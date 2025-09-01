@@ -784,6 +784,7 @@ class MetadataFile(DataFile):
                 self.collections = get_dict("collections", data, library.collections)
                 self.dynamic_collections = get_dict("dynamic_collections", data)
                 col_names = library.collections + [c for c in self.collections]
+                local_people_cache = {}
                 for map_name, dynamic in self.dynamic_collections.items():
                     logger.info("")
                     logger.separator(f"Building {map_name} Dynamic Collections", space=False, border=False)
@@ -977,11 +978,15 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.get('Name')}")
                                 try:
                                     my_emby_cast = None
-                                    emby_people = item.get('People', [])
-                                    if 'tmdb_person' in dynamic["template"]:
-                                        emby_ids = [entry.get("Id") for entry in emby_people]
-                                        my_emby_cast = self.library.EmbyServer.get_items_bulk(emby_ids, ["ProviderIds"])
-                                        pass
+                                    emby_people = None
+                                    if item.get('Id') in local_people_cache:
+                                        my_emby_cast, emby_people = local_people_cache.get(item.get('Id'))
+                                    else:
+                                        emby_people = item.get('People', [])
+                                        if dynamic.get("template") and "tmdb_person" in dynamic["template"]:
+                                            emby_ids = [entry.get("Id") for entry in emby_people]
+                                            my_emby_cast = self.library.EmbyServer.get_items_bulk(emby_ids, ["ProviderIds"])
+                                            local_people_cache[item.get('Id')] = (my_emby_cast, emby_people)
 
                                     # Director, Writer
                                     the_list = []

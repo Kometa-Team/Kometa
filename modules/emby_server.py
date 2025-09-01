@@ -183,6 +183,7 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self._http_session = requests.Session()
         self.missing_tmdb_ids = set()
         self.cached_tmdb_ids = {}
         self.config = config
@@ -1663,10 +1664,7 @@ class EmbyServer:
             import re
             cand_size, cand_ct = None, None
 
-            sess = getattr(self, "_http_session", None)
-            if sess is None:
-                sess = requests.Session()
-                self._http_session = sess
+            sess = self._http_session
 
             headers = {
                 "User-Agent": (
@@ -1773,10 +1771,7 @@ class EmbyServer:
         #    c) Kandidaten-Hash bestimmen (mit gleichen Headers wie oben)
         cand_hash = None
         if image_path.startswith("http"):
-            sess = getattr(self, "_http_session", None)
-            if sess is None:
-                sess = requests.Session()
-                self._http_session = sess
+            sess = self._http_session
 
             headers = {
                 "User-Agent": (

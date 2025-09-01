@@ -267,15 +267,6 @@ class CollectionBuilder:
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
 
-        self.tmdb_person_id = None
-        if "tmdb_person_id" in methods:
-            logger.debug("")
-            logger.debug("Has native Tmdb id")
-            if not self.data[methods["tmdb_person_id"]]:
-                raise Failed(f"{self.Type} Error: tmdb id is blank")
-            logger.debug(f"Value: {self.data[methods['tmdb_person_id']]}")
-            self.tmdb_person_id = str(self.data[methods["tmdb_person_id"]])
-
         english = None
         translations = None
 
@@ -2288,6 +2279,10 @@ class CollectionBuilder:
                     message = f"{self.Type} Error: {filter_final} filter attribute is blank"
                 else:
                     try:
+                        if self.data and "tmdb_person" in self.data:
+                            tmdb_person_id = self.data.get("tmdb_person")
+                            pass
+
                         final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
                     except FilterFailed as e:
                         raise Failed(e)
@@ -2725,6 +2720,7 @@ class CollectionBuilder:
                             if search_mod == "o":
                                 validation = f"{validation[:-1]}mon"
                             results, display_add = build_url_arg(f"-{validation}", mod=last_mod, arg_s=f"{validation} {plex.date_sub_mods[search_mod]}", mod_s=last_text)
+                            pass
                         elif attr == "duration" and modifier in [".gt", ".gte", ".lt", ".lte"]:
                             results, display_add = build_url_arg(validation * 60000)
                         elif modifier == ".rated":
@@ -2880,7 +2876,12 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False)
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, person_list = final_values)
+            tmdb_person_id = None
+            if self.data and "tmdb_person" in self.data:
+                tmdb_person_id = self.data.get("tmdb_person")[0]
+                pass
+
+            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, person_list = final_values, tmdb_person_id = tmdb_person_id)
             valid_list = []
             for fvalue in final_values:
                 if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
