@@ -1536,7 +1536,7 @@ class Emby(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(60), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
-    def get_tags(self, tag):
+    def get_tags(self, tag, person_list=None, tmdb_person_id = None):
         if isinstance(tag, str):
             match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', tag)
             if not match:

@@ -1550,7 +1550,7 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            tags_iter = self.get_tags(final_search, person_list, tmdb_person_id = tmdb_person_id)
+            tags_iter = self.get_tags(final_search, person_list = person_list, tmdb_person_id = tmdb_person_id)
             for choice in tags_iter:
 
                 if choice.title not in names:
