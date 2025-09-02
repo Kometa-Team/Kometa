@@ -184,7 +184,6 @@ class EmbyServer:
 
         # ToDo: Merge the cache
         self._http_session = requests.Session()
-        self.missing_tmdb_ids = set()
         self.cached_tmdb_ids = {}
         self.config = config
         self._roman_name_cache = {}  # key: tmdb_person_id(str) -> latin_name(str)|None
@@ -3177,58 +3176,94 @@ class EmbyServer:
                 return person_id, will_change
 
             # weiterhin mehrdeutig -> sicher bleiben, NICHT auto-linken
-            if hasattr(self, "people_cache"):
-                self.people_cache[cache_key] = None
+            self.people_cache[cache_key] = None
             return None, False
 
         # 4) Gar kein Namensmatch -> kein Auto-Link
-        if hasattr(self, "people_cache"):
-            self.people_cache[cache_key] = None
+        self.people_cache[cache_key] = None
         return None, False
 
-    def get_person_info_bulk(self, tmdb_ids: list, provider: str = "tmdb"):
+    def get_person_info_bulk(self, tmdb_ids: list, provider: str = "tmdb", chunk_size: int = 150):
         """
-        Holt alle Emby-Personen-IDs für eine Liste von TMDb-IDs in einem Schwung.
+        Holt alle Emby-Personen-IDs für eine Liste von TMDb-IDs in Batches.
+        - Chunking via `chunk_size` (Standard 150)
+        - Warnung, falls eine TMDb-ID mehreren Emby-IDs zugeordnet ist
 
         Args:
             tmdb_ids (list): Liste von TMDb-Personen-IDs (ints oder strings).
-            provider (str): Standard "tmdb".
+            provider (str): z. B. "tmdb".
+            chunk_size (int): Größe der Batches für AnyProviderIdEquals.
 
         Returns:
-            dict: Mapping von tmdb_id -> emby_id
+            dict[int, str]: Mapping tmdb_id -> emby_id
         """
         if not tmdb_ids:
             return {}
 
-        # IDs in Emby-Format bringen
-        provider_ids = ",".join([f"{provider}.{pid}" for pid in tmdb_ids])
-
-        endpoint = (
-            f"/emby/Users/{self.user_id}/Items"
-            f"?Recursive=true"
-            f"&Fields=ProviderIds"
-            f"&IncludeItemTypes=Person"
-            f"&AnyProviderIdEquals={provider_ids}"
-            f"&api_key={self.api_key}"
-        )
-        url = self.emby_server_url + endpoint
-
+        # IDs normalisieren (einmalig) und deduplizieren
         try:
-            response = requests.get(url, headers=self.headers, timeout=20)
-            response.raise_for_status()
-        except Exception as e:
-            print(f"[get_person_info_bulk] Fehler beim Request: {e}")
+            norm_ids = sorted({int(x) for x in tmdb_ids if x is not None and str(x).strip() != ""})
+        except ValueError:
+            # Falls mal ein Nicht-Integer hereinschneit, weich aus: nur die „sauberen“
+            norm_ids = sorted({int(x) for x in tmdb_ids if str(x).isdigit()})
+
+        if not norm_ids:
             return {}
 
-        items = response.json().get("Items", [])
+        result: dict[int, str] = {}
+        # Für Duplikats-Warnungen: tmdb_id -> {emby_ids...}
+        multi_map: dict[str, set] = {}
 
-        result = {}
-        for item in items:
-            emby_id = item.get("Id")
-            prov = item.get("ProviderIds", {})
-            tmdb_id = prov.get(provider) or prov.get(provider.capitalize())
-            if emby_id and tmdb_id:
-                result[int(tmdb_id)] = emby_id
+        for i in range(0, len(norm_ids), chunk_size):
+            batch = norm_ids[i:i + chunk_size]
+            provider_ids = ",".join(f"{provider}.{pid}" for pid in batch)
+
+            endpoint = (
+                f"/emby/Users/{self.user_id}/Items"
+                f"?Recursive=true"
+                f"&Fields=ProviderIds"
+                f"&IncludeItemTypes=Person"
+                f"&AnyProviderIdEquals={provider_ids}"
+                f"&api_key={self.api_key}"
+            )
+            url = self.emby_server_url + endpoint
+
+            try:
+                resp = requests.get(url, headers=self.headers, timeout=20)
+                resp.raise_for_status()
+            except Exception as e:
+                logger.warning(f"[get_person_info_bulk] Request-Fehler (Batch {i // chunk_size + 1}): {e}")
+                continue
+
+            items = (resp.json() or {}).get("Items", []) or []
+            for item in items:
+                emby_id = item.get("Id")
+                prov = item.get("ProviderIds") or {}
+                # TMDb kann unter 'tmdb' oder 'Tmdb' liegen – beide prüfen
+                tmdb_id_raw = prov.get(provider.lower()) or prov.get(provider.capitalize())
+                if not emby_id or tmdb_id_raw is None:
+                    continue
+                try:
+                    tmdb_id = int(tmdb_id_raw)
+                except (TypeError, ValueError):
+                    continue
+
+                # Warnung, falls eine TMDb-ID mehreren Emby-IDs zugeordnet ist
+                if tmdb_id in result and result[tmdb_id] != emby_id:
+                    # Track alle beteiligten Emby-IDs
+                    s = multi_map.setdefault(f"{tmdb_id} - {item.get('Name')}", {result[tmdb_id]})
+                    s.add(emby_id)
+
+                else:
+                    result[tmdb_id] = emby_id
+
+        # Nachlaufende Warnungen gesammelt ausgeben
+        if multi_map:
+            for dup_tmdb, emby_ids in multi_map.items():
+                logger.warning(
+                    f"[get_person_info_bulk] TMDb-Person-ID {dup_tmdb} is assigned to multiple Emby-IDs: {sorted(emby_ids)}. "
+                    # f"Nutze zuerst gefundene Emby-ID: {result.get(dup_tmdb)}"
+                )
 
         return result
 
@@ -3270,10 +3305,13 @@ class EmbyServer:
         crew_buckets = {"Director": [], "Writer": [], "Composer": [], "Producer": []}
 
         # --- Robuste Filter ---
+        import re
+
         cast_filtered = [
             a for a in (my_cast or [])
-            if "uncredited" not in ((a.get("character") or "").lower())
+            if not re.search(r"\buncredited\b", (a.get("character") or ""), flags=re.IGNORECASE)
         ]
+
         crew_filtered = [
             m for m in (my_crew or [])
             if (m.get("job") and (m.get("job").strip().lower() in allowed_jobs))
@@ -3283,31 +3321,23 @@ class EmbyServer:
         tmdb_ids = [c.get("person_id") for c in (cast_filtered + crew_filtered) if c.get("person_id")]
         # Nur neue IDs gegen Emby auflösen (nicht im Cache, nicht bereits als "missing" markiert)
         new_tmdb_ids = sorted(
-            {tid for tid in tmdb_ids if tid not in self.cached_tmdb_ids and tid not in self.missing_tmdb_ids})
+            {tid for tid in tmdb_ids if tid not in self.cached_tmdb_ids})
 
         # --- Bulk-Lookup gegen Emby (mit optionalem Chunking) ---
         # Hinweis: Falls Emby-URL-Limits greifen, hier in Chunks aufsplitten (z.B. 150 IDs pro Request)
         missing = None
         if new_tmdb_ids:
-            CHUNK = 150
-            resolved_total = {}
-            for i in range(0, len(new_tmdb_ids), CHUNK):
-                batch = new_tmdb_ids[i:i + CHUNK]
-                try:
-                    resolved = self.get_person_info_bulk(batch, provider=provider)  # {tmdb_id:int -> emby_id:str}
-                except Exception:
-                    resolved = {}
-                if resolved:
-                    resolved_total.update(resolved)
+
+            try:
+                resolved = self.get_person_info_bulk(new_tmdb_ids, provider=provider)  # {tmdb_id:int -> emby_id:str}
+            except Exception as e:
+                logger.error(e)
+                resolved = {}
 
             # Cache updaten
-            if resolved_total:
-                self.cached_tmdb_ids.update(resolved_total)
+            if resolved:
+                self.cached_tmdb_ids.update(resolved)
 
-            # Alles, was Emby nicht zurückgegeben hat, als "missing" merken
-            missing = set(new_tmdb_ids) - set(resolved_total.keys())
-            if missing:
-                self.missing_tmdb_ids.update(missing)
 
         # --- Cast ---
         for c in (cast_filtered or []):
@@ -3319,12 +3349,12 @@ class EmbyServer:
 
             emby_id = self.cached_tmdb_ids.get(tmdb_id)
 
-            if emby_id and missing and int(tmdb_id) in missing:
+            # statt: if emby_id and missing and int(tmdb_id) in missing:
+            if emby_id:
                 try:
-                    self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
+                    self.ensure_person_latin_name(str(emby_id), int(tmdb_id), name)
                 except Exception:
                     pass
-
 
             if not emby_id:
                 # Platzhalter nach Name deduplizieren
@@ -3365,19 +3395,21 @@ class EmbyServer:
             if not tmdb_id or not name or not etype:
                 continue
 
+            tmdb_id = int(tmdb_id)  # Typ konsistent
             emby_id = self.cached_tmdb_ids.get(tmdb_id)
 
-            if emby_id and missing and int(tmdb_id) in missing:
+            # Falls du Namen immer „lateinisieren“ willst, wenn Emby-ID existiert:
+            if emby_id:
                 try:
                     self.ensure_person_latin_name(str(emby_id), tmdb_id, name)
                 except Exception:
                     pass
 
             if not emby_id:
-                continue
+                # Platzhalter analog Cast
                 k_name = key_for(None, name, etype)
                 if k_name not in per_key:
-                    entry = {"Id": name, "Name": f"{name}-{tmdb_id}", "Type": etype, "Tmdb": tmdb_id}
+                    entry = {"Id": name, "Name": name, "Type": etype}
                     per_key[k_name] = entry
                     crew_buckets[etype].append(entry)
                 continue
@@ -3702,33 +3734,34 @@ class EmbyServer:
 
         # Jetzt nur dort Apply, wo eine importierte TMDb-ID existiert, aber im Emby-Item fehlt
         self._ensure_http_session()
-        for p in desired_people:
-            emby_person_id = str(p.get("Id") or "")
-            if not emby_person_id.isdigit():
-                continue
+        if False:
+            for p in desired_people:
+                emby_person_id = str(p.get("Id") or "")
+                if not emby_person_id.isdigit():
+                    continue
 
-            imported_tmdb_id = p.get("Tmdb") or p.get("tmdb") or None
-            if not imported_tmdb_id:
-                continue
+                imported_tmdb_id = p.get("Tmdb") or p.get("tmdb") or None
+                if not imported_tmdb_id:
+                    continue
 
-            # Vorhandene ProviderIds prüfen
-            e_item = id_to_item.get(emby_person_id) or {}
-            prov, e_tmdb = self._norm_provider_ids(e_item.get("ProviderIds"))
-            if e_tmdb:  # Schon vorhanden -> nichts zu tun
-                continue
+                # Vorhandene ProviderIds prüfen
+                e_item = id_to_item.get(emby_person_id) or {}
+                prov, e_tmdb = self._norm_provider_ids(e_item.get("ProviderIds"))
+                if e_tmdb:  # Schon vorhanden -> nichts zu tun
+                    continue
 
-            # Fehlt TMDb -> RemoteSearch/Apply (ohne aggressives ReplaceAllImages)
-            url = f"{self.emby_server_url}/emby/Items/RemoteSearch/Apply/{emby_person_id}"
-            params = {"api_key": self.api_key}
-            data = {"ProviderIds": {"tmdb": str(imported_tmdb_id)}}
+                # Fehlt TMDb -> RemoteSearch/Apply (ohne aggressives ReplaceAllImages)
+                url = f"{self.emby_server_url}/emby/Items/RemoteSearch/Apply/{emby_person_id}"
+                params = {"api_key": self.api_key}
+                data = {"ProviderIds": {"tmdb": str(imported_tmdb_id)}}
 
-            try:
-                r = self.session.post(url, headers=self.headers, params=params, json=data, timeout=20)
-                # kein raise_for_status(), Emby gibt manchmal 204 zurück
-                # optional: Logging bei r.status_code >= 400
-            except Exception as ex:
-                # optional: logger.warning(f"Apply TMDb failed for person {emby_person_id}: {ex}")
-                pass
+                try:
+                    r = self.session.post(url, headers=self.headers, params=params, json=data, timeout=20)
+                    # kein raise_for_status(), Emby gibt manchmal 204 zurück
+                    # optional: Logging bei r.status_code >= 400
+                except Exception as ex:
+                    # optional: logger.warning(f"Apply TMDb failed for person {emby_person_id}: {ex}")
+                    pass
 
         if person_edits:
             for id, name in person_edits:
