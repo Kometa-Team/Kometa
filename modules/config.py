@@ -895,7 +895,7 @@ class ConfigFile:
             self.general["jellyfin"] = {
                 "url": check_url(self.data, "jellyfin.url", default_is_none=True),
                 "token": check_attr(self.data, "jellyfin.token", default_is_none=True),
-                "user_id": check_attr(self.data, "jellyfin.user_id", default_is_none=True),
+                "user": check_attr(self.data, "jellyfin.user", default_is_none=True),
                 "timeout": check_int(self.data, "jellyfin.timeout", default=60),
                 "verify_ssl": check_bool(self.data, "jellyfin.verify_ssl", default=False),
             }
@@ -1342,7 +1342,7 @@ class ConfigFile:
                     params["jellyfin"] = {
                         "url": check_url(lib, "jellyfin.url", default=self.general["jellyfin"]["url"], req_default=True, save=False),
                         "token": check_attr(lib, "jellyfin.token", default=self.general["jellyfin"]["token"], req_default=True, save=False),
-                        "user_id": check_attr(lib, "jellyfin.user_id", default=self.general["jellyfin"]["user_id"], req_default=True, save=False),
+                        "user": check_attr(lib, "jellyfin.user", default=self.general["jellyfin"]["user"], req_default=True, save=False),
                         "timeout": check_int(lib, "jellyfin.timeout", default=self.general["jellyfin"]["timeout"], save=False),
                         "verify_ssl": check_bool(lib, "jellyfin.verify_ssl", default=self.general["jellyfin"]["verify_ssl"], default_is_none=True, save=False)
                     }

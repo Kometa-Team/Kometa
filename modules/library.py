@@ -6,6 +6,7 @@ from modules.operations import Operations
 from modules.poster import ImageData
 from modules.util import Failed, NotScheduled
 from PIL import Image
+from typing import Dict
 
 logger = util.logger
 
