@@ -22,16 +22,21 @@ dynamic_collections:
   Based:
     type: custom
     data:
-      Book: based on book, based on novel
-      Comic: based on comic, based on comic book
-      True Story: based on true story
-      Video Game: based on video game
+      books: Book
+      comics: Comic
+      true_story: True Story
+      video_games: Video Game
     title_format: Based on a <<key_name>>
     template:
       - based
       - shared
       - arr
     template_variables:
+      keywords:
+        books: based on book, based on novel
+        comics: based on comic, based on comic book
+        true_story: based on true story
+        video_games: based on video game
       image:
         default: based/<<key_name_encoded>>
       translation_key:

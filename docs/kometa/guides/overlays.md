@@ -231,7 +231,7 @@ Slightly less Simple:
 
 Change the art on the item in Plex, and remove the "Overlay" label from the item.  If you have Plex Pass, you can remove the label from the item in the UI for Movies and Shows.  You can't remove the label from seasons or episodes in the UI at all.  You will need to use a script or Kometa itself to do that.
 
-??? "Removing the Overlay label from seasons (click to expand)"
+??? "Removing the Overlay label from seasons (Click to Expand)"
 
     ```yaml
     collections:
@@ -245,7 +245,7 @@ Change the art on the item in Plex, and remove the "Overlay" label from the item
             title:  NAME OF SHOW HERE
     ```
 
-??? "Removing the Overlay label from episodes (click to expand)"
+??? "Removing the Overlay label from episodes (Click to Expand)"
 
     ```yaml
     collections:
