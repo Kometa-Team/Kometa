@@ -5,7 +5,7 @@
 
 * **Overlay Text Template Variables** are additional variables shared across the Kometa Text Overlay Defaults.<!--text-vars-->
 
-??? example "Default Template Variable Values (click to expand)"
+??? example "Default Template Variable Values (Click to Expand)"
 
     | Variable            | Default           |
     |:--------------------|:------------------|

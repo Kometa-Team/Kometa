@@ -1,6 +1,6 @@
 ## Example Configuration File
 
-??? example "Sample `config.yml` file (click to expand)"
+??? example "Sample `config.yml` file (Click to Expand)"
 
     ```yaml
     libraries:

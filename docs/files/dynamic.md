@@ -130,7 +130,7 @@ Each dynamic collection definition must have a mapping name (just like standard 
 `dynamic_collections` attribute, which is also attached to the collection as a label to mark it as having been created 
 by this dynamic collection.
 
-??? example "Dynamic Collection Example (click to expand)"
+??? example "Dynamic Collection Example (Click to Expand)"
 
     This example will create a collection for every TMDb Collection associated with items in the library.
     

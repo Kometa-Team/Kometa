@@ -11,7 +11,7 @@ Templates definitions are placed under the top level attribute `templates`. The 
 templates can either be defined in the same file as the other definitions or from an external file using the top level 
 `external_templates` attribute. See [File Blocks](../config/files.md) for how to define files for `external_templates`.
 
-??? example "External Template Example (click to expand)"
+??? example "External Template Example (Click to Expand)"
 
     In this example this is a file in your config folder called `my_templates.yml`.
 
@@ -266,7 +266,7 @@ changing in the template.
 The `name` attribute is what tells the template call which template to use. Its value must correspond exactly to the 
 template mapping name you want to call. 
 
-??? example "Template Name Example (click to expand)"
+??? example "Template Name Example (Click to Expand)"
     
     This is an example using the template name `Actor` showing the template being called in two different ways.
     
@@ -300,7 +300,7 @@ exactly with the Template Variable name surrounded by `<<` and `>>` in the templ
 will replace any part of any value that contains the Template Variable name surrounded by `<<` and `>>` in the template 
 with the specified Template Variable's value.
 
-??? example "Template Variables Example (click to expand)"
+??? example "Template Variables Example (Click to Expand)"
     
     This is an example using the template name `Actor` showing the template being called in two different ways.
     
@@ -332,7 +332,7 @@ with the specified Template Variable's value.
 When using multiple Templates in a single definition you can send the same variable to all templates by using the 
 `variables` attribute.
 
-??? example "Multi-Template Variables Example (click to expand)"
+??? example "Multi-Template Variables Example (Click to Expand)"
 
     ```yaml
     templates:

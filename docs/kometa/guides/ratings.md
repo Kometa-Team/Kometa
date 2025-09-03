@@ -37,7 +37,7 @@ Also note that we have not given this a user rating.
 
 Now let's add rating overlays to the poster. We're going to use the minimal config needed here to illustrate the concepts.
 
-??? example "Initial minimal config (click to expand)"
+??? example "Initial minimal config (Click to Expand)"
 
     ```yaml
     libraries:
@@ -90,7 +90,7 @@ Now just run Kometa again without changing anything else and the user rating ove
 You and I both know that the IMDb rating isn't 6.0, but Kometa is just doing what it's told. Nobody but us humans know where those numbers come from. 
 As an example, let's change the icons to "prove" that Kometa doesn't know or care:
 
-??? example "Updated config (click to expand)"
+??? example "Updated config (Click to Expand)"
 
     ```yaml
     libraries:
@@ -125,7 +125,7 @@ box (whatever that number is) as an IMDb rating. All three of those overlays mea
 
 Now let's actually update the ratings and push some numbers into those boxes using library operations. We'll start with making that user rating accurate:
 
-??? example "Updated config (click to expand)"
+??? example "Updated config (Click to Expand)"
     
     ```yaml
     libraries:
@@ -163,7 +163,7 @@ After that has been run, we see:
 
 Now let's update the critic and audience ratings to some different ratings:
 
-??? example "Updated config (click to expand)"
+??? example "Updated config (Click to Expand)"
 
     ```yaml
     libraries:
@@ -212,7 +212,7 @@ The log will show Kometa updating those values.
 
 Let's change the Trakt rating to that trakt public rating of `85%` instead, which is available via MDBList:
 
-??? example "Updated config (click to expand)"
+??? example "Updated config (Click to Expand)"
 
     ```yaml
     libraries:

@@ -13,7 +13,7 @@ These are the File types that can be utilized against Plex servers:
 | [Playlist Files](../files/playlists.md)     | Defines the data for building playlists, allowing you to combine media from multiple libraries and share them with users on your server. |   `playlist_files`   |
 | [Template Files](../files/templates.md)     | Defines templates in external files, allowing you to use the same templates across multiple other files.                                 | `external_templates` |
 
-??? example "Example File Blocks (click to expand)"
+??? example "Example File Blocks (Click to Expand)"
     
     In this example, multiple file blocks are defined for the `"TV Shows"` library:
     

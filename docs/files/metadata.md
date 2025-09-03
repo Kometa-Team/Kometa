@@ -67,7 +67,7 @@ tags:
 
 You can have the script edit the metadata of Items by adding them to the `metadata` mapping of a Metadata File.
 
-??? example "Examples of multiple metadata edits in each library type (click to expand)"
+??? example "Examples of multiple metadata edits in each library type (Click to Expand)"
     === "Movies"
         ```yaml
         metadata:
@@ -261,7 +261,7 @@ can match and edit multiple items. The available matching options are outlined b
     |:-----------------------------------------|:--------------------------------------------------------------------------------------------------------|
     | `title` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-metadata-1" }                      | Only matches artists that exactly match the artist's Title.<br>Can be a list (only one needs to match).   |
 
-??? example "Matching Examples (click to expand)"
+??? example "Matching Examples (Click to Expand)"
     === "Movies"
         #### Example 1 - `title` and `mapping_id` 
         

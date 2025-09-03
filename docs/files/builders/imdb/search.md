@@ -91,7 +91,7 @@ The `sync_mode: sync` and `collection_order: custom` Setting are recommended sin
 | `runtime.lte`           | Item must have a Runtime less than or equal to the given number.<br>**Options:** Any Integer greater than `0`<br>**Example:** `1000`                                                                                                                                                                                                                                                              |
 | `adult`                 | Include adult titles in the search results.<br>**Options:** `true`/`false`                                                                                                                                                                                                                                                                                                                        |
 
-??? tip "Interests Options"
+??? tip "Interests Options (Click to Expand)"
 
     You can use the Key or the ID for interests
  
