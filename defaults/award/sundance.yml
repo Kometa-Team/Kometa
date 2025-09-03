@@ -25,7 +25,7 @@ collections:
     imdb_award:
       event_id: ev0000631
       event_year: all
-      category_filter: dramatic
+      award_filter: grand jury prize
       winning: true
 
 dynamic_collections:
