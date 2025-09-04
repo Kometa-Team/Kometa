@@ -1,4 +1,4 @@
-import os, re, time, jmespath
+import os, re, time, jmespath, jellyfin
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -6,33 +6,11 @@ from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed
 from PIL import Image
-from jellyfin_apiclient_python import JellyfinClient
-from jellyfin_apiclient_python.api import API
 from requests.exceptions import ConnectionError, ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 from xml.etree.ElementTree import ParseError
 
 logger = util.logger
-
-builder_type_items = {
-    "movies": "movie"
-}
-
-class JellyfinAPI(API):
-    def __init__(self, client, *args, **kwargs):
-        super().__init__(client, *args, **kwargs)
-
-    def get_system_info(self):
-        """Override to get system info"""
-        return self._get("System/Info")
-
-    def get_system_configuration(self):
-        """Override to get system configuration"""
-        return self._get("System/Configuration")
-    
-    def get_libraries(self):
-        """Get libraries"""
-        return jmespath.search("Items", self.get_views())
 
 class Jellyfin(Library):
     def __init__(self, config, params):
@@ -53,7 +31,7 @@ class Jellyfin(Library):
         self.optimize = False
         
         # some api methods require a user context, so we store the user here
-        self.user_id = self.jellyfin["user_id"]
+        self.user = self.jellyfin["user"]
 
         if self.jellyfin["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Jellyfin connection")
@@ -65,26 +43,14 @@ class Jellyfin(Library):
         self.token = self.jellyfin["token"]
         self.timeout = self.jellyfin["timeout"]
         
-        self.client = JellyfinClient()
-        self.client.jellyfin = JellyfinAPI(self.client.http)
-        self.client.config.data["auth.ssl"] = self.jellyfin["verify_ssl"]
-        self.client.config.data["auth.user_id"] = self.user_id
-        self.client.config.data["http.timeout"] = self.timeout
-        
-        # just a clean shortcut
-        self.api = self.client.jellyfin
+        self.api = jellyfin.api(self.url, self.token)
+        self.api.register_client(client_name="Kometa")
 
         logger.info(self.url)
         logger.secret(self.token)
         try:
-            self.client.authenticate(
-                {"Servers": [{"AccessToken": self.token, "address": self.url}]},
-                discover=False
-            )
-
-            system_info = self.api.get_system_info()
-            self._server_version = system_info.get("Version")
-            self._server_name = system_info.get("ServerName")
+            self._server_version = self.api.system.info.version
+            self._server_name = self.api.system.info.server_name
 
             logger.info(f"Connected to server {self._server_name} version {self._server_version}")
         except Exception as e:
@@ -92,18 +58,18 @@ class Jellyfin(Library):
             logger.stacktrace()
             raise Failed(f"Jellyfin Error: {e}")
         
-        library = None
-        library_names = []
-        for item in self.api.get_libraries():
-            library_names.append(item["Name"])
-            if item["Name"].lower() == self.name.lower():
-                library = item
-                break
-        if library is None:
-            raise Failed(f"Jellyfin Library '{params['name']}' not found. Options: {library_names}")
+        libraries = self.api.items.search.only_library().add('name_starts_with', self.name).all
+        
+        if len(libraries) > 1:
+            names = [f"'{item.id.hex}'" for item in libraries.items]
+            raise Failed(f"Jellyfin Library '{params['name']}' is not unique. Options: {names}")
 
-        self.type = library["CollectionType"].lower()
+        if len(libraries) < 1:
+            raise Failed(f"Jellyfin Library '{params['name']}' not found.")
 
+        item = libraries.first
+
+        self.type = item.collection_type.value
         self.is_movie = self.type == "movies"
         self.is_show = self.type == "tvshows"
         self.is_music = self.type == "music"
@@ -136,22 +102,56 @@ class Jellyfin(Library):
         
         logger.info(f"Loading All {builder_level.capitalize()} from Library: {self.name}")
         
-        params = {
-            'IncludeItemTypes': builder_type_items[builder_level],
-            'Fields': 'ProviderIds,Path',
-            'Recursive': 'true',
-            'StartIndex': 0,
-            'Limit': 100000
-        }
+        search = self.api.items.search
+        search.include_item_types = [
+            self.api.generated.BaseItemKind.MOVIE
+        ]
+        search.fields = [
+            self.api.generated.ItemFields.PROVIDERIDS, 
+            self.api.generated.ItemFields.PATH
+        ]
+        search.recursive().paginate(10000)
+        result = search.all
 
-        results = self.api.items(params=params)['Items']
+        logger.info(f"Loaded {len(result)} {builder_level.capitalize()}")
 
-        logger.info(f"Loaded {len(results)} {builder_level.capitalize()}")
+        if builder_level in [None, "movies"]:
+            self._all_items = result
+        return result
 
-        if builder_level in [None, "movie"]:
-            self._all_items = results
-        return results
+    def map_external_id(self, items):
+        total = len(items)
+        for i, item in enumerate(items, 1):
+            logger.ghost(f"Processing: {i}/{total} {item.name}")
+            if isinstance(item, tuple):
+                item = item[0]
+            
+            external_id = jmespath.search("ProviderIds.Tmdb", item)
+            if external_id is None:
+                continue
+            
+            key = item.get('Id')
+            
+            try:
+                self.config.TMDb.get_movie(external_id)
+                self.movie_rating_key_map[key] = external_id
+            except Failed:
+                pass
+        
+        logger.info("")
+        logger.info(f"Processed {total} {self.type}")
+        
+    def get_all_collections(self, label=None):
+        search = self.api.items.search
+        search.include_item_types = [
+            self.api.generated.BaseItemKind.BOXSET
+        ]
+        search.recursive().paginate(10000)
+        return search.all
     
+    def get_collection(self, data, force_search=False, debug=True):
+        print(data)
+
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
         
@@ -167,8 +167,8 @@ class Jellyfin(Library):
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         raise NotImplementedError("Jellyfin image_update method not implemented yet")
     
-    def item_labels(self, item, labels):
-        raise NotImplementedError("Jellyfin item_labels method not implemented yet")
+    def item_labels(self, item):
+        pass
     
     def item_posters(self, item):
         raise NotImplementedError("Jellyfin item_posters method not implemented yet")
@@ -176,8 +176,8 @@ class Jellyfin(Library):
     def notify_delete(self, message_id):
         raise NotImplementedError("Jellyfin notify_delete method not implemented yet")
     
-    def reload(self):
-        raise NotImplementedError("Jellyfin reload method not implemented yet")
+    def reload(self, item, force=False):
+        pass
     
     def upload_poster(self, item, image, tmdb=None, title=None):
         raise NotImplementedError("Jellyfin upload_poster method not implemented yet")
