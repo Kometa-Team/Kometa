@@ -120,15 +120,13 @@ class Operations:
             logger.info(f"{len(tracks)} Tracks Processed; {num_edited} Blank Track Titles Updated")
 
         if self.library.items_library_operation:
-            items = self.library.get_all()
-            total_items = len(items)
-            
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
             # Get an iterable of all items and create the batch generator
-            all_items_iterable = self.library.get_all()
-            batch_generator = self._get_items_in_batches(all_items_iterable, batch_size)
+            all_items = self.library.get_all()
+            total_items = len(all_items)
+            batch_generator = self._get_items_in_batches(all_items, batch_size)
             
             num_batches = (total_items + batch_size - 1) // batch_size if isinstance(total_items, int) else "Unknown"
             processed_items = 0
@@ -155,7 +153,7 @@ class Operations:
                 ep_lock_edits = {}
                 ep_unlock_edits = {}
 
-                for i, item in enumerate(items, 1):
+                for item in items:
                     processed_items += 1
                     logger.info("")
                     logger.info(f"({processed_items}/{total_items}) {item.title}")
