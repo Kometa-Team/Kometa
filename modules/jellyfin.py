@@ -68,9 +68,13 @@ class Jellyfin(Library):
             raise Failed(f"Jellyfin Library '{params['name']}' not found.")
 
         item = libraries.first
-
+        self.Jellyfin = item
         self.type = item.collection_type.value
-        self.is_movie = self.type == "movies"
+        
+        if item.collection_type.value == "movies":
+            self.type = "movie"
+
+        self.is_movie = self.type == "movie"
         self.is_show = self.type == "tvshows"
         self.is_music = self.type == "music"
         self.is_playlist = self.type == "playlists"
@@ -94,9 +98,9 @@ class Jellyfin(Library):
         return 'ProviderIds'
         
     def get_all(self, builder_level=None, load=False):        
-        if load and builder_level in [None, "movies"]:
+        if load and builder_level in [None, "movie"]:
             self._all_items = []
-        if self._all_items and builder_level in [None, "movies"]:
+        if self._all_items and builder_level in [None, "movie"]:
             return self._all_items
         builder_level = self.type
         
@@ -115,7 +119,7 @@ class Jellyfin(Library):
 
         logger.info(f"Loaded {len(result)} {builder_level.capitalize()}")
 
-        if builder_level in [None, "movies"]:
+        if builder_level in [None, "movie"]:
             self._all_items = result
         return result
 
@@ -148,9 +152,18 @@ class Jellyfin(Library):
         ]
         search.recursive().paginate(10000)
         return search.all
-    
+
     def get_collection(self, data, force_search=False, debug=True):
         print(data)
+
+    def split(self, text):
+        attribute, modifier = os.path.splitext(str(text).lower())
+        final = f"{attribute}{modifier}"
+        return attribute, modifier, final
+
+    def fetchItems(self, uri_args):
+        print(f'FetchItems: {uri_args}')
+        return self.api.items.search.recursive().paginate(1000).all
 
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
