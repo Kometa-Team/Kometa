@@ -150,20 +150,23 @@ class Jellyfin(Library):
         search.include_item_types = [
             self.api.generated.BaseItemKind.BOXSET
         ]
-        search.recursive().paginate(10000)
-        return search.all
+        return search.recursive().all
 
-    def get_collection(self, data, force_search=False, debug=True):
-        print(data)
+    def get_collection(self, data, force_search=False, debug=True):        
+        search = self.api.items.search
+        search.include_item_types = [
+            self.api.generated.BaseItemKind.BOXSET
+        ]
+        collections = search.recursive().all
+        for collection in collections:
+            if collection.name == data:
+                return collection
+        return None
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
         final = f"{attribute}{modifier}"
         return attribute, modifier, final
-
-    def fetchItems(self, uri_args):
-        print(f'FetchItems: {uri_args}')
-        return self.api.items.search.recursive().paginate(1000).all
 
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
