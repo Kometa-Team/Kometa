@@ -90,6 +90,7 @@ dynamic_collections:
         - 453993    # The Wolverine
     title_override:
       10: "Star Wars: Skywalker Saga"
+      1565: "28 Days/Weeks/Years Later"
       535313: Godzilla (MonsterVerse)
       535790: Godzilla (Anime)
     template_variables:
