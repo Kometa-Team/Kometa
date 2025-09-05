@@ -730,6 +730,7 @@ class Plex(Library):
         Supports decade-based filtering for Emby and correctly handles episodes.
         """
         is_show= False
+        additional_person_search = None
         # Parse the URI arguments
         plus_replace = str(uri_args).replace('+', '%2B')
 
@@ -810,7 +811,7 @@ class Plex(Library):
                     elif field.endswith('originallyAvailableAt'):
                         if field.startswith("episode"): # look for episodes recently aired to get to the show
                             is_show = True
-                            item_types = {"Episode"}
+                            item_types.add("Episode")
                             # item_types = {"Series"}
 
                         date_value = self.parse_relative_date(operand)
@@ -902,6 +903,7 @@ class Plex(Library):
                         emby_query_params['Tags'].append(f'{value_decoded}')
                     elif key_decoded in ['actor', 'director', 'writer', 'producer', 'composer', 'show.actor']:
                         # Handle multiple persons
+                        # item_types.add("Person")
                         if 'PersonIds' not in emby_query_params:
                             emby_query_params['PersonIds'] = []
                         if 'PersonTypes' not in emby_query_params:
@@ -910,6 +912,7 @@ class Plex(Library):
                             key_decoded = key_decoded.split('.')[1]
                         emby_query_params['PersonIds'].append(value_decoded)
                         emby_query_params['PersonTypes'].append(key_decoded)
+                        additional_person_search = value_decoded # Emby item id
                     elif key_decoded == 'sort':
                         sort_parts = value_decoded.split(':')
                         sort_field, sort_order = (sort_parts[0], sort_parts[1]) if len(sort_parts) == 2 else (
@@ -1032,7 +1035,7 @@ class Plex(Library):
         emby_query_params['ParentId'] = self.Emby.get("Id")
 
         if unknown_params:
-            print(unknown_params)
+            logger.error(f"Emby BETA: unknown parameters: {unknown_params}")
             # |     1 | Unknown parameter: {'duplicate': '1'} ?type=1&sort=titleSort&duplicate=1
             raise Failed(f"Unknown parameter: {unknown_params} {uri_args}")
 
@@ -1057,6 +1060,12 @@ class Plex(Library):
         else:
             my_output= self.EmbyServer.convert_emby_to_plex(items)
         # Convert Emby items to Plex format
+        # Used for Emby to retrieve the person and add to collection
+        if additional_person_search and additional_person_search.isdigit():
+            person = self.EmbyServer.get_item(additional_person_search)
+            plex_person = self.EmbyServer.convert_emby_to_plex([person], False)
+            if plex_person and len(plex_person) == 1:
+                my_output.extend(plex_person)
         return my_output
 
     def parse_relative_date(self, relative_date_str):

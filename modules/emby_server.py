@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import json
 import os
 import re
 import time
@@ -11,9 +10,9 @@ import requests
 from plexapi.collection import Collection
 from plexapi.video import Show, Movie, Episode
 
-from modules.logs import ERROR, WARNING
-from modules.util import Failed
 from modules import util
+from modules.logs import ERROR
+from modules.util import Failed
 
 logger = util.logger
 
@@ -81,9 +80,6 @@ class Show(Show):
         super().__init__(None, xml_data)
         self._loadData(xml_data)
 
-    class Person:
-        def __init__(self):
-            pass
 
     @staticmethod
     def _dict_to_xml(data_dict):
@@ -173,6 +169,23 @@ class Audio:
                 element.set(key, str(value))
         return element
 
+class Person(Movie):
+    def __init__(self, data):
+        xml_data = self._dict_to_xml(data)
+        super().__init__(xml_data)
+        self._loadData(xml_data)
+
+    @staticmethod
+    def _dict_to_xml(data_dict):
+        element = Element('Person')
+        for key, value in data_dict.items():
+            if value is not None:
+                element.set(key, str(value))
+        if 'agent' not in data_dict or not data_dict['agent']:
+            element.set('agent', 'com.plexapp.agents.imdb')  # Oder den entsprechenden Agenten
+
+        return element
+
 
 class EmbyConfig:
     X_EMBY_CONTAINER_SIZE = 50  # Definiere die Standardgröße für die Anzahl der Elemente
@@ -254,8 +267,6 @@ class EmbyServer:
 
         # create an instance of the API class
         # client = emby_client.ApiClient(configuration)
-
-    from deepdiff import DeepDiff
 
     # -------------------------------------------------------------
     # Nutzt DEINE bestehende get_people() – nichts Neues erfunden.
@@ -1290,7 +1301,11 @@ class EmbyServer:
         raise Failed(f"Cannot resolve Emby item id from type={type(plex_object).__name__}: {plex_object!r}")
 
     def get_item(self, item_id: int | str, *, force_refresh: bool = False) -> dict | None:
-        item_id = int(item_id)
+        try:
+            item_id = int(item_id)
+        except: # will be triggered if item doesnt exist yet
+            return None
+
         if not force_refresh and item_id in self.item_cache and item_id not in self.dirty_items:
             return self.item_cache[item_id]
 
@@ -1592,8 +1607,6 @@ class EmbyServer:
                 f"Error marking item {item_id} as a favorite for user {user_id}: {response.content}"
             )
             return False
-
-    import os, hashlib, requests
 
     def set_image_smart(
             self,
@@ -2046,6 +2059,8 @@ class EmbyServer:
 
                 elif media_type == "Audio":
                     plex_object=Audio(data)
+                elif media_type == "Person":
+                    plex_object=Person(data)
                 else:
                     logger.error(f"error converting Emby object")
                     continue
@@ -3082,6 +3097,32 @@ class EmbyServer:
 
         return list(results_by_id.values())
 
+    def get_person_by_name(self, person_name):
+        """
+        - Ohne person_list: komplette (gecachte) Liste via Index (ein Request pro Library+Rolle).
+        - Mit person_list: exakte Namensmatches aus dem Index, fällt bei Bedarf auf minimale Such-Requests zurück
+          (nur wenn wirklich keine Namens-Treffer im Index existieren).
+        Cached zusätzlich: self.people_lib_cache[term.lower()]
+        """
+
+        # 3) Fallback: einmalige Emby-Suche mit SearchTerm
+        self._ensure_http_session()
+        base_url = self.emby_server_url + "/emby/Persons"
+        params = {
+            "SearchTerm": person_name,
+            "Fields": "ProviderIds,ImageTags",
+            "api_key": self.api_key,
+        }
+        try:
+            r = self._http_session.get(base_url, headers=self.headers, params=params, timeout=20)
+            r.raise_for_status()
+            items = r.json().get("Items", [])
+        except Exception:
+            items = []
+
+        # Exakte Namens-Treffer bevorzugen
+
+        return items
 
     def get_person_info_via_library(self, role: str, provider: str, tmdb_id: int | str,
                                     person_name: str):
@@ -3278,7 +3319,7 @@ class EmbyServer:
 
         # --- Job-Mapping ---
         job_map_director = {"director"}
-        job_map_writer = {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "story", "comic book"}
+        job_map_writer = {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "Adaptation", "story", "comic book"}
         job_map_composer = {"composer", "original music composer"}
         job_map_movie_producer = {"producer"}
 
@@ -3360,7 +3401,7 @@ class EmbyServer:
                 # Platzhalter nach Name deduplizieren
                 k_name = key_for(None, name, "Actor")
                 if k_name not in per_key:
-                    entry = {"Id": name, "Name": name, "Type": "Actor"}
+                    entry = {"Id": name, "Name": name, "Type": "Actor", "Tmdb": tmdb_id}
                     if role:
                         entry["Role"] = role
                     per_key[k_name] = entry
@@ -3377,6 +3418,7 @@ class EmbyServer:
                 entry = per_key.pop(k_name)
                 entry["Id"] = str(emby_id)
                 per_key[k_id] = entry
+                entry["Tmdb"]: tmdb_id
             elif k_id not in per_key:
                 entry = {"Id": str(emby_id), "Name": name, "Type": "Actor", "Tmdb": tmdb_id}
                 if role:
@@ -3409,7 +3451,7 @@ class EmbyServer:
                 # Platzhalter analog Cast
                 k_name = key_for(None, name, etype)
                 if k_name not in per_key:
-                    entry = {"Id": name, "Name": name, "Type": etype}
+                    entry = {"Id": name, "Name": name, "Type": etype, "Tmdb": tmdb_id}
                     per_key[k_name] = entry
                     crew_buckets[etype].append(entry)
                 continue
@@ -3420,6 +3462,7 @@ class EmbyServer:
                 entry = per_key.pop(k_name)
                 entry["Id"] = str(emby_id)
                 per_key[k_id] = entry
+                entry["Tmdb"]: tmdb_id
             elif k_id not in per_key:
                 entry = {"Id": str(emby_id), "Name": name, "Type": etype, "Tmdb": tmdb_id}
                 per_key[k_id] = entry
@@ -3542,7 +3585,7 @@ class EmbyServer:
 
 
     # --- NEU: sync_people ignoriert Namensunterschiede für den Film
-    def sync_people(self, library_id: str, emby_item: dict, my_cast: list, my_crew: list):
+    def sync_people(self, emby_item: dict, my_cast: list, my_crew: list):
         item_edits = ""
         person_edits = []
         current_people = emby_item.get("People", []) or []
@@ -3641,13 +3684,17 @@ class EmbyServer:
             for dp in desired_people:
                 name = dp.get("Name")
                 desired_id = dp.get("Id")
+                tmdb_id = dp.get("Tmdb")
+                if not desired_id.isdigit():
+                    desired_id = f"{name}-{desired_id}"
                 current_id = index_current.get(name)
 
                 if current_id and current_id != desired_id:
                     diffs.append({
                         "Name": name,
                         "Id_current": current_id,
-                        "Id_desired": desired_id
+                        "Id_desired": desired_id,
+                        "Tmdb": tmdb_id
                     })
 
             return diffs
@@ -3708,11 +3755,22 @@ class EmbyServer:
         item_edits = f"Update People | {change_summary}"
 
         renames = compare_people_ids(current_people, desired_people)
-
         if renames: # global renames for general usage
+            # renames = sorted(set(renames))
             # print(renames)
+            def unique_by(lst, keys):
+                seen = set()
+                out = []
+                for d in lst:
+                    key = tuple(d.get(k) for k in keys)
+                    if key not in seen:
+                        seen.add(key)
+                        out.append(d)
+                return out
+
+            renames = unique_by(renames, ["Name", "Tmdb"])
             for rename in renames:
-                my_id=f"{rename.get('Name')}-{rename.get('Id_desired')}"
+                my_id=f"{rename.get('Name')}-{rename.get('Tmdb')}"
                 payload = {
                     "Id": rename.get("Id_desired"),
                     "Name": my_id,
@@ -3721,7 +3779,7 @@ class EmbyServer:
                 for p in desired_people:
                     if p.get("Name") == rename.get("Name"):
                         p["Name"] = my_id
-                        person_edits.append((rename.get("Id_desired"), rename.get("Name")))
+                        person_edits.append((rename.get("Id_desired"), rename.get("Name"), rename.get("Tmdb")))
                 pass
 
 
@@ -3764,11 +3822,22 @@ class EmbyServer:
                     pass
 
         if person_edits:
-            for id, name in person_edits:
+            person_edits = sorted(set(person_edits))
+            for id, name, tmdb in person_edits:
+                real_id = None
+                if not id.isdigit():
+                    new_emby_person = self.get_person_by_name(f"{name}-{tmdb}")
+                    if new_emby_person:
+                        real_id = new_emby_person[0].get("Id")
+                    pass
                 payload = {
+                    "Id": real_id if real_id else id,
                     "Name": name,
+                    "ProviderIds":{
+                        "Tmdb": tmdb
+                    }
                 }
-                resp = self.library.EmbyServer.update_item(id, payload)
+                resp = self.update_item(real_id if real_id else id, payload)
 
         return True, item_edits
 

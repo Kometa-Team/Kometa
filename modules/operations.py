@@ -1,7 +1,6 @@
 import os, re
 from datetime import datetime, timedelta, timezone
 from modules import plex, util, anidb
-from modules.tmdb import TMDBObj
 from modules.util import Failed, LimitReached
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
@@ -131,7 +130,7 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-
+            # emby_people = EmbyPeopleSyncMixin(config=self.config,library=self.library)
             total_items = len(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
@@ -163,7 +162,7 @@ class Operations:
                 # Debugging end
 
                 emby_item = self.library.EmbyServer.get_item(
-                    item.ratingKey) if True or self.library.label_operations or self.library.mass_genre_update or self.library.genre_mapper else None
+                    item.ratingKey)
 
                 current_labels = [la.tag for la in
                                   self.library.item_labels(item)] if self.library.label_operations else []
@@ -189,8 +188,8 @@ class Operations:
                         self.library.EmbyServer.editItemTitle(item.ratingKey, new_title)
 
                         item_edits.append(f"\nUpdated Title: {item.title[:25]:<25} | {new_title}")
-
                 if self.library.mass_imdb_parental_labels:
+                # Emby: not tested
                     try:
                         if self.library.mass_imdb_parental_labels == "remove":
                             parental_labels = []
@@ -209,6 +208,7 @@ class Operations:
                     except Failed:
                         pass
                 if item.locations:
+                    # Emby: the location cannot be saved to my custom Embvy object, will need rework
                     path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
@@ -822,30 +822,30 @@ class Operations:
                     except Failed:
                         tmdb_item = None
 
-                    def contains_non_latin(text: str, allow_greek=False, allow_cyrillic=False) -> bool:
-                        """True, wenn der Text Zeichen enthält, die nicht in lateinischen/erlaubten Blöcken liegen."""
-                        import unicodedata
-                        if not text:
-                            return False
-                        for ch in text:
-                            cp = ord(ch)
-                            # Basic Latin + Latin-1 + Latin Extended
-                            if 0x0000 <= cp <= 0x024F or 0x1E00 <= cp <= 0x1EFF or 0x2C60 <= cp <= 0x2C7F or 0xA720 <= cp <= 0xA7FF or 0xAB30 <= cp <= 0xAB6F:
-                                continue
-                            # Ziffern, Leerzeichen, Satzzeichen
-                            if ch.isdigit() or ch.isspace() or unicodedata.category(ch).startswith("P"):
-                                continue
-                            # Optional: Griechisch
-                            if allow_greek and (0x0370 <= cp <= 0x03FF or 0x1F00 <= cp <= 0x1FFF):
-                                continue
-                            # Optional: Kyrillisch
-                            if allow_cyrillic and (
-                                    0x0400 <= cp <= 0x04FF or 0x0500 <= cp <= 0x052F or 0x2DE0 <= cp <= 0x2DFF or 0xA640 <= cp <= 0xA69F):
-                                continue
-                            return True
-                        return False
-
                     if tmdb_item and emby_item is not None:
+
+                        def contains_non_latin(text: str, allow_greek=False, allow_cyrillic=False) -> bool:
+                            """True, wenn der Text Zeichen enthält, die nicht in lateinischen/erlaubten Blöcken liegen."""
+                            import unicodedata
+                            if not text:
+                                return False
+                            for ch in text:
+                                cp = ord(ch)
+                                # Basic Latin + Latin-1 + Latin Extended
+                                if 0x0000 <= cp <= 0x024F or 0x1E00 <= cp <= 0x1EFF or 0x2C60 <= cp <= 0x2C7F or 0xA720 <= cp <= 0xA7FF or 0xAB30 <= cp <= 0xAB6F:
+                                    continue
+                                # Ziffern, Leerzeichen, Satzzeichen
+                                if ch.isdigit() or ch.isspace() or unicodedata.category(ch).startswith("P"):
+                                    continue
+                                # Optional: Griechisch
+                                if allow_greek and (0x0370 <= cp <= 0x03FF or 0x1F00 <= cp <= 0x1FFF):
+                                    continue
+                                # Optional: Kyrillisch
+                                if allow_cyrillic and (
+                                        0x0400 <= cp <= 0x04FF or 0x0500 <= cp <= 0x052F or 0x2DE0 <= cp <= 0x2DFF or 0xA640 <= cp <= 0xA69F):
+                                    continue
+                                return True
+                            return False
 
                         tmdb_title = tmdb_item.title
                         emby_title = emby_item.get("Name")
@@ -878,13 +878,16 @@ class Operations:
                                 pass
                         # ToDo: needs good trigger + option
                         if my_cast:
-                            try:
-                                has_edits, people_edits = self.library.EmbyServer.sync_people(
-                                    self.library.EmbyServer.library_id, emby_item, my_cast, my_crew)
+                            # try:
+                                # has_edits, people_edits = emby_people.sync_people(emby_item, my_cast, my_crew)
+
+
+                                has_edits, people_edits = self.library.EmbyServer.sync_people(emby_item, my_cast, my_crew)
                                 if has_edits:
                                     item_edits.append(people_edits)
-                            except:
-                                pass
+                            # except Exception as e:
+                            #     logger.error(e)
+                            #     pass
                     # Title and case updates end
 
                     # tick("Emby genres updated", min_ms=5)

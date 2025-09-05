@@ -1183,7 +1183,7 @@ class CollectionBuilder:
                 # self.beginning_count = len(self.obj.childCount)
                 # self.library.delete(self.obj)
                 # self.obj = None
-            if self.smart:
+            if self.smart: # e.g. people
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
                 if self.obj and check_url:
                     self.library.update_smart_collection(self.obj, check_url)
@@ -3936,7 +3936,7 @@ class CollectionBuilder:
                 logger.info(f"Poster updated: {self.collection_poster.location}")
                 updated_details.append("Image")
             else:
-                logger.warning(f"Poster not updated.")
+                logger.info(f"Poster update not needed.")
 
             # url = f"{self.library.server_url}/Items/{self.obj['Id']}/Images/Primary"
             # files = {"image": open(self.collection_poster, "rb")}
