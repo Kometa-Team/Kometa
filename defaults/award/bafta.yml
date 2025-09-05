@@ -25,7 +25,9 @@ collections:
     imdb_award:
       event_id: ev0000123
       event_year: all
-      category_filter: best film
+      category_filter: 
+        - best film
+        - best film from any source
       winning: true
 
 dynamic_collections:
