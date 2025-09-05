@@ -22,8 +22,7 @@ name_display = {
     "contentRating": "Content Rating"
 }
 
-# How many library items to process at a time.
-batch_size = 100
+default_plex_bulk_edit_batch_size = 500
 
 class Operations:
     def __init__(self, config, library):
@@ -76,6 +75,7 @@ class Operations:
         logger.debug(f"Content Rating Mapper: {self.library.content_rating_mapper}")
         logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
+        logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
         logger.debug("")
 
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
@@ -126,6 +126,7 @@ class Operations:
             # Get an iterable of all items and create the batch generator
             all_items = self.library.get_all()
             total_items = len(all_items)
+            batch_size = self.library.plex_bulk_edit_batch_size if self.library.plex_bulk_edit_batch_size else total_items
             batch_generator = self._get_items_in_batches(all_items, batch_size)
             
             num_batches = (total_items + batch_size - 1) // batch_size if isinstance(total_items, int) else "Unknown"
