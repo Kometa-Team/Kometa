@@ -1,5 +1,4 @@
 import re
-from typing import Dict
 from modules import util
 from modules.util import Failed, NonExisting
 from modules.request import urlparse
@@ -261,13 +260,13 @@ class Convert:
         else:
             return None
 
-    def ids_from_cache(self, rating_key, external_id, item_type, check_id, library):
+    def ids_from_cache(self, rating_key, guid, item_type, check_id, library):
         media_id_type = None
         cache_id = None
         imdb_check = None
         expired = None
         if self.cache:
-            cache_id, imdb_check, media_type, expired = self.cache.query_guid_map(external_id)
+            cache_id, imdb_check, media_type, expired = self.cache.query_guid_map(guid)
             if (cache_id or imdb_check) and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
                 if item_type == "hama" and check_id.startswith("anidb"):
@@ -278,30 +277,8 @@ class Convert:
         return media_id_type, cache_id, imdb_check, expired
 
     def scan_guid(self, guid_str):
-        """ DEPRECATED instead use scan_external_id """
-        self.scan_external_id(guid_str)
-    
-    def scan_external_id(self, external_id: str|Dict) -> tuple[str, str]:
-        """ Scan the external ID and return the type and ID 
-        
-        Args:
-            external_id (str|Dict): The external ID to scan
-        Returns:
-            tuple[str, str]: A tuple containing the type (imdb, tmdb and etc) and ID
-        """
-        if isinstance(external_id, str):
-            guid = urlparse(external_id)
-            return guid.scheme.split(".")[-1], guid.netloc
-        
-        if isinstance(external_id, dict):
-            # try find imdb first, if not found return the first key/value pair
-            result = jmespath.search(
-                "{key: 'Imdb' || keys(@)[0], value: Imdb || values(@)[0]}", 
-                external_id
-            )
-            return result["key"].lower(), result["value"]
-
-        raise Failed(f"Invalid external ID format: {external_id}")
+        guid = urlparse(guid_str)
+        return guid.scheme.split(".")[-1], guid.netloc
 
     def get_id(self, item, library):
         expired = None

@@ -523,7 +523,7 @@ def run_config(config, stats):
                         logger.info("")
                         logger.separator(f"{library.name} Library Run Again")
                         logger.info("")
-                        library.map_external_id(library.cache_items())
+                        library.map_guids(library.cache_items())
                         for builder in library.run_again:
                             logger.info("")
                             logger.separator(f"{builder.name} Collection in {library.name}")
@@ -716,7 +716,7 @@ def run_libraries(config):
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
-                library.map_external_id(temp_items)
+                library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
 
             runs = {
