@@ -30,6 +30,9 @@ class Jellyfin(Library):
         self.empty_trash = False
         self.optimize = False
         
+        # the builder make reference to Plex directly so we set it here
+        self.Plex = self
+        
         # some api methods require a user context, so we store the user here
         self.user = self.jellyfin["user"]
 
@@ -84,18 +87,10 @@ class Jellyfin(Library):
 
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
-    
-    @property    
-    def library_item_uid_name(self) -> str:
-        return 'Id'
-    
+        
     @property
-    def library_item_title_name(self) -> str:
-        return 'Name'
-    
-    @property
-    def library_external_id_name(self) -> str:
-        return 'ProviderIds'
+    def language(self) -> str:
+        return "en"
         
     def get_all(self, builder_level=None, load=False):        
         if load and builder_level in [None, "movie"]:
@@ -115,35 +110,16 @@ class Jellyfin(Library):
             self.api.generated.ItemFields.PATH
         ]
         search.recursive().paginate(10000)
-        result = search.all
+        result = []
+
+        for item in search.all:
+            result.append(ItemWrapper(item))
 
         logger.info(f"Loaded {len(result)} {builder_level.capitalize()}")
 
         if builder_level in [None, "movie"]:
             self._all_items = result
         return result
-
-    def map_external_id(self, items):
-        total = len(items)
-        for i, item in enumerate(items, 1):
-            logger.ghost(f"Processing: {i}/{total} {item.name}")
-            if isinstance(item, tuple):
-                item = item[0]
-            
-            external_id = jmespath.search("ProviderIds.Tmdb", item)
-            if external_id is None:
-                continue
-            
-            key = item.get('Id')
-            
-            try:
-                self.config.TMDb.get_movie(external_id)
-                self.movie_rating_key_map[key] = external_id
-            except Failed:
-                pass
-        
-        logger.info("")
-        logger.info(f"Processed {total} {self.type}")
         
     def get_all_collections(self, label=None):
         search = self.api.items.search
@@ -160,7 +136,7 @@ class Jellyfin(Library):
         collections = search.recursive().all
         for collection in collections:
             if collection.name == data:
-                return collection
+                return ItemWrapper(collection)
         return None
 
     def split(self, text):
@@ -200,3 +176,34 @@ class Jellyfin(Library):
     
     def upload_poster(self, item, image, tmdb=None, title=None):
         raise NotImplementedError("Jellyfin upload_poster method not implemented yet")
+    
+class ItemWrapper:
+    def __init__(self, item):
+        self.item = item
+        
+    @property
+    def smart(self) -> bool:
+        return False
+    
+    @property
+    def title(self) -> str:
+        return self.item.name
+    
+    @property
+    def ratingKey(self) -> int:
+        return self.item.id.int
+    
+    @property
+    def guid(self) -> str:
+        if self.item.provider_ids and "Imdb" in self.item.provider_ids:
+            return f"imdb://{self.item.provider_ids['Imdb']}"
+        elif self.item.provider_ids and "Tmdb" in self.item.provider_ids:
+            return f"tmdb://{self.item.provider_ids['Tmdb']}"
+        return None
+
+    @property
+    def childCount(self) -> int:
+        return 0
+    
+    def __getattr__(self, name):
+        return getattr(self.item, name)
