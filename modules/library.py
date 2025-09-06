@@ -121,9 +121,6 @@ class Library(ABC):
         self.content_rating_mapper = params["content_rating_mapper"]
         self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
-        self.clean_bundles = params["plex"]["clean_bundles"] # TODO: Here or just in Plex?
-        self.empty_trash = params["plex"]["empty_trash"] # TODO: Here or just in Plex?
-        self.optimize = params["plex"]["optimize"] # TODO: Here or just in Plex?
         self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
         self.status = {}
 
