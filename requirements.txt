@@ -16,3 +16,4 @@ schedule==1.2.2
 setuptools==80.9.0
 tenacity==9.1.2
 tmdbapis==1.2.28
+jellyfin-sdk==0.1.4
