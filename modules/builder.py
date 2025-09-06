@@ -1166,7 +1166,7 @@ class CollectionBuilder:
                                                           or (self.library.Radarr and self.radarr_details["add_missing"])
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            if self.obj and hasattr(self.obj, 'smart') and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
                 logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
@@ -1183,7 +1183,10 @@ class CollectionBuilder:
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
                 if not self.smart:
-                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
+                    if self.playlist:
+                        self.beginning_count = len(self.remove_item_map)
+                    elif hasattr(self.obj, 'childCount'):
+                        self.beginning_count = self.obj.childCount
         else:
             self.obj = None
             if self.sync:

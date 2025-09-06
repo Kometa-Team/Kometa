@@ -168,6 +168,9 @@ class Jellyfin(Library):
         final = f"{attribute}{modifier}"
         return attribute, modifier, final
 
+    def get_collection_items(self, collection, smart_label_collection):
+        return []
+
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
         
