@@ -440,18 +440,13 @@ class CollectionBuilder:
                 raise NotScheduled("Skipped because run_definition has no value")
             logger.debug(f"Value: {self.data[methods['run_definition']]}")
             valid_options = ["true", "false"] + plex.library_types
-            try:
-                for library_type in util.get_list(self.data[methods["run_definition"]], lower=True):
-                    if library_type not in valid_options:
-                        raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
-                    elif library_type == "false":
-                        raise NotScheduled(f"Skipped because run_definition is false")
-                    elif library_type != "true" and self.library and library_type != self.library.Plex.type:
-                        raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
-            except AttributeError:
-                pass
-            except Exception as e:
-                raise e
+            for library_type in util.get_list(self.data[methods["run_definition"]], lower=True):
+                if library_type not in valid_options:
+                    raise Failed(f"{self.Type} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
+                elif library_type == "false":
+                    raise NotScheduled(f"Skipped because run_definition is false")
+                elif library_type != "true" and self.library and library_type != self.library.Plex.type:
+                    raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
         if self.playlist:               self.builder_level = "item"
         elif self.library.is_show:      self.builder_level = "show"
@@ -572,11 +567,7 @@ class CollectionBuilder:
 
         self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
 
-        if hasattr(self.library, "Plex"):
-            self.language = self.library.Plex.language
-        elif hasattr(self.library, "Jellyfin"):
-            self.language = 'en'
-            
+        self.language = self.library.Plex.language
         self.details = {
             "show_filtered": self.library.show_filtered,
             "show_unfiltered": self.library.show_unfiltered,
@@ -932,9 +923,7 @@ class CollectionBuilder:
 
         if "smart_filter" in methods and not self.playlist and not self.overlay:
             try:
-                self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter(
-                    "smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random"
-                )
+                self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
             except FilterFailed as e:
                 if self.ignore_blank_results:
                     raise
@@ -1166,7 +1155,7 @@ class CollectionBuilder:
                                                           or (self.library.Radarr and self.radarr_details["add_missing"])
                                                           or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and hasattr(self.obj, 'smart') and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
                 logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
@@ -1183,10 +1172,7 @@ class CollectionBuilder:
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
                 if not self.smart:
-                    if self.playlist:
-                        self.beginning_count = len(self.remove_item_map)
-                    elif hasattr(self.obj, 'childCount'):
-                        self.beginning_count = self.obj.childCount
+                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
         else:
             self.obj = None
             if self.sync:

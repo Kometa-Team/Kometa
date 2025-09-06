@@ -1126,28 +1126,21 @@ class Operations:
             unconfigured_collections = []
             all_collections = self.library.get_all_collections()
             for i, col in enumerate(all_collections, 1):
-                if hasattr(col, "title"):
-                    title = col.title
-                else:
-                    title = col.name
-                logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {title}")
-                try:
-                    col = self.library.reload(col, force=True)
-                    labels = [la.tag for la in self.library.item_labels(col)]
+                logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
+                col = self.library.reload(col, force=True)
+                labels = [la.tag for la in self.library.item_labels(col)]
 
-                    if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
-                        try:
-                            self.library.delete(col)
-                            logger.info(f"{title} Deleted")
-                        except Failed as e:
-                            logger.error(e)
-                    else:
-                        if "PMM" not in labels and "Kometa" not in labels:
-                            unmanaged_collections.append(col)
-                        if col.title not in self.library.collection_names:
-                            unconfigured_collections.append(col)
-                except Exception as e:
-                    logger.error(e)
+                if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
+                    try:
+                        self.library.delete(col)
+                        logger.info(f"{col.title} Deleted")
+                    except Failed as e:
+                        logger.error(e)
+                else:
+                    if "PMM" not in labels and "Kometa" not in labels:
+                        unmanaged_collections.append(col)
+                    if col.title not in self.library.collection_names:
+                        unconfigured_collections.append(col)
 
             if self.library.show_unmanaged and len(unmanaged_collections) > 0:
                 logger.info("")
