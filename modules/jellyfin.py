@@ -9,6 +9,7 @@ from PIL import Image
 from requests.exceptions import ConnectionError, ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 from xml.etree.ElementTree import ParseError
+from plexapi.video import Movie
 
 logger = util.logger
 
@@ -109,11 +110,12 @@ class Jellyfin(Library):
             self.api.generated.ItemFields.PROVIDERIDS, 
             self.api.generated.ItemFields.PATH
         ]
-        search.recursive().paginate(10000)
+        search.recursive()
+        search.limit = 10
         result = []
 
         for item in search.all:
-            result.append(ItemWrapper(item))
+            result.append(ItemMovieWrapper(item))
 
         logger.info(f"Loaded {len(result)} {builder_level.capitalize()}")
 
@@ -136,13 +138,19 @@ class Jellyfin(Library):
         collections = search.recursive().all
         for collection in collections:
             if collection.name == data:
-                return ItemWrapper(collection)
+                return ItemMovieWrapper(collection)
         return None
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
         final = f"{attribute}{modifier}"
         return attribute, modifier, final
+    
+    def fetch_item(self, item):
+        key = item
+        if key in self.cached_items:
+            return self.cached_items[key][0]
+        raise Failed(f"Jellyfin Error: Item {item} not found")
 
     def get_collection_items(self, collection, smart_label_collection):
         return []
@@ -176,8 +184,8 @@ class Jellyfin(Library):
     
     def upload_poster(self, item, image, tmdb=None, title=None):
         raise NotImplementedError("Jellyfin upload_poster method not implemented yet")
-    
-class ItemWrapper:
+
+class ItemMovieWrapper(Movie):
     def __init__(self, item):
         self.item = item
         
@@ -194,11 +202,15 @@ class ItemWrapper:
         return self.item.id.int
     
     @property
+    def year(self) -> int:
+        return self.item.production_year
+    
+    @property
     def guid(self) -> str:
-        if self.item.provider_ids and "Imdb" in self.item.provider_ids:
+        if self.item.provider_ids and "Tmdb" in self.item.provider_ids:
+            return f"themoviedb://{self.item.provider_ids['Tmdb']}"
+        elif self.item.provider_ids and "Imdb" in self.item.provider_ids:
             return f"imdb://{self.item.provider_ids['Imdb']}"
-        elif self.item.provider_ids and "Tmdb" in self.item.provider_ids:
-            return f"tmdb://{self.item.provider_ids['Tmdb']}"
         return None
 
     @property
