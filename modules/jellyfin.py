@@ -10,6 +10,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 from xml.etree.ElementTree import ParseError
 from plexapi.video import Movie
+from uuid import UUID
 
 logger = util.logger
 
@@ -116,7 +117,6 @@ class Jellyfin(Library):
             self.api.generated.ItemFields.PATH
         ]
         search.recursive()
-        search.limit = 10
         result = []
 
         for item in search.all:
@@ -158,7 +158,26 @@ class Jellyfin(Library):
         raise Failed(f"Jellyfin Error: Item {item} not found")
 
     def get_collection_items(self, collection, smart_label_collection):
-        return []
+        item = self.get_collection(collection.name)
+        search = self.api.items.search.recursive()
+        search.include_item_types = [
+            self.api.generated.BaseItemKind.MOVIE
+        ]
+        search.parent_id = item.id
+        result = []
+        for movie in search.all:
+            result.append(ItemMovieWrapper(movie))
+        return result
+    
+    def get_collection_name_and_items(self, collection, smart_label_collection):
+        name = collection if isinstance(collection, str) else collection.title
+        return name, self.get_collection_items(collection, smart_label_collection)
+
+    def alter_collection(self, items, collection: str, smart_label_collection=False, add=True) -> None:
+        pass
+
+    def item_reload(self, item):
+        return item
 
     def _upload_image(self, item, image):
         raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
@@ -211,6 +230,16 @@ class ItemMovieWrapper(Movie):
         return self.item.production_year
     
     @property
+    def titleSort(self) -> str:
+        return self.item.sort_name
+
+    def editSummary(self, summary: str) -> None:
+        self.item.overview = summary
+        
+    def editSortTitle(self, new_sort_title: str) -> None:
+        self.item.sort_name = new_sort_title
+
+    @property
     def guid(self) -> str:
         if self.item.provider_ids and "Tmdb" in self.item.provider_ids:
             return f"themoviedb://{self.item.provider_ids['Tmdb']}"
@@ -224,3 +253,16 @@ class ItemMovieWrapper(Movie):
     
     def __getattr__(self, name):
         return getattr(self.item, name)
+    
+    def __eq__(self, other):
+        if isinstance(other, ItemMovieWrapper):
+            return self.ratingKey == other.ratingKey
+        return False
+
+    def __hash__(self):
+        return hash(self.ratingKey)
+
+    def __repr__(self):
+        return (
+            f"<ItemMovieWrapper\n  id={self.item.id.hex}\n  ratingKey={self.ratingKey}\n  title={self.title}\n>"
+        )
