@@ -1,3 +1,6 @@
+from __future__ import annotations
+from typing_extensions import Self
+
 import os, re, time, jmespath
 from datetime import datetime, timedelta
 from modules import builder, util
@@ -31,7 +34,9 @@ class Jellyfin(Library):
         params["plex"]["optimize"] = None
         params["plex"]["clean_bundles"] = None
         params["plex"]["empty_trash"] = None
+        
         super().__init__(config, params)
+        
         self.jellyfin = params["jellyfin"]
         self.url = self.jellyfin["url"]
         self.session = self.config.Requests.session
@@ -43,6 +48,9 @@ class Jellyfin(Library):
         
         # the builder make reference to Plex directly so we set it here
         self.Plex = PlexWrapper(self)
+        
+        # jellyfin does not have a language setting per library
+        self.language = "en"
 
         # some api methods require a user context, so we store the user here
         self.user = self.jellyfin["user"]
@@ -59,6 +67,9 @@ class Jellyfin(Library):
         
         self.api = jellyfin.api(self.url, self.token)
         self.api.register_client(client_name="Kometa")
+        
+        # we also wrap the server object to match Plex server interface
+        self.PlexServer = ServerWrapper(self.api.system)
 
         logger.info(self.url)
         logger.secret(self.token)
@@ -96,18 +107,27 @@ class Jellyfin(Library):
 
         self._all_items = []
 
-    def notify(self, text, collection=None, critical=True):
-        self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
+    def notify(self, text: str, collection: str | None = None, critical: bool = True) -> None:
+        """ Sends a notification to the server.
         
-    @property
-    def language(self) -> str:
-        return "en"
-    
-    @property
-    def PlexServer(self):
-        return ServerWrapper(self.api)
+        Args:
+            text (str): The text of the notification.
+            collection (str | None): The collection the notification is for. Defaults to None.
+            critical (bool): Whether the notification is critical. Defaults to True.
+        """
+        self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
 
-    def get_all(self, builder_level=None, load=False):
+    def get_all(self, builder_level: str | None = None, load: bool = False) -> list[ItemMovieWrapper]:
+        """ Returns all items in the library.
+        
+        Args:
+            builder_level (str | None): The type of items to return. Defaults to None.
+            load (bool): Whether to force a reload of all items. Defaults to False.
+            
+        Returns:
+            list[ItemMovieWrapper]: A list of all items in the library.
+        """
+         # cache all items for movie libraries
         if load and builder_level in [None, "movie"]:
             self._all_items = []
         if self._all_items and builder_level in [None, "movie"]:
@@ -135,8 +155,16 @@ class Jellyfin(Library):
         if builder_level in [None, "movie"]:
             self._all_items = result
         return result
+
+    def get_all_collections(self, label: str | None = None) -> list[ItemMovieWrapper]:
+        """ Returns all collections in the library. 
         
-    def get_all_collections(self, label=None):
+        Args:
+            label (str | None): The label to filter collections by. Defaults to None.
+        
+        Returns:
+            list[ItemMovieWrapper]: A list of all collections in the library.
+        """
         search = self.api.items.search
         search.include_item_types = [
             self.api.generated.BaseItemKind.BOXSET
@@ -147,7 +175,22 @@ class Jellyfin(Library):
             result.append(ItemMovieWrapper(item))
         return result
 
-    def get_collection(self, data, force_search=False, debug=True):        
+    def get_collection(
+            self, 
+            data: str, 
+            force_search: bool = False, 
+            debug: bool = True
+        ) -> ItemMovieWrapper:
+        """ Returns a collection by name.
+        
+        Args:
+            data (str): The name of the collection.
+            force_search (bool): Whether to force a search for the collection. Defaults to False.
+            debug (bool): Whether to print debug information. Defaults to True.
+            
+        Returns:
+            ItemMovieWrapper: The collection object.
+        """
         search = self.api.items.search
         search.include_item_types = [
             self.api.generated.BaseItemKind.BOXSET
@@ -172,7 +215,24 @@ class Jellyfin(Library):
             return self.cached_items[key][0]
         raise Failed(f"Jellyfin Error: Item {item} not found")
 
-    def get_collection_items(self, collection, smart_label_collection):
+    def get_collection_items(
+            self, 
+            collection: str | ItemCollectionWrapper, 
+            smart_label_collection: bool = False
+        ) -> list[ItemMovieWrapper]:
+        """ Returns the items of a collection.
+        
+        Args:
+            collection (str | ItemCollectionWrapper): The name or object of the collection.
+            smart_label_collection (bool): Whether the collection is a smart label collection.
+            
+        Returns:
+            list[ItemMovieWrapper]: The items of the collection.
+        """
+        if smart_label_collection is True:
+            warn_msg = "Jellyfin smart label collections are not supported"
+            logger.warning(warn_msg)
+            
         name = collection if isinstance(collection, str) else collection.title
         item = self.get_collection(name)
         
@@ -188,12 +248,29 @@ class Jellyfin(Library):
         for movie in search.all:
             result.append(ItemMovieWrapper(movie))
         return result
-    
-    def get_collection_name_and_items(self, collection, smart_label_collection):
+
+    def get_collection_name_and_items(
+            self, 
+            collection: str | ItemCollectionWrapper, 
+            smart_label_collection: bool = False
+        ) -> tuple[str, list[ItemMovieWrapper]]:
+        """ Returns the name and items of a collection. 
+        
+        Args:
+            collection (str | ItemCollectionWrapper): The name or object of the collection.
+            smart_label_collection (bool): Whether the collection is a smart label collection.
+            
+        Returns:
+            tuple[str, list[ItemMovieWrapper]]: The name and items of the collection.
+        """
+        if smart_label_collection is True:
+            warn_msg = "Jellyfin smart label collections are not supported"
+            logger.warning(warn_msg)
+            
         name = collection if isinstance(collection, str) else collection.title
         return name, self.get_collection_items(collection, smart_label_collection)
 
-    def alter_collection(self, items, collection: str, smart_label_collection=False, add=True) -> None:
+    def alter_collection(self, items, collection, smart_label_collection=False, add=True) -> None:
         warn_msg = "Jellyfin alter_collection method not implemented yet"
         logger.warning(warn_msg)
         pass
@@ -210,7 +287,7 @@ class Jellyfin(Library):
         logger.warning(warn_msg)
         return None
         
-    def fetchItems(self, uri_args):
+    def fetchItems(self, uri_args: dict | None = None) -> list[ItemMovieWrapper]:
         if uri_args is not None:
             warn_msg = "Jellyfin fetchItems method not implemented yet"
             logger.warning(warn_msg)
@@ -225,7 +302,17 @@ class Jellyfin(Library):
         warn_msg = "Jellyfin _upload_image method not implemented yet"
         logger.warning(warn_msg)
         
-    def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
+    def edit_tags(
+            self, 
+            attr: str, 
+            obj: str, 
+            add_tags: list[str] | None = None, 
+            remove_tags: list[str] | None = None, 
+            sync_tags: list[str] | None = None, 
+            do_print: bool = True, 
+            locked: bool = True, 
+            is_locked: bool | None = None
+        ) -> None:
         warn_msg = "Jellyfin edit_tags method not implemented yet"
         logger.warning(warn_msg)
     
@@ -285,69 +372,93 @@ class Jellyfin(Library):
 
 class PlexWrapper:
     def __init__(self, library: Library):
+        """ Initializes PlexWrapper object """
         self.library = library
         
     @property
     def type(self) -> str:
+        """ Returns the type of the library """
+        # Jellyfin library types are capitalized, run_definition expect lowercase
         return self.library.type.lower()
 
     def __getattr__(self, name):
         return getattr(self.library, name)
 
 class ServerWrapper:
-    def __init__(self, api):
-        self.api = api
+    """ Wrapper for Jellyfin Server to match Plex Server interface """
+    def __init__(self, system: jellyfin.api.system):
+        """ Initializes ServerWrapper object 
+        
+        Args:
+            system (jellyfin.api.system): The Jellyfin system object
+        """
+        self.system = system
         
     @property
     def machineIdentifier(self) -> str:
-        return self.api.system.info.id
+        """ Returns the machine identifier of the server """
+        return self.system.info.id
     
     @property
     def friendlyName(self) -> str:
-        return self.api.system.info.server_name
+        """ Returns the friendly name of the server """
+        return self.system.info.server_name
 
 class ItemMovieWrapper(Movie):
-    def __init__(self, item):
+    """ Wrapper for Jellyfin Movie item to match Plex Movie interface """
+    
+    def __init__(self, item: Item):
+        """ Initializes ItemMovieWrapper object """
         self.item = item
         
     @property
     def smart(self) -> bool:
+        """ Returns False as Jellyfin does not support smart collections """
         return False
     
     @property
     def title(self) -> str:
+        """ Returns the title of the movie """
         return self.item.name if self.item.name else ""
     
     @property
     def summary(self) -> str:
+        """ Returns the summary of the movie """
         return self.item.overview if self.item.overview else ""
     
     @property
     def ratingKey(self) -> int:
+        """ Returns the rating key of the movie """
         return self.item.id.int if self.item.id else 0
     
     @property
     def year(self) -> int:
+        """ Returns the release year of the movie """
         return self.item.production_year if self.item.production_year else 0
 
     @property
     def collectionSort(self) -> int:
+        """ Returns the collection sort order of the movie """
         return 0
     
     @property
     def titleSort(self) -> str:
-        if self.item.sort_name is None:
-            return ""
-        return self.item.sort_name
+        """ Returns the sort title of the movie """
+        return self.item.sort_name if self.item.sort_name else ""
 
     def editSummary(self, summary: str) -> None:
+        """ Edits the summary of the movie """
         self.item.overview = summary
         
     def editSortTitle(self, new_sort_title: str) -> None:
+        """ Edits the sort title of the movie """
         self.item.sort_name = new_sort_title
 
     @property
     def guid(self) -> str:
+        """ Returns the GUID of the movie """
+         # Jellyfin does not have a GUID, we construct one from provider IDs if available
+         # Otherwise return None
         if self.item.provider_ids and "Tmdb" in self.item.provider_ids:
             return f"themoviedb://{self.item.provider_ids['Tmdb']}"
         elif self.item.provider_ids and "Imdb" in self.item.provider_ids:
@@ -356,20 +467,24 @@ class ItemMovieWrapper(Movie):
 
     @property
     def childCount(self) -> int:
+        """ Returns the child count of the movie """
+         # For movies, child count is typically 0
+         # For collections, it would be the number of items in the collection
+         # Here we return 0 for movies and actual child count for collections
         return self.item.child_count if self.item.child_count else 0
     
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return getattr(self.item, name)
-    
-    def __eq__(self, other):
+
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, ItemMovieWrapper):
             return self.ratingKey == other.ratingKey
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.ratingKey)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<ItemMovieWrapper\n  id={self.item.id.hex}\n  ratingKey={self.ratingKey}\n  title={self.title}\n>"
         )
