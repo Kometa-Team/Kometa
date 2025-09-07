@@ -8,7 +8,15 @@ from plexapi.video import Movie
 
 import jellyfin
 from jellyfin.items import Item
-from jellyfin.generated import BaseItemDto, CollectionApi
+from jellyfin.generated import (
+    BaseItemDto, 
+    BaseItemKind, 
+    CollectionApi, 
+    CollectionType,
+    ItemUpdateApi,
+    ItemFields,
+    UserLibraryApi
+)
 
 logger = util.logger
 
@@ -44,7 +52,7 @@ class Jellyfin(Library):
         self.language = "en"
 
         # some api methods require a user context, so we store the user here
-        self.user = self.jellyfin["user"]
+        self.user = self.api.users.of(self.user).id
 
         if self.jellyfin["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Jellyfin connection")
@@ -87,7 +95,7 @@ class Jellyfin(Library):
         self.Jellyfin = item
         self.type = item.collection_type.value
         
-        if item.collection_type == jellyfin.generated.CollectionType.MOVIES:
+        if item.collection_type == CollectionType.MOVIES:
             self.type = "Movie"
 
         self.is_movie = self.type == "Movie"
@@ -128,13 +136,8 @@ class Jellyfin(Library):
         logger.info(f"Loading All {builder_level.capitalize()} from Library: {self.name}")
         
         search = self.api.items.search
-        search.include_item_types = [
-            self.api.generated.BaseItemKind.MOVIE
-        ]
-        search.fields = [
-            self.api.generated.ItemFields.PROVIDERIDS, 
-            self.api.generated.ItemFields.PATH
-        ]
+        search.include_item_types = [BaseItemKind.MOVIE]
+        search.fields = [ItemFields.PROVIDERIDS, ItemFields.PATH]
         search.recursive()
         result = []
 
@@ -157,9 +160,7 @@ class Jellyfin(Library):
             list[ItemMovieWrapper]: A list of all collections in the library.
         """
         search = self.api.items.search
-        search.include_item_types = [
-            self.api.generated.BaseItemKind.BOXSET
-        ]
+        search.include_item_types = [BaseItemKind.BOXSET]
         
         result = []
         for item in search.all:
@@ -183,9 +184,7 @@ class Jellyfin(Library):
             ItemMovieWrapper: The collection object.
         """
         search = self.api.items.search
-        search.include_item_types = [
-            self.api.generated.BaseItemKind.BOXSET
-        ]
+        search.include_item_types = [BaseItemKind.BOXSET]
         collections = search.recursive().all
         for collection in collections:
             if collection.name == data:
@@ -231,9 +230,7 @@ class Jellyfin(Library):
             return []
 
         search = self.api.items.search.recursive()
-        search.include_item_types = [
-            self.api.generated.BaseItemKind.MOVIE
-        ]
+        search.include_item_types = [BaseItemKind.MOVIE]
         search.parent_id = item.id
         result = []
         for movie in search.all:
@@ -334,12 +331,16 @@ class Jellyfin(Library):
         )
 
     def item_reload(self, item):
-        return item
+        if item.type == BaseItemKind.BOXSET:
+            return self.get_collection(item.name)
+        if item.type == BaseItemKind.MOVIE:
+            return ItemMovieWrapper(Item(
+                UserLibraryApi(self.api.client).get_item(item.id, self.user)
+            ))
     
     def delete(self, obj):
         warn_msg = "Jellyfin delete method not implemented yet"
         logger.warning(warn_msg)
-        print(obj)
         
     def fetchItem(self, data):
         warn_msg = "Jellyfin fetchItem method not implemented yet"
@@ -360,11 +361,11 @@ class Jellyfin(Library):
     def _upload_image(self, item, image):
         warn_msg = "Jellyfin _upload_image method not implemented yet"
         logger.warning(warn_msg)
-        
+
     def edit_tags(
             self, 
-            attr: str, 
-            obj: str, 
+            attr: str,
+            obj: ItemMovieWrapper,
             add_tags: list[str] | None = None, 
             remove_tags: list[str] | None = None, 
             sync_tags: list[str] | None = None, 
@@ -372,9 +373,27 @@ class Jellyfin(Library):
             locked: bool = True, 
             is_locked: bool | None = None
         ) -> None:
-        warn_msg = "Jellyfin edit_tags method not implemented yet"
-        logger.warning(warn_msg)
-    
+        # Get the user library item
+        model = UserLibraryApi(self.api.client).get_item(obj.id, self.user)
+        
+        if add_tags and model.tags is None:
+            model.tags = add_tags
+        if add_tags and model.tags is not None:
+            model.tags.extend(add_tags)
+        if remove_tags:
+            model.tags = [tag for tag in model.tags if tag not in remove_tags]
+        if sync_tags is not None:
+            model.tags = sync_tags
+            
+        if do_print:
+            logger.info(model.tags)
+
+        # remove duplicates
+        model.tags = list(set(model.tags)) if model.tags else []
+        model.lock_data = locked
+
+        ItemUpdateApi(self.api.client).update_item(model.id.hex, model)
+
     def find_poster_url(self, item):
         warn_msg = "Jellyfin find_poster_url method not implemented yet"
         logger.warning(warn_msg)
@@ -398,9 +417,11 @@ class Jellyfin(Library):
         warn_msg = "Jellyfin notify_delete method not implemented yet"
         logger.warning(warn_msg)
 
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def reload(self, item, force=False):
-        warn_msg = "Jellyfin reload method not implemented yet"
-        logger.warning(warn_msg)
+        if force:
+            return self.fetch_item(item.id)
+        return self.item_reload(item)
     
     def upload_poster(self, item, image, tmdb=None, title=None):
         warn_msg = "Jellyfin upload_poster method not implemented yet"
@@ -470,6 +491,11 @@ class ItemMovieWrapper(Movie):
         """ Initializes ItemMovieWrapper object """
         self.item = item
         
+    @property
+    def model(self) -> BaseItemDto:
+        """ Returns the underlying BaseItemDto model """
+        return self.item.model
+
     @property
     def smart(self) -> bool:
         """ Returns False as Jellyfin does not support smart collections """
