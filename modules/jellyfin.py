@@ -1,4 +1,4 @@
-import os, re, time, jmespath, jellyfin
+import os, re, time, jmespath
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
@@ -11,6 +11,10 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_excepti
 from xml.etree.ElementTree import ParseError
 from plexapi.video import Movie
 from uuid import UUID
+
+import jellyfin
+from jellyfin.items import Item
+from jellyfin.generated import BaseItemDto
 
 logger = util.logger
 
@@ -144,7 +148,8 @@ class Jellyfin(Library):
         for collection in collections:
             if collection.name == data:
                 return ItemMovieWrapper(collection)
-        return None
+
+        return ItemMovieWrapper(Item(BaseItemDto()))
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
@@ -158,7 +163,12 @@ class Jellyfin(Library):
         raise Failed(f"Jellyfin Error: Item {item} not found")
 
     def get_collection_items(self, collection, smart_label_collection):
-        item = self.get_collection(collection.name)
+        name = collection if isinstance(collection, str) else collection.title
+        item = self.get_collection(name)
+        
+        if item.ratingKey == 0:
+            return []
+
         search = self.api.items.search.recursive()
         search.include_item_types = [
             self.api.generated.BaseItemKind.MOVIE
@@ -248,16 +258,20 @@ class ItemMovieWrapper(Movie):
     
     @property
     def title(self) -> str:
-        return self.item.name
+        return self.item.name if self.item.name else ""
+    
+    @property
+    def summary(self) -> str:
+        return self.item.overview if self.item.overview else ""
     
     @property
     def ratingKey(self) -> int:
-        return self.item.id.int
+        return self.item.id.int if self.item.id else 0
     
     @property
     def year(self) -> int:
-        return self.item.production_year
-    
+        return self.item.production_year if self.item.production_year else 0
+
     @property
     def collectionSort(self) -> int:
         return 0
