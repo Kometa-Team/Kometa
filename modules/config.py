@@ -397,9 +397,12 @@ class ConfigFile:
 
             Args:
                 data (dict): Dictionary to check for attribute
-                xpath (str): JMESPath-style path to check under
-                *args: Additional positional arguments to pass to check_for_attribute
-                **kwargs: Additional keyword arguments to pass to check_for_attribute
+                xpath (str): Attribute to check for, use . for sub-attributes
+                *args: Additional arguments for check_for_attribute
+                **kwargs: Additional keyword arguments for check_for_attribute
+
+            Returns:
+                any: Validated attribute value or default
             """
             parent, child = xpath.split(".")
             return check_for_attribute(
@@ -411,10 +414,21 @@ class ConfigFile:
             )
 
         def check_for_attribute(
-            data, attribute, parent=None, test_list=None, translations=None, default=None, 
-            do_print=True, default_is_none=False, req_default=False, var_type="str", 
-            throw=False, save=True, int_min=0, int_max=None
-        ):
+                data,
+                attribute, 
+                parent=None, 
+                test_list=None, 
+                translations=None, 
+                default=None, 
+                do_print=True, 
+                default_is_none=False, 
+                req_default=False, 
+                var_type="str", 
+                throw=False, 
+                save=True, 
+                int_min=0, 
+                int_max=None
+            ) -> Any:
             """ Checks for attribute in config file and validates it
             
             Args:
