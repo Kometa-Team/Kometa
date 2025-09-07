@@ -78,7 +78,6 @@ class Jellyfin(Library):
         
         self.api = jellyfin.api(self.url, self.token)
         self.api.register_client(client_name="Kometa")
-        self.api._client = ApiClientWrapper(self.api.configuration)
 
         # some api methods require a user context, so we store the user here
         self.user = self.api.users.of(self.jellyfin["user"]).id
@@ -315,7 +314,7 @@ class Jellyfin(Library):
         Returns:
             ItemMovieWrapper: The created collection object.
         """
-        collection = CollectionApi(self.api.client).create_collection(
+        collection = CollectionApi().create_collection(
             name=item.title,
             parent_id=self.Jellyfin.id,
         )
@@ -329,7 +328,7 @@ class Jellyfin(Library):
             items (list[ItemMovieWrapper]): The items to add.
             collection (ItemMovieWrapper): The collection to add the items to.
         """
-        CollectionApi(self.api.client).add_to_collection(
+        CollectionApi().add_to_collection(
             collection.id, 
             [item.id for item in items]
         )
@@ -341,7 +340,7 @@ class Jellyfin(Library):
             items (list[ItemMovieWrapper]): The items to remove.
             collection (ItemMovieWrapper): The collection to remove the items from.
         """
-        CollectionApi(self.api.client).remove_from_collection(
+        CollectionApi().remove_from_collection(
             collection.id, 
             [item.id for item in items]
         )
@@ -351,7 +350,7 @@ class Jellyfin(Library):
             return self.get_collection(item.name)
         if item.type == BaseItemKind.MOVIE:
             return ItemMovieWrapper(Item(
-                UserLibraryApi(self.api.client).get_item(item.id, self.user)
+                UserLibraryApi().get_item(item.id, self.user)
             ))
     
     def delete(self, obj):
@@ -390,7 +389,7 @@ class Jellyfin(Library):
             return
         
          # Fetch the latest item data to avoid overwriting changes
-        model = UserLibraryApi(self.api.client).get_item(obj.id, self.user)
+        model = UserLibraryApi().get_item(obj.id, self.user)
         
         if add_tags and model.tags is None:
             model.tags = add_tags
@@ -408,7 +407,7 @@ class Jellyfin(Library):
         model.tags = list(set(model.tags)) if model.tags else []
         model.lock_data = locked
 
-        ItemUpdateApi(self.api.client).update_item(model.id.hex, model)
+        ItemUpdateApi().update_item(model.id.hex, model)
 
     def find_poster_url(self, item):
         warn_msg = "Jellyfin find_poster_url method not implemented yet"
@@ -462,7 +461,7 @@ class Jellyfin(Library):
             return False
 
         tmp_file_path = self.get_image_tmp(image.location)
-        ImageApi(self.api.client).set_item_image(
+        ImageApi().set_item_image(
             item.id,
             image_type,
             tmp_file_path,
@@ -496,12 +495,6 @@ class Jellyfin(Library):
     def moveItem(self, obj, item, after):
         warn_msg = "Jellyfin moveItem method not implemented yet"
         logger.warning(warn_msg)
-
-class ApiClientWrapper(ApiClient):
-    def sanitize_for_serialization(self, obj):
-        if isinstance(obj, bytes):
-            return base64.b64encode(obj).decode("utf-8")
-        return super().sanitize_for_serialization(obj)
 
 class PlexWrapper:
     def __init__(self, library: Library):
