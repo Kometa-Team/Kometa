@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-import os
+import os, types, requests, mimetypes, base64, tempfile
+from urllib.parse import urlparse
 from modules import util
 from modules.library import Library
 from modules.util import Failed
@@ -9,13 +10,16 @@ from plexapi.video import Movie
 import jellyfin
 from jellyfin.items import Item
 from jellyfin.generated import (
+    ApiClient,
     BaseItemDto, 
     BaseItemKind, 
     CollectionApi, 
     CollectionType,
     ItemUpdateApi,
     ItemFields,
-    UserLibraryApi
+    UserLibraryApi,
+    ImageApi,
+    ImageType
 )
 
 logger = util.logger
@@ -35,7 +39,18 @@ class Jellyfin(Library):
         params["plex"]["empty_trash"] = None
         
         super().__init__(config, params)
+
+        # TODO: https://github.com/Kometa-Team/Kometa/issues/2791
+        self.config.Cache.query_image_map = types.MethodType(
+            lambda self, rating_key, table_name: (None, None, None),
+            self.config.Cache
+        )
         
+        self.config.Cache.update_image_map = types.MethodType(
+            lambda self, rating_key, table_name, location, compare, overlay=None: None,
+            self.config.Cache
+        )
+
         self.jellyfin = params["jellyfin"]
         self.url = self.jellyfin["url"]
         self.session = self.config.Requests.session
@@ -63,7 +78,8 @@ class Jellyfin(Library):
         
         self.api = jellyfin.api(self.url, self.token)
         self.api.register_client(client_name="Kometa")
-        
+        self.api._client = ApiClientWrapper(self.api.configuration)
+
         # some api methods require a user context, so we store the user here
         self.user = self.api.users.of(self.jellyfin["user"]).id
 
@@ -358,10 +374,6 @@ class Jellyfin(Library):
             results.append(ItemMovieWrapper(item))
         return results
 
-    def _upload_image(self, item, image):
-        warn_msg = "Jellyfin _upload_image method not implemented yet"
-        logger.warning(warn_msg)
-
     def edit_tags(
             self, 
             attr: str,
@@ -374,6 +386,10 @@ class Jellyfin(Library):
             is_locked: bool | None = None
         ) -> None:
         # Get the user library item
+        if obj.id is None:
+            return
+        
+         # Fetch the latest item data to avoid overwriting changes
         model = UserLibraryApi(self.api.client).get_item(obj.id, self.user)
         
         if add_tags and model.tags is None:
@@ -434,12 +450,44 @@ class Jellyfin(Library):
         warn_msg = "Jellyfin find_item_assets method not implemented yet"
         logger.warning(warn_msg)
         return None, None, None, item_asset_directory, folder_name
+
+    def _upload_image(self, item: ItemMovieWrapper, image: ImageBase) -> bool:
+        if image.is_poster:
+            image_type = ImageType.PRIMARY
+        elif image.is_background:
+            image_type = ImageType.BACKDROP
+        elif image.is_logo:
+            image_type = ImageType.LOGO
+        else:
+            return False
+
+        tmp_file_path = self.get_image_tmp(image.location)
+        ImageApi(self.api.client).set_item_image(
+            item.id,
+            image_type,
+            tmp_file_path,
+            _content_type=self.get_content_type_from_url(image.location)
+        )
+        os.remove(tmp_file_path)
+        return True
     
-    def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
-        warn_msg = "Jellyfin upload_images can't use cache: https://github.com/Kometa-Team/Kometa/issues/2790"
-        logger.warning(warn_msg)
-        return False, False, False
+    def get_image_tmp(self, url: str) -> str:
+        response = requests.get(url)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(url)[-1]) as tmp_file:
+            tmp_file.write(response.content)
+            tmp_file_path = tmp_file.name
+            
+        return tmp_file_path
     
+    def get_content_type_from_url(self, url: str) -> str:
+        """
+        Returns the MIME type for a given image URL based on its extension.
+        """
+        path = urlparse(url).path
+        ext = os.path.splitext(path)[-1]
+        content_type, _ = mimetypes.guess_type('file' + ext)
+        return content_type
+
     def playlist_report(self):
         warn_msg = "Jellyfin playlist_report method not implemented yet"
         logger.warning(warn_msg)
@@ -448,6 +496,12 @@ class Jellyfin(Library):
     def moveItem(self, obj, item, after):
         warn_msg = "Jellyfin moveItem method not implemented yet"
         logger.warning(warn_msg)
+
+class ApiClientWrapper(ApiClient):
+    def sanitize_for_serialization(self, obj):
+        if isinstance(obj, bytes):
+            return base64.b64encode(obj).decode("utf-8")
+        return super().sanitize_for_serialization(obj)
 
 class PlexWrapper:
     def __init__(self, library: Library):
