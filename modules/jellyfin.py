@@ -8,7 +8,7 @@ from plexapi.video import Movie
 
 import jellyfin
 from jellyfin.items import Item
-from jellyfin.generated import BaseItemDto
+from jellyfin.generated import BaseItemDto, CollectionApi
 
 logger = util.logger
 
@@ -261,10 +261,55 @@ class Jellyfin(Library):
         name = collection if isinstance(collection, str) else collection.title
         return name, self.get_collection_items(collection, smart_label_collection)
 
-    def alter_collection(self, items, collection, smart_label_collection=False, add=True) -> None:
-        warn_msg = "Jellyfin alter_collection method not implemented yet"
-        logger.warning(warn_msg)
-        pass
+    def alter_collection(
+            self, 
+            items: list[ItemMovieWrapper], 
+            collection: str, 
+            smart_label_collection=False, 
+            add=True
+        ) -> None:
+        """ Alters a collection by adding or removing items.
+        
+        Args:
+            items (list[ItemMovieWrapper]): The items to add or remove.
+            collection (str): The name of the collection.
+            smart_label_collection (bool): Whether the collection is a smart label collection. Defaults to False.
+            add (bool): Whether to add or remove the items. Defaults to True.
+        """
+        if smart_label_collection is True:
+            warn_msg = "Jellyfin smart label collections are not supported"
+            logger.warning(warn_msg)
+        
+        item = self.get_collection(collection)
+            
+        if add:
+            self.add_to_collection(items, item)
+        else:
+            self.remove_from_collection(items, item)
+
+    def add_to_collection(self, items: list[ItemMovieWrapper], collection: ItemMovieWrapper) -> None:
+        """ Adds items to a collection.
+        
+        Args:
+            items (list[ItemMovieWrapper]): The items to add.
+            collection (ItemMovieWrapper): The collection to add the items to.
+        """
+        CollectionApi(self.api.client).add_to_collection(
+            collection.id, 
+            [item.id for item in items]
+        )
+        
+    def remove_from_collection(self, items: list[ItemMovieWrapper], collection: ItemMovieWrapper) -> None:
+        """ Removes items from a collection.
+        
+        Args:
+            items (list[ItemMovieWrapper]): The items to remove.
+            collection (ItemMovieWrapper): The collection to remove the items from.
+        """
+        CollectionApi(self.api.client).remove_from_collection(
+            collection.id, 
+            [item.id for item in items]
+        )
 
     def item_reload(self, item):
         return item
@@ -272,6 +317,7 @@ class Jellyfin(Library):
     def delete(self, obj):
         warn_msg = "Jellyfin delete method not implemented yet"
         logger.warning(warn_msg)
+        print(obj)
         
     def fetchItem(self, data):
         warn_msg = "Jellyfin fetchItem method not implemented yet"
