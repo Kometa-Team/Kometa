@@ -51,9 +51,6 @@ class Jellyfin(Library):
         # jellyfin does not have a language setting per library
         self.language = "en"
 
-        # some api methods require a user context, so we store the user here
-        self.user = self.api.users.of(self.user).id
-
         if self.jellyfin["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Jellyfin connection")
             self.session = self.config.Requests.create_session(verify_ssl=False)
@@ -67,6 +64,9 @@ class Jellyfin(Library):
         self.api = jellyfin.api(self.url, self.token)
         self.api.register_client(client_name="Kometa")
         
+        # some api methods require a user context, so we store the user here
+        self.user = self.api.users.of(self.jellyfin["user"]).id
+
         # we also wrap the server object to match Plex server interface
         self.PlexServer = ServerWrapper(self.api.system)
 
@@ -417,7 +417,6 @@ class Jellyfin(Library):
         warn_msg = "Jellyfin notify_delete method not implemented yet"
         logger.warning(warn_msg)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
     def reload(self, item, force=False):
         if force:
             return self.fetch_item(item.id)
