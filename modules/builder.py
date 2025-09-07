@@ -2889,7 +2889,7 @@ class CollectionBuilder:
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
                 else:
                     actor_id = None
-                    if attribute in ["actor", "director", "producer", "writer"]:
+                    if attribute in ["actor", "director", "producer", "writer", "composer"]:
                         actor_id = self.library.get_actor_id(fvalue)
                         if actor_id:
                             if plex_search:

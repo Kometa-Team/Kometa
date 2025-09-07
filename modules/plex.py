@@ -730,7 +730,7 @@ class Plex(Library):
         Supports decade-based filtering for Emby and correctly handles episodes.
         """
         is_show= False
-        additional_person_search = None
+        additional_person_search = []
         # Parse the URI arguments
         plus_replace = str(uri_args).replace('+', '%2B')
 
@@ -912,7 +912,7 @@ class Plex(Library):
                             key_decoded = key_decoded.split('.')[1]
                         emby_query_params['PersonIds'].append(value_decoded)
                         emby_query_params['PersonTypes'].append(key_decoded)
-                        additional_person_search = value_decoded # Emby item id
+                        additional_person_search.append(value_decoded) # Emby item id
                     elif key_decoded == 'sort':
                         sort_parts = value_decoded.split(':')
                         sort_field, sort_order = (sort_parts[0], sort_parts[1]) if len(sort_parts) == 2 else (
@@ -1061,11 +1061,18 @@ class Plex(Library):
             my_output= self.EmbyServer.convert_emby_to_plex(items)
         # Convert Emby items to Plex format
         # Used for Emby to retrieve the person and add to collection
-        if additional_person_search and additional_person_search.isdigit():
-            person = self.EmbyServer.get_item(additional_person_search)
-            plex_person = self.EmbyServer.convert_emby_to_plex([person], False)
-            if plex_person and len(plex_person) == 1:
+        if additional_person_search:
+            people = []
+            for add_p in additional_person_search:
+                if not add_p.isdigit():
+                    continue
+                person = self.EmbyServer.get_item(add_p)
+                people.append(person)
+            plex_person = self.EmbyServer.convert_emby_to_plex(people, False)
+            if plex_person:
                 my_output.extend(plex_person)
+            else:
+                logger.warning(f"Additional person search was requested, result unclear: {additional_person_search} => {plex_person}")
         return my_output
 
     def parse_relative_date(self, relative_date_str):
@@ -2833,6 +2840,7 @@ class Plex(Library):
         check_field("genre", "genre", var_key="genres")
         check_field("writer", "writer", var_key="writers")
         check_field("producer", "producer", var_key="producers")
+        check_field("composer", "composer", var_key="composers")
         check_field("collection", "collection", var_key="collections")
         check_field("label", "label", var_key="labels")
         check_field("mood", "mood", var_key="moods")
@@ -3086,7 +3094,7 @@ class Plex(Library):
                                 attrs.extend([s.language, s.languageCode])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
-            elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",
+            elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "composer", "writer",
                                  "collection", "network"]:
                 attrs = [attr.tag for attr in getattr(item, filter_actual)]
             else:

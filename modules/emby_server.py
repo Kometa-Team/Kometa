@@ -30,6 +30,14 @@ import unicodedata
 # https://dev.emby.media/doc/restapi/Browsing-the-Library.html
 # https://docs.mdblist.com/docs/api
 
+# New class (in developent) for replacing fake Palex objects
+class EmbyItem:
+    def __init__(self, base_item):
+        pass
+
+    def update_item_info(self, update_date):
+        pass
+
 
 class PlexMedia:
     def __init__(self, name, server_id, item_id, runtime_ticks, provider_ids, media_type, image_tags,
@@ -3343,7 +3351,7 @@ class EmbyServer:
 
         per_key = {}
         ordered_cast = []
-        crew_buckets = {"Director": [], "Writer": [], "Composer": [], "Producer": []}
+        crew_buckets = {"Director": [], "Writer": [], "Producer": [], "Composer": []}
 
         # --- Robuste Filter ---
         import re

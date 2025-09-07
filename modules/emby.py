@@ -2677,6 +2677,7 @@ class Emby(Library):
         check_field("genre", "genre", var_key="genres")
         check_field("writer", "writer", var_key="writers")
         check_field("producer", "producer", var_key="producers")
+        check_field("composer", "composer", var_key="composers")
         check_field("collection", "collection", var_key="collections")
         check_field("label", "label", var_key="labels")
         check_field("mood", "mood", var_key="moods")
