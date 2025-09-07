@@ -102,8 +102,12 @@ class Jellyfin(Library):
     @property
     def language(self) -> str:
         return "en"
-        
-    def get_all(self, builder_level=None, load=False):        
+    
+    @property
+    def PlexServer(self):
+        return ServerWrapper(self.api)
+
+    def get_all(self, builder_level=None, load=False):
         if load and builder_level in [None, "movie"]:
             self._all_items = []
         if self._all_items and builder_level in [None, "movie"]:
@@ -137,7 +141,11 @@ class Jellyfin(Library):
         search.include_item_types = [
             self.api.generated.BaseItemKind.BOXSET
         ]
-        return search.recursive().all
+        
+        result = []
+        for item in search.all:
+            result.append(ItemMovieWrapper(item))
+        return result
 
     def get_collection(self, data, force_search=False, debug=True):        
         search = self.api.items.search
@@ -203,11 +211,15 @@ class Jellyfin(Library):
         return None
         
     def fetchItems(self, uri_args):
-        if uri_args is None:
-            return self.api.items.search.recursive().all
-        warn_msg = "Jellyfin fetchItems method not implemented yet"
-        logger.warning(warn_msg)
-        return []
+        if uri_args is not None:
+            warn_msg = "Jellyfin fetchItems method not implemented yet"
+            logger.warning(warn_msg)
+            return []
+
+        results = []
+        for item in self.api.items.search.recursive().all:
+            results.append(ItemMovieWrapper(item))
+        return results
 
     def _upload_image(self, item, image):
         warn_msg = "Jellyfin _upload_image method not implemented yet"
@@ -262,9 +274,26 @@ class Jellyfin(Library):
         logger.warning(warn_msg)
         return False, False, False
     
+    def playlist_report(self):
+        warn_msg = "Jellyfin playlist_report method not implemented yet"
+        logger.warning(warn_msg)
+        return {}
+    
     def moveItem(self, obj, item, after):
-        # Jellyfin dont support move item
-        pass
+        warn_msg = "Jellyfin moveItem method not implemented yet"
+        logger.warning(warn_msg)
+
+class ServerWrapper:
+    def __init__(self, api):
+        self.api = api
+        
+    @property
+    def machineIdentifier(self) -> str:
+        return self.api.system.info.id
+    
+    @property
+    def friendlyName(self) -> str:
+        return self.api.system.info.server_name
 
 class ItemMovieWrapper(Movie):
     def __init__(self, item):
