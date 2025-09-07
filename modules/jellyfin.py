@@ -348,7 +348,7 @@ class Jellyfin(Library):
         return None, None, None, item_asset_directory, folder_name
     
     def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
-        warn_msg = "Jellyfin upload_images will not work with cache without change sqlite rating_key on cache to TEXT"
+        warn_msg = "Jellyfin upload_images can't use cache: https://github.com/Kometa-Team/Kometa/issues/2790"
         logger.warning(warn_msg)
         return False, False, False
     
