@@ -281,11 +281,33 @@ class Jellyfin(Library):
             logger.warning(warn_msg)
         
         item = self.get_collection(collection)
-            
+        
+        if item.ratingKey == 0:
+            item = self.create_collection(item)
+
+        if item.id is None:
+            raise Failed(f"Jellyfin Error: Could not create collection {collection}")
+
         if add:
             self.add_to_collection(items, item)
         else:
             self.remove_from_collection(items, item)
+            
+    def create_collection(self, item: ItemMovieWrapper) -> ItemMovieWrapper:
+        """ Creates a new collection.
+        
+        Args:
+            item (ItemMovieWrapper): The collection to create.
+            
+        Returns:
+            ItemMovieWrapper: The created collection object.
+        """
+        collection = CollectionApi(self.api.client).create_collection(
+            name=item.title,
+            parent_id=self.Jellyfin.id,
+        )
+        item.id = collection.id
+        return item
 
     def add_to_collection(self, items: list[ItemMovieWrapper], collection: ItemMovieWrapper) -> None:
         """ Adds items to a collection.
