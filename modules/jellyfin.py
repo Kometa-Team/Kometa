@@ -149,7 +149,9 @@ class Jellyfin(Library):
             if collection.name == data:
                 return ItemMovieWrapper(collection)
 
-        return ItemMovieWrapper(Item(BaseItemDto()))
+        item = Item(BaseItemDto())
+        item.name = data
+        return ItemMovieWrapper(item)
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
@@ -190,6 +192,22 @@ class Jellyfin(Library):
 
     def item_reload(self, item):
         return item
+    
+    def delete(self, obj):
+        warn_msg = "Jellyfin delete method not implemented yet"
+        logger.warning(warn_msg)
+        
+    def fetchItem(self, data):
+        warn_msg = "Jellyfin fetchItem method not implemented yet"
+        logger.warning(warn_msg)
+        return None
+        
+    def fetchItems(self, uri_args):
+        if uri_args is None:
+            return self.api.items.search.recursive().all
+        warn_msg = "Jellyfin fetchItems method not implemented yet"
+        logger.warning(warn_msg)
+        return []
 
     def _upload_image(self, item, image):
         warn_msg = "Jellyfin _upload_image method not implemented yet"
