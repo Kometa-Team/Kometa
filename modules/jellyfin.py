@@ -42,8 +42,8 @@ class Jellyfin(Library):
         self.optimize = False
         
         # the builder make reference to Plex directly so we set it here
-        self.Plex = self
-        
+        self.Plex = PlexWrapper(self)
+
         # some api methods require a user context, so we store the user here
         self.user = self.jellyfin["user"]
 
@@ -85,15 +85,15 @@ class Jellyfin(Library):
         self.Jellyfin = item
         self.type = item.collection_type.value
         
-        if item.collection_type.value == "movies":
-            self.type = "movie"
+        if item.collection_type == jellyfin.generated.CollectionType.MOVIES:
+            self.type = "Movie"
 
-        self.is_movie = self.type == "movie"
-        self.is_show = self.type == "tvshows"
-        self.is_music = self.type == "music"
-        self.is_playlist = self.type == "playlists"
-        self.is_other = self.type == "boxsets"
-        
+        self.is_movie = self.type == "Movie"
+        self.is_show = self.type == "TVShow"
+        self.is_music = self.type == "Music"
+        self.is_playlist = self.type == "Playlist"
+        self.is_other = self.type == "Boxset"
+
         self._all_items = []
 
     def notify(self, text, collection=None, critical=True):
@@ -282,6 +282,17 @@ class Jellyfin(Library):
     def moveItem(self, obj, item, after):
         warn_msg = "Jellyfin moveItem method not implemented yet"
         logger.warning(warn_msg)
+
+class PlexWrapper:
+    def __init__(self, library: Library):
+        self.library = library
+        
+    @property
+    def type(self) -> str:
+        return self.library.type.lower()
+
+    def __getattr__(self, name):
+        return getattr(self.library, name)
 
 class ServerWrapper:
     def __init__(self, api):
