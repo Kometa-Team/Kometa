@@ -760,7 +760,9 @@ class IMDb:
     def episode_ratings(self):
         if self._episode_ratings is None:
             self._episode_ratings = {}
-            for imdb_id, parent_id, season_num, episode_num in self._interface("episode"):
+            logger.info("Processing IMDb rating for episodes. This may take a while...")
+            all_eps = self._interface("episode")
+            for i, (imdb_id, parent_id, season_num, episode_num) in enumerate(all_eps):
                 if imdb_id not in self.ratings:
                     continue
                 if parent_id not in self._episode_ratings:
@@ -768,6 +770,8 @@ class IMDb:
                 if season_num not in self._episode_ratings[parent_id]:
                     self._episode_ratings[parent_id][season_num] = {}
                 self._episode_ratings[parent_id][season_num][episode_num] = self.ratings[imdb_id]
+                logger.ghost(f"Processing IMDb rating for episodes: {i / len(all_eps) * 100:6.2f}%")
+            logger.exorcise()
         return self._episode_ratings
 
     def get_rating(self, imdb_id):
