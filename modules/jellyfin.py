@@ -1,19 +1,10 @@
 from __future__ import annotations
-from typing_extensions import Self
 
-import os, re, time, jmespath
-from datetime import datetime, timedelta
-from modules import builder, util
+import os
+from modules import util
 from modules.library import Library
-from modules.poster import ImageData
-from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed
-from PIL import Image
-from requests.exceptions import ConnectionError, ConnectTimeout
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
-from xml.etree.ElementTree import ParseError
 from plexapi.video import Movie
-from uuid import UUID
 
 import jellyfin
 from jellyfin.items import Item
