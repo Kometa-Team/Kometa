@@ -308,7 +308,7 @@ class Cache:
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS overlay_special_text (
                     key INTEGER PRIMARY KEY,
-                    rating_key INTEGER,
+                    rating_key TEXT,
                     type TEXT,
                     text TEXT)"""
                 )
