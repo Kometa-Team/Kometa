@@ -174,40 +174,69 @@ class Jellyfin(Library):
         return name, self.get_collection_items(collection, smart_label_collection)
 
     def alter_collection(self, items, collection: str, smart_label_collection=False, add=True) -> None:
+        warn_msg = "Jellyfin alter_collection method not implemented yet"
+        logger.warning(warn_msg)
         pass
 
     def item_reload(self, item):
         return item
 
     def _upload_image(self, item, image):
-        raise NotImplementedError("Jellyfin _upload_image method not implemented yet")
+        warn_msg = "Jellyfin _upload_image method not implemented yet"
+        logger.warning(warn_msg)
         
     def edit_tags(self, attr, obj, add_tags=None, remove_tags=None, sync_tags=None, do_print=True, locked=True, is_locked=None):
-        raise NotImplementedError("Jellyfin edit_tags method not implemented yet")
+        warn_msg = "Jellyfin edit_tags method not implemented yet"
+        logger.warning(warn_msg)
     
     def find_poster_url(self, item):
-        raise NotImplementedError("Jellyfin find_poster_url method not implemented yet")
+        warn_msg = "Jellyfin find_poster_url method not implemented yet"
+        logger.warning(warn_msg)
 
     def get_rating_keys(self, method, data, is_playlist=False):
-        raise NotImplementedError("Jellyfin get_rating_keys method not implemented yet")
+        warn_msg = "Jellyfin get_rating_keys method not implemented yet"
+        logger.warning(warn_msg)
 
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
-        raise NotImplementedError("Jellyfin image_update method not implemented yet")
-    
+        warn_msg = "Jellyfin image_update method not implemented yet"
+        logger.warning(warn_msg)
+
     def item_labels(self, item):
         pass
     
     def item_posters(self, item):
-        raise NotImplementedError("Jellyfin item_posters method not implemented yet")
+        warn_msg = "Jellyfin item_posters method not implemented yet"
+        logger.warning(warn_msg)
     
     def notify_delete(self, message_id):
-        raise NotImplementedError("Jellyfin notify_delete method not implemented yet")
-    
+        warn_msg = "Jellyfin notify_delete method not implemented yet"
+        logger.warning(warn_msg)
+
     def reload(self, item, force=False):
-        pass
+        warn_msg = "Jellyfin reload method not implemented yet"
+        logger.warning(warn_msg)
     
     def upload_poster(self, item, image, tmdb=None, title=None):
-        raise NotImplementedError("Jellyfin upload_poster method not implemented yet")
+        warn_msg = "Jellyfin upload_poster method not implemented yet"
+        logger.warning(warn_msg)
+        
+    def collection_order_query(self, collection, data):
+        warn_msg = "Jellyfin dont support collection order"
+        logger.warning(warn_msg)
+        
+    def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
+        warn_msg = "Jellyfin find_item_assets method not implemented yet"
+        logger.warning(warn_msg)
+        return None, None, None, item_asset_directory, folder_name
+    
+    def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
+        warn_msg = "Jellyfin upload_images will not work with cache without change sqlite rating_key on cache to TEXT"
+        logger.warning(warn_msg)
+        return False, False, False
+    
+    def moveItem(self, obj, item, after):
+        # Jellyfin dont support move item
+        pass
 
 class ItemMovieWrapper(Movie):
     def __init__(self, item):
@@ -230,7 +259,13 @@ class ItemMovieWrapper(Movie):
         return self.item.production_year
     
     @property
+    def collectionSort(self) -> int:
+        return 0
+    
+    @property
     def titleSort(self) -> str:
+        if self.item.sort_name is None:
+            return ""
         return self.item.sort_name
 
     def editSummary(self, summary: str) -> None:
@@ -249,7 +284,7 @@ class ItemMovieWrapper(Movie):
 
     @property
     def childCount(self) -> int:
-        return 0
+        return self.item.child_count if self.item.child_count else 0
     
     def __getattr__(self, name):
         return getattr(self.item, name)
