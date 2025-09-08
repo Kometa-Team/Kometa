@@ -10,16 +10,14 @@ from plexapi.video import Movie
 import jellyfin
 from jellyfin.items import Item
 from jellyfin.generated import (
-    ApiClient,
     BaseItemDto, 
     BaseItemKind, 
     CollectionApi, 
     CollectionType,
-    ItemUpdateApi,
+    LibraryApi,
     ItemFields,
-    UserLibraryApi,
-    ImageApi,
-    ImageType
+    ImageType,
+    MetadataField
 )
 
 logger = util.logger
@@ -318,8 +316,9 @@ class Jellyfin(Library):
         """
         collection = CollectionApi().create_collection(
             name=item.title,
-            parent_id=self.Jellyfin.id,
+            parent_id=self.Jellyfin.id
         )
+
         item.id = collection.id
         return item
 
@@ -354,8 +353,12 @@ class Jellyfin(Library):
             return ItemMovieWrapper(self.api.items.by_id(item.id))
     
     def delete(self, obj):
-        warn_msg = "Jellyfin delete method not implemented yet"
-        logger.warning(warn_msg)
+        items = self.api.items.search.recursive().add('name_starts_with', obj.name).all
+        for item in items:
+            if item.name == obj.name:
+                LibraryApi().delete_item(item.id)
+                break
+        return True
         
     def fetchItem(self, data):
         warn_msg = "Jellyfin fetchItem method not implemented yet"
@@ -458,7 +461,7 @@ class Jellyfin(Library):
         else:
             return False
 
-        return self.api.image.upload_from_url(item.id.hex, image_type, image.location)
+        return self.api.image.upload_from_url(item.id, image_type, image.location)
 
     def playlist_report(self):
         warn_msg = "Jellyfin playlist_report method not implemented yet"
@@ -529,7 +532,7 @@ class ItemMovieWrapper(Movie):
     def summary(self) -> str:
         """ Returns the summary of the movie """
         return self.item.overview if self.item.overview else ""
-    
+
     @property
     def ratingKey(self) -> int:
         """ Returns the rating key of the movie """
@@ -590,5 +593,5 @@ class ItemMovieWrapper(Movie):
 
     def __repr__(self) -> str:
         return (
-            f"<ItemMovieWrapper\n  id={self.item.id.hex}\n  ratingKey={self.ratingKey}\n  title={self.title}\n>"
+            f"<ItemMovieWrapper\n  id={self.item.id}\n  ratingKey={self.ratingKey}\n  title={self.title}\n>"
         )
