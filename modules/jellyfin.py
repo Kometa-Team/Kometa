@@ -77,10 +77,12 @@ class Jellyfin(Library):
         self.timeout = self.jellyfin["timeout"]
         
         self.api = jellyfin.api(self.url, self.token)
+        
+        # we register a client to identify ourselves to the server
         self.api.register_client(client_name="Kometa")
 
         # some api methods require a user context, so we store the user here
-        self.user = self.api.users.of(self.jellyfin["user"]).id
+        self.api.user = self.jellyfin["user"]
 
         # we also wrap the server object to match Plex server interface
         self.PlexServer = ServerWrapper(self.api.system)
@@ -349,9 +351,7 @@ class Jellyfin(Library):
         if item.type == BaseItemKind.BOXSET:
             return self.get_collection(item.name)
         if item.type == BaseItemKind.MOVIE:
-            return ItemMovieWrapper(Item(
-                UserLibraryApi().get_item(item.id, self.user)
-            ))
+            return ItemMovieWrapper(self.api.items.by_id(item.id))
     
     def delete(self, obj):
         warn_msg = "Jellyfin delete method not implemented yet"
@@ -388,8 +388,7 @@ class Jellyfin(Library):
         if obj.id is None:
             return
         
-         # Fetch the latest item data to avoid overwriting changes
-        model = UserLibraryApi().get_item(obj.id, self.user)
+        model = self.api.items.edit(obj.id)
         
         if add_tags and model.tags is None:
             model.tags = add_tags
@@ -406,8 +405,7 @@ class Jellyfin(Library):
         # remove duplicates
         model.tags = list(set(model.tags)) if model.tags else []
         model.lock_data = locked
-
-        ItemUpdateApi().update_item(model.id.hex, model)
+        model.save()
 
     def find_poster_url(self, item):
         warn_msg = "Jellyfin find_poster_url method not implemented yet"
@@ -460,32 +458,7 @@ class Jellyfin(Library):
         else:
             return False
 
-        tmp_file_path = self.get_image_tmp(image.location)
-        ImageApi().set_item_image(
-            item.id,
-            image_type,
-            tmp_file_path,
-            _content_type=self.get_content_type_from_url(image.location)
-        )
-        os.remove(tmp_file_path)
-        return True
-    
-    def get_image_tmp(self, url: str) -> str:
-        response = requests.get(url)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(url)[-1]) as tmp_file:
-            tmp_file.write(response.content)
-            tmp_file_path = tmp_file.name
-            
-        return tmp_file_path
-    
-    def get_content_type_from_url(self, url: str) -> str:
-        """
-        Returns the MIME type for a given image URL based on its extension.
-        """
-        path = urlparse(url).path
-        ext = os.path.splitext(path)[-1]
-        content_type, _ = mimetypes.guess_type('file' + ext)
-        return content_type
+        return self.api.image.upload_from_url(item.id.hex, image_type, image.location)
 
     def playlist_report(self):
         warn_msg = "Jellyfin playlist_report method not implemented yet"
