@@ -459,7 +459,7 @@ webhooks:                        # Can be individually specified per library as 
   run_start:
   run_end:
   changes:
-plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
+plex:                            # Can be individually specified per library as well;
   url: http://192.168.1.12:32400
   token: Enter Plex Token
   timeout: 60
@@ -468,9 +468,10 @@ plex:                            # Can be individually specified per library as 
   empty_trash: false
   optimize: false
   verify_ssl: true
-jellyfin:                            # Can be individually specified per library as well; REQUIRED for the script to run
+jellyfin:                            # Can be individually specified per library as well;
   url: http://192.168.1.12:8096
   token: Enter Jellyfin API Token
+  user: Enter Jellyfin User ID or Name
   timeout: 60
   optimize: false
   verify_ssl: true
