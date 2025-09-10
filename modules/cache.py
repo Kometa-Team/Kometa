@@ -339,17 +339,48 @@ class Cache:
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
                                 self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], overlay=row["overlay"])
                     cursor.execute("DROP TABLE IF EXISTS image_map")
-        self.add_cast_and_crew_columns_if_not_exist()
+        self.add_tables_for_emby()
 
-    def add_cast_and_crew_columns_if_not_exist(self):
+    def add_tables_for_emby(self):
+        import sqlite3
         with sqlite3.connect(self.cache_path) as conn:
             cursor = conn.cursor()
+
+            # 1) Personen-Map (neu)
+            cursor.execute(
+                """CREATE TABLE IF NOT EXISTS tmdb_person_map (
+                    key INTEGER PRIMARY KEY,
+                    tmdb_id INTEGER UNIQUE,
+                    emby_id TEXT,
+                    name TEXT,
+                    alias TEXT,
+                    meta_json TEXT,
+                    expiration_date TEXT
+                )"""
+            )
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_tmdb_person_map_tid ON tmdb_person_map(tmdb_id)"
+            )
+
+            # 2) Spalten in tmdb_movie_data nur hinzufügen, wenn sie fehlen
             cursor.execute("PRAGMA table_info(tmdb_movie_data)")
             columns = [row[1] for row in cursor.fetchall()]
+
             if "cast" not in columns:
-                cursor.execute("ALTER TABLE tmdb_movie_data ADD COLUMN cast TEXT")
+                try:
+                    cursor.execute("ALTER TABLE tmdb_movie_data ADD COLUMN cast TEXT")
+                except sqlite3.OperationalError as e:
+                    # falls doch schon vorhanden (Race / ältere Migration)
+                    if "duplicate column name" not in str(e).lower():
+                        raise
+
             if "crew" not in columns:
-                cursor.execute("ALTER TABLE tmdb_movie_data ADD COLUMN crew TEXT")
+                try:
+                    cursor.execute("ALTER TABLE tmdb_movie_data ADD COLUMN crew TEXT")
+                except sqlite3.OperationalError as e:
+                    if "duplicate column name" not in str(e).lower():
+                        raise
+
             conn.commit()
 
     def query_guid_map(self, plex_guid):
@@ -708,6 +739,30 @@ class Cache:
                     cast_json, crew_json,
                     obj.tmdb_id
                 ))
+        # --- Person-Map aus den bereits vorliegenden cast/crew-Daten vorbefüllen (tmdb_id + name) ---
+        try:
+            def _iter_people(lst):
+                for it in (obj.cast or [] if lst == "cast" else obj.crew or []):
+                    if isinstance(it, dict):
+                        tid = it.get("person_id") or it.get("id")
+                        nm = it.get("name")
+                    else:
+                        tid = getattr(it, "person_id", None) or getattr(it, "id", None)
+                        nm = getattr(it, "name", None)
+                    if tid and nm and str(tid).isdigit():
+                        yield int(tid), str(nm)
+
+            seen = set()
+            for tid, nm in list(_iter_people("cast")) + list(_iter_people("crew")):
+                if tid in seen:
+                    continue
+                seen.add(tid)
+                try:
+                    self.update_tmdb_person_map(False, tid, name=nm, expiration=self.expiration)
+                except Exception:
+                    pass
+        except Exception:
+            pass
 
     def query_tmdb_show(self, tmdb_id, expiration):
         tmdb_dict = {}
@@ -1283,3 +1338,64 @@ class Cache:
         except Exception:
             pass
 
+    def query_tmdb_person_map_bulk(self, tmdb_ids, expiration):
+        mapping, missing_ids, expired_ids = {}, set(tmdb_ids or []), set()
+        if not tmdb_ids:
+            return mapping, missing_ids, expired_ids
+
+        qmarks = ",".join("?" * len(tmdb_ids))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM tmdb_person_map WHERE tmdb_id IN ({qmarks})", tuple(tmdb_ids))
+                for row in cursor.fetchall():
+                    tid = int(row["tmdb_id"])
+                    try:
+                        meta = json.loads(row["meta_json"]) if row["meta_json"] else {}
+                    except Exception:
+                        meta = {}
+                    mapping[tid] = {
+                        "emby_id": row["emby_id"],
+                        "name": row["name"],
+                        "alias": row["alias"],
+                        "meta": meta
+                    }
+                    missing_ids.discard(tid)
+                    if row["expiration_date"]:
+                        dt = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                        if (datetime.now() - dt).days > expiration:
+                            expired_ids.add(tid)
+        return mapping, missing_ids, expired_ids
+
+
+    def update_tmdb_person_map(self, expired, tmdb_id, emby_id=None, name=None, alias=None, meta_patch=None, expiration=None):
+        if expiration is None:
+            expiration = self.expiration if hasattr(self, "expiration") else 30
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
+
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO tmdb_person_map(tmdb_id) VALUES(?)", (tmdb_id,))
+                cursor.execute("SELECT emby_id, name, alias, meta_json FROM tmdb_person_map WHERE tmdb_id = ?", (tmdb_id,))
+                row = cursor.fetchone()
+                cur_emby  = row["emby_id"] if row else None
+                cur_name  = row["name"] if row else None
+                cur_alias = row["alias"] if row else None
+                try:
+                    cur_meta = json.loads(row["meta_json"]) if (row and row["meta_json"]) else {}
+                except Exception:
+                    cur_meta = {}
+
+                new_emby  = emby_id if emby_id is not None else cur_emby
+                new_name  = name    if name    is not None else cur_name
+                new_alias = alias   if alias   is not None else cur_alias
+                if meta_patch:
+                    try: cur_meta.update(meta_patch)
+                    except Exception: pass
+
+                cursor.execute(
+                    "UPDATE tmdb_person_map SET emby_id = ?, name = ?, alias = ?, meta_json = ?, expiration_date = ? WHERE tmdb_id = ?",
+                    (new_emby, new_name, new_alias, json.dumps(cur_meta, ensure_ascii=False) if cur_meta else None,
+                     expiration_date.strftime("%Y-%m-%d"), tmdb_id)
+                )

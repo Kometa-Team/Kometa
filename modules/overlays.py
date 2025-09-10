@@ -177,7 +177,7 @@ class Overlays:
                         poster = ImageData("asset_directory", my_overlay_path if has_overlay else "", is_url=False)
                         # poster = ImageData("asset_directory", emby_poster.get("Path"), is_url=False, compare=poster_compare)
                         # background = ImageData("asset_directory", emby_thumb.get("Path"), compare=emby_item.get("ImageTags").get("Thumb"))
-                        item_dir = os.path.dirname(emby_poster.get("Path"))
+                        item_dir = os.path.dirname(poster.location)
                         name = str(item_dir).split('\\')[-1]
 
                         # poster, background, item_dir, name = self.library.find_item_assets(item)

@@ -816,7 +816,7 @@ class Operations:
                                     continue
                 # tick("Finished", min_ms=5)
 
-                if do_cast_update and self.library.is_movie and tmdb_id:  # mass_cast_and_crew_update
+                if False: # do_cast_update and self.library.is_movie and tmdb_id:  # mass_cast_and_crew_update
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
