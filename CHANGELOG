@@ -13,7 +13,7 @@ Adds `|` as a preferred delimiter for run times.
 # Docs
 Fixed an issue where the home page logo and shield images appeared as raw text
 Fixed an issue where the builder overview page had multiple dead links
-
+Added some clarification on Library types to defaults pages
 
 # Defaults
 Add Movistar Plus + as streaming service
