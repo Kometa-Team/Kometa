@@ -1,4 +1,4 @@
-import os, re
+import math, os, re
 from datetime import datetime, timedelta, timezone
 from modules import plex, util, anidb
 from modules.util import Failed, LimitReached
@@ -22,23 +22,14 @@ name_display = {
     "contentRating": "Content Rating"
 }
 
-default_plex_bulk_edit_batch_size = 500
+def _item_batches(items_iterable, batch_size):
+    for batch_num in range(0, math.ceil(len(items_iterable) / batch_size)):
+        yield items_iterable[batch_num * batch_size:(batch_num + 1) * batch_size]
 
 class Operations:
     def __init__(self, config, library):
         self.config = config
         self.library = library
-
-    def _get_items_in_batches(self, items_iterable, batch_size=1000):
-        """Yield successive n-sized chunks from an iterable."""
-        batch = []
-        for item in items_iterable:
-            batch.append(item)
-            if len(batch) == batch_size:
-                yield batch
-                batch = []
-        if batch:
-            yield batch
 
     def run_operations(self):
         operation_start = datetime.now()
@@ -127,14 +118,12 @@ class Operations:
             all_items = self.library.get_all()
             total_items = len(all_items)
             batch_size = self.library.plex_bulk_edit_batch_size if self.library.plex_bulk_edit_batch_size else total_items
-            batch_generator = self._get_items_in_batches(all_items, batch_size)
-            
-            num_batches = (total_items + batch_size - 1) // batch_size if isinstance(total_items, int) else "Unknown"
-            processed_items = 0
+            num_batches = math.ceil(total_items / batch_size)
 
             # New batch processing loop using the generator
-            for batch_num, items in enumerate(batch_generator, 1):
-                logger.separator(f"Processing Batch {batch_num}/{num_batches}")
+            for batch_num, items in enumerate(_item_batches(all_items, batch_size), 1):
+                if num_batches > 1:
+                    logger.separator(f"Processing Batch {batch_num}/{num_batches}")
 
                 radarr_adds = []
                 sonarr_adds = []
@@ -154,10 +143,9 @@ class Operations:
                 ep_lock_edits = {}
                 ep_unlock_edits = {}
 
-                for item in items:
-                    processed_items += 1
+                for i, item in enumerate(items, 1):
                     logger.info("")
-                    logger.info(f"({processed_items}/{total_items}) {item.title}")
+                    logger.info(f"({i}/{batch_size}{f' B{batch_num}/{num_batches}' if num_batches > 1 else ''}) {item.title}")
                     try:
                         item = self.library.reload(item)
                     except Failed as e:
@@ -1124,7 +1112,6 @@ class Operations:
                         logger.error(e)
                 
                 logger.info("")
-                logger.separator(f"Done with Batch {batch_num}/{num_batches}")
 
         if self.library.radarr_remove_by_tag:
             logger.info("")
