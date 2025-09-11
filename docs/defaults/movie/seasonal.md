@@ -7,7 +7,7 @@ hide:
     replace='{
         "COLLECTION": "Seasonal", 
         "CODE_NAME": "seasonal",
-        "LIBRARY_TYPE": "Movie, Show", 
+        "LIBRARY_TYPE": "Movie", 
         "SECTION_NUMBER": "090", 
         "DESCRIPTION": "dynamically create seasonal collections based on holidays"
     }'
