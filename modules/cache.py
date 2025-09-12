@@ -1102,7 +1102,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM overlay_special_text2 WHERE rating_key = ?", (rating_key, ))
+                cursor.execute("SELECT * FROM overlay_special_text2 WHERE rating_key = ?", (str(rating_key), ))
                 for row in cursor.fetchall():
                     if row:
                         attrs[row["type"]] = row["text"]
@@ -1112,8 +1112,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO overlay_special_text2(rating_key, type) VALUES(?, ?)", (rating_key, data_type))
-                cursor.execute("UPDATE overlay_special_text2 SET text = ? WHERE rating_key = ? AND type = ?", (text, rating_key, data_type))
+                cursor.execute("INSERT OR IGNORE INTO overlay_special_text2(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
+                cursor.execute("UPDATE overlay_special_text2 SET text = ? WHERE rating_key = ? AND type = ?", (text, str(rating_key), data_type))
 
     def query_testing(self, name):
         value1 = None
