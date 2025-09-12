@@ -1,5 +1,8 @@
 import os, time
 from abc import ABC, abstractmethod
+
+import requests
+
 from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
@@ -318,7 +321,20 @@ class Library(ABC):
                          "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
                          "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
                 if attr in images:
+                    ok = True
+                    if attr != f"file_{image_type}":
+                        import urllib.request, urllib.error
+                        try:
+                            ok = urllib.request.urlopen(urllib.request.Request(images[attr], method='HEAD'), timeout=5).status != 404
+                        except urllib.error.HTTPError as e:
+                            ok = e.code != 404
+                        except Exception:
+                            ok = False
+
+                    if not ok: continue
+
                     if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
+                        requests.delete()
                         if "asset_directory" in images:
                             return images["asset_directory"]
                         else:

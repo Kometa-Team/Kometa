@@ -1469,7 +1469,7 @@ class Plex(Library):
                         now = datetime.now()
                 self.config.tpdb_timer = now
             if image.is_poster and image.is_url:
-                self.upload_poster(item, image.location, url=True)
+                upload_success = self.upload_poster(item, image.location, url=True)
             elif image.is_poster:
                 upload_success = self.validate_image_size(image)
                 if upload_success:

@@ -3966,6 +3966,7 @@ class CollectionBuilder:
 
             uploaded_poster, _, _ = self.library.upload_images(self.obj, poster=self.collection_poster)
 
+
             # uploaded_poster = my_emby.set_image_smart(self.obj.ratingKey, self.collection_poster.location)
 
             # if uploaded_poster:

@@ -1675,7 +1675,7 @@ class EmbyServer:
             if response.status_code == 204:
                 return True
             else:
-                logger.error(f"Error setting image for item {item_id}, response: {response}")
+                # logger.error(f"Error setting image for item {item_id}, response: {response}")
                 return False
 
         except Exception as e:
