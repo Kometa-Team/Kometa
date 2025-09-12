@@ -21,7 +21,8 @@ class Cache:
                     "guids", "guid_map", "imdb_to_tvdb_map", "tmdb_to_tvdb_map", "imdb_map",
                     "mdb_data", "mdb_data2", "mdb_data3", "mdb_data4", "omdb_data", "omdb_data2",
                     "tvdb_data", "tvdb_data2", "tvdb_data3", "tmdb_show_data", "tmdb_show_data2",
-                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data"
+                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data",
+                    "overlay_special_text"
                 ]:
                     cursor.execute(f"DROP TABLE IF EXISTS {old_table}")
                 cursor.execute(
@@ -306,9 +307,9 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS overlay_special_text (
+                    """CREATE TABLE IF NOT EXISTS overlay_special_text2 (
                     key INTEGER PRIMARY KEY,
-                    rating_key INTEGER,
+                    rating_key TEXT,
                     type TEXT,
                     text TEXT)"""
                 )
@@ -1101,7 +1102,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM overlay_special_text WHERE rating_key = ?", (rating_key, ))
+                cursor.execute("SELECT * FROM overlay_special_text2 WHERE rating_key = ?", (str(rating_key), ))
                 for row in cursor.fetchall():
                     if row:
                         attrs[row["type"]] = row["text"]
@@ -1111,8 +1112,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO overlay_special_text(rating_key, type) VALUES(?, ?)", (rating_key, data_type))
-                cursor.execute("UPDATE overlay_special_text SET text = ? WHERE rating_key = ? AND type = ?", (text, rating_key, data_type))
+                cursor.execute("INSERT OR IGNORE INTO overlay_special_text2(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
+                cursor.execute("UPDATE overlay_special_text2 SET text = ? WHERE rating_key = ? AND type = ?", (text, str(rating_key), data_type))
 
     def query_testing(self, name):
         value1 = None
