@@ -5,6 +5,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.doesthedogdie import DoesTheDogDie
 from modules.ergast import Ergast
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
@@ -146,9 +147,10 @@ library_operations = {
     "mass_critic_rating_update": mass_rating_options, "mass_episode_critic_rating_update": mass_episode_rating_options,
     "mass_user_rating_update": mass_rating_options, "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options, "mass_imdb_parental_labels": imdb_label_options,
-    "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options,
-    "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
-    "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
+    "mass_does_the_dog_labels": "dict", "mass_originally_available_update": mass_available_options,
+    "mass_added_at_update": mass_available_options, "mass_collection_mode": "mass_collection_mode",
+    "mass_poster_update": "dict", "mass_background_update": "dict", "metadata_backup": "dict",
+    "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
 }
 
 class ConfigFile:
@@ -720,6 +722,24 @@ class ConfigFile:
 
             logger.separator()
 
+            self.DoesTheDogDie = None
+            if "doesthedogdie" in self.data:
+                logger.info("Connecting to DoesTheDogDie...")
+                try:
+                    self.DoesTheDogDie = DoesTheDogDie(self.Requests, {
+                        "apikey": check_for_attribute(self.data, "apikey", parent="doesthedogdie", throw=True),
+                    })
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"DoesTheDogDie Connection {'Failed' if self.OMDb is None else 'Successful'}")
+            else:
+                logger.info("omdb attribute not found")
+
+            logger.separator()
+
             self.MyAnimeList = None
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
@@ -1030,6 +1050,11 @@ class ConfigFile:
                                     section_final[op] = {
                                         "source": check_for_attribute(input_dict, "source", test_list=mass_collection_content_options, default_is_none=True, save=False),
                                         "ranking": check_for_attribute(input_dict, "ranking", var_type="list", default=content_rating_default, save=False),
+                                    }
+                                elif op == "mass_does_the_dog_labels":
+                                    section_final[op] = {
+                                        "label_mode": check_for_attribute(input_dict, "label_mode", default="dog", save=False),
+                                        "strict_search": check_for_attribute(input_dict, "strict_search", var_type="bool", default=False, save=False),
                                     }
                             else:
                                 section_final[op] = check_for_attribute(config_op, op, var_type=data_type, default=False, save=False)

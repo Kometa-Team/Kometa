@@ -48,6 +48,7 @@ class Operations:
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
+        logger.debug(f"Mass Does The Dog... Warning Labels: {self.library.mass_does_the_dog_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
@@ -154,6 +155,39 @@ class Operations:
                         item.editTitle(new_title)
                         item_edits += f"Updated Title: {item.title[:25]:<25} | {new_title}"
 
+                if self.library.mass_does_the_dog_labels:
+                    try:
+                        topics_to_warn_on = []
+                        if self.library.mass_does_the_dog_labels["label_mode"] == "remove":
+                            pass
+                        elif self.library.mass_does_the_dog_labels["label_mode"] == "all":
+                            topics_to_warn_on = self.config.DogDieChecker.get_all_topic_ids()
+                        elif self.library.mass_does_the_dog_labels["label_mode"] == "dog":
+                            topics_to_warn_on = [153] # 153 is the dog topic id
+                        else:
+                            for category_name in self.library.mass_does_the_dog_labels["label_mode"].split(","):
+                                category_id = self.config.DogDieChecker.get_category_id_by_name(category_name)
+                                if category_id:
+                                    topic_ids = self.config.DogDieChecker.get_topic_ids_by_category_id(category_id)
+                                    if topic_ids:
+                                        for topic_id in topic_ids:
+                                            topics_to_warn_on.append(topic_id)
+                                    else:
+                                        logger.warning("Does The Dog... category " + category_name + " returned no topics.")
+                                else:
+                                    logger.warning("Does The Dog... category " + category_name + " not found.")
+                        dog_warning_labels = self.config.DogDieChecker.search_movie(imdb_id, topic_ids=topics_to_warn_on)
+                        add_labels = [la for la in dog_warning_labels if la not in current_labels]
+                        remove_labels = [la for la in current_labels if la in self.config.DogDieChecker.get_all_labels() and la not in dog_warning_labels]
+                        for label_list, edit_type in [(add_labels, "add"), (remove_labels, "remove")]:
+                            if label_list:
+                                for label in label_list:
+                                    if label not in label_edits[edit_type]:
+                                        label_edits[edit_type][label] = []
+                                    label_edits[edit_type][label].append(item.ratingKey)
+                                item_edits += f"\n{edit_type.capitalize()} Does The Dog... Labels (Batched) | {', '.join(label_list)}"
+                    except Failed:
+                        pass
                 if self.library.mass_imdb_parental_labels:
                     try:
                         if self.library.mass_imdb_parental_labels == "remove":
