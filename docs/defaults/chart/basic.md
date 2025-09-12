@@ -15,6 +15,8 @@ hide:
 | `New Episodes`   | `episodes` | Collection of Episodes released in the last 7 days.            |
 | `Newly Released` | `released` | Collection of Movies or TV Shows released in the last 90 days. |
 
+Recommendations: The New Episode Collection only work with Show Libraries.
+
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "basic"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "basic"}' include-tags='all|movie|show' %}
     ```yaml
