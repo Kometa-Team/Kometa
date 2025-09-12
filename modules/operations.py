@@ -1,5 +1,8 @@
 import os, re
 from datetime import datetime, timedelta, timezone
+
+from transformers.models.marian.convert_marian_tatoeba_to_pytorch import dedup
+
 from modules import plex, util, anidb
 from modules.util import Failed, LimitReached
 from plexapi.exceptions import NotFound
@@ -131,6 +134,7 @@ class Operations:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
             # emby_people = EmbyPeopleSyncMixin(config=self.config,library=self.library)
+            people_alias_revert = []
             total_items = len(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
@@ -179,7 +183,7 @@ class Operations:
                 # tick("Fetched ids", min_ms=5)
 
                 item_edits = []
-                do_cast_update = False
+                do_cast_update = True
 
                 if self.library.remove_title_parentheses:
                     if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
@@ -882,9 +886,12 @@ class Operations:
                                 # has_edits, people_edits = emby_people.sync_people(emby_item, my_cast, my_crew)
 
 
-                                has_edits, people_edits = self.library.EmbyServer.sync_people(emby_item, my_cast, my_crew)
+                                has_edits, people_edits, new_people_renames = self.library.EmbyServer.sync_people(emby_item, my_cast, my_crew)
                                 if has_edits:
                                     item_edits.append(people_edits)
+                                if new_people_renames:
+                                    people_alias_revert.extend(new_people_renames)
+
                             # except Exception as e:
                             #     logger.error(e)
                             #     pass
@@ -1138,6 +1145,33 @@ class Operations:
                     self.library.EmbyServer.multiEditField(self.library.load_list_from_cache(rating_keys),item_attr, new_rating)
             # emby_changes = {}
             # emby_changes.update(self.library.EmbyServer.multiEditRatings(rating_edits))
+
+            if people_alias_revert and len(people_alias_revert) > 1:
+                dedup = []
+                seen = set()  # Key pro Aktion
+                for emby_pid, (alias_name, clean_name, tid) in people_alias_revert:
+                    key = (str(emby_pid), str(alias_name))
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    dedup.append((str(emby_pid), (alias_name, clean_name, tid)))
+
+                # 2) Stabil sortieren (erst nach alias, dann PID), damit das Log hübsch ist
+                dedup.sort(key=lambda t: (t[1][0].casefold(), t[0]))
+                _size = len(dedup)
+            else:
+                _size = len(people_alias_revert)
+                dedup = people_alias_revert
+
+            for i, (emby_pid, (alias_name, clean_name, tid)) in enumerate(dedup, 1):
+                try:
+                    logger.info(f"Reverting People Name {i}/{_size} | {alias_name} -> {clean_name}")
+                    self.library.EmbyServer.update_item(emby_pid,
+                                                        {"Id": emby_pid, "Name": clean_name,
+                                                         "ProviderIds": {"Tmdb": tid}})
+                    # log["aliases_reverted"].append((emby_pid, clean_name))
+                except Exception:
+                    pass
 
 
             _size = len(content_edits.items())

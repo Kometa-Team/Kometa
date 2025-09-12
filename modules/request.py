@@ -6,6 +6,7 @@ from modules.util import Failed
 from requests.exceptions import ConnectionError
 from tenacity import retry, stop_after_attempt, wait_fixed
 from urllib import parse
+from urllib.parse import unquote, parse_qsl
 
 logger = util.logger
 
@@ -36,7 +37,6 @@ def parse_qs(data):
     return parse.parse_qs(data)
 
 
-from urllib.parse import unquote, parse_qsl
 
 def parse_query_with_plus(uri_args: str):
     """

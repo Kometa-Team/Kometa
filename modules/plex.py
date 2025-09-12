@@ -455,7 +455,6 @@ watchlist_sorts = {
     "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
 }
 
-MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
 
 class Plex(Library):
     def __init__(self, config, params):
@@ -1434,12 +1433,6 @@ class Plex(Library):
                 item_list.append(item)
         return item_list
 
-    def validate_image_size(self, image):
-        if image.compare < MAX_IMAGE_SIZE:
-            return True
-        else:
-            logger.error(f"Image too large: {image.location}, bytes {image.compare}, MAX {MAX_IMAGE_SIZE}")
-            return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def reload(self, item, force=False):
@@ -1476,7 +1469,7 @@ class Plex(Library):
                         now = datetime.now()
                 self.config.tpdb_timer = now
             if image.is_poster and image.is_url:
-                self.upload_poster(item, url=image.location)
+                self.upload_poster(item, image.location, url=True)
             elif image.is_poster:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
@@ -1520,13 +1513,12 @@ class Plex(Library):
             # print(f"Fehler beim Kopieren der Datei: {e}")
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa")
+            return self.EmbyServer.set_image_smart(item.ratingKey, image)
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa")
+            return self.EmbyServer.set_image_smart(item.ratingKey, image)
         # if url:
         #     item.uploadPoster(url=image)
         # else:
@@ -1535,18 +1527,18 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, image_type="Backdrop")
             # item.uploadArt(url=image)
         else:
-            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="Backdrop")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, image_type="Backdrop")
             # item.uploadArt(filepath=image)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
         if url:
-            self.EmbyServer.set_image_smart(item.ratingKey, url, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, url, image_type="ClearLogo")
         else:
-            self.EmbyServer.set_image_smart(item.ratingKey, image, provider_name="Kometa", image_type="ClearLogo")
+            self.EmbyServer.set_image_smart(item.ratingKey, image, image_type="ClearLogo")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_actor_id(self, name):
@@ -2509,7 +2501,6 @@ class Plex(Library):
         posters, backgrounds, logos = util.get_image_dicts(group, alias)
         if style_data and "url_poster" in style_data and style_data["url_poster"]:
             posters["style_data"] = style_data["url_poster"]
-            # print(posters["style_data"])
         elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
             posters["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_poster']}"
         if style_data and "url_background" in style_data and style_data["url_background"]:
@@ -2747,6 +2738,67 @@ class Plex(Library):
             if i_id:
                 imdb_id = i_id[0]
             return tmdb_id, tvdb_id, imdb_id
+
+    def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
+        poster_uploaded = False
+        if poster is not None:
+            try:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, self.image_table_name)
+                if not image_compare or str(poster.compare) != str(image_compare):
+                    if overlay:
+                        # self.reload(item, force=True)
+                        if overlay and "Overlay" in [la.tag for la in self.item_labels(item)]:
+                            item.removeLabel("Overlay")
+                    poster_uploaded = self._upload_image(item, poster)
+                    logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
+                elif self.show_asset_not_needed:
+                    logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except Failed:
+                logger.stacktrace()
+                logger.error(f"Metadata: {poster.attribute} failed to update {poster.message}")
+
+        background_uploaded = False
+        if background is not None:
+            try:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds")
+                if not image_compare or str(background.compare) != str(image_compare):
+                    background_uploaded = self._upload_image(item, background)
+                    logger.info(f"Metadata: {background.attribute} updated {background.message}")
+                elif self.show_asset_not_needed:
+                    logger.info(f"Metadata: {background.prefix}background update not needed")
+            except Failed:
+                logger.stacktrace()
+                logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
+
+        logo_uploaded = False
+        if logo is not None:
+            try:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_logos")
+                if not image_compare or str(logo.compare) != str(image_compare):
+                    logo_uploaded = self._upload_image(item, logo)
+                    logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
+                elif self.show_asset_not_needed:
+                    logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except Failed:
+                logger.stacktrace()
+                logger.error(f"Metadata: {logo.attribute} failed to update {logo.message}")
+
+        if self.config.Cache:
+            if poster_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
+            if background_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", "", background.compare)
+            if logo_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_logos", "", logo.compare)
+
+        return poster_uploaded, background_uploaded, logo_uploaded
+
 
     def get_ratings(self, item):
         ratings = {

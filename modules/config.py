@@ -5,6 +5,7 @@ from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
 from modules.convert import Convert
+from modules.emby import Emby
 from modules.ergast import Ergast
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
@@ -1256,11 +1257,37 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    # ToDo - Develop, document
+                    emby_library = Emby(self, params)
+                    if self.data["settings"] and 'server_type' in self.data["settings"]:
+                        the_type = self.data.get("settings").get("server_type")
+                        match the_type:
+                            case "emby":
+                                # library = Emby(self, params)
+                                pass
+                            case "jellyfin":
+                                # library = Jellyfin(self, params)
+                                pass
+                            case default:
+                                # library = Plex(self, params)
+                                pass
+
+
+                        pass
+
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                     logger.info("")
                     logger.separator("Scanning Files", space=False, border=False)
                     library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
+                    # test
+                    if False:
+                        emby_library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
+                        if not emby_library.collection_files and not emby_library.metadata_files and not emby_library.overlay_files and not emby_library.library_operation and not emby_library.images_files and not self.playlist_files:
+                            raise Failed(
+                                "Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
+                    # test end
+
                     if not library.collection_files and not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
                         raise Failed("Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
                 except Failed as e:

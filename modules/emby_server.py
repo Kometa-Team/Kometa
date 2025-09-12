@@ -205,6 +205,11 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self.cached_person_names = []
+        self._person_name_cache = {}
+        self._bulk_person_cache = {}
+        self.people_index = {}
+        self.platformVersion = "" # - undefined??
         self._person_dupe_redirect_last = {}
         self._person_dupes_last = {}
         self._person_dupes_choice_last = {}
@@ -1285,6 +1290,7 @@ class EmbyServer:
         endpoint = f"{self.emby_server_url}/emby/Library/MediaFolders"
         response = self.session.get(endpoint, headers=self.headers)
         response.raise_for_status()
+        # ToDo: maybe add section as Fields
         return response.json().get('Items', [])
 
     def get_library_data(self, library_id):
@@ -1625,251 +1631,19 @@ class EmbyServer:
             self,
             item_id: str,
             image_path: str,
-            image_type: str = "Primary",
-            provider_name: str = "MDBList Collection Creator script",
+            image_type: str = "Primary"
     ) -> bool:
-        """
-        Setzt ein Bild nur dann, wenn es sich vom bereits in Emby hinterlegten Bild unterscheidet.
-        Vergleicht zuerst Content-Length & Content-Type (schnell), danach optional per SHA-256 Hash.
-        Nutzt einen kleinen In-Memory-Cache, gebunden an den Emby-ImageTag.
-
-        Rückgabe:
-          True  -> Bild gesetzt
-          False -> harter Fehler beim Setzen ODER übersprungen (identisch)
-        """
-        # --- kleiner Cache auf dem Objekt (einmalig angelegt) ---
-        if not hasattr(self, "_image_hash_cache"):
-            self._image_hash_cache = {}  # key: (item_id, image_type, image_tag) -> sha256_hex
-
-        # --- Content-Type Mapping nur für lokale Dateien ---
-        ext_to_ct = {
-            ".jpg": "image/jpeg",
-            ".jpeg": "image/jpeg",
-            ".png": "image/png",
-            ".tbn": "image/jpeg",
-            ".webp": "image/webp",
-        }
-
-        def sha256_stream(iterable):
-            h = hashlib.sha256()
-            for chunk in iterable:
-                if chunk:
-                    h.update(chunk)
-            return h.hexdigest()
-
-        # 1) aktuelle Bildgröße/-typ aus Emby (HEAD auf Originalbild)
-        cur_url = (
-            f"{self.emby_server_url}/emby/Items/{item_id}/Images/{image_type}"
-            f"?EnableImageEnhancers=false&Format=original"
-        )
-        try:
-            cur_head = requests.head(
-                cur_url,
-                headers={"X-Emby-Token": self.api_key},
-                timeout=10,
-                allow_redirects=True,
-            )
-            if not cur_head.ok:
-                cur_size, cur_ct = None, None
-            else:
-                cur_size = int(cur_head.headers.get("Content-Length", "0") or "0") or None
-                cur_ct = cur_head.headers.get("Content-Type")
-        except Exception:
-            cur_size, cur_ct = None, None
-
-        # Wenn kein aktuelles Bild ermittelbar -> direkt setzen
-        if cur_size is None:
-            if image_path.startswith("http"):
-                return self.__set_remote_image(item_id, image_path, image_type, provider_name)
-            else:
-                return self.__upload_image(item_id, image_path, image_type)
-
-        # 2) Kandidat: Größe & Typ bestimmen (robust für Hosts ohne HEAD)
         if image_path.startswith("http"):
-            import re
-            cand_size, cand_ct = None, None
-
-            sess = self._http_session
-
-            headers = {
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/124.0 Safari/537.36"
-                ),
-                "Accept": "image/*,*/*;q=0.8",
-            }
-            if "theposterdb.com" in image_path:
-                headers["Referer"] = "https://theposterdb.com/"
-
-            # 2a) HEAD versuchen
-            try:
-                r = sess.head(image_path, timeout=10, allow_redirects=True, headers=headers)
-                if r.ok:
-                    cl = r.headers.get("Content-Length")
-                    if cl and cl.isdigit():
-                        cand_size = int(cl)
-                    cand_ct = r.headers.get("Content-Type")
-                r.close()
-            except Exception:
-                pass
-
-            # 2b) Fallback: GET mit Range (1 Byte)
-            if cand_size is None or not cand_ct:
-                try:
-                    r = sess.get(
-                        image_path,
-                        headers={**headers, "Range": "bytes=0-0"},
-                        timeout=10,
-                        allow_redirects=True,
-                        stream=True,
-                    )
-                    if r.status_code in (200, 206):
-                        if not cand_ct:
-                            cand_ct = r.headers.get("Content-Type")
-                        cr = r.headers.get("Content-Range")  # z.B. "bytes 0-0/123456"
-                        if cr:
-                            m = _re.search(r"/(\d+)$", cr)
-                            if m:
-                                cand_size = int(m.group(1))
-                        else:
-                            cl = r.headers.get("Content-Length")
-                            if cl and cl.isdigit():
-                                cand_size = int(cl)
-                    r.close()
-                except Exception:
-                    pass
-        else:
-            # (lokale Datei wie gehabt)
-            try:
-                cand_size = os.path.getsize(image_path)
-            except Exception:
-                cand_size = None
-            ext = os.path.splitext(image_path)[1].lower()
-            cand_ct = ext_to_ct.get(ext)
-
-        # 3) Schnelle Entscheidung: Größe/Typ verschieden -> setzen
-        if (cand_size is None) or (cand_size != cur_size) or (cur_ct and cand_ct and cur_ct != cand_ct):
-            if image_path.startswith("http"):
-                return self.__set_remote_image(item_id, image_path, image_type, provider_name)
-            else:
-                return self.__upload_image(item_id, image_path, image_type)
-
-        # 4) Größe & Typ gleich -> Hash-Vergleich (mit Tag-gebundenem Cache)
-        #    a) ImageTag holen (billig)
-        image_tag = None
-        try:
-            meta = requests.get(
-                f"{self.emby_server_url}/emby/Items/{item_id}",
-                params={"Fields": "PrimaryImageTag,ImageTags", "api_key": self.api_key},
-                timeout=10,
-            )
-            if meta.ok:
-                d = meta.json()
-                if image_type.lower() == "primary":
-                    image_tag = d.get("PrimaryImageTag")
-                else:
-                    tags = d.get("ImageTags") or {}
-                    image_tag = tags.get(image_type) or tags.get(image_type.capitalize())
-        except Exception:
-            pass
-
-        cache_key = (item_id, image_type, image_tag)
-        cur_hash = self._image_hash_cache.get(cache_key)
-
-        #    b) aktuellen Hash ggf. streamend berechnen
-        if cur_hash is None:
-            try:
-                r = requests.get(
-                    cur_url,
-                    headers={"X-Emby-Token": self.api_key},
-                    stream=True,
-                    timeout=30,
-                )
-                if r.ok:
-                    cur_hash = sha256_stream(r.iter_content(131072))
-                    if image_tag:
-                        self._image_hash_cache[cache_key] = cur_hash
-            except Exception:
-                cur_hash = None
-
-        #    c) Kandidaten-Hash bestimmen (mit gleichen Headers wie oben)
-        cand_hash = None
-        if image_path.startswith("http"):
-            sess = self._http_session
-
-            headers = {
-                "User-Agent": (
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/124.0 Safari/537.36"
-                ),
-                "Accept": "image/*,*/*;q=0.8",
-            }
-            if "theposterdb.com" in image_path:
-                headers["Referer"] = "https://theposterdb.com/"
-
-            try:
-                with sess.get(
-                        image_path,
-                        headers=headers,
-                        timeout=30,
-                        allow_redirects=True,
-                        stream=True,
-                ) as r:
-                    if r.ok:
-                        cand_hash = sha256_stream(r.iter_content(131072))
-            except Exception:
-                cand_hash = None
-        else:
-            try:
-                with open(image_path, "rb") as f:
-                    cand_hash = sha256_stream(iter(lambda: f.read(131072), b""))
-            except Exception:
-                cand_hash = None
-
-        # 5) Gleich? -> Skip; sonst setzen
-        if cur_hash and cand_hash and cur_hash == cand_hash:
-            # logger(f"Skip: identisches {image_type}-Bild für Item {item_id}.")
-            return False
-
-        if image_path.startswith("http"):
-            return self.__set_remote_image(item_id, image_path, image_type, provider_name)
+            return self.__set_remote_image(item_id, image_path, image_type)
         else:
             return self.__upload_image(item_id, image_path, image_type)
 
-    def set_image(
-        self,
-        item_id,
-        image_path,
-        image_type="Primary",
-        provider_name="MDBList Collection Creator script",
-    ):
-        """
-        Can take local or remote path and set as image for item.
-
-        Args:
-            item_id (str): The ID of the item.
-            image_path (str): The path to the image. Either local or remote.
-            image_type (str): The type of the image. Defaults to "Primary".
-            provider_name (str): The name of the image provider. Defaults to "MDBList Collection Creator script".
-
-        Returns:
-            bool: True if the image is uploaded successfully, False otherwise.
-        """
-        if image_path.startswith("http"):
-            return self.__set_remote_image(
-                item_id, image_path, image_type, provider_name
-            )
-        else:
-            return self.__upload_image(item_id, image_path, image_type)
 
     def __set_remote_image(
         self,
         item_id,
         image_url,
         image_type="Primary",
-        provider_name="MDBList Collection Creator script",
     ):
         """
         Downloads a remote image for an item.
@@ -1888,7 +1662,6 @@ class EmbyServer:
 
         params = {
             "Type": image_type,
-            "ProviderName": provider_name,
             "ImageUrl": image_url,
         }
 
@@ -3000,8 +2773,6 @@ class EmbyServer:
           - by_name[name.casefold()] -> list[person-dict] (für exakte Namensmatches)
           - by_provider[(prov_case, tmdb_id_str)] -> person-dict
         """
-        if not hasattr(self, "people_index"):
-            self.people_index = {}  # key: f"{library_id}-{role}" -> dicts
 
         key = f"{role}"
         if key in self.people_index:
@@ -3109,7 +2880,7 @@ class EmbyServer:
                     results_by_id[it["Id"]] = it
 
         return list(results_by_id.values())
-
+    
     def get_person_by_name(self, person_name):
         """
         - Ohne person_list: komplette (gecachte) Liste via Index (ein Request pro Library+Rolle).
@@ -3136,6 +2907,19 @@ class EmbyServer:
         # Exakte Namens-Treffer bevorzugen
 
         return items
+
+    def _get_person_by_name_cached(self, clean_name: str):
+        key = (clean_name or "").strip()
+        hit = self.cached_person_names.get(key)
+        if hit is None:
+            try:
+                hit = self.get_person_by_name(key) or []
+            except Exception:
+                hit = []
+            self.cached_person_names[key] = hit
+            # if len(self.cached_person_names) > 200_000:
+            #     self.cached_person_names.clear()
+        return hit
 
     def get_person_info_via_library(self, role: str, provider: str, tmdb_id: int | str,
                                     person_name: str):
@@ -3194,14 +2978,12 @@ class EmbyServer:
             person = candidates[0]
             person_id = person.get("Id")
             if not person_id:
-                if hasattr(self, "people_cache"):
-                    self.people_cache[cache_key] = None
+                self.people_cache[cache_key] = None
                 return None, False
 
             # Prüfe, ob ProviderIds ergänzt werden müssten
             will_change = not _cand_has_provider(person, prov_key, tmdb_id_str)
-            if hasattr(self, "people_cache"):
-                self.people_cache[cache_key] = person_id
+            self.people_cache[cache_key] = person_id
             return person_id, will_change
 
         if len(candidates) > 1:
@@ -3225,8 +3007,7 @@ class EmbyServer:
                 person = filtered[0]
                 person_id = person.get("Id")
                 will_change = not _cand_has_provider(person, prov_key, tmdb_id_str)
-                if hasattr(self, "people_cache"):
-                    self.people_cache[cache_key] = person_id
+                self.people_cache[cache_key] = person_id
                 return person_id, will_change
 
             # weiterhin mehrdeutig -> sicher bleiben, NICHT auto-linken
@@ -3310,32 +3091,73 @@ class EmbyServer:
                         tid_to_name[tmdb_id] = name
 
         # NEU: immer die kleinere Emby-ID wählen + Duplikatsliste bereitstellen
-        # NEU: immer die kleinere Emby-ID wählen + Duplikatsliste bereitstellen
         self._person_dupes_last = {}
         self._person_dupes_choice_last = {}
-        for tid, idset in tmdb_to_ids.items():
-            chosen = min(idset, key=lambda x: int(x))
-            result[tid] = chosen
-            if len(idset) > 1:
-                ids_sorted = sorted(idset, key=lambda x: int(x))
-                self._person_dupes_last[tid] = ids_sorted
-                self._person_dupes_choice_last[tid] = chosen
+        # ... davor: tmdb_to_ids, tid_to_name usw. existieren ...
 
+        demoted_now = []  # nur fürs Log
+
+        for tid, idset in tmdb_to_ids.items():
+            # IDs sauber sortieren (als Strings, numerisch sortiert)
+            ids_sorted = sorted({str(x) for x in idset}, key=lambda x: int(x))
+            chosen = ids_sorted[0]
+            result[tid] = chosen
+
+            if len(ids_sorted) > 1:
+                # Dupe-Infos merken
+                try:
+                    tid_int = int(tid)
+                except Exception:
+                    tid_int = tid
+                self._person_dupes_last[tid_int] = ids_sorted
+                self._person_dupes_choice_last[tid_int] = chosen
+
+                # Kanonisches Mapping persistent machen
+                try:
+                    self.config.Cache.update_tmdb_person_map(
+                        expired=False,
+                        tmdb_id=int(tid),
+                        emby_id=str(chosen),
+                        expiration=self.config.Cache.expiration
+                    )
+                except Exception:
+                    raise Failed
+                    pass
+
+                # ALLE NICHT-kanonischen Personen sofort "demoten"
+                for wrong_pid in ids_sorted[1:]:
+                    try:
+                        self._demote_duplicate_person(wrong_pid)  # <— genau hier eingebaut
+                        demoted_now.append((tid, wrong_pid))
+                    except Exception as e:
+                        try:
+                            logger.warning(f"[get_person_info_bulk] demote failed for pid={wrong_pid}: {e}")
+                        except Exception:
+                            pass
+
+                # Warnung inkl. Info, wen wir demoted haben
                 pname = tid_to_name.get(tid)
                 label = f"{tid} - {pname}" if pname else f"{tid}"
-                logger.warning(
-                    f"[get_person_info_bulk] TMDb-Person-ID {label} is assigned to multiple Emby-IDs: {ids_sorted}. Using {chosen}"
-                )
+                try:
+                    logger.warning(
+                        f"[get_person_info_bulk] TMDb-Person-ID {label} is assigned to multiple Emby-IDs: "
+                        f"{ids_sorted}. Using {chosen}; demoted {ids_sorted[1:]}"
+                    )
+                except Exception:
+                    pass
 
         return result
 
     def _strip_alias_suffix(self, name: str, tmdb_id) -> str:
-        s = name or ""
-        suf = f"-{tmdb_id}"
-        return s[:-len(suf)] if (tmdb_id and s.endswith(suf)) else s
+        s = (name or "").strip()
+        if not s or not s.endswith(tmdb_id):
+            return s
+        while s.endswith(tmdb_id):
+            s = s[:-len(tmdb_id)]
+        return s.strip()
 
     def _norm_name(self, s: str) -> str:
-        import unicodedata, re
+        import unicodedata
         s = unicodedata.normalize("NFKD", s or "")
         s = "".join(c for c in s if not unicodedata.combining(c))
         return _re.sub(r"\s+", " ", s).strip().casefold()
@@ -3369,45 +3191,50 @@ class EmbyServer:
             self.missing_tmdb_ids: set[int]         (tmdb_ids, die in Emby nicht existieren)
         """
 
-        # --- Job-Mapping ---
-        job_map_director = {"director"}
-        job_map_writer = {"writer", "screenplay", "screenwriter", "teleplay", "author", "novel", "adaptation", "story",
-                          "comic book"}
-        job_map_composer = {"composer", "original music composer"}
-        job_map_movie_producer = {"producer"}
+        # ------- Job-Mapping (Type + optionale Crew-Role) -------
+        # Schlüssel immer lower-case!
+        job_to_type_role = {
+            # Director
+            "director": ("Director", None),
 
-        # NEW
-        job_map_lyricist = {"songs"} # e.g. Tina Turner - Thunderdome
-        job_map_conductor = {"conductor"} # e.g. Tina Turner - Thunderdome
+            # Writers
+            "writer": ("Writer", "Autor"),
+            "screenplay": ("Writer", None),
+            "screenwriter": ("Writer", None),
+            "teleplay": ("Writer", None),
+            "author": ("Writer", "Romanvorlage"),
+            "novel": ("Writer", "Romanvorlage"),
+            "adaptation": ("Writer", "Adaption"),
+            "story": ("Writer", "Story"),
+            "comic book": ("Writer", "Comicvorlage"),
+            "original story": ("Writer", "Story"),
+            "theatre play": ("Writer", "Theaterstück"),
 
+            # Music
+            "composer": ("Composer", None),
+            "original music composer": ("Composer", "Filmmusik"),
+            "lyricist": ("Lyricist", None),
+            "songs": ("Lyricist", "Songs"),  # dein Beispiel
+            "theme song performance": ("Lyricist", "Theme Song"),  # dein Beispiel
 
-
-        allowed_jobs = job_map_director | job_map_writer | job_map_composer | job_map_movie_producer | job_map_lyricist | job_map_conductor
+            # Other crew types you already support
+            "producer": ("Producer", None),
+            "conductor": ("Conductor", None),
+        }
+        allowed_jobs = set(job_to_type_role.keys())
 
         def map_job(job: str):
             jl = (job or "").strip().lower()
-            if jl in job_map_director:
-                return "Director"
-            if jl in job_map_writer:
-                return "Writer"
-            if jl in job_map_composer:
-                return "Composer"
-            if jl in job_map_movie_producer:
-                return "Producer"
-            if jl in job_map_lyricist:
-                return "Lyricist"
-            if jl in job_map_conductor:
-                return "Conductor"
-            return None
+            return job_to_type_role.get(jl)  # -> (etype, role) oder None
 
-        def key_for(emby_id, name, etype):
-            # Dedup-Key: bevorzugt ID, sonst name (casefold)
-            return (("id", str(emby_id)) if emby_id else ("name", (name or "").casefold()), etype)
+        # ---------- Dedup-Key jetzt inkl. Role ----------
+        def key_for(emby_id, name, etype, role):
+            # bevorzugt ID, sonst Name (casefold). Role ist Teil der Identität.
+            return (("id", str(emby_id)) if emby_id else ("name", (name or "").casefold()), etype, (role or None))
 
         per_key = {}
         ordered_cast = []
         crew_buckets = {"Director": [], "Writer": [], "Producer": [], "Composer": [], "Conductor": [], "Lyricist": []}
-        # ($enum)(Actor, Director, Writer, Producer, GuestStar, Composer, Conductor, Lyricist)
 
         # --- Robuste Filter ---
         cast_filtered = [
@@ -3428,25 +3255,14 @@ class EmbyServer:
             self.config.Cache.query_tmdb_person_map_bulk(tmdb_ids, self.config.Cache.expiration)
             if self.config and self.config.Cache else ({}, set(tmdb_ids), set())
         )
-        # db_map, db_missing, db_expired = ({}, set(tmdb_ids), set())
-
-
         for tid, rec in db_map.items():
             if rec.get("emby_id"):
                 self.cached_tmdb_ids[tid] = rec["emby_id"]
 
-        # --- [NEU] Cache-Validierung nur für die in diesem Lauf benötigten Mappings ---
+        # --- Cache-Validierung nur für die in diesem Lauf benötigten Mappings ---
         def _validate_cached_person_mappings_local(t2e: dict):
-            """
-            Prüft für die übergebenen TMDb->Emby-Mappings, ob:
-              a) die Emby-ID noch existiert und ein Person-Item ist
-              b) ProviderIds[provider] == tmdb_id (oder ...Id)
-            Ungültige Mappings werden aus self.cached_tmdb_ids entfernt und im DB-Cache als expired markiert.
-            Rückgabe: Menge der 'stale' TMDb-IDs.
-            """
             if not t2e:
                 return set()
-
             emby_ids = sorted({str(e) for e in t2e.values() if e})
             items = []
             CHUNK = 100
@@ -3460,39 +3276,31 @@ class EmbyServer:
                     items.extend(data.get("Items") or data.get("items") or [])
                 except Exception as e:
                     try:
-                        logger.error(e)  # falls self.logger fehlt, nutze globalen logger
+                        logger.error(e)
                     except Exception:
                         pass
-
             by_id = {str(it.get("Id")): it for it in items if it and it.get("Id") is not None}
             stale = set()
             provider_key = "Tmdb" if (provider or "").lower() == "tmdb" else provider
-
             for tid, eid in t2e.items():
                 it = by_id.get(str(eid))
                 if not it or it.get("Type") != "Person":
-                    stale.add(tid)
+                    stale.add(tid);
                     continue
                 prov = it.get("ProviderIds") or {}
                 v1 = str(prov.get(provider_key))
                 v2 = str(prov.get(provider_key + "Id"))
                 if str(tid) not in {v1, v2}:
                     stale.add(tid)
-
-            # aus Memory-Cache entfernen + persistent als expired markieren
             for tid in stale:
                 self.cached_tmdb_ids.pop(tid, None)
                 try:
                     if self.config and self.config.Cache:
                         self.config.Cache.update_tmdb_person_map(
-                            expired=True,
-                            tmdb_id=int(tid),
-                            emby_id=None,
-                            expiration=self.config.Cache.expiration
+                            expired=True, tmdb_id=int(tid), emby_id=None, expiration=self.config.Cache.expiration
                         )
                 except Exception:
                     pass
-
             return stale
 
         needed_cached_map = {tid: self.cached_tmdb_ids.get(tid) for tid in tmdb_ids if tid in self.cached_tmdb_ids}
@@ -3508,26 +3316,16 @@ class EmbyServer:
             try:
                 resolved = self.get_person_info_bulk(to_resolve, provider=provider)  # {tmdb_id:int -> emby_id:str}
             except Exception as e:
-                lg = getattr(self, "logger", None)
-                try:
-                    (lg or logger).error(e)
-                except Exception:
-                    pass
+                logger.error(e)
                 resolved = {}
-
-        # (Duplikatfälle behandelt get_person_info_bulk intern; result immer str)
         if resolved:
             self.cached_tmdb_ids.update({int(k): str(v) for k, v in resolved.items()})
-
-        # === NEU: aktuelle Emby-Namen für alle bekannten Personen prefetchen ===
-        # Wir benutzen diese Namen exakt in desired_people (kein Alias!), damit Emby beim Film-Update
-        # über die ID nicht auf falsche Namensmatches springt.
+        # === Aktuelle Emby-Namen prefetchen ===
         known_emby_ids = sorted({str(v) for v in self.cached_tmdb_ids.values() if str(v).isdigit()})
         emby_name_by_id = {}
         if known_emby_ids:
             try:
-                # Name kommt auch ohne Fields, aber so ist's explizit neutral
-                id_to_item = self.get_items_bulk(known_emby_ids, fields=[])
+                id_to_item = self.get_items_bulk(known_emby_ids)
             except Exception:
                 id_to_item = {}
             for pid, item in (id_to_item or {}).items():
@@ -3562,7 +3360,7 @@ class EmbyServer:
 
             emby_id = self.cached_tmdb_ids.get(tmdb_id_int if tmdb_id_int is not None else tmdb_id)
 
-            # Wenn Emby-ID bekannt: aktuellen Emby-Namen verwenden (KEIN Alias!)
+            # Emby-ID bekannt? → aktuellen Emby-Namen verwenden
             if emby_id:
                 entry_name = emby_name_by_id.get(str(emby_id)) or name
                 try:
@@ -3572,12 +3370,11 @@ class EmbyServer:
                 except Exception:
                     pass
             else:
-                # Kein Emby: ganz normal TMDb-Name als Platzhalter
                 entry_name = name
 
             if not emby_id:
-                # Platzhalter nach Name deduplizieren
-                k_name = key_for(None, entry_name, "Actor")
+                # Platzhalter deduplizieren (inkl. Role)
+                k_name = key_for(None, entry_name, "Actor", role)
                 if k_name not in per_key:
                     entry = {"Id": entry_name, "Name": entry_name, "Type": "Actor", "Tmdb": tmdb_id}
                     if role:
@@ -3589,9 +3386,9 @@ class EmbyServer:
                         per_key[k_name]["Role"] = role
                 continue
 
-            # Emby-ID vorhanden -> über ID deduplizieren (Name ist Anzeige; Emby matched eh über ID)
-            k_id = key_for(emby_id, entry_name, "Actor")
-            k_name = key_for(None, entry_name, "Actor")
+            # Emby-ID vorhanden → über ID deduplizieren (inkl. Role)
+            k_id = key_for(emby_id, entry_name, "Actor", role)
+            k_name = key_for(None, entry_name, "Actor", role)
             if k_name in per_key:
                 entry = per_key.pop(k_name)
                 entry["Id"] = str(emby_id)
@@ -3614,9 +3411,11 @@ class EmbyServer:
         for m in (crew_filtered or []):
             tmdb_id = m.get("person_id")
             name = m.get("name")
-            etype = map_job(m.get("job"))
-            if not tmdb_id or not name or not etype:
+            mapped = map_job(m.get("job"))
+            if not (tmdb_id and name and mapped):
                 continue
+
+            etype, crew_role = mapped  # z.B. ("Writer", "Screenplay") oder ("Writer", None)
 
             try:
                 tmdb_id_int = int(tmdb_id)
@@ -3637,23 +3436,29 @@ class EmbyServer:
                 entry_name = name
 
             if not emby_id:
-                k_name = key_for(None, entry_name, etype)
+                k_name = key_for(None, entry_name, etype, crew_role)
                 if k_name not in per_key:
                     entry = {"Id": entry_name, "Name": entry_name, "Type": etype, "Tmdb": tmdb_id}
+                    if crew_role:
+                        entry["Role"] = crew_role
                     per_key[k_name] = entry
                     crew_buckets[etype].append(entry)
                 continue
 
-            k_id = key_for(emby_id, entry_name, etype)
-            k_name = key_for(None, entry_name, etype)
+            k_id = key_for(emby_id, entry_name, etype, crew_role)
+            k_name = key_for(None, entry_name, etype, crew_role)
             if k_name in per_key:
                 entry = per_key.pop(k_name)
                 entry["Id"] = str(emby_id)
                 entry["Name"] = entry_name
                 entry["Tmdb"] = tmdb_id
+                if crew_role:
+                    entry["Role"] = crew_role
                 per_key[k_id] = entry
             elif k_id not in per_key:
                 entry = {"Id": str(emby_id), "Name": entry_name, "Type": etype, "Tmdb": tmdb_id}
+                if crew_role:
+                    entry["Role"] = crew_role
                 per_key[k_id] = entry
                 crew_buckets[etype].append(entry)
 
@@ -3771,52 +3576,6 @@ class EmbyServer:
         tmdb_str = str(tmdb_val) if tmdb_val not in (None, "", 0) else None
         return d, tmdb_str
 
-    def _alias_cleanup(self, desired_people):
-        # Kandidaten ermitteln (nur echte Aliase)
-        alias_candidates = [str(p.get("Id")) for p in (desired_people or [])
-                            if str(p.get("Id") or "").isdigit()
-                            and p.get("Tmdb")
-                            and (p.get("Name") or "").endswith(f"-{p.get('Tmdb')}")]
-
-        if not alias_candidates:
-            return
-
-        # FRISCH nachladen (nicht das alte id_to_item wiederverwenden!)
-        id_to_item = self.get_items_bulk(alias_candidates, fields=["ProviderIds"])
-
-        # Fallback: DB-Cache (wenn ProviderIds noch nicht sichtbar sind)
-        def _cache_says_ok(emby_pid, tmdb_pid) -> bool:
-            try:
-                if self.config.Cache:
-                    mp, _, _ = self.config.Cache.query_tmdb_person_map_bulk([int(tmdb_pid)], self.config.Cache.expiration)
-                    rec = mp.get(int(tmdb_pid)) or {}
-                    return str(rec.get("emby_id") or "") == str(emby_pid)
-            except Exception:
-                pass
-            return False
-
-        for p in (desired_people or []):
-            emby_pid = str(p.get("Id") or "")
-            tmdb_pid = p.get("Tmdb")
-            name = p.get("Name") or ""
-            if not (emby_pid.isdigit() and tmdb_pid and name.endswith(f"-{tmdb_pid}")):
-                continue
-
-            e_item = id_to_item.get(emby_pid) or {}
-            prov = e_item.get("ProviderIds") or {}
-            # beide Schreibweisen akzeptieren
-            e_tmdb = prov.get("tmdb") if "tmdb" in prov else prov.get("Tmdb")
-
-            if str(e_tmdb or "") == str(tmdb_pid) or _cache_says_ok(emby_pid, tmdb_pid):
-                clean_name = name[:-(len(str(tmdb_pid)) + 1)]
-                try:
-                    self.update_item(emby_pid, {"Id": emby_pid, "Name": clean_name})
-                    if self.config.Cache:
-                        self.config.Cache.update_tmdb_person_map(False, int(tmdb_pid), emby_id=emby_pid,
-                                                          name=clean_name, alias=None,
-                                                          expiration=self.config.Cache.expiration)
-                except Exception:
-                    pass
 
     def sync_people(self, emby_item: dict, my_cast: list, my_crew: list):
         # ---------- Init ----------
@@ -3828,19 +3587,121 @@ class EmbyServer:
             "demoted": [],
             "created": [],
             "created_pending": 0,
-            "namefix": [],
+            "namefix": [],  # keine Sofort-Namefixes
             "item_updated": False,
         }
+
+        # interne Caches (einmalig pro Prozesslauf)
+
+        def _cheap_key(lst, with_id=False):
+            # Multiset über (Type, Role, BaseName) – optional mit Id
+            key = {}
+            for p in (lst or []):
+                typ = p.get("Type") or ""
+                role = p.get("Role") or None
+                name = (p.get("Name") or "").strip()
+                base = _re.sub(r"(?:-\d+)+$", "", name).strip()  # Alias-Suffixe wie "-12345" weg
+                k = (typ, role, base) if not with_id else (typ, role, base, str(p.get("Id") or ""))
+                key[k] = key.get(k, 0) + 1
+            return key
 
         current_people = emby_item.get("People", []) or []
         desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
 
-        try:
-            self._bind_placeholders_to_existing(current_people, desired_people)
-        except Exception:
-            pass
+        # 1) Alias/ID-unabhängige Struktur (Type, Role, BaseName)
+        names_eq = (_cheap_key(current_people, with_id=False) ==
+                    _cheap_key(desired_people, with_id=False))
+
+        # 2) Streng inkl. Id (falls du unterscheiden willst, ob nur Id/Name abweichen)
+        full_eq = (_cheap_key(current_people, with_id=True) ==
+                   _cheap_key(desired_people, with_id=True))
+
+        if names_eq and full_eq:
+            # wirklich gar nichts zu tun
+            return False, [], []
+
+        # ... dein _cheap_key / names_eq / full_eq oben ...
+
+        if names_eq and not full_eq:
+            # Schneller „REPLACE-only“-Pfad
+            people_payload = []
+            people_alias_revert = []  # (pid, (alias_name, clean_name, tid))
+            _seen_ar = set()
+
+            for dp in (desired_people or []):
+                typ = dp.get("Type") or ""
+                role = dp.get("Role")
+                pid_raw = str(dp.get("Id") or "")
+                name_raw = (dp.get("Name") or "").strip()
+                tid = dp.get("Tmdb") or dp.get("tmdb")
+
+                # Alias-Basename (entfernt evtl. vorhandene -\d Suffixe)
+                base = _re.sub(r"(?:-\d+)+$", "", name_raw).strip()
+
+                if (not pid_raw.isdigit()) and tid:
+                    # NEU: Nicht-numerische Id -> Alias in Name UND Id schreiben
+                    alias = f"{base}-{int(tid)}"
+                    q = {"Id": alias, "Name": alias, "Type": typ}
+                    if role is not None:
+                        q["Role"] = role
+                    people_payload.append(q)
+                    # (Noch keine people_alias_revert, da keine numerische PID existiert)
+                    continue
+
+                # Standardfall (numerische PID oder kein TMDb vorhanden)
+                q = {"Id": pid_raw, "Name": name_raw, "Type": typ}
+                if role is not None:
+                    q["Role"] = role
+                people_payload.append(q)
+
+                # Downstream-Rename einsammeln, falls numerische PID + Alias im Namen
+                if "-" in name_raw:
+                    base2, suf = name_raw.rsplit("-", 1)
+                    if base2 and suf.isdigit() and pid_raw.isdigit():
+                        key = (pid_raw, name_raw)
+                        if key not in _seen_ar:
+                            _seen_ar.add(key)
+                            people_alias_revert.append((pid_raw, (name_raw, base2.strip(), suf)))
+
+            # Hard-Replace nur wenn PIDs entfernt wurden
+            prev_ids = {str(p.get("Id") or "") for p in (current_people or [])}
+            next_ids = {str(p.get("Id") or "") for p in (people_payload or [])}
+            removed_ids_present = bool(prev_ids - next_ids)
+
+            if removed_ids_present and current_people:
+                try:
+                    self.update_item(emby_item["Id"], {"People": []})
+                except Exception:
+                    pass
+
+            # Zielzustand schreiben
+            self.update_item(emby_item["Id"], {"People": people_payload})
+
+            # Kompakte Edits sind optional – wenn du nichts loggen willst, gib leer zurück
+            return False, None, people_alias_revert
+
+        # else: Struktur wirklich anders -> normaler (langsamer) Pfad
+
+        # ---- EARLY PATH 2: gleiche Struktur (Type,Role,Basename), aber Id/Name differieren ----
+
+
+
+        people_alias_revert = []  # (pid, (alias_name/old_name, clean_name/new_name, tmdb_id))
+        _seen_alias_reverts = set()  # (pid, alias_or_old_name)
 
         # ---- Helpers (keine neuen Imports) ----
+        def _alias_parts(name: str):
+            s = (name or "").strip()
+            if not s:
+                return None, None
+            s = s.replace("–", "-").replace("—", "-")  # Unicode-Hyphen
+            m = _re.match(r"^(?P<clean>.+?)(?:-(?P<tid>\d+))+$", s)
+            if not m:
+                return None, None
+            clean = (m.group("clean") or "").strip()
+            tid = m.group("tid")
+            return clean, tid
+
         def _base_name(nm: str) -> str:
             return _re.sub(r"(?:-\d+)+$", "", (nm or "")).strip()
 
@@ -3850,8 +3711,10 @@ class EmbyServer:
             except Exception:
                 return (name or "").strip()
             s = (name or "").strip()
+            if not s.endswith(suf):
+                return s
             while s.endswith(suf):
-                s = s[:-len(suf)]
+                s = s[: -len(suf)]
             return s.strip()
 
         def _alias_once(name, tmdb_id):
@@ -3860,9 +3723,6 @@ class EmbyServer:
                 return f"{base}-{int(tmdb_id)}"
             except Exception:
                 return base
-
-        def _pkey(p):  # struktureller Schlüssel: Type, Id, Role
-            return (p.get("Type") or "", str(p.get("Id") or ""), p.get("Role") or None)
 
         def _pid_tmdb_from_bulk(bulk_map, pid: str):
             it = bulk_map.get(str(pid)) or {}
@@ -3873,13 +3733,60 @@ class EmbyServer:
             prov, e_tmdb = self._norm_provider_ids((hit or {}).get("ProviderIds"))
             return e_tmdb
 
-        # ---------- PHASE A: Duplikate (gleiche TMDb) vorab bereinigen ----------
+        def _hard_replace_people(item_id: str, people: list):
+            """setzt People exakt (kein Merge)"""
+            try:
+                self.update_item(item_id, {"People": []})
+            except TypeError:
+                self.update_item(item_id, {"People": []})
+            self.update_item(item_id, {"People": people})
+
+        # ---------- Crash-Recovery: vorhandene Aliase vormerken (sehr billig) ----------
+        for p in (current_people or []):
+            nm = (p.get("Name") or "").strip()
+            clean, tid = _alias_parts(nm)
+            if not (clean and tid):
+                continue
+            pid = str(p.get("Id") or "")
+            if not pid:
+                continue
+            key = (pid, nm)
+            if key in _seen_alias_reverts:
+                continue
+            people_alias_revert.append((pid, (nm, clean, tid)))
+            _seen_alias_reverts.add(key)
+
+        # ---------- Super-schneller Fast-Path (No-Op) ----------
+        # Wenn Struktur & Basenamen 1:1 gleich sind, können wir vorzeitig raus.
+        def _cheap_key(lst):
+            # (Type, Id, Role, BaseName(Name)) -> Set
+            out = set()
+            for p in (lst or []):
+                out.add((
+                    p.get("Type") or "",
+                    str(p.get("Id") or ""),
+                    p.get("Role") or None,
+                    _base_name(p.get("Name")),
+                ))
+            return out
+
+        if _cheap_key(current_people) == _cheap_key(desired_people):
+            # Nichts zu tun – auch keine teuren lookups nötig
+            return False, [], people_alias_revert
+
+        # ---------- PHASE A: Duplikate (gleiche TMDb) vorbereiten (per Cache) ----------
         numeric_pids = set(
             [str(p.get("Id")) for p in current_people if str(p.get("Id") or "").isdigit()] +
             [str(p.get("Id")) for p in desired_people if str(p.get("Id") or "").isdigit()]
         )
-
-        id_to_item = self.get_items_bulk(sorted(numeric_pids), fields=["ProviderIds", "Name"]) if numeric_pids else {}
+        missing = [pid for pid in numeric_pids if pid not in self._bulk_person_cache]
+        if missing:
+            fetched = self.get_items_bulk(sorted(missing), fields=["ProviderIds", "Name"]) or {}
+            # cache auffüllen
+            for k, v in (fetched or {}).items():
+                self._bulk_person_cache[str(k)] = v
+        # lokales Bild zusammensetzen
+        id_to_item = {pid: self._bulk_person_cache.get(pid, {}) for pid in numeric_pids}
 
         desired_pid_by_tmdb = {}
         for dp in (desired_people or []):
@@ -3891,7 +3798,7 @@ class EmbyServer:
                 except Exception:
                     pass
 
-        tmdb_groups = {}  # tmdb_id(str) -> set(pids)
+        tmdb_groups = {}
         for pid in numeric_pids:
             tmdb_id = _pid_tmdb_from_bulk(id_to_item, pid)
             if not tmdb_id:
@@ -3899,51 +3806,20 @@ class EmbyServer:
             k = str(tmdb_id)
             tmdb_groups.setdefault(k, set()).add(str(pid))
 
-        demoted_pids = set()
-        for tmdb_id, pids in tmdb_groups.items():
-            if len(pids) <= 1:
-                continue
-
-            # Kanonische PID: bevorzugt desired, sonst kleinste
-            canonical = None
-            try:
-                t_int = int(tmdb_id)
-            except Exception:
-                t_int = None
-
-            if t_int is not None:
-                cand = desired_pid_by_tmdb.get(t_int)
-                if cand and cand in pids:
-                    canonical = cand
-
-            if not canonical:
-                canonical = sorted(pids, key=lambda s: int(s))[0]
-
-            for pid in pids:
-                if pid == canonical:
-                    continue
-                payload = {"Id": pid, "Name": "John Doe", "PrimaryImageTag": None, "ProviderIds": {}}
-                self.update_item(pid, payload)
-                log["demoted"].append((tmdb_id, pid))
-                demoted_pids.add(pid)
-                changed = True
-
-        def _is_demoted_pid(pid: str) -> bool:
-            return str(pid) in demoted_pids
+        # Demote führen wir SPÄTER aus (nach dem Film-Write) und nie für PIDs, die verwendet werden.
 
         # ---------- PHASE B: Vergleichs-Signaturen (ohne Namen) ----------
         current_people_norm = list(current_people)
         cur_sig = self._people_signature_no_name(current_people_norm)
         des_sig = self._people_signature_no_name(desired_people)
 
-        # Index aktuelle Personen nach (Type,Role,BaseName), demotete rausfiltern
+        # Index aktuelle Personen nach (Type,Role,BaseName)
         cur_idx = {
             (p.get("Type") or "", p.get("Role") or None, _base_name(p.get("Name"))): p
             for p in current_people_norm
-            if not _is_demoted_pid(str(p.get("Id") or ""))
         }
 
-        # ---------- PHASE C: TMDb an bestehender Person ergänzen ----------
+        # ---------- PHASE C: TMDb an bestehender Person ergänzen (idempotent) ----------
         for dp in desired_people:
             key = (dp.get("Type") or "", dp.get("Role") or None, _base_name(dp.get("Name")))
             cp = cur_idx.get(key)
@@ -3953,27 +3829,30 @@ class EmbyServer:
             if not dp_tmdb:
                 continue
             cp_id = str(cp.get("Id") or "")
-            if not cp_id.isdigit() or _is_demoted_pid(cp_id):
+            dp_id = str(dp.get("Id") or "")
+            if cp_id != dp_id or not cp_id.isdigit():
                 continue
             e_tmdb = _pid_tmdb_from_bulk(id_to_item, cp_id)
             if not e_tmdb:
+                # nur schreiben, wenn wirklich fehlt
                 self.update_item(cp_id, {"Id": cp_id, "ProviderIds": {"Tmdb": str(dp_tmdb)}})
                 log["tmdb_added"].append((cp_id, key[2], dp_tmdb))
                 changed = True
 
         # ---------- PHASE D: temporäre Aliase nur wenn nötig ----------
-        # (a) gleicher Klarname in desired → verschiedene Ziel-IDs
-        # (b) im Film ist derselbe Klarname mit anderer PID verknüpft
-        # (c) globale Dubletten mit anderer (nicht-leerer) TMDb **und** Film hat den Namen nicht oder falsch
-
+        # Name->PID Index (Alias + Basename mappen)
         cur_by_name = {}
         for p in (current_people or []):
             nm = (p.get("Name") or "").strip()
             pid = str(p.get("Id") or "")
-            if nm:
-                cur_by_name[nm] = pid
+            if not nm:
+                continue
+            cur_by_name[nm] = pid
+            base = _base_name(nm)
+            if base and base != nm and base not in cur_by_name:
+                cur_by_name[base] = pid
 
-        # Name -> Menge unterschiedlicher Ziel-IDs (PID oder Alias-Key)
+        # Name -> Menge unterschiedlicher Ziel-IDs
         name_to_target_ids = {}
         for dp in (desired_people or []):
             tid = dp.get("Tmdb") or dp.get("tmdb")
@@ -3986,6 +3865,17 @@ class EmbyServer:
                 name_to_target_ids[clean] = s
             s.add(target)
         need_alias_names = {nm for nm, ids in name_to_target_ids.items() if len(ids) > 1}
+
+        # Kandidaten für globale Dubletten nur einmal pro Name suchen (Cache)
+        def _global_hits_for(clean_name: str):
+            if clean_name in self._person_name_cache:
+                return self._person_name_cache[clean_name]
+            try:
+                hits = self.get_person_by_name(clean_name) or []
+            except Exception:
+                hits = []
+            self._person_name_cache[clean_name] = hits
+            return hits
 
         temp_renames = {}  # emby_pid -> (alias_name, clean_name, tmdb)
         people_payload = []  # gewünschte Liste (ohne Tmdb-Key)
@@ -4008,26 +3898,16 @@ class EmbyServer:
                 continue
 
             need_alias = False
-
-            # (a) desired mehrdeutig
             if clean in need_alias_names:
                 need_alias = True
-
-            # (b) im Film unter demselben Namen andere PID
             if not need_alias:
                 cur_pid = cur_by_name.get(clean)
                 if cur_pid and cur_pid != pid:
                     need_alias = True
-
-            # (c) globale Dubletten mit anderer TMDb -> nur wenn Film den Namen nicht hat ODER falsch verknüpft
             if not need_alias:
                 cur_pid = cur_by_name.get(clean)
                 if (not cur_pid) or (cur_pid != pid):
-                    try:
-                        global_hits = self.get_person_by_name(clean) or []
-                    except Exception:
-                        global_hits = []
-                    for it in global_hits:
+                    for it in _global_hits_for(clean):
                         if (it.get("Name") or "") != clean:
                             continue
                         hit_id = str(it.get("Id") or "")
@@ -4048,56 +3928,101 @@ class EmbyServer:
                 q["Role"] = role
             people_payload.append(q)
 
-        # ----- Update-Entscheidung -----
+        # ----- Update-Entscheidung (idempotent) -----
         def _namekey(lst):
+            def _norm_role(r): return "" if r is None else str(r)
+
             out = []
             for p in (lst or []):
                 out.append((
-                    p.get("Type") or "",
+                    str(p.get("Type") or ""),
                     str(p.get("Id") or ""),
-                    p.get("Role") or None,
+                    _norm_role(p.get("Role")),
                     (p.get("Name") or "").strip(),
                 ))
             out.sort()
             return out
 
-        current_namekey = _namekey(current_people)  # IST (mit Namen)
-        desired_namekey = _namekey(people_payload)  # SOLL (mit evtl. Alias)
+        current_namekey = _namekey(current_people)
+        desired_namekey = _namekey(people_payload)
 
-        need_struct_update = (cur_sig != des_sig) or any(not str(p.get("Id") or "").isdigit() for p in desired_people)
+        need_struct_update = (cur_sig != des_sig) or any(not str(p.get("Id") or "").isdigit() for p in people_payload)
         need_name_update = (current_namekey != desired_namekey)
         need_item_update = need_struct_update or need_name_update
 
         if need_item_update:
-            # 1) temporäre Aliase setzen
+            # 1) Aliase setzen (nur wenn nötig; idempotent)
             for emby_pid, (alias_name, clean_name, tid) in temp_renames.items():
-                try:
+                # idempotent: nur schreiben, wenn Name != alias_name
+                cur_info = self._bulk_person_cache.get(str(emby_pid)) or {}
+                cur_name_now = (cur_info.get("Name") or "").strip()
+                if cur_name_now != alias_name:
                     self.update_item(emby_pid, {"Id": emby_pid, "Name": alias_name, "ProviderIds": {"Tmdb": tid}})
+                    # Cache aktualisieren, um Folge-Calls zu sparen
+                    cur_info = dict(cur_info)
+                    cur_info["Name"] = alias_name
+                    cur_info["ProviderIds"] = {"Tmdb": tid}
+                    self._bulk_person_cache[str(emby_pid)] = cur_info
                     log["aliases_prepared"].append((emby_pid, alias_name))
                     changed = True
-                except Exception:
-                    pass
 
-            # 2) Film-Update (People ohne Tmdb)
-            self.update_item(emby_item["Id"], {"People": people_payload})
+                key = (str(emby_pid), alias_name)
+                if key not in _seen_alias_reverts:
+                    people_alias_revert.append(
+                        (str(emby_pid), (alias_name, clean_name, str(tid) if tid is not None else None)))
+                    _seen_alias_reverts.add(key)
+
+            # 2) Film-Update EXAKT (kein Merge), aber nur wenn wirklich unterschiedlich
+            _hard_replace_people(emby_item["Id"], people_payload)
             log["item_updated"] = True
             changed = True
 
-            # 3) Aliase wieder zurück
-            for emby_pid, (alias_name, clean_name, tid) in temp_renames.items():
+            # 3) Demote jetzt, aber nie PIDs demoten, die wir eben verwenden
+            used_pids_now = {str(p.get("Id") or "") for p in (people_payload or [])}
+            for tmdb_id, pids in tmdb_groups.items():
+                if len(pids) <= 1:
+                    continue
+                # Kanonische PID wählen
+                canonical = None
                 try:
-                    self.update_item(emby_pid, {"Id": emby_pid, "Name": clean_name, "ProviderIds": {"Tmdb": tid}})
-                    log["aliases_reverted"].append((emby_pid, clean_name))
-                    changed = True
+                    t_int = int(tmdb_id)
                 except Exception:
-                    pass
-        else:
-            temp_renames.clear()
+                    t_int = None
+                if t_int is not None:
+                    cand = desired_pid_by_tmdb.get(t_int)
+                    if cand and cand in pids:
+                        canonical = cand
+                if not canonical:
+                    canonical = sorted(pids, key=lambda s: int(s))[0]
+                for pid in pids:
+                    if pid == canonical or pid in used_pids_now:
+                        continue
+                    # idempotent: nur setzen, wenn Name nicht schon "John Doe" oder ProviderIds nicht leer
+                    cur_it = self._bulk_person_cache.get(pid) or {}
+                    cur_nm = (cur_it.get("Name") or "").strip()
+                    cur_pids = (cur_it.get("ProviderIds") or {}) or {}
+                    if cur_nm == "John Doe" and not cur_pids:
+                        continue
+                    payload = {"Id": pid, "Name": "John Doe", "PrimaryImageTag": None, "ProviderIds": {}}
+                    self.update_item(pid, payload)
+                    # Cache anpassen
+                    self._bulk_person_cache[pid] = {"Name": "John Doe", "ProviderIds": {}}
+                    log["demoted"].append((tmdb_id, pid))
+                    changed = True
 
-        # ---------- PHASE E: Name-Fixes (Akzente/Case), nur wenn Struktur identisch ----------
-        cur_sig2 = self._people_signature_no_name(emby_item.get("People", []) or current_people_norm)
+        # ---------- PHASE E: Name-Fixes (nur sammeln; keine Sofort-Updates) ----------
+        def _is_alias_name(nm: str) -> bool:
+            s = (nm or "").strip()
+            if "-" in s:
+                suf = s.rsplit("-", 1)[-1]
+                return suf.isdigit()
+            return False
+
+        has_aliases = any(_is_alias_name(p.get("Name")) for p in (people_payload or []))
+        cur_sig2 = self._people_signature_no_name(people_payload)
         des_sig2 = self._people_signature_no_name(desired_people)
-        if cur_sig2 == des_sig2:
+
+        if (cur_sig2 == des_sig2) and not has_aliases:
             tmdb_by_pid = {
                 str(p.get("Id")): p.get("Tmdb")
                 for p in desired_people
@@ -4108,7 +4033,7 @@ class EmbyServer:
                 nm = dp.get("Name") or ""
                 tid = dp.get("Tmdb")
                 if tid and str(nm).endswith(f"-{tid}"):
-                    dp2 = dict(dp);
+                    dp2 = dict(dp)
                     dp2["Name"] = nm[:-(len(str(tid)) + 1)]
                     desired_for_namefix.append(dp2)
                 else:
@@ -4116,141 +4041,180 @@ class EmbyServer:
 
             fixes = self._collect_person_name_fixes(current_people_norm, desired_for_namefix) or []
             for pid, cur_name, new_name in fixes:
-                if str(pid) in demoted_pids:
-                    continue
                 tid = tmdb_by_pid.get(str(pid))
-                if tid and (new_name or "").endswith(f"-{tid}"):
+                tid_str = str(tid) if tid is not None else None
+                clean_cur, tid_cur = _alias_parts(cur_name)
+                if clean_cur:
+                    key = (str(pid), cur_name)
+                    if key not in _seen_alias_reverts:
+                        people_alias_revert.append((str(pid), (cur_name, clean_cur, tid_cur or tid_str)))
+                        _seen_alias_reverts.add(key)
                     continue
-                r = self._update_person_name_if_needed(pid, new_name)
-                if r is not None:
-                    log["namefix"].append((pid, cur_name, new_name))
-                    changed = True
+                key = (str(pid), cur_name)
+                if key not in _seen_alias_reverts:
+                    people_alias_revert.append((str(pid), (cur_name, new_name, tid_str)))
+                    _seen_alias_reverts.add(key)
+                # kein sofortiges Update
+
+        # ---------- Defensiver Fallback: finalen Payload scannen ----------
+        try:
+            for p in (people_payload or []):
+                pid = str(p.get("Id") or "")
+                nm = (p.get("Name") or "").strip()
+                clean, tid = _alias_parts(nm)
+                if pid.isdigit() and clean and tid:
+                    key = (pid, nm)
+                    if key not in _seen_alias_reverts:
+                        people_alias_revert.append((pid, (nm, clean, tid)))
+                        _seen_alias_reverts.add(key)
+        except Exception:
+            pass
 
         # ---------- Zusammenfassung ----------
         def build_people_change_events(current_people, desired_people, log=None):
-            """
-            Liefert eine flache Liste mit *konkreten Personen-Änderungen*.
-            Beispieleinträge (Strings):
-              - ADD Actor pid=123 name=Max Mustermann role=Foo tmdb=456
-              - REMOVE Producer pid=987 name=Erika
-              - REPLACE Writer role=Bar: old(pid=10,name=Alice,tmdb=1) -> new(pid=11,name=Alice B.,tmdb=2)
-              - ALIAS_PREPARE pid=22 alias="Tom Holland-64796" clean="Tom Holland" tmdb=64796
-              - ALIAS_REVERT  pid=22 name="Tom Holland" tmdb=64796
-              - TMDB_ADD pid=33 name="John Doe" tmdb=123
-              - NAMEFIX pid=44 "García" -> "Garcia"
-              - DEMOTED tmdb=123 pid=555
-              - CREATED alias="Foo Bar-999" -> pid=777 name="Foo Bar" tmdb=999
-            """
             log = log or {}
             events = []
-
-            def _pkey(p):
-                return (p.get("Type") or "", str(p.get("Id") or ""), p.get("Role") or None)
 
             def _nm(p):
                 return (p.get("Name") or "").strip()
 
             def _role(p):
-                r = p.get("Role")
-                return f" role={r}" if r else ""
+                return p.get("Role") or None
 
-            # --- Diff current vs desired (strukturgetreu, inkl. Id/Type/Role) ---
+            def _type(p):
+                return (p.get("Type") or "")
+
+            def _pkey(p):
+                return (_type(p), str(p.get("Id") or ""), _role(p))
+
+            def _is_uncredited(p):
+                r = (_role(p) or "").lower()
+                n = _nm(p).lower()
+                return "uncredited" in r or "uncredited" in n
+
+            def _fmt_people_list(persons, limit=6, with_pid=True, with_role=True):
+                out = []
+                for p in persons[:limit]:
+                    parts = [_nm(p)]
+                    meta = []
+                    if with_role and _role(p):
+                        meta.append(f"role={_role(p)}")
+                    if with_pid:
+                        meta.append(f"pid={p.get('Id')}")
+                    if meta:
+                        parts.append(f"({', '.join(meta)})")
+                    out.append(" ".join(parts))
+                if len(persons) > limit:
+                    out.append(f"... +{len(persons) - limit} weitere")
+                return "; ".join(out)
+
+            def _tr_key(tr):
+                typ, role = tr
+                return (str(typ or ""), "" if role is None else str(role))
+
             prev_map = {_pkey(p): p for p in (current_people or [])}
-            next_map = {_pkey(p): p for p in (desired_people or [])}
+            next_source = desired_people or []  # = people_payload
+            next_map = {_pkey(p): p for p in next_source}
 
             added_keys = list(next_map.keys() - prev_map.keys())
             removed_keys = list(prev_map.keys() - next_map.keys())
             added_people = [next_map[k] for k in added_keys]
             removed_people = [prev_map[k] for k in removed_keys]
 
-            # --- Versuche REPLACEs zu erkennen (gleicher Type+Role, andere Id) ---
             from collections import defaultdict
-            add_by_tr = defaultdict(list)  # (Type,Role) -> [p,...]
+            add_by_tr = defaultdict(list)
             rem_by_tr = defaultdict(list)
             for p in added_people:
-                add_by_tr[(p.get("Type") or "", p.get("Role") or None)].append(p)
+                add_by_tr[(_type(p), _role(p))].append(p)
             for p in removed_people:
-                rem_by_tr[(p.get("Type") or "", p.get("Role") or None)].append(p)
+                rem_by_tr[(_type(p), _role(p))].append(p)
 
-            replaced_pairs = []  # [(removed, added), ...]
-            for tr in set(list(add_by_tr.keys()) + list(rem_by_tr.keys())):
+            replaced_pairs = []
+            for tr in sorted(set(add_by_tr.keys()) | set(rem_by_tr.keys()), key=_tr_key):
                 adds = add_by_tr.get(tr, [])
                 rems = rem_by_tr.get(tr, [])
-                # Pairs heuristisch 1:1 zusammenstecken (gleiche Type/Role)
                 while adds and rems:
                     a = adds.pop(0)
                     r = rems.pop(0)
                     replaced_pairs.append((r, a))
+                add_by_tr[tr] = adds
+                rem_by_tr[tr] = rems
 
-                # Übriggebliebene Adds/Removes bleiben als echte Add/Remove-Events
-                for a in adds:
-                    events.append(f"ADD {a.get('Type')} pid={a.get('Id')} name=\"{_nm(a)}\"{_role(a)}"
-                                  + (f" tmdb={a.get('Tmdb')}" if a.get('Tmdb') else ""))
-                for r in rems:
-                    events.append(f"REMOVE {r.get('Type')} pid={r.get('Id')} name=\"{_nm(r)}\"{_role(r)}")
+            def _group_by_type(lst):
+                g = defaultdict(list)
+                for p in (lst or []):
+                    g[_type(p)].append(p)
+                return g
 
-            # Replacements protokollieren
+            grouped_adds = _group_by_type([p for lst in add_by_tr.values() for p in lst])
+            grouped_rems = _group_by_type([p for lst in rem_by_tr.values() for p in lst])
+
+            for typ in sorted(grouped_adds.keys(), key=lambda s: s or ""):
+                persons = grouped_adds[typ]
+                events.append(f"ADD {typ}: " + _fmt_people_list(persons, limit=6, with_pid=True, with_role=True))
+
+            for typ in sorted(grouped_rems.keys(), key=lambda s: s or ""):
+                persons = grouped_rems[typ]
+                credited = [p for p in persons if not _is_uncredited(p)]
+                uncred = [p for p in persons if _is_uncredited(p)]
+                if credited:
+                    events.append(
+                        f"REMOVE {typ}: " + _fmt_people_list(credited, limit=6, with_pid=True, with_role=True))
+                if uncred:
+                    events.append(f"REMOVE {typ} (uncredited): {len(uncred)} entfernt")
+
             for r, a in replaced_pairs:
+                role_txt = f" role={_role(a)}" if _role(a) else ""
                 events.append(
-                    "REPLACE "
-                    f"{a.get('Type')}{_role(a)}: "
-                    f"old(pid={r.get('Id')},name=\"{_nm(r)}\") -> "
-                    f"new(pid={a.get('Id')},name=\"{_nm(a)}\""
-                    + (f",tmdb={a.get('Tmdb')}" if a.get('Tmdb') else "")
-                    + ")"
+                    f"REPLACE {_type(a)}{role_txt}: {_nm(r)} (pid={r.get('Id')}) -> {_nm(a)} (pid={a.get('Id')})"
+                    + (f", tmdb={a.get('Tmdb')}" if a.get('Tmdb') else "")
                 )
 
-            # --- Aktionen aus dem Lauf (log) im Detail ausgeben ---
-            # TMDb hinzugefügt
-            for pid, name_clean, tmdb in (log.get("tmdb_added") or []):
-                events.append(f"TMDB_ADD pid={pid} name=\"{name_clean}\" tmdb={tmdb}")
+            tmdb_added = log.get("tmdb_added") or []
+            if tmdb_added:
+                preview = "; ".join([f"{name} (pid={pid}, tmdb={tm})" for pid, name, tm in tmdb_added[:6]])
+                more = f"; ... +{len(tmdb_added) - 6} weitere" if len(tmdb_added) > 6 else ""
+                events.append("TMDB_ADD: " + preview + more)
 
-            # vorbereitete / zurückgesetzte Aliase
-            for pid, alias in (log.get("aliases_prepared") or []):
-                # tmdb aus Alias suffix ziehen, falls vorhanden
-                tmdb = None
-                if "-" in alias:
-                    suf = alias.split("-")[-1]
-                    if suf.isdigit():
-                        tmdb = int(suf)
-                events.append(
-                    f"ALIAS_PREPARE pid={pid} alias=\"{alias}\""
-                    + (f" tmdb={tmdb}" if tmdb is not None else "")
-                )
+            aliases_prep = log.get("aliases_prepared") or []
+            if aliases_prep:
+                preview = "; ".join([f"{alias} (pid={pid})" for pid, alias in aliases_prep[:6]])
+                more = f"; ... +{len(aliases_prep) - 6} weitere" if len(aliases_prep) > 6 else ""
+                events.append("ALIAS_PREPARE: " + preview + more)
 
-            for pid, clean in (log.get("aliases_reverted") or []):
-                events.append(f"ALIAS_REVERT pid={pid} name=\"{clean}\"")
+            dem = log.get("demoted") or []
+            if dem:
+                preview = "; ".join([f"tmdb={t} pid={p}" for t, p in dem[:8]])
+                more = f"; ... +{len(dem) - 8} weitere" if len(dem) > 8 else ""
+                events.append("DEMOTED: " + preview + more)
 
-            # demotions
-            for tmdb_id, pid in (log.get("demoted") or []):
-                events.append(f"DEMOTED tmdb={tmdb_id} pid={pid}")
-
-            # neu angelegte Personen (Alias -> echte PID)
-            for alias, new_pid, clean, tmdb in (log.get("created") or []):
-                events.append(f"CREATED alias=\"{alias}\" -> pid={new_pid} name=\"{clean}\""
-                              + (f" tmdb={tmdb}" if tmdb else ""))
-
-            # ausstehende Neuanlagen
             if log.get("created_pending"):
                 events.append(f"CREATED_PENDING x{int(log['created_pending'])}")
 
-            # Name-Fixes
-            for pid, old, new in (log.get("namefix") or []):
-                events.append(f"NAMEFIX pid={pid} \"{old}\" -> \"{new}\"")
-
             return events
 
-        # Wenn nichts verändert wurde: leere Liste statt "update"-Text
+        # ---------- Return ----------
+        # dedupe & sort für saubere Downstream-Liste
+        if people_alias_revert:
+            dedup = []
+            seen = set()
+            for pid, (alias, clean, tid) in people_alias_revert:
+                key = (str(pid), str(alias))
+                if key in seen:
+                    continue
+                seen.add(key)
+                dedup.append((str(pid), (alias, clean, tid)))
+            people_alias_revert = sorted(dedup, key=lambda t: (t[1][0].casefold(), t[0]))
+
         if not changed:
-            return False, []
+            return False, [], people_alias_revert
 
         item_edits = build_people_change_events(
-            current_people=current_people,  # Zustand VOR Update
-            desired_people=desired_people,  # gewünschter Zustand (mit Tmdb)
+            current_people=current_people,
+            desired_people=people_payload,  # gegen tatsächlichen Schreibzustand diffen
             log=log
         )
-
-        return bool(changed), " ;".join(item_edits)
+        return True, "; ".join(item_edits), people_alias_revert
 
     # --- Zeichentests / Normalisierung ---
     def _is_latin_string(self, s: str) -> bool:

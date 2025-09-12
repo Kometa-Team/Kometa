@@ -976,9 +976,8 @@ class MetadataFile(DataFile):
                             include_cols = []
                             for i, item in enumerate(lib_all, 1):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.get('Name')}")
+                                my_emby_cast = None
                                 try:
-                                    my_emby_cast = None
-                                    emby_people = None
                                     if item.get('Id') in local_people_cache:
                                         my_emby_cast, emby_people = local_people_cache.get(item.get('Id'))
                                     else:

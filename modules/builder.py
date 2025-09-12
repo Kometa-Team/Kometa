@@ -3926,32 +3926,39 @@ class CollectionBuilder:
         self.collection_poster = self.library.pick_image(self.original_name, self.posters, self.library.prioritize_assets, self.library.download_url_assets, asset_location)
         self.collection_background = self.library.pick_image(self.original_name, self.backgrounds, self.library.prioritize_assets, self.library.download_url_assets, asset_location, image_type="background")
 
+        # from modules.poster import ImageData
+
+
+        # background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
+        #
+        # logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
+
 
         # Bilder (Poster/Backdrop) aktualisieren
         if self.collection_poster:
-            my_emby = self.library.EmbyServer
-            uploaded_poster = my_emby.set_image_smart(self.obj.ratingKey, self.collection_poster.location)
+            # my_emby = self.library.EmbyServer
+            # poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
 
-            if uploaded_poster:
-                logger.info(f"Poster updated: {self.collection_poster.location}")
-                updated_details.append("Image")
-            else:
-                logger.info(f"Poster update not needed.")
+            uploaded_poster, _, _ = self.library.upload_images(self.obj, poster=self.collection_poster)
 
-            # url = f"{self.library.server_url}/Items/{self.obj['Id']}/Images/Primary"
-            # files = {"image": open(self.collection_poster, "rb")}
-            # response = requests.post(url, headers=headers, files=files)
-            # if response.status_code == 204:
-            #     logger.info(f"Poster updated: {self.collection_poster}")
+            # uploaded_poster = my_emby.set_image_smart(self.obj.ratingKey, self.collection_poster.location)
+
+            # if uploaded_poster:
+            #     logger.info(f"Poster updated: {self.collection_poster.location}")
             #     updated_details.append("Image")
             # else:
-            #     logger.warning(f"Failed to update Poster: {response.text}")
+            #     logger.info(f"Poster update not needed.")
 
-        if self.collection_background and not "BackdropImageTags" in self.library.EmbyServer.get_item(self.obj.ratingKey) :
-            uploaded = self.library.EmbyServer.set_image_smart(self.obj.ratingKey,self.collection_background.location, image_type="Backdrop")#.emby_server_url}/Items/{self.obj.ratingKey}/Images/Backdrop"
+
+        if self.collection_background and not "BackdropImageTags" in self.library.EmbyServer.get_item(self.obj.ratingKey):
+
+            _, background_uploaded, _ = self.library.upload_images(self.obj, background=self.collection_background)
+
+
+            # uploaded = self.library.EmbyServer.set_image_smart(self.obj.ratingKey,self.collection_background.location, image_type="Backdrop")#.emby_server_url}/Items/{self.obj.ratingKey}/Images/Backdrop"
             # files = {"image": open(self.collection_background, "rb")}
             # response = requests.post(url, headers=headers, files=files)
-            if uploaded:
+            if background_uploaded:
                 logger.info(f"Backdrop updated: {self.collection_background.location}")
                 updated_details.append("Image")
             else:

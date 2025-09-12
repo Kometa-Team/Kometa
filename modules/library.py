@@ -9,7 +9,10 @@ from PIL import Image
 
 logger = util.logger
 
+MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
+
 class Library(ABC):
+
     def __init__(self, config, params):
         self.session = None
         self.Radarr = None
@@ -492,3 +495,10 @@ class Library(ABC):
             self.reverse_mal[v] = k
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
+
+    def validate_image_size(self, image):
+        if image.compare < MAX_IMAGE_SIZE:
+            return True
+        else:
+            logger.error(f"Image too large: {image.location}, bytes {image.compare}, MAX {MAX_IMAGE_SIZE}")
+            return False
