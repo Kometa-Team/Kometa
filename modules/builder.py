@@ -840,6 +840,23 @@ class CollectionBuilder:
                         if tmdb_person.isdigit():
                             person = self.config.TMDb.get_person(int(tmdb_person))
                             first_person = person.name
+                            # found exact match, now get the offset for poster
+                            resu = self.config.TMDb.search_people(first_person)
+                            idx = 0  # Default
+                            if resu and resu.results:
+                                # 1) Exakte ID treffen
+                                found = None
+                                for i, c in enumerate(resu.results):
+                                    try:
+                                        if c.id == int(tmdb_person):
+                                            found = i
+                                            break
+                                    except Exception:
+                                        pass
+                                if found is not None:
+                                    idx = found
+                            self.tmdb_person_offset= idx
+                            pass
                         else:
                             results = self.config.TMDb.search_people(tmdb_person)
                             if not results:
@@ -1247,9 +1264,15 @@ class CollectionBuilder:
             except Failed:
                 import urllib.parse
 
-                # Parse die URL
-                parsed_url = urllib.parse.urlparse(method_data)
+                # insert name with offset
+                if "Kometa-Team/People-Images" in str(method_data) and self.data.get("tmdb_person", None):
+                    my_tmdb_id = str(self.data.get("tmdb_person")[0])
+                    if my_tmdb_id in method_data:
+                        offset = "" if self.tmdb_person_offset == 0 else f" ({self.tmdb_person_offset + 1})"
+                        method_data = method_data.replace(my_tmdb_id, f"{self.data.get('key_name').replace(" ", "%20")}{offset}")
+                    pass
                 # Hole den Pfad aus der URL
+                parsed_url = urllib.parse.urlparse(method_data)
                 path = parsed_url.path
 
                 # URL-kodiere den Library-Namen mit vorangestelltem Leerzeichen (entspricht '%20')
@@ -1276,7 +1299,9 @@ class CollectionBuilder:
                     except Failed:
                         logger.warning(f"{self.Type} Warning: No Poster Found at {modified_method_data}")
                 else:
-                    logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
+                    self.posters[method_name] = method_data
+
+                    # logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
         elif method_name == "tmdb_list_poster":
             self.posters[method_name] = self.config.TMDb.get_list(
                 util.regex_first_int(method_data, "TMDb List ID")).poster_url
