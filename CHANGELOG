@@ -1,5 +1,6 @@
 # Requirements Update (requirements will need to be reinstalled)
 Updated arrapi requirement to 1.4.14
+Updated lxml requirement to 6.0.1
 Updated plexapi requirement to 4.17.1
 Updated ruamel-yaml requirement to 0.18.15
 Updated requests requirement to 2.32.5
