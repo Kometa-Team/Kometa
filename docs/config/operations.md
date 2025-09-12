@@ -946,3 +946,30 @@ Several of these operations perform **mass** updates; these are just that, **mas
             metadata_files:
               file: config/Movie_Backup.yml  # apply this Metadata File to the library
         ```
+
+###### Plex Bulk Edits Batch Size
+
+??? blank "`plex_bulk_edit_batch_size` - Breaks up processing of operations into chunks of this many items.<a class="headerlink" href="#plex-bulk-edit-batch-size" title="Permanent link">¶</a>"
+
+    <div id="plex-bulk-edit-batch-size" />Setting this file tells Kometa to break up operations that require inspecting/modifying the entire library into chunks. Setting this can be particularly helpful for large libraries.
+
+    If no value is set, the entire library is processed in one batch.
+
+    For example, if your Movies library has 1000 items, by default all of them will be processed at once.
+    If `plex_bulk_edit_batch_size=100`, then 100 items will be processed at once.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `plex_bulk_edit_batch_size`
+
+    **Accepted Values:** None, or any number.
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+                plex_bulk_edit_batch_size: 1000
+                mass_audience_rating_update: imdb
+        ```
