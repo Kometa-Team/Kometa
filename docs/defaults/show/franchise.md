@@ -8,7 +8,7 @@ hide:
         "COLLECTION": "Franchise", 
         "CODE_NAME": "franchise",
         "DESCRIPTION": "dynamically create collections based on popular TV Show franchises",
-        "LIBRARY_TYPE": "Movie", 
+        "LIBRARY_TYPE": "Show", 
         "Section SECTION_NUMBER": ""
     }'
     replace-tags='{

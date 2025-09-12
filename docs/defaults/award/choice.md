@@ -13,4 +13,5 @@ hide:
     }'
     include-tags='all|choice'
     rewrite-relative-urls=false
+    replace-tags='{"rec-sub": "Recommendations: The Critics Choice Best Picture Collection only works with Movie Libraries."}'
 %}
