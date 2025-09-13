@@ -253,9 +253,10 @@ def validate_filename(filename):
         mapping_name = sanitize_filename(str(filename))
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
 
+
 def item_title(item):
     if isinstance(item, Season):
-        if f"Season {item.index}" == item.title:
+        if f"Season {item.index}" == item.title or f"Staffel {item.index}" == item.title:
             return f"{item.parentTitle} {item.title}"
         else:
             return f"{item.parentTitle} Season {item.index}: {item.title}"

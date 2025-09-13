@@ -1134,9 +1134,9 @@ class Plex(Library):
         # if not native and load and builder_level in [None, "show", "artist", "movie"]:
         #     self._emby_all_items = []
         #     self._emby_all_items_native = []
-        if not native and self._emby_all_items: # and builder_level in [None, "show", "artist", "movie"]:
+        if not native and self._emby_all_items and builder_level in [None, "show", "artist", "movie"]:
             return self._emby_all_items
-        if native and self._emby_all_items_native: # and builder_level in [None, "show", "artist", "movie"]:
+        if native and self._emby_all_items_native and builder_level in [None, "show", "artist", "movie"]:
             return self._emby_all_items_native
 
         # builder_type = builder_level.lower() if builder_level else self.Plex.TYPE
@@ -1154,13 +1154,17 @@ class Plex(Library):
         include_item_types = []
         # print(builder_type)
         # Bestimmung der Typen für die Abfrage
+        # ToDo: Add more builder_types
         if builder_type == "movie":
             include_item_types = ["Movie"]
         elif builder_type == "show":
             include_item_types = ["Series"]
+        elif builder_type == "season":
+            include_item_types = ["Season"]
         elif builder_type == "artist":
             include_item_types = ["MusicArtist"]
         else:
+            logger.warning(f"builder type not supported by 'emby_get_all' - {builder_type}")
             include_item_types = ["Movie", "Series", "MusicArtist"]
         items_data =[]
         while start_index < total_record_count:
@@ -1171,7 +1175,7 @@ class Plex(Library):
                 "StartIndex": start_index,
                 "Limit": limit,
                 "ParentId": self.Emby.get("Id"),
-                "Fields": "ProviderIds,People,ProductionYear,CustomRating,CriticRating,CommunityRating,Studios,Path,Genres",
+                "Fields": "Budget,Chapters,DateCreated,Genres,HomePageUrl,IndexOptions,MediaStreams,Overview,ParentId,Path,People,ProviderIds,PrimaryImageAspectRatio,Revenue,SortName,Studios,Taglines",
             }
 
             endpoint = f"{self.emby_server_url}/emby/Users/{self.emby_user_id}/Items"
@@ -2292,8 +2296,8 @@ class Plex(Library):
         else:
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
+            # raise Failed("Plex Error: No Items found in Plex")
             return[]
-            raise Failed("Plex Error: No Items found in Plex")
         return [(item.ratingKey, "ratingKey") for item in items]
 
     def get_collection_items(self, collection, smart_label_collection):
@@ -2939,10 +2943,16 @@ class Plex(Library):
         return map_key, attrs
 
     def get_item_display_title(self, item_to_sort, sort=False):
+
         if isinstance(item_to_sort, Album):
             return f"{item_to_sort.artist().titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"
         elif isinstance(item_to_sort, Season):
-            return f"{item_to_sort.show().titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
+            titleSort = None
+            if sort:
+                season = self.EmbyServer.get_item(item_to_sort.ratingKey)
+                show = self.EmbyServer.get_item(season.get("SeriesId"))
+                titleSort = show.get("SortName")
+            return f"{titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
         elif isinstance(item_to_sort, Episode):
             return f"{item_to_sort.show().titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
         else:
@@ -3003,6 +3013,7 @@ class Plex(Library):
             if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
+            #ToDo: most of the stuff for proprietary Emby item not integrated yet
             values = []
             if filter_attr == "audio_track_title":
                 for media in item.media:
@@ -3091,7 +3102,9 @@ class Plex(Library):
             elif filter_attr == "tracks":
                 sub_items = item.tracks()
             else:
-                sub_items = item.episodes()
+                episodes = self.EmbyServer.get_items({"ParentId": item.ratingKey}, include_item_types="Episode")
+                sub_items = self.EmbyServer.convert_emby_to_plex(episodes)
+                # sub_items = item.episodes()
             filters_in = []
             percentage = 60
             for sub_atr, sub_data in filter_data.items():

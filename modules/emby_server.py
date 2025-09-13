@@ -8,7 +8,7 @@ from xml.etree.ElementTree import Element
 
 import requests
 from plexapi.collection import Collection
-from plexapi.video import Show, Movie, Episode
+from plexapi.video import Show, Movie, Episode, Season
 
 from modules import util
 from modules.logs import ERROR
@@ -101,12 +101,14 @@ class Show(Show):
         return element
 
 
-class Season:
+class Season(Season):
     def __init__(self, data):
-        self.data = data
+        xml_data = self._dict_to_xml(data)
+        super().__init__(None, xml_data)
+        self._loadData(xml_data)
 
-    def __repr__(self):
-        return self._dict_to_xml(self.data)
+    def show(self):
+        pass
 
     @staticmethod
     def _dict_to_xml(data_dict):
@@ -114,6 +116,9 @@ class Season:
         for key, value in data_dict.items():
             if value is not None:
                 element.set(key, str(value))
+        if 'agent' not in data_dict or not data_dict['agent']:
+            element.set('agent', 'com.plexapp.agents.thetvdb')  # Oder den entsprechenden Agenten
+
         return element
 
 
@@ -498,7 +503,7 @@ class EmbyServer:
                 "IncludeItemTypes": "Movie,Series,Episodes",
                 "ParentId": self.library_id,
                 "api_key": self.api_key,
-                "Fields": "Path,Studios,People,ProductionLocations,ProviderIds"
+                "Fields": "Budget,Chapters,DateCreated,Genres,HomePageUrl,IndexOptions,MediaStreams,Overview,ParentId,Path,People,ProviderIds,PrimaryImageAspectRatio,Revenue,SortName,Studios,Taglines"
             }
             try:
                 response = requests.get(endpoint, headers=self.headers, params=params)
@@ -1785,6 +1790,7 @@ class EmbyServer:
                 image_tags = item.get("ImageTags", {})
                 backdrop_image_tags = item.get("BackdropImageTags", [])
                 year = item.get("ProductionYear", None)
+                series_id = item.get("SeriesId")
                 if year:
                     year= int(year)
                 people = item.get("People", [])
@@ -1797,7 +1803,6 @@ class EmbyServer:
                 #         new_person.id = person.get('Id')
                 #         new_person.name = person.get('Name')
                 #         plex_actors.append(new_person)
-
                 # {'Id': '12917', 'Name': 'Hideko Takamine', 'PrimaryImageTag': '243089fe465d5f5402eb21462e0d915e', 'Role': 'Keiko Yashiro', 'Type': 'Actor'}
                 # Erstelle ein Datenobjekt, das der Plex-API-Struktur ähnelt
                 crit_rat = item.get("CriticRating")
@@ -1820,11 +1825,25 @@ class EmbyServer:
                     'userRating': item.get("CustomRating"),
                     'studio': studio, # only one
                     'genres': genres,
+                    'titleSort': item.get('SortName'),
                     # not working
                     # 'media': [item.get('Path')],
                     # 'locations':[item.get('Path')] # todo: working?
                     # 'roles':plex_actors
                 }
+                if item.get("Type") == "Series":
+
+                    pass
+                elif item.get("Type") == "Season":
+                    new_data={
+                        'index': item.get('IndexNumber'),
+                        'parentTitle': item.get('SeriesName')
+                    }
+                    data.update(new_data)
+                    pass
+                elif item.get("Type") == "Episode":
+                    pass
+
             # print(media_type)
                 if media_type == "Movie":
                     plex_object = Movie(data)
@@ -3607,7 +3626,7 @@ class EmbyServer:
 
         current_people = emby_item.get("People", []) or []
         desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
-
+        return False, [], []
         # 1) Alias/ID-unabhängige Struktur (Type, Role, BaseName)
         names_eq = (_cheap_key(current_people, with_id=False) ==
                     _cheap_key(desired_people, with_id=False))
