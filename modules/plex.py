@@ -450,6 +450,9 @@ class Plex(Library):
         super().__init__(config, params)
         self.plex = params["plex"]
         self.url = self.plex["url"]
+        self.clean_bundles = params["plex"]["clean_bundles"]
+        self.empty_trash = params["plex"]["empty_trash"]
+        self.optimize = params["plex"]["optimize"]
         self.session = self.config.Requests.session
         if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
