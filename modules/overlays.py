@@ -65,9 +65,9 @@ class Overlays:
                 item_title = self.library.get_item_display_title(item)
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
                 self.remove_overlay(item, item_title, "Overlay", [
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
+                    os.path.join(self.library.overlay_destination_folder, f"{item}.png"),
+                    os.path.join(self.library.overlay_destination_folder, f"{item}.jpg"),
+                    os.path.join(self.library.overlay_destination_folder, f"{item}.webp")
                 ])
             logger.exorcise()
         else:
@@ -700,8 +700,15 @@ class Overlays:
         return key_to_overlays, properties
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
-        items = self.library.search(label=label, libtype=libtype)
-        # todo: get results from image manager ?
+        # items = self.library.search(label=label, libtype=libtype)
+        if libtype:
+            emby_items = self.library.EmbyServer.get_items(include_item_types=[libtype], params={"ParentId": self.library.EmbyServer.library_id, "Recursive": "True"})
+        else:
+            emby_items = self.library.EmbyServer.get_items(params={"ParentId": self.library.EmbyServer.library_id, "Recursive": "True"},include_item_types =["Show,Movie,Season,Episode"])
+        all_emby_ids = [item.get("Id") for item in emby_items]
+        all_emby_ids = all_emby_ids if not ignore else [o for o in all_emby_ids if o not in ignore]
+        # todo: WIP
+        return all_emby_ids
         return items if not ignore else [o for o in items if o.ratingKey not in ignore]
 
     def remove_overlay(self, item, item_title, label, locations):
@@ -716,17 +723,17 @@ class Overlays:
             poster_location = poster.location
         elif any([os.path.exists(loc) for loc in locations]):
             poster_location = next((loc for loc in locations if os.path.exists(loc)))
-        if not poster_location:
-            is_url = True
-            try:
-                poster_location = self.library.item_posters(item)
-            except Failed:
-                pass
-        if False and poster_location:
-            self.library.upload_poster(item, poster_location, url=is_url)
+        # if not poster_location:
+        #     is_url = True
+        #     try:
+        #         poster_location = self.library.item_posters(item)
+        #     except Failed:
+        #         pass
+        if poster_location:
+            # self.library.upload_poster(item, poster_location, url=is_url)
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             for loc in locations:
                 if os.path.exists(loc):
                     os.remove(loc)
         else:
-            logger.error(f"No Poster found to restore for {item_title}")
+            logger.error(f"No Overlay found to remove for {item_title}")

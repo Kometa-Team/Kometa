@@ -2954,8 +2954,18 @@ class Plex(Library):
                 titleSort = show.get("SortName")
             return f"{titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
         elif isinstance(item_to_sort, Episode):
+            titleSort = None
+            if sort:
+                season = self.EmbyServer.get_item(item_to_sort.ratingKey)
+                show = self.EmbyServer.get_item(season.get("SeriesId"))
+                titleSort = show.get("SortName")
+
             return f"{item_to_sort.show().titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
         else:
+            # must bei str Id
+            item = self.EmbyServer.get_item(item_to_sort)
+            return item.get("SortName") if sort else item.get("Name")
+
             return item_to_sort.titleSort if sort else item_to_sort.title
 
     def split(self, text):
