@@ -51,28 +51,28 @@ class Overlays:
             logger.info("")
 
         # emby_image_manager = Emby_Image_Manager(self.library.name)
+        if False: # ToDo: Remove overlays not working as expected - deactiveted
+            remove_overlays = self.get_overlay_items(ignore=ignore_list)
+            if self.library.is_show:
+                remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
+                remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
+            elif self.library.is_music:
+                remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
 
-        remove_overlays = self.get_overlay_items(ignore=ignore_list)
-        if self.library.is_show:
-            remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
-            remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
-        elif self.library.is_music:
-            remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
-
-        if remove_overlays:
-            logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
-            for i, item in enumerate(remove_overlays, 1):
-                item_title = self.library.get_item_display_title(item)
-                logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
-                self.remove_overlay(item, item_title, "Overlay", [
-                    os.path.join(self.library.overlay_destination_folder, f"{item}.png"),
-                    os.path.join(self.library.overlay_destination_folder, f"{item}.jpg"),
-                    os.path.join(self.library.overlay_destination_folder, f"{item}.webp")
-                ])
-            logger.exorcise()
-        else:
-            logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
-        logger.info("")
+            if remove_overlays:
+                logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
+                for i, item in enumerate(remove_overlays, 1):
+                    item_title = self.library.get_item_display_title(item)
+                    logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
+                    self.remove_overlay(item, item_title, "Overlay", [
+                        os.path.join(self.library.overlay_destination_folder, f"{item}.png"),
+                        os.path.join(self.library.overlay_destination_folder, f"{item}.jpg"),
+                        os.path.join(self.library.overlay_destination_folder, f"{item}.webp")
+                    ])
+                logger.exorcise()
+            else:
+                logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
+            logger.info("")
         if not self.library.remove_overlays:
             logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")

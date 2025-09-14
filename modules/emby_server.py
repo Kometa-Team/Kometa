@@ -3042,62 +3042,88 @@ class EmbyServer:
         self.people_cache[cache_key] = None
         return None, False
 
-    def get_person_info_bulk(self, tmdb_ids: list, provider: str = "tmdb", chunk_size: int = 150):
+    def get_person_info_bulk(self, tmdb_ids: list, provider: str = "tmdb", chunk_size: int = 200):
+        """
+        Liefert dict[tmdb_id:int] -> emby_person_id:str.
+        - nutzt self.session (Connection-Pooling)
+        - bewertet Dupe-Sets nur pro Batch (kein Mehrfach-Demote)
+        - wählt die kleinste Emby-ID als kanonisch
+        - demote pro falscher PID nur einmal (idempotent)
+        - behält Dupe-Listen für Logging/Persistenz bei
+        """
         if not tmdb_ids:
             return {}
 
+        # Lazy-Init interner Strukturen
+        if not hasattr(self, "_person_dupes_last"):
+            self._person_dupes_last = {}
+        if not hasattr(self, "_person_dupes_choice_last"):
+            self._person_dupes_choice_last = {}
+        if not hasattr(self, "_person_dupe_redirect_last"):
+            self._person_dupe_redirect_last = {}
+        if not hasattr(self, "_person_already_demoted"):
+            self._person_already_demoted = set()
+
+        # IDs normalisieren
         try:
             norm_ids = sorted({int(x) for x in tmdb_ids if x is not None and str(x).strip() != ""})
         except ValueError:
             norm_ids = sorted({int(x) for x in tmdb_ids if str(x).isdigit()})
-
         if not norm_ids:
             return {}
 
+        self._ensure_http_session()
         result: dict[int, str] = {}
-        tmdb_to_ids: dict[int, set] = {}
-        tid_to_name: dict[int, str] = {}  # NEU: bevorzugter Name pro TMDb-Person
 
-        # nachdem du self._person_dupes_last / _person_dupes_choice_last gesetzt hast
-        for tid, ids_sorted in (self._person_dupes_last or {}).items():
-            chosen = self._person_dupes_choice_last.get(tid)
-            if not chosen:
-                continue
-            for emby_pid in ids_sorted:
-                if emby_pid != chosen:
-                    self._person_dupe_redirect_last[emby_pid] = chosen
+        base_url = f"{self.emby_server_url}/emby/Users/{self.user_id}/Items"
 
+        # In Batches abfragen und JE Batch separat bewerten/demoten
         for i in range(0, len(norm_ids), chunk_size):
             batch = norm_ids[i:i + chunk_size]
             provider_ids = ",".join(f"{provider}.{pid}" for pid in batch)
 
-            endpoint = (
-                f"/emby/Users/{self.user_id}/Items"
-                f"?Recursive=true"
-                f"&Fields=ProviderIds"
-                f"&IncludeItemTypes=Person"
-                f"&AnyProviderIdEquals={provider_ids}"
-                f"&api_key={self.api_key}"
-            )
-            url = self.emby_server_url + endpoint
+            params = {
+                "Recursive": "true",
+                "Fields": "ProviderIds",
+                "IncludeItemTypes": "Person",
+                "AnyProviderIdEquals": provider_ids,
+                "api_key": self.api_key,
+            }
 
             try:
-                resp = requests.get(url, headers=self.headers, timeout=20)
+                resp = self.session.get(base_url, headers=self.headers, params=params, timeout=20)
                 resp.raise_for_status()
+                payload = resp.json() or {}
             except Exception as e:
-                logger.warning(f"[get_person_info_bulk] Request-Fehler (Batch {i // chunk_size + 1}): {e}")
+                try:
+                    logger.warning(f"[get_person_info_bulk] Request-Fehler (Batch {i // chunk_size + 1}): {e}")
+                except Exception:
+                    pass
                 continue
 
-            items = (resp.json() or {}).get("Items", []) or []
+            items = (payload.get("Items") or payload.get("items") or []) or []
 
+            # Batch-lokale Sammelstrukturen
+            tmdb_to_ids: dict[int, set[str]] = {}
+            tid_to_name: dict[int, str] = {}
 
+            # Treffer sammeln
             for item in items:
                 emby_id = item.get("Id")
+                if not emby_id:
+                    continue
                 name = (item.get("Name") or "").strip()
                 prov = item.get("ProviderIds") or {}
-                tmdb_id_raw = prov.get(provider.lower()) or prov.get(provider.capitalize())
-                if not emby_id or tmdb_id_raw is None:
+
+                # Provider-ID robust lesen (tmdb/Tmdb/TMDb)
+                tmdb_id_raw = (
+                        prov.get(provider.lower())
+                        or prov.get(provider.capitalize())
+                        or prov.get("TMDb")
+                )
+                if tmdb_id_raw is None:
                     continue
+
                 try:
                     tmdb_id = int(tmdb_id_raw)
                 except (TypeError, ValueError):
@@ -3106,69 +3132,66 @@ class EmbyServer:
                 s = tmdb_to_ids.setdefault(tmdb_id, set())
                 s.add(str(emby_id))
 
-                # Name merken; bevorzugt nicht "John Doe"
-                prev = tid_to_name.get(tmdb_id)
                 if name:
-                    if prev is None:
+                    prev = tid_to_name.get(tmdb_id)
+                    if prev is None or (prev == "John Doe" and name != "John Doe"):
                         tid_to_name[tmdb_id] = name
-                    elif prev == "John Doe" and name != "John Doe":
-                        tid_to_name[tmdb_id] = name
 
-        # NEU: immer die kleinere Emby-ID wählen + Duplikatsliste bereitstellen
-        self._person_dupes_last = {}
-        self._person_dupes_choice_last = {}
-        # ... davor: tmdb_to_ids, tid_to_name usw. existieren ...
+            # Dupe-Bewertung NUR für diesen Batch
+            for tid, idset in tmdb_to_ids.items():
+                ids_sorted = sorted({str(x) for x in idset}, key=lambda x: int(x))  # numerische Sortierung
+                chosen = ids_sorted[0]
+                result[tid] = chosen
 
-        demoted_now = []  # nur fürs Log
-
-        for tid, idset in tmdb_to_ids.items():
-            # IDs sauber sortieren (als Strings, numerisch sortiert)
-            ids_sorted = sorted({str(x) for x in idset}, key=lambda x: int(x))
-            chosen = ids_sorted[0]
-            result[tid] = chosen
-
-            if len(ids_sorted) > 1:
-                # Dupe-Infos merken
-                try:
-                    tid_int = int(tid)
-                except Exception:
-                    tid_int = tid
-                self._person_dupes_last[tid_int] = ids_sorted
-                self._person_dupes_choice_last[tid_int] = chosen
-
-                # Kanonisches Mapping persistent machen
-                try:
-                    self.config.Cache.update_tmdb_person_map(
-                        expired=False,
-                        tmdb_id=int(tid),
-                        emby_id=str(chosen),
-                        expiration=self.config.Cache.expiration
-                    )
-                except Exception:
-                    raise Failed
-                    pass
-
-                # ALLE NICHT-kanonischen Personen sofort "demoten"
-                for wrong_pid in ids_sorted[1:]:
+                if len(ids_sorted) > 1:
+                    # Dupe-Infos für Logs/Persistenz
                     try:
-                        self._demote_duplicate_person(wrong_pid)  # <— genau hier eingebaut
-                        demoted_now.append((tid, wrong_pid))
-                    except Exception as e:
-                        try:
-                            logger.warning(f"[get_person_info_bulk] demote failed for pid={wrong_pid}: {e}")
-                        except Exception:
-                            pass
+                        tid_int = int(tid)
+                    except Exception:
+                        tid_int = tid
+                    self._person_dupes_last[tid_int] = ids_sorted
+                    self._person_dupes_choice_last[tid_int] = chosen
 
-                # Warnung inkl. Info, wen wir demoted haben
-                pname = tid_to_name.get(tid)
-                label = f"{tid} - {pname}" if pname else f"{tid}"
-                try:
-                    logger.warning(
-                        f"[get_person_info_bulk] TMDb-Person-ID {label} is assigned to multiple Emby-IDs: "
-                        f"{ids_sorted}. Using {chosen}; demoted {ids_sorted[1:]}"
-                    )
-                except Exception:
-                    pass
+                    # Persistentes Mapping (gewollt hart abbrechen auf Fehler)
+                    try:
+                        self.config.Cache.update_tmdb_person_map(
+                            expired=False,
+                            tmdb_id=int(tid),
+                            emby_id=str(chosen),
+                            expiration=self.config.Cache.expiration
+                        )
+                    except Exception:
+                        raise Failed
+                        pass  # bewusst beibehalten
+
+                    # Nicht-kanonische Personen demoten (pro PID nur einmal)
+                    wrong_ids = ids_sorted[1:]
+                    for wrong_pid in wrong_ids:
+                        if wrong_pid in self._person_already_demoted:
+                            continue
+                        try:
+                            self._demote_duplicate_person(wrong_pid)
+                            self._person_already_demoted.add(wrong_pid)
+                            try:
+                                logger.info(f"[get_person_info_bulk] Demoted person Emby id {wrong_pid}")
+                            except Exception:
+                                pass
+                        except Exception as e:
+                            try:
+                                logger.warning(f"[get_person_info_bulk] demote failed for pid={wrong_pid}: {e}")
+                            except Exception:
+                                pass
+
+                    # Zusammenfassung loggen
+                    pname = tid_to_name.get(tid)
+                    label = f"{tid} - {pname}" if pname else f"{tid}"
+                    try:
+                        logger.warning(
+                            f"[get_person_info_bulk] TMDb-Person-ID {label} ist mehreren Emby-IDs zugeordnet: "
+                            f"{ids_sorted}. Verwende {chosen}; demoted {wrong_ids}"
+                        )
+                    except Exception:
+                        pass
 
         return result
 
@@ -4027,6 +4050,39 @@ class EmbyServer:
         need_name_update = (current_namekey != desired_namekey)
         need_item_update = need_struct_update or need_name_update
 
+        # 3) Demote jetzt, aber nie PIDs demoten, die wir eben verwenden
+        used_pids_now = {str(p.get("Id") or "") for p in (people_payload or [])}
+        for tmdb_id, pids in tmdb_groups.items():
+            if len(pids) <= 1:
+                continue
+            # Kanonische PID wählen
+            canonical = None
+            try:
+                t_int = int(tmdb_id)
+            except Exception:
+                t_int = None
+            if t_int is not None:
+                cand = desired_pid_by_tmdb.get(t_int)
+                if cand and cand in pids:
+                    canonical = cand
+            if not canonical:
+                canonical = sorted(pids, key=lambda s: int(s))[0]
+            for pid in pids:
+                if pid == canonical or pid in used_pids_now:
+                    continue
+                # idempotent: nur setzen, wenn Name nicht schon "John Doe" oder ProviderIds nicht leer
+                cur_it = self._bulk_person_cache.get(pid) or {}
+                cur_nm = (cur_it.get("Name") or "").strip()
+                cur_pids = (cur_it.get("ProviderIds") or {}) or {}
+                if cur_nm == "John Doe" and not cur_pids:
+                    continue
+                payload = {"Id": pid, "Name": "John Doe", "PrimaryImageTag": None, "ProviderIds": {}}
+                self.update_item(pid, payload)
+                # Cache anpassen
+                self._bulk_person_cache[pid] = {"Name": "John Doe", "ProviderIds": {}}
+                log["demoted"].append((tmdb_id, pid))
+                changed = True
+
         if need_item_update:
             # 1) Aliase setzen (nur wenn nötig; idempotent)
             for emby_pid, (alias_name, clean_name, tid) in temp_renames.items():
@@ -4055,38 +4111,6 @@ class EmbyServer:
             log["item_updated"] = True
             changed = True
 
-            # 3) Demote jetzt, aber nie PIDs demoten, die wir eben verwenden
-            used_pids_now = {str(p.get("Id") or "") for p in (people_payload or [])}
-            for tmdb_id, pids in tmdb_groups.items():
-                if len(pids) <= 1:
-                    continue
-                # Kanonische PID wählen
-                canonical = None
-                try:
-                    t_int = int(tmdb_id)
-                except Exception:
-                    t_int = None
-                if t_int is not None:
-                    cand = desired_pid_by_tmdb.get(t_int)
-                    if cand and cand in pids:
-                        canonical = cand
-                if not canonical:
-                    canonical = sorted(pids, key=lambda s: int(s))[0]
-                for pid in pids:
-                    if pid == canonical or pid in used_pids_now:
-                        continue
-                    # idempotent: nur setzen, wenn Name nicht schon "John Doe" oder ProviderIds nicht leer
-                    cur_it = self._bulk_person_cache.get(pid) or {}
-                    cur_nm = (cur_it.get("Name") or "").strip()
-                    cur_pids = (cur_it.get("ProviderIds") or {}) or {}
-                    if cur_nm == "John Doe" and not cur_pids:
-                        continue
-                    payload = {"Id": pid, "Name": "John Doe", "PrimaryImageTag": None, "ProviderIds": {}}
-                    self.update_item(pid, payload)
-                    # Cache anpassen
-                    self._bulk_person_cache[pid] = {"Name": "John Doe", "ProviderIds": {}}
-                    log["demoted"].append((tmdb_id, pid))
-                    changed = True
 
         # ---------- PHASE E: Name-Fixes (nur sammeln; keine Sofort-Updates) ----------
         def _is_alias_name(nm: str) -> bool:
