@@ -210,6 +210,11 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self._items_cache: dict[str, dict] = {}
+        self._items_cache_fields: dict[str, set[str]] = {}
+        self._items_cache_ts: dict[str, float] = {}
+        # anpassbar von außen: self.items_cache_ttl = 0 deaktiviert das Altern (immer frisch)
+        self.items_cache_ttl: int = 300
         self.cached_person_names = []
         self._person_name_cache = {}
         self._bulk_person_cache = {}
@@ -1333,7 +1338,7 @@ class EmbyServer:
         if not force_refresh and item_id in self.item_cache and item_id not in self.dirty_items:
             return self.item_cache[item_id]
 
-        endpoint = f"/emby/users/{self.user_id}/items/{item_id}?api_key={self.api_key}"
+        endpoint = f"/emby/users/{self.user_id}/Items/{item_id}?api_key={self.api_key}"
         url = self.emby_server_url + endpoint
         try:
             resp = requests.get(url, headers=self.headers)
@@ -1343,7 +1348,7 @@ class EmbyServer:
             self.dirty_items.discard(item_id)  # wieder „sauber“
             return data
         except Exception as e:
-            logger.error(f"Error occurred while getting item: {e}. URL: {url}.")
+            logger.ghost(f"Error occurred while getting item: {e}. URL: {url}.")
             return None
 
     def get_item_images(self, item_id) -> dict:
@@ -1959,7 +1964,7 @@ class EmbyServer:
             self.invalidate_item(item_id)
             return response
         except Exception as e:
-            logger.error(f"Error occurred while updating item: {e}")
+            logger.warning(f"Emby item not longer present, not updated: {item_id}")
             return None
 
     def __add_remove_from_collection(
@@ -3221,7 +3226,7 @@ class EmbyServer:
             "screenplay": ("Writer", None),
             "screenwriter": ("Writer", None),
             "teleplay": ("Writer", None),
-            "author": ("Writer", "Romanvorlage"),
+            "author": ("Writer", "Autor"),
             "novel": ("Writer", "Romanvorlage"),
             "adaptation": ("Writer", "Adaption"),
             "story": ("Writer", "Story"),
@@ -3275,7 +3280,8 @@ class EmbyServer:
             if self.config and self.config.Cache else ({}, set(tmdb_ids), set())
         )
         for tid, rec in db_map.items():
-            if rec.get("emby_id"):
+            l = rec.get("emby_id")
+            if l and tid not in self.cached_tmdb_ids.keys():
                 self.cached_tmdb_ids[tid] = rec["emby_id"]
 
         # --- Cache-Validierung nur für die in diesem Lauf benötigten Mappings ---
@@ -3322,13 +3328,13 @@ class EmbyServer:
                     pass
             return stale
 
-        needed_cached_map = {tid: self.cached_tmdb_ids.get(tid) for tid in tmdb_ids if tid in self.cached_tmdb_ids}
-        stale_due_validation = _validate_cached_person_mappings_local(needed_cached_map)
+        # needed_cached_map = {tid: self.cached_tmdb_ids.get(tid) for tid in tmdb_ids if tid in self.cached_tmdb_ids}
+        # stale_due_validation = _validate_cached_person_mappings_local(needed_cached_map)
 
         # --- 2) Nur fehlende/abgelaufene gegen Emby auflösen ---
         to_resolve = sorted({
             tid for tid in tmdb_ids
-            if (tid not in self.cached_tmdb_ids) or (tid in db_expired) or (tid in stale_due_validation)
+            if (tid not in self.cached_tmdb_ids) or (tid in db_expired)
         })
         resolved = {}
         if to_resolve:
@@ -3340,27 +3346,31 @@ class EmbyServer:
         if resolved:
             self.cached_tmdb_ids.update({int(k): str(v) for k, v in resolved.items()})
         # === Aktuelle Emby-Namen prefetchen ===
-        known_emby_ids = sorted({str(v) for v in self.cached_tmdb_ids.values() if str(v).isdigit()})
+        needed_emby_ids =[]
+        for my_tmdb_id in tmdb_ids:
+            if int(my_tmdb_id) in self.cached_tmdb_ids.keys():
+                needed_emby_ids.append(self.cached_tmdb_ids.get(int(my_tmdb_id), ""))
+        # known_emby_ids = list({str(v) for v in self.cached_tmdb_ids.values()})
         emby_name_by_id = {}
-        if known_emby_ids:
+        if needed_emby_ids:
             try:
-                id_to_item = self.get_items_bulk(known_emby_ids)
+                id_to_item = self.get_items_bulk(needed_emby_ids)
             except Exception:
                 id_to_item = {}
             for pid, item in (id_to_item or {}).items():
                 nm = item.get("Name")
                 if nm:
                     emby_name_by_id[str(pid)] = nm
-
+        pass
         # Map TMDb -> aktueller Emby-Name (falls vorhanden)
-        emby_name_by_tid = {}
-        for tid, pid in self.cached_tmdb_ids.items():
-            nm = emby_name_by_id.get(str(pid))
-            if nm:
-                try:
-                    emby_name_by_tid[int(tid)] = nm
-                except Exception:
-                    pass
+        # emby_name_by_tid = {}
+        # for tid, pid in self.cached_tmdb_ids.items():
+        #     nm = emby_name_by_id.get(str(pid))
+        #     if nm:
+        #         try:
+        #             # emby_name_by_tid[int(tid)] = nm
+        #         # except Exception:
+        #             pass
 
         # =================
         # ----- CAST ------
@@ -3542,48 +3552,96 @@ class EmbyServer:
         self._person_name_fix_cache.add(person_id)
         return resp
 
+    @property
+    def items_cache(self):
+        """
+        Lazy-initialized Item-Cache.
+          - _items_cache:        id -> zuletzt gemergtes Item-Dict
+          - _items_cache_fields: id -> Set[str] der vorhandenen Fields
+          - _items_cache_ts:     id -> float (Unix-Zeitpunkt des letzten Refresh)
+          - items_cache_ttl:     Sekunden, die ein Cache-Eintrag als 'frisch' gilt (Default 300)
+        """
+        return self._items_cache
+
+    # ==== Bulk-Fetch: /emby/Items?Ids=...&Fields=... ====
     # ==== Bulk-Fetch: /emby/Items?Ids=...&Fields=... ====
     def get_items_bulk(self, ids: list[str], fields: list[str] | None = None) -> dict[str, dict]:
         """
         Holt Emby-Items in Batches (Ids=...), gibt dict[id] -> item zurück.
+        Nutzt einen lokalen Cache, lädt nur fehlende/abgelaufene/unvollständige Einträge nach.
         """
+        import time  # lokal, um keine Modulweite Änderung zu erzwingen
+
         self._ensure_http_session()
+
         if not ids:
             return {}
 
         # Nur numerische/echte IDs abfragen (Platzhalter-Namen überspringen)
-        fetch_ids = [str(i) for i in ids if str(i).isdigit()]
-        if not fetch_ids:
+        fetch_ids_all = [str(i) for i in ids if str(i).isdigit()]
+        if not fetch_ids_all:
             return {}
 
+        # Felder normalisieren (Mengenvergleich), Request-Parameter aber in stabiler Reihenfolge senden
         fields = fields or []
-        fields_param = ",".join(fields) if fields else ""
+        req_fields_set = {f for f in fields if f}
+        fields_param = ",".join(sorted(req_fields_set)) if req_fields_set else ""
 
         CHUNK = 200  # konservativ; Emby kommt damit gut klar
         out: dict[str, dict] = {}
 
-        for i in range(0, len(fetch_ids), CHUNK):
-            batch = fetch_ids[i:i + CHUNK]
-            # Query-String zusammenbauen
-            # Hinweis: api_key via Query, Headers nutzt du bereits global
-            params = {
-                "Ids": ",".join(batch),
-            }
-            if fields_param:
-                params["Fields"] = fields_param
-            params["api_key"] = self.api_key
+        now = time.time()
+        ttl = getattr(self, "items_cache_ttl", 300)
 
-            # f"/emby/Users/{self.user_id}/Items"
+        def is_fresh(ts: float) -> bool:
+            if not ttl:
+                return True  # ttl == 0 => nie ablaufen lassen
+            return (now - ts) <= ttl
 
+        # 1) Aufteilen in bekannte (frisch + Feld-Superset) und nachzuladende IDs
+        to_fetch: list[str] = []
+        for id_ in fetch_ids_all:
+            cached_item = self._items_cache.get(id_)
+            cached_fields = self._items_cache_fields.get(id_, set())
+            ts = self._items_cache_ts.get(id_, 0.0)
+
+            if cached_item and is_fresh(ts) and req_fields_set.issubset(cached_fields):
+                out[id_] = cached_item
+            else:
+                to_fetch.append(id_)
+
+        # 2) Fehlende/nicht vollständige Items in Batches nachladen
+        if to_fetch:
             url = f"{self.emby_server_url}/emby/Items"
-            resp = self.session.get(url, headers=self.headers, params=params, timeout=20)
-            resp.raise_for_status()
-            data = resp.json() or {}
-            items = data.get("Items") or data.get("items") or []
-            for it in items:
-                it_id = str(it.get("Id") or "")
-                if it_id:
-                    out[it_id] = it
+            for i in range(0, len(to_fetch), CHUNK):
+                batch = to_fetch[i:i + CHUNK]
+                params = {"Ids": ",".join(batch), "api_key": self.api_key}
+                if fields_param:
+                    params["Fields"] = fields_param
+
+                resp = self.session.get(url, headers=self.headers, params=params, timeout=20)
+                resp.raise_for_status()
+                data = resp.json() or {}
+                items = data.get("Items") or data.get("items") or []
+
+                now_fetch = time.time()
+                for it in items:
+                    it_id = str(it.get("Id") or "")
+                    if not it_id:
+                        continue
+
+                    # Bestehendes Cache-Objekt erweitern/überschreiben (merge)
+                    if it_id in self._items_cache:
+                        self._items_cache[it_id].update(it)
+                        # wir wissen, dass mindestens die angeforderten Fields zurückkamen:
+                        self._items_cache_fields[it_id] |= req_fields_set
+                    else:
+                        self._items_cache[it_id] = it
+                        self._items_cache_fields[it_id] = set(req_fields_set)
+
+                    self._items_cache_ts[it_id] = now_fetch
+                    out[it_id] = self._items_cache[it_id]
+
         return out
 
     # ==== Provider-IDs normalisieren ====
@@ -3626,7 +3684,7 @@ class EmbyServer:
 
         current_people = emby_item.get("People", []) or []
         desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
-        return False, [], []
+        # return False, [], []
         # 1) Alias/ID-unabhängige Struktur (Type, Role, BaseName)
         names_eq = (_cheap_key(current_people, with_id=False) ==
                     _cheap_key(desired_people, with_id=False))
@@ -3635,69 +3693,69 @@ class EmbyServer:
         full_eq = (_cheap_key(current_people, with_id=True) ==
                    _cheap_key(desired_people, with_id=True))
 
-        if names_eq and full_eq:
-            # wirklich gar nichts zu tun
-            return False, [], []
+        # if names_eq and full_eq:
+        #     # wirklich gar nichts zu tun
+        #     return False, [], []
 
         # ... dein _cheap_key / names_eq / full_eq oben ...
 
-        if names_eq and not full_eq:
-            # Schneller „REPLACE-only“-Pfad
-            people_payload = []
-            people_alias_revert = []  # (pid, (alias_name, clean_name, tid))
-            _seen_ar = set()
-
-            for dp in (desired_people or []):
-                typ = dp.get("Type") or ""
-                role = dp.get("Role")
-                pid_raw = str(dp.get("Id") or "")
-                name_raw = (dp.get("Name") or "").strip()
-                tid = dp.get("Tmdb") or dp.get("tmdb")
-
-                # Alias-Basename (entfernt evtl. vorhandene -\d Suffixe)
-                base = _re.sub(r"(?:-\d+)+$", "", name_raw).strip()
-
-                if (not pid_raw.isdigit()) and tid:
-                    # NEU: Nicht-numerische Id -> Alias in Name UND Id schreiben
-                    alias = f"{base}-{int(tid)}"
-                    q = {"Id": alias, "Name": alias, "Type": typ}
-                    if role is not None:
-                        q["Role"] = role
-                    people_payload.append(q)
-                    # (Noch keine people_alias_revert, da keine numerische PID existiert)
-                    continue
-
-                # Standardfall (numerische PID oder kein TMDb vorhanden)
-                q = {"Id": pid_raw, "Name": name_raw, "Type": typ}
-                if role is not None:
-                    q["Role"] = role
-                people_payload.append(q)
-
-                # Downstream-Rename einsammeln, falls numerische PID + Alias im Namen
-                if "-" in name_raw:
-                    base2, suf = name_raw.rsplit("-", 1)
-                    if base2 and suf.isdigit() and pid_raw.isdigit():
-                        key = (pid_raw, name_raw)
-                        if key not in _seen_ar:
-                            _seen_ar.add(key)
-                            people_alias_revert.append((pid_raw, (name_raw, base2.strip(), suf)))
-
-            # Hard-Replace nur wenn PIDs entfernt wurden
-            prev_ids = {str(p.get("Id") or "") for p in (current_people or [])}
-            next_ids = {str(p.get("Id") or "") for p in (people_payload or [])}
-            removed_ids_present = bool(prev_ids - next_ids)
-
-            if removed_ids_present and current_people:
-                try:
-                    self.update_item(emby_item["Id"], {"People": []})
-                except Exception:
-                    pass
-
-            # Zielzustand schreiben
-            self.update_item(emby_item["Id"], {"People": people_payload})
-
-            # Kompakte Edits sind optional – wenn du nichts loggen willst, gib leer zurück
-            return False, None, people_alias_revert
+        # if names_eq and not full_eq:
+        #     # Schneller „REPLACE-only“-Pfad
+        #     people_payload = []
+        #     people_alias_revert = []  # (pid, (alias_name, clean_name, tid))
+        #     _seen_ar = set()
+        #
+        #     for dp in (desired_people or []):
+        #         typ = dp.get("Type") or ""
+        #         role = dp.get("Role")
+        #         pid_raw = str(dp.get("Id") or "")
+        #         name_raw = (dp.get("Name") or "").strip()
+        #         tid = dp.get("Tmdb") or dp.get("tmdb")
+        #
+        #         # Alias-Basename (entfernt evtl. vorhandene -\d Suffixe)
+        #         base = _re.sub(r"(?:-\d+)+$", "", name_raw).strip()
+        #
+        #         if (not pid_raw.isdigit()) and tid:
+        #             # NEU: Nicht-numerische Id -> Alias in Name UND Id schreiben
+        #             alias = f"{base}-{int(tid)}"
+        #             q = {"Id": alias, "Name": alias, "Type": typ}
+        #             if role is not None:
+        #                 q["Role"] = role
+        #             people_payload.append(q)
+        #             # (Noch keine people_alias_revert, da keine numerische PID existiert)
+        #             continue
+        #
+        #         # Standardfall (numerische PID oder kein TMDb vorhanden)
+        #         q = {"Id": pid_raw, "Name": name_raw, "Type": typ}
+        #         if role is not None:
+        #             q["Role"] = role
+        #         people_payload.append(q)
+        #
+        #         # Downstream-Rename einsammeln, falls numerische PID + Alias im Namen
+        #         if "-" in name_raw:
+        #             base2, suf = name_raw.rsplit("-", 1)
+        #             if base2 and suf.isdigit() and pid_raw.isdigit():
+        #                 key = (pid_raw, name_raw)
+        #                 if key not in _seen_ar:
+        #                     _seen_ar.add(key)
+        #                     people_alias_revert.append((pid_raw, (name_raw, base2.strip(), suf)))
+        #
+        #     # Hard-Replace nur wenn PIDs entfernt wurden
+        #     prev_ids = {str(p.get("Id") or "") for p in (current_people or [])}
+        #     next_ids = {str(p.get("Id") or "") for p in (people_payload or [])}
+        #     removed_ids_present = bool(prev_ids - next_ids)
+        #
+        #     if removed_ids_present and current_people:
+        #         try:
+        #             self.update_item(emby_item["Id"], {"People": []})
+        #         except Exception:
+        #             pass
+        #
+        #     # Zielzustand schreiben
+        #     self.update_item(emby_item["Id"], {"People": people_payload})
+        #
+        #     # Kompakte Edits sind optional – wenn du nichts loggen willst, gib leer zurück
+        #     return False, None, people_alias_revert
 
         # else: Struktur wirklich anders -> normaler (langsamer) Pfad
 
@@ -3976,7 +4034,8 @@ class EmbyServer:
                 cur_info = self._bulk_person_cache.get(str(emby_pid)) or {}
                 cur_name_now = (cur_info.get("Name") or "").strip()
                 if cur_name_now != alias_name:
-                    self.update_item(emby_pid, {"Id": emby_pid, "Name": alias_name, "ProviderIds": {"Tmdb": tid}})
+                    if not self.update_item(emby_pid, {"Id": emby_pid, "Name": alias_name, "ProviderIds": {"Tmdb": tid}}):
+                        continue
                     # Cache aktualisieren, um Folge-Calls zu sparen
                     cur_info = dict(cur_info)
                     cur_info["Name"] = alias_name
