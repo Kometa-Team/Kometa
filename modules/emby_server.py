@@ -1934,6 +1934,7 @@ class EmbyServer:
             item = self.get_item(item_id)
         if item is None:
             return None
+        self._ensure_http_session()
 
         if "LockedFields" not in item:
             item["LockedFields"] = []
@@ -1956,7 +1957,7 @@ class EmbyServer:
         )
         my_= str(item)
         try:
-            response = requests.post(update_item_url, json=item)
+            response = self._http_session.post(update_item_url, json=item)
             # print(
             #     f"Updated item {item_id} with {data}. Waiting {self.seconds_between_requests} seconds."
             # )
@@ -2697,6 +2698,10 @@ class EmbyServer:
     def multiEditField(self, rating_keys,field_attr=None, new_value=None, locked=False):
         # raise Warning(f"multiEditField not implemented for {rating_keys} - {field_attr} - {new_value} {locked}")
         # return
+
+        self._ensure_http_session()
+
+
         for item in rating_keys:
             item_id = item.ratingKey
             changes ={}
@@ -2719,7 +2724,7 @@ class EmbyServer:
                 my_url = f"{self.emby_server_url}/emby/Studios/{new_value}?api_key={self.api_key}"
 
                 # # Make a request to get the Emby item details
-                response = requests.get(my_url)
+                response = self._http_session.get(my_url)
 
                 # response = requests.get(
                 #     f"{self.emby_server_url}/emby/Tags?{ids}Recursive=true&{library_id}api_key={self.api_key}'"

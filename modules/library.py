@@ -331,7 +331,8 @@ class Library(ABC):
                         except Exception:
                             ok = False
 
-                    if not ok: continue
+                    if not ok:
+                        continue
 
                     if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
                         requests.delete()
