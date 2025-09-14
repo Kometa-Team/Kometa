@@ -2959,11 +2959,12 @@ class Plex(Library):
                 season = self.EmbyServer.get_item(item_to_sort.ratingKey)
                 show = self.EmbyServer.get_item(season.get("SeriesId"))
                 titleSort = show.get("SortName")
-
+            # ToDo - Not working / tested
             return f"{item_to_sort.show().titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
         else:
+            key = item_to_sort.ratingKey if not (isinstance(item_to_sort, int) or isinstance(item_to_sort, str)) else str(item_to_sort)
             # must bei str Id
-            item = self.EmbyServer.get_item(item_to_sort)
+            item = self.EmbyServer.get_item(key)
             return item.get("SortName") if sort else item.get("Name")
 
             return item_to_sort.titleSort if sort else item_to_sort.title
