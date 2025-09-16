@@ -210,6 +210,7 @@ class EmbyServer:
     def __init__(self, server_url, user_id, api_key, config, library_name = None):
 
         # ToDo: Merge the cache
+        self._person_already_demoted = []
         self._items_cache: dict[str, dict] = {}
         self._items_cache_fields: dict[str, set[str]] = {}
         self._items_cache_ts: dict[str, float] = {}
@@ -3059,15 +3060,6 @@ class EmbyServer:
         if not tmdb_ids:
             return {}
 
-        # Lazy-Init interner Strukturen
-        if not hasattr(self, "_person_dupes_last"):
-            self._person_dupes_last = {}
-        if not hasattr(self, "_person_dupes_choice_last"):
-            self._person_dupes_choice_last = {}
-        if not hasattr(self, "_person_dupe_redirect_last"):
-            self._person_dupe_redirect_last = {}
-        if not hasattr(self, "_person_already_demoted"):
-            self._person_already_demoted = set()
 
         # IDs normalisieren
         try:
@@ -3176,7 +3168,7 @@ class EmbyServer:
                             continue
                         try:
                             self._demote_duplicate_person(wrong_pid)
-                            self._person_already_demoted.add(wrong_pid)
+                            self._person_already_demoted.append(wrong_pid)
                             try:
                                 logger.info(f"[get_person_info_bulk] Demoted person Emby id {wrong_pid}")
                             except Exception:
@@ -3304,13 +3296,13 @@ class EmbyServer:
 
         # --- 1) DB-Cache vorwärmen: emby_id + alias ---
         db_map, db_missing, db_expired = (
-            self.config.Cache.query_tmdb_person_map_bulk(tmdb_ids, self.config.Cache.expiration)
+            self.config.Cache.query_tmdb_person_map_bulk(tmdb_ids, 3)
             if self.config and self.config.Cache else ({}, set(tmdb_ids), set())
         )
-        for tid, rec in db_map.items():
-            l = rec.get("emby_id")
-            if l and tid not in self.cached_tmdb_ids.keys():
-                self.cached_tmdb_ids[tid] = rec["emby_id"]
+        # for tid, rec in db_map.items():
+        #     l = rec.get("emby_id")
+        #     if l and tid not in self.cached_tmdb_ids.keys() and tid not in db_expired:
+        #         self.cached_tmdb_ids[tid] = rec["emby_id"]
 
         # --- Cache-Validierung nur für die in diesem Lauf benötigten Mappings ---
         def _validate_cached_person_mappings_local(t2e: dict):
@@ -3364,6 +3356,7 @@ class EmbyServer:
             tid for tid in tmdb_ids
             if (tid not in self.cached_tmdb_ids) or (tid in db_expired)
         })
+        # to_resolve = tmdb_ids
         resolved = {}
         if to_resolve:
             try:
@@ -3714,12 +3707,12 @@ class EmbyServer:
         desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
         # return False, [], []
         # 1) Alias/ID-unabhängige Struktur (Type, Role, BaseName)
-        names_eq = (_cheap_key(current_people, with_id=False) ==
-                    _cheap_key(desired_people, with_id=False))
+        # names_eq = (_cheap_key(current_people, with_id=False) ==
+        #             _cheap_key(desired_people, with_id=False))
 
         # 2) Streng inkl. Id (falls du unterscheiden willst, ob nur Id/Name abweichen)
-        full_eq = (_cheap_key(current_people, with_id=True) ==
-                   _cheap_key(desired_people, with_id=True))
+        # full_eq = (_cheap_key(current_people, with_id=True) ==
+        #            _cheap_key(desired_people, with_id=True))
 
         # if names_eq and full_eq:
         #     # wirklich gar nichts zu tun
@@ -4009,6 +4002,7 @@ class EmbyServer:
                 cur_pid = cur_by_name.get(clean)
                 if cur_pid and cur_pid != pid:
                     need_alias = True
+                    self._demote_duplicate_person(cur_pid)
             if not need_alias:
                 cur_pid = cur_by_name.get(clean)
                 if (not cur_pid) or (cur_pid != pid):
