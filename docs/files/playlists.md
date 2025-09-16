@@ -26,7 +26,7 @@ printed out in your log.
 
 ## Example
 
-This example is a Playlist file with a basic overlay which is saved in a file called `MyPlaylists.yml` within the 
+This example is a Playlist file with a basic playlist which is saved in a file called `MyPlaylists.yml` within the 
 location mapped as `config` in my setup.
 
 
