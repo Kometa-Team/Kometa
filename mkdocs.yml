@@ -175,7 +175,7 @@ nav:
     - Library Operations: config/operations.md
   - CONNECTIONS:
     - REQUIRED CONNECTIONS:
-      - Plex: config/overview.md
+      - Plex: config/plex.md
       - TMDb: config/tmdb.md
     - OPTIONAL CONNECTIONS:
       - Tautulli: config/tautulli.md
