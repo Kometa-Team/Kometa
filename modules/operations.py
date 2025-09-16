@@ -381,6 +381,19 @@ class Operations:
                 ]:
                     if attribute:
                         current = getattr(item, item_attr)
+                        current_emby = None
+                        match item_attr:
+                            case "audienceRating":
+                                current_emby = emby_item.get("CommunityRating")
+                            case "rating":
+                                current_emby = emby_item.get("CriticRating")
+                            case "userRating":
+                                current_emby = emby_item.get("CustomRating")
+
+                        # 'CustomRating' = {str} '6.8'
+                        # 'CommunityRating' = {int} 7
+                        # 'CriticRating' = {int} 40
+
                         for option in attribute:
                             if option in ["lock", "remove"]:
                                 if option == "remove" and current:
@@ -473,7 +486,13 @@ class Operations:
                                         logger.info(f"No {option} {name_display[item_attr]} Found")
                                         raise Failed
                                     found_rating = f"{float(found_rating):.1f}"
-                                    if str(current) != found_rating:
+                                    # TODO BUG: Rating fields in fake Plex objects are empty, using Emby files directly
+                                    str_current_emby = f"{float(current_emby):.1f}"
+                                    if item_attr == "rating":
+                                        str_current_emby = f"{float(current_emby/10):.1f}"
+
+                                        # Emby is 0-100 int, found is 0.0 to 10.0
+                                    if str_current_emby != found_rating:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)

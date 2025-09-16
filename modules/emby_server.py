@@ -1958,7 +1958,7 @@ class EmbyServer:
         )
         my_= str(item)
         try:
-            response = self._http_session.post(update_item_url, json=item)
+            response = requests.post(update_item_url, json=item)
             # print(
             #     f"Updated item {item_id} with {data}. Waiting {self.seconds_between_requests} seconds."
             # )
@@ -3833,10 +3833,10 @@ class EmbyServer:
 
         def _hard_replace_people(item_id: str, people: list):
             """setzt People exakt (kein Merge)"""
-            try:
-                self.update_item(item_id, {"People": []})
-            except TypeError:
-                self.update_item(item_id, {"People": []})
+            # try:
+            #     self.update_item(item_id, {"People": []})
+            # except TypeError:
+            #     self.update_item(item_id, {"People": []})
             self.update_item(item_id, {"People": people})
 
         # ---------- Crash-Recovery: vorhandene Aliase vormerken (sehr billig) ----------
@@ -4075,9 +4075,7 @@ class EmbyServer:
                 cur_pids = (cur_it.get("ProviderIds") or {}) or {}
                 if cur_nm == "John Doe" and not cur_pids:
                     continue
-                payload = {"Id": pid, "Name": "John Doe", "PrimaryImageTag": None, "ProviderIds": {}}
-                self.update_item(pid, payload)
-                # Cache anpassen
+                self._demote_duplicate_person(pid)
                 self._bulk_person_cache[pid] = {"Name": "John Doe", "ProviderIds": {}}
                 log["demoted"].append((tmdb_id, pid))
                 changed = True
