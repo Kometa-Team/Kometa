@@ -3137,7 +3137,7 @@ class EmbyServer:
             # Dupe-Bewertung NUR für diesen Batch
             for tid, idset in tmdb_to_ids.items():
                 ids_sorted = sorted({str(x) for x in idset}, key=lambda x: int(x))  # numerische Sortierung
-                chosen = ids_sorted[0]
+                chosen = ids_sorted[-1]
                 result[tid] = chosen
 
                 if len(ids_sorted) > 1:
@@ -3146,7 +3146,7 @@ class EmbyServer:
                         tid_int = int(tid)
                     except Exception:
                         tid_int = tid
-                    self._person_dupes_last[tid_int] = ids_sorted
+                    # self._person_dupes_last[tid_int] = ids_sorted
                     self._person_dupes_choice_last[tid_int] = chosen
 
                     # Persistentes Mapping (gewollt hart abbrechen auf Fehler)
@@ -3162,7 +3162,7 @@ class EmbyServer:
                         pass  # bewusst beibehalten
 
                     # Nicht-kanonische Personen demoten (pro PID nur einmal)
-                    wrong_ids = ids_sorted[1:]
+                    wrong_ids = ids_sorted[:-1]  # alle außer dem letzten
                     for wrong_pid in wrong_ids:
                         if wrong_pid in self._person_already_demoted:
                             continue
@@ -3411,16 +3411,18 @@ class EmbyServer:
             emby_id = self.cached_tmdb_ids.get(tmdb_id_int if tmdb_id_int is not None else tmdb_id)
 
             # Emby-ID bekannt? → aktuellen Emby-Namen verwenden
-            if emby_id:
-                entry_name = emby_name_by_id.get(str(emby_id)) or name
-                try:
-                    self.ensure_person_latin_name(str(emby_id),
-                                                  int(tmdb_id_int if tmdb_id_int is not None else tmdb_id),
-                                                  entry_name)
-                except Exception:
-                    pass
-            else:
-                entry_name = name
+            # if emby_id:
+            #     if not "John Doe" in emby_name_by_id.get(str(emby_id)):
+            #         entry_name = emby_name_by_id.get(str(emby_id)) or name
+            #     try:
+            #         self.ensure_person_latin_name(str(emby_id),
+            #                                       int(tmdb_id_int if tmdb_id_int is not None else tmdb_id),
+            #                                       entry_name)
+            #     except Exception:
+            #         entry_name = name
+            #         pass
+            # else:
+            entry_name = name
 
             if not emby_id:
                 # Platzhalter deduplizieren (inkl. Role)
@@ -3474,16 +3476,16 @@ class EmbyServer:
 
             emby_id = self.cached_tmdb_ids.get(tmdb_id_int if tmdb_id_int is not None else tmdb_id)
 
-            if emby_id:
-                entry_name = emby_name_by_id.get(str(emby_id)) or name
-                try:
-                    self.ensure_person_latin_name(str(emby_id),
-                                                  int(tmdb_id_int if tmdb_id_int is not None else tmdb_id),
-                                                  entry_name)
-                except Exception:
-                    pass
-            else:
-                entry_name = name
+            # if emby_id:
+            #     entry_name = emby_name_by_id.get(str(emby_id)) or name
+            #     try:
+            #         self.ensure_person_latin_name(str(emby_id),
+            #                                       int(tmdb_id_int if tmdb_id_int is not None else tmdb_id),
+            #                                       entry_name)
+            #     except Exception:
+            #         pass
+            # else:
+            entry_name = name
 
             if not emby_id:
                 k_name = key_for(None, entry_name, etype, crew_role)
@@ -3612,7 +3614,7 @@ class EmbyServer:
         out: dict[str, dict] = {}
 
         now = time.time()
-        ttl = getattr(self, "items_cache_ttl", 300)
+        ttl = self.items_cache_ttl
 
         def is_fresh(ts: float) -> bool:
             if not ttl:
@@ -3950,6 +3952,35 @@ class EmbyServer:
             if base and base != nm and base not in cur_by_name:
                 cur_by_name[base] = pid
 
+        # Persistente False-Friend-Namen laden
+        false_friend_names = self.config.Cache.query_false_friend_names()
+
+        def _is_false_friend(clean_name: str, wanted_pid: str, wanted_tid):
+            cn = (clean_name or "").strip()
+            if not cn:
+                return False
+            key = cn.casefold()
+
+            # 1) Explizit markierter Name?
+            if key in false_friend_names:
+                return True
+
+            # 2) Auf dem aktuellen Item existiert derselbe Name, aber andere PID
+            cur_pid_x = cur_by_name.get(cn)
+            if cur_pid_x and cur_pid_x != wanted_pid:
+                return True
+
+            # 3) Globaler Namenskonflikt: gleicher Name, aber anderer TMDb
+            for it in _global_hits_for(cn):
+                if (it.get("Name") or "").strip() != cn:
+                    continue
+                hit_tid = _tmdb_from_person_hit(it)
+                if hit_tid is None or wanted_tid is None:
+                    continue
+                if str(hit_tid) != str(wanted_tid):
+                    return True
+            return False
+
         # Name -> Menge unterschiedlicher Ziel-IDs
         name_to_target_ids = {}
         for dp in (desired_people or []):
@@ -4017,8 +4048,16 @@ class EmbyServer:
                             need_alias = True
                             break
 
-            if need_alias and tid:
-                alias = _alias_once(clean, tid)
+            # False-Friend anhand DB/Lokalkontext/Globalcheck ermitteln
+            need_alias_ff = _is_false_friend(clean, pid, tid)
+
+            # Dein existierendes need_alias bleibt unverändert nutzbar
+            if need_alias or need_alias_ff:
+                # bei neu erkanntem False-Friend sofort persistieren (idempotent)
+                if need_alias_ff and clean.casefold() not in false_friend_names:
+                    self.config.Cache.add_false_friend_name(clean)
+
+                alias = _alias_once(clean, tid) if tid else clean
                 temp_renames[pid] = (alias, clean, tid)
                 q = {"Id": pid, "Name": alias, "Type": typ}
             else:

@@ -486,10 +486,10 @@ class Operations:
                                         logger.info(f"No {option} {name_display[item_attr]} Found")
                                         raise Failed
                                     found_rating = f"{float(found_rating):.1f}"
-                                    # TODO BUG: Rating fields in fake Plex objects are empty, using Emby files directly
-                                    str_current_emby = f"{float(current_emby):.1f}"
+                                    # TODO BUG: Rating fields in fake Plex objects are empty, using Emby files directly - this is also used with episodes, tbd
+                                    str_current_emby = f"{float(current_emby if current_emby else 0):.1f}"
                                     if item_attr == "rating":
-                                        str_current_emby = f"{float(current_emby/10):.1f}"
+                                        str_current_emby = f"{float(current_emby/10 if current_emby else 0/10):.1f}"
 
                                         # Emby is 0-100 int, found is 0.0 to 10.0
                                     if str_current_emby != found_rating:

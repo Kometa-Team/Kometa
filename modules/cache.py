@@ -1342,6 +1342,9 @@ class Cache:
         mapping, missing_ids, expired_ids = {}, set(tmdb_ids or []), set()
         if not tmdb_ids:
             return mapping, missing_ids, expired_ids
+        # if True:
+        #     return mapping, missing_ids, expired_ids
+
 
         qmarks = ",".join("?" * len(tmdb_ids))
         with sqlite3.connect(self.cache_path) as connection:
@@ -1399,3 +1402,27 @@ class Cache:
                     (new_emby, new_name, new_alias, json.dumps(cur_meta, ensure_ascii=False) if cur_meta else None,
                      expiration_date.strftime("%Y-%m-%d"), tmdb_id)
                 )
+
+    def query_false_friend_names(self) -> set[str]:
+        names = set()
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("CREATE TABLE IF NOT EXISTS false_friend_names (name TEXT PRIMARY KEY)")
+                cursor.execute("SELECT name FROM false_friend_names")
+                for row in cursor.fetchall():
+                    nm = (row["name"] or "").strip()
+                    if nm:
+                        names.add(nm.casefold())
+        return names
+
+    def add_false_friend_name(self, name: str) -> None:
+        nm = (name or "").strip()
+        logger.info(f"Added 'false friend' {name} to alias list.")
+        if not nm:
+            return
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("CREATE TABLE IF NOT EXISTS false_friend_names (name TEXT PRIMARY KEY)")
+                cursor.execute("INSERT OR IGNORE INTO false_friend_names(name) VALUES (?)", (nm.casefold(),))
