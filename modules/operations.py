@@ -142,10 +142,11 @@ class Operations:
                 ep_reset_edits = {}
                 ep_lock_edits = {}
                 ep_unlock_edits = {}
+                current_batch_length = len(items)
 
                 for i, item in enumerate(items, 1):
                     logger.info("")
-                    logger.info(f"({i}/{batch_size}{f' B{batch_num}/{num_batches}' if num_batches > 1 else ''}) {item.title}")
+                    logger.info(f"({i}/{current_batch_length}{f' B{batch_num}/{num_batches}' if num_batches > 1 else ''}) {item.title}")
                     try:
                         item = self.library.reload(item)
                     except Failed as e:
