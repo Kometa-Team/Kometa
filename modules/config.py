@@ -1,5 +1,6 @@
-import os, re
+import os, re, jmespath
 from datetime import datetime
+from typing import Any, Dict, Optional, Union
 from modules import util, radarr, sonarr, operations
 from modules.anidb import AniDB
 from modules.anilist import AniList
@@ -19,7 +20,9 @@ from modules.ntfy import Ntfy
 from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
+from modules.jellyfin import Jellyfin
 from modules.radarr import Radarr
+from modules.request import Requests
 from modules.sonarr import Sonarr
 from modules.reciperr import Reciperr
 from modules.mdblist import MDBList
@@ -153,7 +156,15 @@ library_operations = {
 }
 
 class ConfigFile:
-    def __init__(self, in_request, default_dir, attrs, secrets):
+    def __init__(self, in_request:Requests, default_dir:str, attrs:Dict[str, Any], secrets:Dict[str, Any]):
+        """ Initializes Config Object
+        
+        Args:
+            in_request (modules.request.Requests): Requests object
+            default_dir (str): Default directory for config and metadata files
+            attrs (dict): Dictionary of command line attributes
+            secrets (dict): Dictionary of secret names and values
+        """
         logger.info("Locating config...")
         config_file = attrs["config_file"]
         if config_file and os.path.exists(config_file):                     self.config_path = os.path.abspath(config_file)
@@ -373,7 +384,74 @@ class ConfigFile:
                 return next_data
         self.data = check_next(self.data)
 
-        def check_for_attribute(data, attribute, parent=None, test_list=None, translations=None, default=None, do_print=True, default_is_none=False, req_default=False, var_type="str", throw=False, save=True, int_min=0, int_max=None):
+        def check_int(data, xpath:str, *args, **kwargs) -> Any:
+            return check_attr(data, xpath, var_type="int", *args, **kwargs)
+
+        def check_bool(data, xpath:str, *args, **kwargs) -> Any:
+            return check_attr(data, xpath, var_type="bool", *args, **kwargs)
+
+        def check_url(data, xpath:str, *args, **kwargs) -> Any:
+            return check_attr(data, xpath, var_type="url", *args, **kwargs)
+
+        def check_attr(data, xpath:str, *args, **kwargs) -> Any:
+            """ Shorthand for check_for_attribute
+
+            Args:
+                data (dict): Dictionary to check for attribute
+                xpath (str): Attribute to check for, use . for sub-attributes
+                *args: Additional arguments for check_for_attribute
+                **kwargs: Additional keyword arguments for check_for_attribute
+
+            Returns:
+                any: Validated attribute value or default
+            """
+            parent, child = xpath.split(".")
+            return check_for_attribute(
+                data, 
+                child, 
+                parent=parent, 
+                *args,
+                **kwargs
+            )
+
+        def check_for_attribute(
+                data,
+                attribute, 
+                parent=None, 
+                test_list=None, 
+                translations=None, 
+                default=None, 
+                do_print=True, 
+                default_is_none=False, 
+                req_default=False, 
+                var_type="str", 
+                throw=False, 
+                save=True, 
+                int_min=0, 
+                int_max=None
+            ) -> Any:
+            """ Checks for attribute in config file and validates it
+            
+            Args:
+                data (dict): Dictionary to check for attribute
+                attribute (str): Attribute to check for
+                parent (str, optional): Parent attribute to check under. Defaults to None.
+                test_list (list, optional): List of valid options for attribute. Defaults to None.
+                translations (dict, optional): Translations for attribute values. Defaults to None.
+                default (any, optional): Default value if attribute is not found or invalid. Defaults to None.
+                do_print (bool, optional): Whether to print warnings. Defaults to True.
+                default_is_none (bool, optional): Whether None is a valid default. Defaults to False.
+                req_default (bool, optional): Whether a default is required. Defaults to False.
+                var_type (str, optional): Type of variable. Defaults to "str".
+                throw (bool, optional): Whether to throw an error if invalid. Defaults to False.
+                save (bool, optional): Whether to save default to config if not found. Defaults to True.
+                int_min (int, optional): Minimum value if var_type is int. Defaults to 0.
+                int_max (int, optional): Maximum value if var_type is int. Defaults to None.
+            Raises:
+                Failed: If attribute is required but not found or invalid.
+            Returns:
+                any: Validated attribute value or default
+            """
             endline = ""
             if parent is not None:
                 if data and parent in data:
@@ -828,6 +906,15 @@ class ConfigFile:
                     else:
                         self.general["plex"][attr] = False
                         logger.warning(str(e).replace("Error", "Warning"))
+                        
+            self.general["jellyfin"] = {
+                "url": check_url(self.data, "jellyfin.url", default_is_none=True),
+                "token": check_attr(self.data, "jellyfin.token", default_is_none=True),
+                "user": check_attr(self.data, "jellyfin.user", default_is_none=True),
+                "timeout": check_int(self.data, "jellyfin.timeout", default=60),
+                "verify_ssl": check_bool(self.data, "jellyfin.verify_ssl", default=False),
+            }
+            
             self.general["radarr"] = {
                 "url": check_for_attribute(self.data, "url", parent="radarr", var_type="url", default_is_none=True),
                 "token": check_for_attribute(self.data, "token", parent="radarr", default_is_none=True),
@@ -1209,9 +1296,14 @@ class ConfigFile:
                 except Failed as e:
                     logger.error(e)
 
-                try:
+
+                try:                     
                     logger.info("")
                     logger.separator("Plex Configuration", space=False, border=False)
+                    
+                    if not jmespath.search('plex', self.data):
+                        raise Exception("PLEX_DISABLED")
+
                     params["plex"] = {
                         "url": check_for_attribute(lib, "url", parent="plex", var_type="url", default=self.general["plex"]["url"], req_default=True, save=False),
                         "token": check_for_attribute(lib, "token", parent="plex", default=self.general["plex"]["token"], req_default=True, save=False),
@@ -1251,6 +1343,46 @@ class ConfigFile:
                     logger.error(e)
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Failed")
+                except Exception as e:
+                    if str(e) == "PLEX_DISABLED":
+                        logger.info(f"Plex Disabled for {display_name} library.")
+                
+                try:
+                    logger.info("")
+                    logger.separator("Jellyfin Configuration", space=False, border=False)
+                    
+                    if not jmespath.search('jellyfin', self.data):
+                        raise Exception("JELLYFIN_DISABLED")
+
+                    params["jellyfin"] = {
+                        "url": check_url(lib, "jellyfin.url", default=self.general["jellyfin"]["url"], req_default=True, save=False),
+                        "token": check_attr(lib, "jellyfin.token", default=self.general["jellyfin"]["token"], req_default=True, save=False),
+                        "user": check_attr(lib, "jellyfin.user", default=self.general["jellyfin"]["user"], req_default=True, save=False),
+                        "timeout": check_int(lib, "jellyfin.timeout", default=self.general["jellyfin"]["timeout"], save=False),
+                        "verify_ssl": check_bool(lib, "jellyfin.verify_ssl", default=self.general["jellyfin"]["verify_ssl"], default_is_none=True, save=False)
+                    }
+
+                    if params["jellyfin"]["url"].lower() == "env":
+                        params["jellyfin"]["url"] = self.env_jellyfin_url
+                    if params["jellyfin"]["token"].lower() == "env":
+                        params["jellyfin"]["token"] = self.env_jellyfin_token
+                    library = Jellyfin(self, params)
+                    logger.info("")
+                    logger.info(f"{display_name} Library Connection Successful")
+                    logger.info("")
+                    logger.separator("Scanning Files", space=False, border=False)
+                    library.scan_files(self.operations_only, self.overlays_only, self.collection_only, self.metadata_only)
+                    if not library.collection_files and not library.metadata_files and not library.overlay_files and not library.library_operation and not library.images_files and not self.playlist_files:
+                        raise Failed("Config Error: No valid collection file, metadata file, overlay file, image file, playlist file, or library operations found")
+                except Failed as e:
+                    logger.stacktrace()
+                    logger.error(e)
+                    logger.info("")
+                    logger.info(f"{display_name} Library Connection Failed")
+                
+                if jmespath.search("!(jellyfin || plex)", self.data):
+                    logger.error("Config Error: No media server specified.")
+                    logger.error("Please specify either plex or jellyfin in the library configuration.")
                     continue
 
                 if self.general["radarr"]["url"] or (lib and "radarr" in lib):
