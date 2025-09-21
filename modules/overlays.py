@@ -251,6 +251,7 @@ class Overlays:
                                             actual_attr = format_var
                                         if format_var == "bitrate":
                                             actual_value = None
+                                            # ToDo
                                             for media in item.media:
                                                 current = int(media.bitrate)
                                                 if actual_value is None:
@@ -419,10 +420,14 @@ class Overlays:
                                                 sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                                 actual_value = sum(sub_items) / len(sub_items)
                                         elif format_var == "total_runtime":
+                                            # ToDo
                                             sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
                                             sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                             actual_value = sum(sub_items)
                                         else:
+                                            # match actual_attr:
+                                            #     case 'rating':
+
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
                                                 raise Failed(f"Overlay Warning: No {full_text} found")
                                             actual_value = getattr(item, actual_attr)

@@ -784,7 +784,7 @@ class Plex(Library):
                     operand = value_decoded.strip()
 
                     if field in ["rating","show.rating"]:
-                        emby_query_params["Fields"]= "CommunityRating,CriticRating,UserRating"
+                        emby_query_params["Fields"]= "CommunityRating,CriticRating,CustomRating"
                         if operator in ['>', '>=']:
                             emby_query_params['MinCriticRating'] = int(float(operand) * 10)
                         elif operator in ['<', '<=','<<']:
@@ -1175,7 +1175,7 @@ class Plex(Library):
                 "StartIndex": start_index,
                 "Limit": limit,
                 "ParentId": self.Emby.get("Id"),
-                "Fields": "Budget,Chapters,DateCreated,Genres,HomePageUrl,IndexOptions,MediaStreams,Overview,ParentId,Path,People,ProviderIds,PrimaryImageAspectRatio,Revenue,SortName,Studios,Taglines",
+                "Fields": "Budget,Chapters,DateCreated,Genres,HomePageUrl,IndexOptions,MediaStreams,Overview,ParentId,Path,People,ProviderIds,PrimaryImageAspectRatio,Revenue,SortName,Studios,Taglines,CriticRating,CustomRating,CommunityRating",
             }
 
             endpoint = f"{self.emby_server_url}/emby/Users/{self.emby_user_id}/Items"

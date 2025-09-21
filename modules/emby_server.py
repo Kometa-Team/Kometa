@@ -4345,7 +4345,7 @@ class EmbyServer:
             people_alias_revert = sorted(dedup, key=lambda t: (t[1][0].casefold(), t[0]))
 
         if not changed:
-            return False, [], people_alias_revert
+            return False, "", people_alias_revert
 
         item_edits = build_people_change_events(
             current_people=current_people,
