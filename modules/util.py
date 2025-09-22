@@ -441,7 +441,7 @@ def check_collection_mode(collection_mode):
     if collection_mode and str(collection_mode).lower() in collection_mode_options:
         return collection_mode_options[str(collection_mode).lower()]
     else:
-        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n    default (Library default)\n    hide (Hide Collection)\n    hide_items (Hide Items in this Collection)\n    show_items (Show this Collection and its Items)")
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -531,7 +531,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
                 continue
             try:
-                schedule_str += f"\nScheduled to meet all of these:\n\t"
+                schedule_str += f"\nScheduled to meet all of these:\n    "
                 schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
                 all_check += 1
             except NotScheduled as e:
@@ -655,7 +655,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
         else:
             logger.error(f"Schedule Error: {display}")
     if is_all:
-        schedule_str.replace("\n", "\n\t")
+        schedule_str.replace("\n", "\n    ")
     if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
         if non_existing:
             raise NonExisting(schedule_str)
