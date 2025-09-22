@@ -978,7 +978,7 @@ class Operations:
                                 f"{total_update_items} {item_type_name}{'' if out_type or tag_type else f' updated to {display_value}'}")
                     for batch_num, batch_items in enumerate(_item_batches(update_items, batch_size), 1):
                         if num_batches > 1:
-                            logger.info(f"\tProcessing Batch {batch_num}/{num_batches} {len(batch_items)} {item_type_name}")
+                            logger.info(f"    Processing Batch {batch_num}/{num_batches} {len(batch_items)} {item_type_name}")
                         self.library.Plex.batchMultiEdits(batch_items)
                         if display_attr == "addedAt":
                             update_date = datetime.strptime(update_value, "%Y-%m-%d")
