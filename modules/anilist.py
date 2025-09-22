@@ -308,9 +308,9 @@ class AniList:
                 data = {"limit": data, "score.gt": 3, "sort_by": "score"}
             elif method not in builders:
                 raise Failed(f"AniList Error: Method {method} not supported")
-            message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n\tSort By {pretty_names[data['sort_by']]}"
+            message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n    Sort By {pretty_names[data['sort_by']]}"
             if data['limit'] > 0:
-                message += f"\n\tLimit to {data['limit']} Anime"
+                message += f"\n    Limit to {data['limit']} Anime"
             for key, value in data.items():
                 if key not in ["limit", "sort_by"]:
                     if "." in key:
@@ -319,7 +319,7 @@ class AniList:
                     else:
                         attr = key
                         mod = ""
-                    message += f"\n\t{attr.replace('_', ' ').title()} {util.mod_displays[mod]} {value}"
+                    message += f"\n    {attr.replace('_', ' ').title()} {util.mod_displays[mod]} {value}"
             logger.info(message)
             anilist_ids = self._search(**data)
         logger.debug("")
