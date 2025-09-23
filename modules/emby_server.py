@@ -3107,8 +3107,6 @@ class EmbyServer:
             # Treffer sammeln
             for item in items:
                 emby_id = item.get("Id")
-                if not emby_id:
-                    continue
                 name = (item.get("Name") or "").strip()
                 prov = item.get("ProviderIds") or {}
 
@@ -3219,6 +3217,7 @@ class EmbyServer:
             pass
 
     def _demote_duplicate_person(self, emby_person_id: str) -> None:
+        return
         try:
             logger.info(f"Cleared person {emby_person_id} and renamed to 'John Doe'")
 
@@ -3348,14 +3347,15 @@ class EmbyServer:
                     pass
             return stale
 
-        # needed_cached_map = {tid: self.cached_tmdb_ids.get(tid) for tid in tmdb_ids if tid in self.cached_tmdb_ids}
-        # stale_due_validation = _validate_cached_person_mappings_local(needed_cached_map)
+        needed_cached_map = {tid: self.cached_tmdb_ids.get(tid) for tid in tmdb_ids if tid in self.cached_tmdb_ids}
+        stale_due_validation = _validate_cached_person_mappings_local(needed_cached_map)
 
         # --- 2) Nur fehlende/abgelaufene gegen Emby auflösen ---
         to_resolve = sorted({
             tid for tid in tmdb_ids
             if (tid not in self.cached_tmdb_ids) or (tid in db_expired)
         })
+        to_resolve = sorted(set(to_resolve) | set(stale_due_validation))
         # to_resolve = tmdb_ids
         resolved = {}
         if to_resolve:
@@ -3409,6 +3409,12 @@ class EmbyServer:
                 tmdb_id_int = None
 
             emby_id = self.cached_tmdb_ids.get(tmdb_id_int if tmdb_id_int is not None else tmdb_id)
+
+            # Stale-Guard: wenn diese Emby-ID nicht in den eben geprefetchten Items vorkommt,
+            # behandle sie als "nicht auflösbar".
+            if emby_id and str(emby_id) not in emby_name_by_id:
+                logger.warning(f"[build_emby_people_from_tmdb] drop stale emby_id={emby_id} for tmdb={tmdb_id}")
+                emby_id = None
 
             # Emby-ID bekannt? → aktuellen Emby-Namen verwenden
             # if emby_id:
@@ -3475,16 +3481,12 @@ class EmbyServer:
                 tmdb_id_int = None
 
             emby_id = self.cached_tmdb_ids.get(tmdb_id_int if tmdb_id_int is not None else tmdb_id)
+            # Stale-Guard: wenn diese Emby-ID nicht in den eben geprefetchten Items vorkommt,
+            # behandle sie als "nicht auflösbar".
+            if emby_id and str(emby_id) not in emby_name_by_id:
+                logger.warning(f"[build_emby_people_from_tmdb] drop stale emby_id={emby_id} for tmdb={tmdb_id}")
+                emby_id = None
 
-            # if emby_id:
-            #     entry_name = emby_name_by_id.get(str(emby_id)) or name
-            #     try:
-            #         self.ensure_person_latin_name(str(emby_id),
-            #                                       int(tmdb_id_int if tmdb_id_int is not None else tmdb_id),
-            #                                       entry_name)
-            #     except Exception:
-            #         pass
-            # else:
             entry_name = name
 
             if not emby_id:
@@ -3642,7 +3644,7 @@ class EmbyServer:
                 if fields_param:
                     params["Fields"] = fields_param
 
-                resp = self.session.get(url, headers=self.headers, params=params, timeout=20)
+                resp = self.session.get(url, headers=self.headers, params=params, timeout=120)
                 resp.raise_for_status()
                 data = resp.json() or {}
                 items = data.get("Items") or data.get("items") or []
@@ -3691,6 +3693,8 @@ class EmbyServer:
             "item_updated": False,
         }
 
+        demoted_pids_local = set()
+
         # interne Caches (einmalig pro Prozesslauf)
 
         def _cheap_key(lst, with_id=False):
@@ -3709,16 +3713,18 @@ class EmbyServer:
         desired_people = self.build_emby_people_from_tmdb(my_cast, my_crew, provider="Tmdb")
         # return False, [], []
         # 1) Alias/ID-unabhängige Struktur (Type, Role, BaseName)
-        # names_eq = (_cheap_key(current_people, with_id=False) ==
-        #             _cheap_key(desired_people, with_id=False))
+        names_eq = (_cheap_key(current_people, with_id=False) ==
+                    _cheap_key(desired_people, with_id=False))
 
         # 2) Streng inkl. Id (falls du unterscheiden willst, ob nur Id/Name abweichen)
-        # full_eq = (_cheap_key(current_people, with_id=True) ==
-        #            _cheap_key(desired_people, with_id=True))
+        full_eq = (_cheap_key(current_people, with_id=True) ==
+                   _cheap_key(desired_people, with_id=True))
 
-        # if names_eq and full_eq:
-        #     # wirklich gar nichts zu tun
-        #     return False, [], []
+        if names_eq and full_eq:
+            # wirklich gar nichts zu tun
+            return False, "", []
+
+        # return False, "", []
 
         # ... dein _cheap_key / names_eq / full_eq oben ...
 
@@ -4030,23 +4036,35 @@ class EmbyServer:
             if clean in need_alias_names:
                 need_alias = True
             if not need_alias:
+                # einmal lokal pro Lauf merken, damit derselbe pid nicht doppelt demotet wird
+                # (am Anfang von sync_people definieren, direkt nach den Log-Variablen):
+                # demoted_pids_local = set()
+
                 cur_pid = cur_by_name.get(clean)
                 if cur_pid and cur_pid != pid:
                     need_alias = True
-                    self._demote_duplicate_person(cur_pid)
-            if not need_alias:
-                cur_pid = cur_by_name.get(clean)
-                if (not cur_pid) or (cur_pid != pid):
-                    for it in _global_hits_for(clean):
-                        if (it.get("Name") or "") != clean:
-                            continue
-                        hit_id = str(it.get("Id") or "")
-                        if hit_id == pid:
-                            continue
-                        hit_tmdb = _tmdb_from_person_hit(it)
-                        if hit_tmdb and tid and str(hit_tmdb) != str(tid):
-                            need_alias = True
-                            break
+                    # Nur demoten, wenn:
+                    #  - Ziel-PID NUMERISCH ist (echte Emby-Person)
+                    #  - und der aktuelle Datensatz dieselbe TMDb-ID hat (echtes Duplikat)
+                    #    ODER keine TMDb-ID hinterlegt ist (offensichtlich „falsch/leer“)
+                    if str(pid).isdigit():
+                        cur_tmdb = _pid_tmdb_from_bulk(id_to_item, cur_pid)
+                        if (tid is not None and str(cur_tmdb) == str(tid)) or (cur_tmdb is None):
+                            if cur_pid not in demoted_pids_local:
+                                self._demote_duplicate_person(cur_pid)
+                                demoted_pids_local.add(cur_pid)
+                                try:
+                                    logger.info(
+                                        f"[sync_people] Demoted duplicate person pid={cur_pid} (name='{clean}', tmdb={cur_tmdb})")
+                                except Exception:
+                                    pass
+                        else:
+                            # False Friend (gleicher Name, andere TMDb): NICHT demoten
+                            try:
+                                self.config.Cache.add_false_friend_name(clean)
+                            except Exception:
+                                pass
+                    # Wenn pid NICHT numerisch (Alias), grundsätzlich KEIN Demote.
 
             # False-Friend anhand DB/Lokalkontext/Globalcheck ermitteln
             need_alias_ff = _is_false_friend(clean, pid, tid)
