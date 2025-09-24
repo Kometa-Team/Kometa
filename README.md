@@ -247,15 +247,6 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
 
 <!--sponsor-start-->
-## Special Thanks to our High Tier Sponsors
-
-[strcrzy](https://github.com/strcrzy)
-[merci45k](https://github.com/merci45k)
-[tecnobrat](https://github.com/tecnobrat)
-[mrbuckwheet](https://github.com/mrbuckwheet)
-
-Thank you so much for your continued support!
-
 <h1 align="center">
   ✨ GitHub Sponsors ✨
 </h1>
@@ -264,11 +255,13 @@ Thank you so much for your continued support!
  Maintenance of this project is made possible by all the <a href="https://github.com/Kometa-Team/Kometa/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/meisnate12">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/meisnate12">click here</a>. 💖</p>
 
 <p align="center">
-<!-- real-premium --><a href="https://github.com/github"><img src="https:&#x2F;&#x2F;github.com&#x2F;github.png" width="80px" alt="User avatar: github" /></a>&nbsp;&nbsp;<a href="https://github.com/annegentle"><img src="https:&#x2F;&#x2F;github.com&#x2F;annegentle.png" width="80px" alt="User avatar: annegentle" /></a>&nbsp;&nbsp;<a href="https://github.com/tonjohn"><img src="https:&#x2F;&#x2F;github.com&#x2F;tonjohn.png" width="80px" alt="User avatar: tonjohn" /></a>&nbsp;&nbsp;<a href="https://github.com/Zhenglei-BCS"><img src="https:&#x2F;&#x2F;github.com&#x2F;Zhenglei-BCS.png" width="80px" alt="User avatar: Zhenglei-BCS" /></a>&nbsp;&nbsp;<a href="https://github.com/"><img src="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;JamesIves&#x2F;github-sponsors-readme-action&#x2F;dev&#x2F;.github&#x2F;assets&#x2F;placeholder.png" width="80px" alt="User avatar: " /></a>&nbsp;&nbsp;<!-- real-premium -->
+<!-- real-premium --><!-- real-premium -->
 </p>
 
 <p align="center">
-<!-- real-sponsors --><a href="https://github.com/Chooksta69"><img src="https:&#x2F;&#x2F;github.com&#x2F;Chooksta69.png" width="50px" alt="User avatar: Chooksta69" /></a>&nbsp;&nbsp;<a href="https://github.com/MattWillFlood"><img src="https:&#x2F;&#x2F;github.com&#x2F;MattWillFlood.png" width="50px" alt="User avatar: MattWillFlood" /></a>&nbsp;&nbsp;<a href="https://github.com/jonathan-milan-pollock"><img src="https:&#x2F;&#x2F;github.com&#x2F;jonathan-milan-pollock.png" width="50px" alt="User avatar: jonathan-milan-pollock" /></a>&nbsp;&nbsp;<a href="https://github.com/raoulvdberge"><img src="https:&#x2F;&#x2F;github.com&#x2F;raoulvdberge.png" width="50px" alt="User avatar: raoulvdberge" /></a>&nbsp;&nbsp;<a href="https://github.com/robjtede"><img src="https:&#x2F;&#x2F;github.com&#x2F;robjtede.png" width="50px" alt="User avatar: robjtede" /></a>&nbsp;&nbsp;<a href="https://github.com/hadley"><img src="https:&#x2F;&#x2F;github.com&#x2F;hadley.png" width="50px" alt="User avatar: hadley" /></a>&nbsp;&nbsp;<a href="https://github.com/kevinchalet"><img src="https:&#x2F;&#x2F;github.com&#x2F;kevinchalet.png" width="50px" alt="User avatar: kevinchalet" /></a>&nbsp;&nbsp;<a href="https://github.com/Yousazoe"><img src="https:&#x2F;&#x2F;github.com&#x2F;Yousazoe.png" width="50px" alt="User avatar: Yousazoe" /></a>&nbsp;&nbsp;<a href="https://github.com/planetoftheweb"><img src="https:&#x2F;&#x2F;github.com&#x2F;planetoftheweb.png" width="50px" alt="User avatar: planetoftheweb" /></a>&nbsp;&nbsp;<a href="https://github.com/melton1968"><img src="https:&#x2F;&#x2F;github.com&#x2F;melton1968.png" width="50px" alt="User avatar: melton1968" /></a>&nbsp;&nbsp;<a href="https://github.com/szepeviktor"><img src="https:&#x2F;&#x2F;github.com&#x2F;szepeviktor.png" width="50px" alt="User avatar: szepeviktor" /></a>&nbsp;&nbsp;<a href="https://github.com/sckott"><img src="https:&#x2F;&#x2F;github.com&#x2F;sckott.png" width="50px" alt="User avatar: sckott" /></a>&nbsp;&nbsp;<a href="https://github.com/provinzkraut"><img src="https:&#x2F;&#x2F;github.com&#x2F;provinzkraut.png" width="50px" alt="User avatar: provinzkraut" /></a>&nbsp;&nbsp;<a href="https://github.com/electrovir"><img src="https:&#x2F;&#x2F;github.com&#x2F;electrovir.png" width="50px" alt="User avatar: electrovir" /></a>&nbsp;&nbsp;<a href="https://github.com/Griefed"><img src="https:&#x2F;&#x2F;github.com&#x2F;Griefed.png" width="50px" alt="User avatar: Griefed" /></a>&nbsp;&nbsp;<a href="https://github.com/MontezumaIves"><img src="https:&#x2F;&#x2F;github.com&#x2F;MontezumaIves.png" width="50px" alt="User avatar: MontezumaIves" /></a>&nbsp;&nbsp;<a href="https://github.com/wylie"><img src="https:&#x2F;&#x2F;github.com&#x2F;wylie.png" width="50px" alt="User avatar: wylie" /></a>&nbsp;&nbsp;<a href="https://github.com/pylapp"><img src="https:&#x2F;&#x2F;github.com&#x2F;pylapp.png" width="50px" alt="User avatar: pylapp" /></a>&nbsp;&nbsp;<a href="https://github.com/"><img src="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;JamesIves&#x2F;github-sponsors-readme-action&#x2F;dev&#x2F;.github&#x2F;assets&#x2F;placeholder.png" width="50px" alt="User avatar: " /></a>&nbsp;&nbsp;<a href="https://github.com/"><img src="https:&#x2F;&#x2F;raw.githubusercontent.com&#x2F;JamesIves&#x2F;github-sponsors-readme-action&#x2F;dev&#x2F;.github&#x2F;assets&#x2F;placeholder.png" width="50px" alt="User avatar: " /></a>&nbsp;&nbsp;<!-- real-sponsors -->
+<!-- real-sponsors --><!-- real-sponsors -->
 </p>
+
+Thank you so much for your continued support!
 
 <!--sponsor-end-->
