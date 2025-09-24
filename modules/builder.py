@@ -1592,12 +1592,12 @@ class CollectionBuilder:
                         if award_filter in award_names:
                             final_awards.append(award_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join(award_names)}]")
                     for category_filter in category_filters:
                         if category_filter in category_names:
                             final_category.append(category_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join(category_names)}]")
                 self.builders.append((method_name, {
                     "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
                     "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
