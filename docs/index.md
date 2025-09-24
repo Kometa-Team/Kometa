@@ -227,3 +227,9 @@ hide:
     start="<!--discord-start-->"
     end="<!--discord-end-->"
 %}
+
+{%
+    include-markdown "../README.md"
+    start="<!--sponsor-start-->"
+    end="<!--sponsor-end-->"
+%}
