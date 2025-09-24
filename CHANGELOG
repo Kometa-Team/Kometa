@@ -25,6 +25,7 @@ Add Atres Player as streaming service
 Add AMC+ as streaming service
 Add Filmin as streaming service
 Update BAFTA Best Films to include BAFTA Award for Best Film From Any Source
+Fixes #2806 separators placeholder now work with minimum items.
 
 # Bug Fixes
 Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
