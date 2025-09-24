@@ -123,6 +123,7 @@ jobs:
             echo "" > "PART"
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
+            git add README.md
             git add VERSION
             git add PART
             git commit -m "${new_msg}" --amend

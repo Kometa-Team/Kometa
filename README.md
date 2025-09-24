@@ -247,12 +247,9 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
 
 <!--sponsor-start-->
-<h1 align="center">
-  ✨ GitHub Sponsors ✨
-</h1>
+## GitHub Sponsors
 
-<p align="center">
- Maintenance of this project is made possible by all the <a href="https://github.com/Kometa-Team/Kometa/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/meisnate12">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/meisnate12">click here</a>. 💖</p>
+Maintenance of this project is made possible by all the <a href="https://github.com/Kometa-Team/Kometa/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/meisnate12">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/meisnate12">click here</a>. 💖
 
 <p align="center">
 <!-- real-premium --><!-- real-premium -->
@@ -263,5 +260,4 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 </p>
 
 Thank you so much for your continued support!
-
 <!--sponsor-end-->
