@@ -14,6 +14,7 @@ templates:
       - placeholder_tmdb_movie
       - placeholder_tvdb_show
       - placeholder_imdb_id
+      - minimum_items
       - summary_<<key>>
       - name_<<key>>
       - key_name
@@ -28,12 +29,21 @@ templates:
             value: false
           - placeholder_imdb_id.exists: true
             value: false
+      minimum_items:
+        conditions:
+          - placeholder_tmdb_movie.exists: true
+            value: 1
+          - placeholder_tvdb_show.exists: true
+            value: 1
+          - placeholder_imdb_id.exists: true
+            value: 1
     run_definition: <<use_separator>>
     collection_mode: <<collection_mode>>
     sort_title: <<sort_title>>
     tmdb_movie: <<placeholder_tmdb_movie>>
     tvdb_show: <<placeholder_tvdb_show>>
     imdb_id: <<placeholder_imdb_id>>
+    minimum_items: <<minimum_items>>
     blank_collection: <<use_blank>>
     url_poster: <<url_poster_<<key>>>>
     translation_key: <<translation_key>>
