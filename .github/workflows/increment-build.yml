@@ -73,7 +73,6 @@ jobs:
           marker: 'real-sponsors'
           active-only: false
           include-private: true
-          organization: true
 
       - name: Generate Sponsors 💖
         uses: JamesIves/github-sponsors-readme-action@v1
@@ -85,7 +84,6 @@ jobs:
           marker: 'real-premium'
           active-only: false
           include-private: true
-          organization: true
 
       - name: Update VERSION File
         id: update-version
