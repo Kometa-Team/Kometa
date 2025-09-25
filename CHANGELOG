@@ -27,3 +27,4 @@ Update BAFTA Best Films to include BAFTA Award for Best Film From Any Source
 # Bug Fixes
 Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
 Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
+Fix logic issue in inflight Trakt reauth
