@@ -63,27 +63,20 @@ jobs:
           ref: nightly
           fetch-depth: 0
 
-      - name: Generate Sponsors 💖
-        uses: JamesIves/github-sponsors-readme-action@v1
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          token: ${{ secrets.PAT2 }}
-          file: 'README.md'
-          maximum: 2499
-          template: '<a href="https://github.com/{{{ login }}}"><img src="{{{ avatarUrl }}}" width="50px" alt="User avatar: {{{ login }}}" /></a>&nbsp;&nbsp;'
-          marker: 'real-sponsors'
-          active-only: false
-          include-private: true
+          python-version: "3.x"
 
-      - name: Generate Sponsors 💖
-        uses: JamesIves/github-sponsors-readme-action@v1
-        with:
-          token: ${{ secrets.PAT2 }}
-          file: 'README.md'
-          minimum: 2500
-          template: '<a href="https://github.com/{{{ login }}}"><img src="{{{ avatarUrl }}}" width="80px" alt="User avatar: {{{ login }}}" /></a>&nbsp;&nbsp;'
-          marker: 'real-premium'
-          active-only: false
-          include-private: true
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate Sponsors
+        env:
+          GITHUB_PAT: ${{ secrets.PAT2 }}
+        run: python .github/python/update_sponsors.py
 
       - name: Update VERSION File
         id: update-version
