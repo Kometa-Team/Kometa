@@ -86,7 +86,7 @@
 {% include-markdown "./base/collection/variables_header.md" exclude-tags="separator" %}
     {%
         include-markdown "./../variable_list.md"
-        include-tags="award|award-data|exclude|collection_mode|sync_mode|format"
+        include-tags="award|award-data|exclude|collection_mode|collection_order|sync_mode|format"
         replace='{
             "DYNAMIC_NAME": "Years", 
             "DYNAMIC_VALUE": "Years",

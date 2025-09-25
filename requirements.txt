@@ -1,12 +1,12 @@
 arrapi==1.4.14
 cloudscraper==1.2.71
 GitPython==3.1.45
-lxml==6.0.1
+lxml==6.0.2
 num2words==0.5.14
 pathvalidate==3.3.1
 pillow==11.3.0
 PlexAPI==4.17.1
-psutil==7.0.0
+psutil==7.1.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
 pywin32==311; sys_platform == 'win32'
@@ -15,4 +15,4 @@ ruamel.yaml==0.18.15
 schedule==1.2.2
 setuptools==80.9.0
 tenacity==9.1.2
-tmdbapis==1.2.28
+tmdbapis==1.2.30

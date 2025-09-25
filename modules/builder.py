@@ -472,9 +472,9 @@ class CollectionBuilder:
                     self.builder_level = level
                 elif (self.library.is_show and level != "show") or (self.library.is_music and level != "artist"):
                     if self.library.is_show:
-                        options = "\n\tseason (Collection at the Season Level)\n\tepisode (Collection at the Episode Level)"
+                        options = "\n    season (Collection at the Season Level)\n    episode (Collection at the Episode Level)"
                     else:
-                        options = "\n\talbum (Collection at the Album Level)\n\ttrack (Collection at the Track Level)"
+                        options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
                     raise Failed(f"{self.Type} Error: {self.data[methods['builder_level']]} builder_level invalid{options}")
         self.parts_collection = self.builder_level in plex.builder_level_options
 
@@ -989,7 +989,7 @@ class CollectionBuilder:
                         raise Failed(f"{self.Type} Error: collection_order: {ts} is invalid. Options: {', '.join(sorts)}")
                     self.custom_sort.append(ts)
             if test_sort not in plex.collection_order_options + ["custom.asc", "custom.desc"] and not self.custom_sort:
-                raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n\trelease (Order Collection by release dates)\n\talpha (Order Collection Alphabetically)\n\tcustom.asc/custom.desc (Custom Order Collection)\n\tOther sorting options can be found at https://github.com/Kometa-Team/Kometa/wiki/Smart-Builders#sort-options")
+                raise Failed(f"{self.Type} Error: {test_sort} collection_order invalid\n    release (Order Collection by release dates)\n    alpha (Order Collection Alphabetically)\n    custom.asc/custom.desc (Custom Order Collection)\n    Other sorting options can be found at https://github.com/Kometa-Team/Kometa/wiki/Smart-Builders#sort-options")
 
         if self.smart:
             self.custom_sort = None
@@ -1272,7 +1272,7 @@ class CollectionBuilder:
             if method_data and str(method_data).lower() in plex.collection_filtering_options:
                 self.details[method_name] = str(method_data).lower()
             else:
-                logger.error(f"Config Error: {method_data} collection_filtering invalid\n\tadmin (Always the server admin user)\n\tuser (User currently viewing the content)")
+                logger.error(f"Config Error: {method_data} collection_filtering invalid\n    admin (Always the server admin user)\n    user (User currently viewing the content)")
         elif method_name == "minimum_items":
             self.minimum = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1)
         elif method_name == "cache_builders":
@@ -1592,12 +1592,12 @@ class CollectionBuilder:
                         if award_filter in award_names:
                             final_awards.append(award_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join([v for _, v in award_names.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join(award_names)}]")
                     for category_filter in category_filters:
                         if category_filter in category_names:
                             final_category.append(category_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join([v for _, v in category_names.items()])}]")
+                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join(category_names)}]")
                 self.builders.append((method_name, {
                     "event_id": event_id, "event_year": event_year, "award_filter": final_awards if final_awards else None, "category_filter": final_category if final_category else None,
                     "winning": util.parse(self.Type, "winning", dict_data, parent=method_name, methods=dict_methods, datatype="bool", default=False)
