@@ -1771,10 +1771,10 @@ class Plex(Library):
             item_type = "track"
         else:
             return True
-        item = self.reload(item)
         if filter_attr not in builder.filters[item_type]:
             return True
-        elif filter_attr in builder.date_filters:
+        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        if filter_attr in builder.date_filters:
             if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
