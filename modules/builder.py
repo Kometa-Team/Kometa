@@ -61,12 +61,12 @@ item_details = ["non_item_remove_label", "item_label", "item_genre", "item_editi
 none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
 none_builders = ["radarr_taglist", "sonarr_taglist"]
 radarr_details = [
-    "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
-    "radarr_search", "radarr_availability", "radarr_quality", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
+    "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_root_folder_path", "radarr_monitor",
+    "radarr_search", "radarr_availability", "radarr_quality", "radarr_quality_profile", "radarr_tag", "item_radarr_tag", "radarr_ignore_cache",
 ]
 sonarr_details = [
-    "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_folder", "sonarr_monitor", "sonarr_language",
-    "sonarr_series", "sonarr_quality", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag", "sonarr_ignore_cache"
+    "sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_folder", "sonarr_root_folder_path", "sonarr_monitor", "sonarr_language", "sonarr_language_profile",
+    "sonarr_series", "sonarr_series_type", "sonarr_quality", "sonarr_quality_profile", "sonarr_season", "sonarr_season_folder", "sonarr_search", "sonarr_cutoff_search", "sonarr_tag", "item_sonarr_tag", "sonarr_ignore_cache"
 ]
 album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
 sub_filters = [
@@ -1371,14 +1371,14 @@ class CollectionBuilder:
     def _radarr(self, method_name, method_data):
         if method_name in ["radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_search", "radarr_monitor", "radarr_ignore_cache"]:
             self.radarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
-        elif method_name == "radarr_folder":
+        elif method_name in ["radarr_folder", "radarr_root_folder_path"]:
             self.radarr_details["folder"] = method_data
         elif method_name == "radarr_availability":
             if str(method_data).lower() in radarr.availability_translation:
                 self.radarr_details["availability"] = str(method_data).lower()
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either announced, cinemas, released or db")
-        elif method_name == "radarr_quality":
+        elif method_name in ["radarr_quality", "radarr_quality_profile"]:
             self.radarr_details["quality"] = method_data
         elif method_name == "radarr_tag":
             self.radarr_details["tag"] = util.get_list(method_data, lower=True)
@@ -1388,16 +1388,22 @@ class CollectionBuilder:
             self.builders.append((method_name, True))
 
     def _sonarr(self, method_name, method_data):
-        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_season", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
+        if method_name in ["sonarr_add_missing", "sonarr_add_existing", "sonarr_upgrade_existing", "sonarr_monitor_existing", "sonarr_search", "sonarr_cutoff_search", "sonarr_ignore_cache"]:
             self.sonarr_details[method_name[7:]] = util.parse(self.Type, method_name, method_data, datatype="bool")
-        elif method_name in ["sonarr_folder", "sonarr_quality", "sonarr_language"]:
-            self.sonarr_details[method_name[7:]] = method_data
+        elif method_name in ["sonarr_season", "sonarr_season_folder"]:
+            self.sonarr_details["season"] = method_data
+        elif method_name in ["sonarr_folder", "sonarr_root_folder_path"]:
+            self.sonarr_details["folder"] = method_data
+        elif method_name in ["sonarr_quality", "sonarr_quality_profile"]:
+            self.sonarr_details["quality"] = method_data
+        elif method_name in ["sonarr_language", "sonarr_language_profile"]:
+            self.sonarr_details["language"] = method_data
         elif method_name == "sonarr_monitor":
             if str(method_data).lower() in sonarr.monitor_translation:
                 self.sonarr_details["monitor"] = str(method_data).lower()
             else:
                 raise Failed(f"{self.Type} Error: {method_name} attribute must be either all, future, missing, existing, pilot, first, latest or none")
-        elif method_name == "sonarr_series":
+        elif method_name in ["sonarr_series", "sonarr_series_type"]:
             if str(method_data).lower() in sonarr.series_types:
                 self.sonarr_details["series"] = str(method_data).lower()
             else:
