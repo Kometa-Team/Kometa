@@ -32,3 +32,4 @@ Don't assume details of the IMDb API response structure, offer "private list" as
 Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
 Fixes #2802 the list now acts as a list
 Fixes logic issue with reauthenticating trakt
+Fixes an issue with the `dovi` attribute of `plex_search` where shows and seasons never returned anything
