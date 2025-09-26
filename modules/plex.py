@@ -1794,6 +1794,10 @@ class Plex(Library):
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
                 values = [loc for loc in item.locations if loc]
+            elif filter_attr == "season_title":
+                values = [item.season().title]
+            elif filter_attr == "show_title":
+                values = [item.show().title]
             else:
                 test_value = getattr(item, filter_actual)
                 values = [test_value] if test_value else []
