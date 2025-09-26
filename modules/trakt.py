@@ -201,12 +201,6 @@ class Trakt:
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _request(self, url, params=None, json_data=None):
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.authorization['access_token']}",
-            "trakt-api-version": "2",
-            "trakt-api-key": self.client_id
-        }
         output_json = []
         if params is None:
             params = {}
@@ -218,6 +212,12 @@ class Trakt:
         if json_data:
             logger.trace(f"JSON: {json_data}")
         while current <= pages:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {self.authorization['access_token']}",
+                "trakt-api-version": "2",
+                "trakt-api-key": self.client_id
+            }
             if pages > 1:
                 params["page"] = current
             if json_data is not None:
