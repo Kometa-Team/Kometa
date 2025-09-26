@@ -2723,9 +2723,14 @@ class CollectionBuilder:
             used = []
             for reg in util.validate_regex(data, self.Type, validate=validate):
                 for name, key in names:
-                    if name not in used and re.compile(reg).search(name):
-                        used.append(name)
-                        valid_list.append((name, key) if plex_search else name)
+                    if plex_search:
+                        if name not in used and re.compile(reg).search(name):
+                            used.append(name)
+                            valid_list.append((name, key))
+                    else:
+                        if re.compile(reg).search(name):
+                            valid_list.append(reg)
+                            break
             if not valid_list:
                 error = f"Plex Error: {attribute}: No matches found with regex pattern {data}"
                 if self.details["show_options"]:
