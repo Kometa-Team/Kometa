@@ -120,6 +120,7 @@ show_translation = {
     "lastViewedAt": "show.lastViewedAt",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
+    "dovi": "episode.dovi",
     "subtitleLanguage": "episode.subtitleLanguage",
     "audioLanguage": "episode.audioLanguage",
     "trash": "episode.trash",
