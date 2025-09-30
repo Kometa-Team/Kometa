@@ -84,6 +84,7 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | Definitive          | `definitive`    | `7`    |
 | Open Matte          | `openmatte`     | `6`    |
 | Ulysses             | `ulysses`       | `5`    |
+| Producer's Cut      | `producers`     | `4`    |
 
 ## "Dovetail" versions
 
