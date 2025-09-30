@@ -76,6 +76,7 @@ external_templates:
               - Black-And-Chrome
               - Definitive
               - Ulysses
+              - Producers-Cut
       final_horizontal_offset:
         default: <<horizontal_offset>>
         conditions:
@@ -423,6 +424,9 @@ overlays:
   Ulysses-Dovetail:
     variables: {key: ulysses, weight: 5, search: Ulysses, type: edition_dovetail, allowed_libraries: movie}
     template: [name: edition, name: standard]
+  Producers-Cut-Dovetail:
+    variables: {key: producers, weight: 4, search: Producer, type: edition_dovetail, allowed_libraries: movie}
+    template: [name: edition, name: standard]
 
   4K-DV-HDR-Plus:
     variables: {key: 4k, alt: dvhdrplus, weight: 159, type: resolution}
@@ -601,4 +605,7 @@ overlays:
     template: [name: edition, name: standard]
   Ulysses:
     variables: {key: ulysses, weight: 5, search: Ulysses, type: edition, allowed_libraries: movie}
+    template: [name: edition, name: standard]
+  Producers-Cut:
+    variables: {key: producers, weight: 4, search: Producer, type: edition, allowed_libraries: movie}
     template: [name: edition, name: standard]
