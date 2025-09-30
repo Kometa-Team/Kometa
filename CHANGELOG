@@ -1,43 +1,38 @@
 # Requirements Update (requirements will need to be reinstalled)
-Update gitpython requirement to 3.1.45
-Update lxml requirement to 6.0.0
-Update pathvalidate requirement to 3.3.1
-Update pillow requirement to 11.3.0
-Update plexapi requirement to 4.17.0
-Update python-dotenv requirement to 1.1.1
-Update pywin32 requirement to 311
-Update requests requirement to 2.32.4
-Update ruamel-yaml requirement to 0.18.14
-Update setuptools requirement to 80.9.0
-Update tenacity requirement to 9.1.2
+Updated arrapi requirement to 1.4.14
+Updated lxml requirement to 6.0.2
+Updated plexapi requirement to 4.17.1
+Updated psutil requirement to 7.1.0
+Updated ruamel-yaml requirement to 0.18.15
+Updated requests requirement to 2.32.5
+Updated tmdbapis requirement to 1.2.30
 
 # Important Changes
+Sponsors have a nice call out on the homepage of the wiki and on the projects Readme
 
 # New Features
-Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
-Added support for updating logos via the asset directories as well **credit to @Joost1991**
-Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
+Adds `|` as a preferred delimiter for run times.
+Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
+Adds new filters `show_title` and `season_title`
 Added Producer's Cut default overlay to the resolution/edition default overlays
-IMDb episodes found in a list for a show collection will now add that episode's show to the collection
-Adds `force_refresh` Trakt setting; this tells Kometa to refresh the token on every run without checking it first
-Adds a log of the response from Trakt which triggers the "No Valid Lists" error.
-Adds `assets_for_all_collections` library operation; this tells Kometa to add asset artwork to unmanaged and unconfigured collections
 
 # Docs
-Adds overlay guide
-Adds TrueNAS walkthrough
-Adds notes on Github tokens
-Adds screenshot of UNRaid Console menu
+Fixed an issue where the home page logo and shield images appeared as raw text
+Fixed an issue where the builder overview page had multiple dead links
+Added some clarification on Library types to defaults pages
 
 # Defaults
-[Franchise] Updates 'NCIS' list to include NCIS: Origins and NCIS: Tony & Ziva. Adds 'Spartacus', 'Death in Paradise' and 'Reacher' to the franchise lists
-[Universe] Change the DC Animated Universe list to a mdblist
+Add Movistar Plus + as streaming service
+Add Atres Player as streaming service
+Add AMC+ as streaming service
+Add Filmin as streaming service
+Update BAFTA Best Films to include BAFTA Award for Best Film From Any Source
+Fixes #2806 separators placeholder now work with minimum items.
 
 # Bug Fixes
-
-Fixed an issue where Playlists could not add to both Radarr and Sonarr in a single run
-Fixed an issue where `trakt_list_details` would not find a list's summary if it was an "official" Trakt list
-Fixed an issue where log file paths with >2 periods would cause a ValueError
-Fixed an issue with IMDb Awards
-Restored image language settings after change in base image
-Fixed an issue with IMDb List and Watchlist
+Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
+Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
+Fixes #2802 the list now acts as a list
+Fixes logic issue with reauthenticating trakt
+Fixes an issue with the `dovi` attribute of `plex_search` where shows and seasons never returned anything
+Fixes `.regex` tag filters
