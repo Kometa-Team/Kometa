@@ -17,6 +17,7 @@ Update tenacity requirement to 9.1.2
 Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
 Added support for updating logos via the asset directories as well **credit to @Joost1991**
 Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
+Added Producer's Cut default overlay to the resolution/edition default overlays
 IMDb episodes found in a list for a show collection will now add that episode's show to the collection
 Adds `force_refresh` Trakt setting; this tells Kometa to refresh the token on every run without checking it first
 Adds a log of the response from Trakt which triggers the "No Valid Lists" error.
