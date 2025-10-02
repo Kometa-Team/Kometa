@@ -277,8 +277,8 @@ Here is a quick example of how a config.yml extract looks in Visual Studio Code 
         <th style="text-align: center">Notepad</th>
     </thead>
     <tr>
-        <td><img src="../../assets/images/kometa/guides/vscode.png" alt="vscode"></td>
-        <td><img src="../../assets/images/kometa/guides/notepad.png" alt="notepad"></td>
+        <td><img src="../assets/images/kometa/guides/vscode.png" alt="vscode"></td>
+        <td><img src="../assets/images/kometa/guides/notepad.png" alt="notepad"></td>
     </tr>
 </table>
 

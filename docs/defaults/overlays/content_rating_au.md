@@ -14,15 +14,15 @@ hide:
     end='<!--table-before-->'
 %}
 
-| Rating | Key   |
-|:-------|:------|
-| G      | `g`   |
-| PG     | `pg`  |
-| M      | `m`   |
-| MA15+  | `ma`  |
-| R18+   | `r`   |
-| X18+   | `x`   |
-| NR     | `nr`  |
+| Rating | Key  |
+|:-------|:-----|
+| G      | `g`  |
+| PG     | `pg` |
+| M      | `m`  |
+| MA15+  | `ma` |
+| R18+   | `r`  |
+| X18+   | `x`  |
+| NR     | `nr` |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
