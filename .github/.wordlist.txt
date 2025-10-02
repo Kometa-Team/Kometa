@@ -12,6 +12,8 @@ anidb
 anidb's
 anilist
 anilist's
+anonfawkes
+antwanchild
 api
 apikey
 apis
@@ -212,6 +214,7 @@ monetization
 mossi
 movistar
 mpaa
+mrbuckwheet
 mx
 myanimelist
 myanimelist's
