@@ -429,6 +429,7 @@ nav:
         - Userlist: files/builders/anilist/userlist.md
       - MyAnimeList:
         - Overview: files/builders/myanimelist/overview.md
+        - Airing: files/builders/myanimelist/airing.md
         - All: files/builders/myanimelist/all.md
         - Favorite: files/builders/myanimelist/favorite.md
         - ID: files/builders/myanimelist/id.md
