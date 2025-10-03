@@ -39,20 +39,20 @@ class Convert:
                     self._anilist_to_anidb[anilist_id] = anidb_id
             if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):
                 self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
-                for im_id in util.get_list(ids["imdb_id"]):
+                for im_id in self._anidb_to_imdb[anidb_id]:
                     self._imdb_to_anidb[im_id] = anidb_id
             if "tvdb_id" in ids:
                 self._anidb_to_tvdb[anidb_id] = int(ids["tvdb_id"])
                 if "tvdb_season" in ids and ids["tvdb_season"] in [1, -1] and ids["tvdb_epoffset"] == 0:
                     self._tvdb_to_anidb[int(ids["tvdb_id"])] = anidb_id
             if "tmdb_movie_id" in ids:
-                self._anidb_to_tmdb_movie[anidb_id] = util.get_list(ids["tmdb_movie_id"])
-                for tm_id in util.get_list(ids["tmdb_movie_id"]):
-                    self._tmdb_movie_to_anidb[int(tm_id)] = anidb_id
+                self._anidb_to_tmdb_movie[anidb_id] = util.get_list(ids["tmdb_movie_id"], int_list=True)
+                for tm_id in self._anidb_to_tmdb_movie[anidb_id]:
+                    self._tmdb_movie_to_anidb[tm_id] = anidb_id
             if "tmdb_show_id" in ids:
-                self._anidb_to_tmdb_show[anidb_id] = util.get_list(ids["tmdb_show_id"])
-                for tm_id in util.get_list(ids["tmdb_show_id"]):
-                    self._tmdb_show_to_anidb[int(tm_id)] = anidb_id
+                self._anidb_to_tmdb_show[anidb_id] = util.get_list(ids["tmdb_show_id"], int_list=True)
+                for tm_id in self._anidb_to_tmdb_show[anidb_id]:
+                    self._tmdb_show_to_anidb[tm_id] = anidb_id
 
     def imdb_to_anidb(self, imdb_id):
         if imdb_id in self._imdb_to_anidb:
