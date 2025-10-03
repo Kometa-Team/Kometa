@@ -10,12 +10,12 @@ The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multi
 
 You can add different filters directly to this Builder.
 
-| Filter Attribute                                                                                  | Description                                                                                                                                                                                                 |
-|:--------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Filter Attribute                                                                                  | Description                                                                                                                                                                                                |
+|:--------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `limit`                                                                                           | **Description:** Max number of items per returned.<br>**Values:** number greater than `1`                                                                                                                  |
 | `rating` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-1" } | **Description:** Search for the specified rating range. The rating is the list owner's rating not site wide rating.<br>**Values:** range of int i.e. `8-10` (convert Letterboxd stars to a 10 point scale) |
-| `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-1" }   | **Description:** Search for the specified year range.<br>**Values:** range of int i.e. `1990-1999`                                                                                              |
-| `note` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-2" }   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:** Any String                                                     |
+| `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-1" }   | **Description:** Search for the specified year range.<br>**Values:** range of int i.e. `1990-1999`                                                                                                         |
+| `note` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-2" }   | **Description:** Search for the specified value in the note. The note is the list owner's note not site wide note.<br>**Values:** Any String                                                               |
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 

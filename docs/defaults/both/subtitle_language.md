@@ -13,8 +13,8 @@ hide:
     }'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Subtitle Language"}' %}
-| `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn` | Collection of Movies/Shows that have this Subtitle Language.                   |
-| `Other Subtitles`                                        | `other`                                                                                  | Collection of Movies/Shows that are less common Languages.                     |
+| `<<Subtitle Language>> Audio`<br>**Example:** `Japanese` | `<<ISO 639-1 Code>>`<br>**Example:** `ja` <br>`<<ISO 639-2 Code>>`<br>**Example:** `myn` | Collection of Movies/Shows that have this Subtitle Language. |
+| `Other Subtitles`                                        | `other`                                                                                  | Collection of Movies/Shows that are less common Languages.   |
 
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "subtitle_language"}' include-tags='all|movie|show' %}
     ```yaml

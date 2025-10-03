@@ -29,10 +29,10 @@ Builders use third-party services to source items to be added to the collection.
 
     ??? quicklink "Popular Builders"
 
-        - [:simple-themoviedatabase: TMDb Collection](../tmdb/collection) - Gets every movie/show in your library.
-        - [:simple-themoviedatabase: TMDb List](../tmdb/list) - Gets every movie/show in your Watchlist.
-        - [:simple-themoviedatabase: TMDb Company](../tmdb/company) - Gets the first episode of every show in your library.
-        - [:simple-themoviedatabase: TMDb Network](../tmdb/network) - Gets the first episode of every show in your library.
+        - [:simple-themoviedatabase: TMDb Collection](../tmdb/standard/collection) - Gets every movie/show in your library.
+        - [:simple-themoviedatabase: TMDb List](../tmdb/standard/list) - Gets every movie/show in your Watchlist.
+        - [:simple-themoviedatabase: TMDb Company](../tmdb/standard/company) - Gets the first episode of every show in your library.
+        - [:simple-themoviedatabase: TMDb Network](../tmdb/standard/network) - Gets the first episode of every show in your library.
 
 !!! builder
 

@@ -20,11 +20,11 @@ mal:
     refresh_token: r3fr3sht0k3ng0e5h3r3
 ```
 
-| Attribute       | Description                                | Allowed Values (default in **bold**)         |                   Required                   |
-|:----------------|:-------------------------------------------|:---------------------------------------------|:--------------------------------------------:|
-| `client_id`     | MyAnimeList application client ID.         | Any valid ID or leave **blank**              |  :fontawesome-solid-circle-check:{ .green }  |
-| `client_secret` | MyAnimeList application client secret.     | Any valid secret or leave **blank**          |  :fontawesome-solid-circle-check:{ .green }  |
-| `localhost_url` | Redirect URL used for authorization flow.  | Valid localhost URL or leave **blank**       | :fontawesome-solid-circle-xmark:{ .red }     |
+| Attribute       | Description                               | Allowed Values (default in **bold**)   |                  Required                  |
+|:----------------|:------------------------------------------|:---------------------------------------|:------------------------------------------:|
+| `client_id`     | MyAnimeList application client ID.        | Any valid ID or leave **blank**        | :fontawesome-solid-circle-check:{ .green } |
+| `client_secret` | MyAnimeList application client secret.    | Any valid secret or leave **blank**    | :fontawesome-solid-circle-check:{ .green } |
+| `localhost_url` | Redirect URL used for authorization flow. | Valid localhost URL or leave **blank** |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 *All other attributes will be filled in by Kometa as part of the authentication process*

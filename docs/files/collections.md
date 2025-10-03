@@ -59,12 +59,12 @@ All Time (Worldwide)" will be created/updated.
 
 Collection Files can utilize the following top-level attributes
 
-| Attribute                                          | Description                                                                                                               |
-|:---------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
-| [`collections`](#collection-operations-attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
-| [`dynamic_collections`](#dynamic-collections)      | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
-| [`external_templates`](templates.md)               | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
-| [`templates`](templates.md)                        | contains definitions of templates that can be leveraged by multiple collections                                           |
+| Attribute                                           | Description                                                                                                               |
+|:----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| [`collections`](#collection-operations--attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
+| [`dynamic_collections`](#dynamic-collections)       | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
+| [`external_templates`](templates.md)                | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
+| [`templates`](templates.md)                         | contains definitions of templates that can be leveraged by multiple collections                                           |
 
 * One of `metadata`, `collections` or `dynamic_collections` must be present for the File to run, else you will receive 
 an error when trying to run the file against your library.

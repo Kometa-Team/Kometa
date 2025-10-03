@@ -15,11 +15,11 @@ ntfy:
   topic: kometa  # or a different topic name
 ```
 
-| Attribute | Description               | Allowed Values (default in **bold**)        | Required                                   |
-|:----------|:---------------------------|:--------------------------------------------|:------------------------------------------:|
-| `url`     | ntfy server URL.           | Any valid URL or leave **blank**            | :fontawesome-solid-circle-check:{ .green } |
-| `token`   | ntfy user access token.    | Any valid token or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
-| `topic`   | ntfy topic name.           | Any valid topic or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
+| Attribute | Description             | Allowed Values (default in **bold**) |                  Required                  |
+|:----------|:------------------------|:-------------------------------------|:------------------------------------------:|
+| `url`     | ntfy server URL.        | Any valid URL or leave **blank**     | :fontawesome-solid-circle-check:{ .green } |
+| `token`   | ntfy user access token. | Any valid token or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
+| `topic`   | ntfy topic name.        | Any valid topic or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
 
 ## Setup
 

@@ -8,6 +8,6 @@ Each Companion Script is a separate project that has its own Docker container an
 
 | Name                   | Description                                                | Readme                                                                          |
 |:-----------------------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------|
-| `Quickstart`           | Guided Web UI for creating Configuration Files for Kometa. | [Wiki](quickstart)/[GitHub](https://github.com/Kometa-Team/Quickstart) |
+| `Quickstart`           | Guided Web UI for creating Configuration Files for Kometa. | [Wiki](quickstart)/[GitHub](https://github.com/Kometa-Team/Quickstart)          |
 | `Kometa Overlay Reset` | Script to completely remove all Kometa applied Overlays.   | [Wiki](overlay-reset.md)/[GitHub](https://github.com/Kometa-Team/Overlay-Reset) |
 | `ImageMaid`            | Script to clean up Plex's Image Cache.                     | [Wiki](imagemaid.md)/[GitHub](https://github.com/Kometa-Team/ImageMaid)         |

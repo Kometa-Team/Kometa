@@ -138,10 +138,10 @@ In addition, templates also have a few special attributes that they can use:
     <div id="conditionals" />Each conditional is identified by its mapping name under the top level `conditionals` 
     attribute can have these attributes:
 
-    |  Attribute   | Description                                                                                                                                                                                                                                                      |
-    |:------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    |  Attribute   | Description                                                                                                                                                                                                                                                                                                                                                |
+    |:------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | `conditions` | A list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of condition blocks where if all conditions are met then the variable will be the `value` specified in that condition block. Once all conditions in a block are met, that `value` will be used and no other blocks will be run.<br>**This attribute is required** |
-    |  `default`   | The default value for when no condition block is met. If default is not specified the variable becomes an optional variable.<br>**This attribute is optional**                                                                                                         |
+    |  `default`   | The default value for when no condition block is met. If default is not specified the variable becomes an optional variable.<br>**This attribute is optional**                                                                                                                                                                                             |
     
     #### Condition Blocks
 

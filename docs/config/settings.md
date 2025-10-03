@@ -1137,4 +1137,4 @@ settings:
 1. Sets the `run_order` specifically for the Movies library.
 2. Sets the `minimum_items` attribute specifically for the Movies library.
 3. Sets the global `run_order` which will apply to all libraries unless a library-level `run_order` is found, as showcased in the above example.
-4.  Sets the global `minimum_items` which will apply to all libraries unless a library-level `minimum_items` is found, as showcased in the above example.
+4. Sets the global `minimum_items` which will apply to all libraries unless a library-level `minimum_items` is found, as showcased in the above example.

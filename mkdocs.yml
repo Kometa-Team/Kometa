@@ -331,31 +331,31 @@ nav:
       - TMDb:
         - Overview: files/builders/tmdb/overview.md
         - Standard:
-          - Collection: files/builders/tmdb/collection.md
-          - Company: files/builders/tmdb/company.md
-          - Keyword: files/builders/tmdb/keyword.md
-          - List: files/builders/tmdb/list.md
-          - Movie: files/builders/tmdb/movie.md
-          - Network: files/builders/tmdb/network.md
-          - Show: files/builders/tmdb/show.md
+          - Collection: files/builders/tmdb/standard/collection.md
+          - Company: files/builders/tmdb/standard/company.md
+          - Keyword: files/builders/tmdb/standard/keyword.md
+          - List: files/builders/tmdb/standard/list.md
+          - Movie: files/builders/tmdb/standard/movie.md
+          - Network: files/builders/tmdb/standard/network.md
+          - Show: files/builders/tmdb/standard/show.md
         - Chart:
-          - Airing Today: files/builders/tmdb/airing-today.md
-          - Now Playing: files/builders/tmdb/now-playing.md
-          - On The Air: files/builders/tmdb/on-the-air.md
-          - Popular: files/builders/tmdb/popular.md
-          - Top Rated: files/builders/tmdb/top-rated.md
-          - Trending Daily: files/builders/tmdb/trending-daily.md
-          - Trending Weekly: files/builders/tmdb/trending-weekly.md
-          - Upcoming: files/builders/tmdb/upcoming.md
+          - Airing Today: files/builders/tmdb/chart/airing-today.md
+          - Now Playing: files/builders/tmdb/chart/now-playing.md
+          - On The Air: files/builders/tmdb/chart/on-the-air.md
+          - Popular: files/builders/tmdb/chart/popular.md
+          - Top Rated: files/builders/tmdb/chart/top-rated.md
+          - Trending Daily: files/builders/tmdb/chart/trending-daily.md
+          - Trending Weekly: files/builders/tmdb/chart/trending-weekly.md
+          - Upcoming: files/builders/tmdb/chart/upcoming.md
         - Discover:
           - Movie: files/builders/tmdb/discover/movie.md
           - Show: files/builders/tmdb/discover/show.md
         - People:
-          - Actor: files/builders/tmdb/actor.md
-          - Crew: files/builders/tmdb/crew.md
-          - Director: files/builders/tmdb/director.md
-          - Producer: files/builders/tmdb/producer.md
-          - Writer: files/builders/tmdb/writer.md
+          - Actor: files/builders/tmdb/people/actor.md
+          - Crew: files/builders/tmdb/people/crew.md
+          - Director: files/builders/tmdb/people/director.md
+          - Producer: files/builders/tmdb/people/producer.md
+          - Writer: files/builders/tmdb/people/writer.md
       - TVDb:
         - Overview: files/builders/tvdb/overview.md
         - List: files/builders/tvdb/list.md
@@ -429,6 +429,7 @@ nav:
         - Userlist: files/builders/anilist/userlist.md
       - MyAnimeList:
         - Overview: files/builders/myanimelist/overview.md
+        - Airing: files/builders/myanimelist/airing.md
         - All: files/builders/myanimelist/all.md
         - Favorite: files/builders/myanimelist/favorite.md
         - ID: files/builders/myanimelist/id.md

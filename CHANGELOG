@@ -8,7 +8,8 @@ Updated requests requirement to 2.32.5
 Updated tmdbapis requirement to 1.2.30
 
 # Important Changes
-Sponsors have a nice call out on the homepage of the wiki and on the projects Readme
+Sponsor's Images are now listed on the ReadMe, Wiki Homepage, and acknowledgements page.
+Updated the Sponsorship Tier Rewards (credit to @mrbuckwheet for sponsoring and driving the updates)
 
 # New Features
 Adds `|` as a preferred delimiter for run times.
