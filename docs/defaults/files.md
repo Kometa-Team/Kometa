@@ -15,6 +15,6 @@ The below table outlines the available Defaults Files which can be called via `c
 
 These files apply playlists to the "Playlists" section of Plex and are applied by calling the below paths into the `playlist_files` section of your config.yml
 
-| Default                   | path        | Example Overlays                                       |
-|:--------------------------|:------------|:-------------------------------------------------------|
-| [Playlist](playlist.md)   | `playlist`  | Arrowverse (Timeline Order), Pokémon (Timeline Order)  |
+| Default                 | Path       | Example Overlays                                      |
+|:------------------------|:-----------|:------------------------------------------------------|
+| [Playlist](playlist.md) | `playlist` | Arrowverse (Timeline Order), Pokémon (Timeline Order) |

@@ -11,28 +11,28 @@ hide:
         "DESCRIPTION": "an overlay based on the streaming service the file is found on for each item within your library"
     }'
 %}
-| Netflix         | `netflix`         | `160` |
-| Prime Video     | `amazon`          | `150` |
-| Disney+         | `disney`          | `140` |
-| HBO Max         | `hbomax`          | `130` |
-| Crunchyroll     | `Crunchyroll`     | `120` |
-| Movistar Plus+  | `movistar`        | `115` |
-| Atres Player    | `atresplayer`     | `113` |
-| YouTube         | `youtube`         | `110` |
-| Hulu            | `hulu`            | `100` |
-| Paramount+      | `paramount`       | `90`  |
-| AMC+            | `amc`             | `85`  |
-| AppleTV         | `appletv`         | `80`  |
-| Peacock         | `peacock`         | `70`  |
-| discovery+      | `discovery`       | `58`  |
-| Crave           | `crave`           | `55`  |
-| NOW             | `now`             | `50`  |
-| Channel 4       | `channel4`        | `40`  |
-| ITVX            | `itvx`            | `30`  |
-| BET+            | `bet`             | `20`  |
-| hayu            | `hayu`            | `10`  |
-| tubi            | `tubi`            | `5`   |
-| filmin          | `filmin`          | `5`   |
+| Netflix         | `netflix`     | `160` |
+| Prime Video     | `amazon`      | `150` |
+| Disney+         | `disney`      | `140` |
+| HBO Max         | `hbomax`      | `130` |
+| Crunchyroll     | `Crunchyroll` | `120` |
+| Movistar Plus+  | `movistar`    | `115` |
+| Atres Player    | `atresplayer` | `113` |
+| YouTube         | `youtube`     | `110` |
+| Hulu            | `hulu`        | `100` |
+| Paramount+      | `paramount`   | `90`  |
+| AMC+            | `amc`         | `85`  |
+| AppleTV         | `appletv`     | `80`  |
+| Peacock         | `peacock`     | `70`  |
+| discovery+      | `discovery`   | `58`  |
+| Crave           | `crave`       | `55`  |
+| NOW             | `now`         | `50`  |
+| Channel 4       | `channel4`    | `40`  |
+| ITVX            | `itvx`        | `30`  |
+| BET+            | `bet`         | `20`  |
+| hayu            | `hayu`        | `10`  |
+| tubi            | `tubi`        | `5`   |
+| filmin          | `filmin`      | `5`   |
 
 ## Regional Variants
 
