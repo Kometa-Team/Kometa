@@ -29,11 +29,14 @@ class Reciperr:
         name = "StevenLu" if method == "stevenlu_popular" else "Reciperr"
         logger.info(f"Processing {name} Movies")
         if method == "reciperr_list":
-            ids = [(i["imdb_id"], "imdb") for i in self._request(data) if "imdb_id" in i]
+            id_data = self._request(data)
         elif method == "stevenlu_popular":
-            ids = [(i["imdb_id"], "imdb") for i in self._request(stevenlu_url, name="StevenLu")]
+            id_data = self._request(stevenlu_url, name="StevenLu")
         else:
             raise Failed(f"Config Error: Method {method} not supported")
+        ids = [(i["imdb_id"], "imdb") for i in id_data if "imdb_id" in i]
         if not ids:
+            if id_data:
+                logger.error(f"{name} Error Data: {id_data}")
             raise Failed(f"{name} Error: No IDs found.")
         return ids

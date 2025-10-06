@@ -601,10 +601,15 @@ class IMDb:
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
         if "errors" in response_json:
-            list_id = data["list_id" if list_type == "list" else "user_id"]
-            if response_json["errors"][0]["extensions"]["code"] == "RESOURCE_NOT_FOUND":
+            if list_type == "list" and "list_id" in data:
+                list_id = data["list_id"]
+            elif list_type == "watchlist" and "user_id" in data:
+                list_id = data["user_id"]
+            else:
+                list_id = None
+            if list_id and response_json["errors"][0]["extensions"]["code"] == "RESOURCE_NOT_FOUND":
                 raise Failed(f"IMDb Error: List {list_id} does not exist")
-            elif response_json["errors"][0]["extensions"]["code"] == "FORBIDDEN":
+            elif list_id and response_json["errors"][0]["extensions"]["code"] == "FORBIDDEN":
                 raise Failed(f"IMDb Error: List {list_id} is private and cannot be accessed")
             else:
                 logger.trace(response_json["errors"])
