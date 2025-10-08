@@ -1856,18 +1856,31 @@ class Plex(Library):
                 sub_items = item.episodes()
             filters_in = []
             percentage = 60
+            count = None
             for sub_atr, sub_data in filter_data.items():
                 if sub_atr == "percentage":
                     percentage = sub_data
+                elif sub_atr == "count":
+                    count = sub_data
                 else:
                     filters_in.append((sub_atr, sub_data))
-            failure_threshold = len(sub_items) * ((100 - percentage) / 100)
-            failures = 0
-            for sub_item in sub_items:
-                if self.check_filters(sub_item, filters_in, current_time) is False:
-                    failures += 1
-                if failures > failure_threshold:
+            if count is not None:
+                matches = 0
+                for sub_item in sub_items:
+                    if self.check_filters(sub_item, filters_in, current_time) is True:
+                        matches += 1
+                        if matches >= count:
+                            break
+                if matches < count:
                     return False
+            else:
+                failure_threshold = len(sub_items) * ((100 - percentage) / 100)
+                failures = 0
+                for sub_item in sub_items:
+                    if self.check_filters(sub_item, filters_in, current_time) is False:
+                        failures += 1
+                    if failures > failure_threshold:
+                        return False
         elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
             test_number = []
             if filter_attr in ["channels", "height", "width", "aspect"]:
