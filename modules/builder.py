@@ -2856,7 +2856,6 @@ class CollectionBuilder:
                 has_percentage = "percentage" in data
                 has_count = "count" in data
                 
-                # Check for mutual exclusivity
                 if has_percentage and has_count:
                     raise Failed(f"{self.Type} Error: Cannot use both percentage and count in {attribute} filter. Please use one or the other.")
                 
