@@ -13,7 +13,7 @@ external_templates:
 collections:
   Screen Actors Guild Award Winners:
     variables:
-      key: best
+      key: golden
     template:
       - name: shared
         sort: Screen Actors Guild !
