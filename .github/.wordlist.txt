@@ -290,6 +290,7 @@ readme
 readwriteonce
 realtime
 reauthenticating
+reauthentication
 reciperr
 reddit
 redheadjedi
