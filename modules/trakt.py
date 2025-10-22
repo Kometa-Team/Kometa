@@ -239,6 +239,7 @@ class Trakt:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
             else:
+                reauth_count = 0
                 response_json = response.json()
                 logger.trace(f"Headers: {response.headers}")
                 logger.trace(f"Response: {response_json}")
