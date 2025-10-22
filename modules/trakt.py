@@ -206,6 +206,7 @@ class Trakt:
             params = {}
         pages = 1
         current = 1
+        reauth_count = 0
         logger.trace(f"URL: {base_url}{url}")
         if params:
             logger.trace(f"Params: {params}")
@@ -229,6 +230,10 @@ class Trakt:
             if response.status_code == 401:
                 if not self._refresh():
                     logger.debug(f"Trakt token refresh failure")
+                    raise Failed(f"({response.status_code}) {response.reason}")
+                reauth_count += 1
+                if reauth_count > 1:
+                    logger.debug(f"Trakt token has been refreshed twice on this request; this may be a private list")
                     raise Failed(f"({response.status_code}) {response.reason}")
             elif response.status_code >= 400:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
