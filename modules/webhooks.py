@@ -390,7 +390,7 @@ class Webhooks:
                     "color": 0x00bc8c
                 }
             ],
-            "username": "Kobota",
+            "username": "Kometa",
             "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/bot.png"
         }
         if description:
