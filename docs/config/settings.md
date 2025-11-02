@@ -44,7 +44,7 @@ The available setting attributes which can be set at each level are outlined bel
     
     The first match will be accepted.
 
-    For example, if Kometa is looking for the asset name "Star Wars (1977)", then it woudl be found in any of:
+    Specifically, if Kometa is looking for the asset name "Star Wars (1977)", then it would be found in any of:
     
     ```
     /path/to/assets/Star Wars (1977)
