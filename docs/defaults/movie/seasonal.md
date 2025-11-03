@@ -7,31 +7,31 @@ hide:
     replace='{
         "COLLECTION": "Seasonal", 
         "CODE_NAME": "seasonal",
-        "LIBRARY_TYPE": "Movie, Show", 
+        "LIBRARY_TYPE": "Movie", 
         "SECTION_NUMBER": "090", 
         "DESCRIPTION": "dynamically create seasonal collections based on holidays"
     }'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Seasonal"}' %}
-| `Asian American Pacific Islander Movies` | `aapi`          | Collection of Movies related to Asian American Pacific Islander Month |
-| `Black History Month Movies`             | `black_history` | Collection of Movies related to Black History Month                   |
-| `Christmas Movies`                       | `christmas`     | Collection of Movies related to Christmas.                            |
-| `Disability Month Movies`                | `disabilities`  | Collection of Movies related to Disability Month                      |
-| `Easter Movies`                          | `easter`        | Collection of Movies related to Easter.                               |
-| `Father's Day Movies`                    | `father`        | Collection of Movies related to Father's Day.                         |
-| `Halloween Movies`                       | `halloween`     | Collection of Movies related to Halloween.                            |
-| `Independence Day Movies`                | `independence`  | Collection of Movies related to Independence Day.                     |
-| `Labor Day Movies`                       | `labor`         | Collection of Movies related to Labor Day.                            |
-| `LGBTQ Month Movies`                     | `lgbtq`         | Collection of Movies related to LGBTQ Month                           |
-| `Memorial Day Movies`                    | `memorial`      | Collection of Movies related to Memorial Day.                         |
-| `Mother's Day Movies`                    | `mother`        | Collection of Movies related to Mother's Day.                         |
-| `National Hispanic Heritage Movies`      | `latinx`        | Collection of Movies related to National Hispanic Heritage Month      |
-| `New Year's Day Movies`                  | `years`         | Collection of Movies related to New Year's Day.                       |
-| `St. Patrick's Day Movies`               | `patrick`       | Collection of Movies related to St. Patrick's Day.                    |
-| `Thanksgiving Movies`                    | `thanksgiving`  | Collection of Movies related to Thanksgiving.                         |
-| `Valentine's Day Movies`                 | `valentine`     | Collection of Movies related to Valentine's Day.                      |
-| `Veteran's Day Movies`                   | `veteran`       | Collection of Movies related to Veteran's Day.                        |
-| `Women's History Month Movies`           | `women`         | Collection of Movies related to Women's History Month                 |
+| `Asian American Pacific Islander Movies` | `aapi`          | Collection of Movies related to Asian American Pacific Islander Month. |
+| `Black History Month Movies`             | `black_history` | Collection of Movies related to Black History Month.                   |
+| `Christmas Movies`                       | `christmas`     | Collection of Movies related to Christmas.                             |
+| `Disability Month Movies`                | `disabilities`  | Collection of Movies related to Disability Month.                      |
+| `Easter Movies`                          | `easter`        | Collection of Movies related to Easter.                                |
+| `Father's Day Movies`                    | `father`        | Collection of Movies related to Father's Day.                          |
+| `Halloween Movies`                       | `halloween`     | Collection of Movies related to Halloween.                             |
+| `Independence Day Movies`                | `independence`  | Collection of Movies related to Independence Day.                      |
+| `Labor Day Movies`                       | `labor`         | Collection of Movies related to Labor Day.                             |
+| `LGBTQ Month Movies`                     | `lgbtq`         | Collection of Movies related to LGBTQ Month.                           |
+| `Memorial Day Movies`                    | `memorial`      | Collection of Movies related to Memorial Day.                          |
+| `Mother's Day Movies`                    | `mother`        | Collection of Movies related to Mother's Day.                          |
+| `National Hispanic Heritage Movies`      | `latinx`        | Collection of Movies related to National Hispanic Heritage Month.      |
+| `New Year's Day Movies`                  | `years`         | Collection of Movies related to New Year's Day.                        |
+| `St. Patrick's Day Movies`               | `patrick`       | Collection of Movies related to St. Patrick's Day.                     |
+| `Thanksgiving Movies`                    | `thanksgiving`  | Collection of Movies related to Thanksgiving.                          |
+| `Valentine's Day Movies`                 | `valentine`     | Collection of Movies related to Valentine's Day.                       |
+| `Veteran's Day Movies`                   | `veteran`       | Collection of Movies related to Veteran's Day.                         |
+| `Women's History Month Movies`           | `women`         | Collection of Movies related to Women's History Month.                 |
 
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "seasonal"}' include-tags='all|movie' %}
     ```yaml

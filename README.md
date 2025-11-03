@@ -1,19 +1,21 @@
 # <img src="https://kometa.wiki/en/nightly/assets/images/icons/logo-full.png" alt="Kometa">
 
 <!--shield-start-->
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic)](https://github.com/Kometa-Team/Kometa/releases)
-[![Docker Image Version (latest semver)](https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic)](https://hub.docker.com/r/kometateam/kometa)
-[![Docker Pulls](https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic)](https://hub.docker.com/r/kometateam/kometa)
-[![Develop GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/develop)
-[![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/nightly)
+<a href="https://github.com/Kometa-Team/Kometa/releases"><img src="https://img.shields.io/github/v/release/Kometa-Team/Kometa?style=plastic" alt="GitHub release (latest by date)"></a>
+<a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic" alt="Docker Image Version"></a>
+<a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic" alt="Docker Pulls"></a>
+<a href="https://github.com/Kometa-Team/Kometa/tree/develop"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic" alt="Commits in Develop"></a>
+<a href="https://github.com/Kometa-Team/Kometa/tree/nightly"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic" alt="Commits in Nightly"></a>
 
-[![Discord](https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic)](https://kometa.wiki/en/latest/discord/)
-[![Reddit](https://img.shields.io/badge/%2Fr%2Fkometa-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c)](https://www.reddit.com/r/kometa/)
-[![Wiki](https://img.shields.io/readthedocs/kometa?color=%2300bc8c&style=plastic)](https://kometa.wiki)
-[![Translations](https://img.shields.io/weblate/progress/kometa?color=00bc8c&server=https%3A%2F%2Ftranslations.kometa.wiki&style=plastic)](https://translations.kometa.wiki/projects/kometa/#languages)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic)](https://github.com/sponsors/meisnate12)
-[![Sponsor or Donate](https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic)](https://github.com/sponsors/meisnate12)
-[![Feature Requests](https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic)](https://features.kometa.wiki/)
+<br>
+
+<a href="https://kometa.wiki/en/latest/discord/"><img src="https://img.shields.io/discord/822460010649878528?color=%2300bc8c&label=Discord&style=plastic" alt="Discord"></a>
+<a href="https://www.reddit.com/r/kometa/"><img src="https://img.shields.io/badge/%2Fr%2Fkometa-e05d44?style=plastic&logo=Reddit&logoColor=white&labelColor=0e8a6a&color=00bc8c" alt="Reddit"></a>
+<a href="https://kometa.wiki"><img src="https://img.shields.io/readthedocs/kometa?color=%2300bc8c&style=plastic" alt="Wiki"></a>
+<a href="https://translations.kometa.wiki/projects/kometa/#languages"><img src="https://img.shields.io/weblate/progress/kometa?color=00bc8c&server=https%3A%2F%2Ftranslations.kometa.wiki&style=plastic" alt="Translations"></a>
+<a href="https://github.com/sponsors/meisnate12"><img src="https://img.shields.io/github/sponsors/meisnate12?color=%238a2be2&style=plastic" alt="GitHub Sponsors"></a>
+<a href="https://github.com/sponsors/meisnate12"><img src="https://img.shields.io/badge/-Sponsor%2FDonate-blueviolet?style=plastic" alt="Sponsor or Donate"></a>
+<a href="https://features.kometa.wiki/"><img src="https://img.shields.io/badge/Feature%20Requests-blueviolet?style=plastic" alt="Feature Requests"></a>
 <!--shield-end-->
 <!--intro-start-->
 Kometa is a powerful tool designed to give you complete control over your media libraries. With Kometa, you can take your customization to the next level, 
@@ -244,3 +246,28 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 ## Contributing
 * Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
 
+<!--sponsor-start-->
+## GitHub Sponsors
+
+Maintenance of this project is made possible by all the <a href="https://github.com/Kometa-Team/Kometa/graphs/contributors">contributors</a> and <a href="https://github.com/sponsors/meisnate12">sponsors</a>. If you'd like to sponsor this project and have your avatar or company logo appear below <a href="https://github.com/sponsors/meisnate12">click here</a>. 💖
+
+<h2 align="center">Gold Sponsors</h2>
+
+<p align="center">
+<!--gold-sponsors--><a href="https://github.com/merci45k"><img src="https://github.com/merci45k.png" width="120px" alt="User avatar: merci45k" /></a>&nbsp;&nbsp;<a href="https://github.com/ndkid1986"><img src="https://github.com/ndkid1986.png" width="120px" alt="User avatar: ndkid1986" /></a>&nbsp;&nbsp;<a href="https://github.com/strcrzy"><img src="https://github.com/strcrzy.png" width="120px" alt="User avatar: strcrzy" /></a>&nbsp;&nbsp;<a href="https://github.com/genomez"><img src="https://github.com/genomez.png" width="120px" alt="User avatar: genomez" /></a>&nbsp;&nbsp;<a href="https://github.com/Injuku"><img src="https://github.com/Injuku.png" width="120px" alt="User avatar: Injuku" /></a>&nbsp;&nbsp;<a href="https://github.com/axsuul"><img src="https://github.com/axsuul.png" width="120px" alt="User avatar: axsuul" /></a>&nbsp;&nbsp;<a href="https://github.com/Anarchy27"><img src="https://github.com/Anarchy27.png" width="120px" alt="User avatar: Anarchy27" /></a>
+</p>
+
+<h2 align="center">Silver Sponsors</h2>
+
+<p align="center">
+<!--silver-sponsors--><a href="https://github.com/Ramshackles"><img src="https://github.com/Ramshackles.png" width="80px" alt="User avatar: Ramshackles" /></a>&nbsp;&nbsp;<a href="https://github.com/Quick104"><img src="https://github.com/Quick104.png" width="80px" alt="User avatar: Quick104" /></a>&nbsp;&nbsp;<a href="https://github.com/tecnobrat"><img src="https://github.com/tecnobrat.png" width="80px" alt="User avatar: tecnobrat" /></a>&nbsp;&nbsp;<a href="https://github.com/chazlarson"><img src="https://github.com/chazlarson.png" width="80px" alt="User avatar: chazlarson" /></a>&nbsp;&nbsp;<a href="https://github.com/Spazholio"><img src="https://github.com/Spazholio.png" width="80px" alt="User avatar: Spazholio" /></a>&nbsp;&nbsp;<a href="https://github.com/aschillingchi"><img src="https://github.com/aschillingchi.png" width="80px" alt="User avatar: aschillingchi" /></a>&nbsp;&nbsp;<a href="https://github.com/darthShadow"><img src="https://github.com/darthShadow.png" width="80px" alt="User avatar: darthShadow" /></a>&nbsp;&nbsp;<a href="https://github.com/Eagle1337"><img src="https://github.com/Eagle1337.png" width="80px" alt="User avatar: Eagle1337" /></a>&nbsp;&nbsp;<a href="https://github.com/IronDrachen"><img src="https://github.com/IronDrachen.png" width="80px" alt="User avatar: IronDrachen" /></a>&nbsp;&nbsp;<a href="https://github.com/jarodaustin"><img src="https://github.com/jarodaustin.png" width="80px" alt="User avatar: jarodaustin" /></a>&nbsp;&nbsp;<a href="https://github.com/wellingssimon"><img src="https://github.com/wellingssimon.png" width="80px" alt="User avatar: wellingssimon" /></a>&nbsp;&nbsp;<a href="https://github.com/sw4rl3y79"><img src="https://github.com/sw4rl3y79.png" width="80px" alt="User avatar: sw4rl3y79" /></a>&nbsp;&nbsp;<a href="https://github.com/htlcalbbs"><img src="https://github.com/htlcalbbs.png" width="80px" alt="User avatar: htlcalbbs" /></a>&nbsp;&nbsp;<a href="https://github.com/mrbuckwheet"><img src="https://github.com/mrbuckwheet.png" width="80px" alt="User avatar: mrbuckwheet" /></a>&nbsp;&nbsp;<a href="https://github.com/kevbentz"><img src="https://github.com/kevbentz.png" width="80px" alt="User avatar: kevbentz" /></a>&nbsp;&nbsp;<a href="https://github.com/industrial64"><img src="https://github.com/industrial64.png" width="80px" alt="User avatar: industrial64" /></a>
+</p>
+
+<h2 align="center">Bronze Sponsors</h2>
+
+<p align="center">
+<!--bronze-sponsors--><a href="https://github.com/TheSpoon98"><img src="https://github.com/TheSpoon98.png" width="50px" alt="User avatar: TheSpoon98" /></a>&nbsp;&nbsp;<a href="https://github.com/Kha-kis"><img src="https://github.com/Kha-kis.png" width="50px" alt="User avatar: Kha-kis" /></a>&nbsp;&nbsp;<a href="https://github.com/RobertDoc"><img src="https://github.com/RobertDoc.png" width="50px" alt="User avatar: RobertDoc" /></a>&nbsp;&nbsp;<a href="https://github.com/nichols89ben"><img src="https://github.com/nichols89ben.png" width="50px" alt="User avatar: nichols89ben" /></a>&nbsp;&nbsp;<a href="https://github.com/Arial-Z"><img src="https://github.com/Arial-Z.png" width="50px" alt="User avatar: Arial-Z" /></a>&nbsp;&nbsp;<a href="https://github.com/kokuragari"><img src="https://github.com/kokuragari.png" width="50px" alt="User avatar: kokuragari" /></a>&nbsp;&nbsp;<a href="https://github.com/qazero"><img src="https://github.com/qazero.png" width="50px" alt="User avatar: qazero" /></a>&nbsp;&nbsp;<a href="https://github.com/owine"><img src="https://github.com/owine.png" width="50px" alt="User avatar: owine" /></a>&nbsp;&nbsp;<a href="https://github.com/TownyMontana"><img src="https://github.com/TownyMontana.png" width="50px" alt="User avatar: TownyMontana" /></a>&nbsp;&nbsp;<a href="https://github.com/AwesomeAustn"><img src="https://github.com/AwesomeAustn.png" width="50px" alt="User avatar: AwesomeAustn" /></a>&nbsp;&nbsp;<a href="https://github.com/michaelkahn"><img src="https://github.com/michaelkahn.png" width="50px" alt="User avatar: michaelkahn" /></a>&nbsp;&nbsp;<a href="https://github.com/VulgarBoatman"><img src="https://github.com/VulgarBoatman.png" width="50px" alt="User avatar: VulgarBoatman" /></a>&nbsp;&nbsp;<a href="https://github.com/andrewmcd7"><img src="https://github.com/andrewmcd7.png" width="50px" alt="User avatar: andrewmcd7" /></a>&nbsp;&nbsp;<a href="https://github.com/bullmoose20"><img src="https://github.com/bullmoose20.png" width="50px" alt="User avatar: bullmoose20" /></a>&nbsp;&nbsp;<a href="https://github.com/CountofNotreDame"><img src="https://github.com/CountofNotreDame.png" width="50px" alt="User avatar: CountofNotreDame" /></a>&nbsp;&nbsp;<a href="https://github.com/wcbutler"><img src="https://github.com/wcbutler.png" width="50px" alt="User avatar: wcbutler" /></a>&nbsp;&nbsp;<a href="https://github.com/Alaksin"><img src="https://github.com/Alaksin.png" width="50px" alt="User avatar: Alaksin" /></a>&nbsp;&nbsp;<a href="https://github.com/rg9400"><img src="https://github.com/rg9400.png" width="50px" alt="User avatar: rg9400" /></a>&nbsp;&nbsp;<a href="https://github.com/DaddyDarkan"><img src="https://github.com/DaddyDarkan.png" width="50px" alt="User avatar: DaddyDarkan" /></a>&nbsp;&nbsp;<a href="https://github.com/rsemau"><img src="https://github.com/rsemau.png" width="50px" alt="User avatar: rsemau" /></a>&nbsp;&nbsp;<a href="https://github.com/erwintwr2"><img src="https://github.com/erwintwr2.png" width="50px" alt="User avatar: erwintwr2" /></a>&nbsp;&nbsp;<a href="https://github.com/Iyagovos"><img src="https://github.com/Iyagovos.png" width="50px" alt="User avatar: Iyagovos" /></a>
+</p>
+
+Thank you so much for everyone's past and continued support!
+<!--sponsor-end-->

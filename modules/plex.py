@@ -120,6 +120,7 @@ show_translation = {
     "lastViewedAt": "show.lastViewedAt",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
+    "dovi": "episode.dovi",
     "subtitleLanguage": "episode.subtitleLanguage",
     "audioLanguage": "episode.audioLanguage",
     "trash": "episode.trash",
@@ -196,7 +197,7 @@ method_alias = {
     "producers": "producer",
     "writers": "writer",
     "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title", "filter": "filters",
+    "filter": "filters",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
@@ -450,6 +451,9 @@ class Plex(Library):
         super().__init__(config, params)
         self.plex = params["plex"]
         self.url = self.plex["url"]
+        self.clean_bundles = params["plex"]["clean_bundles"]
+        self.empty_trash = params["plex"]["empty_trash"]
+        self.optimize = params["plex"]["optimize"]
         self.session = self.config.Requests.session
         if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
@@ -1095,6 +1099,24 @@ class Plex(Library):
             raise Failed(f"Collection Error: No valid Plex Collections in {collections}")
         return valid_collections
 
+    def _watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, **kwargs):
+        params = {
+            'includeCollections': 1,
+            'includeExternalMedia': 1
+        }
+
+        if not filter:
+            filter = 'all'
+        if sort:
+            params['sort'] = sort
+        if libtype:
+            params['type'] = plexapi.utils.searchType(libtype)
+
+        params.update(kwargs)
+
+        key = f'{self.account.DISCOVER}/library/sections/watchlist/{filter}{plexapi.utils.joinArgs(params)}'
+        return self.account._toOnlineMetadata(self.account.fetchItems(key, maxresults=maxresults), **kwargs)
+
     def get_watchlist(self, sort=None, is_playlist=False):
         if is_playlist:
             libtype = None
@@ -1102,7 +1124,7 @@ class Plex(Library):
             libtype = "movie"
         else:
             libtype = "show"
-        watchlist = self.account.watchlist(sort=watchlist_sorts[sort], libtype=libtype)
+        watchlist = self._watchlist(sort=watchlist_sorts[sort], libtype=libtype)
         ids = []
         for item in watchlist:
             tmdb_id = []
@@ -1373,10 +1395,10 @@ class Plex(Library):
         item_dir = None
         name = None
         try:
-            poster, background, _, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
+            poster, background, logo, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             if "Overlay" not in current_labels:
-                if poster or background:
-                    self.upload_images(item, poster=poster, background=background)
+                if poster or background or logo:
+                    self.upload_images(item, poster=poster, background=background, logo=logo)
                 elif self.show_missing_assets:
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
             else:
@@ -1391,13 +1413,13 @@ class Plex(Library):
             found_episode = False
             for season in self.query(item.seasons):
                 try:
-                    season_poster, season_background, _, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    season_poster, season_background, season_logo, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if season_poster:
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber > 0:
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
-                    if season_poster or season_background and "Overlay" not in [la.tag for la in self.item_labels(season)]:
-                        self.upload_images(season, poster=season_poster, background=season_background)
+                    if season_poster or season_background or season_logo and "Overlay" not in [la.tag for la in self.item_labels(season)]:
+                        self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo)
                 except Failed as e:
                     if self.show_missing_assets:
                         logger.warning(e)
@@ -1408,7 +1430,7 @@ class Plex(Library):
                             if episode_poster or episode_background or episode_logo:
                                 found_episode = True
                                 if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
-                                    self.upload_images(episode, poster=episode_poster, background=episode_background)
+                                    self.upload_images(episode, poster=episode_poster, background=episode_background, logo=episode_logo)
                             elif self.show_missing_episode_assets:
                                 missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
                     except Failed as e:
@@ -1749,10 +1771,10 @@ class Plex(Library):
             item_type = "track"
         else:
             return True
-        item = self.reload(item)
         if filter_attr not in builder.filters[item_type]:
             return True
-        elif filter_attr in builder.date_filters:
+        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        if filter_attr in builder.date_filters:
             if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
@@ -1772,6 +1794,10 @@ class Plex(Library):
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
                 values = [loc for loc in item.locations if loc]
+            elif filter_attr == "season_title":
+                values = [item.season().title]
+            elif filter_attr == "show_title":
+                values = [item.show().title]
             else:
                 test_value = getattr(item, filter_actual)
                 values = [test_value] if test_value else []

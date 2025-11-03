@@ -13,33 +13,39 @@ hide:
     }'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Streaming"}' %}
-| `Apple TV+ Movies/Shows`   | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.   |
-| `BET+ Movies/Shows`        | `bet`         | Collection of Movies/Shows Streaming on BET+.        |
-| `Channel 4 Movies/Shows`   | `channel4`    | Collection of Movies/Shows Streaming on Channel 4.   |
-| `Crave Movies/Shows`       | `crave`       | Collection of Movies/Shows Streaming on Crave.       |
-| `Crunchyroll Shows`        | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.        |
-| `discovery+ Shows`         | `discovery`   | Collection of Shows Streaming on discovery+.         |
-| `Disney+ Movies/Shows`     | `disney`      | Collection of Movies/Shows Streaming on Disney+.     |
-| `Hayu Shows`               | `hayu`        | Collection of Shows Streaming on Hulu.               |
-| `Hulu Movies/Shows`        | `hulu`        | Collection of Movies/Shows Streaming on Hulu.        |
-| `ITVX Movies/Shows`        | `itvx`        | Collection of Movies/Shows Streaming on ITVX.        |
-| `Max Movies/Shows`         | `max`         | Collection of Movies/Shows Streaming on Max.         |
-| `Netflix Movies/Shows`     | `netflix`     | Collection of Movies/Shows Streaming on Netflix.     |
-| `NOW Movies/Shows`         | `now`         | Collection of Movies/Shows Streaming on NOW.         |
-| `Paramount+ Movies/Shows`  | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.  |
-| `Peacock Movies/Shows`     | `peacock`     | Collection of Movies/Shows Streaming on Peacock.     |
-| `Prime Video Movies/Shows` | `amazon`      | Collection of Movies/Shows Streaming on Prime Video. |
-| `YouTube Movies/Shows`     | `youtube`     | Collection of Movies/Shows Streaming on YouTube.     |
+| `Apple TV+ Movies/Shows`      | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.      |
+| `Atres Player Movies/Shows`   | `atresplayer` | Collection of Movies/Shows Streaming on Atres Player.   |
+| `AMC+ Movies/Shows`           | `amc`         | Collection of Movies/Shows Streaming on AMC+.           |
+| `BET+ Movies/Shows`           | `bet`         | Collection of Movies/Shows Streaming on BET+.           |
+| `Channel 4 Movies/Shows`      | `channel4`    | Collection of Movies/Shows Streaming on Channel 4.      |
+| `Crave Movies/Shows`          | `crave`       | Collection of Movies/Shows Streaming on Crave.          |
+| `Crunchyroll Shows`           | `crunchyroll` | Collection of Shows Streaming on Crunchyroll.           |
+| `discovery+ Shows`            | `discovery`   | Collection of Shows Streaming on discovery+.            |
+| `Disney+ Movies/Shows`        | `disney`      | Collection of Movies/Shows Streaming on Disney+.        |
+| `Filmin Movies/Shows`         | `filmin`      | Collection of Movies/Shows Streaming on Filmin.         |
+| `Hayu Shows`                  | `hayu`        | Collection of Shows Streaming on Hulu.                  |
+| `HBO Max Movies/Shows`        | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.        |
+| `Hulu Movies/Shows`           | `hulu`        | Collection of Movies/Shows Streaming on Hulu.           |
+| `ITVX Movies/Shows`           | `itvx`        | Collection of Movies/Shows Streaming on ITVX.           |
+| `Movistar Plus+ Movies/Shows` | `movistar`    | Collection of Movies/Shows Streaming on Movistar Plus+. |
+| `Netflix Movies/Shows`        | `netflix`     | Collection of Movies/Shows Streaming on Netflix.        |
+| `NOW Movies/Shows`            | `now`         | Collection of Movies/Shows Streaming on NOW.            |
+| `Paramount+ Movies/Shows`     | `paramount`   | Collection of Movies/Shows Streaming on Paramount+.     |
+| `Peacock Movies/Shows`        | `peacock`     | Collection of Movies/Shows Streaming on Peacock.        |
+| `Prime Video Movies/Shows`    | `amazon`      | Collection of Movies/Shows Streaming on Prime Video.    |
+| `Tubi Movies/Shows`           | `tubi`        | Collection of Movies/Shows Streaming on Tubi.           |
+| `YouTube Movies/Shows`        | `youtube`     | Collection of Movies/Shows Streaming on YouTube.        |
 
 ## Regional Variants
 
 Some logic is applied for specific regions to prevent collections appearing which do not exist in said region.
 
-| Region           | Key                         | Description                                                                                                                                |
-|:-----------------|:----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
-| `CA`             | `max`, `showtime`           | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
-| any besides `CA` | `crave`                     | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
-| any besides `GB` | `channel4`, `itvx`, `now`   | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
+| Region           | Key                                 | Description                                                                                                                                |
+|:-----------------|:------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `CA`             | `hbomax`, `showtime`                | These collections will not be created if the region is `CA` as these streaming services are part of the Crave streaming service in Canada. |
+| any besides `CA` | `crave`                             | These collections will not be created if the region is not `CA` as these streaming services are Canada-focused.                            |
+| any besides `GB` | `channel4`, `itvx`, `now`           | These collections will not be created if the region is not `GB` as these streaming services are UK-focused.                                |
+| any besides `ES` | `movistar`, `atresplayer`, `filmin` | These collections will not be created if the region is not `ES` as these streaming services are Spain-focused.                             |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "streaming"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "streaming"}' include-tags='all|movie|show' %}

@@ -11,33 +11,39 @@ hide:
         "DESCRIPTION": "an overlay based on the streaming service the file is found on for each item within your library"
     }'
 %}
-| Netflix     | `netflix`     | `160` |
-| Prime Video | `amazon`      | `150` |
-| Disney+     | `disney`      | `140` |
-| Max         | `max`         | `130` |
-| Crunchyroll | `Crunchyroll` | `120` |
-| YouTube     | `youtube`     | `110` |
-| Hulu        | `hulu`        | `100` |
-| Paramount+  | `paramount`   | `90`  |
-| AppleTV     | `appletv`     | `80`  |
-| Peacock     | `peacock`     | `70`  |
-| discovery+  | `discovery`   | `58`  |
-| Crave       | `crave`       | `55`  |
-| NOW         | `now`         | `50`  |
-| Channel 4   | `channel4`    | `40`  |
-| ITVX        | `itvx`        | `30`  |
-| BET+        | `bet`         | `20`  |
-| hayu        | `hayu`        | `10`  |
+| Netflix         | `netflix`     | `160` |
+| Prime Video     | `amazon`      | `150` |
+| Disney+         | `disney`      | `140` |
+| HBO Max         | `hbomax`      | `130` |
+| Crunchyroll     | `Crunchyroll` | `120` |
+| Movistar Plus+  | `movistar`    | `115` |
+| Atres Player    | `atresplayer` | `113` |
+| YouTube         | `youtube`     | `110` |
+| Hulu            | `hulu`        | `100` |
+| Paramount+      | `paramount`   | `90`  |
+| AMC+            | `amc`         | `85`  |
+| AppleTV         | `appletv`     | `80`  |
+| Peacock         | `peacock`     | `70`  |
+| discovery+      | `discovery`   | `58`  |
+| Crave           | `crave`       | `55`  |
+| NOW             | `now`         | `50`  |
+| Channel 4       | `channel4`    | `40`  |
+| ITVX            | `itvx`        | `30`  |
+| BET+            | `bet`         | `20`  |
+| hayu            | `hayu`        | `10`  |
+| tubi            | `tubi`        | `5`   |
+| filmin          | `filmin`      | `5`   |
 
 ## Regional Variants
 
 Some logic is applied to allow for regional streaming service lists to be available to users depending on where they are, as detailed below:
 
-| Region           | Key                               | Description                                                                                                                         |
-|:-----------------|:----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| any besides `GB` | `channel4`, `itvx`, `hayu`, `now` | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
-| any besides `CA` | `crave`                           | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
-| `CA`             | `max`, `showtime`                 | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| Region           | Key                                 | Description                                                                                                                         |
+|:-----------------|:------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| any besides `GB` | `channel4`, `itvx`, `hayu`, `now`   | These overlays will not be used if the region is not `uk` as these streaming services are UK-focused                                |
+| any besides `CA` | `crave`                             | These overlays will not be used if the region is not `ca` as these streaming services are Canada-focused                            |
+| `CA`             | `hbomax`, `showtime`                | These overlays will not be used if the region is `ca` as these streaming services are part of the Crave streaming service in Canada |
+| any besides `ES` | `movistar`, `atresplayer`, `filmin` | These collections will not be created if the region is not `es` as these streaming services are Spain-focused.                      |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

@@ -28,7 +28,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -65,7 +65,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -105,7 +105,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -141,7 +141,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -212,7 +212,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -274,7 +274,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -315,7 +315,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -355,7 +355,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -393,7 +393,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -461,7 +461,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -544,7 +544,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -627,7 +627,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -710,7 +710,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -762,7 +762,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -801,7 +801,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> Albums`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -841,7 +841,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -880,7 +880,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Best <<library_type>>s of <<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -919,7 +919,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Best Episodes of <<key_name>>`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
 
         ```yaml
         default_template:
@@ -959,7 +959,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Best <<library_type>> of the <<key_name>>`
 
-    ??? tip "Default Templates (click to expand)"
+    ??? tip "Default Templates (Click to Expand)"
         
         === "Movie Default"
 
@@ -1013,7 +1013,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1052,7 +1052,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `<<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1091,7 +1091,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1130,7 +1130,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1169,7 +1169,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1208,7 +1208,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1247,7 +1247,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Top <<key_name>> <<library_type>>s`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1286,7 +1286,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1325,7 +1325,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Most Played <<key_name>> Albums`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1365,7 +1365,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Most Played <<key_name>> Tracks`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1405,7 +1405,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1444,7 +1444,7 @@ requirements of creating the collection.
 
     **Default `title_format`:** `Most Played <<key_name>> Artists`
 
-    ??? tip "Default Template (click to expand)"
+    ??? tip "Default Template (Click to Expand)"
        
         ```yaml
         default_template:
@@ -1587,7 +1587,7 @@ requirements of creating the collection.
               bet: BET+
               itvx: ITVX
               disney: Disney+
-              max: Max
+              hbo-max: HBO Max
               hulu: Hulu
               netflix: Netflix
               now: NOW

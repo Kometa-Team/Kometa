@@ -153,6 +153,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  Atres Player:
+      variables: { weight: 10 }
+      template: [ name: standard, name: networks ]
+
   Atresplayer Premium:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -497,6 +501,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [HBO, HBO Brasil, HBO Europe, HBO Asia, HBO Latin America, HBO España, HBO Nordic, HBO Canada, HBO Family, HBO Mundi]}]
 
+  HBO Max:
+    variables: {key: HBO Max, weight: 10}
+    template: [name: standard, {name: networks, search: [Max, HBO Go, HBO Max]}]
+
   HGTV:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [HGTV, HGTV Canada]}]
@@ -628,10 +636,6 @@ overlays:
   MasterClass:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-
-  Max:
-    variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [Max, HBO Go, HBO Max]}]
 
   MBC:
     variables: { weight: 10}
@@ -962,6 +966,10 @@ overlays:
     template: [name: standard, {name: networks, search: [Travel Channel, Travel Channel United Kingdom]}]
 
   truTV:
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  tubi:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 

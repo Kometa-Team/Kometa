@@ -12,10 +12,10 @@ hide:
         "DESCRIPTION": "an overlay on a show detailing its Current Airing Status for all shows in your library"
     }'
 %}
-| AIRING    | `airing`    | `40`   |
-| RETURNING | `returning` | `30`   |
-| CANCELED  | `canceled`  | `20`   |
-| ENDED     | `ended`     | `10`   |
+| AIRING    | `airing`    | `40` |
+| RETURNING | `returning` | `30` |
+| CANCELED  | `canceled`  | `20` |
+| ENDED     | `ended`     | `10` |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
@@ -32,7 +32,6 @@ hide:
     ```
 
     1.  Changes the text for the canceled overlay to "C A N C E L L E D"
-
 
 
 {% 

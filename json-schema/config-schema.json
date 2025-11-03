@@ -159,30 +159,58 @@
                 },
                 "language": {
                     "type": ["string", "null"],
-                    "enum": [
+                    "enum": ["",
                         "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
-                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
-                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
-                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
-                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
-                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
-                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
-                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
-                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
-                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
-                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
-                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
-                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
-                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
-                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
-                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
-                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                        "ay", "az", "ba", "be", "bg", "bi", "bm", "bn", "bo", "br",
+                        "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
+                        "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et",
+                        "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd",
+                        "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht",
+                        "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io",
+                        "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk",
+                        "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky",
+                        "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg",
+                        "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na",
+                        "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny",
+                        "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt",
+                        "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se",
+                        "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss",
+                        "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk",
+                        "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk",
+                        "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo",
+                        "za", "zh", "zu"
                     ],
                     "description": "This field can be either null or a valid ISO 639 language code."
                 },
                 "region": {
                     "type": "string",
-                    "enum": ["","AD","AE","AF","AG","AI","AL","AM","AN","AO","AQ","AR","AS","AT","AU","AW","AZ","BA","BB","BD","BE","BF","BG","BH","BI","BJ","BM","BN","BO","BR","BS","BT","BU","BV","BW","BY","BZ","CA","CC","CD","CF","CG","CH","CI","CK","CL","CM","CN","CO","CR","CS","CU","CV","CX","CY","CZ","DE","DJ","DK","DM","DO","DZ","EC","EE","EG","EH","ER","ES","ET","FI","FJ","FK","FM","FO","FR","GA","GB","GD","GE","GF","GH","GI","GL","GM","GN","GP","GQ","GR","GS","GT","GU","GW","GY","HK","HM","HN","HR","HT","HU","ID","IE","IL","IN","IO","IQ","IR","IS","IT","JM","JO","JP","KE","KG","KH","KI","KM","KN","KP","KR","KW","KY","KZ","LA","LB","LC","LI","LK","LR","LS","LT","LU","LV","LY","MA","MC","MD","ME","MG","MH","MK","ML","MM","MN","MO","MP","MQ","MR","MS","MT","MU","MV","MW","MX","MY","MZ","NA","NC","NE","NF","NG","NI","NL","NO","NP","NR","NU","NZ","OM","PA","PE","PF","PG","PH","PK","PL","PM","PN","PR","PS","PT","PW","PY","QA","RE","RO","RS","RU","RW","SA","SB","SC","SD","SE","SG","SH","SI","SJ","SK","SL","SM","SN","SO","SR","SS","ST","SU","SV","SY","SZ","TC","TD","TF","TG","TH","TJ","TK","TL","TM","TN","TO","TP","TR","TT","TV","TW","TZ","UA","UG","UM","US","UY","UZ","VA","VC","VE","VG","VI","VN","VU","WF","WS","XC","XG","XI","XK","YE","YT","YU","ZA","ZM","ZR","ZW"],
+                    "enum": ["",
+                        "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AO", "AQ", "AR",
+                        "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", "BD", "BE",
+                        "BF", "BG", "BH", "BI", "BJ", "BL", "BM", "BN", "BO", "BQ",
+                        "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", "CD",
+                        "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR",
+                        "CU", "CV", "CW", "CX", "CY", "CZ", "DE", "DJ", "DK", "DM",
+                        "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "FI",
+                        "FJ", "FK", "FM", "FO", "FR", "GA", "GB", "GD", "GE", "GF",
+                        "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS",
+                        "GT", "GU", "GW", "GY", "HK", "HM", "HN", "HR", "HT", "HU",
+                        "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT",
+                        "JE", "JM", "JO", "JP", "KE", "KG", "KH", "KI", "KM", "KN",
+                        "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK",
+                        "LR", "LS", "LT", "LU", "LV", "LY", "MA", "MC", "MD", "ME",
+                        "MF", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ",
+                        "MR", "MS", "MT", "MU", "MV", "MW", "MX", "MY", "MZ", "NA",
+                        "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU",
+                        "NZ", "OM", "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM",
+                        "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS",
+                        "RU", "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI",
+                        "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "SS", "ST", "SV",
+                        "SX", "SY", "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK",
+                        "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA",
+                        "UG", "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI",
+                        "VN", "VU", "WF", "WS", "YE", "YT", "ZA", "ZM", "ZW"
+                    ],
                     "description": "This field can be either null or a valid ISO 3166-1 Code."
                 },
                 "cache_expiration": {
@@ -344,24 +372,26 @@
                 },
                 "language": {
                     "type": ["string", "null"],
-                    "enum": [
+                    "enum": ["",
                         "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av",
-                        "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo",
-                        "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv",
-                        "cy", "da", "de", "dz", "ee", "el", "en", "eo", "es", "et",
-                        "eu", "fa", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl",
-                        "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz",
-                        "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu",
-                        "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn",
-                        "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg",
-                        "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk",
-                        "ml", "mn", "mo", "mr", "ms", "mt", "nb", "nd", "ne", "nl",
-                        "nn", "no", "oc", "oj", "om", "or", "os", "pa", "pi", "pl",
-                        "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "se", "sg",
-                        "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st",
-                        "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl",
-                        "tn", "to", "tr", "ts", "tt", "tw", "ug", "uk", "ur", "uz",
-                        "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu"
+                        "ay", "az", "ba", "be", "bg", "bi", "bm", "bn", "bo", "br",
+                        "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy",
+                        "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et",
+                        "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd",
+                        "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht",
+                        "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io",
+                        "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk",
+                        "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky",
+                        "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg",
+                        "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na",
+                        "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny",
+                        "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt",
+                        "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se",
+                        "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss",
+                        "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk",
+                        "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk",
+                        "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo",
+                        "za", "zh", "zu"
                     ],
                     "description": "This field can be either null or a valid ISO 639 language code."
                 },
@@ -421,7 +451,7 @@
                 },
                 "monitor": {
                     "type": "string",
-                    "enum": ["all","future","missing","existing","pilot","first","latest","none"]
+                    "enum": ["all", "future", "missing", "existing", "pilot", "first", "latest", "none"]
                 },
                 "monitor_existing": {
                     "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
@@ -435,7 +465,7 @@
                 },
                 "series_type": {
                     "type": "string",
-                    "enum": ["standard","daily","anime"]
+                    "enum": ["standard", "daily", "anime"]
                 },
                 "tag": {
                     "type": [ "string", "null" ]
@@ -496,7 +526,7 @@
                 },
                 "monitor": {
                     "type": "string",
-                    "enum": ["all","future","missing","existing","pilot","first","latest","none"]
+                    "enum": ["all", "future", "missing", "existing", "pilot", "first", "latest", "none"]
                 },
                 "monitor_existing": {
                     "description": "Ensures all existing shows in collections match your monitor setting.\nUse the sonarr_monitor_existing Sonarr Setting in the collection definition to match the monitor setting per collection.",
@@ -510,7 +540,7 @@
                 },
                 "series_type": {
                     "type": "string",
-                    "enum": ["standard","daily","anime"]
+                    "enum": ["standard", "daily", "anime"]
                 },
                 "tag": {
                     "type": [ "string", "null" ]
@@ -569,7 +599,7 @@
                 },
                 "availability": {
                     "type": "string",
-                    "enum": ["announced","cinemas","released","db"]
+                    "enum": ["announced", "cinemas", "released", "db"]
                 },
                 "tag": {
                     "type": [ "string", "null" ]
@@ -633,7 +663,7 @@
                 },
                 "availability": {
                     "type": "string",
-                    "enum": ["announced","cinemas","released","db"]
+                    "enum": ["announced", "cinemas", "released", "db"]
                 },
                 "tag": {
                     "type": [ "string", "null" ]
@@ -796,26 +826,26 @@
                 },
                 "tvdb_language": {
                     "type": ["string", "null"],
-                    "enum": [
+                    "enum": ["",
                         "aar", "abk", "afr", "aka", "alb", "amh", "ara", "arg", "arm", "asm",
-                        "ava", "ave", "aym", "aze", "bak", "bam", "bel", "ben", "bih", "bis",
-                        "bod", "bos", "bre", "bul", "cat", "cha", "che", "chi", "chu", "chv",
-                        "cor", "cos", "cre", "ces", "dan", "deu", "div", "dzo", "ell", "eng",
-                        "epo", "est", "eus", "ewe", "fao", "fas", "fij", "fin", "fra", "fry",
-                        "ful", "gla", "gle", "glg", "glv", "grn", "guj", "hat", "hau", "heb",
-                        "her", "hin", "hmo", "hrv", "hun", "hye", "ibo", "ido", "iii", "iku",
-                        "ile", "ina", "ind", "ipk", "isl", "ita", "jav", "jpn", "kal", "kan",
-                        "kas", "kat", "kau", "kaz", "khm", "kik", "kin", "kir", "kom", "kon",
-                        "kor", "kua", "kur", "lao", "lat", "lav", "lim", "lin", "lit", "ltz",
-                        "lub", "lug", "mah", "mal", "mar", "mkd", "mlg", "mlt", "mon", "mri",
-                        "msa", "mya", "nau", "nav", "nbl", "nde", "ndo", "nep", "nld", "nno",
-                        "nob", "nor", "nya", "oci", "oji", "ori", "orm", "oss", "pan", "pli",
-                        "pol", "por", "pus", "que", "roh", "ron", "run", "rus", "sag", "san",
-                        "sin", "slk", "slv", "sme", "smo", "sna", "snd", "som", "sot", "spa",
-                        "srd", "srp", "ssw", "sun", "swa", "swe", "tah", "tam", "tat", "tel",
-                        "tgk", "tgl", "tha", "tir", "ton", "tsn", "tso", "tuk", "tur", "twi",
-                        "uig", "ukr", "urd", "uzb", "ven", "vie", "vol", "wln", "wol", "xho",
-                        "yid", "yor", "zha", "zho", "zul"
+                        "ava", "ave", "aym", "aze", "bak", "bam", "baq", "bel", "ben", "bis",
+                        "bos", "bre", "bul", "bur", "cat", "cha", "che", "chi", "chu", "chv",
+                        "cor", "cos", "cre", "cze", "dan", "div", "dut", "dzo", "eng", "epo",
+                        "est", "ewe", "fao", "fij", "fin", "fre", "fry", "ful", "geo", "ger",
+                        "gla", "gle", "glg", "glv", "gre", "grn", "guj", "hat", "hau", "heb",
+                        "her", "hin", "hmo", "hrv", "hun", "ibo", "ice", "ido", "iii", "iku",
+                        "ile", "ina", "ind", "ipk", "ita", "jav", "jpn", "kal", "kan", "kas",
+                        "kau", "kaz", "khm", "kik", "kin", "kir", "kom", "kon", "kor", "kua",
+                        "kur", "lao", "lat", "lav", "lim", "lin", "lit", "ltz", "lub", "lug",
+                        "mac", "mah", "mal", "mao", "mar", "may", "mlg", "mlt", "mon", "nau",
+                        "nav", "nbl", "nde", "ndo", "nep", "nno", "nob", "nor", "nya", "oci",
+                        "oji", "ori", "orm", "oss", "pan", "per", "pli", "pol", "por", "pus",
+                        "que", "roh", "rum", "run", "rus", "sag", "san", "sin", "slo", "slv",
+                        "sme", "smo", "sna", "snd", "som", "sot", "spa", "srd", "srp", "ssw",
+                        "sun", "swa", "swe", "tah", "tam", "tat", "tel", "tgk", "tgl", "tha",
+                        "tib", "tir", "ton", "tsn", "tso", "tuk", "tur", "twi", "uig", "ukr",
+                        "urd", "uzb", "ven", "vie", "vol", "wel", "wln", "wol", "xho", "yid",
+                        "yor", "zha", "zul"
                     ],
                     "description": "Specify the language to query TVDb in.\nThis field can be either null or a valid ISO 639-2 language code."
                 },
@@ -985,7 +1015,7 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","letterboxd","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                    "enum": ["actor", "anilist", "aspect", "audio_language", "bafta", "based", "basic", "berlinale", "cannes", "cesar", "choice", "collectionless", "content_rating_au", "content_rating_cs", "content_rating_de", "content_rating_nz", "content_rating_mal", "content_rating_uk", "content_rating_us", "continent", "country", "decade", "director", "emmy", "flixpatrol", "franchise", "genre", "golden", "imdb", "letterboxd", "myanimelist", "network", "nfr", "oscars", "other_chart", "pca", "producer", "razzie", "region", "resolution", "sag", "seasonal", "separator_award", "separator_chart", "spirit", "streaming", "studio", "subtitle_language", "sundance", "tautulli", "tiff", "tmdb", "trakt", "universe", "venice", "writer", "year"]
                 },
                 "schedule": {
                     "type": "string"
@@ -1010,7 +1040,7 @@
             "properties": {
                 "default": {
                     "type": "string",
-                    "enum": ["actor", "anilist","aspect","audio_language","bafta","based","basic","berlinale","cannes","cesar","choice","collectionless","content_rating_au","content_rating_cs","content_rating_de","content_rating_nz","content_rating_mal","content_rating_uk","content_rating_us","continent","country","decade","director","emmy","flixpatrol","franchise","genre","golden","imdb","letterboxd","myanimelist","network","nfr","oscars","other_chart","pca","producer","razzie","region","resolution","sag","seasonal","separator_award","separator_chart","spirit","streaming","studio","subtitle_language","sundance","tautulli","tiff","tmdb","trakt","universe","venice","writer","year"]
+                    "enum": ["actor", "anilist", "aspect", "audio_language", "bafta", "based", "basic", "berlinale", "cannes", "cesar", "choice", "collectionless", "content_rating_au", "content_rating_cs", "content_rating_de", "content_rating_nz", "content_rating_mal", "content_rating_uk", "content_rating_us", "continent", "country", "decade", "director", "emmy", "flixpatrol", "franchise", "genre", "golden", "imdb", "letterboxd", "myanimelist", "network", "nfr", "oscars", "other_chart", "pca", "producer", "razzie", "region", "resolution", "sag", "seasonal", "separator_award", "separator_chart", "spirit", "streaming", "studio", "subtitle_language", "sundance", "tautulli", "tiff", "tmdb", "trakt", "universe", "venice", "writer", "year"]
                 },
                 "schedule": {
                     "type": "string"
@@ -1035,7 +1065,7 @@
             "properties": {
                 "pmm": {
                     "type": "string",
-                    "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
+                    "enum": ["aspect", "audio_codec", "commonsense", "content_rating_au", "content_rating_de", "content_rating_nz", "content_rating_uk", "content_rating_us_movie", "content_rating_us_show", "direct_play", "episode_info", "language_count", "flixpatrol", "languages", "mediastinger", "network", "ratings", "resolution", "ribbon", "runtimes", "status", "streaming", "studio", "versions", "video_format"]
                 },
                 "remove_overlays": {
                     "type": "boolean"
@@ -1048,7 +1078,7 @@
                 },
                 "reset_overlays": {
                     "type": "string",
-                    "enum": ["tmdb","plex"]
+                    "enum": ["tmdb", "plex"]
                 },
                 "schedule": {
                     "type": "string"
@@ -1073,7 +1103,7 @@
             "properties": {
                 "default": {
                     "type": "string",
-                    "enum": ["aspect","audio_codec","commonsense","content_rating_au","content_rating_de","content_rating_nz","content_rating_uk","content_rating_us_movie","content_rating_us_show","direct_play","episode_info","language_count","flixpatrol","languages","mediastinger","network","ratings","resolution","ribbon","runtimes","status","streaming","studio","versions","video_format"]
+                    "enum": ["aspect", "audio_codec", "commonsense", "content_rating_au", "content_rating_de", "content_rating_nz", "content_rating_uk", "content_rating_us_movie", "content_rating_us_show", "direct_play", "episode_info", "language_count", "flixpatrol", "languages", "mediastinger", "network", "ratings", "resolution", "ribbon", "runtimes", "status", "streaming", "studio", "versions", "video_format"]
                 },
                 "remove_overlays": {
                     "type": "boolean"
@@ -1086,7 +1116,7 @@
                 },
                 "reset_overlays": {
                     "type": "string",
-                    "enum": ["tmdb","plex"]
+                    "enum": ["tmdb", "plex"]
                 },
                 "schedule": {
                     "type": "string"
@@ -1628,11 +1658,11 @@
                         "reset_overlays": {
                             "description": "Used to reset overlays from this library only. This will reset overlays to every item in your library to your source choice. This will use the reset image when overlaying items in your library.\nThis will reset all posters to the desired source on each run and will reapply all overlays on each run, which will result in image bloat.",
                             "type": "string",
-                            "enum": ["tmdb","plex"]
+                            "enum": ["tmdb", "plex"]
                         },
                         "run_order": {
                             "type": "array", "uniqueItems": true, "items": {"type": "string",
-                            "enum": ["collections","metadata","operations","overlays"] }
+                            "enum": ["collections", "metadata", "operations", "overlays"] }
                         }
                     }
                 },
@@ -1861,6 +1891,9 @@
                 "assets_for_all": {
                     "type": "boolean"
                 },
+                "assets_for_all_collections": {
+                    "type": "boolean"
+                },
                 "update_blank_track_titles": {
                     "type": "boolean"
                 },
@@ -1899,7 +1932,7 @@
                         "type": "string",
                         "anyOf": [
                         {
-                            "enum": ["mdb","mdb_commonsense","mdb_commonsense0","omdb","mal","lock","unlock","remove","reset"]},
+                            "enum": ["mdb", "mdb_commonsense", "mdb_commonsense0", "omdb", "mal", "lock", "unlock", "remove", "reset"]},
                         {
                             "pattern": ".*"
                         }
@@ -1912,7 +1945,7 @@
                         "type": "string",
                         "anyOf": [
                         {
-                            "enum": ["anidb", "anidb_official", "mal","mal_english", "mal_japanese","lock", "unlock", "remove", "reset"]
+                            "enum": ["anidb", "anidb_official", "mal", "mal_english", "mal_japanese", "lock", "unlock", "remove", "reset"]
                         },
                         {
                             "pattern": ".*"
@@ -2174,11 +2207,11 @@
                 },
                 "mass_imdb_parental_labels": {
                     "type": "string",
-                    "enum": ["none","mild","moderate","severe"]
+                    "enum": ["none", "mild", "moderate", "severe"]
                 },
                 "mass_collection_mode": {
                     "type": "string",
-                    "enum": ["default","hide","hide_items","show_items"]
+                    "enum": ["default", "hide", "hide_items", "show_items"]
                 },
                 "radarr_remove_by_tag": {
                     "type": "array",
@@ -2303,8 +2336,8 @@
             "additionalProperties": false,
             "properties": {
                 "addon_offset": { "type": "integer", "exclusiveMinimum": 0 },
-                "addon_position": { "type": "string", "enum": ["left","top","bottom","right"] },
-                "back_align": { "type": "string", "enum": ["left","right","center","top","bottom"] },
+                "addon_position": { "type": "string", "enum": ["left", "top", "bottom", "right"] },
+                "back_align": { "type": "string", "enum": ["left", "right", "center", "top", "bottom"] },
                 "back_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "back_height": { "type": "integer", "exclusiveMinimum": 0 },
                 "back_line_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
@@ -2312,37 +2345,41 @@
                 "back_padding": { "type": "integer", "exclusiveMinimum": 0 },
                 "back_radius": { "type": "integer", "exclusiveMinimum": 0 },
                 "back_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "builder_level": { "type": "string", "enum": ["show","season","episode"] },
+                "builder_level": { "type": "string", "enum": ["show", "season", "episode"] },
+                    "color": {
+                        "type": "boolean",
+                        "description": "Toggles color styling for applicable overlays like content ratings."
+                    },
                 "file": { "type": "string" },
                 "final_name": { "type": "string" },
-                "flag_alignment": { "type": "string", "enum": ["left","right"] },
+                "flag_alignment": { "type": "string", "enum": ["left", "right"] },
                 "font_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "font_size": { "type": "integer", "exclusiveMinimum": 0 },
-                "font_style": { "type": "string", "enum": ["Any","Italic","Normal","Oblique"] },
+                "font_style": { "type": "string", "enum": ["Any", "Italic", "Normal", "Oblique"] },
                 "font": { "type": "string" },
                 "git": { "type": "string" },
-                "group_alignment": { "type": "string", "enum": ["horizontal","vertical"] },
+                "group_alignment": { "type": "string", "enum": ["horizontal", "vertical"] },
                 "hide_text": { "type": "boolean" },
-                "horizontal_align": { "type": "string", "enum": ["left","center","right"] },
+                "horizontal_align": { "type": "string", "enum": ["left", "center", "right"] },
                 "horizontal_offset": { "type": ["string", "integer"] },
-                "horizontal_position": { "type": "string", "enum": ["left","left2","center","center_left","center_right","right","right2"] },
+                "horizontal_position": { "type": "string", "enum": ["left", "left2", "center", "center_left", "center_right", "right", "right2"] },
                 "horizontal_spacing": { "type": "integer" },
-                "initial_horizontal_align": { "type": "string", "enum": ["left","center","right"] },
+                "initial_horizontal_align": { "type": "string", "enum": ["left", "center", "right"] },
                 "initial_horizontal_offset": { "type": "integer" },
-                "initial_vertical_align": { "type": "string", "enum": ["top","center","bottom"] },
+                "initial_vertical_align": { "type": "string", "enum": ["top", "center", "bottom"] },
                 "initial_vertical_offset": { "type": "integer" },
                 "languages": { "type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z]{2}$" }},
                 "last": { "type": "integer", "exclusiveMinimum": 0 },
                 "limit": { "type": "integer", "exclusiveMinimum": 0 },
-                "location": { "type": "string", "enum": ["world","albania","argentina","armenia","australia","austria","azerbaijan","bahamas","bahrain","bangladesh","belarus","belgium","belize","benin","bolivia","bosnia_and_herzegovina","botswana","brazil","bulgaria","burkina_faso","cambodia","canada","chile","colombia","costa_rica","croatia","cyprus","czech_republic","denmark","dominican_republic","ecuador","egypt","estonia","finland","france","gabon","germany","ghana","greece","guatemala","guinea_bissau","haiti","honduras","hong_kong","hungary","iceland","india","indonesia","ireland","israel","italy","ivory_coast","jamaica","japan","jordan","kazakhstan","kenya","kuwait","kyrgyzstan","laos","latvia","lebanon","lithuania","luxembourg","malaysia","maldives","mali","malta","mexico","moldova","mongolia","montenegro","morocco","mozambique","namibia","netherlands","new_zealand","nicaragua","niger","nigeria","north_macedonia","norway","oman","pakistan","panama","papua_new_guinea","paraguay","peru","philippines","poland","portugal","qatar","romania","russia","rwanda","salvador","saudi_arabia","senegal","serbia","singapore","slovakia","slovenia","south_africa","south_korea","spain","sri_lanka","sweden","switzerland","taiwan","tajikistan","tanzania","thailand","togo","trinidad_and_tobago","turkey","turkmenistan","uganda","ukraine","united_arab_emirates","united_kingdom","united_states","uruguay","uzbekistan","venezuela","vietnam","zambia","zimbabwe"] },
+                "location": { "type": "string", "enum": ["world", "albania", "argentina", "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain", "bangladesh", "belarus", "belgium", "belize", "benin", "bolivia", "bosnia_and_herzegovina", "botswana", "brazil", "bulgaria", "burkina_faso", "cambodia", "canada", "chile", "colombia", "costa_rica", "croatia", "cyprus", "czech_republic", "denmark", "dominican_republic", "ecuador", "egypt", "estonia", "finland", "france", "gabon", "germany", "ghana", "greece", "guatemala", "guinea_bissau", "haiti", "honduras", "hong_kong", "hungary", "iceland", "india", "indonesia", "ireland", "israel", "italy", "ivory_coast", "jamaica", "japan", "jordan", "kazakhstan", "kenya", "kuwait", "kyrgyzstan", "laos", "latvia", "lebanon", "lithuania", "luxembourg", "malaysia", "maldives", "mali", "malta", "mexico", "moldova", "mongolia", "montenegro", "morocco", "mozambique", "namibia", "netherlands", "new_zealand", "nicaragua", "niger", "nigeria", "north_macedonia", "norway", "oman", "pakistan", "panama", "papua_new_guinea", "paraguay", "peru", "philippines", "poland", "portugal", "qatar", "romania", "russia", "rwanda", "salvador", "saudi_arabia", "senegal", "serbia", "singapore", "slovakia", "slovenia", "south_africa", "south_korea", "spain", "sri_lanka", "sweden", "switzerland", "taiwan", "tajikistan", "tanzania", "thailand", "togo", "trinidad_and_tobago", "turkey", "turkmenistan", "uganda", "ukraine", "united_arab_emirates", "united_kingdom", "united_states", "uruguay", "uzbekistan", "venezuela", "vietnam", "zambia", "zimbabwe"] },
                 "minimum": { "type": "integer"},
                 "offset": { "type": "integer", "minimum": 0 },
                 "originals_only": { "description": "Changes Streaming Service overlays to only apply to original content produced by the service.\nNote: Cannot be used with region, and only produces overlays for amazon, appletv, disney, max, hulu, netflix, paramount, peacock", "type": "boolean" },
                 "overlay_limit": { "description": "Choose the number of overlay this queue displays.\nDefault: 3\nValues: 1, 2, 3, 4, or 5", "type": "integer", "minimum": 1, "maximum": 5 },
-                "position": { "type": "string", "enum": ["left","right"] },
+                "position": { "type": "string", "enum": ["left", "right"] },
                 "post_nr_text": { "description": "Choose the text after the 'nr' key for the Overlay.\nValues: Any String", "type": "string" },
                 "post_text": { "description": "Choose the text after the key for the Overlay.\nDefault: +\nValues: Any String", "type": "string" },
-                "pre_nr_text": { "description": "Choose the text before the 'nr' key for the Overlay.\nValues: Any String","type": "string" },
+                "pre_nr_text": { "description": "Choose the text before the 'nr' key for the Overlay.\nValues: Any String", "type": "string" },
                 "pre_text": { "description": "Choose the text before the key for the Overlay.\nValues: Any String", "type": "string" },
                 "rating_alignment": { "type": "string", "enum": ["vertical", "horizontal"] },
                 "rating1": { "type": "string", "enum": ["critic", "audience", "user"] },
@@ -2367,17 +2404,17 @@
                 "size": { "type": "string", "enum": ["small", "big"] },
                 "stroke_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "stroke_width": { "type": "integer", "exclusiveMinimum": 0 },
-                "style": { "type": "string", "enum": ["compact","standard","bigger","round","square","half", "red", "black", "yellow", "gray", "color", "white"] },
+                "style": { "type": "string", "enum": ["compact", "standard", "bigger", "round", "square", "half", "red", "black", "yellow", "gray", "color", "white"] },
                 "text": { "type": "string" },
-                "time_window": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
+                "time_window": { "type": "string", "enum": ["today", "yesterday", "this_week", "last_week", "this_month", "last_month", "this_year", "last_year"] },
                 "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
                 "use_edition": { "type": "boolean" },
                 "use_lowercase": { "type": "boolean" },
                 "use_resolution": { "type": "boolean" },
                 "use_subtitles": { "type": "boolean" },
-                "vertical_align": { "type": "string", "enum": ["top","center","bottom"] },
+                "vertical_align": { "type": "string", "enum": ["top", "center", "bottom"] },
                 "vertical_offset": { "type": ["string", "integer"] },
-                "vertical_position": { "type": "string", "enum": ["top","top2","top3","center","center_top","center_bottom","bottom","bottom2","bottom3"] },
+                "vertical_position": { "type": "string", "enum": ["top", "top2", "top3", "center", "center_top", "center_bottom", "bottom", "bottom2", "bottom3"] },
                 "vertical_spacing": { "type": "integer" }
             },
             "patternProperties": {
@@ -2385,26 +2422,26 @@
                 "^file_.*$": { "type": "string" },
                 "^git_.*$": { "type": "string" },
                 "^limit_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^location_.*$": { "type": "string", "enum": ["world","albania","argentina","armenia","australia","austria","azerbaijan","bahamas","bahrain","bangladesh","belarus","belgium","belize","benin","bolivia","bosnia_and_herzegovina","botswana","brazil","bulgaria","burkina_faso","cambodia","canada","chile","colombia","costa_rica","croatia","cyprus","czech_republic","denmark","dominican_republic","ecuador","egypt","estonia","finland","france","gabon","germany","ghana","greece","guatemala","guinea_bissau","haiti","honduras","hong_kong","hungary","iceland","india","indonesia","ireland","israel","italy","ivory_coast","jamaica","japan","jordan","kazakhstan","kenya","kuwait","kyrgyzstan","laos","latvia","lebanon","lithuania","luxembourg","malaysia","maldives","mali","malta","mexico","moldova","mongolia","montenegro","morocco","mozambique","namibia","netherlands","new_zealand","nicaragua","niger","nigeria","north_macedonia","norway","oman","pakistan","panama","papua_new_guinea","paraguay","peru","philippines","poland","portugal","qatar","romania","russia","rwanda","salvador","saudi_arabia","senegal","serbia","singapore","slovakia","slovenia","south_africa","south_korea","spain","sri_lanka","sweden","switzerland","taiwan","tajikistan","tanzania","thailand","togo","trinidad_and_tobago","turkey","turkmenistan","uganda","ukraine","united_arab_emirates","united_kingdom","united_states","uruguay","uzbekistan","venezuela","vietnam","zambia","zimbabwe"] },
+                "^location_.*$": { "type": "string", "enum": ["world", "albania", "argentina", "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain", "bangladesh", "belarus", "belgium", "belize", "benin", "bolivia", "bosnia_and_herzegovina", "botswana", "brazil", "bulgaria", "burkina_faso", "cambodia", "canada", "chile", "colombia", "costa_rica", "croatia", "cyprus", "czech_republic", "denmark", "dominican_republic", "ecuador", "egypt", "estonia", "finland", "france", "gabon", "germany", "ghana", "greece", "guatemala", "guinea_bissau", "haiti", "honduras", "hong_kong", "hungary", "iceland", "india", "indonesia", "ireland", "israel", "italy", "ivory_coast", "jamaica", "japan", "jordan", "kazakhstan", "kenya", "kuwait", "kyrgyzstan", "laos", "latvia", "lebanon", "lithuania", "luxembourg", "malaysia", "maldives", "mali", "malta", "mexico", "moldova", "mongolia", "montenegro", "morocco", "mozambique", "namibia", "netherlands", "new_zealand", "nicaragua", "niger", "nigeria", "north_macedonia", "norway", "oman", "pakistan", "panama", "papua_new_guinea", "paraguay", "peru", "philippines", "poland", "portugal", "qatar", "romania", "russia", "rwanda", "salvador", "saudi_arabia", "senegal", "serbia", "singapore", "slovakia", "slovenia", "south_africa", "south_korea", "spain", "sri_lanka", "sweden", "switzerland", "taiwan", "tajikistan", "tanzania", "thailand", "togo", "trinidad_and_tobago", "turkey", "turkmenistan", "uganda", "ukraine", "united_arab_emirates", "united_kingdom", "united_states", "uruguay", "uzbekistan", "venezuela", "vietnam", "zambia", "zimbabwe"] },
                 "^rating\\d+_.*$": { "type": "string" },
                 "^regex_.*$": { "type": "string" },
                 "^repo_.*$": { "type": "string" },
                 "^text_.*$": { "type": "string" },
-                "^time_window_.*$": { "type": "string", "enum": ["today","yesterday","this_week","last_week","this_month","last_month","this_year","last_year"] },
+                "^time_window_.*$": { "type": "string", "enum": ["today", "yesterday", "this_week", "last_week", "this_month", "last_month", "this_year", "last_year"] },
                 "^url_.*$": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
                 "^use_.*$": { "type": "boolean" },
                 "^weight_.*$": { "type": "integer" },
                 "^font_.*$": { "type": "string" },
                 "^font_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^font_size_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^font_style_.*$": { "type": "string", "enum": ["Any","Italic","Normal","Oblique"] },
-                "^horizontal_align_.*$": { "type": "string", "enum": ["left","center","right"] },
+                "^font_style_.*$": { "type": "string", "enum": ["Any", "Italic", "Normal", "Oblique"] },
+                "^horizontal_align_.*$": { "type": "string", "enum": ["left", "center", "right"] },
                 "^horizontal_offset_.*$": { "type": ["string", "integer"], "minimum": 0 },
-                "^vertical_align_.*$": { "type": "string", "enum": ["top","center","bottom"] },
+                "^vertical_align_.*$": { "type": "string", "enum": ["top", "center", "bottom"] },
                 "^vertical_offset_.*$": { "type": ["string", "integer"], "minimum": 0 },
                 "^stroke_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^stroke_width_.*$": { "type": "integer", "exclusiveMinimum": 0 },
-                "^back_align_.*$": { "type": "string", "enum": ["left","right","center","top","bottom"] },
+                "^back_align_.*$": { "type": "string", "enum": ["left", "right", "center", "top", "bottom"] },
                 "^back_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
                 "^back_height_.*$": { "type": "integer", "exclusiveMinimum": 0 },
                 "^back_line_color_.*$": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },

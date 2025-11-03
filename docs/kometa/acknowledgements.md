@@ -6,16 +6,14 @@ hide:
 
 ## Kometa Team
 
-| GitHub                                        | Discord     | Role                                                                                                                                                                    |
-|:----------------------------------------------|:------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [meisnate12](https://github.com/meisnate12/)  | Sohjiro     | Main Kometa Developer                                                                                                                                                   |
-| [YozoraXCII](https://github.com/YozoraXCII)   | Yozora      | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
-| [bullmoose20](https://github.com/bullmoose20) | bullmoose20 | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
-| [chazlarson](https://github.com/chazlarson/)  | chazlarson  | Kometa Master Discord Support and Wiki Contributor who created the [Local](install/walkthroughs/local.md) and [Docker](install/walkthroughs/docker.md) guides                                     |
-| [cpt-kuesel](https://github.com/cpt-kuesel)   | Cpt Kuesel  | Kometa Master Discord Support and [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer                                                 |
-| [JohnFawkes](https://github.com/JohnFawkes)   | anon_fawkes | Kometa Apprentice Discord Support                                                                                                                                       |
-| zaP                                           | zaP         | Kometa Apprentice Discord Support, Reddit Moderator                                                                                                                     |
-| [mikenobbs](https://github.com/mikenobbs)     | mikenobbs   | Kometa Discord Moderator                                                                                                                                                |
+| GitHub                                        | Discord    | Role                                                                                                                                                                    |
+|:----------------------------------------------|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [meisnate12](https://github.com/meisnate12/)  | Sohjiro    | Main Kometa Developer                                                                                                                                                   |
+| [YozoraXCII](https://github.com/YozoraXCII)   | Yozora     | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
+| [bullmoose20](https://github.com/bullmoose20) | bullmoose  | Kometa Discord Moderator, Default Configs Creator & Maintainer, Wiki Contributor, [Community Configs Repo](https://github.com/Kometa-Team/Community-Configs) Maintainer |
+| [chazlarson](https://github.com/chazlarson/)  | Mr. Carrot | Kometa Master Discord Support and Wiki Contributor who created the [Local](install/walkthroughs/local.md) and [Docker](install/walkthroughs/docker.md) guides           |
+| [JohnFawkes](https://github.com/JohnFawkes)   | anonfawkes | Kometa Master Discord Support                                                                                                                                           |
+| [antwanchild](https://github.com/antwanchild) | Antwan     | Kometa Master Discord Support                                                                                                                                           |
 
 The team at Kometa would like to recognize and thank those who have helped the project become what it is today. 
 
@@ -25,6 +23,13 @@ Special Thanks to [RedHeadJedi](https://theposterdb.com/user/RedHeadJedi) over a
 **We extend our gratitude to everyone who has contributed in any way towards any of the projects mentioned below.**
 <br>
 <br>
+
+
+{%
+    include-markdown "../../README.md"
+    start="<!--sponsor-start-->"
+    end="<!--sponsor-end-->"
+%}
 
 ## Community Developer Acknowledgements
 

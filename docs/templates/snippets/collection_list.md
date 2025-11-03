@@ -28,18 +28,18 @@ These collections are applied by calling the below paths into the `collection_fi
 
 === "Charts"
 
-    | Default                                       | Path              | Example Collections                        | Allowed Media       |
-    |:----------------------------------------------|:------------------|:-------------------------------------------|:--------------------|
-    | [Chart Separator](../../chart/separator)      | `separator_chart` | Chart Collections                          | `Movies`<br>`Shows` |
-    | [Basic Charts](../../chart/basic)             | `basic`           | Newly Released, New Episodes               | `Movies`<br>`Shows` |
-    | [AniList Charts](../../chart/anilist)         | `anilist`         | AniList Popular, AniList Season            | `Movies`<br>`Shows` |
-    | [IMDb Charts](../../chart/imdb)               | `imdb`            | IMDb Popular, IMDb Top 250                 | `Movies`<br>`Shows` |
-    | [Letterboxd Charts](../../chart/letterboxd)   | `letterboxd`      | Letterboxd Top 250, Top 250 Most Fans      | `Movies`            |
-    | [MyAnimeList Charts](../../chart/myanimelist) | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated | `Movies`<br>`Shows` |
-    | [Tautulli Charts](../../chart/tautulli) :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-1" }    | `tautulli`        | Plex Popular, Plex Watched                 | `Movies`<br>`Shows` |
-    | [TMDb Charts](../../chart/tmdb)               | `tmdb`            | TMDb Popular, TMDb Airing Today            | `Movies`<br>`Shows` |
-    | [Trakt Charts](../../chart/trakt) :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-2" }          | `trakt`           | Trakt Popular, Trakt Trending              | `Movies`<br>`Shows` |
-    | [Other Charts](../../chart/other)             | `other_chart`     | AniDB Popular, Common Sense Selection      | `Movies`<br>`Shows` |
+    | Default                                                                                                                       | Path              | Example Collections                        | Allowed Media       |
+    |:------------------------------------------------------------------------------------------------------------------------------|:------------------|:-------------------------------------------|:--------------------|
+    | [Chart Separator](../../chart/separator)                                                                                      | `separator_chart` | Chart Collections                          | `Movies`<br>`Shows` |
+    | [Basic Charts](../../chart/basic)                                                                                             | `basic`           | Newly Released, New Episodes               | `Movies`<br>`Shows` |
+    | [AniList Charts](../../chart/anilist)                                                                                         | `anilist`         | AniList Popular, AniList Season            | `Movies`<br>`Shows` |
+    | [IMDb Charts](../../chart/imdb)                                                                                               | `imdb`            | IMDb Popular, IMDb Top 250                 | `Movies`<br>`Shows` |
+    | [Letterboxd Charts](../../chart/letterboxd)                                                                                   | `letterboxd`      | Letterboxd Top 250, Top 250 Most Fans      | `Movies`            |
+    | [MyAnimeList Charts](../../chart/myanimelist)                                                                                 | `myanimelist`     | MyAnimeList Popular, MyAnimeList Top Rated | `Movies`<br>`Shows` |
+    | [Tautulli Charts](../../chart/tautulli) :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-1" } | `tautulli`        | Plex Popular, Plex Watched                 | `Movies`<br>`Shows` |
+    | [TMDb Charts](../../chart/tmdb)                                                                                               | `tmdb`            | TMDb Popular, TMDb Airing Today            | `Movies`<br>`Shows` |
+    | [Trakt Charts](../../chart/trakt) :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-collection-list-2" }       | `trakt`           | Trakt Popular, Trakt Trending              | `Movies`<br>`Shows` |
+    | [Other Charts](../../chart/other)                                                                                             | `other_chart`     | AniDB Popular, Common Sense Selection      | `Movies`<br>`Shows` |
 
 === "Content"
 
@@ -94,11 +94,11 @@ These collections are applied by calling the below paths into the `collection_fi
     | Default                           | Path        | Example Collections                      | Allowed Media       |
     |:----------------------------------|:------------|:-----------------------------------------|:--------------------|
     | [Networks](../../show/network)    | `network`   | Disney Channel, Lifetime                 | `Shows`             |
-    | [Streaming](../../both/streaming) | `streaming` | Disney+ Movies, Max Shows                | `Movies`<br>`Shows` |
+    | [Streaming](../../both/streaming) | `streaming` | Disney+ Movies, HBO Max Shows            | `Movies`<br>`Shows` |
     | [Studios](../../both/studio)      | `studio`    | DreamWorks Studios, Walt Disney Pictures | `Movies`<br>`Shows` |
 
 === "Time"
-    
+
     | Default                                                       | Path       | Example Collections          | Allowed Media       |
     |:--------------------------------------------------------------|:-----------|:-----------------------------|:--------------------|
     | [Seasonal](../../movie/seasonal)                              | `seasonal` | Easter, Christmas            | `Movies`            |

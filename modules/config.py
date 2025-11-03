@@ -100,8 +100,8 @@ mass_episode_rating_options = {
     "lock": "Lock Rating", "unlock": "Unlock Rating", "remove": "Remove and Lock Rating", "reset": "Remove and Unlock Rating",
     "plex_tmdb": "Use TMDB Rating through Plex",
     "plex_imdb": "Use IMDB Rating through Plex",
-    "tmdb": "Use TMDb Rating", 
-    "imdb": "Use IMDb Rating", 
+    "tmdb": "Use TMDb Rating",
+    "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating"
 }
 mass_rating_options = {
@@ -138,7 +138,7 @@ mass_rating_options = {
 }
 reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex Poster"}
 library_operations = {
-    "assets_for_all": "bool", "split_duplicates": "bool", "update_blank_track_titles": "bool", "remove_title_parentheses": "bool",
+    "assets_for_all": "bool", "assets_for_all_collections": "bool", "split_duplicates": "bool", "update_blank_track_titles": "bool", "remove_title_parentheses": "bool",
     "radarr_add_all_existing": "bool", "radarr_remove_by_tag": "str", "sonarr_add_all_existing": "bool", "sonarr_remove_by_tag": "str",
     "mass_content_rating_update": mass_content_options, "mass_collection_content_rating_update": "dict",
     "mass_genre_update": mass_genre_options, "mass_studio_update": mass_studio_options,
@@ -149,6 +149,7 @@ library_operations = {
     "mass_originally_available_update": mass_available_options, "mass_added_at_update": mass_available_options,
     "mass_collection_mode": "mass_collection_mode", "mass_poster_update": "dict", "mass_background_update": "dict",
     "metadata_backup": "dict", "delete_collections": "dict", "genre_mapper": "dict", "content_rating_mapper": "dict",
+    "plex_bulk_edit_batch_size": "int",
 }
 
 class ConfigFile:
@@ -512,7 +513,8 @@ class ConfigFile:
             "custom_repo": check_for_attribute(self.data, "custom_repo", parent="settings", default_is_none=True),
             "overlay_artwork_filetype": check_for_attribute(self.data, "overlay_artwork_filetype", parent="settings", test_list=filetype_list, translations={"webp": "webp_lossy"}, default="webp_lossy"),
             "overlay_artwork_quality": check_for_attribute(self.data, "overlay_artwork_quality", parent="settings", var_type="int", default=90, int_min=1, int_max=100),
-            "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False)
+            "assets_for_all": check_for_attribute(self.data, "assets_for_all", parent="settings", var_type="bool", default=False, save=False, do_print=False),
+            "assets_for_all_collections": check_for_attribute(self.data, "assets_for_all_collections", parent="settings", var_type="bool", default=False, save=False, do_print=False)
         }
         self.custom_repo = None
         if self.general["custom_repo"]:
@@ -704,7 +706,8 @@ class ConfigFile:
                     trakt_config = {
                         "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
-                        "pin": check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
+                        "pin":  check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
+                        "force_refresh":  check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
                         "config_path": self.config_path,
                         "store_authorization_in_cache": self.general["store_authorization_in_cache"]
                     }

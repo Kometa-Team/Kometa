@@ -420,7 +420,7 @@ This section aims to provide some insight as to articles/information that we fee
 
 With the release of Kometa 1.20, several changes have been made. Please read the document below thoroughly!
 
-??? blank "`metadata_path` and `overlay_path` are now legacy attributes (click to expand).<a class="headerlink" href="#metadata-overlay-path" title="Permanent link">¶</a>"
+??? blank "`metadata_path` and `overlay_path` are now legacy attributes (Click to Expand).<a class="headerlink" href="#metadata-overlay-path" title="Permanent link">¶</a>"
 
     <div id="metadata-overlay-path" />
 
@@ -465,7 +465,7 @@ With the release of Kometa 1.20, several changes have been made. Please read the
     5. This attribute used to be `overlay_path` and defines files that will relate to Overlays
     6. These files are placed within `overlay_files` because they define how Overlays are built/maintained.
 
-??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (click to expand).<a class="headerlink" href="#overlay-library-attributes" title="Permanent link">¶</a>"
+??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (Click to Expand).<a class="headerlink" href="#overlay-library-attributes" title="Permanent link">¶</a>"
 
     <div id="overlay-library-attributes" />
 
@@ -490,7 +490,7 @@ With the release of Kometa 1.20, several changes have been made. Please read the
     1. We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/imagemaid.md)
     2. This is purely an example, you do not need to specify `reset_overlays` or any of these attributes unless you specifically need to use them.
 
-??? blank "`imdb_list` no longer works for Title or Keyword search URLs (click to expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
+??? blank "`imdb_list` no longer works for Title or Keyword search URLs (Click to Expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
 
     <div id="imdb-search" />
 
@@ -522,14 +522,14 @@ With the release of Kometa 1.20, several changes have been made. Please read the
           keyword.any: spy, espionage
     ```
 
-??? blank "FlixPatrol Default Files and Builders have been removed (click to expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
+??? blank "FlixPatrol Default Files and Builders have been removed (Click to Expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
 
     <div id="flixpatrol" />
 
     Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and 
     TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
 
-??? blank "Kometa Default `other_award` replaced with individual Award files (click to expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
+??? blank "Kometa Default `other_award` replaced with individual Award files (Click to Expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
 
     <div id="awards" />
 

@@ -6,14 +6,14 @@ hide:
 
 ## What does it mean to "run" Kometa?
 
-The word "run" in the Kometa context can be used in two ways; you "run" the Kometa Python script itself, using a Python or docker command, 
+The word "run" in the Kometa context can be used in two ways; you "run" the Kometa Python script itself, using a Python or docker command,
 and then that script behaves in one of two ways:
 
-1. It sits and waits until a particular time, wakes up and processes the config file, then goes back to sleep until that same time the next day. 
+1. It sits and waits until a particular time, wakes up and processes the config file, then goes back to sleep until that same time the next day.
    Kometa does this unless you [specifically tell it to do otherwise](#run).
 2. It processes the config file right away and then exits.
 
-"Processes the config file" means that it will go through all the collections, metadata, overlays, playlists, 
+"Processes the config file" means that it will go through all the collections, metadata, overlays, playlists,
 and libraries that you have defined in your config file and do what you have told it to do with them.
 
 That's kind of a mouthful, though, so we typically use "run" to describe that bit of the process.
@@ -62,15 +62,15 @@ You can set any of these flags as either environment variables or as command lin
 On all platforms, "environment variables" are a way to set variables that are available to all programs running on the system.
 You can set these variables in your shell, in a script, or in a Docker container.
 
-You might think of this as a note on your desk that tells you Sue likes a skim latte when you go to the coffee shop. 
+You might think of this as a note on your desk that tells you Sue likes a skim latte when you go to the coffee shop.
 You can use that note to remember what Sue likes when she asks "please get me a coffee".
 
-Runtime flags are command line arguments that you can pass to Kometa when you run it to change the way it behaves. 
+Runtime flags are command line arguments that you can pass to Kometa when you run it to change the way it behaves.
 
-You might think of this as a directive Bob adds when he asks "please get me a coffee, a **flat white**". 
+You might think of this as a directive Bob adds when he asks "please get me a coffee, a **flat white**".
 At "runtime", Bob is adding a "flag" to his request to indicate the type of coffee.
 
-All these settings have defaults, which you can think of as the "standard coffee" that you get if someone doesn't specify anything. 
+All these settings have defaults, which you can think of as the "standard coffee" that you get if someone doesn't specify anything.
 If Chris doesn't specify a type of coffee, and you have no note about Chris, Chris gets the **default**, a **plain black coffee**.
 
 If you don't specify a runtime flag or environment variable, you get the standard/default behavior.
@@ -99,7 +99,7 @@ That file would contain something like:
 
 ```env
 KOMETA_CONFIG=/path/to/your-config-file.yml
-KOMETA_TIMES=06:00,18:00
+KOMETA_TIMES=06:00|18:00
 KOMETA_TRACE=true
 KOMETA_LOG_REQUESTS=true
 KOMETA_TIMEOUT=360
@@ -114,7 +114,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     Some Commands or Variables can be combined in a single run, this is mainly beneficial when you want to run a specific
     command and have it run immediately rather than waiting until the next scheduled run.
 
-    For example, if I want to run [Collections Only](#collections-only) to only run Collection Files, and [Run Immediately](#run) 
+    For example, if I want to run [Collections Only](#collections-only) to only run Collection Files, and [Run Immediately](#run)
     to skip waiting until my next scheduled run, I can use both commands at the same time:
 
     !!! example
@@ -141,7 +141,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-c` or `--config` (ex. `--config /some/path/to/your-config-file.yml`)
 
     **Environment Variable:** `KOMETA_CONFIG` (ex. `KOMETA_CONFIG=/some/path/to/your-config-file.yml`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -158,20 +158,20 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
     <hr style="margin: 0px;">
 
-    **Accepted Values:** Comma-separated list in `HH:MM` format
+    **Accepted Values:** Pipe-separated list in `HH:MM` format
 
-    **Shell Flags:** `-t` or `--times` (ex. `--times 06:00,18:00`)
+    **Shell Flags:** `-t` or `--times` (ex. `--times "06:00|18:00"`)
 
-    **Environment Variable:** `KOMETA_TIMES` (ex. `KOMETA_TIMES=06:00,18:00`)
-    
+    **Environment Variable:** `KOMETA_TIMES` (ex. `KOMETA_TIMES=06:00|18:00`)
+
     !!! example
         === "Local Environment"
             ```
-            python kometa.py --times 22:00,03:00
+            python kometa.py --times '22:00|03:00'
             ```
         === "Docker Environment"
             ```
-            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --times 22:00,03:00
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --times "22:00|03:00"
             ```
 
 ??? blank "Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN`<a class="headerlink" href="#run" title="Permanent link">¶</a>"
@@ -183,7 +183,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-r` or `--run` (ex. `--run`)
 
     **Environment Variable:** `KOMETA_RUN` (ex. `KOMETA_RUN=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -197,7 +197,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 ??? blank "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`<a class="headerlink" href="#tests" title="Permanent link">¶</a>"
 
     <div id="tests" />If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).
-    
+
     **NOTE: This will only run collections with `test: true` in the definition.**
 
     <hr style="margin: 0px;">
@@ -205,7 +205,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-ts` or `--tests` (ex. `--tests`)
 
     **Environment Variable:** `KOMETA_TESTS` (ex. `KOMETA_TESTS=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -216,9 +216,9 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --tests
             ```
         === "Example Collection File"
-    
+
             In my collection YAML file, I would set `true: false` like this:
-    
+
             ```yaml
             collections:
               Marvel Cinematic Universe:
@@ -236,7 +236,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-db` or `--debug` (ex. `--debug`)
 
     **Environment Variable:** `KOMETA_DEBUG` (ex. `KOMETA_DEBUG=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -256,7 +256,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-tr` or `--trace` (ex. `--trace`)
 
     **Environment Variable:** `KOMETA_TRACE` (ex. `KOMETA_TRACE=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -269,10 +269,10 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Log Requests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lr`/`--log-requests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_REQUESTS`<a class="headerlink" href="#log-requests" title="Permanent link">¶</a>"
 
-    <div id="log-requests" />If you enable this, every external network request made by Kometa will be logged, along with the data that is returned. 
-    This will add a lot of data to the logs, and will probably contain things like tokens, since the auto-redaction of such things is not generalized 
+    <div id="log-requests" />If you enable this, every external network request made by Kometa will be logged, along with the data that is returned.
+    This will add a lot of data to the logs, and will probably contain things like tokens, since the auto-redaction of such things is not generalized
     enough to catch any token that may be in any URL.
-    
+
     **This can potentially have personal information in it.**
 
     <hr style="margin: 0px;">
@@ -280,7 +280,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-lr` or `--log-requests` (ex. `--log-requests`)
 
     **Environment Variable:** `KOMETA_LOG_REQUESTS` (ex. `KOMETA_LOG_REQUESTS=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -293,7 +293,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
-    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt). 
+    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).
     This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
@@ -303,7 +303,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-ti` or `--timeout` (ex. `--timeout 360`)
 
     **Environment Variable:** `KOMETA_TIMEOUT` (ex. `KOMETA_TIMEOUT=360`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -317,9 +317,9 @@ Kometa will load those environment variables when it starts up, and you don't ha
 ??? blank "No Verify SSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nv`/`--no-verify-ssl`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_VERIFY_SSL`<a class="headerlink" href="#no-verify-ssl" title="Permanent link">¶</a>"
 
     <div id="no-verify-ssl" />Turn SSL Verification off.
-    
+
     ???+ note
-    
+
         set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 
     <hr style="margin: 0px;">
@@ -327,7 +327,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-nv` or `--no-verify-ssl` (ex. `--no-verify-ssl`)
 
     **Environment Variable:** `KOMETA_NO_VERIFY_SSL` (ex. `KOMETA_NO_VERIFY_SSL=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -347,7 +347,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-co` or `--collections-only` (ex. `--collections-only`)
 
     **Environment Variable:** `KOMETA_COLLECTIONS_ONLY` (ex. `KOMETA_COLLECTIONS_ONLY=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -367,7 +367,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-mo` or `--metadata-only` (ex. `--metadata-only`)
 
     **Environment Variable:** `KOMETA_METADATA_ONLY` (ex. `KOMETA_METADATA_ONLY=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -387,7 +387,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-po` or `--playlists-only` (ex. `--playlists-only`)
 
     **Environment Variable:** `KOMETA_PLAYLISTS_ONLY` (ex. `KOMETA_PLAYLISTS_ONLY=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -407,7 +407,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-op` or `--operations-only` (ex. `--operations-only`)
 
     **Environment Variable:** `KOMETA_OPERATIONS_ONLY` (ex. `KOMETA_OPERATIONS_ONLY=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -427,7 +427,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:**  `-ov` or `--overlays-only` (ex. `--overlays-only`)
 
     **Environment Variable:** `KOMETA_OVERLAYS_ONLY` (ex. `KOMETA_OVERLAYS_ONLY=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -484,11 +484,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES`<a class="headerlink" href="#run-files" title="Permanent link">¶</a>"
 
-    <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files, 
+    <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files,
     bypassing the time to run flag. This works for all different paths i.e. `default`, `git`, `url`, `file`, or `repo`.
 
     ???+ warning
-         
+
          Do not use this to run Overlay files, as Overlay files must run all together or not at all due to their nature.
 
     <hr style="margin: 0px;">
@@ -518,7 +518,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-is` or `--ignore-schedules` (ex. `--ignore-schedules`)
 
     **Environment Variable:** `KOMETA_IGNORE_SCHEDULES` (ex. `KOMETA_IGNORE_SCHEDULES=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -539,7 +539,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-ig` or `--ignore-ghost` (ex. `--ignore-ghost`)
 
     **Environment Variable:** `KOMETA_IGNORE_GHOST` (ex. `KOMETA_IGNORE_GHOST=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -555,7 +555,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     <div id="delete-collections" />Delete all collections in each library as the first step in the run.
 
     ???+ warning
-         
+
         You will lose **all** collections in the library - this will delete all collections, including ones not created or maintained by Kometa.
 
     <hr style="margin: 0px;">
@@ -563,7 +563,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-dc` or `--delete-collections` (ex. `--delete-collections`)
 
     **Environment Variable:** `KOMETA_DELETE_COLLECTIONS` (ex. `KOMETA_DELETE_COLLECTIONS=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -579,9 +579,9 @@ Kometa will load those environment variables when it starts up, and you don't ha
     <div id="delete-labels" />Delete all labels [save one, see below] on every item in a Library prior to running collections/operations.
 
     ???+ warning
-    
+
         To preserve functionality of Kometa, this will **not** remove the Overlay label, which is required for Kometa to know which items have Overlays applied.
-    
+
         This will impact any [Smart Label Collections](../files/settings/#smart-label-definitions) that you have in your library.
         We do not recommend using this on a regular basis if you also use any operations or collections that update labels,
         as you are effectively deleting and adding labels on each run.
@@ -591,7 +591,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-dl` or `--delete-labels` (ex. `--delete-labels`)
 
     **Environment Variable:** `KOMETA_DELETE_LABELS` (ex. `KOMETA_DELETE_LABELS=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -611,7 +611,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-re` or `--resume` (ex. `--resume "Star Wars"`)
 
     **Environment Variable:** `KOMETA_RESUME` (ex. `KOMETA_RESUME=Star Wars`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -624,7 +624,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "No Countdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nc`/`--no-countdown`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_COUNTDOWN`<a class="headerlink" href="#no-countdown" title="Permanent link">¶</a>"
 
-    <div id="no-countdown" />Typically, when **not** doing an [immediate run](#run), Kometa displays a countdown in the terminal where it's running. 
+    <div id="no-countdown" />Typically, when **not** doing an [immediate run](#run), Kometa displays a countdown in the terminal where it's running.
     If you want to hide this countdown, use this flag.
 
     <hr style="margin: 0px;">
@@ -632,7 +632,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-nc` or `--no-countdown` (ex. `--no-countdown`)
 
     **Environment Variable:** `KOMETA_NO_COUNTDOWN` (ex. `KOMETA_NO_COUNTDOWN=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -645,7 +645,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "No Missing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nm`/`--no-missing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_MISSING`<a class="headerlink" href="#no-missing" title="Permanent link">¶</a>"
 
-    <div id="no-missing" />Kometa can take various actions on missing items, such as sending them to Radarr, listing them in the log, or saving a report. 
+    <div id="no-missing" />Kometa can take various actions on missing items, such as sending them to Radarr, listing them in the log, or saving a report.
     If you want to disable all of these actions, use this flag.
 
     <hr style="margin: 0px;">
@@ -653,7 +653,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-nm` or `--no-missing` (ex. `--no-missing`)
 
     **Environment Variable:** `KOMETA_NO_MISSING` (ex. `KOMETA_NO_MISSING=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -666,7 +666,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "No Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nr`/`--no-report`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_REPORT`<a class="headerlink" href="#no-report" title="Permanent link">¶</a>"
 
-    <div id="no-report" />Kometa can produce a report of missing items, collections, and other information. 
+    <div id="no-report" />Kometa can produce a report of missing items, collections, and other information.
     If you have this report enabled but want to disable it for a specific run, use this flag.
 
     <hr style="margin: 0px;">
@@ -674,7 +674,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:**  `-nr` or `--no-report` (ex. `--no-report`)
 
     **Environment Variable:** `KOMETA_NO_REPORT` (ex. `KOMETA_NO_REPORT=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -687,7 +687,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Read Only Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ro`/`--read-only-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_READ_ONLY_CONFIG`<a class="headerlink" href="#read-only-config" title="Permanent link">¶</a>"
 
-    <div id="read-only-config" />Kometa reads in and then writes out a properly formatted version of your `config.yml` on each run;this makes the formatting consistent and ensures 
+    <div id="read-only-config" />Kometa reads in and then writes out a properly formatted version of your `config.yml` on each run;this makes the formatting consistent and ensures
     that you have visibility into new settings that get added. If you want to disable this behavior and tell Kometa to leave your `config.yml` as-is, use this flag.
 
     <hr style="margin: 0px;">
@@ -695,7 +695,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:**  `-ro` or `--read-only-config` (ex. `--read-only-config`)
 
     **Environment Variable:** `KOMETA_READ_ONLY_CONFIG` (ex. `KOMETA_READ_ONLY_CONFIG=true`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -717,7 +717,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-d` or `--divider` (ex. `--divider *`)
 
     **Environment Variable:** `KOMETA_DIVIDER` (ex. `KOMETA_DIVIDER=*`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -730,7 +730,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Screen Width&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-w`/`--width`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_WIDTH`<a class="headerlink" href="#width" title="Permanent link">¶</a>"
 
-    <div id="width" />The log is formatted to fit within a certain width. If you wish to change that width, you can do that with this flag. 
+    <div id="width" />The log is formatted to fit within a certain width. If you wish to change that width, you can do that with this flag.
     Not that long lines are not wrapped or truncated to this width; this controls the minimum width of the log.
 
     <hr style="margin: 0px;">
@@ -740,7 +740,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     **Shell Flags:** `-w` or `--width` (ex. `--width 150`)
 
     **Environment Variable:** `KOMETA_WIDTH` (ex. `KOMETA_WIDTH=150`)
-    
+
     !!! example
         === "Local Environment"
             ```
@@ -773,9 +773,9 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`<a class="headerlink" href="#kometa-vars" title="Permanent link">¶</a>"
 
-    <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the 
+    <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the
     format `KOMETA_***`, where `***` is the name you want to call the variable, will be loaded in as Config Secrets.
-    
+
     These Config Secrets can be loaded into the config by placing `<<***>>` in any field in the config, where `***` is whatever name you called the variable.
 
     <hr style="margin: 0px;">
@@ -793,9 +793,9 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --kometa-mysecret 123456789
             ```
-    
+
         **Example Config Usage:**
-    
+
         ```yaml
         tmdb:
           apikey: <<mysecret>>

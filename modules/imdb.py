@@ -44,36 +44,36 @@ chart_urls = {
 }
 
 imdb_search_attributes = [
-    "limit", 
-    "sort_by", 
-    "title", 
-    "type", "type.not", 
+    "limit",
+    "sort_by",
+    "title",
+    "type", "type.not",
     "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte", 
+    "votes.gte", "votes.lte",
     "genre", "genre.any", "genre.not",
     "interests", "interests.any", "interests.not",
     "topic", "topic.any", "topic.not",
-    "alternate_version", "alternate_version.any", "alternate_version.not", 
-    "crazy_credit", "crazy_credit.any", "crazy_credit.not", 
+    "alternate_version", "alternate_version.any", "alternate_version.not",
+    "crazy_credit", "crazy_credit.any", "crazy_credit.not",
     "location", "location.any", "location.not",
-    "goof", "goof.any", "goof.not", 
-    "plot", "plot.any", "plot.not", 
-    "quote", "quote.any", "quote.not", 
+    "goof", "goof.any", "goof.not",
+    "plot", "plot.any", "plot.not",
+    "quote", "quote.any", "quote.not",
     "soundtrack", "soundtrack.any", "soundtrack.not",
-    "trivia", "trivia.any", "trivia.not", 
-    "event", "event.winning", 
-    "imdb_top", "imdb_bottom", 
-    "company", 
+    "trivia", "trivia.any", "trivia.not",
+    "event", "event.winning",
+    "imdb_top", "imdb_bottom",
+    "company",
     "content_rating",
-    "country", "country.any", "country.not", "country.origin", 
-    "keyword", "keyword.any", "keyword.not", 
-    "series", "series.not", 
-    "list", "list.any", "list.not", 
-    "language", "language.any", "language.not", "language.primary", 
+    "country", "country.any", "country.not", "country.origin",
+    "keyword", "keyword.any", "keyword.not",
+    "series", "series.not",
+    "list", "list.any", "list.not",
+    "language", "language.any", "language.not", "language.primary",
     "popularity.gte", "popularity.lte",
     "character",
-    "cast", "cast.any", "cast.not", 
-    "runtime.gte", "runtime.lte", 
+    "cast", "cast.any", "cast.not",
+    "runtime.gte", "runtime.lte",
     "adult",
 ]
 sort_by_options = {
@@ -539,7 +539,7 @@ class IMDb:
                     input_list.extend([event_options[a] if a in event_options else {"eventId": a} for a in data["event"]])
                 if "event.winning" in data:
                     for a in data["event.winning"]:
-                        award_dict = event_options[a] if a in event_options else {"eventId": a}
+                        award_dict = event_options[a].copy() if a in event_options else {"eventId": a}
                         award_dict["winnerFilter"] = "WINNER_ONLY"
                         input_list.append(award_dict)
                 out["awardConstraint"] = {"allEventNominations": input_list}
@@ -586,6 +586,7 @@ class IMDb:
                 out["lsConst"] = data["list_id"]
             else:
                 out["urConst"] = data["user_id"]
+            out["isInPace"] = False
             out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)
@@ -599,40 +600,48 @@ class IMDb:
         imdb_ids = []
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
-        try:
-            step = "list" if list_type == "list" else "predefinedList"
-            search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
-            total = search_data["total"]
-            limit = data["limit"]
-            if limit < 1 or total < limit:
-                limit = total
-            remainder = limit % item_count
-            if remainder == 0:
-                remainder = item_count
-            num_of_pages = math.ceil(int(limit) / item_count)
-            end_cursor = search_data["pageInfo"]["endCursor"]
-            imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
-            if num_of_pages > 1:
-                for i in range(2, num_of_pages + 1):
-                    start_num = (i - 1) * item_count + 1
-                    logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
-                    json_obj["variables"]["after"] = end_cursor
-                    response_json = self._graph_request(json_obj)
-                    search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
-                    end_cursor = search_data["pageInfo"]["endCursor"]
-                    ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
-                    if i == num_of_pages:
-                        ids_found = ids_found[:remainder]
-                    imdb_ids.extend(ids_found)
-            logger.exorcise()
-            if len(imdb_ids) > 0:
-                return imdb_ids
+        if "errors" in response_json:
+            if list_type == "list" and "list_id" in data:
+                list_id = data["list_id"]
+            elif list_type == "watchlist" and "user_id" in data:
+                list_id = data["user_id"]
+            else:
+                list_id = None
+            if list_id and response_json["errors"][0]["extensions"]["code"] == "RESOURCE_NOT_FOUND":
+                raise Failed(f"IMDb Error: List {list_id} does not exist")
+            elif list_id and response_json["errors"][0]["extensions"]["code"] == "FORBIDDEN":
+                raise Failed(f"IMDb Error: List {list_id} is private and cannot be accessed")
+            else:
+                logger.trace(response_json["errors"])
+                raise Failed(f"IMDb Error: {response_json['errors'][0]['message']}")
+        step = "list" if list_type == "list" else "predefinedList"
+        search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+        total = search_data["total"]
+        limit = data["limit"]
+        if limit < 1 or total < limit:
+            limit = total
+        remainder = limit % item_count
+        if remainder == 0:
+            remainder = item_count
+        num_of_pages = math.ceil(int(limit) / item_count)
+        end_cursor = search_data["pageInfo"]["endCursor"]
+        imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
+        if num_of_pages > 1:
+            for i in range(2, num_of_pages + 1):
+                start_num = (i - 1) * item_count + 1
+                logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
+                json_obj["variables"]["after"] = end_cursor
+                response_json = self._graph_request(json_obj)
+                search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+                end_cursor = search_data["pageInfo"]["endCursor"]
+                ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
+                if i == num_of_pages:
+                    ids_found = ids_found[:remainder]
+                imdb_ids.extend(ids_found)
+        logger.exorcise()
+        if not imdb_ids:
             raise Failed("IMDb Error: No IMDb IDs Found")
-        except KeyError:
-            if 'errors' in response_json.keys() and 'message' in response_json['errors'][0] and response_json['errors'][0]['message'] == 'PersistedQueryNotFound':
-                raise Failed("Internal IMDB PersistedQuery Error")
-            logger.error(f"Response: {response_json}")
-            raise
+        return imdb_ids
 
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
@@ -759,7 +768,9 @@ class IMDb:
     def episode_ratings(self):
         if self._episode_ratings is None:
             self._episode_ratings = {}
-            for imdb_id, parent_id, season_num, episode_num in self._interface("episode"):
+            logger.info("Processing IMDb rating for episodes. This may take a while...")
+            all_eps = self._interface("episode")
+            for i, (imdb_id, parent_id, season_num, episode_num) in enumerate(all_eps):
                 if imdb_id not in self.ratings:
                     continue
                 if parent_id not in self._episode_ratings:
@@ -767,6 +778,8 @@ class IMDb:
                 if season_num not in self._episode_ratings[parent_id]:
                     self._episode_ratings[parent_id][season_num] = {}
                 self._episode_ratings[parent_id][season_num][episode_num] = self.ratings[imdb_id]
+                logger.ghost(f"Processing IMDb rating for episodes: {i / len(all_eps) * 100:6.2f}%")
+            logger.exorcise()
         return self._episode_ratings
 
     def get_rating(self, imdb_id):

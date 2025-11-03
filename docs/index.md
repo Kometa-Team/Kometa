@@ -8,17 +8,24 @@ hide:
 .md-content h1, .md-content__button {
     display: none;
 }
+.centered { text-align: center; }
+.centered img { vertical-align: middle; margin: 0 .1rem; }
+
 </style>
 
-<center>
-![Logo](assets/images/icons/logo-full.png)
 
-{%
-    include-markdown "../README.md"
-    start="<!--shield-start-->"
-    end="<!--shield-end-->"
-%}
-</center>
+<div class="centered">
+  <img src="assets/images/icons/logo-full.png" alt="Logo" style="padding-bottom: 1.5rem;">
+</div>
+
+<div class="centered">
+  {%
+      include-markdown "../README.md"
+      start="<!--shield-start-->"
+      end="<!--shield-end-->"
+  %}
+</div>
+
 
 {%
     include-markdown "../README.md"
@@ -219,4 +226,10 @@ hide:
     include-markdown "../README.md"
     start="<!--discord-start-->"
     end="<!--discord-end-->"
+%}
+
+{%
+    include-markdown "../README.md"
+    start="<!--sponsor-start-->"
+    end="<!--sponsor-end-->"
 %}

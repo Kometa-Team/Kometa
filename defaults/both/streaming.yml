@@ -39,7 +39,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region: [CA, AU, NL]
+          - region: [CA, AU, NL, ES]
             tmdb_key: [9]
             value: 119
 
@@ -58,6 +58,9 @@ templates:
             value: False
           - region.not: GB
             tmdb_key: [103, 41, 2300, 39]
+            value: False
+          - region.not: ES
+            tmdb_key: [149, 339, 2241, 62, 2162, 63]
             value: False
           - region.not: CA
             tmdb_key: [230]
@@ -111,15 +114,20 @@ dynamic_collections:
       discovery: discovery+
       disney: Disney+
       itvx: ITVX
-      max: Max
+      hbomax: HBO Max
       hayu: hayu
       hulu: Hulu
+      movistar: Movistar Plus+
+      atresplayer: Atres Player
       netflix: Netflix
       now: NOW
       paramount: Paramount+
       peacock: Peacock
       amazon: Prime Video
+      amc: AMC+
+      filmin: Filmin
       youtube: YouTube
+      tubi: tubi
     title_format: <<key_name>> <<library_typeU>>s
     template:
       - streaming
@@ -136,17 +144,22 @@ dynamic_collections:
         crunchyroll: 283
         discovery: 510
         disney: 337
-        itvx: 41|2300
-        max: 1899
+        hbomax: 1899
         hayu: 223
         hulu: 15
+        itvx: 41|2300
+        movistar: 149|339|2241
         netflix: 8
         now: 39
         paramount: 531|1770
         peacock: 387
         amazon: 9
+        amc: 528|1854
+        filmin: 63
         showtime: 37
         youtube: 188
+        tubi: 73
+        atresplayer: 62|2162
       originals_only:
         default: false
       allowed_libraries:
@@ -169,3 +182,6 @@ dynamic_collections:
         itvx:
           - BritBox Movies
           - BritBox Shows
+        hbomax:
+          - Max Movies
+          - Max Shows

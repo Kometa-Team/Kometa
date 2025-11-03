@@ -401,7 +401,7 @@ Manual collections can utilize the `sort_by` attribute to define the sorting.
 
 The Sort Orders available for "Manual" collections are outlined on the **[Plex Sort Options](../../files/builders/plex/sort-options.md)** page.
 
-??? tip
+??? tip "Tip (Click to Expand)"
     
     Although the Sort Options are listed on the Manual Plex Builder page, the options are available to mostly any Builder if you use the `collection_order` attribute to define a `sort_by` value
 
@@ -446,7 +446,7 @@ if you have a Smart Label collection, you can pass the `sort_by` value you want 
 
 The Sort Orders available for "Smart" collections are outlined on the **[Plex Sort Options](../../files/builders/plex/sort-options.md)** page.
 
-??? tip
+??? tip "Tip (Click to Expand)"
     
     Although the Sort Options are listed on the Smart Plex Builder page, the options are available to mostly any Builder when you use a smart Label Builder.
 

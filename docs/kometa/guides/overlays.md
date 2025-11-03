@@ -171,7 +171,7 @@ If you *ARE* using the [asset directory](./assets.md) to manage your custom art,
 
 Once the image has been generated and uploaded, Kometa sets a sharing label on the item in Plex: "Overlay"
 
-![](images/overlay_label.png)
+![](../../assets/images/overlay_label.png)
 
 Kometa uses this label as discussed earlier to determine which items already have overlays; this mainly affects where it should get the clean art [in the absence of a asset image].  Is there a label?  Get the art from the backup directory.  No label?  Download the art from Plex.  As above, if there is asset art for this item, the label is not used for this purpose since the asset image is the single source of truth.
 
@@ -231,7 +231,7 @@ Slightly less Simple:
 
 Change the art on the item in Plex, and remove the "Overlay" label from the item.  If you have Plex Pass, you can remove the label from the item in the UI for Movies and Shows.  You can't remove the label from seasons or episodes in the UI at all.  You will need to use a script or Kometa itself to do that.
 
-??? "Removing the Overlay label from seasons (click to expand)"
+??? "Removing the Overlay label from seasons (Click to Expand)"
 
     ```yaml
     collections:
@@ -245,7 +245,7 @@ Change the art on the item in Plex, and remove the "Overlay" label from the item
             title:  NAME OF SHOW HERE
     ```
 
-??? "Removing the Overlay label from episodes (click to expand)"
+??? "Removing the Overlay label from episodes (Click to Expand)"
 
     ```yaml
     collections:

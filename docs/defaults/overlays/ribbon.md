@@ -11,26 +11,26 @@ hide:
         "DESCRIPTION": "a ribbon overlay based on the Top Lists of various sites on each item within your library"
     }'
 %}
-| Oscars Best Picture             | `oscars`          | `190`  |
-| Oscars Best Director            | `oscars_director` | `180`  |
-| Golden Globe Winner             | `golden`          | `170`  |
-| Golden Globe Director           | `golden_director` | `160`  |
-| BAFTA Winner                    | `bafta`           | `150`  |
-| Cannes Winner                   | `cannes`          | `140`  |
-| Berlinale Winner                | `berlinale`       | `130`  |
-| Venice Winner                   | `venice`          | `120`  |
-| Sundance Winner                 | `sundance`        | `110`  |
-| Emmys Winner                    | `emmys`           | `100`  |
-| Critic's Choice Winner          | `choice`          | `90`   |
-| Independent Spirit Award Winner | `spirit`          | `80`   |
-| César Winner                    | `cesar`           | `70`   |
-| IMDb Top 250                    | `imdb`            | `60`   |
-| Letterboxd Top 250              | `letterboxd`      | `50`   |
-| Rotten Tomatoes Verified Hot    | `rottenverified`  | `45`   |
-| Rotten Tomatoes Certified Fresh | `rotten`          | `40`   |
-| Metacritic Must See             | `metacritic`      | `30`   |
-| Common Sense Selection          | `common`          | `20`   |
-| Razzies Winner                  | `razzie`          | `10`   |
+| Oscars Best Picture             | `oscars`          | `190` |
+| Oscars Best Director            | `oscars_director` | `180` |
+| Golden Globe Winner             | `golden`          | `170` |
+| Golden Globe Director           | `golden_director` | `160` |
+| BAFTA Winner                    | `bafta`           | `150` |
+| Cannes Winner                   | `cannes`          | `140` |
+| Berlinale Winner                | `berlinale`       | `130` |
+| Venice Winner                   | `venice`          | `120` |
+| Sundance Winner                 | `sundance`        | `110` |
+| Emmys Winner                    | `emmys`           | `100` |
+| Critic's Choice Winner          | `choice`          | `90`  |
+| Independent Spirit Award Winner | `spirit`          | `80`  |
+| César Winner                    | `cesar`           | `70`  |
+| IMDb Top 250                    | `imdb`            | `60`  |
+| Letterboxd Top 250              | `letterboxd`      | `50`  |
+| Rotten Tomatoes Verified Hot    | `rottenverified`  | `45`  |
+| Rotten Tomatoes Certified Fresh | `rotten`          | `40`  |
+| Metacritic Must See             | `metacritic`      | `30`  |
+| Common Sense Selection          | `common`          | `20`  |
+| Razzies Winner                  | `razzie`          | `10`  |
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

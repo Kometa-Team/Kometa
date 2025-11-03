@@ -70,6 +70,7 @@ dynamic_collections:
       avp: Alien / Predator
       arrow: Arrowverse
       askew: View Askewniverse
+      conjuring: Conjuring Universe
       dca: DC Animated Universe
       dcu: DC Universe
       fast: Fast & Furious
@@ -79,7 +80,7 @@ dynamic_collections:
       rocky: Rocky / Creed
       trek: Star Trek
       star: Star Wars Universe
-      mummy: The Mummy Universe
+      mummy: Mummy Universe
       wizard: Wizarding World
       xmen: X-Men Universe
     template:
@@ -90,6 +91,7 @@ dynamic_collections:
     template_variables:
       allowed_libraries:
         avp: movie
+        conjuring: movie
         wizard: movie
         fast: movie
         rocky: movie
@@ -97,14 +99,15 @@ dynamic_collections:
       imdb_url:
         arrow: https://www.imdb.com/list/ls566667558/
         avp: https://www.imdb.com/list/ls543971628/
-        dca: https://www.imdb.com/list/ls590606031/
+        conjuring: https://www.imdb.com/list/ls068768438/
         dcu: https://www.imdb.com/list/ls524274984/
+        fast: https://www.imdb.com/list/ls4102351575/
         mcu: https://www.imdb.com/list/ls539646485/
         star: https://www.imdb.com/list/ls501373412/
         trek: https://www.imdb.com/list/ls547463722/
         xmen: https://www.imdb.com/list/ls567618635/
       mdblist_url:
-        fast: https://mdblist.com/lists/k0meta/external/9246
+        dca: https://mdblist.com/lists/johnfawkes/dca
         marvel: https://mdblist.com/lists/k0meta/external/15110
         middle: https://mdblist.com/lists/k0meta/external/46550
         mummy: https://mdblist.com/lists/k0meta/external/9249
@@ -115,3 +118,5 @@ dynamic_collections:
         default: universe/<<key>>
       delete_collections_named:
         dcu: DC Extended Universe
+        mummy: The Mummy Universe
+        conjuring: The Conjuring Universe

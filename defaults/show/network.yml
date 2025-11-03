@@ -27,7 +27,7 @@ dynamic_collections:
       - shared
     template_variables:
       delete_collections_named:
-        Max: HBO Max
+        HBO Max: Max
       search_term:
         default: network
       image:
@@ -62,6 +62,7 @@ dynamic_collections:
       - ARD
       - Arte
       - Atresplayer Premium
+      - Atres Player
       - AT-X
       - Audience
       - AXN
@@ -181,7 +182,6 @@ dynamic_collections:
       - Logo
       - Magnolia Network
       - MasterClass
-      - Max
       - MBC
       - MBN
       - MGM+
@@ -265,6 +265,7 @@ dynamic_collections:
       - Tokyo MX
       - Travel Channel
       - truTV
+      - tubi
       - Turner Classic Movies
       - TV 2
       - tv asahi
@@ -413,6 +414,9 @@ dynamic_collections:
         - HBO Canada
         - HBO Family
         - HBO Mundi
+      HBO Max:
+        - HBO Go
+        - Max
       HGTV:
         - HGTV Canada
       History:
@@ -420,9 +424,6 @@ dynamic_collections:
         - H2
       Lifetime:
         - Lifetime Movies
-      Max:
-        - HBO Go
-        - HBO Max
       MTV:
         - MTV2
         - MTV3

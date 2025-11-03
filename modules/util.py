@@ -143,6 +143,28 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [int(value)]
 
+def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
+    if split is True:               split = "|"
+    if data is None:                return None if return_none else []
+    elif isinstance(data, list):    list_data = data
+    elif isinstance(data, dict):    return [data]
+    elif split is False:            list_data = [str(data)]
+    else:
+        list_data = [s.strip() for s in str(data).split(split)]
+        if len(list_data) == 1:
+            split = ","
+            list_data = [s.strip() for s in str(data).split(split)]
+
+    def get_str(input_data):
+        return str(input_data).strip() if trim else str(input_data)
+
+    if lower is True:               return [get_str(d).lower() for d in list_data]
+    elif upper is True:             return [get_str(d).upper() for d in list_data]
+    elif int_list is True:
+        try:                            return [int(get_str(d)) for d in list_data]
+        except ValueError:              return []
+    else:                           return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+
 def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
     if split is True:               split = ","
     if data is None:                return None if return_none else []
@@ -419,7 +441,7 @@ def check_collection_mode(collection_mode):
     if collection_mode and str(collection_mode).lower() in collection_mode_options:
         return collection_mode_options[str(collection_mode).lower()]
     else:
-        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n\tdefault (Library default)\n\thide (Hide Collection)\n\thide_items (Hide Items in this Collection)\n\tshow_items (Show this Collection and its Items)")
+        raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n    default (Library default)\n    hide (Hide Collection)\n    hide_items (Hide Items in this Collection)\n    show_items (Show this Collection and its Items)")
 
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
@@ -509,7 +531,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
                 continue
             try:
-                schedule_str += f"\nScheduled to meet all of these:\n\t"
+                schedule_str += f"\nScheduled to meet all of these:\n    "
                 schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
                 all_check += 1
             except NotScheduled as e:
@@ -633,7 +655,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
         else:
             logger.error(f"Schedule Error: {display}")
     if is_all:
-        schedule_str.replace("\n", "\n\t")
+        schedule_str.replace("\n", "\n    ")
     if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
         if non_existing:
             raise NonExisting(schedule_str)

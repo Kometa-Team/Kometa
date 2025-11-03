@@ -28,12 +28,15 @@ dynamic_collections:
       video_games: Video Game
     title_format: Based on a <<key_name>>
     template:
-      - mdb_smart
+      - based
       - shared
       - arr
     template_variables:
-      mdblist_list:
-        default: https://mdblist.com/lists/k0meta/based_on_<<key>>_<<library_type>>s
+      keywords:
+        books: based on book, based on novel
+        comics: based on comic, based on comic book
+        true_story: based on true story
+        video_games: based on video game
       image:
         default: based/<<key_name_encoded>>
       translation_key:

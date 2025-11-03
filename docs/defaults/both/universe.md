@@ -15,6 +15,7 @@ hide:
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Universe"}' %}
 | `Alien / Predator`           | `avp`       | Collection of Movies in the Alien / Predator Universe             |
 | `Arrowverse`                 | `arrow`     | Collection of Movies in the The Arrow Universe                    |
+| `Conjuring Universe`         | `conjuring` | Collection of Movies in the Conjuring Universe                    |
 | `DC Animated Universe`       | `dca`       | Collection of Movies in the DC Animated Universe                  |
 | `DC Extended Universe`       | `dcu`       | Collection of Movies in the DC Extended Universe                  |
 | `Fast & Furious`             | `fast`      | Collection of Movies in the Fast & Furious Universe               |
