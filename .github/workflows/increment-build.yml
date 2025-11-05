@@ -63,6 +63,21 @@ jobs:
           ref: nightly
           fetch-depth: 0
 
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.x"
+
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate Sponsors
+        env:
+          GITHUB_PAT: ${{ secrets.PAT2 }}
+        run: python .github/python/update_sponsors.py
+
       - name: Update VERSION File
         id: update-version
         run: |
@@ -99,8 +114,10 @@ jobs:
           
             echo "$new_value" > "VERSION"
             echo "" > "PART"
+            git diff --name-only HEAD^
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
+            git add README.md
             git add VERSION
             git add PART
             git commit -m "${new_msg}" --amend

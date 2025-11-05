@@ -120,6 +120,7 @@ show_translation = {
     "lastViewedAt": "show.lastViewedAt",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
+    "dovi": "episode.dovi",
     "subtitleLanguage": "episode.subtitleLanguage",
     "audioLanguage": "episode.audioLanguage",
     "trash": "episode.trash",
@@ -196,7 +197,7 @@ method_alias = {
     "producers": "producer",
     "writers": "writer",
     "years": "year", "show_year": "year", "show_years": "year",
-    "show_title": "title", "filter": "filters",
+    "filter": "filters",
     "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
     "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
     "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
@@ -450,6 +451,9 @@ class Plex(Library):
         super().__init__(config, params)
         self.plex = params["plex"]
         self.url = self.plex["url"]
+        self.clean_bundles = params["plex"]["clean_bundles"]
+        self.empty_trash = params["plex"]["empty_trash"]
+        self.optimize = params["plex"]["optimize"]
         self.session = self.config.Requests.session
         if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
@@ -1767,10 +1771,10 @@ class Plex(Library):
             item_type = "track"
         else:
             return True
-        item = self.reload(item)
         if filter_attr not in builder.filters[item_type]:
             return True
-        elif filter_attr in builder.date_filters:
+        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        if filter_attr in builder.date_filters:
             if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
@@ -1790,6 +1794,10 @@ class Plex(Library):
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
                 values = [loc for loc in item.locations if loc]
+            elif filter_attr == "season_title":
+                values = [item.season().title]
+            elif filter_attr == "show_title":
+                values = [item.show().title]
             else:
                 test_value = getattr(item, filter_actual)
                 values = [test_value] if test_value else []

@@ -25,12 +25,12 @@ trakt:
     created_at: 137946258
 ```
 
-| Attribute        | Description                           | Allowed Values (default in **bold**)         |                  Required                  |
-|:-----------------|:--------------------------------------|:---------------------------------------------|:------------------------------------------:|
-| `client_id`      | Trakt application client ID.          | Any valid ID or leave **blank**              | :fontawesome-solid-circle-check:{ .green } |
-| `client_secret`  | Trakt application client secret.      | Any valid secret or leave **blank**          | :fontawesome-solid-circle-check:{ .green } |
-| `pin`            | Trakt PIN.                            | PIN string or leave **blank**                | :fontawesome-solid-circle-xmark:{ .red }   |
-| `force_refresh`  | Refresh credentials on every run      | 'true' or 'false'                            | :fontawesome-solid-circle-xmark:{ .red }   |
+| Attribute       | Description                       | Allowed Values (default in **bold**) |                  Required                  |
+|:----------------|:----------------------------------|:-------------------------------------|:------------------------------------------:|
+| `client_id`     | Trakt application client ID.      | Any valid ID or leave **blank**      | :fontawesome-solid-circle-check:{ .green } |
+| `client_secret` | Trakt application client secret.  | Any valid secret or leave **blank**  | :fontawesome-solid-circle-check:{ .green } |
+| `pin`           | Trakt PIN.                        | PIN string or leave **blank**        |  :fontawesome-solid-circle-xmark:{ .red }  |
+| `force_refresh` | Refresh credentials on every run. | 'true' or 'false'                    |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 
 *All other attributes will be filled in by Kometa as part of the authentication process*
