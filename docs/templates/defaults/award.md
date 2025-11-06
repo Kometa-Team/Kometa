@@ -38,13 +38,13 @@
 | `Oscars Best Director Winners` | `best_director` | Collection of Oscars Best Director Award Winners. |
 <!--oscars-->
 <!--pca-->
-| `People's Choice Award Winners` | `pca` | Collection of People's Choice Award Winners. |
+| `People's Choice Award Winners` | `best` | Collection of People's Choice Award Winners. |
 <!--pca-->
 <!--razzie-->
 | `Razzies Golden Raspberry Winners` | `golden` | Collection of Razzie Golden Raspberry Award Winners. |
 <!--razzie-->
 <!--sag-->
-| `Screen Actors Guild Award Winners` | `golden` | Collection of Screen Actors Guild Award Winners. |
+| `Screen Actors Guild Award Winners` | `best` | Collection of Screen Actors Guild Award Winners. |
 <!--sag-->
 <!--spirit-->
 | `Independent Spirit Best Feature Winners` | `best` | Collection of Independent Spirit Best Feature Award Winners. |
