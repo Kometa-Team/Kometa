@@ -1416,7 +1416,7 @@ class Plex(Library):
                     season_poster, season_background, season_logo, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if season_poster:
                         found_season = True
-                    elif self.show_missing_season_assets and season.seasonNumber > 0:
+                    elif self.show_missing_season_assets and season.seasonNumber and season.seasonNumber > 0:
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
                     if season_poster or season_background or season_logo and "Overlay" not in [la.tag for la in self.item_labels(season)]:
                         self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo)
