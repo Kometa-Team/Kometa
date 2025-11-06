@@ -4,8 +4,8 @@ from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 9:
-    print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.9.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+if sys.version_info[0] != 3 or sys.version_info[1] < 10:
+    print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
