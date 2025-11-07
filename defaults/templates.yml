@@ -178,13 +178,14 @@ templates:
 
   based:
     default:
-      sort: popularity.asc
+      sort_by: popularity.asc
+      sort_by_<<key>>: <<sort_by>>
       limit: 200
     imdb_search:
       keyword.any: <<keywords>>
       limit: <<limit>>
       type: <<type>>
-      sort_by: <<sort>>
+      sort_by: <<sort_by>>
     conditionals:
       type:
         default: bob
