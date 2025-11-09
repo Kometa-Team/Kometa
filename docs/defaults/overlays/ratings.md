@@ -14,9 +14,9 @@ This file only updates the overlays based on the data in Plex, it will not pull 
     }'
 %}
 
-!!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.0.3"
+!!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.2.3"
 
-    A new way to apply Ratings overlays has been released as part of Kometa 2.0.3,
+    A new way to apply Ratings overlays has been released as part of Kometa 2.2.3,
 
     This new system allows the rating to be applied to posters without having to first run Operations to override Plex's in-built ratings slots.
 
