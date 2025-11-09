@@ -8,11 +8,12 @@ hide:
         "OVERLAY_NAME": "Ratings", 
         "CODE_NAME": "ratings",
         "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library.
-
-This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info"
+        "DESCRIPTION": "an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library."
     }'
+    replace-tags='{"title-sub": ""}'
+    end='<!--rec-sub-->'
 %}
+
 
 !!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.2.3"
 
