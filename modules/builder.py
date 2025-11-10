@@ -57,8 +57,8 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
                          poster_details + background_details + summary_details + string_details + all_builders
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh", "item_analyze"] + item_false_details
-item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
-none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
+item_details = ["item_critic_rating", "item_audience_rating", "item_user_rating", "non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition", "item_critic_rating", "item_audience_rating", "item_user_rating"]
 none_builders = ["radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
@@ -1337,6 +1337,8 @@ class CollectionBuilder:
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "item_edition":
             self.item_details[method_final] = str(method_data) if method_data else "" # noqa
+        elif method_name in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+            self.item_details[method_final] = util.parse(self.Type, method_name, method_data, datatype="float", minimum=0, maximum=10) if method_data is not None else None
         elif method_name == "non_item_remove_label":
             if not method_data:
                 raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
@@ -3259,6 +3261,13 @@ class CollectionBuilder:
             if "item_edition" in self.item_details and item.editionTitle != self.item_details["item_edition"]:
                 self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
                 logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
+            for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+                if _rating in self.item_details:
+                    plex_attr = plex.attribute_translation[_rating[5:]]
+                    current_rating = getattr(item, plex_attr)
+                    if current_rating != self.item_details[_rating]:
+                        item.editField(plex_attr, self.item_details[_rating])
+                        logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
             path = None
             if "item_radarr_tag" in self.item_details or self.radarr_details["add_existing"] or "item_sonarr_tag" in self.item_details or self.sonarr_details["add_existing"]:
                 if item.locations:
