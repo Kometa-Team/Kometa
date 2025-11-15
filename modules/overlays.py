@@ -153,7 +153,7 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster, background, _, item_dir, name = self.library.find_item_assets(item)
+                        poster, background, logo, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
                             if (isinstance(item, Episode) and self.library.show_missing_episode_assets) or \
                                     (isinstance(item, Season) and self.library.show_missing_season_assets) or \
@@ -164,6 +164,8 @@ class Overlays:
                                     logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
                         if background:
                             self.library.upload_images(item, background=background)
+                        if logo:
+                            self.library.upload_images(item, logo=logo)
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)
