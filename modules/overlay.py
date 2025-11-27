@@ -275,7 +275,7 @@ class Overlay:
                         self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
                     raise Failed(f"Overlay Error: overlay image {self.path} failed to load")
-            match = re.search("\\(([^)]+)\\)", self.name)
+            match = re.search("\\((.+)\\)", self.name)
             if not match:
                 raise Failed(f"Overlay Error: failed to parse overlay text name: {self.name}")
             self.name = f"text({match.group(1)})"
