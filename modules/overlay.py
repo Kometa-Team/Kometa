@@ -240,7 +240,7 @@ class Overlay:
             raise Failed(f"Overlay Error: Overlay Name: {self.name} cannot contain '|'")
         elif self.name.startswith("blur"):
             try:
-                match = re.search("\\(([^)]+)\\)", self.name)
+                match = re.search("\\((.+)\\)", self.name)
                 if not match or 0 >= int(match.group(1)) > 100:
                     raise ValueError
                 self.name = f"blur({match.group(1)})"
