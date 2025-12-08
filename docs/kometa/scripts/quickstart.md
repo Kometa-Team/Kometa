@@ -11,6 +11,9 @@ hide:
     
     Notably, template variables on the default collections are not available, so you cannot generally modify the behavior of the default collections within Quickstart.
 
+    Quickstart also does not provide any support for manipulating external YAML files like collection, overlay, and metadata files.
+    
+
 {%
   include-markdown "https://raw.githubusercontent.com/Kometa-Team/Quickstart/refs/heads/develop/README.md"
   comments=false
