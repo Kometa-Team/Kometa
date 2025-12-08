@@ -7,6 +7,13 @@ hide:
     **Quickstart is in early development.** Please provide feedback via the 
     [quickstart-feedback Discord channel](https://discord.com/channels/822460010649878528/1335372922306695198)
 
+    Quickstart is incomplete in that it does not expose every possible setting in `config.yml`.
+    
+    Notably, template variables on the default collections are not available, so you cannot generally modify the behavior of the default collections within Quickstart.
+
+    Quickstart also does not provide any support for manipulating external YAML files like collection, overlay, and metadata files.
+    
+
 {%
   include-markdown "https://raw.githubusercontent.com/Kometa-Team/Quickstart/refs/heads/develop/README.md"
   comments=false
