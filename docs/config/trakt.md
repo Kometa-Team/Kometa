@@ -41,7 +41,6 @@ trakt:
 | `pin`           | Trakt PIN.                        | PIN string or leave **blank**        |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `force_refresh` | Refresh credentials on every run. | 'true' or 'false'                    |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-
 *All other attributes will be filled in by Kometa as part of the authentication process*
 
 ### Important Note on "Authentication Process":
@@ -52,7 +51,7 @@ The Trakt authentication process is interactive; Kometa will display a URL in th
 
 You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `traskt` attribute.
 
-### Authenticating during the Kometa run
+### Common activities:
 
 To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:
 
@@ -60,16 +59,37 @@ To connect to Trakt.tv you must create a Trakt application and supply Kometa the
 2. Enter a `Name` for the application.
 3. Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
 4. Click the `SAVE APP` button.
-5. Record the `Client ID` and `Client Secret` as `client_id` and `client_secret` in your Configuration File.
+5. Record the `Client ID` and `Client Secret`; you will need them in a moment.
 6. Click the Green Authorize Button next to the Redirect URI.
 
     ![Trakt Authorize](../assets/images/config/trakt.png)
 
-7. Record the `PIN` as `pin` in your Configuration File.
+7. Record the `PIN`; you will need it in a moment.
 
 ???+ warning
 
     Run Kometa shortly after obtaining your PIN; the PIN may expire at some point.
+
+### Authenticating during the Kometa run
+
+1. Add the `Client ID` and `Client Secret` as `client_id` and `client_secret` to your Configuration File.
+2. Add the `PIN` as `pin` in your Configuration File.
+
+    ```yaml title="config.yml Trakt sample"
+    trakt:
+      client_id: 1a2b3c4d5e6f7g8h9i     ## HERE
+      client_secret: 1a12b23c34d45e56f6 ## HERE
+      pin: 12345                        ## HERE
+      force_refresh: false
+      authorization:
+        access_token:
+        token_type:
+        expires_in:
+        refresh_token:
+        scope:
+        created_at:
+    ```
+3. Run Kometa within ten minutes of creating the PIN
 
 ### Authenticating outside the Kometa run
 
