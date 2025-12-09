@@ -6,7 +6,15 @@ hide:
 
 Configuring [MyAnimeList](https://myanimelist.net/) is optional but is required for MyAnimeList based collections and operations to function.
 
-A `mal` mapping is in the root of the config file, sampled below.
+The `mal` attribute is found at the root of the config file. Some of these are filled in by you, others are filled in by MyAnimeList:
+
+Kometa will keep these credentials up-to-date; they expire periodically and need to be renewed.
+
+???+ warning
+
+    Your config file needs to be writable by Kometa, since the `authentication` attribute gets updated when the credentials are renewed.
+
+    If the config file is not writable, the MyAnimeList renewal will eventually fail.
 
 ```yaml title="config.yml MyAnimeList sample"
 mal:
@@ -34,6 +42,8 @@ mal:
 The MyAnimeList authentication process is interactive; Kometa will display a URL in the console output and then wait for you to visit that URL in order to grant access and then paste in some additional information.  In order for this to happen you need to run Kometa in an interactive mode, which can be fussy in some contexts (e.g., running Kometa in a Docker container on a NAS).  For this reason, it is far simpler to use the form down below to perform these steps; it does all the same steps, but takes them out of the Kometa script execution.  The form will produce a complete authentication block as shown above ready for you to copy-paste into your `config.yml`.
 
 ## MyAnimeList Authentication
+
+You can complete the MyAnimeList authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `mal` attribute.
 
 To connect to MyAnimeList.net you must create a MyAnimeList application and supply Kometa the `client id` and `client secret` provided, please do the following:
 
