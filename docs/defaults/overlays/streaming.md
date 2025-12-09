@@ -15,7 +15,7 @@ hide:
 | Prime Video     | `amazon`      | `150` |
 | Disney+         | `disney`      | `140` |
 | HBO Max         | `hbomax`      | `130` |
-| Crunchyroll     | `Crunchyroll` | `120` |
+| Crunchyroll     | `crunchyroll` | `120` |
 | Movistar Plus+  | `movistar`    | `115` |
 | Atres Player    | `atresplayer` | `113` |
 | YouTube         | `youtube`     | `110` |
