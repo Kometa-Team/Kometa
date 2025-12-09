@@ -8,7 +8,16 @@ hide:
 
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
-A `trakt` mapping is in the root of the config file, sampled below.
+The `trakt` attribute is found at the root of the config file.  Some of these are filled in by you, others are filled in by Trakt:
+
+Kometa will keep these credentials up-to-date; they expire in 24 hours and will need to be renewed.
+
+???+ warning
+
+    Your config file needs to be writable by Kometa, since the `authentication` attribute gets updated when the credentials are renewed.
+
+    If the config file is not writable, the Trakt renewal will eventually fail.
+
 
 ```yaml title="config.yml Trakt sample"
 trakt:
@@ -41,6 +50,10 @@ The Trakt authentication process is interactive; Kometa will display a URL in th
 
 ## Trakt Authentication
 
+You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `traskt` attribute.
+
+### Authenticating during the Kometa run
+
 To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:
 
 1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
@@ -58,7 +71,7 @@ To connect to Trakt.tv you must create a Trakt application and supply Kometa the
 
     Run Kometa shortly after obtaining your PIN; the PIN may expire at some point.
 
-## Online Authorization
+### Authenticating outside the Kometa run
 
 {%    
   include-markdown "./authentication.md"
