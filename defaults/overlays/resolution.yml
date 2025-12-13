@@ -52,6 +52,7 @@ external_templates:
               - DV-HDR
               - Plus
               - DV
+              - HLG
               - HDR
           - type: resolution_dovetail
             value:
@@ -264,7 +265,7 @@ overlays:
     variables: {key: 4k, alt: dv, weight: 150, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   4K-HLG-Dovetail:
-    variables: {key: 4k, alt: "hlg", weight: 141, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: 4k, alt: hlg, weight: 141, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   4K-HDR-Dovetail:
     variables: {key: 4k, alt: hdr, weight: 140, type: resolution_dovetail, allowed_libraries: movie}
@@ -361,6 +362,9 @@ overlays:
     template: [name: resolution, name: standard]
   DV-Dovetail:
     variables: {key: "", alt: dv, weight: 5, type: resolution_dovetail, all: true, allowed_libraries: movie}
+    template: [name: resolution, name: standard]
+  HLG-Dovetail:
+    variables: {key: "", alt: hlg, weight: 2, type: resolution_dovetail, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   HDR-Dovetail:
     variables: {key: "", alt: hdr, weight: 1, type: resolution_dovetail, allowed_libraries: movie}
@@ -553,8 +557,11 @@ overlays:
   DV:
     variables: {key: "", alt: dv, weight: 5, type: resolution, all: true}
     template: [name: resolution, name: standard]
+  HLG:
+    variables: {key: "", alt: hlg, weight: 2, type: resolution}
+    template: [name: resolution, name: standard]
   HDR:
-    variables: {key: "", alt: hdr, weight: 2, type: resolution}
+    variables: {key: "", alt: hdr, weight: 1, type: resolution}
     template: [name: resolution, name: standard]
 
   Extended-Edition:
