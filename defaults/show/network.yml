@@ -27,6 +27,7 @@ dynamic_collections:
       - shared
     template_variables:
       delete_collections_named:
+        Apple TV: Apple TV+
         HBO Max: Max
       search_term:
         default: network
