@@ -13,7 +13,7 @@ jobs:
     steps:
 
       - name: Check Out Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -76,7 +76,7 @@ jobs:
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
 
       - name: Checkout Configs Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: Kometa-Team/Community-Configs
           token: ${{ secrets.PAT }}
