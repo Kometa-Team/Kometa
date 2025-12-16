@@ -133,8 +133,7 @@ This is not something you can enable or disable independently; it's an internal 
 
     1.  Stops the DV/HDR10+ overlay applying, regardless of resolution
     2.  Stops the DV overlay applying, regardless of resolution
-    3.  Stops the HLG overlay applying, regardless of resolution
-    3.  Stops the HDR overlay applying, regardless of resolution
+    3.  Stops the HLG/HDR overlay applying, regardless of resolution
     4.  Stops this resolution overlay applying
     5.  Assuming that this library only contains 4K Movies, we will want to disable all non-4K overlays from processing to increase performance
 
