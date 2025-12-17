@@ -364,7 +364,7 @@ overlays:
     variables: {key: "", alt: dv, weight: 5, type: resolution_dovetail, all: true, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   HLG-Dovetail:
-    variables: {key: "", alt: hlg, weight: 2, type: resolution_dovetail, allowed_libraries: movie}
+    variables: {key: "", alt: hlg, weight: 2, type: resolution_dovetail, all: true, allowed_libraries: movie}
     template: [name: resolution, name: standard]
   HDR-Dovetail:
     variables: {key: "", alt: hdr, weight: 1, type: resolution_dovetail, allowed_libraries: movie}
@@ -558,7 +558,7 @@ overlays:
     variables: {key: "", alt: dv, weight: 5, type: resolution, all: true}
     template: [name: resolution, name: standard]
   HLG:
-    variables: {key: "", alt: hlg, weight: 2, type: resolution}
+    variables: {key: "", alt: hlg, weight: 2, type: resolution, all: true}
     template: [name: resolution, name: standard]
   HDR:
     variables: {key: "", alt: hdr, weight: 1, type: resolution}
