@@ -769,6 +769,8 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Default Value:** `true`
 
+    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
+
     ???+ example "Example"
 
         ```yaml
@@ -834,6 +836,8 @@ The available setting attributes which can be set at each level are outlined bel
     **Accepted Values:** `true` or `false`.
 
     **Default Value:** `true`
+
+    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
 
     ???+ example "Example"
 
