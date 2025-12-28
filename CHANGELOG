@@ -9,6 +9,13 @@ Updated python-dotenv requirement to 1.2.1
 Updated ruamel.yaml requirement to 0.18.16
 
 # New Features
+Added `file_logo` and `url_logo` as metadata image options **credit to @Joost1991**
+Added support for `dovi` search attribute for Plex builders (requires PMS 1.41.6.9606 or above)
+Added `store_authorization_in_cache` setting to store Trakt and MAL authorization in the cache instead of the config file **credit to @ChuckNoxis**
+Adds `|` as a preferred delimiter for run times.
+Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
+Adds new filters `show_title` and `season_title`
+Adds Producer's Cut to resolution/edition default overlay
 
 # Docs
 

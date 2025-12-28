@@ -9,6 +9,14 @@ class Cache:
     def __init__(self, config_path, expiration):
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
+        self._initialize_database()
+
+    def get_connection(self):
+        """Get a database connection"""
+        return sqlite3.connect(self.cache_path)
+
+    def _initialize_database(self):
+        """Initialize the database with required tables"""
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
@@ -320,6 +328,12 @@ class Cache:
                     value1 TEXT,
                     value2 TEXT,
                     success TEXT)"""
+                )
+                cursor.execute(
+                    """CREATE TABLE IF NOT EXISTS authorization (
+                        service TEXT PRIMARY KEY,
+                        data TEXT
+                    )"""
                 )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
@@ -1137,3 +1151,44 @@ class Cache:
                 cursor.execute(f"INSERT OR IGNORE INTO testing(name) VALUES(?)", (name,))
                 sql = f"UPDATE testing SET value1 = ?, value2 = ?, success = ? WHERE name = ?"
                 cursor.execute(sql, (value1, value2, success, name))
+
+    def get_authorization(self, service):
+        """Get authorization data for a service from the database"""
+        try:
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"SELECT data FROM authorization WHERE service = ?", (service,))
+                result = cursor.fetchone()
+                if result and result[0] and result[0] != "null":
+                    try:
+                        return json.loads(result[0])
+                    except json.JSONDecodeError as e:
+                        logger.error(f"Failed to decode authorization data for {service}: {e}")
+                        return None
+                return None
+        except Exception as e:
+            logger.error(f"Failed to get authorization for {service}: {e}")
+            return None
+
+    def set_authorization(self, service, data):
+        """Store authorization data for a service in the database"""
+        try:
+            if data is None:
+                data = "null"
+            elif not isinstance(data, str):
+                try:
+                    data = json.dumps(data)
+                except Exception as e:
+                    logger.error(f"Failed to convert data to JSON string: {e}")
+                    return
+
+            with self.get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(f"INSERT OR REPLACE INTO authorization (service, data) VALUES (?, ?)", (service, data))
+                conn.commit()
+                logger.debug(f"Successfully stored authorization for {service} in database.")
+        except Exception as e:
+            logger.error(f"Failed to set authorization for {service}: {e}")
+            logger.error(f"Error type: {type(e)}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
