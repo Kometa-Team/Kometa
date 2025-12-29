@@ -16,4 +16,4 @@ Updated ruamel.yaml requirement to 0.18.16
 
 # Bug Fixes
 Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
-
+Pin dockerfile to 3.14.0, since 3.14.1 introduces memory bloat issues
