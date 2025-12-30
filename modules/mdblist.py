@@ -33,6 +33,9 @@ class MDBList:
         self.apikey = None
         self.expiration = 60
         self.supporter = False
+        self.patron = False
+        self.api_requests = 0
+        self.api_request_count = 0
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
@@ -40,8 +43,16 @@ class MDBList:
         try:
             # Verified FQDN for user check
             res, _ = self._request(f"{api_url}user")
-            self.supporter = res.get("limits", {}).get("supporter", False)
+            self.supporter = res.get("is_supporter", False)
+            self.patron = res.get("patron_status", False)
+            self.api_requests = res.get("api_requests", 0)
+            self.api_request_count = res.get("api_request_count", 0)
+    
             logger.info(f"MDBList Connection Verified (Supporter: {self.supporter})")
+            logger.info(f"Patron Status: {self.patron}")
+            logger.info(f"Daily API Requests: {self.api_requests}")
+            logger.info(f"API Requests Used Today: {self.api_request_count}")
+
         except Exception as e:
             self.apikey = None
             raise Failed(f"MDBList Key Initialization Failed: {e}")
