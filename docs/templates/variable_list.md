@@ -255,7 +255,7 @@
 <!--year-data-->
 <!--data-->
 | `data`        | **Description:** Overrides the [default data dictionary](#default-value-source). Defines the data that the custom dynamic collection processes.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } List of keys/names |
-| `append_data` | **Description:** Appends to the [default data dictionary](#default-value-source).<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } List of keys/names                                                               |
+| `append_data` | **Description:** Appends to the [default data dictionary](#default-value-source).<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } List of keys/names; if the name contains commas, wrap it in quotes.               |
 | `remove_data` | **Description:** Removes from the [default data dictionary](#default-value-source).<br>**Values:** List of keys to remove                                                                    |
 <!--data-->
 <!--addons-->
