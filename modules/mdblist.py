@@ -12,7 +12,7 @@ builders = ["mdblist_list"]
 sort_names = [
     "rank", "score", "score_average", "released", "releaseddigital", "imdbrating", "imdbvotes", "imdbpopular",
     "tmdbpopular", "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes",
-    "last_air_date", "budget", " revenue", "usort", "added", "runtime", "title", "random"
+    "last_air_date", "usort", "added", "runtime", "budget", " revenue", "title", "random"
 ]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 
@@ -95,18 +95,16 @@ class MDBList:
         logger.secret(self.apikey)
         self.expiration = expiration
         try:
-            res, _ = self._request(f"{api_url}user")
-            logger.trace(f"MDB response: {res}")
+            response, _ = self._request(f"{api_url}user")
+            logger.trace(f"MDB response: {response}")
+
+            self.supporter = response.get("is_supporter", False)
             logger.info(f"Supporter Key: {self.supporter}")
 
-            self.supporter = res.get("is_supporter", False)
-            self.patron = res.get("patron_status", False)
-            self.api_requests = res.get("api_requests", 0)
-            self.api_requests_count = res.get("api_requests_count", 0)
+            self.patron = response.get("patron_status", False)
+            self.api_requests = response.get("api_requests", 0)
+            self.api_requests_count = response.get("api_requests_count", 0)
     
-            self.rating_id_limit = response["limits"]["rating_ids"]
-            # logger.info(f"Rating ID limit: {self.rating_id_limit}")
-
             logger.info(f"MDBList Connection Verified (Supporter: {self.supporter})")
             logger.info(f"Patron Status: {self.patron}")
             logger.info(f"Daily API Requests: {self.api_requests}")
@@ -184,7 +182,7 @@ class MDBList:
             return MDbObj(data)
         return None
 
-def validate_mdblist_lists(self, error_type, mdb_lists):
+    def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
         for mdb_dict in util.get_list(mdb_lists, split=False):
             if not isinstance(mdb_dict, dict):
