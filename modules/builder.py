@@ -3108,6 +3108,8 @@ class CollectionBuilder:
     def run_missing(self):
         added_to_radarr = 0
         added_to_sonarr = 0
+        i = 0
+        total_ids = len(self.missing_movies)
         if len(self.missing_movies) > 0 and (self.library.is_movie or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
@@ -3116,6 +3118,7 @@ class CollectionBuilder:
             missing_movies_with_names = []
             filtered_movies_with_names = []
             for missing_id in self.missing_movies:
+                i += 1
                 try:
                     movie = self.config.TMDb.get_movie(missing_id)
                 except Failed as e:
@@ -3125,11 +3128,15 @@ class CollectionBuilder:
                 if self.check_missing_filters(missing_id, True, tmdb_item=movie, check_released=self.details["missing_only_released"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
                 else:
                     filtered_movies_with_names.append((current_title, missing_id))
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {current_title} (TMDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if len(missing_movies_with_names) > 0:
@@ -3160,6 +3167,8 @@ class CollectionBuilder:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
                 self.library.add_filtered(self.name, filtered_movies_with_names, True)
+        i = 0
+        total_ids = len(self.missing_shows)
         if len(self.missing_shows) > 0 and (self.library.is_show or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
@@ -3168,6 +3177,7 @@ class CollectionBuilder:
             missing_shows_with_names = []
             filtered_shows_with_names = []
             for missing_id in self.missing_shows:
+                i += 1
                 try:
                     title = self.config.TVDb.get_tvdb_obj(missing_id).title
                 except Failed as e:
@@ -3176,11 +3186,15 @@ class CollectionBuilder:
                 if self.check_missing_filters(missing_id, False, check_released=self.details["missing_only_released"]):
                     missing_shows_with_names.append((title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
                 else:
                     filtered_shows_with_names.append((title, missing_id))
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {title} (TVDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if len(missing_shows_with_names) > 0:
