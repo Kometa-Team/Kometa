@@ -16,10 +16,10 @@ sort_names = [
 ]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 
-
-# --- CORRECT FQDN ---
-api_url = "https://api.mdblist.com/"
 base_url = "https://mdblist.com/lists/"
+api_url = "https://api.mdblist.com/"
+
+headers = {"User-Agent": "Kometa"}
 
 class MDbObj:
     def __init__(self, data):
@@ -82,30 +82,48 @@ class MDBList:
         self.cache = cache
         self.apikey = None
         self.expiration = 60
+        self.limit = False
         self.supporter = False
         self.patron = False
         self.api_requests = 0
         self.api_request_count = 0
+        self.supporter = False
+        self.rating_id_limit = 10
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
+        logger.secret(self.apikey)
         self.expiration = expiration
         try:
-            # Verified FQDN for user check
             res, _ = self._request(f"{api_url}user")
+            logger.trace(f"MDB response: {res}")
+            logger.info(f"Supporter Key: {self.supporter}")
+
             self.supporter = res.get("is_supporter", False)
             self.patron = res.get("patron_status", False)
             self.api_requests = res.get("api_requests", 0)
             self.api_requests_count = res.get("api_requests_count", 0)
     
+            self.rating_id_limit = response["limits"]["rating_ids"]
+            # logger.info(f"Rating ID limit: {self.rating_id_limit}")
+
             logger.info(f"MDBList Connection Verified (Supporter: {self.supporter})")
             logger.info(f"Patron Status: {self.patron}")
             logger.info(f"Daily API Requests: {self.api_requests}")
             logger.info(f"API Requests Used Today: {self.api_requests_count}")
             
-        except Exception as e:
+            self.get_item(imdb_id="tt0080684", ignore_cache=True)
+        except LimitReached:
+            logger.info(f"MDBList API limit exhausted")
+            self.limit = True
+        except Failed as fe:
+            logger.info(f"MDBList API connection failed: {fe}")
             self.apikey = None
-            raise Failed(f"MDBList Key Initialization Failed: {e}")
+            raise
+
+    @property
+    def has_key(self):
+        return self.apikey is not None
 
     def _request(self, url, params=None):
         final_params = {"apikey": self.apikey}
@@ -126,7 +144,47 @@ class MDBList:
             
         return json_data, response.headers
 
-    def validate_mdblist_lists(self, error_type, mdb_lists):
+    def get_item(self, tmdb_id, is_movie=True):
+        """Fetches a single item by TMDB ID with caching."""
+        m_type = "movie" if is_movie else "show"
+        cache_id = f"mdblist_{m_type}_{tmdb_id}"
+        
+        # Check cache first
+        expired, expired_bool = self.cache.query_mdblist(cache_id, self.expiration)
+        if expired and not expired_bool:
+            return MDbObj(expired)
+        
+        # Fetch from API if not in cache or expired
+        res, _ = self._request(f"{api_url}{m_type}/{tmdb_id}/")
+        self.cache.update_mdblist(cache_id, res, self.expiration)
+        return MDbObj(res)
+
+    def get_series(self, tmdb_id):
+        return self.get_item(tmdb_id, is_movie=False)
+
+    def get_movie(self, tmdb_id):
+        return self.get_item(tmdb_id, is_movie=True)
+
+    def get_imdb(self, imdb_id):
+        """Fetches an item by IMDB ID with caching."""
+        cache_id = f"mdblist_imdb_{imdb_id}"
+        expired, expired_bool = self.cache.query_mdblist(cache_id, self.expiration)
+        if expired and not expired_bool:
+            return MDbObj(expired)
+
+        res, _ = self._request(api_url, params={"i": imdb_id})
+        data = None
+        if isinstance(res, list) and len(res) > 0:
+            data = res[0]
+        elif isinstance(res, dict) and "id" in res:
+            data = res
+            
+        if data:
+            self.cache.update_mdblist(cache_id, data, self.expiration)
+            return MDbObj(data)
+        return None
+
+def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
         for mdb_dict in util.get_list(mdb_lists, split=False):
             if not isinstance(mdb_dict, dict):
