@@ -142,45 +142,40 @@ class MDBList:
             
         return json_data, response.headers
 
-    def get_item(self, tmdb_id, is_movie=True):
-        """Fetches a single item by TMDB ID with caching."""
-        m_type = "movie" if is_movie else "show"
-        cache_id = f"mdblist_{m_type}_{tmdb_id}"
-        
-        # Check cache first
-        expired, expired_bool = self.cache.query_mdblist(cache_id, self.expiration)
-        if expired and not expired_bool:
-            return MDbObj(expired)
-        
-        # Fetch from API if not in cache or expired
-        res, _ = self._request(f"{api_url}{m_type}/{tmdb_id}/")
-        self.cache.update_mdblist(cache_id, res, self.expiration)
-        return MDbObj(res)
-
-    def get_series(self, tmdb_id):
-        return self.get_item(tmdb_id, is_movie=False)
-
-    def get_movie(self, tmdb_id):
-        return self.get_item(tmdb_id, is_movie=True)
+    def get_item(self, imdb_id=None, tmdb_id=None, tvdb_id=None, is_movie=True, ignore_cache=False):
+        params = {}
+        if imdb_id:
+            params["i"] = imdb_id
+            key = imdb_id
+        elif tmdb_id:
+            params["tm"] = tmdb_id
+            params["m"] = "movie" if is_movie else "show"
+            key = f"{'tm' if is_movie else 'ts'}{tmdb_id}"
+        elif tvdb_id:
+            params["tv"] = tvdb_id
+            params["m"] = "movie" if is_movie else "show"
+            key = f"{'tvm' if is_movie else 'tvs'}{tvdb_id}"
+        else:
+            raise Failed("MDBList Error: Either IMDb ID, TVDb ID, or TMDb ID and TMDb Type Required")
+        expired = None
+        if self.cache and not ignore_cache:
+            mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
+            if mdb_dict and expired is False:
+                return MDbObj(mdb_dict)
+        logger.trace(f"ID: {key}")
+        mdb = MDbObj(self._request(api_url, params=params))
+        if self.cache and not ignore_cache:
+            self.cache.update_mdb(expired, key, mdb, self.expiration)
+        return mdb
 
     def get_imdb(self, imdb_id):
-        """Fetches an item by IMDB ID with caching."""
-        cache_id = f"mdblist_imdb_{imdb_id}"
-        expired, expired_bool = self.cache.query_mdblist(cache_id, self.expiration)
-        if expired and not expired_bool:
-            return MDbObj(expired)
+        return self.get_item(imdb_id=imdb_id)
 
-        res, _ = self._request(api_url, params={"i": imdb_id})
-        data = None
-        if isinstance(res, list) and len(res) > 0:
-            data = res[0]
-        elif isinstance(res, dict) and "id" in res:
-            data = res
-            
-        if data:
-            self.cache.update_mdblist(cache_id, data, self.expiration)
-            return MDbObj(data)
-        return None
+    def get_series(self, tvdb_id):
+        return self.get_item(tvdb_id=tvdb_id, is_movie=False)
+ 
+    def get_movie(self, tmdb_id): 
+        return self.get_item(tmdb_id=tmdb_id, is_movie=True)
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
