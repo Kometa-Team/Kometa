@@ -271,6 +271,9 @@ if not uuid_num:
         handle.write(str(uuid_num))
 
 plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
+plexapi.BASE_HEADERS["X-Plex-Provides"] = "sync"
+plexapi.BASE_HEADERS["X-Plex-Product"] = "Kometa"
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 if util.windows:
