@@ -1,5 +1,8 @@
 import time
+from datetime import datetime
+from json import JSONDecodeError
 from modules import util
+from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
 logger = util.logger
@@ -26,6 +29,52 @@ class MDbObj:
         self.type = data.get("mediatype") or data.get("type")
         self.tmdbid = util.check_num(data.get("id") or data.get("tmdbid"))
         self.imdbid = data.get("imdbid")
+
+        try:
+            self.released = datetime.strptime(data["released"], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            self.released = None
+        try:
+            self.released_digital = datetime.strptime(data["released_digital"], "%Y-%m-%d")
+        except (ValueError, TypeError):
+            self.released_digital = None
+
+        self.traktid = util.check_num(data.get("traktid"))
+        self.tmdbid = util.check_num(data.get("tmdbid"))
+        self.score = util.check_num(data.get("score"))
+        self.average = util.check_num(data.get("score_average"))
+
+        self.imdb_rating = None
+        self.metacritic_rating = None
+        self.metacriticuser_rating = None
+        self.trakt_rating = None
+        self.tomatoes_rating = None
+        self.tomatoesaudience_rating = None
+        self.tmdb_rating = None
+        self.letterboxd_rating = None
+        self.myanimelist_rating = None
+        for rating in data.get("ratings", []):
+            if rating["source"] == "imdb":
+                self.imdb_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "metacritic":
+                self.metacritic_rating = util.check_num(rating["value"])
+            elif rating["source"] == "metacriticuser":
+                self.metacriticuser_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "trakt":
+                self.trakt_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tomatoes":
+                self.tomatoes_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tomatoesaudience":
+                self.tomatoesaudience_rating = util.check_num(rating["value"])
+            elif rating["source"] == "tmdb":
+                self.tmdb_rating = util.check_num(rating["value"])
+            elif rating["source"] == "letterboxd":
+                self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+            elif rating["source"] == "myanimelist":
+                self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
+        self.content_rating = data.get("certification")
+        self.commonsense = data.get("commonsense")
+        self.age_rating = data.get("age_rating")
 
 class MDBList:
     def __init__(self, requests, cache):
