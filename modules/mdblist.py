@@ -110,7 +110,7 @@ class MDBList:
             logger.info(f"Daily API Requests: {self.api_requests}")
             logger.info(f"API Requests Used Today: {self.api_requests_count}")
             
-            self.get_item(imdb_id="tt0080684", ignore_cache=True)
+            self.get_item(media_provider='imdb', media_type='movie', media_id="tt0080684", ignore_cache=True)
         except LimitReached:
             logger.info(f"MDBList API limit exhausted")
             self.limit = True
@@ -167,7 +167,8 @@ class MDBList:
             if mdb_dict and expired is False:
                 return MDbObj(mdb_dict)
         logger.trace(f"ID: {key}")
-        mdb = MDbObj(self._request(api_url, params={}))
+        mdb_tuple = self._request(item_url, params={})
+        mdb = MDbObj(mdb_tuple[0])
         if self.cache and not ignore_cache:
             self.cache.update_mdb(expired, key, mdb, self.expiration)
         return mdb
