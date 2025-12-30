@@ -9,9 +9,10 @@ builders = ["mdblist_list"]
 sort_names = [
     "rank", "score", "score_average", "released", "releaseddigital", "imdbrating", "imdbvotes", "imdbpopular",
     "tmdbpopular", "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes",
-    "last_air_date", "watched", "rating", "download", "usort", "added", "runtime", "title", "random"
+    "last_air_date", "budget", " revenue", "usort", "added", "runtime", "title", "random"
 ]
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
+
 
 # --- CORRECT FQDN ---
 api_url = "https://api.mdblist.com/"
@@ -46,13 +47,13 @@ class MDBList:
             self.supporter = res.get("is_supporter", False)
             self.patron = res.get("patron_status", False)
             self.api_requests = res.get("api_requests", 0)
-            self.api_request_count = res.get("api_request_count", 0)
+            self.api_requests_count = res.get("api_requests_count", 0)
     
             logger.info(f"MDBList Connection Verified (Supporter: {self.supporter})")
             logger.info(f"Patron Status: {self.patron}")
             logger.info(f"Daily API Requests: {self.api_requests}")
-            logger.info(f"API Requests Used Today: {self.api_request_count}")
-
+            logger.info(f"API Requests Used Today: {self.api_requests_count}")
+            
         except Exception as e:
             self.apikey = None
             raise Failed(f"MDBList Key Initialization Failed: {e}")
