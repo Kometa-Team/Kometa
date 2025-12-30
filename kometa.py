@@ -876,6 +876,8 @@ def run_collection(config, library, metadata, requested_collections):
                         library.status[str(mapping_name)]["removed"] = items_removed
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                    logger.info("")
+                    logger.info(f"Processing missing items: {len(builder.missing_movies)} movies and/or {len(builder.missing_shows)} missing shows")
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
                     library.status[str(mapping_name)]["radarr"] += radarr_add
