@@ -17,5 +17,5 @@ Add visible (X/Y) logging while processing missing items.
 # Defaults
 
 # Bug Fixes
-Fix a logic error that caused an infinite loop on reauthentication with private Trakt lists
-
+Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
+Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
