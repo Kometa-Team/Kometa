@@ -10,8 +10,6 @@ This is problematic on some setups [namely docker] where entering interactive mo
 These scripts allow you to authorize Trakt and MyAnimeList here on the wiki. Once authorized, the script will 
 give you a YAML block that you will copy into the config.yml, replacing the existing `trakt` and/or `myanimelist` sections.
 
-The source code for these scripts can be found on the [Trakt-MAL-OAuth Repository](https://github.com/Kometa-Team/Trakt-MAL-OAuth).
-
 ## Usage
 
 1. Enter client ID and secret.

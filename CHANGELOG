@@ -13,6 +13,8 @@ Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 
 # Docs
+Updates to Quickstart docs about limitations
+Updates to Trakt and MAL flow pages
 
 # Defaults
 
