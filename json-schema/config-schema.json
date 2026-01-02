@@ -775,6 +775,10 @@
                     "description": "Used to delete collections not scheduled.\nIf a collection is skipped due to it not being scheduled, delete the collection.",
                     "type": "boolean"
                 },
+                "auto_sort_hubs": {
+                    "description": "Used to automatically sort Plex recommendation hubs after collections are updated, mirroring the sort title order.",
+                    "type": "boolean"
+                },
                 "run_again_delay": {
                     "description": "Used to control the number of minutes to delay running run_again collections.\nSet the number of minutes to delay running run_again collections after daily run is finished. For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run 'X' amount of time later so that any downloaded items are processed.",
                     "type": "integer",

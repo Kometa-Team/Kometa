@@ -136,6 +136,26 @@ The available setting attributes which can be set at each level are outlined bel
           asset_folders: true
         ```
 
+??? blank "`auto_sort_hubs` - Used to automatically sort Plex Recommendation Hubs by sort title order.<a class="headerlink" href="#auto-sort-hubs" title="Permanent link">¶</a>"
+
+    <div id="auto-sort-hubs" />When enabled, Kometa will automatically sort Plex Recommendation Hubs based on the sort titles of the collections within each library.
+
+    This will mirror the order of how collections are displayed within the Plex library view. Only collections that are marked as visible in Plex will be sorted.
+
+    **Attribute:** `auto_sort_hubs`
+
+    **Levels with this Attribute:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          auto_sort_hubs: true
+        ```
 
 ??? blank "`cache` - Used to control Kometa's cache database.<a class="headerlink" href="#cache" title="Permanent link">¶</a>"
 
