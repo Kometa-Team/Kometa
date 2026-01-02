@@ -1,6 +1,6 @@
 arrapi==1.4.14
 cloudscraper==1.2.71
-GitPython==3.1.45
+GitPython==3.1.46
 lxml==6.0.2
 num2words==0.5.14
 packaging==25.0
