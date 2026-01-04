@@ -27,6 +27,7 @@ dynamic_collections:
       - shared
     template_variables:
       delete_collections_named:
+        Apple TV: Apple TV+
         HBO Max: Max
       search_term:
         default: network
@@ -58,7 +59,7 @@ dynamic_collections:
       - ANIMAX
       - Angel Studios
       - Antena 3
-      - Apple TV+
+      - Apple TV
       - ARD
       - Arte
       - Atresplayer Premium
@@ -322,7 +323,9 @@ dynamic_collections:
         - Animal Planet Brasil
         - Animal Planet Deutschland
       Angel Studios:
-      - VidAngel
+        - VidAngel
+      Apple TV:
+        - Apple TV+
       BET:
         - BET Her
       Canal+:

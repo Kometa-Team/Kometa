@@ -52,7 +52,7 @@ so you may want to go through the [Docker Walkthrough](walkthroughs/docker.md) f
 
 ## Local Install Overview
 
-Kometa is compatible with Python 3.9 through 3.13. **Kometa has not been tested and may be non-functional on any version of Python beyond 3.13**
+Kometa is compatible with Python 3.10 through 3.13. **Kometa has not been tested and may be non-functional on any version of Python beyond 3.13**
 
 These are high-level steps which assume the user has knowledge of python and pip, and the general ability to troubleshoot issues. 
 For a detailed step-by-step walkthrough, refer to the [Local Walkthrough](walkthroughs/local.md) guide.
