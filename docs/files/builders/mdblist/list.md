@@ -93,7 +93,7 @@ https://imdb.com/list/ls089009459
 These lists can be used with Kometa, **provided** one or the other of these criteria are true:
 
 1. The owner of the MDBList API Key also owns the MDBList external list OR
-2. The owner of the external list has **unchecked** the `Make your external lists private` setting in their MDBList account settings.
+2. The owner of the MDBList external list has **unchecked** the `Make your external lists private` setting in their MDBList account settings.
 
 ```yaml
 collections:
