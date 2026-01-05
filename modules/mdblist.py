@@ -12,7 +12,7 @@ builders = ["mdblist_list"]
 sort_names = [
     "rank", "score", "score_average", "released", "releasedigital", "imdbrating", "imdbvotes", "imdbpopular", 
     "tmdbpopular", "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes",
-    "last_air_date", "budget", "revenue", "runtime", "title", "sort_title", "random"
+    "last_air_date", "budget", "revenue", "runtime", "title", "sort_title", "random", "usort", "added"
 ]
 
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
@@ -241,10 +241,6 @@ class MDBList:
                     items = page_data
             except Exception as e:
                 raise Failed(f"MDBList Error: Could not fetch list items: {e}")
-
-            if not items:
-                logger.warning(f"MDBList Issue: no results returned for list {list_path}; perhaps it is private?")
-                break
 
             for item in items:
                 if 0 < limit_config <= len(results):
