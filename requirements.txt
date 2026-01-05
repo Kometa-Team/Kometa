@@ -12,7 +12,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 pywin32==311; sys_platform == 'win32'
 requests==2.32.5
-ruamel.yaml==0.18.17
+ruamel.yaml==0.19.1
 schedule==1.2.2
 setuptools==80.9.0
 tenacity==9.1.2
