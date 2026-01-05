@@ -10,10 +10,11 @@ logger = util.logger
 # --- REQUIRED MODULE ATTRIBUTES ---
 builders = ["mdblist_list"]
 sort_names = [
-    "rank", "score", "score_average", "released", "releaseddigital", "imdbrating", "imdbvotes", "imdbpopular",
+    "rank", "score", "score_average", "released", "releasedigital", "imdbrating", "imdbvotes", "imdbpopular", 
     "tmdbpopular", "rogerebert", "rtomatoes", "rtaudience", "metacritic", "myanimelist", "letterrating", "lettervotes",
-    "last_air_date", "usort", "added", "runtime", "budget", " revenue", "title", "random"
+    "last_air_date", "budget", "revenue", "runtime", "title", "sort_title", "random"
 ]
+
 list_sorts = [f"{s}.asc" for s in sort_names] + [f"{s}.desc" for s in sort_names]
 
 base_url = "https://mdblist.com/lists/"
@@ -200,26 +201,15 @@ class MDBList:
         return valid_lists
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
-        list_path = data["url"].split("/lists/")[-1].strip("/")
-        
-        total_items = 0
-        try:
-            meta_url = f"{api_url}lists/{list_path}"
-            meta_data, _ = self._request(meta_url)
-            
-            target_type = "movie" if is_movie is not None and is_movie else "show"
-            if isinstance(meta_data, list):
-                for list_meta in meta_data:
-                    if list_meta.get("mediatype") == target_type:
-                        total_items = list_meta.get("items", 0)
-                        break
-            
-            if total_items > 0:
-                logger.info(f"MDBList Sync: Found {total_items} {target_type}s in '{list_path}'")
-        except Exception as e:
-            logger.debug(f"MDBList: Could not fetch list metadata: {e}")
 
-        items_url = f"{api_url}lists/{list_path}/items/"
+        list_path = data["url"].split("/lists/")[-1].strip("/")
+
+        external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
+
+        total_items = 0
+
+        items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+
         sort, direction = data["sort_by"].split(".")
         results = []
         offset = 0
@@ -233,19 +223,27 @@ class MDBList:
                 "sort": sort,
                 "sortorder": direction
             }
-            if is_movie is not None:
+            if not external_id and is_movie is not None:
                 params["mediatype"] = "movie" if is_movie else "show"
+            else:
+                params["unified"] = "true"
 
-            page_data, headers = self._request(items_url, params=params)
-            has_more = headers.get("X-Has-More", "false").lower() == "true"
-            
-            items = []
-            if isinstance(page_data, dict):
-                items = page_data.get("movies", page_data.get("shows", page_data.get("items", [])))
-            elif isinstance(page_data, list):
-                items = page_data
+            items = None
+
+            try:
+                page_data, headers = self._request(items_url, params=params)
+                has_more = headers.get("X-Has-More", "false").lower() == "true"
+                total_items = int(headers.get("X-Total-Items", 0))
+                items = []
+                if isinstance(page_data, dict):
+                    items = page_data.get("movies", page_data.get("shows", page_data.get("items", [])))
+                elif isinstance(page_data, list):
+                    items = page_data
+            except Exception as e:
+                raise Failed(f"MDBList Error: Could not fetch list items: {e}")
 
             if not items:
+                logger.warning(f"MDBList Issue: no results returned for list {list_path}; perhaps it is private?")
                 break
 
             for item in items:

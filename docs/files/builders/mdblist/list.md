@@ -38,15 +38,11 @@ For these sorts to be reflected in your collection you **must** use `collection_
 | `letterrating.asc`<br>`letterrating.desc`     | Sort by Letterboxd Rating              |
 | `lettervotes.asc`<br>`lettervotes.desc`       | Sort by Letterboxd Votes               |
 | `last_air_date.asc`<br>`last_air_date.desc`   | Sort by Last Air Date                  |
-| `watched.asc`<br>`watched.desc`               | Sort by Last Watched Date              |
-| `rating.asc`<br>`rating.desc`                 | Sort by Users Rating                   |
-| `download.asc`<br>`download.desc`             | Sort by Downloaded                     |
-| `usort.asc`<br>`usort.desc`                   | Sort by User Sort                      |
-| `added.asc`<br>`added.desc`                   | Sort by Date Added                     |
-| `runtime.asc`<br>`runtime.desc`               | Sort by Runtime                        |
 | `budget.asc`<br>`budget.desc`                 | Sort by Budget                         |
 | `revenue.asc`<br>`revenue.desc`               | Sort by Revenue                        |
+| `runtime.asc`<br>`runtime.desc`               | Sort by Runtime                        |
 | `title.asc`<br>`title.desc`                   | Sort by Title                          |
+| `sort_title.asc`<br>`sort_title.desc`         | Sort by Sort Title                     |
 | `random.asc`<br>`random.desc`                 | Sort by Random (Randomized Daily)      |
 
 ### Example MDBList List Builder(s)
@@ -79,6 +75,30 @@ collections:
     mdblist_list: 
       url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
       sort_by: imdbrating.desc
+    collection_order: custom
+    sync_mode: sync
+```
+
+### "External" MDBList(s)
+
+MDBList supports "external lists", which basically mirror a list from another site.  For example, this one:
+```
+https://mdblist.com/lists/chazlarson/external/2868
+```
+Which mirrors:
+```
+https://imdb.com/list/ls089009459
+```
+
+These lists can be used with Kometa, **provided** one or the other of these criteria are true:
+
+1. The owner of the MDBList API Key also owns the MDBList external list OR
+2. The owner of the external list has **unchecked** the `Make your external lists private` setting in their MDBList account settings.
+
+```yaml
+collections:
+  Esquire 60 Scariest Movies of All Time:
+    mdblist_list: https://mdblist.com/lists/chazlarson/external/2868
     collection_order: custom
     sync_mode: sync
 ```
