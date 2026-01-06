@@ -192,12 +192,18 @@ class MDBList:
             url = mdb_dict.get("url", "").strip("/")
             if not url.startswith(base_url.strip("/")):
                 raise Failed(f"{error_type} Error: {url} must start with {base_url}")
-            
-            valid_lists.append({
+
+            list_object = {
                 "url": url,
-                "limit": int(mdb_dict.get("limit", 0)),
-                "sort_by": mdb_dict.get("sort_by", "rank.asc")
-            })
+                "limit": int(mdb_dict.get("limit", 0))
+            }
+
+            if "sort_by" in mdb_dict:
+                sort_by = mdb_dict["sort_by"]
+                list_object["sort_by"] = sort_by
+
+            valid_lists.append(list_object)
+
         return valid_lists
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
@@ -210,7 +216,7 @@ class MDBList:
 
         items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
 
-        sort, direction = data["sort_by"].split(".")
+        sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
         offset = 0
         limit_config = data.get("limit", 0)
@@ -220,9 +226,11 @@ class MDBList:
             params = {
                 "offset": offset,
                 "limit": 1000,
-                "sort": sort,
-                "sortorder": direction
             }
+            if sort and direction:
+                params["sort"] = sort
+                params["sortorder"] = direction
+            
             if not external_id and is_movie is not None:
                 params["mediatype"] = "movie" if is_movie else "show"
             else:
