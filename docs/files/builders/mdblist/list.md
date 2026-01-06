@@ -11,7 +11,7 @@ hide:
  
 Finds every item in a [MDBList List](https://mdblist.com/toplists/).
 
-The expected input is an MDBList List URL. Multiple values are supported as a list only a comma-separated string will not work.
+The expected input is an MDBList List URL. Multiple values are supported **as a list only**; a comma-separated string will not work.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
@@ -69,7 +69,7 @@ collections:
 ```
 You can also sort the items by using the `sort_by` and `url` attributes under `mdblist_list`.
 
-The default `sort_by` when it's not specified is `rank.asc`.
+If no `sort_by` option is specified, the list will use the sort order saved when the list was created.
 
 ```yaml
 collections:
@@ -91,10 +91,9 @@ Which mirrors:
 ```
 https://imdb.com/list/ls089009459
 ```
-
 These lists can be used with Kometa, **provided** one or the other of these criteria are true:
 
-1. The owner of the MDBList API Key also owns the MDBList external list OR
+1. The owner of the MDBList API Key also owns the MDBList external list **OR**
 2. The owner of the MDBList external list has **unchecked** the `Make your external lists private` setting in their MDBList account settings.
 
 ```yaml
