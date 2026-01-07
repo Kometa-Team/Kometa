@@ -149,6 +149,9 @@ class Cache:
                     rank INTEGER,
                     popularity TEXT,
                     genres TEXT,
+                    explicit_genres TEXT,
+                    themes TEXT,
+                    demographics TEXT,
                     studio TEXT,
                     expiration_date TEXT)"""
                 )
@@ -602,6 +605,9 @@ class Cache:
                     mal_dict["rank"] = row["rank"] if row["rank"] else None
                     mal_dict["popularity"] = row["popularity"] if row["popularity"] else None
                     mal_dict["genres"] = row["genres"] if row["genres"] else None
+                    mal_dict["explicit_genres"] = row["explicit_genres"] if row["explicit_genres"] else None
+                    mal_dict["themes"] = row["themes"] if row["themes"] else None
+                    mal_dict["demographics"] = row["demographics"] if row["demographics"] else None
                     mal_dict["studio"] = row["studio"] if row["studio"] else None
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
@@ -615,10 +621,10 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO mal_data2(mal_id) VALUES(?)", (mal_id,))
                 update_sql = "UPDATE mal_data2 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
-                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, studio = ?, expiration_date = ? WHERE mal_id = ?"
+                             "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, explicit_genres = ?, themes = ?, demographics = ?, studio = ?, expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
-                    mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), mal.studio, expiration_date.strftime("%Y-%m-%d"), mal_id
+                    mal.rating, mal.score, mal.rank, mal.popularity, "|".join(mal.genres), "|".join(mal.explicit_genres), "|".join(mal.themes), "|".join(mal.demographics), mal.studio, expiration_date.strftime("%Y-%m-%d"), mal_id
                 ))
 
     def query_tmdb_movie(self, tmdb_id, expiration):
