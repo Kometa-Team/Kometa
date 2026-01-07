@@ -14,9 +14,13 @@ Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 
 # Docs
+Add docs around requirements for those lists
+Sync MDBList sort options with MDBList API Docs
 
 # Defaults
 
 # Bug Fixes
 Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
 Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
+Improve API-based handling of MDBList "external" lists.
+Sync MDBList sort options with MDBList API Docs
