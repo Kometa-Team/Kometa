@@ -229,7 +229,7 @@ class MyAnimeList:
         return self._parse_request(url)
 
     def _season(self, data):
-        url = f"{urls['season']}/{data['year']}/{data['season']}?sort={data['sort_by']}&limit=500"
+        url = f"{urls['season']}/{data['year']}/{data['season']}?sort={data['sort_by']}&limit=500&nsfw=true"
         if data["starting_only"]:
             url += "&fields=start_season"
         results = []
