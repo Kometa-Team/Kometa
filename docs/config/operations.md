@@ -157,6 +157,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`anidb_1_0`</td><td>Use AniDB Main Tags and All 1 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
       <tr><td>`anidb_0_5`</td><td>Use AniDB Main Tags and All 0.5 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList for Genres. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
+      <tr><td>`mal_all`</td><td>Use MyAnimeList for Genres (includes Explicit Genres, Themes and Demographics). Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`lock`</td><td>Lock all Genre Field.</td></tr>
       <tr><td>`unlock`</td><td>Unlock all Genre Field.</td></tr>
       <tr><td>`remove`</td><td>Remove all Genres and Lock all Field.</td></tr>
