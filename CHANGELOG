@@ -2,15 +2,17 @@
 Python 3.9 is no longer supported as it is End-of-Life, please use Python 3.10+
 
 # Requirements Update (requirements will need to be reinstalled)
-Updated pillow requirement to 12.0.0
+Updated gitpython requirement to 3.1.46
+Updated pillow requirement to 12.1.0
 Updated plexapi requirement to 4.17.2
 Updated psutil requirement to 7.2.1
 Updated python-dotenv requirement to 1.2.1
-Updated ruamel.yaml requirement to 0.18.17
+Updated ruamel.yaml requirement to 0.19.1
 
 # New Features
 Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
+Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
 
 # Docs
 Add docs around requirements for those lists
