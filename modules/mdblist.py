@@ -222,35 +222,48 @@ class MDBList:
         limit_config = data.get("limit", 0)
         has_more = True
 
+        params = {
+            "limit": 1000,
+        }
+
+        if not external_id and is_movie is not None:
+            items_url = f"{items_url}movie" if is_movie else f"{items_url}show"
+        else:
+            params["unified"] = True
+
+        items = []
+
         while has_more:
-            params = {
-                "offset": offset,
-                "limit": 1000,
-            }
+            params["offset"] = offset
+
             if sort and direction:
                 params["sort"] = sort
                 params["sortorder"] = direction
-            
-            if not external_id and is_movie is not None:
-                params["mediatype"] = "movie" if is_movie else "show"
-            else:
-                params["unified"] = "true"
 
-            items = None
+            items = []
 
             try:
                 page_data, headers = self._request(items_url, params=params)
                 has_more = headers.get("X-Has-More", "false").lower() == "true"
                 total_items = int(headers.get("X-Total-Items", 0))
-                items = []
+                total_matched_items = int(headers.get("X-Matched-Items", 0))
+                
+                items = [] 
                 if isinstance(page_data, dict):
-                    items = page_data.get("movies", page_data.get("shows", page_data.get("items", [])))
+                    if is_movie:
+                        items = page_data.get("movies")
+                    else:
+                        items = page_data.get("shows")
+
+                    if len(items) == 0 and "items" in page_data: # type: ignore
+                        items = page_data["items"]
+
                 elif isinstance(page_data, list):
                     items = page_data
             except Exception as e:
                 raise Failed(f"MDBList Error: Could not fetch list items: {e}")
 
-            for item in items:
+            for item in items: # type: ignore
                 if 0 < limit_config <= len(results):
                     return results
 
@@ -260,15 +273,15 @@ class MDBList:
                     type_key = "tmdb" if m_type.lower() == "movie" else "tmdb_show"
                     results.append((tmdb_id, type_key))
 
-            offset += len(items)
+            offset += len(items) # type: ignore
             
-            if total_items > 0:
-                percent = int((len(results) / total_items) * 100)
-                logger.info(f"MDBList Sync Progress: {len(results)}/{total_items} ({percent}%)")
+            if total_matched_items > 0:
+                percent = int((len(results) / total_matched_items) * 100)
+                logger.info(f"MDBList Sync Progress: {len(results)}/{total_matched_items} ({percent}%)")
             else:
                 logger.info(f"MDBList Sync Progress: {len(results)} items processed...")
 
-            if len(items) == 0:
+            if len(items) == 0: # type: ignore
                 break
 
         return results
