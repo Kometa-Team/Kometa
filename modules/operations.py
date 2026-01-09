@@ -529,7 +529,9 @@ class Operations:
                                     _rating = mdb_obj().content_rating # noqa
                                     new_rating = _rating if _rating else None
                                 elif str(option).startswith("mdb_commonsense"):
-                                    _rating = mdb_obj().commonsense # noqa
+                                    _rating = None
+                                    if mdb_obj().commonsense:
+                                        _rating = mdb_obj().age_rating # noqa
                                     if not _rating:
                                         new_rating = None
                                     elif option == "mdb_commonsense0":
