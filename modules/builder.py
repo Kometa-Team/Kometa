@@ -1750,6 +1750,20 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
         elif method_name.startswith("letterboxd_user_films"):
             page_type = "films"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
             letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
             for letterboxd_page in letterboxd_pages:
                 self.builders.append(("letterboxd_user_films", letterboxd_page))
@@ -1758,6 +1772,20 @@ class CollectionBuilder:
                 pass
         elif method_name.startswith("letterboxd_user_reviews"):
             page_type = "reviews"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
             letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
             for letterboxd_page in letterboxd_pages:
                 self.builders.append(("letterboxd_user_reviews", letterboxd_page))
