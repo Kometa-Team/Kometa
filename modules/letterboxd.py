@@ -302,6 +302,7 @@ class Letterboxd:
 
     def validate_letterboxd_user_pages(self, err_type, letterboxd_user_pages, page_type, language):
         valid_pages = []
+<<<<<<< HEAD
         # Check if input is a dict with usernames list and shared parameters
         # Handle patterns:
         # 1. {usernames: [user1, user2], min_rating: 8}
