@@ -74,7 +74,7 @@ class MDbObj:
             elif rating["source"] == "myanimelist":
                 self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
         self.content_rating = data.get("certification")
-        self.commonsense = data.get("commonsense")
+        self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
 
 class MDBList:
@@ -275,7 +275,7 @@ class MDBList:
 
             offset += len(items) # type: ignore
             
-            if total_matched_items > 0:
+            if total_items > 0:
                 percent = int((len(results) / total_matched_items) * 100)
                 logger.info(f"MDBList Sync Progress: {len(results)}/{total_matched_items} ({percent}%)")
             else:
