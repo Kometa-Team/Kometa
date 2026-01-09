@@ -141,9 +141,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  Apple TV+:
+  Apple TV:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [Apple TV, Apple TV+]}]
 
   ARD:
     variables: { weight: 10}

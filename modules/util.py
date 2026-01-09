@@ -381,7 +381,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     if yml_files:
                         current.extend([("File", yml) for yml in yml_files])
                     else:
-                        logger.error(f"{err_type} Error: No YAML (.yml|.yaml) files found in {file['folder']}")
+                        logger.error(f"{err_type} Error: No YAML (.yml,.yaml) files found in {file['folder']}")
 
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
