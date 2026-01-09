@@ -16,6 +16,7 @@ Adds `|` as a preferred delimiter for run times.
 Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
 Adds new filters `show_title` and `season_title`
 Adds Producer's Cut to resolution/edition default overlay
+Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` builders for improved performance with large collections
 
 # Docs
 Fixed an issue where the home page logo and shield images appeared as raw text
