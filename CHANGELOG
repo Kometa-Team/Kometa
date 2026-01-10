@@ -17,6 +17,7 @@ Add new `mal_all` genre option to include Explicit Genres, Themes and Demographi
 # Docs
 Add docs around requirements for those lists
 Sync MDBList sort options with MDBList API Docs
+Add docs around Plex token types, add Plex Token generation form
 
 # Defaults
 
