@@ -105,9 +105,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  Alibi:
+  U&Alibi:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: ["U&Alibi", "Alibi"]}]
+
 
   ALTBalaji:
     variables: { weight: 10}
@@ -285,9 +286,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  Channel 5:
+  5:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: ["5", "Channel 5"]}]
 
   CHCH-DT:
     variables: { weight: 10}
@@ -341,9 +342,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  Dave:
+  U&Dave:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [U&Dave, Dave]}]
 
   DC Universe:
     variables: { weight: 10}
@@ -385,9 +386,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  Eden:
+  U&Eden:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [U&Eden, Eden]}]
 
   Elisa Viihde:
     variables: { weight: 10}
@@ -1033,9 +1034,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  UKTV:
+  U:
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: [UKTV, U]}]
 
   UniMás:
     variables: { weight: 10}
