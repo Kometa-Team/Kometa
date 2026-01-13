@@ -26,5 +26,5 @@ Fix a logic error that caused an infinite loop on reauthentication with private 
 Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
 Improve API-based handling of MDBList "external" lists.
 Sync MDBList sort options with MDBList API Docs
-Update several networks to cater for rebranded names
+Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
