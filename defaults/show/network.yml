@@ -29,6 +29,11 @@ dynamic_collections:
       delete_collections_named:
         Apple TV: Apple TV+
         HBO Max: Max
+        "5": Channel 5
+        "U&Alibi": Alibi
+        U: UKTV
+        "U&Dave": Dave
+        "U&Eden": Eden
       search_term:
         default: network
       image:
@@ -50,7 +55,7 @@ dynamic_collections:
       - Acorn TV
       - Adult Swim
       - AHC
-      - Alibi
+      - "U&Alibi"
       - ALTBalaji
       - Amazon Kids+
       - AMC
@@ -95,7 +100,7 @@ dynamic_collections:
       - CBS
       - Channel 3
       - Channel 4
-      - Channel 5
+      - 5
       - CHCH-DT
       - Cinemax
       - Citytv
@@ -109,7 +114,7 @@ dynamic_collections:
       - CTV
       - Cuatro
       - Curiosity Stream
-      - Dave
+      - "U&Dave"
       - DC Universe
       - Discovery
       - Discovery Kids
@@ -120,7 +125,7 @@ dynamic_collections:
       - Disney+
       - DR1
       - Dropout
-      - Eden
+      - "U&Eden"
       - Elisa Viihde
       - Elisa Viihde Viaplay
       - ENA
@@ -282,7 +287,7 @@ dynamic_collections:
       - TVNZ 1
       - TVNZ 2
       - TVP1
-      - UKTV
+      - U
       - UniMás
       - Universal Kids
       - Universal TV
