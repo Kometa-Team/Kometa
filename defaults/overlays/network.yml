@@ -105,7 +105,7 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  U&Alibi:
+  "U&Alibi":
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: ["U&Alibi", "Alibi"]}]
 
@@ -342,9 +342,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  U&Dave:
+  "U&Dave":
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [U&Dave, Dave]}]
+    template: [name: standard, {name: networks, search: ["U&Dave", "Dave"]}]
 
   DC Universe:
     variables: { weight: 10}
@@ -386,9 +386,9 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  U&Eden:
+  "U&Eden":
     variables: { weight: 10}
-    template: [name: standard, {name: networks, search: [U&Eden, Eden]}]
+    template: [name: standard, {name: networks, search: ["U&Eden", "Eden"]}]
 
   Elisa Viihde:
     variables: { weight: 10}

@@ -30,10 +30,10 @@ dynamic_collections:
         Apple TV: Apple TV+
         HBO Max: Max
         "5": Channel 5
-        U&Alibi: Alibi
+        "U&Alibi": Alibi
         U: UKTV
-        U&Dave: Dave
-        U&Eden: Eden
+        "U&Dave": Dave
+        "U&Eden": Eden
       search_term:
         default: network
       image:
@@ -55,7 +55,7 @@ dynamic_collections:
       - Acorn TV
       - Adult Swim
       - AHC
-      - U&Alibi
+      - "U&Alibi"
       - ALTBalaji
       - Amazon Kids+
       - AMC
@@ -114,7 +114,7 @@ dynamic_collections:
       - CTV
       - Cuatro
       - Curiosity Stream
-      - U&Dave
+      - "U&Dave"
       - DC Universe
       - Discovery
       - Discovery Kids
@@ -125,7 +125,7 @@ dynamic_collections:
       - Disney+
       - DR1
       - Dropout
-      - U&Eden
+      - "U&Eden"
       - Elisa Viihde
       - Elisa Viihde Viaplay
       - ENA
