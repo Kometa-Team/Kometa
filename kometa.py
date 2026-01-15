@@ -3,6 +3,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from modules.logs import MyLogger
+from packaging.version import Version, parse
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -274,6 +275,7 @@ plexapi.BASE_HEADERS["X-Plex-Client-Identifier"] = str(uuid_num)
 plexapi.BASE_HEADERS["X-Plex-Provides"] = "sync"
 plexapi.BASE_HEADERS["X-Plex-Product"] = "Kometa"
 
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 if util.windows:
@@ -325,9 +327,18 @@ def start(attrs):
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
                     required_versions = {ln.split("==")[0]: ln.split("==")[1].split(";")[0].strip() for ln in file.readlines()}
+                v1 = parse("0")
+                v2 = parse("0")
                 for req_name, sys_ver in system_versions.items():
-                    if sys_ver and sys_ver != required_versions[req_name]:
-                        logger.info(f"    {req_name} version: {sys_ver} requires an update to: {required_versions[req_name]}")
+                    if sys_ver:
+                        v1 = parse(sys_ver)
+                    if req_name in required_versions:
+                        v2 = parse(required_versions[req_name])
+                    if sys_ver:
+                        if v1 < v2:
+                            logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
+                        if v1 > v2:
+                            logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
@@ -879,6 +890,8 @@ def run_collection(config, library, metadata, requested_collections):
                         library.status[str(mapping_name)]["removed"] = items_removed
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                    logger.info("")
+                    logger.info(f"Processing missing items: {len(builder.missing_movies)} movies and/or {len(builder.missing_shows)} missing shows")
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
                     library.status[str(mapping_name)]["radarr"] += radarr_add

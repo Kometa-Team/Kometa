@@ -471,6 +471,8 @@ class Operations:
                                     new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]] # noqa
                                 elif option == "mal":
                                     new_genres = mal_obj().genres # noqa
+                                elif option == "mal_all":
+                                    new_genres = mal_obj().genres + mal_obj().explicit_genres + mal_obj().themes + mal_obj().demographics # noqa
                                 else:
                                     new_genres = option
                                 if not new_genres:
@@ -527,7 +529,9 @@ class Operations:
                                     _rating = mdb_obj().content_rating # noqa
                                     new_rating = _rating if _rating else None
                                 elif str(option).startswith("mdb_commonsense"):
-                                    _rating = mdb_obj().commonsense # noqa
+                                    _rating = None
+                                    if mdb_obj().commonsense:
+                                        _rating = mdb_obj().age_rating # noqa
                                     if not _rating:
                                         new_rating = None
                                     elif option == "mdb_commonsense0":
