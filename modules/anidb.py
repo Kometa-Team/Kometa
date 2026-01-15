@@ -1,22 +1,80 @@
-import json, time
-from datetime import datetime
+import json, time, os
+from datetime import datetime, timedelta
+from lxml import etree
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, logger
+import gzip
+import io
+import traceback
 
 logger = util.logger
 
-builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
+builders = ["anidb_id", "anidb_relation", "anidb_popular"]
 base_url = "https://anidb.net"
 api_url = "http://api.anidb.net:9001/httpapi"
-urls = {
-    "anime": f"{base_url}/anime",
-    "popular": f"{base_url}/latest/anime/popular/?h=1",
-    "relation": "/relation/graph",
-    "tag": f"{base_url}/tag",
-    "login": f"{base_url}/perl-bin/animedb.pl",
-}
-weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
 
+kometa_client = "kometaofficial"
+kometa_client_version = 1
+
+class AniDBTitles:
+    TITLES_URL = "https://anidb.net/api/anime-titles.xml.gz"
+    CACHE_FILE = "config/anidb_cache/anime-titles.xml"
+
+    def __init__(self, requests_obj):
+        self.requests = requests_obj
+        self.title_map = {} # Maps title string -> AID
+        self._load()
+
+    def _load(self):
+        try:
+            """Downloads if missing/old, then parses into memory."""
+            # 1. Update check (24-hour rule)
+            refresh_needed = True
+            if os.path.exists(self.CACHE_FILE):
+                age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(self.CACHE_FILE))
+                if age < timedelta(hours=24):
+                    refresh_needed = False
+
+            if refresh_needed:
+                logger.info("Downloading Master Title List from AniDB...")
+
+                # AniDB requires a non-generic User-Agent and often checks identity
+                headers = {
+                    'User-Agent': f'Kometa/1.0 ({kometa_client})',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Host': 'anidb.net'
+                }
+                response = self.requests.get(self.TITLES_URL, headers=headers)
+                if response.status_code == 200:
+                    # Decompress Gzip in memory and save as plain XML
+                    content = gzip.decompress(response.content)
+                    os.makedirs(os.path.dirname(self.CACHE_FILE), exist_ok=True)
+                    with open(self.CACHE_FILE, 'wb') as f:
+                        f.write(content)
+                else:
+                    logger.error("Failed to download title list.")
+            else:
+                logger.info("Using cached Master Title List from AniDB.")
+
+
+            # 2. Parse XML into a searchable Dictionary
+            if os.path.exists(self.CACHE_FILE):
+                tree = etree.parse(self.CACHE_FILE)
+                for anime in tree.xpath("//anime"):
+                    aid = anime.get("aid")
+                    # Grab every title (main, official, synonym, short)
+                    titles = anime.xpath("title/text()")
+                    for t in titles:
+                        self.title_map[t.lower()] = int(aid)
+        except Exception as e:
+            print("--- ACTUAL ERROR BELOW ---")
+            traceback.print_exc()
+            print("--- END OF ERROR ---")
+            raise e
+
+    def search(self, query):
+        """Returns the AID for a given title string, or None."""
+        return self.title_map.get(query.lower())
 
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
@@ -26,197 +84,285 @@ class AniDBObj:
 
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
+                # Handle data if it's coming from a dictionary (Cache)
                 if isinstance(data, dict):
-                    if is_list:
-                        return data[attr].split("|") if data[attr] else []
-                    elif is_dict:
-                        return json.loads(data[attr])
-                    elif is_int or is_float:
-                        return util.check_num(data[attr], is_int=is_int)
-                    elif is_date:
-                        return datetime.strptime(data[attr], "%Y-%m-%d")
-                    else:
-                        return data[attr]
+                    if is_list: return data[attr].split("|") if data[attr] else []
+                    if is_dict: return json.loads(data[attr]) if data[attr] else {}
+                    if is_int or is_float: return util.check_num(data[attr], is_int=is_int)
+                    if is_date: return datetime.strptime(data[attr], "%Y-%m-%d") if data[attr] else None
+                    return data[attr]
+
+                # Handle data if it's an XML Element (Fresh API Response)
                 parse_results = data.xpath(xpath)
-                if attr == "tags":
-                    return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
-                elif attr == "titles":
-                    return {ta.get("xml:lang"): ta.text_content() for ta in parse_results}
-                elif len(parse_results) > 0:
-                    parse_results = [r.strip() for r in parse_results if len(r) > 0]
+                
+                if  attr == "titles":
+                    # API Titles: <title xml:lang="en" type="official">Title</title>
+                    return {ta.get("{http://www.w3.org/XML/1998/namespace}lang"): ta.text for ta in parse_results}
+
                 if parse_results:
                     if is_list:
-                        return parse_results
-                    elif is_int or is_float:
-                        return util.check_num(parse_results[0], is_int=is_int)
-                    elif is_date:
-                        return datetime.strptime(parse_results[0], "%Y-%m-%d")
-                    else:
-                        return parse_results[0]
-            except (ValueError, TypeError):
+                        return [r.text.strip() if hasattr(r, 'text') else str(r).strip() for r in parse_results]
+                    
+                    val = parse_results[0]
+                    text_val = val.text if hasattr(val, 'text') else str(val)
+                    
+                    if is_int or is_float: return util.check_num(text_val.strip(), is_int=is_int)
+                    if is_date: return datetime.strptime(text_val.strip(), "%Y-%m-%d")
+                    return text_val.strip()
+
+            except (ValueError, TypeError, IndexError):
                 pass
+
             if fail:
-                raise Failed(f"AniDB Error: No Anime Found for AniDB ID: {self.anidb_id}")
-            elif is_list:
-                return []
-            elif is_dict:
-                return {}
+                raise Failed(f"AniDB Error: Data point '{attr}' not found for ID: {self.anidb_id}")
+            return [] if is_list else {} if is_dict else None
+
+        # Standard API XPaths
+        self.main_title = _parse("main_title", "//title[@type='main']/text()", fail=True)
+        self.titles = _parse("titles", "//title[@type='official']", is_dict=True)
+        self.official_title = self.titles.get(self._anidb.language, self.main_title)
+        
+        self.studio = _parse("studio", "//creators/name[@type='Animation Work']/text()")
+        self.rating = _parse("rating", "//ratings/permanent/text()", is_float=True)
+        self.average = _parse("average", "//ratings/temporary/text()", is_float=True)
+        self.score = _parse("score", "//ratings/review/text()", is_float=True)
+        self.released = _parse("released", "//startdate/text()", is_date=True)
+        
+        # Resources (External Links)
+        self.mal_id = _parse("mal_id", "//resource[@type='2']/externalentity/identifier/text()", is_int=True)
+        self.imdb_id = _parse("imdb_id", "//resource[@type='43']/externalentity/identifier/text()")
+        
+        # TMDB handling (Type 44)
+        tmdb_list = _parse("tmdb", "//resource[@type='44']/externalentity/identifier/text()", is_list=True)
+        self.tmdb_id = None
+        self.tmdb_type = None
+        for item in tmdb_list:
+            if item.isdigit():
+                self.tmdb_id = int(item)
             else:
-                return None
-
-        self.main_title = _parse("main_title", "//anime/titles/title[@type='main']/text()", fail=True)
-        self.titles = _parse("titles", "//anime/titles/title[@type='official']", is_dict=True)
-        self.official_title = self.titles[self._anidb.language] if self._anidb.language in self.titles else self.main_title
-        self.studio = _parse("studio", "//anime/creators/name[@type='Animation Work']/text()")
-        self.rating = _parse("rating", "//anime/ratings/permanent/text()", is_float=True)
-        self.average = _parse("average", "//anime/ratings/temporary/text()", is_float=True)
-        self.score = _parse("score", "//anime/ratings/review/text()", is_float=True)
-        self.released = _parse("released", "//anime/startdate/text()", is_date=True)
-        self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
-        self.mal_id = _parse("mal_id", "//anime/resources/resource[@type='2']/externalentity/identifier/text()", is_int=True)
-        self.imdb_id = _parse("imdb_id", "//anime/resources/resource[@type='43']/externalentity/identifier/text()")
-        if isinstance(data, dict):
-            self.tmdb_id = _parse("tmdb_id", "", is_int=True)
-            self.tmdb_type = _parse("tmdb_type", "")
-        else:
-            tmdb = _parse("tmdb", "//anime/resources/resource[@type='44']/externalentity/identifier/text()", is_list=True)
-            self.tmdb_id = None
-            self.tmdb_type = None
-            for i in tmdb:
-                try:
-                    self.tmdb_id = int(i)
-                except ValueError:
-                    self.tmdb_type = i
-
+                self.tmdb_type = item
 
 class AniDB:
-    def __init__(self, requests, cache, data):
-        self.requests = requests
+    def __init__(self, requests_obj, cache, data):
+        self.requests = requests_obj
         self.cache = cache
-        self.language = data["language"]
-        self.expiration = 60
-        self.client = None
-        self.version = None
+        self.language = data.get("language", "en")
+        self.expiration = data.get("expiration", 60)
         self.username = None
         self.password = None
-        self._delay = None
+        self.last_request_time = 0
+        self.min_delay = 2.1
+        self._is_authorized = False
+        self.titles_db = AniDBTitles(self.requests)
 
-    def authorize(self, client, version, expiration):
-        self.client = client
-        self.version = version
-        self.expiration = expiration
-        logger.secret(self.client)
-        if self.cache:
-            value1, value2, success = self.cache.query_testing("anidb_login")
-            if str(value1) == str(client) and str(value2) == str(version) and success:
-                return
-        try:
-            self.get_anime(69, ignore_cache=True)
-            if self.cache:
-                self.cache.update_testing("anidb_login", self.client, self.version, "True")
-        except Failed:
-            self.client = None
-            self.version = None
-            if self.cache:
-                self.cache.update_testing("anidb_login", self.client, self.version, "False")
-            raise
+    def get_id_by_name(self, name):
+        aid = self.titles_db.search(name)
+        if aid:
+            return aid
+        raise Failed(f"AniDB Error: Title '{name}' not found in local database.")
 
     @property
     def is_authorized(self):
-        return self.client is not None
+        """
+        Returns True if the client has been configured and authorized.
+        External code can access this via self.AniDB.is_authorized
+        """
+        return self._is_authorized
 
-    def login(self, username, password):
-        logger.secret(username)
-        logger.secret(password)
-        data = {"show": "main", "xuser": username, "xpass": password, "xdoautologin": "on"}
-        if not self._request(urls["login"], data=data).xpath("//li[@class='sub-menu my']/@title"):
-            raise Failed("AniDB Error: Login failed")
-        self.username = username
-        self.password = password
+    def authorize(self, client, version, expiration):
+        self.expiration = expiration
+        self._is_authorized = False
 
-    def _request(self, url, params=None, data=None):
-        logger.trace(f"URL: {url}")
-        if params:
-            logger.trace(f"Params: {params}")
-        if data:
-            return self.requests.post_html(url, data=data, language=self.language)
-        else:
-            return self.requests.get_html(url, params=params, language=self.language)
+        # Verify connectivity/auth by requesting a known small anime (Serial Experiments Lain: ID 99)
+        try:
+            self.get_anime(99, ignore_cache=True)
+            if self.cache:
+                self.cache.update_testing("anidb_login", kometa_client, kometa_client_version, "True")
+            self._is_authorized = True
+        except Exception as e:
+            raise Failed(f"AniDB Authorization Failed: {e}")
+
+    def verify_user(self, username, password):
+        """
+        Verifies credentials and ensures mature content access is active.
+        """
+        logger.info(f"Verifying AniDB credentials and mature access.")
+        
+        # Temporarily set for the probe
+        original_user, original_pass = self.username, self.password
+        self.username, self.password = username, password
+
+        try:
+            # AID 107 is a restricted title. 
+            # If mature access is NOT working, AniDB returns an <error> or empty node.
+            test_xml = self._request(api_params={'request': 'anime', 'aid': 107}, cache_days=0)
+            
+            if test_xml is not None:
+                # 1. Check for standard Auth Errors
+                error_node = test_xml.xpath("//error/text()")
+                if error_node:
+                    raise Failed(f"AniDB Auth Failed: {error_node[0]}")
+                
+                # 2. Check for Mature Access specifically
+                # If access is denied, 'restricted' attribute is often '1' or tags are missing
+                is_restricted = test_xml.get("restricted") == "1"
+                # If the title node is missing or says "Restricted", the probe failed
+                main_title = test_xml.xpath("//title[@type='main']/text()")
+                
+                if not main_title or "restricted" in main_title[0].lower():
+                    raise Failed("Login successful, but Mature Content access is disabled in AniDB settings.")
+
+                logger.info("AniDB login and Mature Access verified.")
+                return True
+            else:
+                raise Failed("No response from AniDB during verification.")
+
+        except Exception as e:
+            self.username, self.password = original_user, original_pass
+            raise Failed(f"AniDB Verification Failed: {e}")
+
+    def _request(self, api_params=None, rss_url=None, cache_days=7):
+        # 1. Rate Limiting Check (2.1s rule)
+        elapsed = time.perf_counter() - self.last_request_time
+        if elapsed < self.min_delay:
+            time.sleep(self.min_delay - elapsed)
+
+        # 2. Check Cache
+        aid = api_params.get('aid') if api_params else None
+        cache_file = f"config/anidb_cache/anime_{aid}.xml" if aid else None
+        if cache_file and os.path.exists(cache_file):
+            file_age = datetime.fromtimestamp(os.path.getmtime(cache_file))
+            if datetime.now() - file_age < timedelta(days=cache_days):
+                with open(cache_file, 'rb') as f:
+                    return etree.fromstring(f.read())
+
+        # 3. Setup Target and Headers
+        target_url = rss_url if rss_url else api_url
+        headers = {
+            'Accept-Encoding': 'gzip',
+            'User-Agent': f'Kometa/1.0 ({kometa_client})'
+        }
+        
+        payload = {}
+        if not rss_url:
+            payload = {
+                'client': kometa_client if kometa_client else "kometaofficial", 
+                'clientver': str(kometa_client_version) if kometa_client_version is not None else "1", # Coerce to string to avoid TypeErrors
+                'protover': '1',
+                'request': 'anime'
+            }
+            if self.username: payload['user'] = self.username
+            if self.password: payload['pass'] = self.password
+            if api_params: payload.update(api_params)
+
+        # 4. Execute Request
+        response = self.requests.get(target_url, params=payload, headers=headers)
+        self.last_request_time = time.perf_counter()
+
+        if response.status_code == 200:
+            content = response.content
+            
+            # 5. Manual Gzip Decompression Check
+            # Even if 'requests' fails to auto-decode, we check the magic bytes for gzip (\x1f\x8b)
+            if content.startswith(b'\x1f\x8b'):
+                try:
+                    content = gzip.decompress(content)
+                except Exception as e:
+                    raise Failed(f"AniDB Error: Failed to decompress Gzip response: {e}")
+
+            # 6. Save and Return
+            if cache_file:
+                os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+                with open(cache_file, 'wb') as f:
+                    f.write(content)
+            
+            return etree.fromstring(content)
+        
+        elif response.status_code == 403:
+            raise Failed("AniDB Error: 403 Banned (Too many requests or invalid Client ID)")
+            
+        return None
 
     def _popular(self):
-        response = self._request(urls["popular"])
-        return util.get_int_list(response.xpath("//td[@class='thumb anime']/a/@href"), "AniDB ID")
+        xml = self._request(rss_url="https://anidb.net/feeds/popular.xml")
+        return util.get_int_list(xml.xpath("//item/guid/text()"), "AniDB ID") if xml is not None else []
 
     def _relations(self, anidb_id):
-        response = self._request(f"{urls['anime']}/{anidb_id}{urls['relation']}")
-        return util.get_int_list(response.xpath("//area/@href"), "AniDB ID")
+        xml = self._request(api_params={'request': 'anime', 'aid': anidb_id})
+        return util.get_int_list(xml.xpath("//relatedanime/anime/@aid"), "AniDB ID") if xml is not None else []
 
     def _validate(self, anidb_id):
-        response = self._request(f"{urls['anime']}/{anidb_id}")
-        ids = response.xpath(f"//*[text()='a{anidb_id}']/text()")
-        if len(ids) > 0:
-            return util.regex_first_int(ids[0], "AniDB ID")
-        raise Failed(f"AniDB Error: AniDB ID: {anidb_id} not found")
+        """
+        Verifies if an ID exists.
+        Checks Local Master List -> Local XML Cache -> AniDB API.
+        """
+        aid = int(anidb_id)
+
+        # 1. Check the local Master Title List (Fastest - No network)
+        if hasattr(self, 'titles_db') and aid in self.titles_db.title_map.values():
+            return aid
+
+        # 2. Check the Local XML Cache or fallback to API
+        try:
+            # get_anime handles the filesystem check and the 2.1s rate-limited API call
+            anime = self.get_anime(aid)
+            return int(anime.anidb_id)
+        except Exception:
+            raise Failed(f"AniDB Error: AniDB ID: {aid} not found")
 
     def validate_anidb_ids(self, anidb_ids):
+        """
+        Validates a list of AniDB IDs. 
+        Returns a list of valid integer IDs.
+        """
         anidb_list = util.get_int_list(anidb_ids, "AniDB ID")
         anidb_values = []
+        
         for anidb_id in anidb_list:
             try:
                 anidb_values.append(self._validate(anidb_id))
             except Failed as e:
                 logger.error(e)
-        if len(anidb_values) > 0:
-            return anidb_values
-        raise Failed(f"AniDB Error: No valid AniDB IDs in {anidb_list}")
-
-    def _tag(self, tag, limit):
-        anidb_ids = []
-        current_url = f"{urls['tag']}/{tag}"
-        while True:
-            response = self._request(current_url)
-            anidb_ids.extend(util.get_int_list(response.xpath("//td[@class='name main anime']/a/@href"), "AniDB ID"))
-            next_page_list = response.xpath("//li[@class='next']/a/@href")
-            if len(anidb_ids) >= limit or len(next_page_list) == 0:
-                break
-            time.sleep(2)
-            current_url = f"{base_url}{next_page_list[0]}"
-        return anidb_ids[:limit]
+        
+        if not anidb_values:
+            raise Failed(f"AniDB Error: No valid AniDB IDs found in input: {anidb_ids}")
+            
+        return anidb_values
 
     def get_anime(self, anidb_id, ignore_cache=False):
+        # 1. Check Module Cache (SQLite/JSON)
         expired = None
         anidb_dict = None
         if self.cache and not ignore_cache:
             anidb_dict, expired = self.cache.query_anidb(anidb_id, self.expiration)
+
+        # 2. If not in Module Cache, check File Cache/API via _request
         if expired or not anidb_dict:
-            time_check = time.time()
-            if self._delay is not None:
-                while time_check - self._delay < 2:
-                    time_check = time.time()
-            anidb_dict = self._request(api_url, params={"client": self.client, "clientver": self.version, "protover": 1, "request": "anime", "aid": anidb_id})
-            self._delay = time.time()
-        obj = AniDBObj(self, anidb_id, anidb_dict)
+            # This calls the method that handles the 2s delay and XML file caching
+            anidb_xml = self._request(api_params={"request": "anime", "aid": anidb_id})
+            if anidb_xml is None:
+                raise Failed(f"AniDB Error: Could not fetch Anime ID {anidb_id}")
+            data_source = anidb_xml
+        else:
+            data_source = anidb_dict
+
+        # 3. Create the Object
+        obj = AniDBObj(self, anidb_id, data_source)
+        
+        # 4. Update Module Cache
         if self.cache and not ignore_cache:
             self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 
     def get_anidb_ids(self, method, data):
+        # (This remains largely the same but utilizes the new helper methods)
         anidb_ids = []
         if method == "anidb_popular":
-            logger.info(f"Processing AniDB Popular: {data} Anime")
             anidb_ids.extend(self._popular()[:data])
-        elif method == "anidb_tag":
-            logger.info(f"Processing AniDB Tag: {data['limit'] if data['limit'] > 0 else 'All'} Anime from the Tag ID: {data['tag']}")
-            anidb_ids = self._tag(data["tag"], data["limit"])
         elif method == "anidb_id":
-            logger.info(f"Processing AniDB ID: {data}")
             anidb_ids.append(data)
         elif method == "anidb_relation":
-            logger.info(f"Processing AniDB Relation: {data}")
             anidb_ids.extend(self._relations(data))
-        else:
-            raise Failed(f"AniDB Error: Method {method} not supported")
-        logger.debug("")
-        logger.debug(f"{len(anidb_ids)} AniDB IDs Found")
-        logger.trace(f"IDs: {anidb_ids}")
+        
+        logger.debug(f"{len(anidb_ids)} AniDB IDs Found via {method}")
         return anidb_ids

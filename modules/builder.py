@@ -1417,18 +1417,6 @@ class CollectionBuilder:
         elif method_name in ["anidb_id", "anidb_relation"]:
             for anidb_id in self.config.AniDB.validate_anidb_ids(method_data):
                 self.builders.append((method_name, anidb_id))
-        elif method_name == "anidb_tag":
-            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
-                dict_methods = {dm.lower(): dm for dm in dict_data}
-                new_dictionary = {}
-                if "tag" not in dict_methods:
-                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is required")
-                elif not dict_data[dict_methods["tag"]]:
-                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is blank")
-                else:
-                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["tag"]], "AniDB Tag ID")
-                new_dictionary["limit"] = util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
-                self.builders.append((method_name, new_dictionary))
 
     def _anilist(self, method_name, method_data):
         if method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:

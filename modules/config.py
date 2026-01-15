@@ -742,12 +742,14 @@ class ConfigFile:
             else:
                 logger.info("mal attribute not found")
 
-            self.AniDB = AniDB(self.Requests, self.Cache, {
-                "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
-            })
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
+
+                self.AniDB = AniDB(self.Requests, self.Cache, {
+                    "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
+                })
+
                 try:
                     self.AniDB.authorize(
                         check_for_attribute(self.data, "client", parent="anidb", throw=True),
@@ -761,7 +763,7 @@ class ConfigFile:
                         logger.error(e)
                 logger.info(f"AniDB API Connection {'Successful' if self.AniDB.is_authorized else 'Failed'}")
                 try:
-                    self.AniDB.login(
+                    self.AniDB.verify_user(
                         check_for_attribute(self.data, "username", parent="anidb", throw=True),
                         check_for_attribute(self.data, "password", parent="anidb", throw=True)
                     )
