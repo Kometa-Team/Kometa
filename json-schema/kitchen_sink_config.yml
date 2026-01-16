@@ -922,8 +922,6 @@ sonarr:                                         # Can be individually specified 
   ignore_cache: false
   monitor_existing: false
 anidb:
-  client: (redacted)
-  version: 1234
   language: en
   cache_expiration: 60
   username: (redacted)

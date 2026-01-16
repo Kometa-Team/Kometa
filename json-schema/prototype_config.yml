@@ -495,8 +495,6 @@ ntfy:
 anidb:                           # Not required for AniDB builders unless you want mature content
   username: Enter AniDB Username
   password: Enter AniDB Password
-  client: Enter AniDB Client
-  version: 1
   language: en
   cache_expiration: 60
 radarr:                          # Can be individually specified per library as well

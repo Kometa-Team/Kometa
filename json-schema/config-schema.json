@@ -363,13 +363,6 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "client": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer",
-                    "minimum": 1
-                },
                 "language": {
                     "type": ["string", "null"],
                     "enum": ["",
@@ -407,10 +400,7 @@
                     "type": "string"
                 }
             },
-            "required": [
-                "username",
-                "password"
-            ],
+            "required": [],
             "title": "anidb"
         },
         "sonarr-api": {
