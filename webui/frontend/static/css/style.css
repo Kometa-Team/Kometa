@@ -2960,3 +2960,71 @@ body {
     color: white;
 }
 
+/* Ratings Overlay Picker Dialog */
+.ratings-config-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    background-color: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.rating-badge-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background-color: var(--bg-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.rating-badge-preview .rating-num {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-color);
+    color: #000;
+    font-weight: bold;
+    font-size: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.rating-badge-preview .rating-source {
+    font-size: 14px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Rating overlay badge on canvas */
+.rating-overlay-badge {
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 30px;
+    padding: 15px;
+}
+
+.rating-overlay-badge img {
+    max-width: 80px;
+    max-height: 60px;
+    object-fit: contain;
+}
+
+.rating-overlay-badge .rating-text {
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    margin-top: 5px;
+}
+

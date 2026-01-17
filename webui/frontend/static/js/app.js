@@ -1775,7 +1775,7 @@ const livePreview = {
     },
 
     /**
-     * Parse config.yml to find which overlay types are configured
+     * Parse config.yml to find which overlay types are configured and their template variables
      */
     parseConfigOverlays() {
         const configEditor = document.getElementById('config-editor');
@@ -1783,19 +1783,48 @@ const livePreview = {
 
         const content = configEditor.value || '';
         this.configuredOverlayTypes = [];
+        this.overlayTemplateVars = {};  // Store template variables per overlay type
 
-        // Find overlay_files section and extract default overlay types
+        // Find overlay_files section
         const overlayMatch = content.match(/overlay_files:\s*\n([\s\S]*?)(?=\n[a-zA-Z]|\n\s*operations:|$)/);
         if (overlayMatch) {
             const overlaySection = overlayMatch[1];
-            // Find all "- default: xyz" entries
-            const defaultMatches = overlaySection.matchAll(/- default:\s*(\w+)/g);
-            for (const match of defaultMatches) {
-                this.configuredOverlayTypes.push(match[1]);
+
+            // Split into individual overlay entries
+            const entries = overlaySection.split(/\n\s*- default:/);
+
+            for (let i = 1; i < entries.length; i++) {
+                const entry = entries[i];
+                const typeMatch = entry.match(/^\s*(\w+)/);
+                if (typeMatch) {
+                    const overlayType = typeMatch[1];
+                    this.configuredOverlayTypes.push(overlayType);
+
+                    // Extract template_variables for this overlay
+                    const varsMatch = entry.match(/template_variables:\s*\n([\s\S]*?)(?=\n\s*- default:|$)/);
+                    if (varsMatch) {
+                        const varsSection = varsMatch[1];
+                        const vars = {};
+
+                        // Parse each variable line
+                        const varLines = varsSection.match(/^\s+(\w+):\s*(.+?)(?:\s*#.*)?$/gm);
+                        if (varLines) {
+                            varLines.forEach(line => {
+                                const varMatch = line.match(/^\s+(\w+):\s*(.+?)(?:\s*#.*)?$/);
+                                if (varMatch) {
+                                    vars[varMatch[1]] = varMatch[2].trim();
+                                }
+                            });
+                        }
+
+                        this.overlayTemplateVars[overlayType] = vars;
+                    }
+                }
             }
         }
 
         console.log('Configured overlay types:', this.configuredOverlayTypes);
+        console.log('Template variables:', this.overlayTemplateVars);
     },
 
     /**
@@ -1815,7 +1844,7 @@ const livePreview = {
                 overlays: overlays.map(o => ({
                     name: o.name,
                     type: o.type || 'image',
-                    default: o.default,
+                    default: o.default || o.image_url,  // Use image_url for rating overlays
                     horizontal_offset: o.horizontal_offset,
                     vertical_offset: o.vertical_offset,
                     horizontal_align: o.horizontal_align,
@@ -1823,6 +1852,8 @@ const livePreview = {
                     back_color: o.back_color,
                     back_width: o.back_width,
                     back_height: o.back_height,
+                    back_padding: o.back_padding,
+                    back_radius: o.back_radius,
                     font: o.font,
                     font_size: o.font_size,
                     font_color: o.font_color
@@ -1937,6 +1968,12 @@ const livePreview = {
      * Show overlay picker dialog for a specific type
      */
     async showOverlayPicker(overlayType) {
+        // Special handling for ratings - show configured rating badges
+        if (overlayType === 'ratings') {
+            this.showRatingsPickerDialog();
+            return;
+        }
+
         // Load overlays for this type if not already loaded
         if (!this.availableOverlaysByType[overlayType]) {
             await this.loadOverlayType(overlayType);
@@ -1981,6 +2018,148 @@ const livePreview = {
             </div>
         `;
         document.body.appendChild(dialog);
+    },
+
+    /**
+     * Show special picker for ratings overlay with 3 configured badges
+     */
+    showRatingsPickerDialog() {
+        const vars = this.overlayTemplateVars['ratings'] || {};
+
+        // Rating image name to display name mapping
+        const ratingImageNames = {
+            'rt_tomato': 'Rotten Tomatoes (Critics)',
+            'rt_popcorn': 'Rotten Tomatoes (Audience)',
+            'imdb': 'IMDb',
+            'tmdb': 'TMDb',
+            'trakt': 'Trakt',
+            'letterboxd': 'Letterboxd',
+            'metacritic': 'Metacritic',
+            'anidb': 'AniDB',
+            'mal': 'MyAnimeList',
+            'mdb': 'MDBList',
+            'star': 'Star Rating'
+        };
+
+        // Get configured ratings from template variables
+        const rating1Image = vars['rating1_image'] || 'imdb';
+        const rating2Image = vars['rating2_image'] || 'tmdb';
+        const rating3Image = vars['rating3_image'] || 'trakt';
+        const horizontalPos = vars['horizontal_position'] || 'left';
+
+        // Check if ratings are already selected
+        const hasRatings = this.selectedOverlays.some(o => o._isRating);
+
+        const existingDialog = document.getElementById('overlay-picker-dialog');
+        if (existingDialog) existingDialog.remove();
+
+        const dialog = document.createElement('div');
+        dialog.id = 'overlay-picker-dialog';
+        dialog.className = 'modal';
+        dialog.innerHTML = `
+            <div class="modal-content" style="max-width: 500px;">
+                <div class="modal-header">
+                    <h3>Ratings Overlay</h3>
+                    <button class="btn btn-icon" onclick="document.getElementById('overlay-picker-dialog').remove()">✕</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <p style="color: var(--text-muted); margin-bottom: 15px;">Your config has 3 rating badges configured:</p>
+
+                    <div class="ratings-config-preview">
+                        <div class="rating-badge-preview">
+                            <span class="rating-num">1</span>
+                            <span class="rating-source">${ratingImageNames[rating1Image] || rating1Image}</span>
+                        </div>
+                        <div class="rating-badge-preview">
+                            <span class="rating-num">2</span>
+                            <span class="rating-source">${ratingImageNames[rating2Image] || rating2Image}</span>
+                        </div>
+                        <div class="rating-badge-preview">
+                            <span class="rating-num">3</span>
+                            <span class="rating-source">${ratingImageNames[rating3Image] || rating3Image}</span>
+                        </div>
+                    </div>
+
+                    <p style="color: var(--text-muted); margin-top: 15px; font-size: 12px;">
+                        Position: <strong>${horizontalPos}</strong> side, stacked vertically
+                    </p>
+                </div>
+                <div class="modal-footer" style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('overlay-picker-dialog').remove()">Cancel</button>
+                    <button class="btn ${hasRatings ? 'btn-danger' : 'btn-primary'}" onclick="livePreview.toggleRatingsOverlay()">
+                        ${hasRatings ? 'Remove Ratings' : 'Add All 3 Ratings'}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+    },
+
+    /**
+     * Toggle all 3 rating overlays at once
+     */
+    toggleRatingsOverlay() {
+        const hasRatings = this.selectedOverlays.some(o => o._isRating);
+
+        if (hasRatings) {
+            // Remove all rating overlays
+            this.selectedOverlays = this.selectedOverlays.filter(o => !o._isRating);
+        } else {
+            // Add all 3 rating overlays based on config
+            const vars = this.overlayTemplateVars['ratings'] || {};
+            const horizontalPos = vars['horizontal_position'] || 'left';
+            const horizontalAlign = horizontalPos === 'right' ? 'right' : 'left';
+
+            // Vertical offsets for stacking (based on Kometa's default values)
+            const verticalOffsets = [30, 235, 440];
+
+            const ratingImages = [
+                vars['rating1_image'] || 'imdb',
+                vars['rating2_image'] || 'tmdb',
+                vars['rating3_image'] || 'trakt'
+            ];
+
+            ratingImages.forEach((img, idx) => {
+                const ratingImageFile = this.getRatingImageFile(img);
+                this.selectedOverlays.push({
+                    name: `Rating ${idx + 1} (${img})`,
+                    _isRating: true,
+                    _ratingNum: idx + 1,
+                    type: 'image',
+                    horizontal_align: horizontalAlign,
+                    vertical_align: 'center',
+                    horizontal_offset: 30,
+                    vertical_offset: verticalOffsets[idx],
+                    // Use 'default' with the relative path that backend expects
+                    default: `rating/${ratingImageFile}`,
+                    image_url: `/overlay-images/rating/${ratingImageFile}.png`
+                });
+            });
+        }
+
+        document.getElementById('overlay-picker-dialog')?.remove();
+        this.updateOverlaysList();
+        this.loadPreview();
+    },
+
+    /**
+     * Get the rating image filename
+     */
+    getRatingImageFile(ratingImage) {
+        const imageMap = {
+            'rt_tomato': 'RT-Crit-Fresh',
+            'rt_popcorn': 'RT-Aud-Fresh',
+            'imdb': 'IMDb',
+            'tmdb': 'TMDb',
+            'trakt': 'Trakt',
+            'letterboxd': 'Letterboxd',
+            'metacritic': 'Metacritic',
+            'anidb': 'AniDB',
+            'mal': 'MAL',
+            'mdb': 'MDBList',
+            'star': 'Star'
+        };
+        return imageMap[ratingImage] || ratingImage;
     },
 
     /**
