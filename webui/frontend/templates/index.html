@@ -377,8 +377,8 @@ libraries:
                     <div class="visual-editor-canvas-panel">
                         <div class="canvas-toolbar">
                             <div class="toolbar-left">
-                                <button id="btn-load-poster" class="btn btn-small btn-secondary" title="Load poster from selected media">🖼️ Load Poster</button>
-                                <button id="btn-import-overlays" class="btn btn-small btn-secondary" title="Import overlays from config">📥 Import Config</button>
+                                <button id="btn-load-poster" class="btn btn-small btn-secondary" title="Load poster from selected media" onclick="visualEditor.fetchCleanPoster()">🖼️ Load Poster</button>
+                                <button id="btn-import-overlays" class="btn btn-small btn-secondary" title="Import overlays from config" onclick="visualEditor.showImportDialog()">📥 Import Config</button>
                             </div>
                             <div class="zoom-controls">
                                 <button id="btn-zoom-out" class="btn btn-small btn-icon" title="Zoom Out">−</button>
