@@ -2078,17 +2078,18 @@ const visualEditor = {
         } else if (overlay.type === 'backdrop') {
             el.style.backgroundColor = overlay.back_color || 'rgba(0,0,0,0.7)';
         } else {
-            // Image overlay - show placeholder or actual image
-            if (overlay.default) {
-                const imgUrl = `/overlay-images/${overlay.default}.png`;
-                el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<span style=\\'color:#666;font-size:12px;\\'>${overlay.name}</span>'">`;
+            // Image overlay - show actual image from backend-provided URL
+            const imgUrl = overlay.image_url || (overlay.default ? `/overlay-images/${overlay.default}.png` : null);
+            if (imgUrl) {
+                el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<span style=\\'color:#888;font-size:11px;text-align:center;\\'>${overlay.name}</span>'; this.parentElement.style.backgroundColor='rgba(50,50,50,0.5)';">`;
+                el.style.backgroundColor = 'transparent';
             } else {
-                el.innerHTML = `<span style="color:#666;font-size:12px;padding:5px;">${overlay.name}</span>`;
+                el.innerHTML = `<span style="color:#888;font-size:11px;padding:5px;text-align:center;">${overlay.name}</span>`;
+                el.style.backgroundColor = 'rgba(50,50,50,0.5)';
             }
             el.style.display = 'flex';
             el.style.alignItems = 'center';
             el.style.justifyContent = 'center';
-            el.style.backgroundColor = 'rgba(50,50,50,0.5)';
         }
 
         // Add resize handles
@@ -2106,9 +2107,10 @@ const visualEditor = {
     },
 
     calculateOverlayPosition(overlay) {
-        // Default size for overlays
-        let width = overlay.back_width || 200;
-        let height = overlay.back_height || 100;
+        // Default size for overlays - use typical Kometa overlay sizes
+        // Resolution overlays are typically ~208x53, ribbons vary
+        let width = overlay.back_width || overlay.scale_width || 210;
+        let height = overlay.back_height || overlay.scale_height || 55;
 
         // Calculate position based on alignment and offset
         const hAlign = overlay.horizontal_align || 'center';

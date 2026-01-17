@@ -187,6 +187,12 @@ class OverlayPreviewManager:
         for group_name in result["groups"]:
             result["groups"][group_name].sort(key=lambda x: x.get("weight", 0), reverse=True)
 
+        # Add image URLs for each overlay (for visual editor)
+        for overlay in result["overlays"]:
+            image_url = self.get_overlay_image_url(overlay)
+            if image_url:
+                overlay["image_url"] = image_url
+
         return result
 
     def _parse_overlay_config(self, name: str, config: Dict) -> Dict[str, Any]:
@@ -448,6 +454,31 @@ class OverlayPreviewManager:
                                     return path
 
         return None
+
+    def get_overlay_image_url(self, overlay: Dict) -> Optional[str]:
+        """
+        Get a web-accessible URL for an overlay image.
+
+        Uses get_overlay_image_path to find the image file, then converts
+        the file path to a URL that can be served by the web UI.
+
+        Returns:
+            URL string like "/overlay-images/resolution/4kdvhdrplus.png" or None
+        """
+        image_path = self.get_overlay_image_path(overlay)
+        if not image_path:
+            return None
+
+        # Convert file path to web URL
+        # The images are served from /overlay-images/ which maps to defaults/overlays/images/
+        try:
+            # Get the relative path from the images directory
+            rel_path = image_path.relative_to(self.images_dir)
+            return f"/overlay-images/{rel_path}"
+        except ValueError:
+            # Path is not under images_dir - might be a custom file path
+            # For now, return None for custom paths
+            return None
 
     def generate_preview(
         self,
