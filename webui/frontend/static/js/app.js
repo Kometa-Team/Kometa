@@ -1998,6 +1998,8 @@ const visualEditor = {
 
     // Fetch a clean poster (without overlays) for the visual editor
     async fetchCleanPoster() {
+        console.log('fetchCleanPoster called');
+        console.log('state.selectedPoster:', state.selectedPoster);
         if (!state.selectedPoster) {
             alert('Please select a poster from the Poster Source section first');
             return;
@@ -2754,6 +2756,8 @@ const visualEditor = {
 
     // Show import dialog - allows importing overlays from config
     showImportDialog() {
+        console.log('showImportDialog called');
+        console.log('state.loadedOverlays:', state.loadedOverlays);
         if (!state.loadedOverlays || state.loadedOverlays.length === 0) {
             alert('No overlays found in config. Please load an overlay file first from the "Overlay Source" section.');
             return;
