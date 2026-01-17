@@ -1725,7 +1725,7 @@ window.copyImagePath = copyImagePath;
 const livePreview = {
     // Default media for preview (Dune 2021)
     defaultMedia: {
-        tmdb_id: 438631,
+        tmdb_id: '438631',
         title: 'Dune (2021)',
         media_type: 'movie'
     },
@@ -1806,7 +1806,7 @@ const livePreview = {
                 media_type: this.defaultMedia.media_type
             };
 
-            const response = await fetch('/api/overlay/preview', {
+            const response = await fetch('/api/overlays/preview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
@@ -2286,11 +2286,11 @@ const visualEditor = {
                 canvas_type: 'portrait',
                 template_variables: {},
                 poster_source: 'tmdb',
-                tmdb_id: 438631,
+                tmdb_id: '438631',
                 media_type: 'movie'
             };
 
-            const response = await fetch('/api/overlay/preview', {
+            const response = await fetch('/api/overlays/preview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
@@ -2333,7 +2333,7 @@ const visualEditor = {
                 requestData.media_type = state.selectedPoster.media_type;
             }
 
-            const response = await fetch('/api/overlay/preview', {
+            const response = await fetch('/api/overlays/preview', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData)
