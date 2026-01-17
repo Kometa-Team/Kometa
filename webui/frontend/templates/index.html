@@ -154,18 +154,78 @@ libraries:
                     </div>
                 </div>
 
-                <!-- Preview Canvas -->
-                <div class="preview-section">
-                    <h3>Preview</h3>
-                    <div class="preview-controls">
+                <!-- Poster Source Selection -->
+                <div class="poster-source-section">
+                    <h3>Select Poster Source</h3>
+                    <p class="section-hint">Use an actual poster from your library or a sample canvas.</p>
+
+                    <div class="poster-source-tabs">
+                        <button class="poster-tab active" data-source="sample">Sample Canvas</button>
+                        <button class="poster-tab" data-source="plex">Plex Library</button>
+                        <button class="poster-tab" data-source="tmdb">TMDb Search</button>
+                    </div>
+
+                    <!-- Sample Canvas Options (default) -->
+                    <div id="poster-source-sample" class="poster-source-content active">
                         <div class="form-group">
-                            <label for="canvas-type">Poster Type</label>
+                            <label for="canvas-type">Canvas Type</label>
                             <select id="canvas-type">
                                 <option value="portrait">Portrait (1000x1500)</option>
                                 <option value="landscape">Landscape (1920x1080)</option>
                                 <option value="square">Square (1000x1000)</option>
                             </select>
                         </div>
+                    </div>
+
+                    <!-- Plex Search -->
+                    <div id="poster-source-plex" class="poster-source-content hidden">
+                        <div class="media-search-row">
+                            <div class="form-group">
+                                <label for="plex-search">Search Plex</label>
+                                <input type="text" id="plex-search" placeholder="Movie or show title...">
+                            </div>
+                            <button id="btn-search-plex" class="btn btn-secondary">Search</button>
+                        </div>
+                        <div id="plex-status" class="source-status"></div>
+                        <div id="plex-results" class="media-results">
+                            <p class="placeholder-text">Enter a title to search your Plex library.</p>
+                        </div>
+                    </div>
+
+                    <!-- TMDb Search -->
+                    <div id="poster-source-tmdb" class="poster-source-content hidden">
+                        <div class="media-search-row">
+                            <div class="form-group">
+                                <label for="tmdb-search">Search TMDb</label>
+                                <input type="text" id="tmdb-search" placeholder="Movie or show title...">
+                            </div>
+                            <div class="form-group">
+                                <label for="tmdb-type">Type</label>
+                                <select id="tmdb-type">
+                                    <option value="movie">Movie</option>
+                                    <option value="tv">TV Show</option>
+                                </select>
+                            </div>
+                            <button id="btn-search-tmdb" class="btn btn-secondary">Search</button>
+                        </div>
+                        <div id="tmdb-status" class="source-status"></div>
+                        <div id="tmdb-results" class="media-results">
+                            <p class="placeholder-text">Enter a title to search TMDb.</p>
+                        </div>
+                    </div>
+
+                    <!-- Selected Poster Display -->
+                    <div id="selected-poster-info" class="selected-poster-info hidden">
+                        <span class="selected-label">Using poster:</span>
+                        <span id="selected-poster-title" class="selected-title"></span>
+                        <button id="btn-clear-poster" class="btn-clear">Clear</button>
+                    </div>
+                </div>
+
+                <!-- Preview Canvas -->
+                <div class="preview-section">
+                    <h3>Preview</h3>
+                    <div class="preview-actions">
                         <button id="btn-generate-preview" class="btn btn-primary">Generate Preview</button>
                     </div>
 

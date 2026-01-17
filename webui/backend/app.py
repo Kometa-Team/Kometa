@@ -24,6 +24,7 @@ import aiosqlite
 from config_manager import ConfigManager
 from run_manager import RunManager
 from overlay_preview import OverlayPreviewManager
+from poster_fetcher import PosterFetcher
 
 
 # Configuration from environment
@@ -43,12 +44,13 @@ UI_PASSWORD = os.environ.get("KOMETA_UI_PASSWORD", "")
 config_manager: Optional[ConfigManager] = None
 run_manager: Optional[RunManager] = None
 overlay_manager: Optional[OverlayPreviewManager] = None
+poster_fetcher: Optional[PosterFetcher] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global config_manager, run_manager, overlay_manager
+    global config_manager, run_manager, overlay_manager, poster_fetcher
 
     # Ensure directories exist
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -67,6 +69,9 @@ async def lifespan(app: FastAPI):
     overlay_manager = OverlayPreviewManager(
         config_dir=CONFIG_DIR,
         kometa_root=KOMETA_ROOT
+    )
+    poster_fetcher = PosterFetcher(
+        config_path=CONFIG_DIR / "config.yml"
     )
 
     await run_manager.init_db()
@@ -378,6 +383,10 @@ async def websocket_status(websocket: WebSocket):
 class OverlayPreviewRequest(BaseModel):
     overlays: List[Dict[str, Any]]
     canvas_type: str = "portrait"  # portrait, landscape, square
+    poster_source: Optional[str] = None  # plex, tmdb, or None for sample
+    rating_key: Optional[str] = None  # Plex rating key
+    tmdb_id: Optional[str] = None  # TMDb ID
+    media_type: str = "movie"  # movie, tv
 
 
 @app.get("/api/overlays")
@@ -416,10 +425,43 @@ async def parse_overlay_file(file_path: str):
 async def generate_overlay_preview(request: OverlayPreviewRequest):
     """Generate a preview image with overlays applied."""
     try:
+        # Fetch poster if a source is specified
+        sample_poster = None
+        if request.poster_source == "plex" and request.rating_key:
+            poster_data = poster_fetcher.fetch_poster_image(
+                rating_key=request.rating_key
+            )
+            if poster_data:
+                # Save to temp file for overlay manager
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                    f.write(poster_data)
+                    sample_poster = f.name
+        elif request.poster_source == "tmdb" and request.tmdb_id:
+            poster_data = poster_fetcher.fetch_poster_image(
+                tmdb_id=request.tmdb_id,
+                media_type=request.media_type
+            )
+            if poster_data:
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
+                    f.write(poster_data)
+                    sample_poster = f.name
+
         result = overlay_manager.generate_preview(
             overlays=request.overlays,
-            canvas_type=request.canvas_type
+            canvas_type=request.canvas_type,
+            sample_poster=sample_poster
         )
+
+        # Clean up temp file
+        if sample_poster:
+            import os
+            try:
+                os.unlink(sample_poster)
+            except:
+                pass
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -450,6 +492,93 @@ async def get_default_overlays():
                 })
 
         return {"defaults": detailed}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# Media Search & Poster Endpoints (for overlay preview)
+# ============================================================================
+
+@app.get("/api/media/status")
+async def get_media_sources_status():
+    """Get status of available media sources (Plex, TMDb)."""
+    try:
+        status = poster_fetcher.get_status()
+        return status
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/media/libraries")
+async def get_plex_libraries():
+    """Get list of Plex libraries."""
+    try:
+        libraries = poster_fetcher.get_plex_libraries()
+        return {"libraries": libraries}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/media/search")
+async def search_media(
+    query: str,
+    source: str = "plex",  # plex or tmdb
+    media_type: str = "movie",  # movie or tv
+    library: Optional[str] = None,
+    limit: int = 20
+):
+    """Search for media items in Plex or TMDb."""
+    try:
+        if source == "plex":
+            results = poster_fetcher.search_plex(query, library=library, limit=limit)
+        elif source == "tmdb":
+            results = poster_fetcher.search_tmdb(query, media_type=media_type, limit=limit)
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid source: {source}")
+
+        return {"results": results, "source": source, "query": query}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/media/recent")
+async def get_recent_media(library_key: str, limit: int = 20):
+    """Get recently added media from a Plex library."""
+    try:
+        items = poster_fetcher.get_recent_items(library_key, limit=limit)
+        return {"items": items}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/media/poster")
+async def get_poster(
+    rating_key: Optional[str] = None,
+    tmdb_id: Optional[str] = None,
+    media_type: str = "movie",
+    width: Optional[int] = None,
+    height: Optional[int] = None
+):
+    """Fetch a poster image and return as base64 data URI."""
+    try:
+        resize = None
+        if width and height:
+            resize = (width, height)
+
+        result = poster_fetcher.fetch_poster_base64(
+            rating_key=rating_key,
+            tmdb_id=tmdb_id,
+            media_type=media_type,
+            resize=resize
+        )
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Poster not found")
+
+        return {"poster": result}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -20,7 +20,11 @@ const state = {
     // Overlay state
     overlayFiles: [],
     loadedOverlays: [],
-    selectedOverlays: []
+    selectedOverlays: [],
+    // Poster source state
+    posterSource: 'sample',  // sample, plex, tmdb
+    selectedPoster: null,    // { source, rating_key, tmdb_id, title, media_type }
+    mediaSourceStatus: { plex: false, tmdb: false }
 };
 
 // ============================================================================
@@ -82,7 +86,25 @@ const elements = {
     detailFilters: document.getElementById('detail-filters'),
     btnLoadOverlays: document.getElementById('btn-load-overlays'),
     btnGeneratePreview: document.getElementById('btn-generate-preview'),
-    btnClearSelection: document.getElementById('btn-clear-selection')
+    btnClearSelection: document.getElementById('btn-clear-selection'),
+
+    // Poster source elements
+    posterSourceTabs: document.querySelectorAll('.poster-tab'),
+    posterSourceSample: document.getElementById('poster-source-sample'),
+    posterSourcePlex: document.getElementById('poster-source-plex'),
+    posterSourceTmdb: document.getElementById('poster-source-tmdb'),
+    plexSearch: document.getElementById('plex-search'),
+    tmdbSearch: document.getElementById('tmdb-search'),
+    tmdbType: document.getElementById('tmdb-type'),
+    btnSearchPlex: document.getElementById('btn-search-plex'),
+    btnSearchTmdb: document.getElementById('btn-search-tmdb'),
+    plexStatus: document.getElementById('plex-status'),
+    tmdbStatus: document.getElementById('tmdb-status'),
+    plexResults: document.getElementById('plex-results'),
+    tmdbResults: document.getElementById('tmdb-results'),
+    selectedPosterInfo: document.getElementById('selected-poster-info'),
+    selectedPosterTitle: document.getElementById('selected-poster-title'),
+    btnClearPoster: document.getElementById('btn-clear-poster')
 };
 
 // ============================================================================
@@ -653,6 +675,9 @@ function formatDuration(seconds) {
 // ============================================================================
 
 async function loadOverlayFiles() {
+    // Check media source status when loading overlay tab
+    checkMediaSourceStatus();
+
     // Only load if not already loaded
     if (state.overlayFiles.length > 0) {
         return;
@@ -837,10 +862,24 @@ async function generateOverlayPreview() {
     elements.previewCanvas.innerHTML = '<div class="canvas-placeholder"><p>Generating preview...</p></div>';
 
     try {
-        const result = await api.post('/overlays/preview', {
+        // Build request with poster source info
+        const requestData = {
             overlays: state.selectedOverlays,
             canvas_type: elements.canvasType.value
-        });
+        };
+
+        // Add poster source if selected
+        if (state.selectedPoster) {
+            requestData.poster_source = state.selectedPoster.source;
+            if (state.selectedPoster.source === 'plex') {
+                requestData.rating_key = state.selectedPoster.rating_key;
+            } else if (state.selectedPoster.source === 'tmdb') {
+                requestData.tmdb_id = state.selectedPoster.tmdb_id;
+                requestData.media_type = state.selectedPoster.media_type;
+            }
+        }
+
+        const result = await api.post('/overlays/preview', requestData);
 
         if (result.image) {
             elements.previewCanvas.innerHTML = `<img src="${result.image}" alt="Overlay Preview">`;
@@ -852,6 +891,192 @@ async function generateOverlayPreview() {
         console.error('Failed to generate preview:', error);
         elements.previewCanvas.innerHTML = `<div class="canvas-placeholder"><p>Failed to generate preview: ${error.message}</p></div>`;
     }
+}
+
+// ============================================================================
+// Poster Source Selection
+// ============================================================================
+
+async function checkMediaSourceStatus() {
+    try {
+        const status = await api.get('/media/status');
+        state.mediaSourceStatus = {
+            plex: status.plex?.available || false,
+            tmdb: status.tmdb?.available || false
+        };
+
+        // Update status displays
+        if (elements.plexStatus) {
+            if (state.mediaSourceStatus.plex) {
+                elements.plexStatus.className = 'source-status connected';
+                elements.plexStatus.textContent = `Connected to Plex: ${status.plex.url}`;
+            } else {
+                elements.plexStatus.className = 'source-status disconnected';
+                elements.plexStatus.textContent = 'Plex not configured. Add plex credentials to config.yml.';
+            }
+        }
+
+        if (elements.tmdbStatus) {
+            if (state.mediaSourceStatus.tmdb) {
+                elements.tmdbStatus.className = 'source-status connected';
+                elements.tmdbStatus.textContent = 'TMDb API configured';
+            } else {
+                elements.tmdbStatus.className = 'source-status disconnected';
+                elements.tmdbStatus.textContent = 'TMDb not configured. Add tmdb apikey to config.yml.';
+            }
+        }
+    } catch (error) {
+        console.error('Failed to check media source status:', error);
+    }
+}
+
+function switchPosterSource(source) {
+    state.posterSource = source;
+
+    // Update tabs
+    elements.posterSourceTabs.forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.source === source);
+    });
+
+    // Update content panels
+    if (elements.posterSourceSample) {
+        elements.posterSourceSample.classList.toggle('active', source === 'sample');
+        elements.posterSourceSample.classList.toggle('hidden', source !== 'sample');
+    }
+    if (elements.posterSourcePlex) {
+        elements.posterSourcePlex.classList.toggle('active', source === 'plex');
+        elements.posterSourcePlex.classList.toggle('hidden', source !== 'plex');
+    }
+    if (elements.posterSourceTmdb) {
+        elements.posterSourceTmdb.classList.toggle('active', source === 'tmdb');
+        elements.posterSourceTmdb.classList.toggle('hidden', source !== 'tmdb');
+    }
+}
+
+async function searchPlex() {
+    const query = elements.plexSearch?.value?.trim();
+    if (!query) {
+        elements.plexResults.innerHTML = '<p class="placeholder-text">Enter a title to search.</p>';
+        return;
+    }
+
+    elements.plexResults.innerHTML = '<p class="placeholder-text">Searching...</p>';
+
+    try {
+        const result = await api.get(`/media/search?query=${encodeURIComponent(query)}&source=plex`);
+        renderMediaResults(result.results, 'plex', elements.plexResults);
+    } catch (error) {
+        console.error('Plex search error:', error);
+        elements.plexResults.innerHTML = `<p class="placeholder-text">Search failed: ${error.message}</p>`;
+    }
+}
+
+async function searchTmdb() {
+    const query = elements.tmdbSearch?.value?.trim();
+    if (!query) {
+        elements.tmdbResults.innerHTML = '<p class="placeholder-text">Enter a title to search.</p>';
+        return;
+    }
+
+    const mediaType = elements.tmdbType?.value || 'movie';
+    elements.tmdbResults.innerHTML = '<p class="placeholder-text">Searching...</p>';
+
+    try {
+        const result = await api.get(`/media/search?query=${encodeURIComponent(query)}&source=tmdb&media_type=${mediaType}`);
+        renderMediaResults(result.results, 'tmdb', elements.tmdbResults);
+    } catch (error) {
+        console.error('TMDb search error:', error);
+        elements.tmdbResults.innerHTML = `<p class="placeholder-text">Search failed: ${error.message}</p>`;
+    }
+}
+
+function renderMediaResults(results, source, container) {
+    if (!results || results.length === 0) {
+        container.innerHTML = '<p class="placeholder-text">No results found.</p>';
+        return;
+    }
+
+    container.innerHTML = results.map(item => {
+        const title = item.title || item.name;
+        const year = item.year || '';
+        const isSelected = state.selectedPoster &&
+            ((source === 'plex' && state.selectedPoster.rating_key === item.rating_key) ||
+             (source === 'tmdb' && state.selectedPoster.tmdb_id === item.tmdb_id));
+
+        // Build poster thumbnail URL
+        let posterHtml;
+        if (source === 'plex' && item.thumb_url) {
+            posterHtml = `<img src="${item.thumb_url}" alt="${title}" loading="lazy">`;
+        } else if (source === 'tmdb' && item.poster_url) {
+            posterHtml = `<img src="${item.poster_url}" alt="${title}" loading="lazy">`;
+        } else {
+            posterHtml = '<span class="no-poster">?</span>';
+        }
+
+        const dataAttrs = source === 'plex'
+            ? `data-rating-key="${item.rating_key}" data-title="${title}" data-type="${item.type}"`
+            : `data-tmdb-id="${item.tmdb_id}" data-title="${title}" data-type="${item.type}"`;
+
+        return `
+            <div class="media-item ${isSelected ? 'selected' : ''}" ${dataAttrs} onclick="selectMediaItem(this, '${source}')">
+                <div class="media-item-poster">${posterHtml}</div>
+                <div class="media-item-info">
+                    <div class="media-item-title" title="${title}">${title}</div>
+                    <div class="media-item-year">${year}${item.type ? ` - ${item.type}` : ''}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectMediaItem(element, source) {
+    const title = element.dataset.title;
+    const mediaType = element.dataset.type || 'movie';
+
+    if (source === 'plex') {
+        state.selectedPoster = {
+            source: 'plex',
+            rating_key: element.dataset.ratingKey,
+            title: title,
+            media_type: mediaType
+        };
+    } else if (source === 'tmdb') {
+        state.selectedPoster = {
+            source: 'tmdb',
+            tmdb_id: element.dataset.tmdbId,
+            title: title,
+            media_type: mediaType
+        };
+    }
+
+    // Update UI
+    updateSelectedPosterDisplay();
+
+    // Highlight selected item
+    document.querySelectorAll('.media-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+}
+
+function updateSelectedPosterDisplay() {
+    if (state.selectedPoster && elements.selectedPosterInfo) {
+        elements.selectedPosterInfo.classList.remove('hidden');
+        elements.selectedPosterTitle.textContent = `${state.selectedPoster.title} (${state.selectedPoster.source})`;
+    } else if (elements.selectedPosterInfo) {
+        elements.selectedPosterInfo.classList.add('hidden');
+        elements.selectedPosterTitle.textContent = '';
+    }
+}
+
+function clearSelectedPoster() {
+    state.selectedPoster = null;
+    updateSelectedPosterDisplay();
+
+    // Remove selection highlighting
+    document.querySelectorAll('.media-item').forEach(item => {
+        item.classList.remove('selected');
+    });
 }
 
 // ============================================================================
@@ -943,6 +1168,32 @@ libraries:
     if (elements.btnClearSelection) {
         elements.btnClearSelection.addEventListener('click', clearOverlaySelection);
     }
+
+    // Poster source tabs
+    elements.posterSourceTabs.forEach(tab => {
+        tab.addEventListener('click', () => switchPosterSource(tab.dataset.source));
+    });
+
+    // Media search
+    if (elements.btnSearchPlex) {
+        elements.btnSearchPlex.addEventListener('click', searchPlex);
+    }
+    if (elements.plexSearch) {
+        elements.plexSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchPlex();
+        });
+    }
+    if (elements.btnSearchTmdb) {
+        elements.btnSearchTmdb.addEventListener('click', searchTmdb);
+    }
+    if (elements.tmdbSearch) {
+        elements.tmdbSearch.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchTmdb();
+        });
+    }
+    if (elements.btnClearPoster) {
+        elements.btnClearPoster.addEventListener('click', clearSelectedPoster);
+    }
 }
 
 // ============================================================================
@@ -978,3 +1229,4 @@ window.restoreBackup = restoreBackup;
 window.viewRunLogs = viewRunLogs;
 window.toggleOverlaySelection = toggleOverlaySelection;
 window.removeSelectedOverlay = removeSelectedOverlay;
+window.selectMediaItem = selectMediaItem;
