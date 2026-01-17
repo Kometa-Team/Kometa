@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mojo, plex, radarr, reciperr, sonarr, tautulli, tmdb, trakt, tvdb, mdblist, util
 from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, Deleted
+from modules.write_guard import WriteGuard
 from modules.overlay import Overlay
 from modules.poster import KometaImage
 from modules.request import quote
@@ -2921,7 +2922,10 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"Playlist: {self.name} created")
         elif self.playlist and items_added:
-            self.obj.addItems(items_added)
+            if WriteGuard.can_write():
+                self.obj.addItems(items_added)
+            else:
+                WriteGuard.log_blocked("playlist_add_items", f"playlist={self.name}, items={len(items_added)}")
         elif items_added:
             self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
         if self.do_report and items_added:
@@ -2951,7 +2955,10 @@ class CollectionBuilder:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
                 self.library.item_reload(self.obj)
-                self.obj.removeItems(items_removed)
+                if WriteGuard.can_write():
+                    self.obj.removeItems(items_removed)
+                else:
+                    WriteGuard.log_blocked("playlist_remove_items", f"playlist={self.name}, items={len(items_removed)}")
             elif items_removed:
                 self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
             if self.do_report and items_removed:

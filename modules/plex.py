@@ -2,6 +2,7 @@ import os, plexapi, re, time
 from datetime import datetime, timedelta
 from modules import builder, util
 from modules.library import Library
+from modules.write_guard import WriteGuard
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed
@@ -642,10 +643,16 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def create_playlist(self, name, items):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("create_playlist", f"name={name}, items={len(items) if items else 0}")
+            return None
         return self.PlexServer.createPlaylist(name, items=items)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def moveItem(self, obj, item, after):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("move_item", f"item={item}, after={after}", obj)
+            return
         try:
             obj.moveItem(item, after=after)
         except (BadRequest, NotFound, Unauthorized) as e:
@@ -657,6 +664,9 @@ class Plex(Library):
         return method()
 
     def delete(self, obj):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("delete", f"object={obj.title if hasattr(obj, 'title') else obj}")
+            return None
         try:
             return self.query(obj.delete)
         except Exception:
@@ -669,10 +679,18 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def tag_edit(self, item, attribute, data, locked=True, remove=False):
+        if not WriteGuard.can_write():
+            action = "remove" if remove else "add"
+            WriteGuard.log_blocked(f"tag_edit_{action}", f"attribute={attribute}, data={data}", item)
+            return None
         return item.editTags(attribute, data, locked=locked, remove=remove)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def query_collection(self, item, collection, locked=True, add=True):
+        if not WriteGuard.can_write():
+            action = "add_to" if add else "remove_from"
+            WriteGuard.log_blocked(f"{action}_collection_tag", f"collection={collection}", item)
+            return
         if add:
             item.addCollection(collection, locked=locked)
         else:
@@ -680,10 +698,16 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def collection_mode_query(self, collection, data):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("collection_mode_update", f"mode={data}", collection)
+            return
         collection.modeUpdate(mode=data)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def collection_order_query(self, collection, data):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("collection_order_update", f"sort={data}", collection)
+            return
         collection.sortUpdate(sort=data)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
@@ -796,6 +820,9 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def edit_query(self, item, edits, advanced=False):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("edit_metadata", f"edits={edits}, advanced={advanced}", item)
+            return
         if advanced:
             item.editAdvanced(**edits)
         else:
@@ -803,6 +830,10 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def _upload_image(self, item, image):
+        if not WriteGuard.can_write():
+            img_type = "poster" if image.is_poster else "background" if image.is_background else "logo"
+            WriteGuard.log_blocked(f"upload_{img_type}", f"location={image.location}", item)
+            return True  # Return success to avoid error handling
         upload_success = True
         try:
             if image.is_url and "theposterdb.com" in image.location:
@@ -836,6 +867,9 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("upload_poster", f"image={image}, url={url}", item)
+            return
         if url:
             item.uploadPoster(url=image)
         else:
@@ -843,6 +877,9 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("upload_background", f"image={image}, url={url}", item)
+            return
         if url:
             item.uploadArt(url=image)
         else:
@@ -850,6 +887,9 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("upload_logo", f"image={image}, url={url}", item)
+            return
         if url:
             item.uploadLogo(url=image)
         else:
@@ -954,6 +994,10 @@ class Plex(Library):
                 for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
+        if not WriteGuard.can_write():
+            action = "add_to" if add else "remove_from"
+            WriteGuard.log_blocked(f"{action}_collection", f"collection={collection}, items={len(items)}")
+            return
         maintain_status = True
         locked_items = []
         unlocked_items = []
@@ -979,6 +1023,9 @@ class Plex(Library):
                 self.Plex.saveMultiEdits()
 
     def move_item(self, collection, item, after=None):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("move_item_in_collection", f"item={item}, after={after}", collection)
+            return
         key = f"{collection.key}/items/{item}/move"
         if after:
             key += f"?after={after}"
@@ -998,6 +1045,9 @@ class Plex(Library):
             raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
 
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("create_smart_collection", f"title={title}")
+            return
         if not ignore_blank_results:
             self.test_smart_filter(uri_args)
         args = {
@@ -1010,6 +1060,9 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def create_blank_collection(self, title):
+        if not WriteGuard.can_write():
+            WriteGuard.log_blocked("create_blank_collection", f"title={title}")
+            return
         args = {
             "type": 1 if self.is_movie else 2 if self.is_show else 8,
             "title": title,
