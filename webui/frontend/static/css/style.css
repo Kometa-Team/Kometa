@@ -2152,6 +2152,76 @@ body {
     color: var(--danger-color);
 }
 
+/* Layer visibility state */
+.layer-visibility.layer-hidden {
+    opacity: 0.4;
+}
+
+.layer-item.hidden-layer {
+    opacity: 0.5;
+    background-color: var(--bg-secondary);
+}
+
+.layer-item.hidden-layer .layer-name {
+    text-decoration: line-through;
+    color: var(--text-muted);
+}
+
+/* Layer thumbnail */
+.layer-thumbnail {
+    width: 28px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.layer-thumbnail img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Layer controls (up/down buttons) */
+.layer-controls {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.layer-item:hover .layer-controls {
+    opacity: 1;
+}
+
+.layer-btn {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+.layer-btn:hover:not(:disabled) {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.layer-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
 /* YAML Editor Panel */
 .yaml-editor-panel {
     flex: 1;

@@ -436,7 +436,35 @@ class OverlayPreviewManager:
             "streaming": ["Netflix", "Amazon", "Disney", "Hulu", "HBO", "Apple"],
             "network": ["ABC", "CBS", "NBC", "FOX", "BBC", "AMC"],
             "studio": ["Marvel", "Warner", "Sony", "Universal", "Paramount"],
+            "rating": ["IMDb", "TMDb", "Trakt", "Metacritic", "Letterboxd", "RT-", "AniDB", "MAL", "MDBList", "Star"],
         }
+
+        # Special handling for ratings overlays - try direct mapping first
+        rating_name_map = {
+            "imdb": "IMDb",
+            "tmdb": "TMDb",
+            "trakt": "Trakt",
+            "metacritic": "Metacritic",
+            "letterboxd": "Letterboxd",
+            "anidb": "AniDB",
+            "mal": "MAL",
+            "mdblist": "MDBList",
+            "star": "Star",
+            "rt_tomato": "RT-Crit-Fresh",
+            "rt_popcorn": "RT-Aud-Fresh",
+        }
+
+        # Check if this is a rating overlay
+        name_lower = name.lower()
+        for key, img_name in rating_name_map.items():
+            if key in name_lower:
+                rating_path = self.images_dir / "rating" / f"{img_name}.png"
+                if rating_path.exists():
+                    return rating_path
+                # Try Top variants
+                rating_top_path = self.images_dir / "rating" / f"{img_name}Top.png"
+                if rating_top_path.exists():
+                    return rating_top_path
 
         for category, keywords in category_map.items():
             if any(kw.lower() in name.lower() for kw in keywords):

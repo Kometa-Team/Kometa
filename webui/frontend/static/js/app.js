@@ -2046,9 +2046,14 @@ const visualEditor = {
         const existingOverlays = this.elements.canvasPoster.querySelectorAll('.canvas-overlay');
         existingOverlays.forEach(el => el.remove());
 
-        // Render each overlay
+        // Render each overlay (in order - first overlay is bottom layer, last is top)
         this.overlays.forEach((overlay, index) => {
+            // Skip hidden overlays
+            if (overlay._hidden) return;
+
             const el = this.createOverlayElement(overlay, index);
+            // Set z-index based on position in array (later = higher)
+            el.style.zIndex = index + 1;
             this.elements.canvasPoster.appendChild(el);
         });
     },
@@ -2415,19 +2420,29 @@ const visualEditor = {
             return;
         }
 
-        this.elements.layersList.innerHTML = this.overlays.map((overlay, index) => {
+        // Render in reverse order so top layers appear first in the list
+        const overlaysReversed = this.overlays.map((overlay, index) => ({ overlay, index })).reverse();
+
+        this.elements.layersList.innerHTML = overlaysReversed.map(({ overlay, index }) => {
             const isSelected = index === this.selectedOverlayIndex;
+            const isHidden = overlay._hidden;
+            const isFirst = index === 0;
+            const isLast = index === this.overlays.length - 1;
 
             // Generate thumbnail for the overlay
             const thumbnail = this.generateLayerThumbnail(overlay);
 
             return `
-                <div class="layer-item ${isSelected ? 'selected' : ''}" data-index="${index}" onclick="visualEditor.selectOverlay(${index})">
-                    <span class="layer-visibility" onclick="event.stopPropagation(); visualEditor.toggleLayerVisibility(${index})">👁</span>
+                <div class="layer-item ${isSelected ? 'selected' : ''} ${isHidden ? 'hidden-layer' : ''}" data-index="${index}" onclick="visualEditor.selectOverlay(${index})">
+                    <span class="layer-visibility ${isHidden ? 'layer-hidden' : ''}" onclick="event.stopPropagation(); visualEditor.toggleLayerVisibility(${index})" title="${isHidden ? 'Show layer' : 'Hide layer'}">${isHidden ? '👁‍🗨' : '👁'}</span>
                     <span class="layer-thumbnail">${thumbnail}</span>
-                    <span class="layer-name">${overlay.name}</span>
-                    <span class="layer-type">${overlay.type || 'image'}</span>
-                    <span class="layer-delete" onclick="event.stopPropagation(); visualEditor.deleteOverlay(${index})">✕</span>
+                    <span class="layer-name" title="${overlay.name}">${overlay.name}</span>
+                    <span class="layer-type">${overlay.type || 'IMAGE'}</span>
+                    <span class="layer-controls">
+                        <button class="layer-btn" onclick="event.stopPropagation(); visualEditor.moveLayerUp(${index})" ${isLast ? 'disabled' : ''} title="Move to front">▲</button>
+                        <button class="layer-btn" onclick="event.stopPropagation(); visualEditor.moveLayerDown(${index})" ${isFirst ? 'disabled' : ''} title="Move to back">▼</button>
+                    </span>
+                    <span class="layer-delete" onclick="event.stopPropagation(); visualEditor.deleteOverlay(${index})" title="Delete overlay">✕</span>
                 </div>
             `;
         }).join('');
@@ -2499,6 +2514,90 @@ const visualEditor = {
         overlay._hidden = !overlay._hidden;
         this.renderOverlays();
         this.renderLayersList();
+    },
+
+    /**
+     * Move layer up in z-order (towards the front/top)
+     */
+    moveLayerUp(index) {
+        if (index >= this.overlays.length - 1) return; // Already at top
+
+        this.saveUndoState();
+
+        // Swap with the layer above
+        const temp = this.overlays[index];
+        this.overlays[index] = this.overlays[index + 1];
+        this.overlays[index + 1] = temp;
+
+        // Update selection if needed
+        if (this.selectedOverlayIndex === index) {
+            this.selectedOverlayIndex = index + 1;
+        } else if (this.selectedOverlayIndex === index + 1) {
+            this.selectedOverlayIndex = index;
+        }
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+    },
+
+    /**
+     * Move layer down in z-order (towards the back/bottom)
+     */
+    moveLayerDown(index) {
+        if (index <= 0) return; // Already at bottom
+
+        this.saveUndoState();
+
+        // Swap with the layer below
+        const temp = this.overlays[index];
+        this.overlays[index] = this.overlays[index - 1];
+        this.overlays[index - 1] = temp;
+
+        // Update selection if needed
+        if (this.selectedOverlayIndex === index) {
+            this.selectedOverlayIndex = index - 1;
+        } else if (this.selectedOverlayIndex === index - 1) {
+            this.selectedOverlayIndex = index;
+        }
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+    },
+
+    /**
+     * Move selected layer to front (top of z-order)
+     */
+    moveToFront() {
+        if (this.selectedOverlayIndex === null || this.selectedOverlayIndex >= this.overlays.length - 1) return;
+
+        this.saveUndoState();
+
+        const overlay = this.overlays.splice(this.selectedOverlayIndex, 1)[0];
+        this.overlays.push(overlay);
+        this.selectedOverlayIndex = this.overlays.length - 1;
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+    },
+
+    /**
+     * Move selected layer to back (bottom of z-order)
+     */
+    moveToBack() {
+        if (this.selectedOverlayIndex === null || this.selectedOverlayIndex <= 0) return;
+
+        this.saveUndoState();
+
+        const overlay = this.overlays.splice(this.selectedOverlayIndex, 1)[0];
+        this.overlays.unshift(overlay);
+        this.selectedOverlayIndex = 0;
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
     },
 
     deleteOverlay(index) {
