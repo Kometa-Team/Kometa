@@ -1858,13 +1858,27 @@ const visualEditor = {
         // Export YAML button
         const btnExportYaml = document.getElementById('btn-export-yaml');
         if (btnExportYaml) btnExportYaml.addEventListener('click', () => this.exportYaml());
+
+        // Load poster and import overlays buttons
+        const btnLoadPoster = document.getElementById('btn-load-poster');
+        const btnImportOverlays = document.getElementById('btn-import-overlays');
+        if (btnLoadPoster) btnLoadPoster.addEventListener('click', () => this.fetchCleanPoster());
+        if (btnImportOverlays) btnImportOverlays.addEventListener('click', () => this.showImportDialog());
     },
 
     open() {
         if (!this.elements.modal) return;
 
-        // Copy current overlays to working set
-        this.overlays = JSON.parse(JSON.stringify(state.selectedOverlays));
+        // Load overlays: prefer selected overlays, fall back to loaded overlays from config
+        if (state.selectedOverlays && state.selectedOverlays.length > 0) {
+            this.overlays = JSON.parse(JSON.stringify(state.selectedOverlays));
+        } else if (state.loadedOverlays && state.loadedOverlays.length > 0) {
+            // Use all loaded overlays from the config file
+            this.overlays = JSON.parse(JSON.stringify(state.loadedOverlays));
+        } else {
+            this.overlays = [];
+        }
+
         this.selectedOverlayIndex = null;
         this.undoStack = [];
         this.redoStack = [];
@@ -1964,12 +1978,61 @@ const visualEditor = {
     loadPosterBackground() {
         if (!this.elements.canvasPoster) return;
 
-        // Use current preview image if available
+        // Use current preview image if available (base64 data URL)
         if (state.currentPreviewImage) {
             this.elements.canvasPoster.style.backgroundImage = `url(${state.currentPreviewImage})`;
-        } else {
-            // Create a sample gradient background
-            this.elements.canvasPoster.style.backgroundImage = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+            return;
+        }
+
+        // Try to get poster from selected media item
+        if (state.selectedPoster) {
+            if (state.selectedPoster.thumb) {
+                this.elements.canvasPoster.style.backgroundImage = `url(${state.selectedPoster.thumb})`;
+                return;
+            }
+        }
+
+        // Create a sample gradient background as fallback
+        this.elements.canvasPoster.style.backgroundImage = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+    },
+
+    // Fetch a clean poster (without overlays) for the visual editor
+    async fetchCleanPoster() {
+        if (!state.selectedPoster) {
+            alert('Please select a poster from the Poster Source section first');
+            return;
+        }
+
+        try {
+            const requestData = {
+                overlays: [],  // No overlays - just the poster
+                canvas_type: elements.canvasType?.value || 'portrait',
+                template_variables: {}
+            };
+
+            if (state.selectedPoster.source === 'plex') {
+                requestData.poster_source = 'plex';
+                requestData.rating_key = state.selectedPoster.rating_key;
+            } else if (state.selectedPoster.source === 'tmdb') {
+                requestData.poster_source = 'tmdb';
+                requestData.tmdb_id = state.selectedPoster.tmdb_id;
+                requestData.media_type = state.selectedPoster.media_type;
+            }
+
+            const response = await fetch('/api/overlay/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+            if (result.image) {
+                this.elements.canvasPoster.style.backgroundImage = `url(${result.image})`;
+                this.setYamlStatus('success', 'Poster loaded');
+            }
+        } catch (error) {
+            console.error('Failed to load poster:', error);
+            this.setYamlStatus('error', 'Failed to load poster');
         }
     },
 
@@ -2687,6 +2750,92 @@ const visualEditor = {
         this.renderLayersList();
         this.generateYaml();
         this.selectOverlay(this.overlays.length - 1);
+    },
+
+    // Show import dialog - allows importing overlays from config
+    showImportDialog() {
+        if (!state.loadedOverlays || state.loadedOverlays.length === 0) {
+            alert('No overlays found in config. Please load an overlay file first from the "Overlay Source" section.');
+            return;
+        }
+
+        // Create a simple selection dialog
+        const existingDialog = document.getElementById('import-overlays-dialog');
+        if (existingDialog) existingDialog.remove();
+
+        const dialog = document.createElement('div');
+        dialog.id = 'import-overlays-dialog';
+        dialog.className = 'modal';
+        dialog.innerHTML = `
+            <div class="modal-content add-overlay-modal-content" style="max-height: 80vh; width: 600px;">
+                <div class="modal-header">
+                    <h3>Import Overlays from Config</h3>
+                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('import-overlays-dialog').remove()">✕</button>
+                </div>
+                <div class="add-overlay-content" style="overflow-y: auto; max-height: 60vh;">
+                    <p class="section-hint">Select overlays to import (${state.loadedOverlays.length} available)</p>
+                    <div style="margin-bottom: 15px;">
+                        <button class="btn btn-small btn-secondary" onclick="visualEditor.selectAllImport(true)">Select All</button>
+                        <button class="btn btn-small btn-secondary" onclick="visualEditor.selectAllImport(false)">Deselect All</button>
+                    </div>
+                    <div id="import-overlay-list" style="display: flex; flex-direction: column; gap: 8px;">
+                        ${state.loadedOverlays.map((o, i) => `
+                            <label class="import-overlay-item" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg-tertiary); border-radius: 4px; cursor: pointer;">
+                                <input type="checkbox" value="${i}" checked>
+                                <span style="flex: 1;">${o.name}</span>
+                                <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">${o.type || 'image'}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                        <button class="btn btn-secondary" onclick="document.getElementById('import-overlays-dialog').remove()">Cancel</button>
+                        <button class="btn btn-primary" onclick="visualEditor.importSelectedOverlays()">Import Selected</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+    },
+
+    selectAllImport(select) {
+        const checkboxes = document.querySelectorAll('#import-overlay-list input[type="checkbox"]');
+        checkboxes.forEach(cb => cb.checked = select);
+    },
+
+    importSelectedOverlays() {
+        const checkboxes = document.querySelectorAll('#import-overlay-list input[type="checkbox"]:checked');
+        const indices = Array.from(checkboxes).map(cb => parseInt(cb.value));
+
+        if (indices.length === 0) {
+            alert('Please select at least one overlay to import');
+            return;
+        }
+
+        this.saveUndoState();
+
+        // Import selected overlays
+        const newOverlays = indices.map(i => JSON.parse(JSON.stringify(state.loadedOverlays[i])));
+
+        // Add to current overlays (or replace?)
+        const replaceAll = this.overlays.length === 0 || confirm('Replace existing overlays? (Cancel to add to existing)');
+
+        if (replaceAll) {
+            this.overlays = newOverlays;
+        } else {
+            // Add only overlays that don't exist by name
+            newOverlays.forEach(newOverlay => {
+                if (!this.overlays.some(o => o.name === newOverlay.name)) {
+                    this.overlays.push(newOverlay);
+                }
+            });
+        }
+
+        // Close dialog and refresh
+        document.getElementById('import-overlays-dialog')?.remove();
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+        this.setYamlStatus('success', `Imported ${indices.length} overlays`);
     }
 };
 

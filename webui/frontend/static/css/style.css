@@ -1838,6 +1838,11 @@ body {
     gap: 10px;
 }
 
+.canvas-toolbar .toolbar-left {
+    display: flex;
+    gap: 8px;
+}
+
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -2263,121 +2268,21 @@ body {
 }
 
 /* ============================================================================
-   Improved Overlays Tab Layout - Reduced Scrolling
+   Overlays Tab Layout Tweaks
    ============================================================================ */
 
+/* Keep standard layout but ensure max-width */
 .overlays-panel {
-    max-width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto 1fr auto;
-    gap: 20px;
-    height: calc(100vh - 200px);
-    min-height: 600px;
+    max-width: 1400px;
 }
 
-/* Full width sections */
-.overlay-source-section {
-    grid-column: 1 / -1;
-    margin-bottom: 0;
-}
-
-.overlays-panel > h2,
-.overlays-panel > .section-desc {
-    grid-column: 1 / -1;
-}
-
-/* Left column sections */
-.overlay-groups-section,
-.overlay-list-section {
-    grid-column: 1;
-    margin-bottom: 0;
-    max-height: 350px;
-    display: flex;
-    flex-direction: column;
-}
-
+/* Limit overlay list height so it doesn't take too much space */
 .overlay-list-section .overlay-list {
-    flex: 1;
-    max-height: none;
+    max-height: 250px;
 }
 
-/* Right column sections */
-.poster-source-section {
-    grid-column: 2;
-    grid-row: 2 / 4;
-    margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
-}
-
+/* Limit media results height */
 .poster-source-section .media-results {
-    flex: 1;
-    max-height: none;
-}
-
-/* Preview section - full width at bottom */
-.preview-section {
-    grid-column: 1 / -1;
-    margin-bottom: 0;
-}
-
-.preview-section .preview-canvas-container {
-    max-height: 400px;
-    overflow: hidden;
-}
-
-.preview-section .preview-canvas {
-    min-height: 300px;
-}
-
-.preview-section .preview-canvas img {
-    max-height: 350px;
-}
-
-/* Overlay details - floats beside preview */
-.overlay-details-section {
-    position: absolute;
-    right: 20px;
-    bottom: 140px;
-    width: 300px;
-    z-index: 10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-}
-
-/* Collapsible sections at bottom */
-.overlay-images-section,
-.visual-editor-section,
-.template-vars-section {
-    grid-column: 1 / -1;
-}
-
-/* Make collapsed details not take up grid space when at bottom */
-.overlay-images-section,
-.visual-editor-section {
-    margin-top: 0;
-}
-
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-    .overlays-panel {
-        grid-template-columns: 1fr;
-        height: auto;
-    }
-
-    .overlay-groups-section,
-    .overlay-list-section,
-    .poster-source-section {
-        grid-column: 1;
-    }
-
-    .poster-source-section {
-        grid-row: auto;
-    }
-
-    .overlay-details-section {
-        position: static;
-        width: auto;
-    }
+    max-height: 280px;
 }
 
