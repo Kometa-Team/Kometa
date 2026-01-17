@@ -1723,3 +1723,661 @@ body {
     font-size: 24px;
 }
 
+/* ============================================================================
+   Visual Overlay Editor
+   ============================================================================ */
+
+.visual-editor-section {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 25px;
+}
+
+.visual-editor-section h3 {
+    margin-bottom: 8px;
+    color: var(--primary-color);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.badge-beta {
+    font-size: 10px;
+    background-color: var(--warning-color);
+    color: #000;
+}
+
+.visual-editor-toolbar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.toolbar-icon {
+    margin-right: 4px;
+}
+
+/* Modal Styles */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background-color: var(--bg-secondary);
+    border-radius: 12px;
+    max-height: 95vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.visual-editor-modal-content {
+    width: 95vw;
+    height: 90vh;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-tertiary);
+}
+
+.modal-header h2 {
+    font-size: 18px;
+    color: var(--primary-color);
+}
+
+.modal-header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Visual Editor Container */
+.visual-editor-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Canvas Panel (left side) */
+.visual-editor-canvas-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    border-right: 1px solid var(--border-color);
+}
+
+.canvas-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.zoom-controls span {
+    min-width: 50px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.btn-icon {
+    padding: 6px 10px;
+    min-width: 32px;
+}
+
+.canvas-info {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.snap-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.snap-controls .filter-select {
+    width: auto;
+    min-width: 70px;
+}
+
+/* Visual Canvas Wrapper */
+.visual-canvas-wrapper {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: repeating-conic-gradient(#1a1a2e 0% 25%, #16213e 0% 50%) 50% / 20px 20px;
+}
+
+.visual-canvas {
+    position: relative;
+    transform-origin: center center;
+    transition: transform 0.2s ease;
+}
+
+.canvas-poster {
+    position: relative;
+    background-color: #333;
+    width: 500px;
+    height: 750px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+.canvas-grid {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    opacity: 0.3;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 25px 25px;
+}
+
+.canvas-grid.hidden {
+    display: none;
+}
+
+/* Overlay Elements on Canvas */
+.canvas-overlay {
+    position: absolute;
+    cursor: move;
+    border: 2px solid transparent;
+    transition: border-color 0.15s;
+    user-select: none;
+}
+
+.canvas-overlay:hover {
+    border-color: rgba(229, 160, 13, 0.5);
+}
+
+.canvas-overlay.selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(229, 160, 13, 0.3);
+}
+
+.canvas-overlay.dragging {
+    opacity: 0.8;
+    z-index: 1000;
+}
+
+/* Resize Handles */
+.resize-handle {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: var(--primary-color);
+    border: 1px solid #000;
+    border-radius: 2px;
+    z-index: 10;
+}
+
+.resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+.resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+.resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+.resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+.resize-handle.n { top: -5px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.resize-handle.s { bottom: -5px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.e { top: 50%; right: -5px; transform: translateY(-50%); cursor: e-resize; }
+.resize-handle.w { top: 50%; left: -5px; transform: translateY(-50%); cursor: w-resize; }
+
+.canvas-overlay:not(.selected) .resize-handle {
+    display: none;
+}
+
+/* Canvas Status Bar */
+.canvas-status-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 15px;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* Right Panel */
+.visual-editor-right-panel {
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-secondary);
+    overflow: hidden;
+}
+
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.panel-header h4 {
+    font-size: 13px;
+    color: var(--text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.panel-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* Properties Panel */
+.properties-panel {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.properties-content {
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.property-row {
+    margin-bottom: 12px;
+}
+
+.property-row label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.property-row input,
+.property-row select {
+    width: 100%;
+    padding: 6px 10px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.property-row input:focus,
+.property-row select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.property-row-inline {
+    display: flex;
+    gap: 10px;
+}
+
+.property-row-inline .property-row {
+    flex: 1;
+}
+
+/* Layers Panel */
+.layers-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.layers-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.layer-item:hover {
+    border-color: var(--primary-color);
+}
+
+.layer-item.selected {
+    background-color: rgba(229, 160, 13, 0.15);
+    border-color: var(--primary-color);
+}
+
+.layer-visibility {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.layer-visibility:hover {
+    opacity: 1;
+}
+
+.layer-visibility.hidden {
+    opacity: 0.3;
+}
+
+.layer-icon {
+    font-size: 14px;
+}
+
+.layer-name {
+    flex: 1;
+    font-size: 12px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.layer-type {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.layer-delete {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.layer-item:hover .layer-delete {
+    opacity: 1;
+}
+
+.layer-delete:hover {
+    color: var(--danger-color);
+}
+
+/* YAML Editor Panel */
+.yaml-editor-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+.yaml-editor {
+    flex: 1;
+    width: 100%;
+    min-height: 150px;
+    background-color: #0d0d1a;
+    color: #a0d8b0;
+    border: none;
+    padding: 15px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    resize: none;
+}
+
+.yaml-editor:focus {
+    outline: none;
+}
+
+.yaml-status {
+    padding: 6px 15px;
+    background-color: var(--bg-tertiary);
+    border-top: 1px solid var(--border-color);
+    font-size: 11px;
+}
+
+.yaml-status .status-text {
+    color: var(--text-muted);
+}
+
+.yaml-status.error .status-text {
+    color: var(--danger-color);
+}
+
+.yaml-status.success .status-text {
+    color: var(--success-color);
+}
+
+/* Add Overlay Dialog */
+.add-overlay-modal-content {
+    width: 500px;
+    max-width: 95vw;
+}
+
+.add-overlay-content {
+    padding: 20px;
+}
+
+.add-overlay-types {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.add-overlay-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 15px;
+    background-color: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.add-overlay-type-btn:hover {
+    border-color: var(--primary-color);
+    background-color: rgba(229, 160, 13, 0.05);
+}
+
+.add-overlay-type-btn.active {
+    border-color: var(--primary-color);
+    background-color: rgba(229, 160, 13, 0.15);
+}
+
+.add-overlay-type-btn .type-icon {
+    font-size: 28px;
+}
+
+.add-overlay-type-btn .type-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.add-overlay-type-btn .type-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.add-overlay-form {
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* ============================================================================
+   Improved Overlays Tab Layout - Reduced Scrolling
+   ============================================================================ */
+
+.overlays-panel {
+    max-width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto 1fr auto;
+    gap: 20px;
+    height: calc(100vh - 200px);
+    min-height: 600px;
+}
+
+/* Full width sections */
+.overlay-source-section {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.overlays-panel > h2,
+.overlays-panel > .section-desc {
+    grid-column: 1 / -1;
+}
+
+/* Left column sections */
+.overlay-groups-section,
+.overlay-list-section {
+    grid-column: 1;
+    margin-bottom: 0;
+    max-height: 350px;
+    display: flex;
+    flex-direction: column;
+}
+
+.overlay-list-section .overlay-list {
+    flex: 1;
+    max-height: none;
+}
+
+/* Right column sections */
+.poster-source-section {
+    grid-column: 2;
+    grid-row: 2 / 4;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.poster-source-section .media-results {
+    flex: 1;
+    max-height: none;
+}
+
+/* Preview section - full width at bottom */
+.preview-section {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.preview-section .preview-canvas-container {
+    max-height: 400px;
+    overflow: hidden;
+}
+
+.preview-section .preview-canvas {
+    min-height: 300px;
+}
+
+.preview-section .preview-canvas img {
+    max-height: 350px;
+}
+
+/* Overlay details - floats beside preview */
+.overlay-details-section {
+    position: absolute;
+    right: 20px;
+    bottom: 140px;
+    width: 300px;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* Collapsible sections at bottom */
+.overlay-images-section,
+.visual-editor-section,
+.template-vars-section {
+    grid-column: 1 / -1;
+}
+
+/* Make collapsed details not take up grid space when at bottom */
+.overlay-images-section,
+.visual-editor-section {
+    margin-top: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .overlays-panel {
+        grid-template-columns: 1fr;
+        height: auto;
+    }
+
+    .overlay-groups-section,
+    .overlay-list-section,
+    .poster-source-section {
+        grid-column: 1;
+    }
+
+    .poster-source-section {
+        grid-row: auto;
+    }
+
+    .overlay-details-section {
+        position: static;
+        width: auto;
+    }
+}
+

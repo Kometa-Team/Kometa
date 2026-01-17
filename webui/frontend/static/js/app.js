@@ -1708,3 +1708,992 @@ window.removeSelectedOverlay = removeSelectedOverlay;
 window.selectMediaItem = selectMediaItem;
 window.filterByGroup = filterByGroup;
 window.copyImagePath = copyImagePath;
+
+// ============================================================================
+// Visual Overlay Editor
+// ============================================================================
+
+const visualEditor = {
+    // State
+    isOpen: false,
+    zoom: 1,
+    snapToGrid: true,
+    gridSize: 25,
+    canvasWidth: 1000,
+    canvasHeight: 1500,
+    displayScale: 0.5,  // Display scale (canvas shows at 500x750 by default)
+    selectedOverlayIndex: null,
+    overlays: [],  // Working copy of overlays for editing
+    undoStack: [],
+    redoStack: [],
+    isDragging: false,
+    isResizing: false,
+    dragStart: { x: 0, y: 0 },
+    dragOffset: { x: 0, y: 0 },
+    resizeHandle: null,
+    resizeStart: { x: 0, y: 0, width: 0, height: 0 },
+
+    // Elements (cached after init)
+    elements: null,
+
+    init() {
+        this.cacheElements();
+        this.bindEvents();
+    },
+
+    cacheElements() {
+        this.elements = {
+            modal: document.getElementById('visual-editor-modal'),
+            canvas: document.getElementById('visual-canvas'),
+            canvasPoster: document.getElementById('canvas-poster'),
+            canvasWrapper: document.getElementById('visual-canvas-wrapper'),
+            canvasGrid: document.getElementById('canvas-grid'),
+            layersList: document.getElementById('layers-list'),
+            propertiesContent: document.getElementById('properties-content'),
+            yamlEditor: document.getElementById('yaml-editor'),
+            yamlStatus: document.getElementById('yaml-status'),
+            mousePosition: document.getElementById('mouse-position'),
+            selectedOverlayInfo: document.getElementById('selected-overlay-info'),
+            zoomLevel: document.getElementById('zoom-level'),
+            canvasDimensions: document.getElementById('canvas-dimensions'),
+            snapToGrid: document.getElementById('snap-to-grid'),
+            gridSize: document.getElementById('grid-size'),
+            addOverlayDialog: document.getElementById('add-overlay-dialog')
+        };
+    },
+
+    bindEvents() {
+        // Open/close editor
+        const btnOpen = document.getElementById('btn-open-visual-editor');
+        const btnClose = document.getElementById('btn-close-visual-editor');
+        if (btnOpen) btnOpen.addEventListener('click', () => this.open());
+        if (btnClose) btnClose.addEventListener('click', () => this.close());
+
+        // Zoom controls
+        const btnZoomIn = document.getElementById('btn-zoom-in');
+        const btnZoomOut = document.getElementById('btn-zoom-out');
+        const btnZoomFit = document.getElementById('btn-zoom-fit');
+        if (btnZoomIn) btnZoomIn.addEventListener('click', () => this.setZoom(this.zoom + 0.1));
+        if (btnZoomOut) btnZoomOut.addEventListener('click', () => this.setZoom(this.zoom - 0.1));
+        if (btnZoomFit) btnZoomFit.addEventListener('click', () => this.fitToView());
+
+        // Grid controls
+        if (this.elements.snapToGrid) {
+            this.elements.snapToGrid.addEventListener('change', (e) => {
+                this.snapToGrid = e.target.checked;
+                this.elements.canvasGrid.classList.toggle('hidden', !this.snapToGrid);
+            });
+        }
+        if (this.elements.gridSize) {
+            this.elements.gridSize.addEventListener('change', (e) => {
+                this.gridSize = parseInt(e.target.value);
+                this.updateGridDisplay();
+            });
+        }
+
+        // Canvas mouse events
+        if (this.elements.canvasWrapper) {
+            this.elements.canvasWrapper.addEventListener('mousemove', (e) => this.onCanvasMouseMove(e));
+            this.elements.canvasWrapper.addEventListener('mouseup', (e) => this.onCanvasMouseUp(e));
+            this.elements.canvasWrapper.addEventListener('mouseleave', (e) => this.onCanvasMouseUp(e));
+        }
+        if (this.elements.canvasPoster) {
+            this.elements.canvasPoster.addEventListener('click', (e) => this.onCanvasClick(e));
+        }
+
+        // YAML editor
+        if (this.elements.yamlEditor) {
+            this.elements.yamlEditor.addEventListener('input', () => this.onYamlInput());
+        }
+
+        // Copy and Apply YAML buttons
+        const btnCopyYaml = document.getElementById('btn-copy-yaml');
+        const btnApplyYaml = document.getElementById('btn-apply-yaml');
+        if (btnCopyYaml) btnCopyYaml.addEventListener('click', () => this.copyYamlToClipboard());
+        if (btnApplyYaml) btnApplyYaml.addEventListener('click', () => this.applyYamlChanges());
+
+        // Undo/Redo
+        const btnUndo = document.getElementById('btn-editor-undo');
+        const btnRedo = document.getElementById('btn-editor-redo');
+        if (btnUndo) btnUndo.addEventListener('click', () => this.undo());
+        if (btnRedo) btnRedo.addEventListener('click', () => this.redo());
+
+        // Add overlay buttons
+        const btnAddOverlay = document.getElementById('btn-add-overlay');
+        const btnAddOverlayLayer = document.getElementById('btn-add-overlay-layer');
+        const btnCloseAddOverlay = document.getElementById('btn-close-add-overlay');
+        if (btnAddOverlay) btnAddOverlay.addEventListener('click', () => this.openAddOverlayDialog());
+        if (btnAddOverlayLayer) btnAddOverlayLayer.addEventListener('click', () => this.openAddOverlayDialog());
+        if (btnCloseAddOverlay) btnCloseAddOverlay.addEventListener('click', () => this.closeAddOverlayDialog());
+
+        // Add overlay type selection
+        document.querySelectorAll('.add-overlay-type-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.selectOverlayType(e.currentTarget.dataset.type));
+        });
+
+        // Create overlay buttons
+        const btnCreateImage = document.getElementById('btn-create-image-overlay');
+        const btnCreateText = document.getElementById('btn-create-text-overlay');
+        const btnCreateBackdrop = document.getElementById('btn-create-backdrop-overlay');
+        if (btnCreateImage) btnCreateImage.addEventListener('click', () => this.createImageOverlay());
+        if (btnCreateText) btnCreateText.addEventListener('click', () => this.createTextOverlay());
+        if (btnCreateBackdrop) btnCreateBackdrop.addEventListener('click', () => this.createBackdropOverlay());
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (!this.isOpen) return;
+            if (e.key === 'Delete' && this.selectedOverlayIndex !== null) {
+                this.deleteSelectedOverlay();
+            }
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                this.undo();
+            }
+            if (e.ctrlKey && e.key === 'y') {
+                e.preventDefault();
+                this.redo();
+            }
+        });
+
+        // Export YAML button
+        const btnExportYaml = document.getElementById('btn-export-yaml');
+        if (btnExportYaml) btnExportYaml.addEventListener('click', () => this.exportYaml());
+    },
+
+    open() {
+        if (!this.elements.modal) return;
+
+        // Copy current overlays to working set
+        this.overlays = JSON.parse(JSON.stringify(state.selectedOverlays));
+        this.selectedOverlayIndex = null;
+        this.undoStack = [];
+        this.redoStack = [];
+
+        // Show modal
+        this.elements.modal.classList.remove('hidden');
+        this.isOpen = true;
+
+        // Set canvas size based on selected canvas type
+        const canvasType = elements.canvasType?.value || 'portrait';
+        if (canvasType === 'portrait') {
+            this.canvasWidth = 1000;
+            this.canvasHeight = 1500;
+        } else if (canvasType === 'landscape') {
+            this.canvasWidth = 1920;
+            this.canvasHeight = 1080;
+        } else if (canvasType === 'square') {
+            this.canvasWidth = 1000;
+            this.canvasHeight = 1000;
+        }
+
+        // Update canvas display
+        this.updateCanvasSize();
+        this.fitToView();
+
+        // Load poster background if available
+        this.loadPosterBackground();
+
+        // Render overlays and UI
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+
+        // Enable toolbar buttons
+        const btnAddOverlay = document.getElementById('btn-add-overlay');
+        const btnExportYaml = document.getElementById('btn-export-yaml');
+        if (btnAddOverlay) btnAddOverlay.disabled = false;
+        if (btnExportYaml) btnExportYaml.disabled = false;
+    },
+
+    close() {
+        if (!this.elements.modal) return;
+        this.elements.modal.classList.add('hidden');
+        this.isOpen = false;
+
+        // Sync changes back to selected overlays
+        state.selectedOverlays = JSON.parse(JSON.stringify(this.overlays));
+        renderSelectedOverlays();
+    },
+
+    updateCanvasSize() {
+        if (!this.elements.canvasPoster) return;
+
+        const displayWidth = this.canvasWidth * this.displayScale;
+        const displayHeight = this.canvasHeight * this.displayScale;
+
+        this.elements.canvasPoster.style.width = `${displayWidth}px`;
+        this.elements.canvasPoster.style.height = `${displayHeight}px`;
+
+        if (this.elements.canvasDimensions) {
+            this.elements.canvasDimensions.textContent = `${this.canvasWidth} × ${this.canvasHeight}`;
+        }
+
+        this.updateGridDisplay();
+    },
+
+    updateGridDisplay() {
+        if (!this.elements.canvasGrid) return;
+        const gridSizeDisplay = this.gridSize * this.displayScale;
+        this.elements.canvasGrid.style.backgroundSize = `${gridSizeDisplay}px ${gridSizeDisplay}px`;
+    },
+
+    setZoom(level) {
+        this.zoom = Math.max(0.25, Math.min(2, level));
+        if (this.elements.canvas) {
+            this.elements.canvas.style.transform = `scale(${this.zoom})`;
+        }
+        if (this.elements.zoomLevel) {
+            this.elements.zoomLevel.textContent = `${Math.round(this.zoom * 100)}%`;
+        }
+    },
+
+    fitToView() {
+        if (!this.elements.canvasWrapper || !this.elements.canvasPoster) return;
+
+        const wrapperRect = this.elements.canvasWrapper.getBoundingClientRect();
+        const posterWidth = this.canvasWidth * this.displayScale;
+        const posterHeight = this.canvasHeight * this.displayScale;
+
+        const scaleX = (wrapperRect.width - 40) / posterWidth;
+        const scaleY = (wrapperRect.height - 40) / posterHeight;
+        const fitZoom = Math.min(scaleX, scaleY, 1);
+
+        this.setZoom(fitZoom);
+    },
+
+    loadPosterBackground() {
+        if (!this.elements.canvasPoster) return;
+
+        // Use current preview image if available
+        if (state.currentPreviewImage) {
+            this.elements.canvasPoster.style.backgroundImage = `url(${state.currentPreviewImage})`;
+        } else {
+            // Create a sample gradient background
+            this.elements.canvasPoster.style.backgroundImage = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+        }
+    },
+
+    // Overlay rendering
+    renderOverlays() {
+        if (!this.elements.canvasPoster) return;
+
+        // Clear existing overlay elements (but keep grid)
+        const existingOverlays = this.elements.canvasPoster.querySelectorAll('.canvas-overlay');
+        existingOverlays.forEach(el => el.remove());
+
+        // Render each overlay
+        this.overlays.forEach((overlay, index) => {
+            const el = this.createOverlayElement(overlay, index);
+            this.elements.canvasPoster.appendChild(el);
+        });
+    },
+
+    createOverlayElement(overlay, index) {
+        const el = document.createElement('div');
+        el.className = 'canvas-overlay';
+        el.dataset.index = index;
+
+        if (index === this.selectedOverlayIndex) {
+            el.classList.add('selected');
+        }
+
+        // Calculate position and size
+        const pos = this.calculateOverlayPosition(overlay);
+        el.style.left = `${pos.x * this.displayScale}px`;
+        el.style.top = `${pos.y * this.displayScale}px`;
+        el.style.width = `${pos.width * this.displayScale}px`;
+        el.style.height = `${pos.height * this.displayScale}px`;
+
+        // Set content based on type
+        if (overlay.type === 'text') {
+            el.innerHTML = `<span style="color: ${overlay.font_color || '#fff'}; font-size: ${(overlay.font_size || 50) * this.displayScale * 0.5}px;">${overlay.text_content || overlay.name}</span>`;
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+        } else if (overlay.type === 'backdrop') {
+            el.style.backgroundColor = overlay.back_color || 'rgba(0,0,0,0.7)';
+        } else {
+            // Image overlay - show placeholder or actual image
+            if (overlay.default) {
+                const imgUrl = `/overlay-images/${overlay.default}.png`;
+                el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<span style=\\'color:#666;font-size:12px;\\'>${overlay.name}</span>'">`;
+            } else {
+                el.innerHTML = `<span style="color:#666;font-size:12px;padding:5px;">${overlay.name}</span>`;
+            }
+            el.style.display = 'flex';
+            el.style.alignItems = 'center';
+            el.style.justifyContent = 'center';
+            el.style.backgroundColor = 'rgba(50,50,50,0.5)';
+        }
+
+        // Add resize handles
+        ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'].forEach(pos => {
+            const handle = document.createElement('div');
+            handle.className = `resize-handle ${pos}`;
+            handle.dataset.handle = pos;
+            el.appendChild(handle);
+        });
+
+        // Event listeners
+        el.addEventListener('mousedown', (e) => this.onOverlayMouseDown(e, index));
+
+        return el;
+    },
+
+    calculateOverlayPosition(overlay) {
+        // Default size for overlays
+        let width = overlay.back_width || 200;
+        let height = overlay.back_height || 100;
+
+        // Calculate position based on alignment and offset
+        const hAlign = overlay.horizontal_align || 'center';
+        const vAlign = overlay.vertical_align || 'top';
+        const hOffset = parseInt(overlay.horizontal_offset) || 0;
+        const vOffset = parseInt(overlay.vertical_offset) || 0;
+
+        let x = hOffset;
+        let y = vOffset;
+
+        // Horizontal alignment
+        if (hAlign === 'center') {
+            x = (this.canvasWidth - width) / 2 + hOffset;
+        } else if (hAlign === 'right') {
+            x = this.canvasWidth - width - hOffset;
+        } else {
+            x = hOffset;
+        }
+
+        // Vertical alignment
+        if (vAlign === 'center') {
+            y = (this.canvasHeight - height) / 2 + vOffset;
+        } else if (vAlign === 'bottom') {
+            y = this.canvasHeight - height - vOffset;
+        } else {
+            y = vOffset;
+        }
+
+        return { x, y, width, height };
+    },
+
+    // Mouse event handlers
+    onOverlayMouseDown(e, index) {
+        e.stopPropagation();
+
+        // Check if clicking resize handle
+        if (e.target.classList.contains('resize-handle')) {
+            this.startResize(e, index, e.target.dataset.handle);
+            return;
+        }
+
+        // Select overlay
+        this.selectOverlay(index);
+
+        // Start drag
+        this.isDragging = true;
+        const overlayEl = e.currentTarget;
+        const rect = overlayEl.getBoundingClientRect();
+        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.dragOffset = {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+
+        overlayEl.classList.add('dragging');
+    },
+
+    onCanvasMouseMove(e) {
+        // Update mouse position display
+        if (this.elements.mousePosition) {
+            const rect = this.elements.canvasPoster?.getBoundingClientRect();
+            if (rect) {
+                const x = Math.round((e.clientX - rect.left) / this.displayScale / this.zoom);
+                const y = Math.round((e.clientY - rect.top) / this.displayScale / this.zoom);
+                this.elements.mousePosition.textContent = `X: ${x}, Y: ${y}`;
+            }
+        }
+
+        if (this.isDragging && this.selectedOverlayIndex !== null) {
+            this.handleDrag(e);
+        }
+
+        if (this.isResizing && this.selectedOverlayIndex !== null) {
+            this.handleResize(e);
+        }
+    },
+
+    onCanvasMouseUp(e) {
+        if (this.isDragging) {
+            this.isDragging = false;
+            document.querySelectorAll('.canvas-overlay.dragging').forEach(el => {
+                el.classList.remove('dragging');
+            });
+            this.generateYaml();
+        }
+
+        if (this.isResizing) {
+            this.isResizing = false;
+            this.generateYaml();
+        }
+    },
+
+    onCanvasClick(e) {
+        // Deselect if clicking on canvas background
+        if (e.target === this.elements.canvasPoster || e.target === this.elements.canvasGrid) {
+            this.selectOverlay(null);
+        }
+    },
+
+    handleDrag(e) {
+        if (this.selectedOverlayIndex === null) return;
+
+        const overlay = this.overlays[this.selectedOverlayIndex];
+        const posterRect = this.elements.canvasPoster.getBoundingClientRect();
+
+        // Calculate new position in canvas coordinates
+        let newX = (e.clientX - posterRect.left - this.dragOffset.x) / this.displayScale / this.zoom;
+        let newY = (e.clientY - posterRect.top - this.dragOffset.y) / this.displayScale / this.zoom;
+
+        // Snap to grid
+        if (this.snapToGrid) {
+            newX = Math.round(newX / this.gridSize) * this.gridSize;
+            newY = Math.round(newY / this.gridSize) * this.gridSize;
+        }
+
+        // Update overlay position (store as offset from top-left for simplicity)
+        overlay.horizontal_align = 'left';
+        overlay.vertical_align = 'top';
+        overlay.horizontal_offset = Math.max(0, Math.round(newX));
+        overlay.vertical_offset = Math.max(0, Math.round(newY));
+
+        // Update visual
+        this.renderOverlays();
+        this.renderProperties();
+    },
+
+    startResize(e, index, handle) {
+        e.stopPropagation();
+        this.isResizing = true;
+        this.resizeHandle = handle;
+        this.selectOverlay(index);
+
+        const overlayEl = this.elements.canvasPoster.querySelector(`[data-index="${index}"]`);
+        const rect = overlayEl.getBoundingClientRect();
+
+        this.resizeStart = {
+            x: e.clientX,
+            y: e.clientY,
+            width: rect.width / this.zoom,
+            height: rect.height / this.zoom,
+            left: rect.left,
+            top: rect.top
+        };
+    },
+
+    handleResize(e) {
+        if (this.selectedOverlayIndex === null) return;
+
+        const overlay = this.overlays[this.selectedOverlayIndex];
+        const dx = (e.clientX - this.resizeStart.x) / this.zoom;
+        const dy = (e.clientY - this.resizeStart.y) / this.zoom;
+
+        let newWidth = this.resizeStart.width / this.displayScale;
+        let newHeight = this.resizeStart.height / this.displayScale;
+
+        // Adjust based on handle
+        if (this.resizeHandle.includes('e')) newWidth += dx / this.displayScale;
+        if (this.resizeHandle.includes('w')) newWidth -= dx / this.displayScale;
+        if (this.resizeHandle.includes('s')) newHeight += dy / this.displayScale;
+        if (this.resizeHandle.includes('n')) newHeight -= dy / this.displayScale;
+
+        // Snap to grid
+        if (this.snapToGrid) {
+            newWidth = Math.round(newWidth / this.gridSize) * this.gridSize;
+            newHeight = Math.round(newHeight / this.gridSize) * this.gridSize;
+        }
+
+        // Minimum size
+        newWidth = Math.max(20, newWidth);
+        newHeight = Math.max(20, newHeight);
+
+        // Update overlay size
+        overlay.back_width = Math.round(newWidth);
+        overlay.back_height = Math.round(newHeight);
+
+        // Update visual
+        this.renderOverlays();
+        this.renderProperties();
+    },
+
+    selectOverlay(index) {
+        this.selectedOverlayIndex = index;
+
+        // Update canvas overlay selection
+        this.elements.canvasPoster?.querySelectorAll('.canvas-overlay').forEach((el, i) => {
+            el.classList.toggle('selected', i === index);
+        });
+
+        // Update layers list selection
+        this.renderLayersList();
+
+        // Update properties panel
+        this.renderProperties();
+
+        // Update status
+        if (this.elements.selectedOverlayInfo) {
+            if (index !== null && this.overlays[index]) {
+                this.elements.selectedOverlayInfo.textContent = `Selected: ${this.overlays[index].name}`;
+            } else {
+                this.elements.selectedOverlayInfo.textContent = 'No overlay selected';
+            }
+        }
+    },
+
+    // Layers list
+    renderLayersList() {
+        if (!this.elements.layersList) return;
+
+        if (this.overlays.length === 0) {
+            this.elements.layersList.innerHTML = '<p class="placeholder-text">No overlays loaded</p>';
+            return;
+        }
+
+        this.elements.layersList.innerHTML = this.overlays.map((overlay, index) => {
+            const isSelected = index === this.selectedOverlayIndex;
+            const typeIcon = overlay.type === 'text' ? '📝' : overlay.type === 'backdrop' ? '▬' : '🖼️';
+
+            return `
+                <div class="layer-item ${isSelected ? 'selected' : ''}" data-index="${index}" onclick="visualEditor.selectOverlay(${index})">
+                    <span class="layer-visibility" onclick="event.stopPropagation(); visualEditor.toggleLayerVisibility(${index})">👁</span>
+                    <span class="layer-icon">${typeIcon}</span>
+                    <span class="layer-name">${overlay.name}</span>
+                    <span class="layer-type">${overlay.type || 'image'}</span>
+                    <span class="layer-delete" onclick="event.stopPropagation(); visualEditor.deleteOverlay(${index})">✕</span>
+                </div>
+            `;
+        }).join('');
+    },
+
+    toggleLayerVisibility(index) {
+        const overlay = this.overlays[index];
+        overlay._hidden = !overlay._hidden;
+        this.renderOverlays();
+        this.renderLayersList();
+    },
+
+    deleteOverlay(index) {
+        if (confirm(`Delete overlay "${this.overlays[index].name}"?`)) {
+            this.saveUndoState();
+            this.overlays.splice(index, 1);
+            if (this.selectedOverlayIndex === index) {
+                this.selectedOverlayIndex = null;
+            } else if (this.selectedOverlayIndex > index) {
+                this.selectedOverlayIndex--;
+            }
+            this.renderOverlays();
+            this.renderLayersList();
+            this.renderProperties();
+            this.generateYaml();
+        }
+    },
+
+    deleteSelectedOverlay() {
+        if (this.selectedOverlayIndex !== null) {
+            this.deleteOverlay(this.selectedOverlayIndex);
+        }
+    },
+
+    // Properties panel
+    renderProperties() {
+        if (!this.elements.propertiesContent) return;
+
+        if (this.selectedOverlayIndex === null) {
+            this.elements.propertiesContent.innerHTML = '<p class="placeholder-text">Select an overlay to edit its properties</p>';
+            return;
+        }
+
+        const overlay = this.overlays[this.selectedOverlayIndex];
+
+        this.elements.propertiesContent.innerHTML = `
+            <div class="property-row">
+                <label>Name</label>
+                <input type="text" value="${overlay.name}" onchange="visualEditor.updateProperty('name', this.value)">
+            </div>
+            <div class="property-row-inline">
+                <div class="property-row">
+                    <label>H Align</label>
+                    <select onchange="visualEditor.updateProperty('horizontal_align', this.value)">
+                        <option value="left" ${overlay.horizontal_align === 'left' ? 'selected' : ''}>Left</option>
+                        <option value="center" ${overlay.horizontal_align === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="right" ${overlay.horizontal_align === 'right' ? 'selected' : ''}>Right</option>
+                    </select>
+                </div>
+                <div class="property-row">
+                    <label>V Align</label>
+                    <select onchange="visualEditor.updateProperty('vertical_align', this.value)">
+                        <option value="top" ${overlay.vertical_align === 'top' ? 'selected' : ''}>Top</option>
+                        <option value="center" ${overlay.vertical_align === 'center' ? 'selected' : ''}>Center</option>
+                        <option value="bottom" ${overlay.vertical_align === 'bottom' ? 'selected' : ''}>Bottom</option>
+                    </select>
+                </div>
+            </div>
+            <div class="property-row-inline">
+                <div class="property-row">
+                    <label>H Offset</label>
+                    <input type="number" value="${overlay.horizontal_offset || 0}" onchange="visualEditor.updateProperty('horizontal_offset', parseInt(this.value))">
+                </div>
+                <div class="property-row">
+                    <label>V Offset</label>
+                    <input type="number" value="${overlay.vertical_offset || 0}" onchange="visualEditor.updateProperty('vertical_offset', parseInt(this.value))">
+                </div>
+            </div>
+            <div class="property-row-inline">
+                <div class="property-row">
+                    <label>Width</label>
+                    <input type="number" value="${overlay.back_width || 200}" onchange="visualEditor.updateProperty('back_width', parseInt(this.value))">
+                </div>
+                <div class="property-row">
+                    <label>Height</label>
+                    <input type="number" value="${overlay.back_height || 100}" onchange="visualEditor.updateProperty('back_height', parseInt(this.value))">
+                </div>
+            </div>
+            ${overlay.type === 'text' ? `
+                <div class="property-row">
+                    <label>Text</label>
+                    <input type="text" value="${overlay.text_content || ''}" onchange="visualEditor.updateProperty('text_content', this.value)">
+                </div>
+                <div class="property-row">
+                    <label>Font Size</label>
+                    <input type="number" value="${overlay.font_size || 50}" onchange="visualEditor.updateProperty('font_size', parseInt(this.value))">
+                </div>
+                <div class="property-row">
+                    <label>Font Color</label>
+                    <input type="color" value="${overlay.font_color || '#FFFFFF'}" onchange="visualEditor.updateProperty('font_color', this.value)">
+                </div>
+            ` : ''}
+            ${overlay.type === 'backdrop' ? `
+                <div class="property-row">
+                    <label>Back Color</label>
+                    <input type="text" value="${overlay.back_color || '#000000AA'}" onchange="visualEditor.updateProperty('back_color', this.value)">
+                </div>
+            ` : ''}
+            <div class="property-row">
+                <label>Group</label>
+                <input type="text" value="${overlay.group || ''}" onchange="visualEditor.updateProperty('group', this.value)">
+            </div>
+            <div class="property-row">
+                <label>Weight</label>
+                <input type="number" value="${overlay.weight || ''}" onchange="visualEditor.updateProperty('weight', parseInt(this.value) || null)">
+            </div>
+        `;
+    },
+
+    updateProperty(prop, value) {
+        if (this.selectedOverlayIndex === null) return;
+
+        this.saveUndoState();
+        this.overlays[this.selectedOverlayIndex][prop] = value;
+
+        this.renderOverlays();
+        this.generateYaml();
+    },
+
+    // YAML generation and parsing
+    generateYaml() {
+        if (!this.elements.yamlEditor) return;
+
+        let yaml = 'overlays:\n';
+
+        this.overlays.forEach(overlay => {
+            yaml += `  ${overlay.name}:\n`;
+
+            // Overlay image/text settings
+            if (overlay.type === 'text') {
+                yaml += `    overlay:\n`;
+                yaml += `      name: text(${overlay.text_content || overlay.name})\n`;
+                if (overlay.font) yaml += `      font: ${overlay.font}\n`;
+                if (overlay.font_size) yaml += `      font_size: ${overlay.font_size}\n`;
+                if (overlay.font_color) yaml += `      font_color: "${overlay.font_color}"\n`;
+            } else if (overlay.type === 'backdrop') {
+                yaml += `    overlay:\n`;
+                yaml += `      name: backdrop\n`;
+                if (overlay.back_color) yaml += `      back_color: "${overlay.back_color}"\n`;
+                if (overlay.back_width) yaml += `      back_width: ${overlay.back_width}\n`;
+                if (overlay.back_height) yaml += `      back_height: ${overlay.back_height}\n`;
+            } else {
+                yaml += `    overlay:\n`;
+                yaml += `      name: ${overlay.name}\n`;
+                if (overlay.default) yaml += `      default: ${overlay.default}\n`;
+                if (overlay.file) yaml += `      file: ${overlay.file}\n`;
+            }
+
+            // Position settings
+            if (overlay.horizontal_align) yaml += `      horizontal_align: ${overlay.horizontal_align}\n`;
+            if (overlay.vertical_align) yaml += `      vertical_align: ${overlay.vertical_align}\n`;
+            if (overlay.horizontal_offset) yaml += `      horizontal_offset: ${overlay.horizontal_offset}\n`;
+            if (overlay.vertical_offset) yaml += `      vertical_offset: ${overlay.vertical_offset}\n`;
+
+            // Group and weight
+            if (overlay.group) yaml += `      group: ${overlay.group}\n`;
+            if (overlay.weight) yaml += `      weight: ${overlay.weight}\n`;
+
+            // Plex all filter (basic)
+            yaml += `    plex_all: true\n`;
+        });
+
+        this.elements.yamlEditor.value = yaml;
+        this.setYamlStatus('success', 'YAML updated');
+    },
+
+    onYamlInput() {
+        // Debounce YAML parsing
+        clearTimeout(this._yamlDebounce);
+        this._yamlDebounce = setTimeout(() => this.parseYaml(), 500);
+    },
+
+    parseYaml() {
+        // This is a simplified parser - in production you'd use a proper YAML library
+        const yaml = this.elements.yamlEditor.value;
+        // For now, just validate basic structure
+        if (yaml.includes('overlays:')) {
+            this.setYamlStatus('success', 'Valid YAML structure');
+        } else {
+            this.setYamlStatus('error', 'Invalid YAML structure');
+        }
+    },
+
+    applyYamlChanges() {
+        // In a full implementation, this would parse the YAML and update overlays
+        this.setYamlStatus('success', 'Changes applied');
+        this.renderOverlays();
+        this.renderLayersList();
+    },
+
+    setYamlStatus(type, message) {
+        if (!this.elements.yamlStatus) return;
+        this.elements.yamlStatus.className = `yaml-status ${type}`;
+        this.elements.yamlStatus.innerHTML = `<span class="status-text">${message}</span>`;
+    },
+
+    copyYamlToClipboard() {
+        if (!this.elements.yamlEditor) return;
+        navigator.clipboard.writeText(this.elements.yamlEditor.value).then(() => {
+            this.setYamlStatus('success', 'Copied to clipboard!');
+        });
+    },
+
+    exportYaml() {
+        this.generateYaml();
+        const yaml = this.elements.yamlEditor?.value || '';
+
+        // Create download
+        const blob = new Blob([yaml], { type: 'text/yaml' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'overlays.yml';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    },
+
+    // Undo/Redo
+    saveUndoState() {
+        this.undoStack.push(JSON.stringify(this.overlays));
+        this.redoStack = [];
+        this.updateUndoRedoButtons();
+    },
+
+    undo() {
+        if (this.undoStack.length === 0) return;
+
+        this.redoStack.push(JSON.stringify(this.overlays));
+        this.overlays = JSON.parse(this.undoStack.pop());
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.renderProperties();
+        this.generateYaml();
+        this.updateUndoRedoButtons();
+    },
+
+    redo() {
+        if (this.redoStack.length === 0) return;
+
+        this.undoStack.push(JSON.stringify(this.overlays));
+        this.overlays = JSON.parse(this.redoStack.pop());
+
+        this.renderOverlays();
+        this.renderLayersList();
+        this.renderProperties();
+        this.generateYaml();
+        this.updateUndoRedoButtons();
+    },
+
+    updateUndoRedoButtons() {
+        const btnUndo = document.getElementById('btn-editor-undo');
+        const btnRedo = document.getElementById('btn-editor-redo');
+        if (btnUndo) btnUndo.disabled = this.undoStack.length === 0;
+        if (btnRedo) btnRedo.disabled = this.redoStack.length === 0;
+    },
+
+    // Add overlay dialog
+    openAddOverlayDialog() {
+        if (this.elements.addOverlayDialog) {
+            this.elements.addOverlayDialog.classList.remove('hidden');
+            // Reset forms
+            document.querySelectorAll('.add-overlay-form').forEach(f => f.classList.add('hidden'));
+            document.querySelectorAll('.add-overlay-type-btn').forEach(b => b.classList.remove('active'));
+        }
+    },
+
+    closeAddOverlayDialog() {
+        if (this.elements.addOverlayDialog) {
+            this.elements.addOverlayDialog.classList.add('hidden');
+        }
+    },
+
+    selectOverlayType(type) {
+        // Update button states
+        document.querySelectorAll('.add-overlay-type-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.type === type);
+        });
+
+        // Show appropriate form
+        document.querySelectorAll('.add-overlay-form').forEach(f => f.classList.add('hidden'));
+        const formId = `form-${type}-overlay`;
+        const form = document.getElementById(formId);
+        if (form) form.classList.remove('hidden');
+
+        // Populate image dropdown if needed
+        if (type === 'image') {
+            this.populateImageDropdown();
+        }
+    },
+
+    populateImageDropdown() {
+        const select = document.getElementById('new-overlay-default');
+        if (!select || Object.keys(state.availableImages).length === 0) return;
+
+        select.innerHTML = '<option value="">-- Select image --</option>';
+        Object.entries(state.availableImages).forEach(([category, images]) => {
+            const group = document.createElement('optgroup');
+            group.label = category;
+            images.forEach(img => {
+                const opt = document.createElement('option');
+                opt.value = img;
+                opt.textContent = img.split('/').pop();
+                group.appendChild(opt);
+            });
+            select.appendChild(group);
+        });
+    },
+
+    createImageOverlay() {
+        const name = document.getElementById('new-overlay-name')?.value || 'New Overlay';
+        const source = document.getElementById('new-overlay-image-source')?.value;
+        const defaultImg = document.getElementById('new-overlay-default')?.value;
+        const filePath = document.getElementById('new-overlay-file')?.value;
+
+        this.saveUndoState();
+
+        const newOverlay = {
+            name: name,
+            type: 'image',
+            horizontal_align: 'center',
+            vertical_align: 'top',
+            horizontal_offset: 0,
+            vertical_offset: 100,
+            back_width: 200,
+            back_height: 100
+        };
+
+        if (source === 'default' && defaultImg) {
+            newOverlay.default = defaultImg;
+        } else if (filePath) {
+            newOverlay.file = filePath;
+        }
+
+        this.overlays.push(newOverlay);
+        this.closeAddOverlayDialog();
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+        this.selectOverlay(this.overlays.length - 1);
+    },
+
+    createTextOverlay() {
+        const name = document.getElementById('new-text-name')?.value || 'Text Overlay';
+        const text = document.getElementById('new-text-content')?.value || 'Sample Text';
+        const font = document.getElementById('new-text-font')?.value;
+        const size = parseInt(document.getElementById('new-text-size')?.value) || 50;
+        const color = document.getElementById('new-text-color')?.value || '#FFFFFF';
+
+        this.saveUndoState();
+
+        const newOverlay = {
+            name: name,
+            type: 'text',
+            text_content: text,
+            font: font,
+            font_size: size,
+            font_color: color,
+            horizontal_align: 'center',
+            vertical_align: 'center',
+            horizontal_offset: 0,
+            vertical_offset: 0,
+            back_width: 300,
+            back_height: 80
+        };
+
+        this.overlays.push(newOverlay);
+        this.closeAddOverlayDialog();
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+        this.selectOverlay(this.overlays.length - 1);
+    },
+
+    createBackdropOverlay() {
+        const name = document.getElementById('new-backdrop-name')?.value || 'Backdrop';
+        const color = document.getElementById('new-backdrop-color')?.value || '#000000';
+        const opacity = parseInt(document.getElementById('new-backdrop-opacity')?.value) || 70;
+        const width = parseInt(document.getElementById('new-backdrop-width')?.value) || 200;
+        const height = parseInt(document.getElementById('new-backdrop-height')?.value) || 60;
+
+        // Convert hex color to rgba
+        const r = parseInt(color.slice(1, 3), 16);
+        const g = parseInt(color.slice(3, 5), 16);
+        const b = parseInt(color.slice(5, 7), 16);
+        const rgba = `rgba(${r},${g},${b},${opacity / 100})`;
+
+        this.saveUndoState();
+
+        const newOverlay = {
+            name: name,
+            type: 'backdrop',
+            back_color: rgba,
+            back_width: width,
+            back_height: height,
+            horizontal_align: 'center',
+            vertical_align: 'bottom',
+            horizontal_offset: 0,
+            vertical_offset: 50
+        };
+
+        this.overlays.push(newOverlay);
+        this.closeAddOverlayDialog();
+        this.renderOverlays();
+        this.renderLayersList();
+        this.generateYaml();
+        this.selectOverlay(this.overlays.length - 1);
+    }
+};
+
+// Initialize visual editor when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    visualEditor.init();
+});
+
+// Expose to global scope
+window.visualEditor = visualEditor;

@@ -339,8 +339,238 @@ libraries:
                         </div>
                     </details>
                 </div>
+
+                <!-- Visual Overlay Editor (new feature) -->
+                <div class="visual-editor-section">
+                    <h3>Visual Overlay Editor <span class="badge badge-beta">Beta</span></h3>
+                    <p class="section-hint">Visually edit overlay positions and export to YAML. Changes sync bidirectionally.</p>
+
+                    <div class="visual-editor-toolbar">
+                        <button id="btn-open-visual-editor" class="btn btn-primary">
+                            <span class="toolbar-icon">✏️</span> Open Visual Editor
+                        </button>
+                        <button id="btn-add-overlay" class="btn btn-secondary" disabled>
+                            <span class="toolbar-icon">➕</span> Add Overlay
+                        </button>
+                        <button id="btn-export-yaml" class="btn btn-secondary" disabled>
+                            <span class="toolbar-icon">📄</span> Export YAML
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
+
+        <!-- Visual Overlay Editor Modal -->
+        <div id="visual-editor-modal" class="modal hidden">
+            <div class="modal-content visual-editor-modal-content">
+                <div class="modal-header">
+                    <h2>Visual Overlay Editor</h2>
+                    <div class="modal-header-actions">
+                        <button id="btn-editor-undo" class="btn btn-secondary btn-small" disabled title="Undo">↶ Undo</button>
+                        <button id="btn-editor-redo" class="btn btn-secondary btn-small" disabled title="Redo">↷ Redo</button>
+                        <button id="btn-close-visual-editor" class="btn btn-secondary btn-small">✕ Close</button>
+                    </div>
+                </div>
+
+                <div class="visual-editor-container">
+                    <!-- Left Panel: Visual Canvas -->
+                    <div class="visual-editor-canvas-panel">
+                        <div class="canvas-toolbar">
+                            <div class="zoom-controls">
+                                <button id="btn-zoom-out" class="btn btn-small btn-icon" title="Zoom Out">−</button>
+                                <span id="zoom-level">100%</span>
+                                <button id="btn-zoom-in" class="btn btn-small btn-icon" title="Zoom In">+</button>
+                                <button id="btn-zoom-fit" class="btn btn-small btn-icon" title="Fit to View">⤢</button>
+                            </div>
+                            <div class="canvas-info">
+                                <span id="canvas-dimensions">1000 × 1500</span>
+                            </div>
+                            <div class="snap-controls">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="snap-to-grid" checked>
+                                    Snap to Grid
+                                </label>
+                                <select id="grid-size" class="filter-select">
+                                    <option value="10">10px</option>
+                                    <option value="25" selected>25px</option>
+                                    <option value="50">50px</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="visual-canvas-wrapper" id="visual-canvas-wrapper">
+                            <div class="visual-canvas" id="visual-canvas">
+                                <!-- Poster background will be rendered here -->
+                                <div class="canvas-poster" id="canvas-poster">
+                                    <div class="canvas-grid" id="canvas-grid"></div>
+                                    <!-- Overlay elements will be dynamically added here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="canvas-status-bar">
+                            <span id="mouse-position">X: 0, Y: 0</span>
+                            <span id="selected-overlay-info">No overlay selected</span>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: YAML Editor & Properties -->
+                    <div class="visual-editor-right-panel">
+                        <!-- Properties Panel -->
+                        <div class="properties-panel">
+                            <div class="panel-header">
+                                <h4>Overlay Properties</h4>
+                            </div>
+                            <div class="properties-content" id="properties-content">
+                                <p class="placeholder-text">Select an overlay to edit its properties</p>
+                            </div>
+                        </div>
+
+                        <!-- Overlays Layer List -->
+                        <div class="layers-panel">
+                            <div class="panel-header">
+                                <h4>Overlays</h4>
+                                <button id="btn-add-overlay-layer" class="btn btn-small btn-icon" title="Add Overlay">+</button>
+                            </div>
+                            <div class="layers-list" id="layers-list">
+                                <p class="placeholder-text">No overlays loaded</p>
+                            </div>
+                        </div>
+
+                        <!-- YAML Editor Panel -->
+                        <div class="yaml-editor-panel">
+                            <div class="panel-header">
+                                <h4>YAML Output</h4>
+                                <div class="panel-actions">
+                                    <button id="btn-copy-yaml" class="btn btn-small" title="Copy to Clipboard">📋 Copy</button>
+                                    <button id="btn-apply-yaml" class="btn btn-small btn-primary" title="Apply YAML changes">Apply</button>
+                                </div>
+                            </div>
+                            <textarea id="yaml-editor" class="yaml-editor" spellcheck="false" placeholder="# YAML will be generated as you edit overlays..."></textarea>
+                            <div class="yaml-status" id="yaml-status">
+                                <span class="status-text">Ready</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Overlay Dialog -->
+        <div id="add-overlay-dialog" class="modal hidden">
+            <div class="modal-content add-overlay-modal-content">
+                <div class="modal-header">
+                    <h3>Add Overlay</h3>
+                    <button id="btn-close-add-overlay" class="btn btn-secondary btn-small">✕</button>
+                </div>
+                <div class="add-overlay-content">
+                    <div class="add-overlay-types">
+                        <button class="add-overlay-type-btn" data-type="image">
+                            <span class="type-icon">🖼️</span>
+                            <span class="type-name">Image Overlay</span>
+                            <span class="type-desc">Add a PNG/image overlay</span>
+                        </button>
+                        <button class="add-overlay-type-btn" data-type="text">
+                            <span class="type-icon">📝</span>
+                            <span class="type-name">Text Overlay</span>
+                            <span class="type-desc">Add dynamic or static text</span>
+                        </button>
+                        <button class="add-overlay-type-btn" data-type="backdrop">
+                            <span class="type-icon">▬</span>
+                            <span class="type-name">Backdrop</span>
+                            <span class="type-desc">Add a colored background bar</span>
+                        </button>
+                    </div>
+
+                    <!-- Image Overlay Form -->
+                    <div class="add-overlay-form hidden" id="form-image-overlay">
+                        <div class="form-group">
+                            <label for="new-overlay-name">Overlay Name</label>
+                            <input type="text" id="new-overlay-name" placeholder="e.g., Resolution 4K">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-overlay-image">Image Source</label>
+                            <select id="new-overlay-image-source">
+                                <option value="default">Default Image</option>
+                                <option value="file">Custom File Path</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="default-image-group">
+                            <label for="new-overlay-default">Default Image</label>
+                            <select id="new-overlay-default">
+                                <option value="">-- Select image --</option>
+                            </select>
+                        </div>
+                        <div class="form-group hidden" id="file-path-group">
+                            <label for="new-overlay-file">File Path</label>
+                            <input type="text" id="new-overlay-file" placeholder="config/overlays/my-image.png">
+                        </div>
+                        <button class="btn btn-primary" id="btn-create-image-overlay">Create Overlay</button>
+                    </div>
+
+                    <!-- Text Overlay Form -->
+                    <div class="add-overlay-form hidden" id="form-text-overlay">
+                        <div class="form-group">
+                            <label for="new-text-name">Overlay Name</label>
+                            <input type="text" id="new-text-name" placeholder="e.g., Rating Text">
+                        </div>
+                        <div class="form-group">
+                            <label for="new-text-content">Text Content</label>
+                            <input type="text" id="new-text-content" placeholder="e.g., <<audience_rating>> or Static Text">
+                            <small>Use &lt;&lt;variable&gt;&gt; for dynamic content</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="new-text-font">Font</label>
+                                <select id="new-text-font">
+                                    <option value="fonts/Inter-Bold.ttf">Inter Bold</option>
+                                    <option value="fonts/Inter-Medium.ttf">Inter Medium</option>
+                                    <option value="fonts/Roboto-Bold.ttf">Roboto Bold</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="new-text-size">Font Size</label>
+                                <input type="number" id="new-text-size" value="50" min="10" max="500">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="new-text-color">Font Color</label>
+                            <input type="color" id="new-text-color" value="#FFFFFF">
+                        </div>
+                        <button class="btn btn-primary" id="btn-create-text-overlay">Create Overlay</button>
+                    </div>
+
+                    <!-- Backdrop Form -->
+                    <div class="add-overlay-form hidden" id="form-backdrop-overlay">
+                        <div class="form-group">
+                            <label for="new-backdrop-name">Overlay Name</label>
+                            <input type="text" id="new-backdrop-name" placeholder="e.g., Rating Backdrop">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="new-backdrop-color">Color</label>
+                                <input type="color" id="new-backdrop-color" value="#000000">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-backdrop-opacity">Opacity %</label>
+                                <input type="number" id="new-backdrop-opacity" value="70" min="0" max="100">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="new-backdrop-width">Width</label>
+                                <input type="number" id="new-backdrop-width" value="200" min="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-backdrop-height">Height</label>
+                                <input type="number" id="new-backdrop-height" value="60" min="10">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" id="btn-create-backdrop-overlay">Create Overlay</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Run Tab -->
         <section id="tab-run" class="tab-content hidden">
