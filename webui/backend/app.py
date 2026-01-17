@@ -101,6 +101,11 @@ frontend_dir = Path(__file__).parent.parent / "frontend"
 app.mount("/static", StaticFiles(directory=frontend_dir / "static"), name="static")
 templates = Jinja2Templates(directory=frontend_dir / "templates")
 
+# Mount overlay images from defaults directory
+overlay_images_dir = KOMETA_ROOT / "defaults" / "overlays" / "images"
+if overlay_images_dir.exists():
+    app.mount("/overlay-images", StaticFiles(directory=overlay_images_dir), name="overlay-images")
+
 
 # Pydantic models
 class ConfigSaveRequest(BaseModel):

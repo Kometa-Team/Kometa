@@ -1234,8 +1234,8 @@ function renderOverlayImages(category) {
 
     elements.overlayImagesGrid.innerHTML = images.map(imagePath => {
         const imageName = imagePath.split('/').pop();
-        // Build the image URL - images are served from static files
-        const imageUrl = `/static/images/overlays/${imagePath}.png`;
+        // Build the image URL - images are served from /overlay-images mount
+        const imageUrl = `/overlay-images/${imagePath}.png`;
 
         return `
             <div class="overlay-image-item" title="${imagePath}" onclick="copyImagePath('${imagePath}')">
@@ -1318,6 +1318,12 @@ function switchPosterSource(source) {
 }
 
 async function searchPlex() {
+    // Check if Plex is configured
+    if (!state.mediaSourceStatus.plex) {
+        elements.plexResults.innerHTML = '<p class="placeholder-text">Plex not configured. Add plex credentials to config.yml and restart the server.</p>';
+        return;
+    }
+
     const query = elements.plexSearch?.value?.trim();
     if (!query) {
         elements.plexResults.innerHTML = '<p class="placeholder-text">Enter a title to search.</p>';
@@ -1328,7 +1334,11 @@ async function searchPlex() {
 
     try {
         const result = await api.get(`/media/search?query=${encodeURIComponent(query)}&source=plex`);
-        renderMediaResults(result.results, 'plex', elements.plexResults);
+        if (result.results && result.results.length > 0) {
+            renderMediaResults(result.results, 'plex', elements.plexResults);
+        } else {
+            elements.plexResults.innerHTML = '<p class="placeholder-text">No results found. Try a different search term.</p>';
+        }
     } catch (error) {
         console.error('Plex search error:', error);
         elements.plexResults.innerHTML = `<p class="placeholder-text">Search failed: ${error.message}</p>`;
@@ -1336,6 +1346,12 @@ async function searchPlex() {
 }
 
 async function searchTmdb() {
+    // Check if TMDb is configured
+    if (!state.mediaSourceStatus.tmdb) {
+        elements.tmdbResults.innerHTML = '<p class="placeholder-text">TMDb not configured. Add tmdb apikey to config.yml and restart the server.</p>';
+        return;
+    }
+
     const query = elements.tmdbSearch?.value?.trim();
     if (!query) {
         elements.tmdbResults.innerHTML = '<p class="placeholder-text">Enter a title to search.</p>';
@@ -1347,7 +1363,11 @@ async function searchTmdb() {
 
     try {
         const result = await api.get(`/media/search?query=${encodeURIComponent(query)}&source=tmdb&media_type=${mediaType}`);
-        renderMediaResults(result.results, 'tmdb', elements.tmdbResults);
+        if (result.results && result.results.length > 0) {
+            renderMediaResults(result.results, 'tmdb', elements.tmdbResults);
+        } else {
+            elements.tmdbResults.innerHTML = '<p class="placeholder-text">No results found. Try a different search term.</p>';
+        }
     } catch (error) {
         console.error('TMDb search error:', error);
         elements.tmdbResults.innerHTML = `<p class="placeholder-text">Search failed: ${error.message}</p>`;
