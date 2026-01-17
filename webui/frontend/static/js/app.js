@@ -2084,8 +2084,11 @@ const visualEditor = {
                 el.innerHTML = `<img src="${imgUrl}" style="width:100%;height:100%;object-fit:contain;" onerror="this.parentElement.innerHTML='<span style=\\'color:#888;font-size:11px;text-align:center;\\'>${overlay.name}</span>'; this.parentElement.style.backgroundColor='rgba(50,50,50,0.5)';">`;
                 el.style.backgroundColor = 'transparent';
             } else {
-                el.innerHTML = `<span style="color:#888;font-size:11px;padding:5px;text-align:center;">${overlay.name}</span>`;
-                el.style.backgroundColor = 'rgba(50,50,50,0.5)';
+                // Generate dynamic badge for overlays without pre-made images (like Edition overlays)
+                // These are rendered as styled text on a background, similar to Kometa's dynamic generation
+                const badgeHtml = this.generateDynamicBadge(overlay);
+                el.innerHTML = badgeHtml;
+                el.style.backgroundColor = 'transparent';
             }
             el.style.display = 'flex';
             el.style.alignItems = 'center';
@@ -2104,6 +2107,94 @@ const visualEditor = {
         el.addEventListener('mousedown', (e) => this.onOverlayMouseDown(e, index));
 
         return el;
+    },
+
+    /**
+     * Generate a dynamic badge for overlays without pre-made images.
+     * Replicates Kometa's style for Edition overlays (Directors-Cut, etc.)
+     * These use a semi-transparent background with styled text.
+     */
+    generateDynamicBadge(overlay) {
+        // Get display text - clean up the name for display
+        let displayText = overlay.display_name || overlay.name || 'Unknown';
+        // Remove common suffixes for cleaner display
+        displayText = displayText.replace(/-Dovetail$/, '').replace(/-/g, ' ');
+
+        // Kometa edition badges use these default styles:
+        // - Background: #00000099 (semi-transparent black)
+        // - Text color: #FFFFFF
+        // - Font: Inter-Medium style
+        const backColor = overlay.back_color || 'rgba(0, 0, 0, 0.6)';
+        const textColor = overlay.font_color || '#FFFFFF';
+        const fontSize = Math.max(10, (overlay.font_size || 55) * this.displayScale * 0.22);
+        const strokeWidth = overlay.stroke_width || 0;
+        const strokeColor = overlay.stroke_color || '#000000';
+
+        // Determine if this is a "dovetail" style (has the pointed edge)
+        const isDovetail = (overlay.name || '').includes('Dovetail');
+
+        // Build the badge HTML with inline SVG for the dovetail shape
+        if (isDovetail) {
+            // Dovetail style - pointed edge on the right
+            return `
+                <div style="
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                ">
+                    <div style="
+                        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                        border: 1px solid #e94560;
+                        border-radius: 4px 0 0 4px;
+                        padding: 4px 12px 4px 8px;
+                        display: flex;
+                        align-items: center;
+                        height: 80%;
+                        box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                        clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 50%, calc(100% - 15px) 100%, 0 100%);
+                    ">
+                        <span style="
+                            color: ${textColor};
+                            font-size: ${fontSize}px;
+                            font-weight: 600;
+                            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+                            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                            white-space: nowrap;
+                            letter-spacing: 0.5px;
+                            ${strokeWidth > 0 ? `-webkit-text-stroke: ${strokeWidth}px ${strokeColor};` : ''}
+                        ">${displayText}</span>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Standard rectangle badge
+            return `
+                <div style="
+                    background: ${backColor};
+                    border-radius: 4px;
+                    padding: 6px 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    height: 100%;
+                    box-sizing: border-box;
+                    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+                ">
+                    <span style="
+                        color: ${textColor};
+                        font-size: ${fontSize}px;
+                        font-weight: 600;
+                        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+                        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+                        text-align: center;
+                        ${strokeWidth > 0 ? `-webkit-text-stroke: ${strokeWidth}px ${strokeColor};` : ''}
+                    ">${displayText}</span>
+                </div>
+            `;
+        }
     },
 
     calculateOverlayPosition(overlay) {
@@ -2326,18 +2417,81 @@ const visualEditor = {
 
         this.elements.layersList.innerHTML = this.overlays.map((overlay, index) => {
             const isSelected = index === this.selectedOverlayIndex;
-            const typeIcon = overlay.type === 'text' ? '📝' : overlay.type === 'backdrop' ? '▬' : '🖼️';
+
+            // Generate thumbnail for the overlay
+            const thumbnail = this.generateLayerThumbnail(overlay);
 
             return `
                 <div class="layer-item ${isSelected ? 'selected' : ''}" data-index="${index}" onclick="visualEditor.selectOverlay(${index})">
                     <span class="layer-visibility" onclick="event.stopPropagation(); visualEditor.toggleLayerVisibility(${index})">👁</span>
-                    <span class="layer-icon">${typeIcon}</span>
+                    <span class="layer-thumbnail">${thumbnail}</span>
                     <span class="layer-name">${overlay.name}</span>
                     <span class="layer-type">${overlay.type || 'image'}</span>
                     <span class="layer-delete" onclick="event.stopPropagation(); visualEditor.deleteOverlay(${index})">✕</span>
                 </div>
             `;
         }).join('');
+    },
+
+    /**
+     * Generate a thumbnail preview for an overlay in the layers list
+     */
+    generateLayerThumbnail(overlay) {
+        // For overlays with image URLs, show the actual image
+        const imgUrl = overlay.image_url || (overlay.default ? `/overlay-images/${overlay.default}.png` : null);
+
+        if (imgUrl) {
+            return `<img src="${imgUrl}" style="width:24px;height:24px;object-fit:contain;border-radius:2px;" onerror="this.style.display='none'">`;
+        }
+
+        // For text overlays
+        if (overlay.type === 'text') {
+            return `<span style="font-size:10px;background:#333;padding:2px 4px;border-radius:2px;">📝</span>`;
+        }
+
+        // For backdrop overlays
+        if (overlay.type === 'backdrop') {
+            const bgColor = overlay.back_color || '#333';
+            return `<span style="display:inline-block;width:24px;height:16px;background:${bgColor};border-radius:2px;"></span>`;
+        }
+
+        // For dynamic overlays (no image file), generate a mini badge preview
+        const isDovetail = (overlay.name || '').includes('Dovetail');
+        const displayText = (overlay.display_name || overlay.name || '?').replace(/-Dovetail$/, '').replace(/-/g, ' ').substring(0, 3);
+
+        if (isDovetail) {
+            return `
+                <span style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 28px;
+                    height: 18px;
+                    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+                    border: 1px solid #e94560;
+                    border-radius: 2px 0 0 2px;
+                    font-size: 7px;
+                    color: #fff;
+                    font-weight: bold;
+                    clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 50%, calc(100% - 5px) 100%, 0 100%);
+                ">${displayText}</span>
+            `;
+        } else {
+            return `
+                <span style="
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 16px;
+                    background: rgba(0,0,0,0.6);
+                    border-radius: 2px;
+                    font-size: 7px;
+                    color: #fff;
+                    font-weight: bold;
+                ">${displayText}</span>
+            `;
+        }
     },
 
     toggleLayerVisibility(index) {
