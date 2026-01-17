@@ -23,6 +23,7 @@ import aiosqlite
 
 from config_manager import ConfigManager
 from run_manager import RunManager
+from overlay_preview import OverlayPreviewManager
 
 
 # Configuration from environment
@@ -41,12 +42,13 @@ UI_PASSWORD = os.environ.get("KOMETA_UI_PASSWORD", "")
 # Initialize managers
 config_manager: Optional[ConfigManager] = None
 run_manager: Optional[RunManager] = None
+overlay_manager: Optional[OverlayPreviewManager] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan handler for startup/shutdown."""
-    global config_manager, run_manager
+    global config_manager, run_manager, overlay_manager
 
     # Ensure directories exist
     CONFIG_DIR.mkdir(parents=True, exist_ok=True)
@@ -61,6 +63,10 @@ async def lifespan(app: FastAPI):
         kometa_root=KOMETA_ROOT,
         db_path=db_path,
         apply_enabled=APPLY_ENABLED
+    )
+    overlay_manager = OverlayPreviewManager(
+        config_dir=CONFIG_DIR,
+        kometa_root=KOMETA_ROOT
     )
 
     await run_manager.init_db()
@@ -363,6 +369,89 @@ async def websocket_status(websocket: WebSocket):
             await asyncio.sleep(2)  # Update every 2 seconds
     except WebSocketDisconnect:
         pass
+
+
+# ============================================================================
+# Overlay Preview Endpoints
+# ============================================================================
+
+class OverlayPreviewRequest(BaseModel):
+    overlays: List[Dict[str, Any]]
+    canvas_type: str = "portrait"  # portrait, landscape, square
+
+
+@app.get("/api/overlays")
+async def get_available_overlays():
+    """Get list of available overlay configurations."""
+    try:
+        overlays = overlay_manager.get_available_overlays()
+        return overlays
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/overlays/images")
+async def get_overlay_images():
+    """Get list of available overlay images."""
+    try:
+        images = overlay_manager.get_overlay_images_list()
+        return {"images": images}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/overlays/parse")
+async def parse_overlay_file(file_path: str):
+    """Parse an overlay YAML file."""
+    try:
+        result = overlay_manager.parse_overlay_file(file_path)
+        return result
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/overlays/preview")
+async def generate_overlay_preview(request: OverlayPreviewRequest):
+    """Generate a preview image with overlays applied."""
+    try:
+        result = overlay_manager.generate_preview(
+            overlays=request.overlays,
+            canvas_type=request.canvas_type
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/overlays/defaults")
+async def get_default_overlays():
+    """Get list of default overlay configurations with details."""
+    try:
+        overlays = overlay_manager.get_available_overlays()
+        detailed = []
+
+        for overlay_file in overlays.get("default", []):
+            try:
+                parsed = overlay_manager.parse_overlay_file(overlay_file["path"])
+                detailed.append({
+                    "name": overlay_file["name"],
+                    "path": overlay_file["path"],
+                    "overlay_count": len(parsed.get("overlays", [])),
+                    "queue_count": len(parsed.get("queues", [])),
+                    "overlays": parsed.get("overlays", [])[:5]  # First 5 for preview
+                })
+            except Exception:
+                detailed.append({
+                    "name": overlay_file["name"],
+                    "path": overlay_file["path"],
+                    "error": "Failed to parse"
+                })
+
+        return {"defaults": detailed}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ============================================================================

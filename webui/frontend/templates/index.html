@@ -27,6 +27,7 @@
     <!-- Main Navigation -->
     <nav class="nav-tabs">
         <button class="nav-tab active" data-tab="config">Configuration</button>
+        <button class="nav-tab" data-tab="overlays">Overlays</button>
         <button class="nav-tab" data-tab="run">Run</button>
         <button class="nav-tab" data-tab="logs">Logs</button>
         <button class="nav-tab" data-tab="history">History</button>
@@ -121,6 +122,93 @@ libraries:
                 <h3>Backups</h3>
                 <div id="backups-list" class="backups-list">
                     <p class="loading">Loading backups...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Overlays Tab -->
+        <section id="tab-overlays" class="tab-content hidden">
+            <div class="overlays-panel">
+                <h2>Overlay Preview</h2>
+                <p class="section-desc">Preview how overlays will appear on your media posters.</p>
+
+                <!-- Overlay Source Selection -->
+                <div class="overlay-source-section">
+                    <h3>Select Overlay Configuration</h3>
+                    <div class="overlay-source-options">
+                        <div class="form-group">
+                            <label for="overlay-source">Overlay File</label>
+                            <select id="overlay-source">
+                                <option value="">-- Select an overlay file --</option>
+                            </select>
+                        </div>
+                        <button id="btn-load-overlays" class="btn btn-secondary">Load Overlays</button>
+                    </div>
+                </div>
+
+                <!-- Overlay List -->
+                <div class="overlay-list-section">
+                    <h3>Available Overlays</h3>
+                    <div id="overlay-list" class="overlay-list">
+                        <p class="placeholder-text">Select an overlay file to see available overlays.</p>
+                    </div>
+                </div>
+
+                <!-- Preview Canvas -->
+                <div class="preview-section">
+                    <h3>Preview</h3>
+                    <div class="preview-controls">
+                        <div class="form-group">
+                            <label for="canvas-type">Poster Type</label>
+                            <select id="canvas-type">
+                                <option value="portrait">Portrait (1000x1500)</option>
+                                <option value="landscape">Landscape (1920x1080)</option>
+                                <option value="square">Square (1000x1000)</option>
+                            </select>
+                        </div>
+                        <button id="btn-generate-preview" class="btn btn-primary">Generate Preview</button>
+                    </div>
+
+                    <div class="preview-canvas-container">
+                        <div id="preview-canvas" class="preview-canvas">
+                            <div class="canvas-placeholder">
+                                <span>&#128444;</span>
+                                <p>Select overlays and click "Generate Preview"</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Overlays for Preview -->
+                    <div class="selected-overlays">
+                        <h4>Selected Overlays</h4>
+                        <div id="selected-overlay-list" class="selected-overlay-list">
+                            <p class="placeholder-text">Click overlays above to add them to the preview.</p>
+                        </div>
+                        <button id="btn-clear-selection" class="btn btn-secondary btn-small">Clear Selection</button>
+                    </div>
+                </div>
+
+                <!-- Overlay Details Panel -->
+                <div class="overlay-details-section hidden" id="overlay-details">
+                    <h3>Overlay Details</h3>
+                    <div class="details-content">
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span id="detail-name" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Type:</span>
+                            <span id="detail-type" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Position:</span>
+                            <span id="detail-position" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Filters:</span>
+                            <span id="detail-filters" class="detail-value">-</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

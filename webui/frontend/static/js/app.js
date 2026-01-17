@@ -16,7 +16,11 @@ const state = {
     applyEnabled: false,
     wsLogs: null,
     wsStatus: null,
-    autoScroll: true
+    autoScroll: true,
+    // Overlay state
+    overlayFiles: [],
+    loadedOverlays: [],
+    selectedOverlays: []
 };
 
 // ============================================================================
@@ -63,7 +67,22 @@ const elements = {
     btnClearLogs: document.getElementById('btn-clear-logs'),
 
     // History
-    historyList: document.getElementById('history-list')
+    historyList: document.getElementById('history-list'),
+
+    // Overlays
+    overlaySource: document.getElementById('overlay-source'),
+    overlayList: document.getElementById('overlay-list'),
+    selectedOverlayList: document.getElementById('selected-overlay-list'),
+    previewCanvas: document.getElementById('preview-canvas'),
+    canvasType: document.getElementById('canvas-type'),
+    overlayDetails: document.getElementById('overlay-details'),
+    detailName: document.getElementById('detail-name'),
+    detailType: document.getElementById('detail-type'),
+    detailPosition: document.getElementById('detail-position'),
+    detailFilters: document.getElementById('detail-filters'),
+    btnLoadOverlays: document.getElementById('btn-load-overlays'),
+    btnGeneratePreview: document.getElementById('btn-generate-preview'),
+    btnClearSelection: document.getElementById('btn-clear-selection')
 };
 
 // ============================================================================
@@ -117,6 +136,8 @@ function switchTab(tabName) {
         loadRunPlan();
     } else if (tabName === 'history') {
         loadRunHistory();
+    } else if (tabName === 'overlays') {
+        loadOverlayFiles();
     }
 }
 
@@ -628,6 +649,212 @@ function formatDuration(seconds) {
 }
 
 // ============================================================================
+// Overlay Preview
+// ============================================================================
+
+async function loadOverlayFiles() {
+    // Only load if not already loaded
+    if (state.overlayFiles.length > 0) {
+        return;
+    }
+
+    try {
+        const result = await api.get('/overlays');
+
+        // Combine default and custom overlay files
+        state.overlayFiles = [];
+
+        if (result.default && result.default.length > 0) {
+            state.overlayFiles.push({ label: '-- Default Overlays --', disabled: true });
+            state.overlayFiles.push(...result.default.map(f => ({
+                path: f.path,
+                name: f.name,
+                type: 'default'
+            })));
+        }
+
+        if (result.custom && result.custom.length > 0) {
+            state.overlayFiles.push({ label: '-- Custom Overlays --', disabled: true });
+            state.overlayFiles.push(...result.custom.map(f => ({
+                path: f.path,
+                name: f.name,
+                type: 'custom'
+            })));
+        }
+
+        // Populate dropdown
+        elements.overlaySource.innerHTML = '<option value="">-- Select an overlay file --</option>';
+        state.overlayFiles.forEach((file, index) => {
+            if (file.disabled) {
+                elements.overlaySource.innerHTML += `<option disabled>${file.label}</option>`;
+            } else {
+                elements.overlaySource.innerHTML += `<option value="${file.path}">${file.name}</option>`;
+            }
+        });
+
+    } catch (error) {
+        console.error('Failed to load overlay files:', error);
+        elements.overlayList.innerHTML = `<p class="placeholder-text">Failed to load overlay files: ${error.message}</p>`;
+    }
+}
+
+async function loadOverlaysFromFile() {
+    const filePath = elements.overlaySource.value;
+    if (!filePath) {
+        elements.overlayList.innerHTML = '<p class="placeholder-text">Select an overlay file to see available overlays.</p>';
+        return;
+    }
+
+    elements.overlayList.innerHTML = '<p class="placeholder-text">Loading overlays...</p>';
+
+    try {
+        const result = await api.get(`/overlays/parse?file_path=${encodeURIComponent(filePath)}`);
+
+        state.loadedOverlays = result.overlays || [];
+
+        if (state.loadedOverlays.length === 0) {
+            elements.overlayList.innerHTML = '<p class="placeholder-text">No overlays found in this file.</p>';
+            return;
+        }
+
+        renderOverlayList();
+
+    } catch (error) {
+        console.error('Failed to parse overlay file:', error);
+        elements.overlayList.innerHTML = `<p class="placeholder-text">Failed to parse file: ${error.message}</p>`;
+    }
+}
+
+function renderOverlayList() {
+    elements.overlayList.innerHTML = state.loadedOverlays.map((overlay, index) => {
+        const isSelected = state.selectedOverlays.some(s => s.name === overlay.name);
+        const overlayType = overlay.text ? 'text' : (overlay.image ? 'image' : 'other');
+        const position = overlay.horizontal_align && overlay.vertical_align
+            ? `${overlay.vertical_align}-${overlay.horizontal_align}`
+            : (overlay.horizontal_offset || overlay.vertical_offset ? 'custom' : 'default');
+
+        return `
+            <div class="overlay-item ${isSelected ? 'selected' : ''}"
+                 data-index="${index}"
+                 onclick="toggleOverlaySelection(${index})">
+                <span class="overlay-name">${overlay.name}</span>
+                <span class="overlay-type">${overlayType}</span>
+                <span class="overlay-position">${position}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleOverlaySelection(index) {
+    const overlay = state.loadedOverlays[index];
+    if (!overlay) return;
+
+    const existingIndex = state.selectedOverlays.findIndex(s => s.name === overlay.name);
+
+    if (existingIndex >= 0) {
+        // Remove from selection
+        state.selectedOverlays.splice(existingIndex, 1);
+    } else {
+        // Add to selection
+        state.selectedOverlays.push({ ...overlay });
+    }
+
+    // Update UI
+    renderOverlayList();
+    renderSelectedOverlays();
+    showOverlayDetails(overlay);
+}
+
+function renderSelectedOverlays() {
+    if (state.selectedOverlays.length === 0) {
+        elements.selectedOverlayList.innerHTML = '<p class="placeholder-text">Click overlays above to add them to the preview.</p>';
+        return;
+    }
+
+    elements.selectedOverlayList.innerHTML = state.selectedOverlays.map((overlay, index) => `
+        <span class="selected-overlay-tag">
+            ${overlay.name}
+            <span class="remove-tag" onclick="event.stopPropagation(); removeSelectedOverlay(${index})">×</span>
+        </span>
+    `).join('');
+}
+
+function removeSelectedOverlay(index) {
+    state.selectedOverlays.splice(index, 1);
+    renderOverlayList();
+    renderSelectedOverlays();
+}
+
+function clearOverlaySelection() {
+    state.selectedOverlays = [];
+    renderOverlayList();
+    renderSelectedOverlays();
+}
+
+function showOverlayDetails(overlay) {
+    if (!overlay) {
+        elements.overlayDetails.classList.add('hidden');
+        return;
+    }
+
+    elements.overlayDetails.classList.remove('hidden');
+    elements.detailName.textContent = overlay.name || '-';
+
+    // Determine type
+    let type = 'Unknown';
+    if (overlay.text) {
+        type = `Text: "${overlay.text}"`;
+    } else if (overlay.image) {
+        type = `Image: ${overlay.image}`;
+    } else if (overlay.git || overlay.repo) {
+        type = 'Git/Repo overlay';
+    }
+    elements.detailType.textContent = type;
+
+    // Position
+    const hAlign = overlay.horizontal_align || 'center';
+    const vAlign = overlay.vertical_align || 'top';
+    const hOffset = overlay.horizontal_offset || 0;
+    const vOffset = overlay.vertical_offset || 0;
+    elements.detailPosition.textContent = `${vAlign}-${hAlign} (offset: ${hOffset}, ${vOffset})`;
+
+    // Filters
+    const filters = [];
+    if (overlay.plex_search) filters.push('Plex Search');
+    if (overlay.tmdb_show) filters.push('TMDb Show');
+    if (overlay.tmdb_movie) filters.push('TMDb Movie');
+    if (overlay.imdb_list) filters.push('IMDb List');
+    if (overlay.builder_level) filters.push(`Level: ${overlay.builder_level}`);
+    elements.detailFilters.textContent = filters.length > 0 ? filters.join(', ') : 'None';
+}
+
+async function generateOverlayPreview() {
+    if (state.selectedOverlays.length === 0) {
+        alert('Please select at least one overlay to preview.');
+        return;
+    }
+
+    elements.previewCanvas.innerHTML = '<div class="canvas-placeholder"><p>Generating preview...</p></div>';
+
+    try {
+        const result = await api.post('/overlays/preview', {
+            overlays: state.selectedOverlays,
+            canvas_type: elements.canvasType.value
+        });
+
+        if (result.image) {
+            elements.previewCanvas.innerHTML = `<img src="${result.image}" alt="Overlay Preview">`;
+        } else if (result.error) {
+            elements.previewCanvas.innerHTML = `<div class="canvas-placeholder"><p>Error: ${result.error}</p></div>`;
+        }
+
+    } catch (error) {
+        console.error('Failed to generate preview:', error);
+        elements.previewCanvas.innerHTML = `<div class="canvas-placeholder"><p>Failed to generate preview: ${error.message}</p></div>`;
+    }
+}
+
+// ============================================================================
 // Event Listeners
 // ============================================================================
 
@@ -702,6 +929,20 @@ libraries:
     elements.autoScrollCheckbox.addEventListener('change', (e) => {
         state.autoScroll = e.target.checked;
     });
+
+    // Overlays
+    if (elements.btnLoadOverlays) {
+        elements.btnLoadOverlays.addEventListener('click', loadOverlaysFromFile);
+    }
+    if (elements.overlaySource) {
+        elements.overlaySource.addEventListener('change', loadOverlaysFromFile);
+    }
+    if (elements.btnGeneratePreview) {
+        elements.btnGeneratePreview.addEventListener('click', generateOverlayPreview);
+    }
+    if (elements.btnClearSelection) {
+        elements.btnClearSelection.addEventListener('click', clearOverlaySelection);
+    }
 }
 
 // ============================================================================
@@ -732,6 +973,8 @@ async function init() {
 // Start the app
 document.addEventListener('DOMContentLoaded', init);
 
-// Make restoreBackup available globally for onclick
+// Make functions available globally for onclick handlers
 window.restoreBackup = restoreBackup;
 window.viewRunLogs = viewRunLogs;
+window.toggleOverlaySelection = toggleOverlaySelection;
+window.removeSelectedOverlay = removeSelectedOverlay;
