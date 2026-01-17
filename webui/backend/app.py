@@ -21,10 +21,10 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel
 import aiosqlite
 
-from config_manager import ConfigManager
-from run_manager import RunManager
-from overlay_preview import OverlayPreviewManager
-from poster_fetcher import PosterFetcher
+from backend.config_manager import ConfigManager
+from backend.run_manager import RunManager
+from backend.overlay_preview import OverlayPreviewManager
+from backend.poster_fetcher import PosterFetcher
 
 
 # Configuration from environment

@@ -10,8 +10,6 @@
 # IMPORTANT: By default, the UI runs in DRY RUN mode only.
 # To enable Apply mode, set KOMETA_UI_APPLY_ENABLED=true (use with caution!)
 
-version: "3.8"
-
 services:
   # Kometa Web UI
   kometa-ui:
