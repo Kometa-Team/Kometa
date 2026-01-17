@@ -1461,3 +1461,87 @@ body {
 .preview-actions {
     margin-bottom: 20px;
 }
+
+/* Template Variables Section */
+.template-vars-section {
+    margin-top: 15px;
+}
+
+.template-vars-section details {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+}
+
+.template-vars-section summary {
+    cursor: pointer;
+    padding: 10px 15px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.template-vars-section summary:hover {
+    background-color: var(--bg-tertiary);
+}
+
+.template-vars-content {
+    padding: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.template-vars-input {
+    width: 100%;
+    min-height: 80px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    color: var(--text-color);
+    padding: 10px;
+    resize: vertical;
+}
+
+.template-vars-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.template-vars-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+    align-items: center;
+}
+
+.preset-label {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.preset-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 500;
+    border-radius: 10px;
+    background-color: var(--primary-color);
+    color: var(--bg-color);
+}
+
+.badge.hidden {
+    display: none;
+}
+
+.btn-small {
+    font-size: 12px;
+    padding: 6px 12px;
+}

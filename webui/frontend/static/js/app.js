@@ -92,6 +92,13 @@ const elements = {
     btnGeneratePreview: document.getElementById('btn-generate-preview'),
     btnClearSelection: document.getElementById('btn-clear-selection'),
 
+    // Template variables
+    templateVarsDetails: document.getElementById('template-vars-details'),
+    templateVarsBadge: document.getElementById('template-vars-badge'),
+    templateVarsInput: document.getElementById('template-vars-input'),
+    btnApplyTemplateVars: document.getElementById('btn-apply-template-vars'),
+    presetBtns: document.querySelectorAll('.preset-btn'),
+
     // Poster source elements
     posterSourceTabs: document.querySelectorAll('.poster-tab'),
     posterSourceSample: document.getElementById('poster-source-sample'),
@@ -802,9 +809,34 @@ async function loadOverlaysFromFile() {
     elements.overlayList.innerHTML = '<p class="placeholder-text">Loading overlays...</p>';
 
     try {
-        const result = await api.get(`/overlays/parse?file_path=${encodeURIComponent(filePath)}`);
+        // Build URL with optional template variables
+        let url = `/overlays/parse?file_path=${encodeURIComponent(filePath)}`;
+
+        // Parse and validate template variables if provided
+        const templateVarsText = elements.templateVarsInput ? elements.templateVarsInput.value.trim() : '';
+        if (templateVarsText) {
+            try {
+                // Validate JSON
+                JSON.parse(templateVarsText);
+                url += `&template_vars=${encodeURIComponent(templateVarsText)}`;
+            } catch (jsonError) {
+                console.warn('Invalid template variables JSON, ignoring:', jsonError);
+            }
+        }
+
+        const result = await api.get(url);
 
         state.loadedOverlays = result.overlays || [];
+
+        // Update template badge visibility
+        if (elements.templateVarsBadge) {
+            if (result.has_templates) {
+                elements.templateVarsBadge.classList.remove('hidden');
+                elements.templateVarsBadge.textContent = `Uses templates (${state.loadedOverlays.length} overlays)`;
+            } else {
+                elements.templateVarsBadge.classList.add('hidden');
+            }
+        }
 
         if (state.loadedOverlays.length === 0) {
             elements.overlayList.innerHTML = '<p class="placeholder-text">No overlays found in this file.</p>';
@@ -1271,6 +1303,30 @@ libraries:
     }
     if (elements.btnClearSelection) {
         elements.btnClearSelection.addEventListener('click', clearOverlaySelection);
+    }
+
+    // Template variables
+    if (elements.btnApplyTemplateVars) {
+        elements.btnApplyTemplateVars.addEventListener('click', loadOverlaysFromFile);
+    }
+    if (elements.presetBtns) {
+        elements.presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                if (preset && elements.templateVarsInput) {
+                    // Merge with existing or set new
+                    try {
+                        const existing = elements.templateVarsInput.value.trim();
+                        const existingObj = existing ? JSON.parse(existing) : {};
+                        const presetObj = JSON.parse(preset);
+                        const merged = { ...existingObj, ...presetObj };
+                        elements.templateVarsInput.value = JSON.stringify(merged, null, 2);
+                    } catch (e) {
+                        elements.templateVarsInput.value = preset;
+                    }
+                }
+            });
+        });
     }
 
     // Poster source tabs

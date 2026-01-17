@@ -412,10 +412,25 @@ async def get_overlay_images():
 
 
 @app.get("/api/overlays/parse")
-async def parse_overlay_file(file_path: str):
-    """Parse an overlay YAML file."""
+async def parse_overlay_file(file_path: str, template_vars: Optional[str] = None):
+    """
+    Parse an overlay YAML file.
+
+    Args:
+        file_path: Path to the overlay file
+        template_vars: JSON-encoded template variables (optional)
+    """
     try:
-        result = overlay_manager.parse_overlay_file(file_path)
+        # Parse template variables if provided
+        user_template_vars = None
+        if template_vars:
+            import json
+            try:
+                user_template_vars = json.loads(template_vars)
+            except json.JSONDecodeError:
+                pass
+
+        result = overlay_manager.parse_overlay_file(file_path, user_template_vars)
         return result
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
@@ -427,9 +442,12 @@ async def parse_overlay_file(file_path: str):
 async def generate_overlay_preview(request: OverlayPreviewRequest):
     """Generate a preview image with overlays applied."""
     try:
-        # Fetch poster if a source is specified
+        # Fetch poster and metadata if a source is specified
         sample_poster = None
+        media_metadata = None
+
         if request.poster_source == "plex" and request.rating_key:
+            # Fetch poster image
             poster_data = poster_fetcher.fetch_poster_image(
                 rating_key=request.rating_key
             )
@@ -439,6 +457,10 @@ async def generate_overlay_preview(request: OverlayPreviewRequest):
                 with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
                     f.write(poster_data)
                     sample_poster = f.name
+
+            # Fetch metadata for text variable substitution
+            media_metadata = poster_fetcher.get_plex_item_metadata(request.rating_key)
+
         elif request.poster_source == "tmdb" and request.tmdb_id:
             poster_data = poster_fetcher.fetch_poster_image(
                 tmdb_id=request.tmdb_id,
@@ -453,7 +475,8 @@ async def generate_overlay_preview(request: OverlayPreviewRequest):
         result = overlay_manager.generate_preview(
             overlays=request.overlays,
             canvas_type=request.canvas_type,
-            sample_poster=sample_poster
+            sample_poster=sample_poster,
+            media_metadata=media_metadata
         )
 
         # Clean up temp file

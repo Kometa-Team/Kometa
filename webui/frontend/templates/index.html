@@ -152,6 +152,28 @@ libraries:
                         </div>
                         <button id="btn-load-overlays" class="btn btn-secondary">Load Overlays</button>
                     </div>
+
+                    <!-- Template Variables (collapsible) -->
+                    <div class="template-vars-section">
+                        <details id="template-vars-details">
+                            <summary>Template Variables <span id="template-vars-badge" class="badge hidden">Has templates</span></summary>
+                            <div class="template-vars-content">
+                                <p class="section-hint">Override template variables for this overlay file. Use JSON format.</p>
+                                <div class="form-group">
+                                    <label for="template-vars-input">Variables (JSON)</label>
+                                    <textarea id="template-vars-input" class="template-vars-input" placeholder='{"horizontal_position": "right", "style": "red"}'></textarea>
+                                </div>
+                                <div class="template-vars-presets">
+                                    <span class="preset-label">Common presets:</span>
+                                    <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "right"}'>Right position</button>
+                                    <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "left"}'>Left position</button>
+                                    <button class="btn btn-small preset-btn" data-preset='{"style": "red"}'>Red style</button>
+                                    <button class="btn btn-small preset-btn" data-preset='{"builder_level": "episode"}'>Episode level</button>
+                                </div>
+                                <button id="btn-apply-template-vars" class="btn btn-secondary btn-small">Apply & Reload</button>
+                            </div>
+                        </details>
+                    </div>
                 </div>
 
                 <!-- Overlay List -->

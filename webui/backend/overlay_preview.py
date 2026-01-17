@@ -19,6 +19,8 @@ except ImportError:
 
 from ruamel.yaml import YAML
 
+from .template_processor import TemplateProcessor
+
 
 # Standard canvas dimensions
 CANVAS_PORTRAIT = (1000, 1500)   # Movies, shows, seasons
@@ -53,6 +55,9 @@ class OverlayPreviewManager:
         self.yaml = YAML()
         self.yaml.preserve_quotes = True
 
+        # Initialize template processor for handling Kometa templates
+        self.template_processor = TemplateProcessor(kometa_root)
+
     def get_available_overlays(self) -> Dict[str, Any]:
         """Get list of available overlay configurations."""
         overlays = {
@@ -82,8 +87,21 @@ class OverlayPreviewManager:
 
         return overlays
 
-    def parse_overlay_file(self, file_path: str) -> Dict[str, Any]:
-        """Parse an overlay YAML file and extract overlay definitions."""
+    def parse_overlay_file(
+        self,
+        file_path: str,
+        template_variables: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Parse an overlay YAML file and extract overlay definitions.
+
+        Args:
+            file_path: Path to the overlay YAML file
+            template_variables: Optional user-provided template variables to apply
+
+        Returns:
+            Dictionary with parsed overlays, queues, and metadata
+        """
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"Overlay file not found: {file_path}")
@@ -92,13 +110,24 @@ class OverlayPreviewManager:
             data = self.yaml.load(f)
 
         if not data:
-            return {"overlays": [], "queues": []}
+            return {"overlays": [], "queues": [], "has_templates": False}
 
         result = {
             "overlays": [],
             "queues": [],
-            "templates": []
+            "has_templates": False,
+            "template_info": {}
         }
+
+        # Check if file uses templates
+        has_external_templates = "external_templates" in data
+        has_local_templates = "templates" in data and data["templates"]
+        result["has_templates"] = has_external_templates or has_local_templates
+
+        if has_external_templates:
+            result["template_info"]["external"] = data["external_templates"]
+        if has_local_templates:
+            result["template_info"]["local_count"] = len(data["templates"])
 
         # Extract queues
         if "queues" in data:
@@ -108,10 +137,32 @@ class OverlayPreviewManager:
                     "positions": queue_data.get("settings", {}).get("position", [])
                 })
 
-        # Extract overlays
+        # Process overlays - use template expansion if templates are present
+        if result["has_templates"]:
+            # Use the template processor to expand all overlays
+            expanded = self.template_processor.expand_overlay_file(
+                file_path,
+                template_variables
+            )
+
+            for overlay_config in expanded:
+                if overlay_config:
+                    # Extract the overlay name
+                    original_name = overlay_config.pop("_original_name", "unknown")
+                    overlay_config.pop("_template", None)
+                    overlay_config.pop("_direct", None)
+
+                    parsed = self._parse_overlay_config(original_name, overlay_config)
+                    result["overlays"].append(parsed)
+
+        # Also process any direct overlay definitions (non-templated)
         if "overlays" in data:
             for overlay_name, overlay_data in data["overlays"].items():
                 if overlay_data and isinstance(overlay_data, dict):
+                    # Skip if already processed via template
+                    if result["has_templates"] and "template" in overlay_data:
+                        continue
+
                     overlay_config = overlay_data.get("overlay", {})
                     if overlay_config:
                         parsed = self._parse_overlay_config(overlay_name, overlay_config)
@@ -238,35 +289,136 @@ class OverlayPreviewManager:
             return 0
 
     def get_overlay_image_path(self, overlay: Dict) -> Optional[Path]:
-        """Get the path to an overlay image file."""
-        # Check default path
-        if overlay.get("default"):
-            path = self.images_dir / f"{overlay['default']}.png"
-            if path.exists():
-                return path
+        """
+        Get the path to an overlay image file.
 
-        # Check file path
+        Searches in multiple locations with various naming conventions:
+        - Direct path from 'file' attribute
+        - Default images directory with 'default' attribute
+        - Subdirectories organized by type (resolution, ribbon, streaming, etc.)
+        - Various case and format variations
+        """
+        # Helper to normalize names for file searching
+        def normalize_name(name: str) -> List[str]:
+            """Generate variations of a name for file searching."""
+            variations = set()
+            variations.add(name)
+
+            # Remove common suffixes like -Dovetail
+            base_name = name
+            if "-Dovetail" in name:
+                base_name = name.replace("-Dovetail", "")
+                variations.add(base_name)
+
+            # Add lowercase version
+            variations.add(name.lower())
+            variations.add(base_name.lower())
+
+            # Remove hyphens and convert to lowercase
+            no_hyphen = base_name.replace("-", "").lower()
+            variations.add(no_hyphen)
+
+            # Handle resolution format: "4K-DV-HDR-Plus" -> "4kdvhdrplus"
+            # Also handle "Plus" -> "plus"
+            compact = base_name.replace("-", "").replace("P", "p").lower()
+            variations.add(compact)
+
+            # Another variation: remove "P" suffix for resolutions
+            # "1080P" -> "1080p"
+            for res in ["4K", "1080P", "720P", "480P", "576P"]:
+                if res in base_name:
+                    alt = base_name.replace(res, res.lower())
+                    variations.add(alt.replace("-", "").lower())
+
+            # Convert list for ordered iteration
+            return list(variations)
+
+        # Check file path first (explicit path takes priority)
         if overlay.get("file"):
-            path = Path(overlay["file"])
+            file_path = overlay["file"]
+            path = Path(file_path)
             if not path.is_absolute():
-                path = self.config_dir / path
+                path = self.config_dir / file_path
             if path.exists():
                 return path
 
-        # Check for image by name
-        name = overlay.get("display_name", overlay.get("name", ""))
-        if name and not name.startswith(("text(", "blur(", "backdrop")):
-            # Try direct name
-            path = self.images_dir / f"{name}.png"
+        # Check default attribute (e.g., "default: resolution/4k")
+        if overlay.get("default"):
+            default_val = overlay["default"]
+
+            # Handle paths with subdirectories
+            if "/" in default_val:
+                path = self.images_dir / f"{default_val}.png"
+                if path.exists():
+                    return path
+
+            # Try direct name in images root
+            path = self.images_dir / f"{default_val}.png"
             if path.exists():
                 return path
 
-            # Try in subdirectories
+            # Try in known subdirectories
             for subdir in self.images_dir.iterdir():
                 if subdir.is_dir():
-                    path = subdir / f"{name}.png"
+                    path = subdir / f"{default_val}.png"
                     if path.exists():
                         return path
+                    # Try in nested subdirectories (e.g., ribbon/red/)
+                    for nested in subdir.iterdir():
+                        if nested.is_dir():
+                            path = nested / f"{default_val}.png"
+                            if path.exists():
+                                return path
+
+        # Check for image by overlay name
+        name = overlay.get("display_name", overlay.get("name", ""))
+        if name and not name.startswith(("text(", "blur(", "backdrop")):
+            name_variations = normalize_name(name)
+
+            for variation in name_variations:
+                # Try direct name in images root
+                path = self.images_dir / f"{variation}.png"
+                if path.exists():
+                    return path
+
+                # Try in subdirectories
+                for subdir in self.images_dir.iterdir():
+                    if subdir.is_dir():
+                        path = subdir / f"{variation}.png"
+                        if path.exists():
+                            return path
+
+                        # Try nested subdirectories (e.g., ribbon/red/, streaming/...)
+                        for nested in subdir.iterdir():
+                            if nested.is_dir():
+                                path = nested / f"{variation}.png"
+                                if path.exists():
+                                    return path
+
+        # Last resort: try to infer category from overlay name and search there
+        category_map = {
+            "resolution": ["4K", "1080", "720", "480", "576", "DV", "HDR"],
+            "audio_codec": ["Atmos", "DTS", "TrueHD", "AAC", "Dolby"],
+            "ribbon": ["Emmy", "Oscar", "Golden", "BAFTA", "IMDb", "Rotten"],
+            "streaming": ["Netflix", "Amazon", "Disney", "Hulu", "HBO", "Apple"],
+            "network": ["ABC", "CBS", "NBC", "FOX", "BBC", "AMC"],
+            "studio": ["Marvel", "Warner", "Sony", "Universal", "Paramount"],
+        }
+
+        for category, keywords in category_map.items():
+            if any(kw.lower() in name.lower() for kw in keywords):
+                category_dir = self.images_dir / category
+                if category_dir.exists():
+                    for variation in normalize_name(name):
+                        path = category_dir / f"{variation}.png"
+                        if path.exists():
+                            return path
+                        # Check nested dirs
+                        for nested in category_dir.iterdir():
+                            if nested.is_dir():
+                                path = nested / f"{variation}.png"
+                                if path.exists():
+                                    return path
 
         return None
 
@@ -274,16 +426,25 @@ class OverlayPreviewManager:
         self,
         overlays: List[Dict],
         canvas_type: str = "portrait",
-        sample_poster: Optional[str] = None
+        sample_poster: Optional[str] = None,
+        media_metadata: Optional[Dict[str, Any]] = None
     ) -> Dict[str, Any]:
         """
         Generate a preview of overlays on a canvas.
+
+        Args:
+            overlays: List of overlay configurations to render
+            canvas_type: "portrait", "landscape", or "square"
+            sample_poster: Optional path to a poster image file
+            media_metadata: Optional metadata from Plex item for text substitution
 
         Returns preview data including:
         - Base64 encoded preview image
         - Overlay positions and dimensions
         - Warnings/errors
         """
+        # Store media metadata for text substitution
+        self._current_media_metadata = media_metadata or {}
         if not HAS_PIL:
             return {
                 "error": "PIL/Pillow not available for image generation",
@@ -540,30 +701,58 @@ class OverlayPreviewManager:
         result["rendered"] = True
 
     def _substitute_variables(self, text: str) -> str:
-        """Substitute variables in text with sample values."""
-        substitutions = {
-            "<<runtime>>": "7200000",
-            "<<runtime H>>": "2",
-            "<<runtime M>>": "00",
-            "<<audience_rating>>": "8.5",
-            "<<critic_rating>>": "92",
-            "<<user_rating>>": "9.0",
-            "<<imdb_rating>>": "8.2",
-            "<<tmdb_rating>>": "8.1",
-            "<<title>>": "Sample Title",
-            "<<content_rating>>": "PG-13",
-            "<<edition>>": "Director's Cut",
-            "<<season_number>>": "1",
-            "<<season_number0>>": "01",
-            "<<episode_number>>": "5",
-            "<<episode_number0>>": "05",
-            "<<episode_number00>>": "005",
-            "<<originally_available>>": "2024-01-15",
-            "<<bitrate>>": "15000",
-            "<<versions>>": "2",
+        """
+        Substitute variables in text with actual metadata values when available,
+        or sample values as fallback.
+        """
+        # Get metadata from current preview context
+        metadata = getattr(self, '_current_media_metadata', {})
+
+        # Map Kometa variables to Plex metadata fields
+        metadata_mapping = {
+            "<<runtime>>": ("duration", lambda x: str(x) if x else "7200000"),
+            "<<runtime H>>": ("duration", lambda x: str(int(x / 3600000)) if x else "2"),
+            "<<runtime M>>": ("duration", lambda x: str(int((x % 3600000) / 60000)).zfill(2) if x else "00"),
+            "<<audience_rating>>": ("audienceRating", lambda x: f"{x:.1f}" if x else "8.5"),
+            "<<critic_rating>>": ("rating", lambda x: str(int(x * 10)) if x else "92"),
+            "<<user_rating>>": ("userRating", lambda x: f"{x:.1f}" if x else "9.0"),
+            "<<imdb_rating>>": ("audienceRating", lambda x: f"{x:.1f}" if x else "8.2"),
+            "<<tmdb_rating>>": ("audienceRating", lambda x: f"{x:.1f}" if x else "8.1"),
+            "<<title>>": ("title", lambda x: x if x else "Sample Title"),
+            "<<content_rating>>": ("contentRating", lambda x: x if x else "PG-13"),
+            "<<edition>>": ("editionTitle", lambda x: x if x else "Director's Cut"),
+            "<<year>>": ("year", lambda x: str(x) if x else "2024"),
+            "<<originally_available>>": ("originallyAvailableAt", lambda x: x if x else "2024-01-15"),
+            "<<studio>>": ("studio", lambda x: x if x else "Studio"),
+            "<<genres>>": ("genres", lambda x: ", ".join(x[:3]) if x else "Drama, Action"),
         }
 
-        for var, value in substitutions.items():
+        # Season/episode specific
+        season_episode_mapping = {
+            "<<season_number>>": ("parentIndex", lambda x: str(x) if x else "1"),
+            "<<season_number0>>": ("parentIndex", lambda x: str(x).zfill(2) if x else "01"),
+            "<<episode_number>>": ("index", lambda x: str(x) if x else "5"),
+            "<<episode_number0>>": ("index", lambda x: str(x).zfill(2) if x else "05"),
+            "<<episode_number00>>": ("index", lambda x: str(x).zfill(3) if x else "005"),
+        }
+
+        # Static sample values for less common variables
+        static_substitutions = {
+            "<<bitrate>>": "15000",
+            "<<versions>>": "2",
+            "<<video_resolution>>": "4K",
+            "<<audio_codec>>": "TrueHD Atmos",
+            "<<video_codec>>": "HEVC",
+        }
+
+        # Apply metadata-based substitutions
+        for var, (field, formatter) in {**metadata_mapping, **season_episode_mapping}.items():
+            if var in text:
+                value = metadata.get(field)
+                text = text.replace(var, formatter(value))
+
+        # Apply static substitutions
+        for var, value in static_substitutions.items():
             text = text.replace(var, value)
 
         # Handle any remaining variables with placeholder

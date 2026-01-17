@@ -127,6 +127,10 @@ class PosterFetcher:
                     "summary": (item.get("summary") or "")[:200]
                 }
 
+                # Build thumbnail URL for display
+                if result["thumb"]:
+                    result["thumb_url"] = f"{self._plex_url}{result['thumb']}?X-Plex-Token={self._plex_token}&width=150&height=225"
+
                 # Add parent info for seasons/episodes
                 if item_type == "season":
                     result["show_title"] = item.get("parentTitle")
@@ -240,6 +244,67 @@ class PosterFetcher:
             print(f"Failed to get Plex poster URL: {e}")
 
         return None
+
+    def get_plex_item_metadata(self, rating_key: str) -> Optional[Dict[str, Any]]:
+        """
+        Get detailed metadata for a Plex item.
+
+        Returns metadata useful for overlay text variable substitution.
+        """
+        if not self.has_plex:
+            return None
+
+        try:
+            url = f"{self._plex_url}/library/metadata/{rating_key}"
+            params = {"X-Plex-Token": self._plex_token}
+
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+
+            from xml.etree import ElementTree
+            root = ElementTree.fromstring(response.content)
+
+            # Find the item
+            item = root.find(".//Video") or root.find(".//Directory")
+            if item is None:
+                return None
+
+            # Extract metadata
+            metadata = {
+                "title": item.get("title"),
+                "year": int(item.get("year")) if item.get("year") else None,
+                "rating": float(item.get("rating")) if item.get("rating") else None,
+                "audienceRating": float(item.get("audienceRating")) if item.get("audienceRating") else None,
+                "userRating": float(item.get("userRating")) if item.get("userRating") else None,
+                "contentRating": item.get("contentRating"),
+                "duration": int(item.get("duration")) if item.get("duration") else None,
+                "studio": item.get("studio"),
+                "originallyAvailableAt": item.get("originallyAvailableAt"),
+                "editionTitle": item.get("editionTitle"),
+                "index": int(item.get("index")) if item.get("index") else None,
+                "parentIndex": int(item.get("parentIndex")) if item.get("parentIndex") else None,
+                "grandparentTitle": item.get("grandparentTitle"),
+                "parentTitle": item.get("parentTitle"),
+            }
+
+            # Extract genres
+            genres = [g.get("tag") for g in item.findall(".//Genre") if g.get("tag")]
+            if genres:
+                metadata["genres"] = genres
+
+            # Extract media info (resolution, codecs, etc.)
+            media = item.find(".//Media")
+            if media is not None:
+                metadata["videoResolution"] = media.get("videoResolution")
+                metadata["audioCodec"] = media.get("audioCodec")
+                metadata["videoCodec"] = media.get("videoCodec")
+                metadata["bitrate"] = int(media.get("bitrate")) if media.get("bitrate") else None
+
+            return metadata
+
+        except Exception as e:
+            print(f"Failed to get Plex item metadata: {e}")
+            return None
 
     def fetch_poster_image(
         self,
