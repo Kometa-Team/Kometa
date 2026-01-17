@@ -115,6 +115,7 @@ class OverlayPreviewManager:
         result = {
             "overlays": [],
             "queues": [],
+            "groups": {},  # Group name -> list of overlay names
             "has_templates": False,
             "template_info": {}
         }
@@ -171,6 +172,21 @@ class OverlayPreviewManager:
                         parsed["builder_level"] = overlay_data.get("builder_level", "item")
                         result["overlays"].append(parsed)
 
+        # Build groups dictionary from parsed overlays
+        for overlay in result["overlays"]:
+            group = overlay.get("group")
+            if group:
+                if group not in result["groups"]:
+                    result["groups"][group] = []
+                result["groups"][group].append({
+                    "name": overlay["name"],
+                    "weight": overlay.get("weight", 0)
+                })
+
+        # Sort overlays within each group by weight
+        for group_name in result["groups"]:
+            result["groups"][group_name].sort(key=lambda x: x.get("weight", 0), reverse=True)
+
         return result
 
     def _parse_overlay_config(self, name: str, config: Dict) -> Dict[str, Any]:
@@ -180,6 +196,7 @@ class OverlayPreviewManager:
         # Determine overlay type
         overlay_type = "image"
         text_content = None
+        blur_amount = None
 
         if isinstance(overlay_name, str):
             if overlay_name.startswith("text(") and overlay_name.endswith(")"):
@@ -187,14 +204,23 @@ class OverlayPreviewManager:
                 text_content = overlay_name[5:-1]  # Extract text content
             elif overlay_name.startswith("blur("):
                 overlay_type = "blur"
+                # Extract blur amount if specified
+                try:
+                    blur_amount = int(overlay_name[5:-1])
+                except (ValueError, IndexError):
+                    blur_amount = 50  # Default blur
             elif overlay_name == "backdrop":
                 overlay_type = "backdrop"
+
+        # Extract suppress_overlays info
+        suppress_overlays = config.get("suppress_overlays")
 
         return {
             "name": name,
             "display_name": overlay_name,
             "type": overlay_type,
             "text_content": text_content,
+            "blur_amount": blur_amount,
 
             # Positioning
             "horizontal_align": config.get("horizontal_align", DEFAULTS["horizontal_align"]),
@@ -230,6 +256,7 @@ class OverlayPreviewManager:
             "group": config.get("group"),
             "weight": config.get("weight", 0),
             "queue": config.get("queue"),
+            "suppress_overlays": suppress_overlays,
 
             # Addon
             "addon_position": config.get("addon_position"),
@@ -538,6 +565,8 @@ class OverlayPreviewManager:
             self._render_image_overlay(canvas, overlay, result)
         elif overlay_type == "backdrop":
             self._render_backdrop_overlay(canvas, draw, overlay, result)
+        elif overlay_type == "blur":
+            self._render_blur_overlay(canvas, overlay, result)
 
         return result
 
@@ -697,6 +726,41 @@ class OverlayPreviewManager:
 
         radius = overlay.get("back_radius", 0)
         self._draw_rounded_rect(draw, (x, y, x + back_width, y + back_height), radius, rgba)
+
+        result["rendered"] = True
+
+    def _render_blur_overlay(self, canvas: Image.Image, overlay: Dict, result: Dict):
+        """Render a blur overlay on a region of the canvas."""
+        try:
+            from PIL import ImageFilter
+        except ImportError:
+            result["rendered"] = False
+            return
+
+        # Get blur amount (percentage translates to blur radius)
+        blur_amount = overlay.get("blur_amount", 50)
+        blur_radius = max(1, int(blur_amount / 5))  # Convert percentage to radius
+
+        # Determine blur region
+        back_width = overlay.get("back_width") or canvas.size[0]
+        back_height = overlay.get("back_height") or canvas.size[1]
+
+        x, y = self.calculate_position(
+            canvas.size,
+            (back_width, back_height),
+            overlay.get("horizontal_align", "left"),
+            overlay.get("horizontal_offset", 0),
+            overlay.get("vertical_align", "top"),
+            overlay.get("vertical_offset", 0)
+        )
+
+        result["position"] = (x, y)
+        result["size"] = (back_width, back_height)
+
+        # Extract region, blur it, paste back
+        region = canvas.crop((x, y, x + back_width, y + back_height))
+        blurred = region.filter(ImageFilter.GaussianBlur(radius=blur_radius))
+        canvas.paste(blurred, (x, y))
 
         result["rendered"] = True
 

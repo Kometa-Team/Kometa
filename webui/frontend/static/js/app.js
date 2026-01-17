@@ -21,6 +21,11 @@ const state = {
     overlayFiles: [],
     loadedOverlays: [],
     selectedOverlays: [],
+    overlayGroups: {},  // Group name -> list of overlay info
+    activeGroupFilter: '',  // Current group filter
+    activeTypeFilter: '',   // Current type filter
+    currentPreviewImage: null,  // Current preview image data URI
+    availableImages: {},  // Category -> list of image names
     // Poster source state
     posterSource: 'sample',  // sample, plex, tmdb
     selectedPoster: null,    // { source, rating_key, tmdb_id, title, media_type }
@@ -90,7 +95,20 @@ const elements = {
     detailFilters: document.getElementById('detail-filters'),
     btnLoadOverlays: document.getElementById('btn-load-overlays'),
     btnGeneratePreview: document.getElementById('btn-generate-preview'),
+    btnDownloadPreview: document.getElementById('btn-download-preview'),
     btnClearSelection: document.getElementById('btn-clear-selection'),
+    // Overlay groups and filters
+    overlayGroupsSection: document.getElementById('overlay-groups-section'),
+    overlayGroups: document.getElementById('overlay-groups'),
+    groupsCountBadge: document.getElementById('groups-count-badge'),
+    overlaysCountBadge: document.getElementById('overlays-count-badge'),
+    overlayFilterGroup: document.getElementById('overlay-filter-group'),
+    overlayFilterType: document.getElementById('overlay-filter-type'),
+    // Overlay images browser
+    overlayImagesDetails: document.getElementById('overlay-images-details'),
+    imagesCategorySelect: document.getElementById('images-category-select'),
+    overlayImagesGrid: document.getElementById('overlay-images-grid'),
+    imagesCountBadge: document.getElementById('images-count-badge'),
 
     // Template variables
     templateVarsDetails: document.getElementById('template-vars-details'),
@@ -827,6 +845,9 @@ async function loadOverlaysFromFile() {
         const result = await api.get(url);
 
         state.loadedOverlays = result.overlays || [];
+        state.overlayGroups = result.groups || {};
+        state.activeGroupFilter = '';
+        state.activeTypeFilter = '';
 
         // Update template badge visibility
         if (elements.templateVarsBadge) {
@@ -838,11 +859,20 @@ async function loadOverlaysFromFile() {
             }
         }
 
+        // Update overlays count badge
+        if (elements.overlaysCountBadge) {
+            elements.overlaysCountBadge.textContent = state.loadedOverlays.length;
+        }
+
         if (state.loadedOverlays.length === 0) {
             elements.overlayList.innerHTML = '<p class="placeholder-text">No overlays found in this file.</p>';
+            hideOverlayGroups();
             return;
         }
 
+        // Render groups and overlay list
+        renderOverlayGroups();
+        populateGroupFilter();
         renderOverlayList();
 
     } catch (error) {
@@ -851,20 +881,135 @@ async function loadOverlaysFromFile() {
     }
 }
 
+function renderOverlayGroups() {
+    const groupNames = Object.keys(state.overlayGroups);
+
+    if (groupNames.length === 0) {
+        hideOverlayGroups();
+        return;
+    }
+
+    // Show groups section
+    if (elements.overlayGroupsSection) {
+        elements.overlayGroupsSection.classList.remove('hidden');
+    }
+
+    // Update count badge
+    if (elements.groupsCountBadge) {
+        elements.groupsCountBadge.textContent = groupNames.length;
+    }
+
+    // Render group tags
+    if (elements.overlayGroups) {
+        elements.overlayGroups.innerHTML = groupNames.map(groupName => {
+            const count = state.overlayGroups[groupName].length;
+            const isActive = state.activeGroupFilter === groupName;
+            return `
+                <span class="overlay-group-tag ${isActive ? 'active' : ''}"
+                      data-group="${groupName}"
+                      onclick="filterByGroup('${groupName}')">
+                    ${groupName}
+                    <span class="group-count">${count}</span>
+                </span>
+            `;
+        }).join('');
+    }
+}
+
+function hideOverlayGroups() {
+    if (elements.overlayGroupsSection) {
+        elements.overlayGroupsSection.classList.add('hidden');
+    }
+}
+
+function populateGroupFilter() {
+    if (!elements.overlayFilterGroup) return;
+
+    // Reset and populate group filter dropdown
+    elements.overlayFilterGroup.innerHTML = '<option value="">All Groups</option>';
+    const groupNames = Object.keys(state.overlayGroups);
+    groupNames.forEach(groupName => {
+        const option = document.createElement('option');
+        option.value = groupName;
+        option.textContent = `${groupName} (${state.overlayGroups[groupName].length})`;
+        elements.overlayFilterGroup.appendChild(option);
+    });
+
+    // Add "No Group" option if there are ungrouped overlays
+    const ungroupedCount = state.loadedOverlays.filter(o => !o.group).length;
+    if (ungroupedCount > 0) {
+        const option = document.createElement('option');
+        option.value = '__none__';
+        option.textContent = `No Group (${ungroupedCount})`;
+        elements.overlayFilterGroup.appendChild(option);
+    }
+}
+
+function filterByGroup(groupName) {
+    // Toggle filter if clicking same group
+    state.activeGroupFilter = state.activeGroupFilter === groupName ? '' : groupName;
+
+    // Update dropdown to match
+    if (elements.overlayFilterGroup) {
+        elements.overlayFilterGroup.value = state.activeGroupFilter;
+    }
+
+    renderOverlayGroups();
+    renderOverlayList();
+}
+
+function getFilteredOverlays() {
+    return state.loadedOverlays.filter((overlay, index) => {
+        // Apply group filter
+        if (state.activeGroupFilter) {
+            if (state.activeGroupFilter === '__none__') {
+                if (overlay.group) return false;
+            } else {
+                if (overlay.group !== state.activeGroupFilter) return false;
+            }
+        }
+
+        // Apply type filter
+        if (state.activeTypeFilter) {
+            if (overlay.type !== state.activeTypeFilter) return false;
+        }
+
+        return true;
+    });
+}
+
 function renderOverlayList() {
-    elements.overlayList.innerHTML = state.loadedOverlays.map((overlay, index) => {
+    const filteredOverlays = getFilteredOverlays();
+
+    if (filteredOverlays.length === 0) {
+        elements.overlayList.innerHTML = '<p class="placeholder-text">No overlays match the current filters.</p>';
+        return;
+    }
+
+    elements.overlayList.innerHTML = filteredOverlays.map((overlay) => {
+        const originalIndex = state.loadedOverlays.indexOf(overlay);
         const isSelected = state.selectedOverlays.some(s => s.name === overlay.name);
-        const overlayType = overlay.text ? 'text' : (overlay.image ? 'image' : 'other');
+        const overlayType = overlay.type || 'image';
         const position = overlay.horizontal_align && overlay.vertical_align
             ? `${overlay.vertical_align}-${overlay.horizontal_align}`
             : (overlay.horizontal_offset || overlay.vertical_offset ? 'custom' : 'default');
 
+        // Add group indicator if grouped
+        const groupBadge = overlay.group
+            ? `<span class="overlay-group-indicator">${overlay.group}</span>`
+            : '';
+
         return `
             <div class="overlay-item ${isSelected ? 'selected' : ''}"
-                 data-index="${index}"
-                 onclick="toggleOverlaySelection(${index})">
+                 data-index="${originalIndex}"
+                 data-type="${overlayType}"
+                 data-group="${overlay.group || ''}"
+                 onclick="toggleOverlaySelection(${originalIndex})">
                 <span class="overlay-name">${overlay.name}</span>
-                <span class="overlay-type">${overlayType}</span>
+                <div class="overlay-meta">
+                    <span class="overlay-type">${overlayType}</span>
+                    ${groupBadge}
+                </div>
                 <span class="overlay-position">${position}</span>
             </div>
         `;
@@ -926,14 +1071,18 @@ function showOverlayDetails(overlay) {
     elements.overlayDetails.classList.remove('hidden');
     elements.detailName.textContent = overlay.name || '-';
 
-    // Determine type
-    let type = 'Unknown';
-    if (overlay.text) {
-        type = `Text: "${overlay.text}"`;
-    } else if (overlay.image) {
-        type = `Image: ${overlay.image}`;
-    } else if (overlay.git || overlay.repo) {
-        type = 'Git/Repo overlay';
+    // Determine type with more detail
+    let type = overlay.type || 'image';
+    if (overlay.type === 'text' && overlay.text_content) {
+        type = `Text: "${overlay.text_content}"`;
+    } else if (overlay.type === 'blur') {
+        type = `Blur (${overlay.blur_amount || 50}%)`;
+    } else if (overlay.type === 'backdrop') {
+        type = 'Backdrop';
+    } else if (overlay.default) {
+        type = `Image: ${overlay.default}`;
+    } else if (overlay.file) {
+        type = `Image: ${overlay.file}`;
     }
     elements.detailType.textContent = type;
 
@@ -944,13 +1093,14 @@ function showOverlayDetails(overlay) {
     const vOffset = overlay.vertical_offset || 0;
     elements.detailPosition.textContent = `${vAlign}-${hAlign} (offset: ${hOffset}, ${vOffset})`;
 
-    // Filters
+    // Filters and group info
     const filters = [];
-    if (overlay.plex_search) filters.push('Plex Search');
-    if (overlay.tmdb_show) filters.push('TMDb Show');
-    if (overlay.tmdb_movie) filters.push('TMDb Movie');
-    if (overlay.imdb_list) filters.push('IMDb List');
+    if (overlay.group) filters.push(`Group: ${overlay.group}`);
+    if (overlay.weight) filters.push(`Weight: ${overlay.weight}`);
+    if (overlay.queue) filters.push(`Queue: ${overlay.queue}`);
+    if (overlay.plex_all) filters.push('Plex All');
     if (overlay.builder_level) filters.push(`Level: ${overlay.builder_level}`);
+    if (overlay.suppress_overlays) filters.push(`Suppresses: ${overlay.suppress_overlays}`);
     elements.detailFilters.textContent = filters.length > 0 ? filters.join(', ') : 'None';
 }
 
@@ -983,15 +1133,128 @@ async function generateOverlayPreview() {
         const result = await api.post('/overlays/preview', requestData);
 
         if (result.image) {
-            elements.previewCanvas.innerHTML = `<img src="${result.image}" alt="Overlay Preview">`;
+            elements.previewCanvas.innerHTML = `<img src="${result.image}" alt="Overlay Preview" id="preview-image">`;
+            // Show download button
+            if (elements.btnDownloadPreview) {
+                elements.btnDownloadPreview.classList.remove('hidden');
+                state.currentPreviewImage = result.image;
+            }
         } else if (result.error) {
             elements.previewCanvas.innerHTML = `<div class="canvas-placeholder"><p>Error: ${result.error}</p></div>`;
+            if (elements.btnDownloadPreview) {
+                elements.btnDownloadPreview.classList.add('hidden');
+            }
         }
 
     } catch (error) {
         console.error('Failed to generate preview:', error);
         elements.previewCanvas.innerHTML = `<div class="canvas-placeholder"><p>Failed to generate preview: ${error.message}</p></div>`;
+        if (elements.btnDownloadPreview) {
+            elements.btnDownloadPreview.classList.add('hidden');
+        }
     }
+}
+
+function downloadPreview() {
+    if (!state.currentPreviewImage) {
+        alert('No preview image to download. Generate a preview first.');
+        return;
+    }
+
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = state.currentPreviewImage;
+
+    // Generate filename based on selected overlays
+    const overlayNames = state.selectedOverlays.map(o => o.name).slice(0, 3).join('_');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    link.download = `overlay_preview_${overlayNames}_${timestamp}.png`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// ============================================================================
+// Overlay Images Browser
+// ============================================================================
+
+async function loadOverlayImages() {
+    try {
+        const result = await api.get('/overlays/images');
+        state.availableImages = result.images || {};
+
+        // Count total images
+        let totalCount = 0;
+        Object.values(state.availableImages).forEach(images => {
+            totalCount += images.length;
+        });
+
+        // Update badge
+        if (elements.imagesCountBadge) {
+            elements.imagesCountBadge.textContent = totalCount;
+        }
+
+        // Populate category dropdown
+        populateImageCategories();
+
+    } catch (error) {
+        console.error('Failed to load overlay images:', error);
+    }
+}
+
+function populateImageCategories() {
+    if (!elements.imagesCategorySelect) return;
+
+    elements.imagesCategorySelect.innerHTML = '<option value="">-- Select category --</option>';
+
+    const categories = Object.keys(state.availableImages).sort();
+    categories.forEach(category => {
+        const count = state.availableImages[category].length;
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = `${category} (${count})`;
+        elements.imagesCategorySelect.appendChild(option);
+    });
+}
+
+function renderOverlayImages(category) {
+    if (!elements.overlayImagesGrid) return;
+
+    if (!category || !state.availableImages[category]) {
+        elements.overlayImagesGrid.innerHTML = '<p class="placeholder-text">Select a category to view images.</p>';
+        return;
+    }
+
+    const images = state.availableImages[category];
+    if (images.length === 0) {
+        elements.overlayImagesGrid.innerHTML = '<p class="placeholder-text">No images in this category.</p>';
+        return;
+    }
+
+    elements.overlayImagesGrid.innerHTML = images.map(imagePath => {
+        const imageName = imagePath.split('/').pop();
+        // Build the image URL - images are served from static files
+        const imageUrl = `/static/images/overlays/${imagePath}.png`;
+
+        return `
+            <div class="overlay-image-item" title="${imagePath}" onclick="copyImagePath('${imagePath}')">
+                <img src="${imageUrl}" alt="${imageName}" onerror="this.parentElement.innerHTML='<div class=\\'image-placeholder\\'>?</div><span class=\\'image-name\\'>${imageName}</span>'">
+                <span class="image-name">${imageName}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+function copyImagePath(imagePath) {
+    // Copy the overlay image path to clipboard for use in config
+    const fullPath = `default: ${imagePath}`;
+    navigator.clipboard.writeText(fullPath).then(() => {
+        // Show brief feedback
+        alert(`Copied: ${fullPath}`);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
 }
 
 // ============================================================================
@@ -1301,8 +1564,41 @@ libraries:
     if (elements.btnGeneratePreview) {
         elements.btnGeneratePreview.addEventListener('click', generateOverlayPreview);
     }
+    if (elements.btnDownloadPreview) {
+        elements.btnDownloadPreview.addEventListener('click', downloadPreview);
+    }
     if (elements.btnClearSelection) {
         elements.btnClearSelection.addEventListener('click', clearOverlaySelection);
+    }
+
+    // Overlay filters
+    if (elements.overlayFilterGroup) {
+        elements.overlayFilterGroup.addEventListener('change', (e) => {
+            state.activeGroupFilter = e.target.value;
+            renderOverlayGroups();
+            renderOverlayList();
+        });
+    }
+    if (elements.overlayFilterType) {
+        elements.overlayFilterType.addEventListener('change', (e) => {
+            state.activeTypeFilter = e.target.value;
+            renderOverlayList();
+        });
+    }
+
+    // Overlay images browser
+    if (elements.imagesCategorySelect) {
+        elements.imagesCategorySelect.addEventListener('change', (e) => {
+            renderOverlayImages(e.target.value);
+        });
+    }
+    if (elements.overlayImagesDetails) {
+        elements.overlayImagesDetails.addEventListener('toggle', (e) => {
+            // Load images when details is opened for the first time
+            if (e.target.open && Object.keys(state.availableImages).length === 0) {
+                loadOverlayImages();
+            }
+        });
     }
 
     // Template variables
@@ -1390,3 +1686,5 @@ window.viewRunLogs = viewRunLogs;
 window.toggleOverlaySelection = toggleOverlaySelection;
 window.removeSelectedOverlay = removeSelectedOverlay;
 window.selectMediaItem = selectMediaItem;
+window.filterByGroup = filterByGroup;
+window.copyImagePath = copyImagePath;

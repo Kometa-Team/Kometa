@@ -176,9 +176,28 @@ libraries:
                     </div>
                 </div>
 
+                <!-- Overlay Groups Info (shown when groups exist) -->
+                <div class="overlay-groups-section hidden" id="overlay-groups-section">
+                    <h3>Overlay Groups <span class="badge" id="groups-count-badge"></span></h3>
+                    <p class="section-hint">Overlays in the same group are mutually exclusive - only one will be applied per item.</p>
+                    <div id="overlay-groups" class="overlay-groups"></div>
+                </div>
+
                 <!-- Overlay List -->
                 <div class="overlay-list-section">
-                    <h3>Available Overlays</h3>
+                    <h3>Available Overlays <span class="badge" id="overlays-count-badge"></span></h3>
+                    <div class="overlay-list-controls">
+                        <select id="overlay-filter-group" class="filter-select">
+                            <option value="">All Groups</option>
+                        </select>
+                        <select id="overlay-filter-type" class="filter-select">
+                            <option value="">All Types</option>
+                            <option value="image">Image</option>
+                            <option value="text">Text</option>
+                            <option value="blur">Blur</option>
+                            <option value="backdrop">Backdrop</option>
+                        </select>
+                    </div>
                     <div id="overlay-list" class="overlay-list">
                         <p class="placeholder-text">Select an overlay file to see available overlays.</p>
                     </div>
@@ -257,6 +276,7 @@ libraries:
                     <h3>Preview</h3>
                     <div class="preview-actions">
                         <button id="btn-generate-preview" class="btn btn-primary">Generate Preview</button>
+                        <button id="btn-download-preview" class="btn btn-secondary hidden">Download Preview</button>
                     </div>
 
                     <div class="preview-canvas-container">
@@ -299,6 +319,25 @@ libraries:
                             <span id="detail-filters" class="detail-value">-</span>
                         </div>
                     </div>
+                </div>
+
+                <!-- Overlay Images Browser -->
+                <div class="overlay-images-section">
+                    <details id="overlay-images-details">
+                        <summary>Browse Overlay Images <span id="images-count-badge" class="badge">0</span></summary>
+                        <div class="overlay-images-content">
+                            <p class="section-hint">Browse available overlay images organized by category.</p>
+                            <div class="form-group">
+                                <label for="images-category-select">Category</label>
+                                <select id="images-category-select">
+                                    <option value="">-- Select category --</option>
+                                </select>
+                            </div>
+                            <div id="overlay-images-grid" class="overlay-images-grid">
+                                <p class="placeholder-text">Select a category to view images.</p>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
         </section>
