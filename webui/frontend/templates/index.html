@@ -40,11 +40,14 @@
             <div class="config-header">
                 <h2>Configuration</h2>
                 <div class="config-actions">
+                    <button id="btn-upload-config" class="btn btn-secondary">Upload</button>
                     <button id="btn-load-config" class="btn btn-secondary">Reload</button>
                     <button id="btn-validate" class="btn btn-secondary">Validate</button>
                     <button id="btn-save-config" class="btn btn-primary">Save</button>
                 </div>
             </div>
+            <!-- Hidden file input for upload -->
+            <input type="file" id="config-file-input" accept=".yml,.yaml" style="display: none;">
 
             <!-- Config Source Selector -->
             <div class="config-source-selector" id="config-source-selector">
@@ -54,6 +57,11 @@
                         <span class="option-icon">&#128196;</span>
                         <span class="option-title">Start from existing config.yml</span>
                         <span class="option-desc">Load and edit your current configuration</span>
+                    </button>
+                    <button class="source-option" data-source="upload">
+                        <span class="option-icon">&#128228;</span>
+                        <span class="option-title">Upload config file</span>
+                        <span class="option-desc">Import a config.yml from your computer</span>
                     </button>
                     <button class="source-option" data-source="new">
                         <span class="option-icon">&#10133;</span>
@@ -323,8 +331,10 @@ libraries:
                     <h3>Filters (Optional)</h3>
                     <div class="filter-group">
                         <label for="filter-libraries">Libraries</label>
-                        <input type="text" id="filter-libraries" placeholder="e.g., Movies|TV Shows">
-                        <small>Pipe-separated list of library names</small>
+                        <select id="filter-libraries" multiple>
+                            <option value="" disabled>Loading libraries...</option>
+                        </select>
+                        <small>Hold Ctrl/Cmd to select multiple. Leave empty for all.</small>
                     </div>
                     <div class="filter-group">
                         <label for="filter-collections">Collections</label>
@@ -374,12 +384,19 @@ libraries:
                 <div class="logs-header">
                     <h2>Live Logs</h2>
                     <div class="logs-actions">
+                        <button id="btn-cancel-run" class="btn btn-danger hidden">Cancel Run</button>
                         <button id="btn-clear-logs" class="btn btn-secondary">Clear</button>
                         <label class="checkbox-label">
                             <input type="checkbox" id="auto-scroll" checked>
                             Auto-scroll
                         </label>
                     </div>
+                </div>
+                <!-- Run status bar (shown when running) -->
+                <div id="logs-run-status" class="logs-run-status hidden">
+                    <span class="status-indicator running"></span>
+                    <span>Run in progress: <code id="logs-run-id">-</code></span>
+                    <span class="run-duration" id="logs-run-duration"></span>
                 </div>
                 <div id="logs-container" class="logs-container">
                     <pre id="logs-output" class="logs-output">Waiting for logs...</pre>

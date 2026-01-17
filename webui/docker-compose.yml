@@ -28,6 +28,8 @@ services:
     environment:
       # Config directory inside container
       - KOMETA_CONFIG_DIR=/config
+      # Kometa source directory (where kometa.py lives)
+      - KOMETA_ROOT=/kometa
       # UI port
       - KOMETA_UI_PORT=8080
       # Safety: Apply mode disabled by default

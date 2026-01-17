@@ -1,20 +1,28 @@
 # Kometa Web UI Dockerfile
 # Multi-stage build for the Web UI container
 
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    libxml2-dev \
+    libxslt1-dev \
+    zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install Python dependencies
-COPY backend/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+# Install Web UI dependencies
+COPY backend/requirements.txt /tmp/webui-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/webui-requirements.txt
+
+# Install Kometa dependencies (for running kometa.py)
+# Note: requirements.txt is copied from the parent directory via build context
+COPY kometa-requirements.txt /tmp/kometa-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/kometa-requirements.txt
 
 
 # Final stage

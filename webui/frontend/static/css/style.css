@@ -644,6 +644,22 @@ body {
     font-size: 14px;
 }
 
+.filter-group select[multiple] {
+    min-height: 100px;
+    padding: 8px;
+}
+
+.filter-group select[multiple] option {
+    padding: 6px 10px;
+    margin-bottom: 2px;
+    border-radius: 4px;
+}
+
+.filter-group select[multiple] option:checked {
+    background: linear-gradient(0deg, var(--primary) 0%, var(--primary) 100%);
+    color: white;
+}
+
 .filter-group small {
     display: block;
     margin-top: 5px;
@@ -723,6 +739,47 @@ body {
     gap: 8px;
     cursor: pointer;
     font-size: 14px;
+}
+
+.logs-run-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background-color: rgba(255, 193, 7, 0.15);
+    border: 1px solid var(--warning);
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.logs-run-status .status-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--warning);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.logs-run-status .status-indicator.running {
+    background-color: var(--warning);
+}
+
+.logs-run-status code {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.logs-run-status .run-duration {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 
 .logs-container {

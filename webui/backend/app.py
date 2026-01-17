@@ -29,7 +29,9 @@ from backend.poster_fetcher import PosterFetcher
 
 # Configuration from environment
 CONFIG_DIR = Path(os.environ.get("KOMETA_CONFIG_DIR", "/config"))
-KOMETA_ROOT = Path(__file__).parent.parent.parent  # Go up from webui/backend to repo root
+# KOMETA_ROOT: Where the main Kometa source code lives (kometa.py, modules/, etc.)
+# In Docker: mounted at /kometa; locally: relative to this file
+KOMETA_ROOT = Path(os.environ.get("KOMETA_ROOT", "/kometa"))
 UI_PORT = int(os.environ.get("KOMETA_UI_PORT", "8080"))
 UI_HOST = os.environ.get("KOMETA_UI_HOST", "0.0.0.0")
 

@@ -69,6 +69,10 @@ const elements = {
     logsOutput: document.getElementById('logs-output'),
     autoScrollCheckbox: document.getElementById('auto-scroll'),
     btnClearLogs: document.getElementById('btn-clear-logs'),
+    btnCancelRun: document.getElementById('btn-cancel-run'),
+    logsRunStatus: document.getElementById('logs-run-status'),
+    logsRunId: document.getElementById('logs-run-id'),
+    logsRunDuration: document.getElementById('logs-run-duration'),
 
     // History
     historyList: document.getElementById('history-list'),
@@ -312,7 +316,48 @@ async function restoreBackup(backupName) {
 // Run Management
 // ============================================================================
 
+async function loadPlexLibraries() {
+    try {
+        const result = await api.get('/media/libraries');
+        const libraries = result.libraries || [];
+
+        // Clear and populate the dropdown
+        elements.filterLibraries.innerHTML = '';
+
+        if (libraries.length === 0) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.disabled = true;
+            option.textContent = 'No libraries found (check Plex connection)';
+            elements.filterLibraries.appendChild(option);
+        } else {
+            // Add placeholder
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.disabled = true;
+            placeholder.textContent = '-- Select libraries (optional) --';
+            elements.filterLibraries.appendChild(placeholder);
+
+            // Add library options
+            libraries.forEach(lib => {
+                const option = document.createElement('option');
+                option.value = lib.title;
+                const typeLabel = lib.type === 'movie' ? 'Movies' : 'TV Shows';
+                const countLabel = lib.count ? ` - ${lib.count} items` : '';
+                option.textContent = `${lib.title} (${typeLabel}${countLabel})`;
+                elements.filterLibraries.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load Plex libraries:', error);
+        elements.filterLibraries.innerHTML = '<option value="" disabled>Failed to load libraries</option>';
+    }
+}
+
 async function loadRunPlan() {
+    // Load Plex libraries for the filter dropdown
+    loadPlexLibraries();
+
     try {
         const plan = await api.get('/run/plan');
         state.applyEnabled = plan.apply_enabled;
@@ -447,8 +492,8 @@ async function startRun() {
         }
     }
 
-    // Gather filters
-    const libraries = elements.filterLibraries.value.split('|').filter(l => l.trim());
+    // Gather filters - get selected options from multi-select
+    const libraries = Array.from(elements.filterLibraries.selectedOptions).map(opt => opt.value).filter(v => v);
     const collections = elements.filterCollections.value.split('|').filter(c => c.trim());
     const runType = elements.filterType.value || null;
 
@@ -496,16 +541,40 @@ async function stopRun() {
 }
 
 function updateRunStatusUI(status) {
-    if (status.running || state.isRunning) {
+    const isRunning = status.running || state.isRunning;
+    const runId = status.run_id || state.currentRunId;
+
+    if (isRunning) {
+        // Run tab UI
         elements.btnStartRun.classList.add('hidden');
         elements.btnStopRun.classList.remove('hidden');
         elements.currentRunStatus.classList.remove('hidden');
-        elements.currentRunId.textContent = status.run_id || state.currentRunId;
+        elements.currentRunId.textContent = runId;
         elements.currentRunStart.textContent = status.start_time ? new Date(status.start_time).toLocaleString() : new Date().toLocaleString();
+
+        // Logs tab UI
+        elements.btnCancelRun.classList.remove('hidden');
+        elements.logsRunStatus.classList.remove('hidden');
+        elements.logsRunId.textContent = runId;
+
+        // Update duration if we have start time
+        if (status.start_time) {
+            const startTime = new Date(status.start_time);
+            const now = new Date();
+            const durationSec = Math.floor((now - startTime) / 1000);
+            const mins = Math.floor(durationSec / 60);
+            const secs = durationSec % 60;
+            elements.logsRunDuration.textContent = `(${mins}m ${secs}s)`;
+        }
     } else {
+        // Run tab UI
         elements.btnStartRun.classList.remove('hidden');
         elements.btnStopRun.classList.add('hidden');
         elements.currentRunStatus.classList.add('hidden');
+
+        // Logs tab UI
+        elements.btnCancelRun.classList.add('hidden');
+        elements.logsRunStatus.classList.add('hidden');
     }
 }
 
@@ -1090,6 +1159,9 @@ function initEventListeners() {
     });
 
     // Config actions
+    document.getElementById('btn-upload-config').addEventListener('click', () => {
+        document.getElementById('config-file-input').click();
+    });
     document.getElementById('btn-load-config').addEventListener('click', loadConfig);
     document.getElementById('btn-validate').addEventListener('click', validateConfig);
     document.getElementById('btn-save-config').addEventListener('click', saveConfig);
@@ -1113,8 +1185,11 @@ function initEventListeners() {
 
             if (option.dataset.source === 'existing') {
                 loadConfig();
+            } else if (option.dataset.source === 'upload') {
+                // Trigger file upload dialog
+                document.getElementById('config-file-input').click();
             } else {
-                // Show empty editor
+                // Show empty editor with template
                 document.getElementById('config-source-selector').style.display = 'none';
                 document.getElementById('config-editor-container').style.display = 'block';
                 elements.configEditor.value = `# Kometa Configuration
@@ -1136,6 +1211,34 @@ libraries:
         });
     });
 
+    // Config file upload handler
+    const configFileInput = document.getElementById('config-file-input');
+    if (configFileInput) {
+        configFileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('config-source-selector').style.display = 'none';
+                    document.getElementById('config-editor-container').style.display = 'block';
+                    elements.configEditor.value = event.target.result;
+                    // Validate the uploaded config
+                    validateConfig();
+                };
+                reader.onerror = () => {
+                    showValidation({
+                        valid: false,
+                        errors: ['Failed to read the uploaded file'],
+                        warnings: []
+                    });
+                };
+                reader.readAsText(file);
+            }
+            // Reset the input so the same file can be uploaded again
+            e.target.value = '';
+        });
+    }
+
     // Run mode
     elements.runModeOptions.forEach(option => {
         option.addEventListener('click', () => {
@@ -1151,6 +1254,7 @@ libraries:
 
     // Logs
     elements.btnClearLogs.addEventListener('click', clearLogs);
+    elements.btnCancelRun.addEventListener('click', stopRun);
     elements.autoScrollCheckbox.addEventListener('change', (e) => {
         state.autoScroll = e.target.checked;
     });

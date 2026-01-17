@@ -147,7 +147,7 @@ class PosterFetcher:
         return results
 
     def get_plex_libraries(self) -> List[Dict[str, Any]]:
-        """Get list of Plex libraries."""
+        """Get list of Plex libraries with item counts."""
         if not self.has_plex:
             return []
 
@@ -166,17 +166,49 @@ class PosterFetcher:
             for directory in root.findall(".//Directory"):
                 lib_type = directory.get("type")
                 if lib_type in ["movie", "show"]:
+                    lib_key = directory.get("key")
+                    lib_title = directory.get("title")
+
+                    # Fetch actual item count from library endpoint
+                    count = self._get_library_count(lib_key)
+
                     libraries.append({
-                        "key": directory.get("key"),
-                        "title": directory.get("title"),
+                        "key": lib_key,
+                        "title": lib_title,
                         "type": lib_type,
-                        "count": directory.get("count", 0)
+                        "count": count
                     })
 
         except Exception as e:
             print(f"Failed to get Plex libraries: {e}")
 
         return libraries
+
+    def _get_library_count(self, library_key: str) -> Optional[int]:
+        """Get the item count for a specific library."""
+        try:
+            url = f"{self._plex_url}/library/sections/{library_key}/all"
+            params = {
+                "X-Plex-Token": self._plex_token,
+                "X-Plex-Container-Start": "0",
+                "X-Plex-Container-Size": "0"  # We only want the count, not items
+            }
+
+            response = requests.get(url, params=params, timeout=10)
+            response.raise_for_status()
+
+            from xml.etree import ElementTree
+            root = ElementTree.fromstring(response.content)
+
+            # The totalSize attribute contains the total item count
+            total_size = root.get("totalSize")
+            if total_size:
+                return int(total_size)
+
+        except Exception as e:
+            print(f"Failed to get library count for {library_key}: {e}")
+
+        return None
 
     def get_plex_poster_url(self, rating_key: str, poster_type: str = "thumb") -> Optional[str]:
         """Get poster URL for a Plex item."""
