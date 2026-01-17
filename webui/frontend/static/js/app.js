@@ -1733,7 +1733,9 @@ const livePreview = {
     // Current state
     isLoading: false,
     currentPosterUrl: null,
-    currentOverlays: [],
+    selectedOverlays: [],  // User-selected overlays to display
+    configuredOverlayTypes: [],  // Overlay types from config.yml
+    availableOverlaysByType: {},  // Loaded overlays grouped by type
 
     // DOM Elements
     elements: {
@@ -1766,11 +1768,38 @@ const livePreview = {
             btnChangePoster.addEventListener('click', () => this.showPosterPicker());
         }
 
+        // Parse config to find configured overlay types
+        this.parseConfigOverlays();
+
         console.log('Live preview initialized');
     },
 
     /**
-     * Load the preview with Dune poster and any loaded overlays
+     * Parse config.yml to find which overlay types are configured
+     */
+    parseConfigOverlays() {
+        const configEditor = document.getElementById('config-editor');
+        if (!configEditor) return;
+
+        const content = configEditor.value || '';
+        this.configuredOverlayTypes = [];
+
+        // Find overlay_files section and extract default overlay types
+        const overlayMatch = content.match(/overlay_files:\s*\n([\s\S]*?)(?=\n[a-zA-Z]|\n\s*operations:|$)/);
+        if (overlayMatch) {
+            const overlaySection = overlayMatch[1];
+            // Find all "- default: xyz" entries
+            const defaultMatches = overlaySection.matchAll(/- default:\s*(\w+)/g);
+            for (const match of defaultMatches) {
+                this.configuredOverlayTypes.push(match[1]);
+            }
+        }
+
+        console.log('Configured overlay types:', this.configuredOverlayTypes);
+    },
+
+    /**
+     * Load the preview with Dune poster (no overlays by default)
      */
     async loadPreview() {
         if (!this.elements.poster) return;
@@ -1778,9 +1807,8 @@ const livePreview = {
         this.setLoading(true);
 
         try {
-            // Get overlays from state (if config is loaded)
-            const overlays = state.loadedOverlays || [];
-            this.currentOverlays = overlays;
+            // Only include user-selected overlays, not all loaded overlays
+            const overlays = this.selectedOverlays || [];
 
             // Prepare request data
             const requestData = {
@@ -1819,8 +1847,8 @@ const livePreview = {
                 this.currentPosterUrl = result.image;
             }
 
-            // Update UI with overlay info
-            this.updateOverlaysList(overlays);
+            // Update UI with selected overlay info
+            this.updateOverlaysList();
             this.updateTitle(this.defaultMedia.title);
 
         } catch (error) {
@@ -1854,39 +1882,154 @@ const livePreview = {
     },
 
     /**
-     * Update the overlays list in the sidebar
+     * Update the overlays list in the sidebar - shows type selector and selected overlays
      */
-    updateOverlaysList(overlays) {
+    updateOverlaysList() {
         if (!this.elements.overlaysList) return;
 
-        if (!overlays || overlays.length === 0) {
-            this.elements.overlaysList.innerHTML = '<p class="placeholder-text">No overlays loaded. Select an overlay config above.</p>';
-            if (this.elements.overlaysBadge) this.elements.overlaysBadge.textContent = '0';
-            if (this.elements.overlayCount) this.elements.overlayCount.textContent = '0 overlays applied';
-            return;
+        // Build the overlay type selector and selected overlays list
+        let html = '';
+
+        // Show configured overlay types from config.yml as buttons
+        if (this.configuredOverlayTypes.length > 0) {
+            html += '<div class="overlay-type-selector">';
+            html += '<p class="selector-label">Add from config:</p>';
+            html += '<div class="overlay-type-buttons">';
+            this.configuredOverlayTypes.forEach(type => {
+                const loaded = this.availableOverlaysByType[type];
+                const loadedClass = loaded ? 'loaded' : '';
+                html += `<button class="overlay-type-btn ${loadedClass}" onclick="livePreview.showOverlayPicker('${type}')" title="Click to select ${type} overlays">${type}</button>`;
+            });
+            html += '</div></div>';
+        } else {
+            html += '<p class="placeholder-text">No overlay types configured. Check your config.yml overlay_files section.</p>';
         }
 
-        // Show first 10 overlays with thumbnail previews
-        const displayOverlays = overlays.slice(0, 10);
-        const remaining = overlays.length - 10;
+        // Show selected overlays
+        if (this.selectedOverlays.length > 0) {
+            html += '<div class="selected-overlays-section">';
+            html += '<p class="selector-label">Selected overlays:</p>';
+            this.selectedOverlays.forEach((o, idx) => {
+                html += `
+                    <div class="active-overlay-item">
+                        <div class="active-overlay-thumbnail">${this.generateThumbnail(o)}</div>
+                        <span class="active-overlay-name" title="${o.name}">${o.name}</span>
+                        <button class="overlay-remove-btn" onclick="livePreview.removeOverlay(${idx})" title="Remove">✕</button>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        }
 
-        this.elements.overlaysList.innerHTML = displayOverlays.map(o => `
-            <div class="active-overlay-item">
-                <div class="active-overlay-thumbnail">
-                    ${this.generateThumbnail(o)}
-                </div>
-                <span class="active-overlay-name" title="${o.name}">${o.name}</span>
-                <span class="active-overlay-type">${o.type || 'IMG'}</span>
-            </div>
-        `).join('') + (remaining > 0 ? `<p class="placeholder-text">...and ${remaining} more</p>` : '');
+        this.elements.overlaysList.innerHTML = html;
 
+        // Update badges
         if (this.elements.overlaysBadge) {
-            this.elements.overlaysBadge.textContent = overlays.length;
+            this.elements.overlaysBadge.textContent = this.selectedOverlays.length;
         }
 
         if (this.elements.overlayCount) {
-            this.elements.overlayCount.textContent = `${overlays.length} overlay${overlays.length !== 1 ? 's' : ''} applied`;
+            this.elements.overlayCount.textContent = `${this.selectedOverlays.length} overlay${this.selectedOverlays.length !== 1 ? 's' : ''} applied`;
         }
+    },
+
+    /**
+     * Show overlay picker dialog for a specific type
+     */
+    async showOverlayPicker(overlayType) {
+        // Load overlays for this type if not already loaded
+        if (!this.availableOverlaysByType[overlayType]) {
+            await this.loadOverlayType(overlayType);
+        }
+
+        const overlays = this.availableOverlaysByType[overlayType] || [];
+        if (overlays.length === 0) {
+            alert(`No overlays found for type: ${overlayType}`);
+            return;
+        }
+
+        // Create picker dialog
+        const existingDialog = document.getElementById('overlay-picker-dialog');
+        if (existingDialog) existingDialog.remove();
+
+        const dialog = document.createElement('div');
+        dialog.id = 'overlay-picker-dialog';
+        dialog.className = 'modal';
+        dialog.innerHTML = `
+            <div class="modal-content" style="max-width: 600px; max-height: 80vh;">
+                <div class="modal-header">
+                    <h3>Select ${overlayType} Overlay</h3>
+                    <button class="btn btn-icon" onclick="document.getElementById('overlay-picker-dialog').remove()">✕</button>
+                </div>
+                <div class="modal-body" style="overflow-y: auto; max-height: 60vh; padding: 15px;">
+                    <div class="overlay-picker-grid">
+                        ${overlays.map((o, idx) => {
+                            const isSelected = this.selectedOverlays.some(s => s.name === o.name);
+                            return `
+                                <div class="overlay-picker-item ${isSelected ? 'selected' : ''}" onclick="livePreview.toggleOverlayFromPicker('${overlayType}', ${idx})">
+                                    <div class="picker-thumbnail">${this.generateThumbnail(o)}</div>
+                                    <span class="picker-name">${o.name}</span>
+                                    ${isSelected ? '<span class="picker-check">✓</span>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                <div class="modal-footer" style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 10px;">
+                    <button class="btn btn-secondary" onclick="document.getElementById('overlay-picker-dialog').remove()">Close</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+    },
+
+    /**
+     * Load overlays for a specific type from the default overlay files
+     */
+    async loadOverlayType(overlayType) {
+        try {
+            const filePath = `/kometa/defaults/overlays/${overlayType}.yml`;
+            const response = await fetch(`/api/overlays/parse?file_path=${encodeURIComponent(filePath)}`);
+            const result = await response.json();
+            this.availableOverlaysByType[overlayType] = result.overlays || [];
+            this.updateOverlaysList();
+        } catch (error) {
+            console.error(`Failed to load overlay type ${overlayType}:`, error);
+            this.availableOverlaysByType[overlayType] = [];
+        }
+    },
+
+    /**
+     * Toggle an overlay from the picker dialog
+     */
+    toggleOverlayFromPicker(overlayType, index) {
+        const overlay = this.availableOverlaysByType[overlayType]?.[index];
+        if (!overlay) return;
+
+        const existingIdx = this.selectedOverlays.findIndex(o => o.name === overlay.name);
+        if (existingIdx >= 0) {
+            // Remove it
+            this.selectedOverlays.splice(existingIdx, 1);
+        } else {
+            // Add it
+            this.selectedOverlays.push({ ...overlay });
+        }
+
+        // Refresh the picker dialog to show updated selection
+        this.showOverlayPicker(overlayType);
+
+        // Update the sidebar and preview
+        this.updateOverlaysList();
+        this.loadPreview();
+    },
+
+    /**
+     * Remove an overlay from selection
+     */
+    removeOverlay(index) {
+        this.selectedOverlays.splice(index, 1);
+        this.updateOverlaysList();
+        this.loadPreview();
     },
 
     /**
@@ -1944,6 +2087,7 @@ const livePreview = {
      * Refresh the preview with current state
      */
     async refreshPreview() {
+        this.parseConfigOverlays();  // Re-parse config in case it changed
         await this.loadPreview();
     },
 
@@ -1965,13 +2109,11 @@ const livePreview = {
     },
 
     /**
-     * Called when overlays are loaded from a config file
+     * Called when overlays are loaded from a config file (legacy - no longer auto-loads all)
      */
     onOverlaysLoaded(overlays) {
-        this.currentOverlays = overlays;
-        this.updateOverlaysList(overlays);
-        // Auto-refresh preview when overlays change
-        this.loadPreview();
+        // Don't auto-load all overlays anymore - just update the UI
+        this.updateOverlaysList();
     }
 };
 
