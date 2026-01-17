@@ -176,6 +176,22 @@ libraries:
                     </div>
                 </div>
 
+                <!-- Visual Overlay Editor (Primary Feature) -->
+                <div class="visual-editor-section">
+                    <h3>Visual Overlay Editor</h3>
+                    <p class="section-hint">Visually design and preview overlays on a poster. Select overlays from the loaded config.</p>
+
+                    <div class="visual-editor-toolbar">
+                        <button id="btn-open-visual-editor" class="btn btn-primary">
+                            <span class="toolbar-icon">✏️</span> Open Visual Editor
+                        </button>
+                        <span id="loaded-overlays-indicator" class="loaded-indicator hidden">
+                            <span class="indicator-dot"></span>
+                            <span id="loaded-overlays-count">0</span> overlays loaded
+                        </span>
+                    </div>
+                </div>
+
                 <!-- Overlay Groups Info (shown when groups exist) -->
                 <div class="overlay-groups-section hidden" id="overlay-groups-section">
                     <h3>Overlay Groups <span class="badge" id="groups-count-badge"></span></h3>
@@ -338,24 +354,6 @@ libraries:
                             </div>
                         </div>
                     </details>
-                </div>
-
-                <!-- Visual Overlay Editor (new feature) -->
-                <div class="visual-editor-section">
-                    <h3>Visual Overlay Editor <span class="badge badge-beta">Beta</span></h3>
-                    <p class="section-hint">Visually edit overlay positions and export to YAML. Changes sync bidirectionally.</p>
-
-                    <div class="visual-editor-toolbar">
-                        <button id="btn-open-visual-editor" class="btn btn-primary">
-                            <span class="toolbar-icon">✏️</span> Open Visual Editor
-                        </button>
-                        <button id="btn-add-overlay" class="btn btn-secondary" disabled>
-                            <span class="toolbar-icon">➕</span> Add Overlay
-                        </button>
-                        <button id="btn-export-yaml" class="btn btn-secondary" disabled>
-                            <span class="toolbar-icon">📄</span> Export YAML
-                        </button>
-                    </div>
                 </div>
             </div>
         </section>

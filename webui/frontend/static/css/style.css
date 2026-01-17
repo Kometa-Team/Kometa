@@ -2222,6 +2222,107 @@ body {
     cursor: not-allowed;
 }
 
+/* Import Overlay Cards */
+.import-overlay-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+}
+
+.import-overlay-card:hover {
+    border-color: var(--primary-color);
+    background: var(--bg-secondary);
+}
+
+.import-overlay-card input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.import-overlay-card.already-added {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.import-overlay-card.already-added:hover {
+    border-color: var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.import-overlay-thumbnail {
+    width: 40px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.import-overlay-thumbnail img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.import-overlay-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.import-overlay-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.import-overlay-meta {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.import-overlay-type {
+    font-size: 9px;
+    color: var(--text-muted);
+    background: var(--bg-secondary);
+    padding: 1px 4px;
+    border-radius: 2px;
+}
+
+.import-overlay-group {
+    font-size: 9px;
+    color: var(--primary-color);
+}
+
+.import-overlay-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 8px;
+    background: var(--success-color);
+    color: #000;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
 /* YAML Editor Panel */
 .yaml-editor-panel {
     flex: 1;

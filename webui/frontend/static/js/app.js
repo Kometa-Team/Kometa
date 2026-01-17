@@ -1992,8 +1992,46 @@ const visualEditor = {
             }
         }
 
-        // Create a sample gradient background as fallback
+        // Load default Dune poster from TMDb as fallback
+        this.loadDefaultPoster();
+    },
+
+    /**
+     * Load a default poster (Dune 2021) for the visual editor
+     */
+    async loadDefaultPoster() {
+        if (!this.elements.canvasPoster) return;
+
+        // Set a temporary gradient while loading
         this.elements.canvasPoster.style.backgroundImage = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)';
+
+        try {
+            // Dune (2021) TMDb ID: 438631
+            const requestData = {
+                overlays: [],
+                canvas_type: 'portrait',
+                template_variables: {},
+                poster_source: 'tmdb',
+                tmdb_id: 438631,
+                media_type: 'movie'
+            };
+
+            const response = await fetch('/api/overlay/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+            if (result.image) {
+                this.elements.canvasPoster.style.backgroundImage = `url(${result.image})`;
+                // Store as default poster info
+                this.defaultPosterLoaded = true;
+            }
+        } catch (error) {
+            console.log('Could not load default poster:', error);
+            // Keep the gradient background on error
+        }
     },
 
     // Fetch a clean poster (without overlays) for the visual editor
@@ -3011,10 +3049,8 @@ const visualEditor = {
 
     // Show import dialog - allows importing overlays from config
     showImportDialog() {
-        console.log('showImportDialog called');
-        console.log('state.loadedOverlays:', state.loadedOverlays);
         if (!state.loadedOverlays || state.loadedOverlays.length === 0) {
-            alert('No overlays found in config. Please load an overlay file first from the "Overlay Source" section.');
+            alert('No overlays found in config. Please load an overlay file first from the "Overlay Source" section on the Overlays page.');
             return;
         }
 
@@ -3022,43 +3058,120 @@ const visualEditor = {
         const existingDialog = document.getElementById('import-overlays-dialog');
         if (existingDialog) existingDialog.remove();
 
+        // Get unique groups from loaded overlays
+        const groups = [...new Set(state.loadedOverlays.map(o => o.group).filter(Boolean))].sort();
+
         const dialog = document.createElement('div');
         dialog.id = 'import-overlays-dialog';
         dialog.className = 'modal';
         dialog.innerHTML = `
-            <div class="modal-content add-overlay-modal-content" style="max-height: 80vh; width: 600px;">
-                <div class="modal-header">
-                    <h3>Import Overlays from Config</h3>
-                    <button class="btn btn-secondary btn-small" onclick="document.getElementById('import-overlays-dialog').remove()">✕</button>
+            <div class="modal-content" style="max-height: 85vh; width: 700px; display: flex; flex-direction: column;">
+                <div class="modal-header" style="flex-shrink: 0;">
+                    <h3>Add Overlays from Config</h3>
+                    <button class="btn btn-icon" onclick="document.getElementById('import-overlays-dialog').remove()" title="Close">✕</button>
                 </div>
-                <div class="add-overlay-content" style="overflow-y: auto; max-height: 60vh;">
-                    <p class="section-hint">Select overlays to import (${state.loadedOverlays.length} available)</p>
-                    <div style="margin-bottom: 15px;">
+                <div style="padding: 15px; flex-shrink: 0; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                        <select id="import-group-filter" onchange="visualEditor.filterImportList()" style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color);">
+                            <option value="">All Groups (${state.loadedOverlays.length})</option>
+                            ${groups.map(g => {
+                                const count = state.loadedOverlays.filter(o => o.group === g).length;
+                                return `<option value="${g}">${g} (${count})</option>`;
+                            }).join('')}
+                            <option value="__none__">No Group (${state.loadedOverlays.filter(o => !o.group).length})</option>
+                        </select>
+                        <input type="text" id="import-search" placeholder="Search overlays..." onkeyup="visualEditor.filterImportList()" style="padding: 6px 10px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); flex: 1; min-width: 150px;">
                         <button class="btn btn-small btn-secondary" onclick="visualEditor.selectAllImport(true)">Select All</button>
                         <button class="btn btn-small btn-secondary" onclick="visualEditor.selectAllImport(false)">Deselect All</button>
                     </div>
-                    <div id="import-overlay-list" style="display: flex; flex-direction: column; gap: 8px;">
-                        ${state.loadedOverlays.map((o, i) => `
-                            <label class="import-overlay-item" style="display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg-tertiary); border-radius: 4px; cursor: pointer;">
-                                <input type="checkbox" value="${i}" checked>
-                                <span style="flex: 1;">${o.name}</span>
-                                <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">${o.type || 'image'}</span>
-                            </label>
-                        `).join('')}
-                    </div>
-                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                </div>
+                <div id="import-overlay-list" style="overflow-y: auto; flex: 1; padding: 15px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">
+                    ${this.renderImportOverlayItems(state.loadedOverlays)}
+                </div>
+                <div style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                    <span id="import-selection-count" style="color: var(--text-muted); font-size: 12px;">0 selected</span>
+                    <div style="display: flex; gap: 10px;">
                         <button class="btn btn-secondary" onclick="document.getElementById('import-overlays-dialog').remove()">Cancel</button>
-                        <button class="btn btn-primary" onclick="visualEditor.importSelectedOverlays()">Import Selected</button>
+                        <button class="btn btn-primary" onclick="visualEditor.importSelectedOverlays()">Add Selected</button>
                     </div>
                 </div>
             </div>
         `;
         document.body.appendChild(dialog);
+
+        // Update selection count initially
+        this.updateImportSelectionCount();
+    },
+
+    renderImportOverlayItems(overlays) {
+        return overlays.map((o, i) => {
+            const originalIndex = state.loadedOverlays.indexOf(o);
+            const thumbnail = this.generateLayerThumbnail(o);
+            const isAlreadyAdded = this.overlays.some(existing => existing.name === o.name);
+
+            return `
+                <label class="import-overlay-card ${isAlreadyAdded ? 'already-added' : ''}" data-index="${originalIndex}" data-group="${o.group || ''}" data-name="${o.name.toLowerCase()}">
+                    <input type="checkbox" value="${originalIndex}" ${isAlreadyAdded ? 'disabled' : ''} onchange="visualEditor.updateImportSelectionCount()">
+                    <div class="import-overlay-thumbnail">${thumbnail}</div>
+                    <div class="import-overlay-info">
+                        <span class="import-overlay-name" title="${o.name}">${o.name}</span>
+                        <span class="import-overlay-meta">
+                            <span class="import-overlay-type">${(o.type || 'image').toUpperCase()}</span>
+                            ${o.group ? `<span class="import-overlay-group">${o.group}</span>` : ''}
+                        </span>
+                    </div>
+                    ${isAlreadyAdded ? '<span class="import-overlay-badge">Added</span>' : ''}
+                </label>
+            `;
+        }).join('');
+    },
+
+    filterImportList() {
+        const groupFilter = document.getElementById('import-group-filter')?.value || '';
+        const searchFilter = (document.getElementById('import-search')?.value || '').toLowerCase();
+        const cards = document.querySelectorAll('.import-overlay-card');
+
+        cards.forEach(card => {
+            const group = card.dataset.group;
+            const name = card.dataset.name;
+
+            let show = true;
+
+            // Apply group filter
+            if (groupFilter) {
+                if (groupFilter === '__none__') {
+                    if (group) show = false;
+                } else {
+                    if (group !== groupFilter) show = false;
+                }
+            }
+
+            // Apply search filter
+            if (show && searchFilter) {
+                if (!name.includes(searchFilter)) show = false;
+            }
+
+            card.style.display = show ? '' : 'none';
+        });
     },
 
     selectAllImport(select) {
-        const checkboxes = document.querySelectorAll('#import-overlay-list input[type="checkbox"]');
-        checkboxes.forEach(cb => cb.checked = select);
+        const checkboxes = document.querySelectorAll('#import-overlay-list input[type="checkbox"]:not(:disabled)');
+        checkboxes.forEach(cb => {
+            // Only affect visible items
+            if (cb.closest('.import-overlay-card').style.display !== 'none') {
+                cb.checked = select;
+            }
+        });
+        this.updateImportSelectionCount();
+    },
+
+    updateImportSelectionCount() {
+        const checked = document.querySelectorAll('#import-overlay-list input[type="checkbox"]:checked').length;
+        const countEl = document.getElementById('import-selection-count');
+        if (countEl) {
+            countEl.textContent = `${checked} selected`;
+        }
     },
 
     importSelectedOverlays() {
@@ -3066,7 +3179,7 @@ const visualEditor = {
         const indices = Array.from(checkboxes).map(cb => parseInt(cb.value));
 
         if (indices.length === 0) {
-            alert('Please select at least one overlay to import');
+            alert('Please select at least one overlay to add');
             return;
         }
 
@@ -3075,26 +3188,21 @@ const visualEditor = {
         // Import selected overlays
         const newOverlays = indices.map(i => JSON.parse(JSON.stringify(state.loadedOverlays[i])));
 
-        // Add to current overlays (or replace?)
-        const replaceAll = this.overlays.length === 0 || confirm('Replace existing overlays? (Cancel to add to existing)');
-
-        if (replaceAll) {
-            this.overlays = newOverlays;
-        } else {
-            // Add only overlays that don't exist by name
-            newOverlays.forEach(newOverlay => {
-                if (!this.overlays.some(o => o.name === newOverlay.name)) {
-                    this.overlays.push(newOverlay);
-                }
-            });
-        }
+        // Add only overlays that don't exist by name
+        let addedCount = 0;
+        newOverlays.forEach(newOverlay => {
+            if (!this.overlays.some(o => o.name === newOverlay.name)) {
+                this.overlays.push(newOverlay);
+                addedCount++;
+            }
+        });
 
         // Close dialog and refresh
         document.getElementById('import-overlays-dialog')?.remove();
         this.renderOverlays();
         this.renderLayersList();
         this.generateYaml();
-        this.setYamlStatus('success', `Imported ${indices.length} overlays`);
+        this.setYamlStatus('success', `Added ${addedCount} overlay${addedCount !== 1 ? 's' : ''}`);
     }
 };
 
