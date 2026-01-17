@@ -189,6 +189,10 @@ function switchTab(tabName) {
         loadRunHistory();
     } else if (tabName === 'overlays') {
         loadOverlayFiles();
+        // Load live preview with Dune poster (on first visit or refresh)
+        if (window.livePreview) {
+            window.livePreview.loadPreview();
+        }
     }
 }
 
@@ -874,6 +878,11 @@ async function loadOverlaysFromFile() {
         renderOverlayGroups();
         populateGroupFilter();
         renderOverlayList();
+
+        // Update live preview with loaded overlays
+        if (window.livePreview) {
+            window.livePreview.onOverlaysLoaded(state.loadedOverlays);
+        }
 
     } catch (error) {
         console.error('Failed to parse overlay file:', error);
@@ -1708,6 +1717,271 @@ window.removeSelectedOverlay = removeSelectedOverlay;
 window.selectMediaItem = selectMediaItem;
 window.filterByGroup = filterByGroup;
 window.copyImagePath = copyImagePath;
+
+// ============================================================================
+// Live Preview Manager - Shows real-time overlay preview on the page
+// ============================================================================
+
+const livePreview = {
+    // Default media for preview (Dune 2021)
+    defaultMedia: {
+        tmdb_id: 438631,
+        title: 'Dune (2021)',
+        media_type: 'movie'
+    },
+
+    // Current state
+    isLoading: false,
+    currentPosterUrl: null,
+    currentOverlays: [],
+
+    // DOM Elements
+    elements: {
+        poster: null,
+        loading: null,
+        title: null,
+        overlayCount: null,
+        overlaysList: null,
+        overlaysBadge: null
+    },
+
+    init() {
+        // Get DOM elements
+        this.elements.poster = document.getElementById('live-preview-poster');
+        this.elements.loading = document.getElementById('live-preview-loading');
+        this.elements.title = document.getElementById('preview-media-title');
+        this.elements.overlayCount = document.getElementById('preview-overlay-count');
+        this.elements.overlaysList = document.getElementById('active-overlays-list');
+        this.elements.overlaysBadge = document.getElementById('active-overlays-badge');
+
+        // Add event listeners for new buttons
+        const btnRefresh = document.getElementById('btn-refresh-preview');
+        const btnChangePoster = document.getElementById('btn-change-poster');
+
+        if (btnRefresh) {
+            btnRefresh.addEventListener('click', () => this.refreshPreview());
+        }
+
+        if (btnChangePoster) {
+            btnChangePoster.addEventListener('click', () => this.showPosterPicker());
+        }
+
+        console.log('Live preview initialized');
+    },
+
+    /**
+     * Load the preview with Dune poster and any loaded overlays
+     */
+    async loadPreview() {
+        if (!this.elements.poster) return;
+
+        this.setLoading(true);
+
+        try {
+            // Get overlays from state (if config is loaded)
+            const overlays = state.loadedOverlays || [];
+            this.currentOverlays = overlays;
+
+            // Prepare request data
+            const requestData = {
+                overlays: overlays.map(o => ({
+                    name: o.name,
+                    type: o.type || 'image',
+                    default: o.default,
+                    horizontal_offset: o.horizontal_offset,
+                    vertical_offset: o.vertical_offset,
+                    horizontal_align: o.horizontal_align,
+                    vertical_align: o.vertical_align,
+                    back_color: o.back_color,
+                    back_width: o.back_width,
+                    back_height: o.back_height,
+                    font: o.font,
+                    font_size: o.font_size,
+                    font_color: o.font_color
+                })),
+                canvas_type: 'portrait',
+                template_variables: {},
+                poster_source: 'tmdb',
+                tmdb_id: this.defaultMedia.tmdb_id,
+                media_type: this.defaultMedia.media_type
+            };
+
+            const response = await fetch('/api/overlay/preview', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+
+            if (result.image) {
+                this.showPreviewImage(result.image);
+                this.currentPosterUrl = result.image;
+            }
+
+            // Update UI with overlay info
+            this.updateOverlaysList(overlays);
+            this.updateTitle(this.defaultMedia.title);
+
+        } catch (error) {
+            console.error('Failed to load preview:', error);
+            this.showError('Failed to load preview');
+        } finally {
+            this.setLoading(false);
+        }
+    },
+
+    /**
+     * Show the preview image
+     */
+    showPreviewImage(imageData) {
+        if (!this.elements.poster) return;
+
+        // Clear loading indicator
+        const loading = this.elements.loading;
+        if (loading) loading.classList.add('hidden');
+
+        // Remove existing image if any
+        const existingImg = this.elements.poster.querySelector('img.poster-image');
+        if (existingImg) existingImg.remove();
+
+        // Create and add new image
+        const img = document.createElement('img');
+        img.className = 'poster-image';
+        img.src = imageData;
+        img.alt = 'Overlay Preview';
+        this.elements.poster.appendChild(img);
+    },
+
+    /**
+     * Update the overlays list in the sidebar
+     */
+    updateOverlaysList(overlays) {
+        if (!this.elements.overlaysList) return;
+
+        if (!overlays || overlays.length === 0) {
+            this.elements.overlaysList.innerHTML = '<p class="placeholder-text">No overlays loaded. Select an overlay config above.</p>';
+            if (this.elements.overlaysBadge) this.elements.overlaysBadge.textContent = '0';
+            if (this.elements.overlayCount) this.elements.overlayCount.textContent = '0 overlays applied';
+            return;
+        }
+
+        // Show first 10 overlays with thumbnail previews
+        const displayOverlays = overlays.slice(0, 10);
+        const remaining = overlays.length - 10;
+
+        this.elements.overlaysList.innerHTML = displayOverlays.map(o => `
+            <div class="active-overlay-item">
+                <div class="active-overlay-thumbnail">
+                    ${this.generateThumbnail(o)}
+                </div>
+                <span class="active-overlay-name" title="${o.name}">${o.name}</span>
+                <span class="active-overlay-type">${o.type || 'IMG'}</span>
+            </div>
+        `).join('') + (remaining > 0 ? `<p class="placeholder-text">...and ${remaining} more</p>` : '');
+
+        if (this.elements.overlaysBadge) {
+            this.elements.overlaysBadge.textContent = overlays.length;
+        }
+
+        if (this.elements.overlayCount) {
+            this.elements.overlayCount.textContent = `${overlays.length} overlay${overlays.length !== 1 ? 's' : ''} applied`;
+        }
+    },
+
+    /**
+     * Generate a tiny thumbnail for an overlay
+     */
+    generateThumbnail(overlay) {
+        if (overlay.image_url) {
+            return `<img src="${overlay.image_url}" style="width:100%;height:100%;object-fit:contain;">`;
+        }
+
+        // Generate text-based thumbnail
+        const initial = (overlay.name || 'O').charAt(0).toUpperCase();
+        return `<span>${initial}</span>`;
+    },
+
+    /**
+     * Update the media title display
+     */
+    updateTitle(title) {
+        if (this.elements.title) {
+            this.elements.title.textContent = title;
+        }
+    },
+
+    /**
+     * Set loading state
+     */
+    setLoading(loading) {
+        this.isLoading = loading;
+
+        if (this.elements.loading) {
+            if (loading) {
+                this.elements.loading.classList.remove('hidden');
+            } else {
+                this.elements.loading.classList.add('hidden');
+            }
+        }
+    },
+
+    /**
+     * Show error message in preview area
+     */
+    showError(message) {
+        if (!this.elements.poster) return;
+
+        this.elements.poster.innerHTML = `
+            <div class="live-preview-error">
+                <span>⚠️</span>
+                <p>${message}</p>
+            </div>
+        `;
+    },
+
+    /**
+     * Refresh the preview with current state
+     */
+    async refreshPreview() {
+        await this.loadPreview();
+    },
+
+    /**
+     * Show poster picker (opens advanced section or a modal)
+     */
+    showPosterPicker() {
+        // Open the advanced section and scroll to poster source
+        const advancedDetails = document.getElementById('overlay-advanced-details');
+        if (advancedDetails) {
+            advancedDetails.open = true;
+
+            // Scroll to poster source section
+            const posterSection = document.querySelector('.poster-source-section');
+            if (posterSection) {
+                posterSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    },
+
+    /**
+     * Called when overlays are loaded from a config file
+     */
+    onOverlaysLoaded(overlays) {
+        this.currentOverlays = overlays;
+        this.updateOverlaysList(overlays);
+        // Auto-refresh preview when overlays change
+        this.loadPreview();
+    }
+};
+
+// Initialize live preview on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    livePreview.init();
+});
+
+// Make it globally accessible
+window.livePreview = livePreview;
 
 // ============================================================================
 // Visual Overlay Editor

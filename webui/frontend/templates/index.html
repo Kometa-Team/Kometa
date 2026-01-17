@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1>Kometa Web UI <span style="font-size: 12px; color: #888; font-weight: normal;">v0.2.3-dev</span></h1>
+            <h1>Kometa Web UI <span style="font-size: 12px; color: #888; font-weight: normal;">v0.3.0-dev</span></h1>
             <div class="status-indicator" id="connection-status">
                 <span class="status-dot"></span>
                 <span class="status-text">Connecting...</span>
@@ -136,205 +136,236 @@ libraries:
 
         <!-- Overlays Tab -->
         <section id="tab-overlays" class="tab-content hidden">
-            <div class="overlays-panel">
-                <h2>Overlay Preview</h2>
-                <p class="section-desc">Preview how overlays will appear on your media posters.</p>
-
-                <!-- Overlay Source Selection -->
-                <div class="overlay-source-section">
-                    <h3>Select Overlay Configuration</h3>
-                    <div class="overlay-source-options">
-                        <div class="form-group">
-                            <label for="overlay-source">Overlay File</label>
+            <div class="overlays-panel overlays-panel-redesigned">
+                <!-- Hero Section: Live Overlay Preview -->
+                <div class="overlay-hero-section">
+                    <div class="overlay-hero-header">
+                        <div class="hero-title-group">
+                            <h2>Overlay Preview</h2>
+                            <p class="section-desc">See exactly how your overlays will appear on media posters.</p>
+                        </div>
+                        <div class="overlay-config-selector">
                             <select id="overlay-source">
-                                <option value="">-- Select an overlay file --</option>
+                                <option value="">-- Select overlay config --</option>
                             </select>
+                            <button id="btn-load-overlays" class="btn btn-secondary btn-small">Load</button>
                         </div>
-                        <button id="btn-load-overlays" class="btn btn-secondary">Load Overlays</button>
                     </div>
 
-                    <!-- Template Variables (collapsible) -->
-                    <div class="template-vars-section">
-                        <details id="template-vars-details">
-                            <summary>Template Variables <span id="template-vars-badge" class="badge hidden">Has templates</span></summary>
-                            <div class="template-vars-content">
-                                <p class="section-hint">Override template variables for this overlay file. Use JSON format.</p>
-                                <div class="form-group">
-                                    <label for="template-vars-input">Variables (JSON)</label>
-                                    <textarea id="template-vars-input" class="template-vars-input" placeholder='{"horizontal_position": "right", "style": "red"}'></textarea>
+                    <!-- Live Preview Canvas (Embedded) -->
+                    <div class="overlay-live-preview">
+                        <div class="live-preview-canvas-area">
+                            <div class="live-preview-poster" id="live-preview-poster">
+                                <div class="live-preview-loading" id="live-preview-loading">
+                                    <div class="loading-spinner"></div>
+                                    <span>Loading preview...</span>
                                 </div>
-                                <div class="template-vars-presets">
-                                    <span class="preset-label">Common presets:</span>
-                                    <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "right"}'>Right position</button>
-                                    <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "left"}'>Left position</button>
-                                    <button class="btn btn-small preset-btn" data-preset='{"style": "red"}'>Red style</button>
-                                    <button class="btn btn-small preset-btn" data-preset='{"builder_level": "episode"}'>Episode level</button>
+                                <!-- Overlays will be rendered here -->
+                            </div>
+                            <div class="live-preview-info">
+                                <span class="preview-media-title" id="preview-media-title">Dune (2021)</span>
+                                <span class="preview-overlay-count" id="preview-overlay-count">0 overlays applied</span>
+                            </div>
+                        </div>
+
+                        <div class="live-preview-sidebar">
+                            <div class="sidebar-section">
+                                <h4>Active Overlays <span class="badge" id="active-overlays-badge">0</span></h4>
+                                <div class="active-overlays-list" id="active-overlays-list">
+                                    <p class="placeholder-text">Load a config to see overlays</p>
                                 </div>
-                                <button id="btn-apply-template-vars" class="btn btn-secondary btn-small">Apply & Reload</button>
                             </div>
-                        </details>
-                    </div>
-                </div>
 
-                <!-- Visual Overlay Editor (Primary Feature) -->
-                <div class="visual-editor-section">
-                    <h3>Visual Overlay Editor</h3>
-                    <p class="section-hint">Visually design and preview overlays on a poster. Select overlays from the loaded config.</p>
-
-                    <div class="visual-editor-toolbar">
-                        <button id="btn-open-visual-editor" class="btn btn-primary">
-                            <span class="toolbar-icon">✏️</span> Open Visual Editor
-                        </button>
-                        <span id="loaded-overlays-indicator" class="loaded-indicator hidden">
-                            <span class="indicator-dot"></span>
-                            <span id="loaded-overlays-count">0</span> overlays loaded
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Overlay Groups Info (shown when groups exist) -->
-                <div class="overlay-groups-section hidden" id="overlay-groups-section">
-                    <h3>Overlay Groups <span class="badge" id="groups-count-badge"></span></h3>
-                    <p class="section-hint">Overlays in the same group are mutually exclusive - only one will be applied per item.</p>
-                    <div id="overlay-groups" class="overlay-groups"></div>
-                </div>
-
-                <!-- Overlay List -->
-                <div class="overlay-list-section">
-                    <h3>Available Overlays <span class="badge" id="overlays-count-badge"></span></h3>
-                    <div class="overlay-list-controls">
-                        <select id="overlay-filter-group" class="filter-select">
-                            <option value="">All Groups</option>
-                        </select>
-                        <select id="overlay-filter-type" class="filter-select">
-                            <option value="">All Types</option>
-                            <option value="image">Image</option>
-                            <option value="text">Text</option>
-                            <option value="blur">Blur</option>
-                            <option value="backdrop">Backdrop</option>
-                        </select>
-                    </div>
-                    <div id="overlay-list" class="overlay-list">
-                        <p class="placeholder-text">Select an overlay file to see available overlays.</p>
-                    </div>
-                </div>
-
-                <!-- Poster Source Selection -->
-                <div class="poster-source-section">
-                    <h3>Select Poster Source</h3>
-                    <p class="section-hint">Use an actual poster from your library or a sample canvas.</p>
-
-                    <div class="poster-source-tabs">
-                        <button class="poster-tab active" data-source="sample">Sample Canvas</button>
-                        <button class="poster-tab" data-source="plex">Plex Library</button>
-                        <button class="poster-tab" data-source="tmdb">TMDb Search</button>
-                    </div>
-
-                    <!-- Sample Canvas Options (default) -->
-                    <div id="poster-source-sample" class="poster-source-content active">
-                        <div class="form-group">
-                            <label for="canvas-type">Canvas Type</label>
-                            <select id="canvas-type">
-                                <option value="portrait">Portrait (1000x1500)</option>
-                                <option value="landscape">Landscape (1920x1080)</option>
-                                <option value="square">Square (1000x1000)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Plex Search -->
-                    <div id="poster-source-plex" class="poster-source-content hidden">
-                        <div class="media-search-row">
-                            <div class="form-group">
-                                <label for="plex-search">Search Plex</label>
-                                <input type="text" id="plex-search" placeholder="Movie or show title...">
+                            <div class="sidebar-section">
+                                <h4>Quick Actions</h4>
+                                <div class="quick-actions">
+                                    <button id="btn-open-visual-editor" class="btn btn-primary btn-block">
+                                        <span class="toolbar-icon">✏️</span> Edit Overlays
+                                    </button>
+                                    <button id="btn-refresh-preview" class="btn btn-secondary btn-block">
+                                        <span class="toolbar-icon">🔄</span> Refresh Preview
+                                    </button>
+                                    <button id="btn-change-poster" class="btn btn-secondary btn-block">
+                                        <span class="toolbar-icon">🖼️</span> Change Poster
+                                    </button>
+                                </div>
                             </div>
-                            <button id="btn-search-plex" class="btn btn-secondary">Search</button>
-                        </div>
-                        <div id="plex-status" class="source-status"></div>
-                        <div id="plex-results" class="media-results">
-                            <p class="placeholder-text">Enter a title to search your Plex library.</p>
-                        </div>
-                    </div>
 
-                    <!-- TMDb Search -->
-                    <div id="poster-source-tmdb" class="poster-source-content hidden">
-                        <div class="media-search-row">
-                            <div class="form-group">
-                                <label for="tmdb-search">Search TMDb</label>
-                                <input type="text" id="tmdb-search" placeholder="Movie or show title...">
-                            </div>
-                            <div class="form-group">
-                                <label for="tmdb-type">Type</label>
-                                <select id="tmdb-type">
-                                    <option value="movie">Movie</option>
-                                    <option value="tv">TV Show</option>
-                                </select>
-                            </div>
-                            <button id="btn-search-tmdb" class="btn btn-secondary">Search</button>
-                        </div>
-                        <div id="tmdb-status" class="source-status"></div>
-                        <div id="tmdb-results" class="media-results">
-                            <p class="placeholder-text">Enter a title to search TMDb.</p>
-                        </div>
-                    </div>
-
-                    <!-- Selected Poster Display -->
-                    <div id="selected-poster-info" class="selected-poster-info hidden">
-                        <span class="selected-label">Using poster:</span>
-                        <span id="selected-poster-title" class="selected-title"></span>
-                        <button id="btn-clear-poster" class="btn-clear">Clear</button>
-                    </div>
-                </div>
-
-                <!-- Preview Canvas -->
-                <div class="preview-section">
-                    <h3>Preview</h3>
-                    <div class="preview-actions">
-                        <button id="btn-generate-preview" class="btn btn-primary">Generate Preview</button>
-                        <button id="btn-download-preview" class="btn btn-secondary hidden">Download Preview</button>
-                    </div>
-
-                    <div class="preview-canvas-container">
-                        <div id="preview-canvas" class="preview-canvas">
-                            <div class="canvas-placeholder">
-                                <span>&#128444;</span>
-                                <p>Select overlays and click "Generate Preview"</p>
+                            <div class="sidebar-section collapsible">
+                                <details id="template-vars-details">
+                                    <summary>
+                                        <h4>Template Variables</h4>
+                                        <span id="template-vars-badge" class="badge hidden">Has templates</span>
+                                    </summary>
+                                    <div class="template-vars-content">
+                                        <textarea id="template-vars-input" class="template-vars-input" placeholder='{"horizontal_position": "right"}'></textarea>
+                                        <div class="template-vars-presets">
+                                            <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "right"}'>Right</button>
+                                            <button class="btn btn-small preset-btn" data-preset='{"horizontal_position": "left"}'>Left</button>
+                                            <button class="btn btn-small preset-btn" data-preset='{"style": "red"}'>Red</button>
+                                        </div>
+                                        <button id="btn-apply-template-vars" class="btn btn-secondary btn-small btn-block">Apply</button>
+                                    </div>
+                                </details>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Selected Overlays for Preview -->
-                    <div class="selected-overlays">
-                        <h4>Selected Overlays</h4>
-                        <div id="selected-overlay-list" class="selected-overlay-list">
-                            <p class="placeholder-text">Click overlays above to add them to the preview.</p>
-                        </div>
-                        <button id="btn-clear-selection" class="btn btn-secondary btn-small">Clear Selection</button>
-                    </div>
                 </div>
 
-                <!-- Overlay Details Panel -->
-                <div class="overlay-details-section hidden" id="overlay-details">
-                    <h3>Overlay Details</h3>
-                    <div class="details-content">
-                        <div class="detail-row">
-                            <span class="detail-label">Name:</span>
-                            <span id="detail-name" class="detail-value">-</span>
+                <!-- Advanced Options (Collapsible) -->
+                <div class="overlay-advanced-section">
+                    <details id="overlay-advanced-details">
+                        <summary>
+                            <h3>Advanced Options</h3>
+                            <span class="badge" id="overlays-count-badge">0</span>
+                        </summary>
+                        <div class="advanced-content">
+                            <!-- Overlay Groups Info -->
+                            <div class="overlay-groups-section" id="overlay-groups-section">
+                                <h4>Overlay Groups <span class="badge" id="groups-count-badge"></span></h4>
+                                <p class="section-hint">Overlays in the same group are mutually exclusive.</p>
+                                <div id="overlay-groups" class="overlay-groups"></div>
+                            </div>
+
+                            <!-- Overlay List -->
+                            <div class="overlay-list-section">
+                                <h4>All Available Overlays</h4>
+                                <div class="overlay-list-controls">
+                                    <select id="overlay-filter-group" class="filter-select">
+                                        <option value="">All Groups</option>
+                                    </select>
+                                    <select id="overlay-filter-type" class="filter-select">
+                                        <option value="">All Types</option>
+                                        <option value="image">Image</option>
+                                        <option value="text">Text</option>
+                                        <option value="blur">Blur</option>
+                                        <option value="backdrop">Backdrop</option>
+                                    </select>
+                                </div>
+                                <div id="overlay-list" class="overlay-list">
+                                    <p class="placeholder-text">Select an overlay file to see available overlays.</p>
+                                </div>
+                            </div>
+
+                            <!-- Poster Source Selection -->
+                            <div class="poster-source-section">
+                                <h4>Custom Poster Source</h4>
+                                <p class="section-hint">Use a poster from your library or a sample canvas.</p>
+
+                                <div class="poster-source-tabs">
+                                    <button class="poster-tab active" data-source="sample">Sample Canvas</button>
+                                    <button class="poster-tab" data-source="plex">Plex Library</button>
+                                    <button class="poster-tab" data-source="tmdb">TMDb Search</button>
+                                </div>
+
+                                <!-- Sample Canvas Options (default) -->
+                                <div id="poster-source-sample" class="poster-source-content active">
+                                    <div class="form-group">
+                                        <label for="canvas-type">Canvas Type</label>
+                                        <select id="canvas-type">
+                                            <option value="portrait">Portrait (1000x1500)</option>
+                                            <option value="landscape">Landscape (1920x1080)</option>
+                                            <option value="square">Square (1000x1000)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Plex Search -->
+                                <div id="poster-source-plex" class="poster-source-content hidden">
+                                    <div class="media-search-row">
+                                        <div class="form-group">
+                                            <label for="plex-search">Search Plex</label>
+                                            <input type="text" id="plex-search" placeholder="Movie or show title...">
+                                        </div>
+                                        <button id="btn-search-plex" class="btn btn-secondary">Search</button>
+                                    </div>
+                                    <div id="plex-status" class="source-status"></div>
+                                    <div id="plex-results" class="media-results">
+                                        <p class="placeholder-text">Enter a title to search your Plex library.</p>
+                                    </div>
+                                </div>
+
+                                <!-- TMDb Search -->
+                                <div id="poster-source-tmdb" class="poster-source-content hidden">
+                                    <div class="media-search-row">
+                                        <div class="form-group">
+                                            <label for="tmdb-search">Search TMDb</label>
+                                            <input type="text" id="tmdb-search" placeholder="Movie or show title...">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="tmdb-type">Type</label>
+                                            <select id="tmdb-type">
+                                                <option value="movie">Movie</option>
+                                                <option value="tv">TV Show</option>
+                                            </select>
+                                        </div>
+                                        <button id="btn-search-tmdb" class="btn btn-secondary">Search</button>
+                                    </div>
+                                    <div id="tmdb-status" class="source-status"></div>
+                                    <div id="tmdb-results" class="media-results">
+                                        <p class="placeholder-text">Enter a title to search TMDb.</p>
+                                    </div>
+                                </div>
+
+                                <!-- Selected Poster Display -->
+                                <div id="selected-poster-info" class="selected-poster-info hidden">
+                                    <span class="selected-label">Using poster:</span>
+                                    <span id="selected-poster-title" class="selected-title"></span>
+                                    <button id="btn-clear-poster" class="btn-clear">Clear</button>
+                                </div>
+                            </div>
+
+                            <!-- Legacy Preview Canvas (hidden by default) -->
+                            <div class="preview-section legacy-preview hidden">
+                                <h4>Legacy Preview</h4>
+                                <div class="preview-actions">
+                                    <button id="btn-generate-preview" class="btn btn-primary">Generate Preview</button>
+                                    <button id="btn-download-preview" class="btn btn-secondary hidden">Download Preview</button>
+                                </div>
+
+                                <div class="preview-canvas-container">
+                                    <div id="preview-canvas" class="preview-canvas">
+                                        <div class="canvas-placeholder">
+                                            <span>&#128444;</span>
+                                            <p>Select overlays and click "Generate Preview"</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Selected Overlays for Preview -->
+                                <div class="selected-overlays">
+                                    <h4>Selected Overlays</h4>
+                                    <div id="selected-overlay-list" class="selected-overlay-list">
+                                        <p class="placeholder-text">Click overlays above to add them to the preview.</p>
+                                    </div>
+                                    <button id="btn-clear-selection" class="btn btn-secondary btn-small">Clear Selection</button>
+                                </div>
+                            </div>
+
+                            <!-- Overlay Details Panel -->
+                            <div class="overlay-details-section hidden" id="overlay-details">
+                                <h4>Overlay Details</h4>
+                                <div class="details-content">
+                                    <div class="detail-row">
+                                        <span class="detail-label">Name:</span>
+                                        <span id="detail-name" class="detail-value">-</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Type:</span>
+                                        <span id="detail-type" class="detail-value">-</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Position:</span>
+                                        <span id="detail-position" class="detail-value">-</span>
+                                    </div>
+                                    <div class="detail-row">
+                                        <span class="detail-label">Filters:</span>
+                                        <span id="detail-filters" class="detail-value">-</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Type:</span>
-                            <span id="detail-type" class="detail-value">-</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Position:</span>
-                            <span id="detail-position" class="detail-value">-</span>
-                        </div>
-                        <div class="detail-row">
-                            <span class="detail-label">Filters:</span>
-                            <span id="detail-filters" class="detail-value">-</span>
-                        </div>
-                    </div>
+                    </details>
                 </div>
 
                 <!-- Overlay Images Browser -->

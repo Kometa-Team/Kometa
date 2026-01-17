@@ -2457,3 +2457,348 @@ body {
     max-height: 280px;
 }
 
+/* ============================================================================
+   Overlay Hero Section - Main Visual Editor
+   ============================================================================ */
+
+.overlays-panel-redesigned {
+    max-width: 100%;
+    padding: 0;
+}
+
+.overlay-hero-section {
+    background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+}
+
+.overlay-hero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.hero-title-group h2 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.hero-title-group .section-desc {
+    margin-bottom: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.overlay-config-selector {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.overlay-config-selector select {
+    min-width: 280px;
+    padding: 10px 15px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+/* Live Preview Layout */
+.overlay-live-preview {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 25px;
+    min-height: 500px;
+}
+
+@media (max-width: 1100px) {
+    .overlay-live-preview {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Live Preview Canvas Area */
+.live-preview-canvas-area {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-color);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.live-preview-poster {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    position: relative;
+    min-height: 450px;
+    overflow: hidden;
+}
+
+.live-preview-poster img.poster-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.live-preview-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-muted);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.live-preview-loading.hidden {
+    display: none;
+}
+
+.live-preview-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+}
+
+.preview-media-title {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.preview-overlay-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    background-color: var(--bg-tertiary);
+    padding: 4px 10px;
+    border-radius: 12px;
+}
+
+/* Live Preview Sidebar */
+.live-preview-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sidebar-section {
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.sidebar-section h4 {
+    font-size: 14px;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-section h4 .badge {
+    font-size: 11px;
+}
+
+/* Active Overlays List */
+.active-overlays-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.active-overlay-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    background-color: var(--bg-secondary);
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 13px;
+}
+
+.active-overlay-item:last-child {
+    margin-bottom: 0;
+}
+
+.active-overlay-thumbnail {
+    width: 32px;
+    height: 24px;
+    background-color: var(--bg-tertiary);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-muted);
+    overflow: hidden;
+}
+
+.active-overlay-name {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.active-overlay-type {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background-color: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-block {
+    width: 100%;
+    justify-content: center;
+}
+
+/* Collapsible Sidebar Section */
+.sidebar-section.collapsible {
+    padding: 0;
+}
+
+.sidebar-section.collapsible summary {
+    padding: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sidebar-section.collapsible summary h4 {
+    margin-bottom: 0;
+}
+
+.sidebar-section.collapsible .template-vars-content {
+    padding: 0 15px 15px 15px;
+}
+
+.sidebar-section.collapsible .template-vars-input {
+    width: 100%;
+    min-height: 60px;
+    margin-bottom: 10px;
+}
+
+.sidebar-section.collapsible .template-vars-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+/* Advanced Options Section */
+.overlay-advanced-section {
+    background-color: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.overlay-advanced-section > details > summary {
+    padding: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.overlay-advanced-section > details > summary h3 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--text-color);
+}
+
+.overlay-advanced-section .advanced-content {
+    padding: 0 20px 20px 20px;
+}
+
+.overlay-advanced-section .overlay-groups-section,
+.overlay-advanced-section .overlay-list-section,
+.overlay-advanced-section .poster-source-section,
+.overlay-advanced-section .preview-section,
+.overlay-advanced-section .overlay-details-section {
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.overlay-advanced-section h4 {
+    color: var(--primary-color);
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+/* Ensure overlay groups section doesn't hide itself */
+.overlay-advanced-section .overlay-groups-section {
+    display: block;
+}
+
+/* Live Preview Error State */
+.live-preview-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+.live-preview-error span {
+    font-size: 48px;
+}
+
+.live-preview-error p {
+    font-size: 14px;
+}
+
+/* Overlay Images Browser - compact when in advanced */
+.overlay-advanced-section .overlay-images-section {
+    margin-top: 15px;
+}
+
+/* Better placeholder text */
+.live-preview-sidebar .placeholder-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 10px;
+}
+
