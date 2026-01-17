@@ -69,6 +69,7 @@ arguments = {
     "no-missing": {"args": "nm", "type": "bool", "help": "Run without running the missing section"},
     "no-report": {"args": "nr", "type": "bool", "help": "Run without saving a report"},
     "read-only-config": {"args": "ro", "type": "bool", "help": "Run without writing to the config"},
+    "dry-run": {"args": "dr", "type": "bool", "help": "Run in dry-run mode - no changes will be made to Plex (Web UI safe mode)"},
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
     "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"}
@@ -296,6 +297,9 @@ def process(attrs):
 def start(attrs):
     try:
         logger.add_main_handler()
+        # Initialize Write Guard for dry-run mode (Web UI safe mode)
+        from modules.write_guard import WriteGuard
+        WriteGuard.initialize()
         logger.separator()
         logger.info("")
         logger.info_center(" __  ___  ______    ___  ___   _______  __________    ___      ")
@@ -339,6 +343,7 @@ def start(attrs):
         attrs["config_file"] = run_args["config"]
         attrs["ignore_schedules"] = run_args["ignore-schedules"]
         attrs["read_only"] = run_args["read-only-config"]
+        attrs["dry_run"] = run_args["dry-run"]
         attrs["no_missing"] = run_args["no-missing"]
         attrs["no_report"] = run_args["no-report"]
         attrs["collection_only"] = run_args["collections-only"]
@@ -464,6 +469,8 @@ def start(attrs):
 
         start_str = start_time.strftime('%H:%M:%S %Y-%m-%d')
         end_str = end_time.strftime('%H:%M:%S %Y-%m-%d')
+        # Print dry-run summary if in dry-run mode
+        WriteGuard.print_summary()
         logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
         logger.remove_main_handler()
     except Exception as e:

@@ -1,0 +1,8 @@
+# Kometa Web UI Backend Dependencies
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.6
+websockets>=12.0
+ruamel.yaml>=0.18.0
+pydantic>=2.5.0
+aiosqlite>=0.19.0

@@ -1,0 +1,63 @@
+# Kometa Web UI Docker Compose
+#
+# This compose file runs the Kometa Web UI alongside the main Kometa container.
+#
+# Usage:
+#   docker-compose up -d
+#
+# Access the UI at: http://localhost:8080
+#
+# IMPORTANT: By default, the UI runs in DRY RUN mode only.
+# To enable Apply mode, set KOMETA_UI_APPLY_ENABLED=true (use with caution!)
+
+version: "3.8"
+
+services:
+  # Kometa Web UI
+  kometa-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kometa-ui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount the same config directory as the main Kometa container
+      - ${KOMETA_CONFIG_PATH:-./config}:/config
+      # Mount the Kometa source code (for running kometa.py)
+      - ${KOMETA_SOURCE_PATH:-..}:/kometa:ro
+    environment:
+      # Config directory inside container
+      - KOMETA_CONFIG_DIR=/config
+      # UI port
+      - KOMETA_UI_PORT=8080
+      # Safety: Apply mode disabled by default
+      - KOMETA_UI_APPLY_ENABLED=${KOMETA_UI_APPLY_ENABLED:-false}
+      # Optional: Set a password for the UI
+      - KOMETA_UI_PASSWORD=${KOMETA_UI_PASSWORD:-}
+      # Timezone
+      - TZ=${TZ:-America/New_York}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+# Example: Running with the main Kometa container
+# Uncomment below if you want to run both together
+#
+#  kometa:
+#    image: kometateam/kometa:latest
+#    container_name: kometa
+#    restart: unless-stopped
+#    volumes:
+#      - ${KOMETA_CONFIG_PATH:-./config}:/config
+#    environment:
+#      - TZ=${TZ:-America/New_York}
+#    # Run on schedule (not needed if using Web UI to trigger runs)
+#    # command: ["--run"]
+
+volumes:
+  config:

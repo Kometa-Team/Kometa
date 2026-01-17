@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kometa Web UI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- Safety Banner -->
+    <div id="safety-banner" class="safety-banner safe">
+        <span id="mode-indicator">DRY RUN MODE</span>
+        <span class="mode-description">No changes will be made to Plex</span>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1>Kometa Web UI</h1>
+            <div class="status-indicator" id="connection-status">
+                <span class="status-dot"></span>
+                <span class="status-text">Connecting...</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="config">Configuration</button>
+        <button class="nav-tab" data-tab="run">Run</button>
+        <button class="nav-tab" data-tab="logs">Logs</button>
+        <button class="nav-tab" data-tab="history">History</button>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Configuration Tab -->
+        <section id="tab-config" class="tab-content active">
+            <div class="config-header">
+                <h2>Configuration</h2>
+                <div class="config-actions">
+                    <button id="btn-load-config" class="btn btn-secondary">Reload</button>
+                    <button id="btn-validate" class="btn btn-secondary">Validate</button>
+                    <button id="btn-save-config" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+
+            <!-- Config Source Selector -->
+            <div class="config-source-selector" id="config-source-selector">
+                <h3>Choose Configuration Source</h3>
+                <div class="source-options">
+                    <button class="source-option selected" data-source="existing">
+                        <span class="option-icon">&#128196;</span>
+                        <span class="option-title">Start from existing config.yml</span>
+                        <span class="option-desc">Load and edit your current configuration</span>
+                    </button>
+                    <button class="source-option" data-source="new">
+                        <span class="option-icon">&#10133;</span>
+                        <span class="option-title">Create new config</span>
+                        <span class="option-desc">Start with a blank template</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Validation Messages -->
+            <div id="validation-messages" class="validation-messages hidden"></div>
+
+            <!-- Config Editor -->
+            <div class="config-editor-container" id="config-editor-container">
+                <div class="editor-tabs">
+                    <button class="editor-tab active" data-view="yaml">YAML Editor</button>
+                    <button class="editor-tab" data-view="form">Form View</button>
+                </div>
+
+                <!-- YAML Editor View -->
+                <div id="view-yaml" class="editor-view active">
+                    <textarea id="config-editor" class="config-editor" spellcheck="false" placeholder="# Kometa Configuration
+# Paste your config.yml here or start typing...
+
+plex:
+  url: http://plex:32400
+  token: YOUR_PLEX_TOKEN
+
+libraries:
+  Movies:
+    collection_files:
+      - file: config/Movies.yml
+"></textarea>
+                </div>
+
+                <!-- Form View (simplified) -->
+                <div id="view-form" class="editor-view hidden">
+                    <div class="form-section">
+                        <h3>Plex Connection</h3>
+                        <div class="form-group">
+                            <label for="plex-url">Plex URL</label>
+                            <input type="text" id="plex-url" placeholder="http://plex:32400">
+                        </div>
+                        <div class="form-group">
+                            <label for="plex-token">Plex Token</label>
+                            <input type="password" id="plex-token" placeholder="Your Plex token">
+                            <small><a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/" target="_blank">How to find your token</a></small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h3>TMDb</h3>
+                        <div class="form-group">
+                            <label for="tmdb-apikey">API Key</label>
+                            <input type="password" id="tmdb-apikey" placeholder="Your TMDb API key">
+                            <small><a href="https://www.themoviedb.org/settings/api" target="_blank">Get API key</a></small>
+                        </div>
+                    </div>
+
+                    <p class="form-note">For advanced configuration, use the YAML Editor tab.</p>
+                </div>
+            </div>
+
+            <!-- Backup List -->
+            <div class="backups-section">
+                <h3>Backups</h3>
+                <div id="backups-list" class="backups-list">
+                    <p class="loading">Loading backups...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Run Tab -->
+        <section id="tab-run" class="tab-content hidden">
+            <div class="run-panel">
+                <h2>Run Kometa</h2>
+
+                <!-- Run Mode Selector -->
+                <div class="run-mode-selector">
+                    <div class="mode-option selected" data-mode="dry-run">
+                        <input type="radio" name="run-mode" id="mode-dry-run" checked>
+                        <label for="mode-dry-run">
+                            <span class="mode-name">Dry Run</span>
+                            <span class="mode-desc">Preview changes without modifying Plex</span>
+                        </label>
+                    </div>
+                    <div class="mode-option {% if not apply_enabled %}disabled{% endif %}" data-mode="apply">
+                        <input type="radio" name="run-mode" id="mode-apply" {% if not apply_enabled %}disabled{% endif %}>
+                        <label for="mode-apply">
+                            <span class="mode-name">Apply</span>
+                            <span class="mode-desc">
+                                {% if apply_enabled %}
+                                Make actual changes to Plex
+                                {% else %}
+                                Disabled (KOMETA_UI_APPLY_ENABLED=false)
+                                {% endif %}
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Apply Mode Confirmation (hidden by default) -->
+                <div id="apply-confirmation" class="apply-confirmation hidden">
+                    <div class="warning-box">
+                        <h4>&#9888; Apply Mode Warning</h4>
+                        <p>You are about to run Kometa in <strong>APPLY</strong> mode. This will make actual changes to your Plex server.</p>
+                        <p>Type <code>APPLY CHANGES</code> below to confirm:</p>
+                        <input type="text" id="apply-confirm-input" placeholder="Type APPLY CHANGES">
+                    </div>
+                </div>
+
+                <!-- Run Plan Preview -->
+                <div class="run-plan" id="run-plan">
+                    <h3>Run Plan Preview</h3>
+                    <div class="plan-loading">Loading configuration...</div>
+                </div>
+
+                <!-- Run Filters -->
+                <div class="run-filters">
+                    <h3>Filters (Optional)</h3>
+                    <div class="filter-group">
+                        <label for="filter-libraries">Libraries</label>
+                        <input type="text" id="filter-libraries" placeholder="e.g., Movies|TV Shows">
+                        <small>Pipe-separated list of library names</small>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-collections">Collections</label>
+                        <input type="text" id="filter-collections" placeholder="e.g., Best Of|Top Rated">
+                        <small>Pipe-separated list of collection names</small>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-type">Run Type</label>
+                        <select id="filter-type">
+                            <option value="">All</option>
+                            <option value="collections">Collections Only</option>
+                            <option value="metadata">Metadata Only</option>
+                            <option value="overlays">Overlays Only</option>
+                            <option value="operations">Operations Only</option>
+                            <option value="playlists">Playlists Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Run Button -->
+                <div class="run-actions">
+                    <button id="btn-start-run" class="btn btn-primary btn-large">
+                        Start Dry Run
+                    </button>
+                    <button id="btn-stop-run" class="btn btn-danger btn-large hidden">
+                        Stop Run
+                    </button>
+                </div>
+
+                <!-- Current Run Status -->
+                <div id="current-run-status" class="run-status hidden">
+                    <div class="status-header">
+                        <span class="status-icon spinning">&#8635;</span>
+                        <span class="status-text">Running...</span>
+                    </div>
+                    <div class="status-details">
+                        <p>Run ID: <code id="current-run-id">-</code></p>
+                        <p>Started: <span id="current-run-start">-</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Logs Tab -->
+        <section id="tab-logs" class="tab-content hidden">
+            <div class="logs-panel">
+                <div class="logs-header">
+                    <h2>Live Logs</h2>
+                    <div class="logs-actions">
+                        <button id="btn-clear-logs" class="btn btn-secondary">Clear</button>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="auto-scroll" checked>
+                            Auto-scroll
+                        </label>
+                    </div>
+                </div>
+                <div id="logs-container" class="logs-container">
+                    <pre id="logs-output" class="logs-output">Waiting for logs...</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- History Tab -->
+        <section id="tab-history" class="tab-content hidden">
+            <div class="history-panel">
+                <h2>Run History</h2>
+                <div id="history-list" class="history-list">
+                    <p class="loading">Loading history...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Kometa Web UI | <a href="https://kometa.wiki" target="_blank">Documentation</a></p>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
