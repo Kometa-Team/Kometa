@@ -758,10 +758,25 @@ function configToYaml(config, indent = 0) {
             value.forEach(item => {
                 if (typeof item === 'object' && item !== null) {
                     // Object in array (like collection_files with file/template_variables)
-                    const firstKey = Object.keys(item)[0];
+                    const keys = Object.keys(item);
+                    const firstKey = keys[0];
                     yaml += `${spaces}  - ${firstKey}: ${formatYamlValue(item[firstKey])}\n`;
-                    Object.keys(item).slice(1).forEach(subKey => {
-                        yaml += `${spaces}    ${subKey}: ${formatYamlValue(item[subKey])}\n`;
+                    keys.slice(1).forEach(subKey => {
+                        const subValue = item[subKey];
+                        if (typeof subValue === 'object' && subValue !== null && !Array.isArray(subValue)) {
+                            // Nested object (like template_variables)
+                            yaml += `${spaces}    ${subKey}:\n`;
+                            Object.keys(subValue).forEach(nestedKey => {
+                                yaml += `${spaces}      ${nestedKey}: ${formatYamlValue(subValue[nestedKey])}\n`;
+                            });
+                        } else if (Array.isArray(subValue)) {
+                            yaml += `${spaces}    ${subKey}:\n`;
+                            subValue.forEach(arrItem => {
+                                yaml += `${spaces}      - ${formatYamlValue(arrItem)}\n`;
+                            });
+                        } else {
+                            yaml += `${spaces}    ${subKey}: ${formatYamlValue(subValue)}\n`;
+                        }
                     });
                 } else {
                     yaml += `${spaces}  - ${formatYamlValue(item)}\n`;
