@@ -390,6 +390,967 @@ const sidebarStatus = {
 };
 
 // ============================================================================
+// Dashboard Module
+// ============================================================================
+
+const dashboard = {
+    elements: {},
+
+    init() {
+        // Cache dashboard elements
+        this.elements = {
+            plexCard: document.getElementById('dashboard-plex-card'),
+            plexStatus: document.getElementById('dashboard-plex-status'),
+            plexDetail: document.getElementById('dashboard-plex-detail'),
+            tmdbCard: document.getElementById('dashboard-tmdb-card'),
+            tmdbStatus: document.getElementById('dashboard-tmdb-status'),
+            tmdbDetail: document.getElementById('dashboard-tmdb-detail'),
+            configCard: document.getElementById('dashboard-config-card'),
+            configStatus: document.getElementById('dashboard-config-status'),
+            configDetail: document.getElementById('dashboard-config-detail'),
+            libraries: document.getElementById('dashboard-libraries'),
+            activity: document.getElementById('dashboard-activity')
+        };
+
+        // Set up event listeners
+        document.getElementById('dashboard-test-plex')?.addEventListener('click', () => this.testPlex());
+        document.getElementById('dashboard-test-tmdb')?.addEventListener('click', () => this.testTmdb());
+        document.getElementById('dashboard-go-config')?.addEventListener('click', () => switchTab('config'));
+        document.getElementById('dashboard-add-library')?.addEventListener('click', () => {
+            switchTab('config');
+            // Activate libraries subtab
+            document.querySelector('[data-subtab="libraries"]')?.click();
+        });
+
+        // Quick action buttons
+        document.getElementById('dashboard-action-run')?.addEventListener('click', () => {
+            switchTab('run');
+        });
+        document.getElementById('dashboard-action-dry-run')?.addEventListener('click', () => {
+            switchTab('run');
+        });
+        document.getElementById('dashboard-action-validate')?.addEventListener('click', () => {
+            validateConfig();
+        });
+        document.getElementById('dashboard-action-backup')?.addEventListener('click', () => {
+            this.backupConfig();
+        });
+        document.getElementById('dashboard-action-wizard')?.addEventListener('click', () => {
+            setupWizard.show();
+        });
+    },
+
+    async testPlex() {
+        const btn = document.getElementById('dashboard-test-plex');
+        if (btn) btn.disabled = true;
+
+        this.updateCardStatus('plex', 'loading', 'Testing connection...');
+
+        try {
+            const url = document.getElementById('plex-url')?.value;
+            const token = document.getElementById('plex-token')?.value;
+
+            if (!url || !token) {
+                this.updateCardStatus('plex', 'error', 'Not configured', 'Add Plex URL and token in Configuration');
+                toast.warning('Plex URL and token required');
+                return;
+            }
+
+            const result = await api.post('/test/plex', { url, token });
+            if (result.success) {
+                this.updateCardStatus('plex', 'connected', 'Connected', result.server_name || 'Plex Server');
+                sidebarStatus.updatePlex(true);
+                toast.success(`Connected to ${result.server_name || 'Plex'}`);
+            } else {
+                this.updateCardStatus('plex', 'error', 'Connection failed', result.error);
+                sidebarStatus.updatePlex(false);
+                toast.error(result.error || 'Connection failed');
+            }
+        } catch (error) {
+            this.updateCardStatus('plex', 'error', 'Connection failed', error.message);
+            sidebarStatus.updatePlex(false);
+            toast.error(error.message);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
+
+    async testTmdb() {
+        const btn = document.getElementById('dashboard-test-tmdb');
+        if (btn) btn.disabled = true;
+
+        this.updateCardStatus('tmdb', 'loading', 'Testing API key...');
+
+        try {
+            const apikey = document.getElementById('tmdb-apikey')?.value;
+
+            if (!apikey) {
+                this.updateCardStatus('tmdb', 'error', 'Not configured', 'Add TMDb API key in Configuration');
+                toast.warning('TMDb API key required');
+                return;
+            }
+
+            const result = await api.post('/test/tmdb', { apikey });
+            if (result.success) {
+                this.updateCardStatus('tmdb', 'connected', 'API key valid', 'TMDb API');
+                sidebarStatus.updateTmdb(true);
+                toast.success('TMDb API key is valid');
+            } else {
+                this.updateCardStatus('tmdb', 'error', 'Invalid API key', result.error);
+                sidebarStatus.updateTmdb(false);
+                toast.error(result.error || 'Invalid API key');
+            }
+        } catch (error) {
+            this.updateCardStatus('tmdb', 'error', 'API test failed', error.message);
+            sidebarStatus.updateTmdb(false);
+            toast.error(error.message);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
+
+    updateCardStatus(type, status, text, detail = '-') {
+        const card = this.elements[`${type}Card`];
+        const statusEl = this.elements[`${type}Status`];
+        const detailEl = this.elements[`${type}Detail`];
+
+        if (card) {
+            card.classList.remove('status-connected', 'status-error');
+            if (status === 'connected') card.classList.add('status-connected');
+            if (status === 'error') card.classList.add('status-error');
+        }
+
+        if (statusEl) {
+            const dot = statusEl.querySelector('.status-dot');
+            const textEl = statusEl.querySelector('.status-text');
+
+            if (dot) {
+                dot.classList.remove('connected', 'error');
+                if (status === 'connected') dot.classList.add('connected');
+                if (status === 'error') dot.classList.add('error');
+            }
+            if (textEl) textEl.textContent = text;
+        }
+
+        if (detailEl) {
+            detailEl.textContent = detail;
+        }
+    },
+
+    updateConfigStatus(loaded, libraryCount = 0) {
+        if (loaded) {
+            this.updateCardStatus('config', 'connected', 'Loaded', `${libraryCount} ${libraryCount === 1 ? 'library' : 'libraries'} configured`);
+        } else {
+            this.updateCardStatus('config', 'error', 'Not loaded', 'No configuration found');
+        }
+    },
+
+    updateLibraries(libraries) {
+        if (!this.elements.libraries) return;
+
+        if (!libraries || Object.keys(libraries).length === 0) {
+            this.elements.libraries.innerHTML = `
+                <div class="dashboard-empty-state">
+                    <span class="empty-icon">📚</span>
+                    <p>No libraries configured</p>
+                    <button class="btn btn-primary btn-sm" id="dashboard-add-library">Add Library</button>
+                </div>
+            `;
+            // Re-attach event listener
+            document.getElementById('dashboard-add-library')?.addEventListener('click', () => {
+                switchTab('config');
+                document.querySelector('[data-subtab="libraries"]')?.click();
+            });
+            return;
+        }
+
+        let html = '';
+        for (const [name, config] of Object.entries(libraries)) {
+            const type = config.library_type || 'movie';
+            const icon = type === 'movie' ? '🎬' : type === 'show' ? '📺' : '🎵';
+            html += `
+                <div class="dashboard-library-card">
+                    <div class="library-icon">${icon}</div>
+                    <div class="library-name">${name}</div>
+                    <div class="library-type">${type}</div>
+                </div>
+            `;
+        }
+        this.elements.libraries.innerHTML = html;
+    },
+
+    addActivity(title, success = true) {
+        if (!this.elements.activity) return;
+
+        const time = new Date().toLocaleTimeString();
+        const iconClass = success ? 'success' : 'error';
+        const icon = success ? '✓' : '✗';
+
+        // Remove empty state if present
+        const empty = this.elements.activity.querySelector('.activity-empty');
+        if (empty) empty.remove();
+
+        // Add new activity at the top
+        const item = document.createElement('div');
+        item.className = 'activity-item fade-in';
+        item.innerHTML = `
+            <div class="activity-icon ${iconClass}">${icon}</div>
+            <div class="activity-content">
+                <div class="activity-title">${title}</div>
+                <div class="activity-time">${time}</div>
+            </div>
+        `;
+
+        this.elements.activity.insertBefore(item, this.elements.activity.firstChild);
+
+        // Keep only last 5 activities
+        const items = this.elements.activity.querySelectorAll('.activity-item');
+        if (items.length > 5) {
+            items[items.length - 1].remove();
+        }
+    },
+
+    async backupConfig() {
+        try {
+            const result = await api.post('/config/backup');
+            if (result.success) {
+                toast.success('Configuration backed up successfully');
+                this.addActivity('Configuration backup created', true);
+            } else {
+                toast.error(result.error || 'Backup failed');
+                this.addActivity('Configuration backup failed', false);
+            }
+        } catch (error) {
+            toast.error(error.message);
+            this.addActivity('Configuration backup failed', false);
+        }
+    },
+
+    // Called when config is loaded to update dashboard
+    refresh() {
+        // Update config status
+        const hasConfig = elements.configEditor?.value?.trim().length > 0;
+        const libraries = parsedConfig?.libraries || {};
+        const libraryCount = Object.keys(libraries).length;
+
+        this.updateConfigStatus(hasConfig, libraryCount);
+        this.updateLibraries(libraries);
+
+        // Check Plex config
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        if (plexUrl && plexToken) {
+            this.updateCardStatus('plex', '', 'Configured', 'Click Test to verify');
+        } else {
+            this.updateCardStatus('plex', 'error', 'Not configured', 'Add in Configuration tab');
+        }
+
+        // Check TMDb config
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        if (tmdbKey) {
+            this.updateCardStatus('tmdb', '', 'Configured', 'Click Test to verify');
+        } else {
+            this.updateCardStatus('tmdb', 'error', 'Not configured', 'Add in Configuration tab');
+        }
+    }
+};
+
+// ============================================================================
+// Setup Wizard
+// ============================================================================
+
+const setupWizard = {
+    modal: null,
+    currentStep: 1,
+    config: {
+        plex: { url: '', token: '', serverName: '' },
+        tmdb: { apikey: '' },
+        library: { name: '', type: 'movie' }
+    },
+
+    init() {
+        this.modal = document.getElementById('setup-wizard');
+        if (!this.modal) return;
+
+        // Setup event listeners
+        document.getElementById('wizard-close')?.addEventListener('click', () => this.close());
+
+        // Step 1: Plex
+        document.getElementById('wizard-test-plex')?.addEventListener('click', () => this.testPlex());
+        document.getElementById('wizard-skip-plex')?.addEventListener('click', () => this.goToStep(2));
+
+        // Step 2: TMDb
+        document.getElementById('wizard-back-1')?.addEventListener('click', () => this.goToStep(1));
+        document.getElementById('wizard-test-tmdb')?.addEventListener('click', () => this.testTmdb());
+        document.getElementById('wizard-skip-tmdb')?.addEventListener('click', () => this.goToStep(3));
+
+        // Step 3: Library
+        document.getElementById('wizard-back-2')?.addEventListener('click', () => this.goToStep(2));
+        document.getElementById('wizard-add-library')?.addEventListener('click', () => this.addLibrary());
+        document.getElementById('wizard-skip-library')?.addEventListener('click', () => this.goToStep(4));
+
+        // Step 4: Complete
+        document.getElementById('wizard-back-3')?.addEventListener('click', () => this.goToStep(3));
+        document.getElementById('wizard-finish')?.addEventListener('click', () => this.finish());
+
+        // Close on backdrop click
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) this.close();
+        });
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.close();
+            }
+        });
+    },
+
+    show() {
+        if (this.modal) {
+            this.modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            this.goToStep(1);
+        }
+    },
+
+    close() {
+        if (this.modal) {
+            this.modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    },
+
+    goToStep(step) {
+        this.currentStep = step;
+
+        // Update progress indicators
+        document.querySelectorAll('.wizard-step').forEach(el => {
+            const stepNum = parseInt(el.dataset.step);
+            el.classList.remove('active', 'completed');
+            if (stepNum < step) el.classList.add('completed');
+            if (stepNum === step) el.classList.add('active');
+        });
+
+        // Update panels
+        document.querySelectorAll('.wizard-panel').forEach(el => {
+            const panelNum = parseInt(el.dataset.panel);
+            el.classList.toggle('active', panelNum === step);
+        });
+
+        // Update summary on final step
+        if (step === 4) {
+            this.updateSummary();
+        }
+    },
+
+    async testPlex() {
+        const url = document.getElementById('wizard-plex-url')?.value?.trim();
+        const token = document.getElementById('wizard-plex-token')?.value?.trim();
+        const resultEl = document.getElementById('wizard-plex-result');
+
+        if (!url || !token) {
+            this.showResult(resultEl, 'error', 'Please enter both URL and token');
+            return;
+        }
+
+        this.showResult(resultEl, 'loading', 'Testing connection...');
+
+        try {
+            const result = await api.post('/test/plex', { url, token });
+            if (result.success) {
+                this.config.plex = { url, token, serverName: result.server_name || 'Plex' };
+                this.showResult(resultEl, 'success', `Connected to ${result.server_name || 'Plex'}!`);
+
+                // Also update the main config form
+                document.getElementById('plex-url').value = url;
+                document.getElementById('plex-token').value = token;
+
+                // Auto-advance after a short delay
+                setTimeout(() => this.goToStep(2), 1000);
+            } else {
+                this.showResult(resultEl, 'error', result.error || 'Connection failed');
+            }
+        } catch (error) {
+            this.showResult(resultEl, 'error', error.message);
+        }
+    },
+
+    async testTmdb() {
+        const apikey = document.getElementById('wizard-tmdb-key')?.value?.trim();
+        const resultEl = document.getElementById('wizard-tmdb-result');
+
+        if (!apikey) {
+            this.showResult(resultEl, 'error', 'Please enter an API key');
+            return;
+        }
+
+        this.showResult(resultEl, 'loading', 'Testing API key...');
+
+        try {
+            const result = await api.post('/test/tmdb', { apikey });
+            if (result.success) {
+                this.config.tmdb = { apikey };
+                this.showResult(resultEl, 'success', 'API key is valid!');
+
+                // Also update the main config form
+                document.getElementById('tmdb-apikey').value = apikey;
+
+                // Auto-advance
+                setTimeout(() => this.goToStep(3), 1000);
+            } else {
+                this.showResult(resultEl, 'error', result.error || 'Invalid API key');
+            }
+        } catch (error) {
+            this.showResult(resultEl, 'error', error.message);
+        }
+    },
+
+    addLibrary() {
+        const name = document.getElementById('wizard-library-name')?.value?.trim();
+        const type = document.getElementById('wizard-library-type')?.value;
+
+        if (!name) {
+            toast.warning('Please enter a library name');
+            return;
+        }
+
+        this.config.library = { name, type };
+
+        // Add to parsed config
+        if (!parsedConfig.libraries) {
+            parsedConfig.libraries = {};
+        }
+        parsedConfig.libraries[name] = {
+            library_type: type
+        };
+
+        // Sync to YAML
+        syncFormsToYaml();
+
+        toast.success(`Library "${name}" added`);
+        this.goToStep(4);
+    },
+
+    showResult(el, type, message) {
+        if (!el) return;
+        el.className = `wizard-test-result visible ${type}`;
+        el.textContent = message;
+    },
+
+    updateSummary() {
+        // Plex
+        const plexItem = document.getElementById('wizard-summary-plex');
+        if (plexItem) {
+            const status = plexItem.querySelector('.summary-status');
+            if (this.config.plex.url) {
+                plexItem.classList.add('configured');
+                status.textContent = this.config.plex.serverName || 'Connected';
+            } else {
+                plexItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+
+        // TMDb
+        const tmdbItem = document.getElementById('wizard-summary-tmdb');
+        if (tmdbItem) {
+            const status = tmdbItem.querySelector('.summary-status');
+            if (this.config.tmdb.apikey) {
+                tmdbItem.classList.add('configured');
+                status.textContent = 'API key valid';
+            } else {
+                tmdbItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+
+        // Library
+        const libraryItem = document.getElementById('wizard-summary-library');
+        if (libraryItem) {
+            const status = libraryItem.querySelector('.summary-status');
+            if (this.config.library.name) {
+                libraryItem.classList.add('configured');
+                status.textContent = this.config.library.name;
+            } else {
+                libraryItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+    },
+
+    async finish() {
+        // Save the configuration
+        try {
+            await saveConfig();
+            toast.success('Configuration saved!');
+            dashboard.addActivity('Initial setup completed', true);
+        } catch (error) {
+            toast.error('Failed to save configuration');
+        }
+
+        this.close();
+
+        // Refresh dashboard
+        dashboard.refresh();
+
+        // Mark wizard as completed in localStorage
+        localStorage.setItem('kometa-wizard-completed', 'true');
+    },
+
+    // Check if wizard should be shown (first-time user)
+    shouldShow() {
+        // Don't show if already completed
+        if (localStorage.getItem('kometa-wizard-completed') === 'true') {
+            return false;
+        }
+
+        // Show if no Plex or TMDb configured
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+
+        return !plexUrl && !tmdbKey;
+    }
+};
+
+// ============================================================================
+// Profile Switcher
+// ============================================================================
+
+const profileSwitcher = {
+    currentProfile: 'default',
+    profiles: {},
+    dropdownBtn: null,
+    dropdown: null,
+
+    init() {
+        this.dropdownBtn = document.getElementById('profile-switcher-btn');
+        this.dropdown = document.getElementById('profile-dropdown');
+
+        if (!this.dropdownBtn || !this.dropdown) return;
+
+        // Load saved profiles from localStorage
+        this.loadProfiles();
+
+        // Toggle dropdown
+        this.dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-switcher')) {
+                this.closeDropdown();
+            }
+        });
+
+        // Save profile button
+        document.getElementById('btn-save-profile')?.addEventListener('click', () => {
+            this.showSaveDialog();
+        });
+
+        // Manage profiles button
+        document.getElementById('btn-manage-profiles')?.addEventListener('click', () => {
+            this.showManageDialog();
+        });
+
+        // Render profiles
+        this.renderProfiles();
+    },
+
+    toggleDropdown() {
+        const isOpen = this.dropdown.classList.toggle('active');
+        this.dropdownBtn.setAttribute('aria-expanded', isOpen);
+    },
+
+    closeDropdown() {
+        this.dropdown.classList.remove('active');
+        this.dropdownBtn.setAttribute('aria-expanded', 'false');
+    },
+
+    loadProfiles() {
+        const saved = localStorage.getItem('kometa-profiles');
+        if (saved) {
+            try {
+                this.profiles = JSON.parse(saved);
+            } catch (e) {
+                this.profiles = {};
+            }
+        }
+
+        // Ensure default profile exists
+        if (!this.profiles.default) {
+            this.profiles.default = {
+                name: 'Default',
+                config: null,
+                created: Date.now()
+            };
+        }
+
+        // Load current profile
+        this.currentProfile = localStorage.getItem('kometa-current-profile') || 'default';
+    },
+
+    saveProfiles() {
+        localStorage.setItem('kometa-profiles', JSON.stringify(this.profiles));
+        localStorage.setItem('kometa-current-profile', this.currentProfile);
+    },
+
+    renderProfiles() {
+        const list = document.getElementById('profile-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        for (const [id, profile] of Object.entries(this.profiles)) {
+            const btn = document.createElement('button');
+            btn.className = `profile-item ${id === this.currentProfile ? 'active' : ''}`;
+            btn.dataset.profile = id;
+            btn.setAttribute('role', 'menuitem');
+            btn.innerHTML = `
+                <span class="profile-item-icon">${id === 'default' ? '📄' : '📁'}</span>
+                <span class="profile-item-name">${profile.name}</span>
+                <span class="profile-item-check">✓</span>
+            `;
+            btn.addEventListener('click', () => this.switchProfile(id));
+            list.appendChild(btn);
+        }
+
+        // Update header display
+        const nameEl = document.getElementById('current-profile-name');
+        if (nameEl && this.profiles[this.currentProfile]) {
+            nameEl.textContent = this.profiles[this.currentProfile].name;
+        }
+    },
+
+    async switchProfile(id) {
+        if (!this.profiles[id]) return;
+
+        // Save current config to current profile before switching
+        if (this.currentProfile !== id) {
+            this.profiles[this.currentProfile].config = elements.configEditor?.value || '';
+        }
+
+        this.currentProfile = id;
+        this.saveProfiles();
+
+        // Load the selected profile's config
+        if (this.profiles[id].config) {
+            elements.configEditor.value = this.profiles[id].config;
+            parseYamlToConfig();
+            syncYamlToForms();
+        }
+
+        this.renderProfiles();
+        this.closeDropdown();
+
+        toast.success(`Switched to "${this.profiles[id].name}" profile`);
+        dashboard.addActivity(`Switched to ${this.profiles[id].name} profile`, true);
+    },
+
+    showSaveDialog() {
+        this.closeDropdown();
+
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('save-profile-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'save-profile-modal';
+            modal.className = 'save-profile-modal';
+            modal.innerHTML = `
+                <div class="save-profile-content">
+                    <h3>Save as Profile</h3>
+                    <div class="form-group">
+                        <label for="new-profile-name">Profile Name</label>
+                        <input type="text" id="new-profile-name" class="form-control" placeholder="e.g., Production, Testing">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="btn-cancel-save-profile">Cancel</button>
+                        <button class="btn btn-primary" id="btn-confirm-save-profile">Save Profile</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listeners
+            document.getElementById('btn-cancel-save-profile').addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            document.getElementById('btn-confirm-save-profile').addEventListener('click', () => {
+                this.saveNewProfile();
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+
+        // Clear and show
+        document.getElementById('new-profile-name').value = '';
+        modal.classList.add('active');
+        document.getElementById('new-profile-name').focus();
+    },
+
+    saveNewProfile() {
+        const nameInput = document.getElementById('new-profile-name');
+        const name = nameInput?.value?.trim();
+
+        if (!name) {
+            toast.warning('Please enter a profile name');
+            return;
+        }
+
+        // Generate ID from name
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+        // Check for duplicates
+        if (this.profiles[id] && id !== 'default') {
+            toast.warning('A profile with this name already exists');
+            return;
+        }
+
+        // Save profile
+        this.profiles[id] = {
+            name: name,
+            config: elements.configEditor?.value || '',
+            created: Date.now()
+        };
+
+        this.currentProfile = id;
+        this.saveProfiles();
+        this.renderProfiles();
+
+        // Close modal
+        document.getElementById('save-profile-modal').classList.remove('active');
+
+        toast.success(`Profile "${name}" saved`);
+        dashboard.addActivity(`Created profile: ${name}`, true);
+    },
+
+    showManageDialog() {
+        this.closeDropdown();
+        // For now, just show a toast - full manage dialog could be added later
+        toast.info('Profile management: Delete profiles by clearing localStorage');
+    },
+
+    // Update current profile's config (called when config changes)
+    updateCurrentProfile() {
+        if (this.profiles[this.currentProfile]) {
+            this.profiles[this.currentProfile].config = elements.configEditor?.value || '';
+            this.saveProfiles();
+        }
+    }
+};
+
+// ============================================================================
+// Pre-flight Checklist
+// ============================================================================
+
+const preflight = {
+    status: {
+        config: 'pending',
+        plex: 'pending',
+        tmdb: 'pending',
+        libraries: 'pending'
+    },
+
+    init() {
+        // Event listeners
+        document.getElementById('btn-recheck-preflight')?.addEventListener('click', () => this.checkAll());
+        document.getElementById('btn-verify-connections')?.addEventListener('click', () => this.verifyConnections());
+    },
+
+    checkAll() {
+        this.checkConfig();
+        this.checkPlex();
+        this.checkTmdb();
+        this.checkLibraries();
+        this.updateOverallStatus();
+    },
+
+    checkConfig() {
+        const hasConfig = elements.configEditor?.value?.trim().length > 0;
+        const item = document.getElementById('preflight-config');
+        const detail = document.getElementById('preflight-config-detail');
+
+        if (hasConfig) {
+            this.status.config = 'ready';
+            item?.classList.remove('warning', 'error');
+            item?.classList.add('ready');
+            if (detail) detail.textContent = 'Loaded';
+        } else {
+            this.status.config = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'No configuration loaded';
+        }
+    },
+
+    checkPlex() {
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        const item = document.getElementById('preflight-plex');
+        const detail = document.getElementById('preflight-plex-detail');
+
+        if (plexUrl && plexToken) {
+            this.status.plex = 'warning'; // Configured but not verified
+            item?.classList.remove('ready', 'error');
+            item?.classList.add('warning');
+            if (detail) detail.textContent = 'Configured (click Verify to test)';
+        } else {
+            this.status.plex = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'Not configured';
+        }
+    },
+
+    checkTmdb() {
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        const item = document.getElementById('preflight-tmdb');
+        const detail = document.getElementById('preflight-tmdb-detail');
+
+        if (tmdbKey) {
+            this.status.tmdb = 'warning'; // Configured but not verified
+            item?.classList.remove('ready', 'error');
+            item?.classList.add('warning');
+            if (detail) detail.textContent = 'Configured (click Verify to test)';
+        } else {
+            this.status.tmdb = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'Not configured';
+        }
+    },
+
+    checkLibraries() {
+        const libraries = parsedConfig?.libraries || {};
+        const count = Object.keys(libraries).length;
+        const item = document.getElementById('preflight-libraries');
+        const detail = document.getElementById('preflight-libraries-detail');
+
+        if (count > 0) {
+            this.status.libraries = 'ready';
+            item?.classList.remove('warning', 'error');
+            item?.classList.add('ready');
+            if (detail) detail.textContent = `${count} ${count === 1 ? 'library' : 'libraries'}`;
+        } else {
+            this.status.libraries = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'No libraries configured';
+        }
+    },
+
+    async verifyConnections() {
+        // Test Plex
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        const plexItem = document.getElementById('preflight-plex');
+        const plexDetail = document.getElementById('preflight-plex-detail');
+
+        if (plexUrl && plexToken) {
+            if (plexDetail) plexDetail.textContent = 'Testing...';
+            try {
+                const result = await api.post('/test/plex', { url: plexUrl, token: plexToken });
+                if (result.success) {
+                    this.status.plex = 'ready';
+                    plexItem?.classList.remove('warning', 'error');
+                    plexItem?.classList.add('ready');
+                    if (plexDetail) plexDetail.textContent = result.server_name || 'Connected';
+                    sidebarStatus.updatePlex(true);
+                } else {
+                    this.status.plex = 'error';
+                    plexItem?.classList.remove('ready', 'warning');
+                    plexItem?.classList.add('error');
+                    if (plexDetail) plexDetail.textContent = result.error || 'Connection failed';
+                    sidebarStatus.updatePlex(false);
+                }
+            } catch (error) {
+                this.status.plex = 'error';
+                plexItem?.classList.remove('ready', 'warning');
+                plexItem?.classList.add('error');
+                if (plexDetail) plexDetail.textContent = error.message;
+                sidebarStatus.updatePlex(false);
+            }
+        }
+
+        // Test TMDb
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        const tmdbItem = document.getElementById('preflight-tmdb');
+        const tmdbDetail = document.getElementById('preflight-tmdb-detail');
+
+        if (tmdbKey) {
+            if (tmdbDetail) tmdbDetail.textContent = 'Testing...';
+            try {
+                const result = await api.post('/test/tmdb', { apikey: tmdbKey });
+                if (result.success) {
+                    this.status.tmdb = 'ready';
+                    tmdbItem?.classList.remove('warning', 'error');
+                    tmdbItem?.classList.add('ready');
+                    if (tmdbDetail) tmdbDetail.textContent = 'API key valid';
+                    sidebarStatus.updateTmdb(true);
+                } else {
+                    this.status.tmdb = 'error';
+                    tmdbItem?.classList.remove('ready', 'warning');
+                    tmdbItem?.classList.add('error');
+                    if (tmdbDetail) tmdbDetail.textContent = result.error || 'Invalid API key';
+                    sidebarStatus.updateTmdb(false);
+                }
+            } catch (error) {
+                this.status.tmdb = 'error';
+                tmdbItem?.classList.remove('ready', 'warning');
+                tmdbItem?.classList.add('error');
+                if (tmdbDetail) tmdbDetail.textContent = error.message;
+                sidebarStatus.updateTmdb(false);
+            }
+        }
+
+        this.updateOverallStatus();
+        toast.success('Connection verification complete');
+    },
+
+    updateOverallStatus() {
+        const checklist = document.getElementById('preflight-checklist');
+        const statusEl = document.getElementById('preflight-status');
+
+        const values = Object.values(this.status);
+        const hasErrors = values.includes('error');
+        const hasWarnings = values.includes('warning');
+        const allReady = values.every(s => s === 'ready');
+
+        checklist?.classList.remove('all-ready', 'has-warnings', 'has-errors');
+
+        if (allReady) {
+            checklist?.classList.add('all-ready');
+            if (statusEl) {
+                statusEl.textContent = 'Ready to run';
+                statusEl.className = 'preflight-status ready';
+            }
+        } else if (hasErrors) {
+            checklist?.classList.add('has-errors');
+            if (statusEl) {
+                statusEl.textContent = 'Issues found';
+                statusEl.className = 'preflight-status error';
+            }
+        } else if (hasWarnings) {
+            checklist?.classList.add('has-warnings');
+            if (statusEl) {
+                statusEl.textContent = 'Verify connections';
+                statusEl.className = 'preflight-status warning';
+            }
+        }
+    },
+
+    // Called when switching to Run tab
+    refresh() {
+        this.checkAll();
+    }
+};
+
+// ============================================================================
 // Keyboard Shortcuts (Phase 4)
 // ============================================================================
 
@@ -422,15 +1383,19 @@ const keyboard = {
             yamlPreview.toggle();
         });
 
-        this.register('ctrl+1', 'Go to Config tab', () => {
+        this.register('ctrl+1', 'Go to Dashboard', () => {
+            document.querySelector('[data-tab="dashboard"]')?.click();
+        });
+
+        this.register('ctrl+2', 'Go to Config tab', () => {
             document.querySelector('[data-tab="config"]')?.click();
         });
 
-        this.register('ctrl+2', 'Go to Run tab', () => {
+        this.register('ctrl+3', 'Go to Run tab', () => {
             document.querySelector('[data-tab="run"]')?.click();
         });
 
-        this.register('ctrl+3', 'Go to Logs tab', () => {
+        this.register('ctrl+4', 'Go to Logs tab', () => {
             document.querySelector('[data-tab="logs"]')?.click();
         });
 
@@ -603,6 +1568,7 @@ function switchTab(tabName) {
     // Load tab-specific data
     if (tabName === 'run') {
         loadRunPlan();
+        preflight.refresh();
     } else if (tabName === 'history') {
         loadRunHistory();
     } else if (tabName === 'overlays') {
@@ -3646,10 +4612,24 @@ async function init() {
     // Initialize Phase 4 features
     keyboard.init();
 
+    // Initialize dashboard, wizard, profiles, and preflight
+    dashboard.init();
+    setupWizard.init();
+    profileSwitcher.init();
+    preflight.init();
+
     // Load initial data
     await loadConfig();
     await loadBackups();
     await checkRunStatus();
+
+    // Refresh dashboard after config is loaded
+    dashboard.refresh();
+
+    // Show setup wizard for first-time users
+    if (setupWizard.shouldShow()) {
+        setTimeout(() => setupWizard.show(), 500);
+    }
 
     // Sync loaded config to forms
     syncYamlToForms();

@@ -20,6 +20,34 @@
     <header class="header" role="banner">
         <div class="header-content">
             <h1>Kometa Web UI <span class="text-xs text-muted font-normal">v0.3.0-dev</span></h1>
+            <!-- Profile Switcher -->
+            <div class="profile-switcher" id="profile-switcher">
+                <button class="profile-switcher-btn" id="profile-switcher-btn" aria-expanded="false" aria-haspopup="true">
+                    <span class="profile-icon">📁</span>
+                    <span class="profile-name" id="current-profile-name">Default</span>
+                    <span class="profile-chevron">▼</span>
+                </button>
+                <div class="profile-dropdown" id="profile-dropdown" role="menu">
+                    <div class="profile-dropdown-header">
+                        <span>Configuration Profiles</span>
+                    </div>
+                    <div class="profile-list" id="profile-list">
+                        <button class="profile-item active" data-profile="default" role="menuitem">
+                            <span class="profile-item-icon">📄</span>
+                            <span class="profile-item-name">Default</span>
+                            <span class="profile-item-check">✓</span>
+                        </button>
+                    </div>
+                    <div class="profile-dropdown-actions">
+                        <button class="btn btn-sm btn-secondary" id="btn-save-profile">
+                            <span>💾</span> Save as Profile
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-manage-profiles">
+                            <span>⚙️</span> Manage
+                        </button>
+                    </div>
+                </div>
+            </div>
             <div class="status-indicator" id="connection-status" aria-label="Connection status">
                 <span class="status-dot" aria-hidden="true"></span>
                 <span class="status-text">Connecting...</span>
@@ -29,7 +57,8 @@
 
     <!-- Main Navigation -->
     <nav class="nav-tabs" role="tablist" aria-label="Main navigation">
-        <button class="nav-tab active" data-tab="config" role="tab" aria-selected="true" aria-controls="tab-config">Configuration</button>
+        <button class="nav-tab active" data-tab="dashboard" role="tab" aria-selected="true" aria-controls="tab-dashboard">Dashboard</button>
+        <button class="nav-tab" data-tab="config" role="tab" aria-selected="false" aria-controls="tab-config">Configuration</button>
         <button class="nav-tab" data-tab="overlays" role="tab" aria-selected="false" aria-controls="tab-overlays">Overlays</button>
         <button class="nav-tab" data-tab="run" role="tab" aria-selected="false" aria-controls="tab-run">Run</button>
         <button class="nav-tab" data-tab="logs" role="tab" aria-selected="false" aria-controls="tab-logs">Logs</button>
@@ -38,8 +67,115 @@
 
     <!-- Main Content -->
     <main class="main-content" id="main-content" role="main">
+        <!-- Dashboard Tab -->
+        <section id="tab-dashboard" class="tab-content active" role="tabpanel" aria-labelledby="tab-dashboard-btn">
+            <div class="dashboard-panel">
+                <div class="dashboard-header">
+                    <h2>Dashboard</h2>
+                    <p class="text-muted">System status and quick actions</p>
+                </div>
+
+                <!-- Connection Status Cards -->
+                <div class="dashboard-section">
+                    <h3 class="dashboard-section-title">Connection Status</h3>
+                    <div class="dashboard-grid dashboard-grid-3">
+                        <div class="dashboard-card" id="dashboard-plex-card">
+                            <div class="dashboard-card-icon">📺</div>
+                            <div class="dashboard-card-content">
+                                <div class="dashboard-card-title">Plex Server</div>
+                                <div class="dashboard-card-status" id="dashboard-plex-status">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Not configured</span>
+                                </div>
+                                <div class="dashboard-card-detail" id="dashboard-plex-detail">-</div>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" id="dashboard-test-plex">Test</button>
+                        </div>
+
+                        <div class="dashboard-card" id="dashboard-tmdb-card">
+                            <div class="dashboard-card-icon">🎬</div>
+                            <div class="dashboard-card-content">
+                                <div class="dashboard-card-title">TMDb API</div>
+                                <div class="dashboard-card-status" id="dashboard-tmdb-status">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Not configured</span>
+                                </div>
+                                <div class="dashboard-card-detail" id="dashboard-tmdb-detail">-</div>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" id="dashboard-test-tmdb">Test</button>
+                        </div>
+
+                        <div class="dashboard-card" id="dashboard-config-card">
+                            <div class="dashboard-card-icon">📄</div>
+                            <div class="dashboard-card-content">
+                                <div class="dashboard-card-title">Configuration</div>
+                                <div class="dashboard-card-status" id="dashboard-config-status">
+                                    <span class="status-dot"></span>
+                                    <span class="status-text">Loading...</span>
+                                </div>
+                                <div class="dashboard-card-detail" id="dashboard-config-detail">-</div>
+                            </div>
+                            <button class="btn btn-sm btn-secondary" id="dashboard-go-config">Edit</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Library Overview -->
+                <div class="dashboard-section">
+                    <h3 class="dashboard-section-title">Libraries</h3>
+                    <div class="dashboard-libraries" id="dashboard-libraries">
+                        <div class="dashboard-empty-state">
+                            <span class="empty-icon">📚</span>
+                            <p>No libraries configured</p>
+                            <button class="btn btn-primary btn-sm" id="dashboard-add-library">Add Library</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="dashboard-section">
+                    <h3 class="dashboard-section-title">Quick Actions</h3>
+                    <div class="dashboard-actions">
+                        <button class="dashboard-action-btn" id="dashboard-action-run">
+                            <span class="action-icon">▶️</span>
+                            <span class="action-label">Run Kometa</span>
+                            <span class="action-desc">Execute with current config</span>
+                        </button>
+                        <button class="dashboard-action-btn" id="dashboard-action-dry-run">
+                            <span class="action-icon">🔍</span>
+                            <span class="action-label">Dry Run</span>
+                            <span class="action-desc">Preview changes without applying</span>
+                        </button>
+                        <button class="dashboard-action-btn" id="dashboard-action-validate">
+                            <span class="action-icon">✓</span>
+                            <span class="action-label">Validate Config</span>
+                            <span class="action-desc">Check configuration for errors</span>
+                        </button>
+                        <button class="dashboard-action-btn" id="dashboard-action-backup">
+                            <span class="action-icon">💾</span>
+                            <span class="action-label">Backup Config</span>
+                            <span class="action-desc">Save a backup of current config</span>
+                        </button>
+                        <button class="dashboard-action-btn" id="dashboard-action-wizard">
+                            <span class="action-icon">🧙</span>
+                            <span class="action-label">Setup Wizard</span>
+                            <span class="action-desc">Run guided setup again</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-section">
+                    <h3 class="dashboard-section-title">Recent Activity</h3>
+                    <div class="dashboard-activity" id="dashboard-activity">
+                        <div class="activity-empty">No recent activity</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Configuration Tab -->
-        <section id="tab-config" class="tab-content active" role="tabpanel" aria-labelledby="tab-config-btn">
+        <section id="tab-config" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-config-btn">
             <div class="config-header">
                 <h2>Configuration</h2>
                 <div class="config-actions" role="toolbar" aria-label="Configuration actions">
@@ -1652,6 +1788,104 @@ libraries:
                     </div>
                 </div>
 
+                <!-- Overlay Preset Gallery -->
+                <div class="overlay-gallery-section">
+                    <div class="overlay-gallery-header">
+                        <h3>Overlay Presets</h3>
+                        <p class="section-desc">Quick-apply common overlay configurations</p>
+                    </div>
+                    <div class="overlay-gallery" id="overlay-gallery">
+                        <div class="overlay-gallery-item" data-preset="resolution">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge resolution">4K</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Resolution</span>
+                                <span class="gallery-item-desc">4K, 1080p, 720p badges</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="audio">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge audio">Atmos</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Audio Format</span>
+                                <span class="gallery-item-desc">Dolby Atmos, DTS:X, etc.</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="hdr">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge hdr">HDR</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">HDR Formats</span>
+                                <span class="gallery-item-desc">HDR10, Dolby Vision, etc.</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="ratings">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge ratings">★ 8.5</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Ratings</span>
+                                <span class="gallery-item-desc">IMDb, RT, TMDb scores</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="streaming">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge streaming">Netflix</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Streaming</span>
+                                <span class="gallery-item-desc">Netflix, Disney+, etc.</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="awards">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-badge awards">🏆</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Awards</span>
+                                <span class="gallery-item-desc">Oscar, Emmy winners</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="status">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini">
+                                    <div class="preview-overlay-ribbon">NEW</div>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Status Ribbons</span>
+                                <span class="gallery-item-desc">New, Returning, Ending</span>
+                            </div>
+                        </div>
+                        <div class="overlay-gallery-item" data-preset="custom">
+                            <div class="gallery-item-preview">
+                                <div class="preview-poster-mini custom">
+                                    <span class="plus-icon">+</span>
+                                </div>
+                            </div>
+                            <div class="gallery-item-info">
+                                <span class="gallery-item-name">Custom Overlay</span>
+                                <span class="gallery-item-desc">Create your own</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Advanced Options (Collapsible) -->
                 <div class="overlay-advanced-section">
                     <details id="overlay-advanced-details">
@@ -2050,6 +2284,44 @@ libraries:
             <div class="run-panel">
                 <h2>Run Kometa</h2>
 
+                <!-- Pre-flight Checklist -->
+                <div class="preflight-checklist" id="preflight-checklist">
+                    <div class="preflight-header">
+                        <h3>Pre-flight Checklist</h3>
+                        <span class="preflight-status" id="preflight-status">Checking...</span>
+                    </div>
+                    <div class="preflight-items">
+                        <div class="preflight-item" id="preflight-config">
+                            <span class="preflight-icon">⏳</span>
+                            <span class="preflight-label">Configuration loaded</span>
+                            <span class="preflight-detail" id="preflight-config-detail">Checking...</span>
+                        </div>
+                        <div class="preflight-item" id="preflight-plex">
+                            <span class="preflight-icon">⏳</span>
+                            <span class="preflight-label">Plex connection</span>
+                            <span class="preflight-detail" id="preflight-plex-detail">Not verified</span>
+                        </div>
+                        <div class="preflight-item" id="preflight-tmdb">
+                            <span class="preflight-icon">⏳</span>
+                            <span class="preflight-label">TMDb API key</span>
+                            <span class="preflight-detail" id="preflight-tmdb-detail">Not verified</span>
+                        </div>
+                        <div class="preflight-item" id="preflight-libraries">
+                            <span class="preflight-icon">⏳</span>
+                            <span class="preflight-label">Libraries configured</span>
+                            <span class="preflight-detail" id="preflight-libraries-detail">Checking...</span>
+                        </div>
+                    </div>
+                    <div class="preflight-actions">
+                        <button class="btn btn-sm btn-secondary" id="btn-recheck-preflight">
+                            🔄 Re-check All
+                        </button>
+                        <button class="btn btn-sm btn-secondary" id="btn-verify-connections">
+                            🔌 Verify Connections
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Run Mode Selector -->
                 <div class="run-mode-selector">
                     <div class="mode-option selected" data-mode="dry-run">
@@ -2183,6 +2455,160 @@ libraries:
     <footer class="footer">
         <p>Kometa Web UI | <a href="https://kometa.wiki" target="_blank">Documentation</a></p>
     </footer>
+
+    <!-- Setup Wizard Modal -->
+    <div id="setup-wizard" class="wizard-modal" role="dialog" aria-labelledby="wizard-title" aria-modal="true">
+        <div class="wizard-content">
+            <div class="wizard-header">
+                <h2 id="wizard-title">Welcome to Kometa</h2>
+                <p class="text-muted">Let's get you set up in a few easy steps</p>
+            </div>
+
+            <!-- Progress Indicator -->
+            <div class="wizard-progress">
+                <div class="wizard-step active" data-step="1">
+                    <span class="step-number">1</span>
+                    <span class="step-label">Plex</span>
+                </div>
+                <div class="wizard-step" data-step="2">
+                    <span class="step-number">2</span>
+                    <span class="step-label">TMDb</span>
+                </div>
+                <div class="wizard-step" data-step="3">
+                    <span class="step-number">3</span>
+                    <span class="step-label">Library</span>
+                </div>
+                <div class="wizard-step" data-step="4">
+                    <span class="step-number">4</span>
+                    <span class="step-label">Done</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Plex Connection -->
+            <div class="wizard-panel active" data-panel="1">
+                <div class="wizard-panel-header">
+                    <span class="panel-icon">📺</span>
+                    <h3>Connect to Plex</h3>
+                    <p>Enter your Plex server details to get started</p>
+                </div>
+                <div class="wizard-panel-body">
+                    <div class="form-group">
+                        <label for="wizard-plex-url">Plex URL</label>
+                        <input type="text" id="wizard-plex-url" class="form-control" placeholder="http://localhost:32400">
+                        <small class="form-hint">Your Plex server URL including port</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="wizard-plex-token">Plex Token</label>
+                        <input type="password" id="wizard-plex-token" class="form-control" placeholder="Your Plex token">
+                        <small class="form-hint">
+                            <a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/" target="_blank">How to find your token</a>
+                        </small>
+                    </div>
+                    <div id="wizard-plex-result" class="wizard-test-result"></div>
+                </div>
+                <div class="wizard-panel-footer">
+                    <button class="btn btn-secondary" id="wizard-skip-plex">Skip for now</button>
+                    <button class="btn btn-primary" id="wizard-test-plex">Test Connection</button>
+                </div>
+            </div>
+
+            <!-- Step 2: TMDb API -->
+            <div class="wizard-panel" data-panel="2">
+                <div class="wizard-panel-header">
+                    <span class="panel-icon">🎬</span>
+                    <h3>Connect TMDb</h3>
+                    <p>TMDb provides movie and TV show metadata</p>
+                </div>
+                <div class="wizard-panel-body">
+                    <div class="form-group">
+                        <label for="wizard-tmdb-key">TMDb API Key</label>
+                        <input type="password" id="wizard-tmdb-key" class="form-control" placeholder="Your TMDb API key">
+                        <small class="form-hint">
+                            <a href="https://www.themoviedb.org/settings/api" target="_blank">Get a free API key from TMDb</a>
+                        </small>
+                    </div>
+                    <div id="wizard-tmdb-result" class="wizard-test-result"></div>
+                </div>
+                <div class="wizard-panel-footer">
+                    <button class="btn btn-secondary" id="wizard-back-1">Back</button>
+                    <button class="btn btn-secondary" id="wizard-skip-tmdb">Skip for now</button>
+                    <button class="btn btn-primary" id="wizard-test-tmdb">Test API Key</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Add Library -->
+            <div class="wizard-panel" data-panel="3">
+                <div class="wizard-panel-header">
+                    <span class="panel-icon">📚</span>
+                    <h3>Add a Library</h3>
+                    <p>Choose a Plex library to manage with Kometa</p>
+                </div>
+                <div class="wizard-panel-body">
+                    <div class="form-group">
+                        <label for="wizard-library-name">Library Name</label>
+                        <input type="text" id="wizard-library-name" class="form-control" placeholder="e.g., Movies, TV Shows">
+                        <small class="form-hint">Must match the exact name in Plex</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="wizard-library-type">Library Type</label>
+                        <select id="wizard-library-type" class="form-select">
+                            <option value="movie">Movies</option>
+                            <option value="show">TV Shows</option>
+                            <option value="music">Music</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="wizard-panel-footer">
+                    <button class="btn btn-secondary" id="wizard-back-2">Back</button>
+                    <button class="btn btn-secondary" id="wizard-skip-library">Skip for now</button>
+                    <button class="btn btn-primary" id="wizard-add-library">Add Library</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Complete -->
+            <div class="wizard-panel" data-panel="4">
+                <div class="wizard-panel-header">
+                    <span class="panel-icon">🎉</span>
+                    <h3>You're All Set!</h3>
+                    <p>Your basic configuration is ready</p>
+                </div>
+                <div class="wizard-panel-body">
+                    <div class="wizard-summary">
+                        <div class="summary-item" id="wizard-summary-plex">
+                            <span class="summary-icon">📺</span>
+                            <span class="summary-label">Plex</span>
+                            <span class="summary-status">Not configured</span>
+                        </div>
+                        <div class="summary-item" id="wizard-summary-tmdb">
+                            <span class="summary-icon">🎬</span>
+                            <span class="summary-label">TMDb</span>
+                            <span class="summary-status">Not configured</span>
+                        </div>
+                        <div class="summary-item" id="wizard-summary-library">
+                            <span class="summary-icon">📚</span>
+                            <span class="summary-label">Library</span>
+                            <span class="summary-status">Not configured</span>
+                        </div>
+                    </div>
+                    <div class="wizard-next-steps">
+                        <h4>What's next?</h4>
+                        <ul>
+                            <li>Explore the Configuration tab to fine-tune settings</li>
+                            <li>Add overlays and collections in the Overlays tab</li>
+                            <li>Run a dry-run test to preview changes</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="wizard-panel-footer">
+                    <button class="btn btn-secondary" id="wizard-back-3">Back</button>
+                    <button class="btn btn-primary" id="wizard-finish">Get Started</button>
+                </div>
+            </div>
+
+            <!-- Close button -->
+            <button class="wizard-close" id="wizard-close" aria-label="Close wizard">&times;</button>
+        </div>
+    </div>
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container" role="alert" aria-live="polite"></div>
