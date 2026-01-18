@@ -3134,12 +3134,159 @@ body {
 }
 
 /* ============================================================================
-   Config Editor - Sub-tabs & Form Styles
+   Config Editor - Sidebar Layout (Phase 2)
    ============================================================================ */
 
-/* Sub-tab Navigation */
-.config-subtabs {
+/* Grid layout with sidebar */
+.config-editor-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 500px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+/* Sidebar Navigation */
+.config-sidebar {
+    background-color: var(--bg-tertiary);
+    border-right: 1px solid var(--border-color);
     display: flex;
+    flex-direction: column;
+}
+
+.config-sidebar-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-2) 0;
+}
+
+.config-nav-group {
+    margin-bottom: var(--space-3);
+}
+
+.config-nav-group-label {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.config-nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-4);
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.config-nav-item:hover {
+    color: var(--text-primary);
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.config-nav-item.active {
+    color: var(--primary-color);
+    background-color: rgba(229, 160, 13, 0.1);
+    border-left-color: var(--primary-color);
+}
+
+.config-nav-item .nav-icon {
+    font-size: var(--text-md);
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.config-nav-item .nav-label {
+    flex: 1;
+}
+
+.config-nav-item .nav-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    font-weight: var(--font-semibold);
+}
+
+.config-nav-item .nav-badge.optional {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+}
+
+.config-nav-item.active .nav-badge {
+    background: rgba(229, 160, 13, 0.2);
+    color: var(--primary-color);
+}
+
+/* Main content area */
+.config-content-area {
+    background-color: var(--bg-secondary);
+    overflow-y: auto;
+    max-height: calc(100vh - 280px);
+}
+
+/* Mobile: Stack layout */
+@media (max-width: 900px) {
+    .config-editor-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .config-sidebar {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .config-sidebar-nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-1);
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .config-nav-group {
+        display: contents;
+    }
+
+    .config-nav-group-label {
+        display: none;
+    }
+
+    .config-nav-item {
+        padding: var(--space-2) var(--space-3);
+        border-left: none;
+        border-radius: var(--radius-sm);
+        flex: 0 0 auto;
+    }
+
+    .config-nav-item.active {
+        background-color: var(--bg-secondary);
+    }
+
+    .config-nav-item .nav-icon {
+        display: none;
+    }
+
+    .config-content-area {
+        max-height: none;
+    }
+}
+
+/* Legacy horizontal tabs (kept for compatibility) */
+.config-subtabs {
+    display: none; /* Hidden by default when sidebar is used */
     flex-wrap: wrap;
     gap: 4px;
     padding: 12px 16px;
@@ -5407,5 +5554,174 @@ input[type="checkbox"]:focus-visible {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* ===========================================
+   PHASE 2: ENHANCED COMPONENTS
+   =========================================== */
+
+/* -------------------------------------------
+   ENHANCED SERVICE CARDS (override existing)
+   ------------------------------------------- */
+.service-card {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-4);
+    overflow: hidden;
+    transition: border-color var(--transition-normal), box-shadow var(--transition-normal);
+}
+
+.service-card:hover {
+    border-color: var(--border-strong);
+    box-shadow: var(--shadow-sm);
+}
+
+.service-card.is-configured {
+    border-color: var(--color-success);
+}
+
+/* -------------------------------------------
+   FORM VALIDATION STATES
+   ------------------------------------------- */
+/* Success state */
+.form-group.is-valid input,
+.form-group.is-valid select,
+.form-group.is-valid textarea {
+    border-color: var(--color-success);
+}
+
+.form-group.is-valid input:focus,
+.form-group.is-valid select:focus,
+.form-group.is-valid textarea:focus {
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+}
+
+/* Error state */
+.form-group.is-invalid input,
+.form-group.is-invalid select,
+.form-group.is-invalid textarea {
+    border-color: var(--color-error);
+    background-color: var(--color-error-bg);
+}
+
+.form-group.is-invalid input:focus,
+.form-group.is-invalid select:focus,
+.form-group.is-invalid textarea:focus {
+    box-shadow: var(--shadow-focus-error);
+}
+
+/* Validation messages */
+.form-feedback {
+    display: none;
+    font-size: var(--text-sm);
+    margin-top: var(--space-1);
+}
+
+.form-group.is-valid .form-feedback.valid-feedback,
+.form-group.is-invalid .form-feedback.invalid-feedback {
+    display: block;
+}
+
+.valid-feedback {
+    color: var(--color-success);
+}
+
+.invalid-feedback {
+    color: var(--color-error);
+}
+
+/* Input wrapper for validation icons */
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+    padding-right: var(--space-8);
+}
+
+.form-group.is-valid .input-wrapper::after {
+    content: '✓';
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-success);
+    font-size: var(--text-md);
+}
+
+.form-group.is-invalid .input-wrapper::after {
+    content: '!';
+    position: absolute;
+    right: var(--space-3);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-error);
+    font-weight: var(--font-bold);
+    font-size: var(--text-md);
+}
+
+/* -------------------------------------------
+   IMPROVED BUTTON CONSISTENCY
+   ------------------------------------------- */
+.btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.btn-primary:hover:not(:disabled) {
+    background-color: var(--primary-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active:not(:disabled) {
+    background-color: var(--primary-active);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--bg-elevated);
+    border-color: var(--border-strong);
+}
+
+.btn-ghost {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Loading button state */
+.btn.is-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn.is-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.btn-primary.is-loading::after {
+    border-color: var(--text-inverse);
+    border-right-color: transparent;
+}
+
+/* -------------------------------------------
+   FOCUS RING FOR SIDEBAR NAV
+   ------------------------------------------- */
+.config-nav-item:focus-visible {
+    outline: none;
+    box-shadow: inset var(--shadow-focus);
 }
 

@@ -74,23 +74,72 @@
             <!-- Validation Messages -->
             <div id="validation-messages" class="validation-messages hidden"></div>
 
-            <!-- Config Editor Container -->
-            <div class="config-editor-container" id="config-editor-container">
-                <!-- Sub-tab Navigation -->
-                <div class="config-subtabs">
-                    <button class="config-subtab active" data-subtab="plex">Plex</button>
-                    <button class="config-subtab" data-subtab="tmdb">TMDb</button>
-                    <button class="config-subtab" data-subtab="libraries">Libraries</button>
-                    <button class="config-subtab" data-subtab="settings">Settings</button>
-                    <button class="config-subtab" data-subtab="arr">Arr Services</button>
-                    <button class="config-subtab" data-subtab="metadata">Metadata</button>
-                    <button class="config-subtab" data-subtab="lists">Lists</button>
-                    <button class="config-subtab" data-subtab="notifications">Notifications</button>
-                    <button class="config-subtab" data-subtab="yaml">Raw YAML</button>
-                </div>
+            <!-- Config Editor Container with Sidebar -->
+            <div class="config-editor-container config-editor-layout" id="config-editor-container">
+                <!-- Sidebar Navigation -->
+                <aside class="config-sidebar">
+                    <nav class="config-sidebar-nav">
+                        <div class="config-nav-group">
+                            <div class="config-nav-group-label">Core</div>
+                            <button class="config-nav-item active" data-subtab="plex">
+                                <span class="nav-icon">📺</span>
+                                <span class="nav-label">Plex</span>
+                                <span class="nav-badge">Required</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="tmdb">
+                                <span class="nav-icon">🎬</span>
+                                <span class="nav-label">TMDb</span>
+                                <span class="nav-badge">Required</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="libraries">
+                                <span class="nav-icon">📚</span>
+                                <span class="nav-label">Libraries</span>
+                                <span class="nav-badge">Required</span>
+                            </button>
+                        </div>
+                        <div class="config-nav-group">
+                            <div class="config-nav-group-label">Settings</div>
+                            <button class="config-nav-item" data-subtab="settings">
+                                <span class="nav-icon">⚙️</span>
+                                <span class="nav-label">Settings</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                        </div>
+                        <div class="config-nav-group">
+                            <div class="config-nav-group-label">Integrations</div>
+                            <button class="config-nav-item" data-subtab="arr">
+                                <span class="nav-icon">📥</span>
+                                <span class="nav-label">Arr Services</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="metadata">
+                                <span class="nav-icon">🏷️</span>
+                                <span class="nav-label">Metadata</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="lists">
+                                <span class="nav-icon">📋</span>
+                                <span class="nav-label">Lists</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="notifications">
+                                <span class="nav-icon">🔔</span>
+                                <span class="nav-label">Notifications</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                        </div>
+                        <div class="config-nav-group">
+                            <div class="config-nav-group-label">Advanced</div>
+                            <button class="config-nav-item" data-subtab="yaml">
+                                <span class="nav-icon">📝</span>
+                                <span class="nav-label">Raw YAML</span>
+                            </button>
+                        </div>
+                    </nav>
+                </aside>
 
-                <!-- Sub-tab Content Panels -->
-                <div class="config-subtab-content">
+                <!-- Main Content Area -->
+                <div class="config-content-area config-subtab-content">
                     <!-- Plex Sub-tab -->
                     <div id="subtab-plex" class="subtab-panel active">
                         <div class="section-header">

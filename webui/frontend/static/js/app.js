@@ -467,10 +467,11 @@ let parsedConfig = {};
 let isSyncing = false;
 
 /**
- * Initialize config subtabs
+ * Initialize config subtabs (supports both legacy tabs and new sidebar nav)
  */
 function initConfigSubtabs() {
-    const subtabs = document.querySelectorAll('.config-subtab');
+    // Support both old .config-subtab and new .config-nav-item classes
+    const subtabs = document.querySelectorAll('.config-subtab, .config-nav-item');
     const panels = document.querySelectorAll('.subtab-panel');
 
     subtabs.forEach(tab => {
@@ -487,8 +488,8 @@ function initConfigSubtabs() {
                 syncYamlToForms();
             }
 
-            // Update active states
-            subtabs.forEach(t => t.classList.toggle('active', t === tab));
+            // Update active states for ALL navigation items (both old and new)
+            subtabs.forEach(t => t.classList.toggle('active', t.dataset.subtab === targetSubtab));
             panels.forEach(p => {
                 const isActive = p.id === `subtab-${targetSubtab}`;
                 p.classList.toggle('active', isActive);
