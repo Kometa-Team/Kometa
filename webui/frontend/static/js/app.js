@@ -235,6 +235,161 @@ const toast = {
 };
 
 // ============================================================================
+// YAML Preview Panel (Phase 3)
+// ============================================================================
+
+const yamlPreview = {
+    panel: null,
+    toggleBtn: null,
+    previewCode: null,
+    container: null,
+    isActive: false,
+
+    init() {
+        this.panel = document.getElementById('yaml-preview-panel');
+        this.toggleBtn = document.getElementById('btn-toggle-yaml-preview');
+        this.previewCode = document.getElementById('yaml-preview-code');
+        this.container = document.getElementById('config-editor-container');
+
+        if (!this.panel || !this.toggleBtn) return;
+
+        // Toggle button click
+        this.toggleBtn.addEventListener('click', () => this.toggle());
+
+        // Close button
+        document.getElementById('btn-close-preview')?.addEventListener('click', () => this.hide());
+
+        // Copy button
+        document.getElementById('btn-copy-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Initial update
+        this.update();
+    },
+
+    toggle() {
+        if (this.isActive) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    },
+
+    show() {
+        this.isActive = true;
+        this.panel?.classList.add('active');
+        this.toggleBtn?.classList.add('active');
+        this.container?.classList.add('with-preview');
+        this.update();
+    },
+
+    hide() {
+        this.isActive = false;
+        this.panel?.classList.remove('active');
+        this.toggleBtn?.classList.remove('active');
+        this.container?.classList.remove('with-preview');
+    },
+
+    update() {
+        if (!this.isActive || !this.previewCode) return;
+
+        const yamlContent = elements.configEditor?.value || '';
+        this.previewCode.innerHTML = this.highlightYaml(yamlContent);
+    },
+
+    highlightYaml(yaml) {
+        if (!yaml) return '<span class="yaml-comment"># No configuration loaded</span>';
+
+        // Simple YAML syntax highlighting
+        return yaml
+            .split('\n')
+            .map(line => {
+                // Comments
+                if (line.trim().startsWith('#')) {
+                    return `<span class="yaml-comment">${this.escapeHtml(line)}</span>`;
+                }
+
+                // Key-value pairs
+                const colonIndex = line.indexOf(':');
+                if (colonIndex > 0) {
+                    const key = line.substring(0, colonIndex);
+                    const rest = line.substring(colonIndex);
+
+                    // Check if there's a value after the colon
+                    const valueMatch = rest.match(/^:\s*(.+)$/);
+                    if (valueMatch) {
+                        const value = valueMatch[1].trim();
+                        let valueClass = 'yaml-value';
+
+                        // Determine value type
+                        if (value === 'true' || value === 'false') {
+                            valueClass = 'yaml-boolean';
+                        } else if (/^-?\d+(\.\d+)?$/.test(value)) {
+                            valueClass = 'yaml-number';
+                        } else if (value.startsWith('"') || value.startsWith("'")) {
+                            valueClass = 'yaml-string';
+                        }
+
+                        return `<span class="yaml-key">${this.escapeHtml(key)}</span>: <span class="${valueClass}">${this.escapeHtml(valueMatch[1])}</span>`;
+                    }
+
+                    return `<span class="yaml-key">${this.escapeHtml(key)}</span>${this.escapeHtml(rest)}`;
+                }
+
+                // List items
+                if (line.trim().startsWith('-')) {
+                    return this.escapeHtml(line);
+                }
+
+                return this.escapeHtml(line);
+            })
+            .join('\n');
+    },
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    copyYaml() {
+        const yamlContent = elements.configEditor?.value || '';
+        navigator.clipboard.writeText(yamlContent).then(() => {
+            toast.success('YAML copied to clipboard');
+        }).catch(() => {
+            toast.error('Failed to copy YAML');
+        });
+    }
+};
+
+// ============================================================================
+// Sidebar Status Updates (Phase 3)
+// ============================================================================
+
+const sidebarStatus = {
+    plexDot: null,
+    tmdbDot: null,
+
+    init() {
+        this.plexDot = document.getElementById('sidebar-plex-status');
+        this.tmdbDot = document.getElementById('sidebar-tmdb-status');
+    },
+
+    updatePlex(connected) {
+        if (this.plexDot) {
+            this.plexDot.classList.toggle('connected', connected);
+            this.plexDot.classList.toggle('disconnected', !connected);
+        }
+    },
+
+    updateTmdb(connected) {
+        if (this.tmdbDot) {
+            this.tmdbDot.classList.toggle('connected', connected);
+            this.tmdbDot.classList.toggle('disconnected', !connected);
+        }
+    }
+};
+
+// ============================================================================
 // API Functions
 // ============================================================================
 
@@ -814,6 +969,9 @@ function syncFormsToYaml() {
 
         // Update service status badges
         updateServiceStatuses();
+
+        // Update YAML preview panel
+        yamlPreview.update();
 
     } finally {
         isSyncing = false;
@@ -1729,15 +1887,18 @@ async function testPlexConnection() {
             resultEl.textContent = `✓ Connected to ${result.server_name || 'Plex'}`;
             resultEl.className = 'test-result success';
             toast.success(`Connected to ${result.server_name || 'Plex'}`, { title: 'Plex Connection' });
+            sidebarStatus.updatePlex(true);
         } else {
             resultEl.textContent = `✗ ${result.error || 'Connection failed'}`;
             resultEl.className = 'test-result error';
             toast.error(result.error || 'Connection failed', { title: 'Plex Connection' });
+            sidebarStatus.updatePlex(false);
         }
     } catch (error) {
         resultEl.textContent = `✗ ${error.message}`;
         resultEl.className = 'test-result error';
         toast.error(error.message, { title: 'Plex Connection' });
+        sidebarStatus.updatePlex(false);
     }
 }
 
@@ -1762,13 +1923,19 @@ async function testTmdbConnection() {
         if (result.success) {
             resultEl.textContent = '✓ API key is valid';
             resultEl.className = 'test-result success';
+            toast.success('TMDb API key is valid', { title: 'TMDb Connection' });
+            sidebarStatus.updateTmdb(true);
         } else {
             resultEl.textContent = `✗ ${result.error || 'Invalid API key'}`;
             resultEl.className = 'test-result error';
+            toast.error(result.error || 'Invalid API key', { title: 'TMDb Connection' });
+            sidebarStatus.updateTmdb(false);
         }
     } catch (error) {
         resultEl.textContent = `✗ ${error.message}`;
         resultEl.className = 'test-result error';
+        toast.error(error.message, { title: 'TMDb Connection' });
+        sidebarStatus.updateTmdb(false);
     }
 }
 
@@ -3307,6 +3474,10 @@ async function init() {
     initConnectionTestButtons();
     initAddLibraryButton();
 
+    // Initialize Phase 3 features
+    yamlPreview.init();
+    sidebarStatus.init();
+
     // Load initial data
     await loadConfig();
     await loadBackups();
@@ -3314,6 +3485,9 @@ async function init() {
 
     // Sync loaded config to forms
     syncYamlToForms();
+
+    // Update YAML preview after initial load
+    yamlPreview.update();
 
     // Connect WebSocket for status updates
     connectStatusWebSocket();

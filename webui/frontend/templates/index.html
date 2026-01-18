@@ -136,6 +136,31 @@
                             </button>
                         </div>
                     </nav>
+
+                    <!-- Connection Status -->
+                    <div class="sidebar-status-section">
+                        <div class="sidebar-status-title">Status</div>
+                        <div class="sidebar-status-item">
+                            <span class="status-name">Plex</span>
+                            <span class="status-indicator">
+                                <span class="status-dot" id="sidebar-plex-status"></span>
+                            </span>
+                        </div>
+                        <div class="sidebar-status-item">
+                            <span class="status-name">TMDb</span>
+                            <span class="status-indicator">
+                                <span class="status-dot" id="sidebar-tmdb-status"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- YAML Preview Toggle -->
+                    <div class="config-sidebar-footer">
+                        <button id="btn-toggle-yaml-preview" class="btn-toggle-preview" title="Toggle live YAML preview">
+                            <span>📄</span>
+                            <span>YAML Preview</span>
+                        </button>
+                    </div>
                 </aside>
 
                 <!-- Main Content Area -->
@@ -1513,6 +1538,28 @@ libraries:
                         </div>
                     </div>
                 </div>
+
+                <!-- Live YAML Preview Panel -->
+                <aside class="yaml-preview-panel" id="yaml-preview-panel">
+                    <div class="yaml-preview-header">
+                        <h4>
+                            <span>📄</span>
+                            Live Preview
+                            <span class="preview-badge">Synced</span>
+                        </h4>
+                        <div class="yaml-preview-actions">
+                            <button class="btn btn-sm btn-ghost" id="btn-copy-yaml" title="Copy YAML">
+                                Copy
+                            </button>
+                            <button class="btn btn-sm btn-ghost" id="btn-close-preview" title="Close preview">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                    <div class="yaml-preview-content">
+                        <pre class="yaml-preview-code" id="yaml-preview-code"># Loading...</pre>
+                    </div>
+                </aside>
             </div>
 
             <!-- Backup List (Collapsible) -->
