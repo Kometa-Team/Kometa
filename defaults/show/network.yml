@@ -46,6 +46,7 @@ dynamic_collections:
         default: true
     include:
       - "#0"
+      - 5
       - 7mate
       - ABC
       - ABC Family
@@ -55,7 +56,6 @@ dynamic_collections:
       - Acorn TV
       - Adult Swim
       - AHC
-      - "U&Alibi"
       - ALTBalaji
       - Amazon Kids+
       - AMC
@@ -100,7 +100,6 @@ dynamic_collections:
       - CBS
       - Channel 3
       - Channel 4
-      - 5
       - CHCH-DT
       - Cinemax
       - Citytv
@@ -114,7 +113,6 @@ dynamic_collections:
       - CTV
       - Cuatro
       - Curiosity Stream
-      - "U&Dave"
       - DC Universe
       - Discovery
       - Discovery Kids
@@ -125,7 +123,6 @@ dynamic_collections:
       - Disney+
       - DR1
       - Dropout
-      - "U&Eden"
       - Elisa Viihde
       - Elisa Viihde Viaplay
       - ENA
@@ -288,6 +285,13 @@ dynamic_collections:
       - TVNZ 2
       - TVP1
       - U
+      - "U&Alibi"
+      - "U&Dave"
+      - "U&Drama"
+      - "U&Eden"
+      - "U&Gold"
+      - "U&W"
+      - "U&Yesterday"
       - UniMás
       - Universal Kids
       - Universal TV
