@@ -390,6 +390,168 @@ const sidebarStatus = {
 };
 
 // ============================================================================
+// Keyboard Shortcuts (Phase 4)
+// ============================================================================
+
+const keyboard = {
+    shortcuts: new Map(),
+    helpModal: null,
+
+    init() {
+        // Register default shortcuts
+        this.register('ctrl+s', 'Save configuration', () => {
+            document.getElementById('btn-save')?.click();
+        });
+
+        this.register('ctrl+shift+s', 'Save and run', () => {
+            // Save first, then trigger run
+            const saveBtn = document.getElementById('btn-save');
+            if (saveBtn) {
+                saveBtn.click();
+                setTimeout(() => {
+                    document.getElementById('btn-run')?.click();
+                }, 500);
+            }
+        });
+
+        this.register('ctrl+/', 'Show keyboard shortcuts', () => {
+            this.showHelp();
+        });
+
+        this.register('ctrl+p', 'Toggle YAML preview', () => {
+            yamlPreview.toggle();
+        });
+
+        this.register('ctrl+1', 'Go to Config tab', () => {
+            document.querySelector('[data-tab="config"]')?.click();
+        });
+
+        this.register('ctrl+2', 'Go to Run tab', () => {
+            document.querySelector('[data-tab="run"]')?.click();
+        });
+
+        this.register('ctrl+3', 'Go to Logs tab', () => {
+            document.querySelector('[data-tab="logs"]')?.click();
+        });
+
+        this.register('escape', 'Close modals/panels', () => {
+            // Close YAML preview if open
+            if (yamlPreview.isActive) {
+                yamlPreview.hide();
+                return;
+            }
+            // Close help modal if open
+            if (this.helpModal?.classList.contains('active')) {
+                this.hideHelp();
+                return;
+            }
+        });
+
+        // Global keydown listener
+        document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+        // Create help modal
+        this.createHelpModal();
+    },
+
+    register(combo, description, callback) {
+        this.shortcuts.set(combo.toLowerCase(), { description, callback });
+    },
+
+    handleKeydown(e) {
+        // Don't trigger shortcuts when typing in inputs
+        if (e.target.matches('input, textarea, select')) {
+            // Allow Escape in inputs
+            if (e.key !== 'Escape') return;
+        }
+
+        const combo = this.getCombo(e);
+        const shortcut = this.shortcuts.get(combo);
+
+        if (shortcut) {
+            e.preventDefault();
+            shortcut.callback();
+        }
+    },
+
+    getCombo(e) {
+        const parts = [];
+        if (e.ctrlKey || e.metaKey) parts.push('ctrl');
+        if (e.shiftKey) parts.push('shift');
+        if (e.altKey) parts.push('alt');
+
+        // Normalize key
+        let key = e.key.toLowerCase();
+        if (key === ' ') key = 'space';
+        if (key !== 'control' && key !== 'shift' && key !== 'alt' && key !== 'meta') {
+            parts.push(key);
+        }
+
+        return parts.join('+');
+    },
+
+    createHelpModal() {
+        const modal = document.createElement('div');
+        modal.className = 'keyboard-help-modal';
+        modal.id = 'keyboard-help-modal';
+        modal.innerHTML = `
+            <div class="keyboard-help-content">
+                <div class="keyboard-help-header">
+                    <h3>Keyboard Shortcuts</h3>
+                    <button class="btn-close-help" aria-label="Close">&times;</button>
+                </div>
+                <div class="keyboard-help-body">
+                    ${this.renderShortcutsList()}
+                </div>
+                <div class="keyboard-help-footer">
+                    <span class="text-muted">Press <kbd>Ctrl</kbd> + <kbd>/</kbd> to toggle this help</span>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        this.helpModal = modal;
+
+        // Close button handler
+        modal.querySelector('.btn-close-help')?.addEventListener('click', () => this.hideHelp());
+
+        // Click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) this.hideHelp();
+        });
+    },
+
+    renderShortcutsList() {
+        let html = '<div class="shortcuts-list">';
+        for (const [combo, { description }] of this.shortcuts) {
+            const keys = combo.split('+').map(k => `<kbd>${k}</kbd>`).join(' + ');
+            html += `
+                <div class="shortcut-item">
+                    <span class="shortcut-keys">${keys}</span>
+                    <span class="shortcut-desc">${description}</span>
+                </div>
+            `;
+        }
+        html += '</div>';
+        return html;
+    },
+
+    showHelp() {
+        if (this.helpModal) {
+            this.helpModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    hideHelp() {
+        if (this.helpModal) {
+            this.helpModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+};
+
+// ============================================================================
 // API Functions
 // ============================================================================
 
@@ -426,7 +588,10 @@ function switchTab(tabName) {
 
     // Update nav tabs
     elements.navTabs.forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
+        const isActive = tab.dataset.tab === tabName;
+        tab.classList.toggle('active', isActive);
+        // Update ARIA attributes for accessibility
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     // Update tab contents
@@ -3477,6 +3642,9 @@ async function init() {
     // Initialize Phase 3 features
     yamlPreview.init();
     sidebarStatus.init();
+
+    // Initialize Phase 4 features
+    keyboard.init();
 
     // Load initial data
     await loadConfig();

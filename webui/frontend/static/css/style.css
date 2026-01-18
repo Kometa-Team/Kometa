@@ -6195,3 +6195,457 @@ input[type="checkbox"]:focus-visible {
     background: var(--color-error);
 }
 
+/* ==========================================================================
+   Phase 4: Micro-animations & Polish
+   ========================================================================== */
+
+/* Smooth transitions for interactive elements */
+.btn,
+.config-nav-item,
+.service-card,
+.card,
+.form-control,
+.form-select,
+.yaml-preview-panel,
+.toast {
+    transition: all 0.2s ease;
+}
+
+/* Button hover lift effect */
+.btn-primary:hover,
+.btn-success:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-primary:active,
+.btn-success:active {
+    transform: translateY(0);
+}
+
+/* Card hover lift */
+.service-card:hover,
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Nav item slide indicator */
+.config-nav-item {
+    position: relative;
+}
+
+.config-nav-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%) scaleY(0);
+    width: 3px;
+    height: 60%;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+    transition: transform 0.2s ease;
+}
+
+.config-nav-item:hover::before {
+    transform: translateY(-50%) scaleY(0.5);
+}
+
+.config-nav-item.active::before {
+    transform: translateY(-50%) scaleY(1);
+}
+
+/* Status dot pulse animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.status-dot.connected {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Form focus glow */
+.form-control:focus,
+.form-select:focus {
+    box-shadow: var(--shadow-focus);
+    border-color: var(--accent);
+}
+
+/* Toast slide-in animation */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast {
+    animation: slideInRight 0.3s ease forwards;
+}
+
+.toast.toast-exit {
+    animation: slideOutRight 0.3s ease forwards;
+}
+
+/* YAML preview panel slide animation */
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.yaml-preview-panel.visible {
+    animation: slideInFromRight 0.3s ease forwards;
+}
+
+/* Skeleton shimmer animation */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--bg-tertiary) 25%,
+        var(--bg-secondary) 50%,
+        var(--bg-tertiary) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Checkbox check animation */
+@keyframes checkmark {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+input[type="checkbox"]:checked {
+    animation: checkmark 0.2s ease;
+}
+
+/* Fade in for dynamically loaded content */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Stagger animation for lists */
+.stagger-in > * {
+    opacity: 0;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.stagger-in > *:nth-child(1) { animation-delay: 0.05s; }
+.stagger-in > *:nth-child(2) { animation-delay: 0.1s; }
+.stagger-in > *:nth-child(3) { animation-delay: 0.15s; }
+.stagger-in > *:nth-child(4) { animation-delay: 0.2s; }
+.stagger-in > *:nth-child(5) { animation-delay: 0.25s; }
+.stagger-in > *:nth-child(6) { animation-delay: 0.3s; }
+.stagger-in > *:nth-child(7) { animation-delay: 0.35s; }
+.stagger-in > *:nth-child(8) { animation-delay: 0.4s; }
+.stagger-in > *:nth-child(9) { animation-delay: 0.45s; }
+.stagger-in > *:nth-child(10) { animation-delay: 0.5s; }
+
+/* Loading spinner improvements */
+.spinner {
+    transition: opacity 0.2s ease;
+}
+
+/* Subtle scale on focus for buttons */
+.btn:focus-visible {
+    transform: scale(1.02);
+}
+
+/* Status badge pulse for warnings */
+@keyframes warningPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+    }
+}
+
+.badge-warning {
+    animation: warningPulse 2s ease-in-out infinite;
+}
+
+/* Smooth height transitions for collapsibles */
+.collapsible-content {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+.collapsible-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+.collapsible-content.expanded {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+/* Input ripple effect placeholder */
+.input-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ==========================================================================
+   Keyboard Shortcuts Help Modal
+   ========================================================================== */
+
+.keyboard-help-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.keyboard-help-modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.keyboard-help-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95);
+    transition: transform 0.2s ease;
+}
+
+.keyboard-help-modal.active .keyboard-help-content {
+    transform: scale(1);
+}
+
+.keyboard-help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.keyboard-help-header h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.btn-close-help {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-1);
+    line-height: 1;
+    transition: color 0.2s ease;
+}
+
+.btn-close-help:hover {
+    color: var(--text-primary);
+}
+
+.keyboard-help-body {
+    padding: var(--space-4);
+    overflow-y: auto;
+}
+
+.shortcuts-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.shortcut-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-2) 0;
+}
+
+.shortcut-keys {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.shortcut-keys kbd {
+    display: inline-block;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: var(--space-1) var(--space-2);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    text-transform: capitalize;
+    box-shadow: 0 1px 0 var(--border-color);
+}
+
+.shortcut-desc {
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+}
+
+.keyboard-help-footer {
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.keyboard-help-footer kbd {
+    display: inline-block;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 2px 6px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    margin: 0 2px;
+}
+
+/* ==========================================================================
+   Accessibility Enhancements
+   ========================================================================== */
+
+/* Skip to content link */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--accent);
+    color: var(--bg-primary);
+    padding: var(--space-2) var(--space-4);
+    z-index: 10001;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Focus indicator improvements */
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --border-color: #fff;
+        --text-primary: #fff;
+        --text-secondary: #ccc;
+    }
+
+    .btn {
+        border-width: 2px;
+    }
+
+    .form-control,
+    .form-select {
+        border-width: 2px;
+    }
+}
+
+/* Forced colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+    .btn {
+        border: 2px solid ButtonText;
+    }
+
+    .status-dot {
+        forced-color-adjust: none;
+    }
+
+    .toast {
+        border: 2px solid CanvasText;
+    }
+}
+

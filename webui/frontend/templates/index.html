@@ -7,43 +7,46 @@
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
+    <!-- Skip Navigation Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <!-- Safety Banner -->
-    <div id="safety-banner" class="safety-banner safe">
+    <div id="safety-banner" class="safety-banner safe" role="alert" aria-live="polite">
         <span id="mode-indicator">DRY RUN MODE</span>
         <span class="mode-description">No changes will be made to Plex</span>
     </div>
 
     <!-- Header -->
-    <header class="header">
+    <header class="header" role="banner">
         <div class="header-content">
             <h1>Kometa Web UI <span class="text-xs text-muted font-normal">v0.3.0-dev</span></h1>
-            <div class="status-indicator" id="connection-status">
-                <span class="status-dot"></span>
+            <div class="status-indicator" id="connection-status" aria-label="Connection status">
+                <span class="status-dot" aria-hidden="true"></span>
                 <span class="status-text">Connecting...</span>
             </div>
         </div>
     </header>
 
     <!-- Main Navigation -->
-    <nav class="nav-tabs">
-        <button class="nav-tab active" data-tab="config">Configuration</button>
-        <button class="nav-tab" data-tab="overlays">Overlays</button>
-        <button class="nav-tab" data-tab="run">Run</button>
-        <button class="nav-tab" data-tab="logs">Logs</button>
-        <button class="nav-tab" data-tab="history">History</button>
+    <nav class="nav-tabs" role="tablist" aria-label="Main navigation">
+        <button class="nav-tab active" data-tab="config" role="tab" aria-selected="true" aria-controls="tab-config">Configuration</button>
+        <button class="nav-tab" data-tab="overlays" role="tab" aria-selected="false" aria-controls="tab-overlays">Overlays</button>
+        <button class="nav-tab" data-tab="run" role="tab" aria-selected="false" aria-controls="tab-run">Run</button>
+        <button class="nav-tab" data-tab="logs" role="tab" aria-selected="false" aria-controls="tab-logs">Logs</button>
+        <button class="nav-tab" data-tab="history" role="tab" aria-selected="false" aria-controls="tab-history">History</button>
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
+    <main class="main-content" id="main-content" role="main">
         <!-- Configuration Tab -->
-        <section id="tab-config" class="tab-content active">
+        <section id="tab-config" class="tab-content active" role="tabpanel" aria-labelledby="tab-config-btn">
             <div class="config-header">
                 <h2>Configuration</h2>
-                <div class="config-actions">
-                    <button id="btn-upload-config" class="btn btn-secondary">Upload</button>
-                    <button id="btn-load-config" class="btn btn-secondary">Reload</button>
-                    <button id="btn-validate" class="btn btn-secondary">Validate</button>
-                    <button id="btn-save-config" class="btn btn-primary">Save</button>
+                <div class="config-actions" role="toolbar" aria-label="Configuration actions">
+                    <button id="btn-upload-config" class="btn btn-secondary" aria-label="Upload configuration file">Upload</button>
+                    <button id="btn-load-config" class="btn btn-secondary" aria-label="Reload configuration from server">Reload</button>
+                    <button id="btn-validate" class="btn btn-secondary" aria-label="Validate configuration">Validate</button>
+                    <button id="btn-save-config" class="btn btn-primary" aria-label="Save configuration (Ctrl+S)">Save</button>
                 </div>
             </div>
             <!-- Hidden file input for upload -->
@@ -1572,7 +1575,7 @@ libraries:
         </section>
 
         <!-- Overlays Tab -->
-        <section id="tab-overlays" class="tab-content hidden">
+        <section id="tab-overlays" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-overlays-btn">
             <div class="overlays-panel overlays-panel-redesigned">
                 <!-- Hero Section: Live Overlay Preview -->
                 <div class="overlay-hero-section">
@@ -2043,7 +2046,7 @@ libraries:
         </div>
 
         <!-- Run Tab -->
-        <section id="tab-run" class="tab-content hidden">
+        <section id="tab-run" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-run-btn">
             <div class="run-panel">
                 <h2>Run Kometa</h2>
 
@@ -2140,13 +2143,13 @@ libraries:
         </section>
 
         <!-- Logs Tab -->
-        <section id="tab-logs" class="tab-content hidden">
+        <section id="tab-logs" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-logs-btn">
             <div class="logs-panel">
                 <div class="logs-header">
                     <h2>Live Logs</h2>
-                    <div class="logs-actions">
-                        <button id="btn-cancel-run" class="btn btn-danger hidden">Cancel Run</button>
-                        <button id="btn-clear-logs" class="btn btn-secondary">Clear</button>
+                    <div class="logs-actions" role="toolbar" aria-label="Log actions">
+                        <button id="btn-cancel-run" class="btn btn-danger hidden" aria-label="Cancel current run">Cancel Run</button>
+                        <button id="btn-clear-logs" class="btn btn-secondary" aria-label="Clear log display">Clear</button>
                         <label class="checkbox-label">
                             <input type="checkbox" id="auto-scroll" checked>
                             Auto-scroll
@@ -2166,11 +2169,11 @@ libraries:
         </section>
 
         <!-- History Tab -->
-        <section id="tab-history" class="tab-content hidden">
+        <section id="tab-history" class="tab-content hidden" role="tabpanel" aria-labelledby="tab-history-btn">
             <div class="history-panel">
                 <h2>Run History</h2>
-                <div id="history-list" class="history-list">
-                    <p class="loading">Loading history...</p>
+                <div id="history-list" class="history-list" role="list" aria-label="Run history entries">
+                    <p class="loading" aria-live="polite">Loading history...</p>
                 </div>
             </div>
         </section>
