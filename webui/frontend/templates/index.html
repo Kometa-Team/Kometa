@@ -260,6 +260,29 @@
                                 <span class="nav-label">Settings</span>
                                 <span class="nav-badge optional">Optional</span>
                             </button>
+                            <button class="config-nav-item" data-subtab="scheduling">
+                                <span class="nav-icon">🕐</span>
+                                <span class="nav-label">Scheduling</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="operations">
+                                <span class="nav-icon">⚡</span>
+                                <span class="nav-label">Operations</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                        </div>
+                        <div class="config-nav-group">
+                            <div class="config-nav-group-label">Builders</div>
+                            <button class="config-nav-item" data-subtab="collections">
+                                <span class="nav-icon">📚</span>
+                                <span class="nav-label">Collections</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="playlists">
+                                <span class="nav-icon">🎵</span>
+                                <span class="nav-label">Playlists</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
                         </div>
                         <div class="config-nav-group">
                             <div class="config-nav-group-label">Integrations</div>
@@ -286,6 +309,11 @@
                         </div>
                         <div class="config-nav-group">
                             <div class="config-nav-group-label">Advanced</div>
+                            <button class="config-nav-item" data-subtab="mappers">
+                                <span class="nav-icon">🔄</span>
+                                <span class="nav-label">Data Mappers</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
                             <button class="config-nav-item" data-subtab="yaml">
                                 <span class="nav-icon">📝</span>
                                 <span class="nav-label">Raw YAML</span>
@@ -1031,6 +1059,1222 @@
                         </div>
                     </div>
 
+                    <!-- Scheduling Sub-tab -->
+                    <div id="subtab-scheduling" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🕐</span>
+                                <h3>Scheduling & Automation</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/schedule/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Configure when Kometa runs and the order of operations. Set up global schedules or library-specific timing.</p>
+
+                        <div class="settings-groups">
+                            <!-- Global Schedule -->
+                            <details class="settings-group" open>
+                                <summary><h4><span class="group-icon">🌐</span> Global Schedule</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Set the default schedule for when Kometa runs. Individual libraries can override these settings.</p>
+
+                                    <div class="form-row">
+                                        <div class="form-group flex-1">
+                                            <label for="schedule-run-time" class="label-with-info">
+                                                Run Time
+                                                <span class="default-badge">Default: 05:00</span>
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Time of day when Kometa should run (24-hour format)</span>
+                                                </span>
+                                            </label>
+                                            <input type="time" id="schedule-run-time" data-config-path="settings.run_time" value="05:00">
+                                            <span class="field-help">Daily run time in 24-hour format</span>
+                                        </div>
+                                        <div class="form-group flex-1">
+                                            <label for="schedule-times" class="label-with-info">
+                                                Times Per Day
+                                                <span class="default-badge">Default: 1</span>
+                                            </label>
+                                            <input type="number" id="schedule-times" data-config-path="settings.times_to_run" value="1" min="1" max="24">
+                                            <span class="field-help">How many times to run per day</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Schedule Builder -->
+                                    <div class="schedule-builder-container">
+                                        <label class="label-with-info mb-2">
+                                            Schedule Expression
+                                            <span class="tooltip-wrapper">
+                                                <span class="info-icon">?</span>
+                                                <span class="tooltip">Build a schedule using presets or create a custom expression</span>
+                                            </span>
+                                        </label>
+                                        <div class="schedule-builder" id="global-schedule-builder">
+                                            <div class="schedule-preset-tabs">
+                                                <button class="schedule-preset-tab active" data-preset="daily">Daily</button>
+                                                <button class="schedule-preset-tab" data-preset="weekly">Weekly</button>
+                                                <button class="schedule-preset-tab" data-preset="monthly">Monthly</button>
+                                                <button class="schedule-preset-tab" data-preset="range">Date Range</button>
+                                                <button class="schedule-preset-tab" data-preset="custom">Custom</button>
+                                            </div>
+                                            <div class="schedule-preset-content">
+                                                <!-- Daily Preset -->
+                                                <div class="schedule-preset-panel active" data-panel="daily">
+                                                    <p class="field-help mb-2">Run every day at the specified time.</p>
+                                                    <div class="schedule-visual">
+                                                        <span class="schedule-badge">daily</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Weekly Preset -->
+                                                <div class="schedule-preset-panel" data-panel="weekly">
+                                                    <p class="field-help mb-2">Select which days of the week to run.</p>
+                                                    <div class="day-selector">
+                                                        <label class="day-checkbox"><input type="checkbox" value="monday"> Mon</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="tuesday"> Tue</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="wednesday"> Wed</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="thursday"> Thu</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="friday"> Fri</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="saturday"> Sat</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="sunday" checked> Sun</label>
+                                                    </div>
+                                                    <div class="schedule-visual mt-2">
+                                                        <span class="schedule-badge">weekly(sunday)</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Monthly Preset -->
+                                                <div class="schedule-preset-panel" data-panel="monthly">
+                                                    <p class="field-help mb-2">Select which day of the month to run.</p>
+                                                    <div class="form-row">
+                                                        <div class="form-group">
+                                                            <label for="monthly-day">Day of Month</label>
+                                                            <input type="number" id="monthly-day" min="1" max="31" value="1">
+                                                        </div>
+                                                    </div>
+                                                    <div class="schedule-visual mt-2">
+                                                        <span class="schedule-badge">monthly(1)</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Date Range Preset -->
+                                                <div class="schedule-preset-panel" data-panel="range">
+                                                    <p class="field-help mb-2">Run only within a specific date range.</p>
+                                                    <div class="form-row">
+                                                        <div class="form-group flex-1">
+                                                            <label for="range-start">Start Date</label>
+                                                            <input type="date" id="range-start">
+                                                        </div>
+                                                        <div class="form-group flex-1">
+                                                            <label for="range-end">End Date</label>
+                                                            <input type="date" id="range-end">
+                                                        </div>
+                                                    </div>
+                                                    <div class="schedule-visual mt-2">
+                                                        <span class="schedule-badge">range(01/01-12/31)</span>
+                                                    </div>
+                                                </div>
+                                                <!-- Custom Preset -->
+                                                <div class="schedule-preset-panel" data-panel="custom">
+                                                    <p class="field-help mb-2">Enter a custom schedule expression.</p>
+                                                    <div class="form-group">
+                                                        <input type="text" id="custom-schedule" placeholder="e.g., weekly(monday|friday), monthly(15)">
+                                                    </div>
+                                                    <div class="schedule-expression-help">
+                                                        <strong>Available expressions:</strong>
+                                                        <ul>
+                                                            <li><code>daily</code> - Every day</li>
+                                                            <li><code>weekly(day)</code> - Specific day (monday-sunday)</li>
+                                                            <li><code>weekly(day|day)</code> - Multiple days</li>
+                                                            <li><code>monthly(N)</code> - Day N of month</li>
+                                                            <li><code>yearly(MM/DD)</code> - Specific date</li>
+                                                            <li><code>range(MM/DD-MM/DD)</code> - Date range</li>
+                                                            <li><code>all</code> - Every run</li>
+                                                            <li><code>never</code> - Disabled</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="global-schedule-value" data-config-path="settings.schedule">
+                                        </div>
+                                    </div>
+
+                                    <!-- Schedule Preview -->
+                                    <div class="schedule-preview mt-4">
+                                        <label class="label-with-info">
+                                            <span class="group-icon">📅</span> Next Scheduled Runs
+                                        </label>
+                                        <div class="schedule-preview-list" id="global-schedule-preview">
+                                            <div class="schedule-preview-item">
+                                                <span class="preview-date">Sunday, Jan 19, 2026</span>
+                                                <span class="preview-time">05:00 AM</span>
+                                            </div>
+                                            <div class="schedule-preview-item">
+                                                <span class="preview-date">Monday, Jan 20, 2026</span>
+                                                <span class="preview-time">05:00 AM</span>
+                                            </div>
+                                            <div class="schedule-preview-item">
+                                                <span class="preview-date">Tuesday, Jan 21, 2026</span>
+                                                <span class="preview-time">05:00 AM</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Run Order -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📋</span> Run Order</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Drag and drop to reorder the sequence in which Kometa processes different tasks.</p>
+
+                                    <div class="run-order-list" id="run-order-list">
+                                        <div class="run-order-item" data-order="operations" draggable="true">
+                                            <span class="drag-handle">⋮⋮</span>
+                                            <span class="order-icon">⚡</span>
+                                            <span class="order-label">Operations</span>
+                                            <span class="order-desc">Mass metadata operations</span>
+                                        </div>
+                                        <div class="run-order-item" data-order="metadata" draggable="true">
+                                            <span class="drag-handle">⋮⋮</span>
+                                            <span class="order-icon">🏷️</span>
+                                            <span class="order-label">Metadata</span>
+                                            <span class="order-desc">Metadata file processing</span>
+                                        </div>
+                                        <div class="run-order-item" data-order="collections" draggable="true">
+                                            <span class="drag-handle">⋮⋮</span>
+                                            <span class="order-icon">📚</span>
+                                            <span class="order-label">Collections</span>
+                                            <span class="order-desc">Collection building</span>
+                                        </div>
+                                        <div class="run-order-item" data-order="overlays" draggable="true">
+                                            <span class="drag-handle">⋮⋮</span>
+                                            <span class="order-icon">🎨</span>
+                                            <span class="order-label">Overlays</span>
+                                            <span class="order-desc">Overlay application</span>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="run-order-value" data-config-path="settings.run_order">
+                                </div>
+                            </details>
+
+                            <!-- Library Schedules -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📚</span> Library Schedules</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Override global schedule for individual libraries. Libraries without custom schedules use the global settings.</p>
+
+                                    <div class="library-schedules-list" id="library-schedules-list">
+                                        <div class="library-schedule-placeholder">
+                                            <span class="placeholder-icon">📚</span>
+                                            <p>Library schedules will appear here after you configure libraries in the Libraries tab.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Overlay Schedules -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🎨</span> Overlay Schedules</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Configure when overlays are applied. Overlays can run on a different schedule than collections.</p>
+
+                                    <div class="checkbox-with-desc mb-4">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="schedule-overlays-separately" data-config-path="settings.separate_overlay_schedule">
+                                            Use Separate Overlay Schedule
+                                        </label>
+                                        <span class="checkbox-desc">Run overlays on a different schedule than collections</span>
+                                    </div>
+
+                                    <div class="overlay-schedule-builder" id="overlay-schedule-section">
+                                        <div class="schedule-builder" id="overlay-schedule-builder">
+                                            <div class="schedule-preset-tabs">
+                                                <button class="schedule-preset-tab active" data-preset="daily">Daily</button>
+                                                <button class="schedule-preset-tab" data-preset="weekly">Weekly</button>
+                                                <button class="schedule-preset-tab" data-preset="monthly">Monthly</button>
+                                                <button class="schedule-preset-tab" data-preset="custom">Custom</button>
+                                            </div>
+                                            <div class="schedule-preset-content">
+                                                <div class="schedule-preset-panel active" data-panel="daily">
+                                                    <p class="field-help mb-2">Run overlays every day.</p>
+                                                    <div class="schedule-visual">
+                                                        <span class="schedule-badge">daily</span>
+                                                    </div>
+                                                </div>
+                                                <div class="schedule-preset-panel" data-panel="weekly">
+                                                    <p class="field-help mb-2">Select which days to run overlays.</p>
+                                                    <div class="day-selector">
+                                                        <label class="day-checkbox"><input type="checkbox" value="monday" checked> Mon</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="tuesday"> Tue</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="wednesday"> Wed</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="thursday"> Thu</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="friday"> Fri</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="saturday"> Sat</label>
+                                                        <label class="day-checkbox"><input type="checkbox" value="sunday"> Sun</label>
+                                                    </div>
+                                                    <div class="schedule-visual mt-2">
+                                                        <span class="schedule-badge">weekly(monday)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="schedule-preset-panel" data-panel="monthly">
+                                                    <p class="field-help mb-2">Run overlays on a specific day of the month.</p>
+                                                    <div class="form-group">
+                                                        <input type="number" id="overlay-monthly-day" min="1" max="31" value="1" placeholder="Day of month">
+                                                    </div>
+                                                    <div class="schedule-visual mt-2">
+                                                        <span class="schedule-badge">monthly(1)</span>
+                                                    </div>
+                                                </div>
+                                                <div class="schedule-preset-panel" data-panel="custom">
+                                                    <p class="field-help mb-2">Enter a custom overlay schedule expression.</p>
+                                                    <div class="form-group">
+                                                        <input type="text" id="overlay-custom-schedule" placeholder="e.g., weekly(monday|wednesday|friday)">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <input type="hidden" id="overlay-schedule-value" data-config-path="settings.schedule_overlays">
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Operations Sub-tab -->
+                    <div id="subtab-operations" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">⚡</span>
+                                <h3>Mass Operations</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/operations/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Configure mass metadata update operations that can modify large numbers of items at once. Enable only the operations you need.</p>
+
+                        <div class="settings-groups">
+                            <!-- Rating Operations -->
+                            <details class="settings-group" open>
+                                <summary><h4><span class="group-icon">⭐</span> Rating Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Sync ratings from external sources to Plex metadata fields.</p>
+
+                                    <div class="operations-grid">
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-audience-rating" data-config-path="operations.mass_audience_rating_update">
+                                                    Mass Audience Rating Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update audience ratings from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="audience-rating-source">Source</label>
+                                                    <select id="audience-rating-source" data-config-path="operations.mass_audience_rating_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="imdb">IMDb</option>
+                                                        <option value="trakt_user">Trakt (User)</option>
+                                                        <option value="omdb">OMDb</option>
+                                                        <option value="mdb">MDBList</option>
+                                                        <option value="mdb_average">MDBList Average</option>
+                                                        <option value="mdb_imdb">MDBList IMDb</option>
+                                                        <option value="mdb_metacritic">MDBList Metacritic</option>
+                                                        <option value="mdb_metacriticuser">MDBList Metacritic User</option>
+                                                        <option value="mdb_trakt">MDBList Trakt</option>
+                                                        <option value="mdb_tomatoes">MDBList Rotten Tomatoes</option>
+                                                        <option value="mdb_tomatoesaudience">MDBList RT Audience</option>
+                                                        <option value="mdb_tmdb">MDBList TMDb</option>
+                                                        <option value="mdb_letterboxd">MDBList Letterboxd</option>
+                                                        <option value="anidb_rating">AniDB Rating</option>
+                                                        <option value="anidb_average">AniDB Average</option>
+                                                        <option value="anidb_score">AniDB Score</option>
+                                                        <option value="mal">MyAnimeList</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-critic-rating" data-config-path="operations.mass_critic_rating_update">
+                                                    Mass Critic Rating Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update critic ratings from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="critic-rating-source">Source</label>
+                                                    <select id="critic-rating-source" data-config-path="operations.mass_critic_rating_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="imdb">IMDb</option>
+                                                        <option value="trakt_user">Trakt (User)</option>
+                                                        <option value="omdb">OMDb</option>
+                                                        <option value="mdb">MDBList</option>
+                                                        <option value="mdb_metacritic">MDBList Metacritic</option>
+                                                        <option value="mdb_tomatoes">MDBList Rotten Tomatoes</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-user-rating" data-config-path="operations.mass_user_rating_update">
+                                                    Mass User Rating Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update user ratings from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="user-rating-source">Source</label>
+                                                    <select id="user-rating-source" data-config-path="operations.mass_user_rating_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="imdb">IMDb</option>
+                                                        <option value="trakt_user">Trakt (User)</option>
+                                                        <option value="letterboxd">Letterboxd</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Metadata Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🏷️</span> Metadata Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Update metadata fields like genres, content ratings, and titles from external sources.</p>
+
+                                    <div class="operations-grid">
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-genre" data-config-path="operations.mass_genre_update">
+                                                    Mass Genre Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update genres from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="genre-source">Source</label>
+                                                    <select id="genre-source" data-config-path="operations.mass_genre_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="imdb">IMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="omdb">OMDb</option>
+                                                        <option value="anidb">AniDB</option>
+                                                        <option value="mal">MyAnimeList</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-content-rating" data-config-path="operations.mass_content_rating_update">
+                                                    Mass Content Rating Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update content ratings (PG, R, etc.)</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="content-rating-source">Source</label>
+                                                    <select id="content-rating-source" data-config-path="operations.mass_content_rating_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="mdb">MDBList</option>
+                                                        <option value="mdb_commonsense">MDBList Common Sense</option>
+                                                        <option value="mdb_commonsense0">MDBList Common Sense (0+)</option>
+                                                        <option value="omdb">OMDb</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-original-title" data-config-path="operations.mass_original_title_update">
+                                                    Mass Original Title Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update original titles from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="original-title-source">Source</label>
+                                                    <select id="original-title-source" data-config-path="operations.mass_original_title_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="anidb">AniDB (Romaji)</option>
+                                                        <option value="anidb_official">AniDB (Official)</option>
+                                                        <option value="mal">MyAnimeList</option>
+                                                        <option value="mal_english">MyAnimeList (English)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-studio" data-config-path="operations.mass_studio_update">
+                                                    Mass Studio Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update studio/network information</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="studio-source">Source</label>
+                                                    <select id="studio-source" data-config-path="operations.mass_studio_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="anidb">AniDB</option>
+                                                        <option value="mal">MyAnimeList</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Image Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🖼️</span> Image Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Update posters and background images from external sources.</p>
+
+                                    <div class="operations-grid">
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-poster" data-config-path="operations.mass_poster_update">
+                                                    Mass Poster Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update posters from external sources</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="poster-source">Source</label>
+                                                    <select id="poster-source" data-config-path="operations.mass_poster_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="plex">Plex</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-background" data-config-path="operations.mass_background_update">
+                                                    Mass Background Update
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Update background/art images</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="background-source">Source</label>
+                                                    <select id="background-source" data-config-path="operations.mass_background_update_source">
+                                                        <option value="">Select source...</option>
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="plex">Plex</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Collection Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📚</span> Collection Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Manage collections and their metadata in bulk.</p>
+
+                                    <div class="operations-grid">
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-mass-collection-mode" data-config-path="operations.mass_collection_mode">
+                                                    Mass Collection Mode
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Set the visibility mode for collections</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="collection-mode">Mode</label>
+                                                    <select id="collection-mode" data-config-path="operations.mass_collection_mode_value">
+                                                        <option value="">Select mode...</option>
+                                                        <option value="default">Default</option>
+                                                        <option value="hide">Hide</option>
+                                                        <option value="hide_items">Hide Items</option>
+                                                        <option value="show_items">Show Items</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="operation-card">
+                                            <div class="operation-header">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="op-delete-collections" data-config-path="operations.delete_collections">
+                                                    Delete Collections
+                                                </label>
+                                            </div>
+                                            <div class="operation-body">
+                                                <p class="field-help">Delete collections matching criteria</p>
+                                                <div class="form-group mt-2">
+                                                    <label for="delete-collections-filter">Filter</label>
+                                                    <select id="delete-collections-filter" data-config-path="operations.delete_collections_filter">
+                                                        <option value="">All managed</option>
+                                                        <option value="managed">Managed by Kometa</option>
+                                                        <option value="unmanaged">Not managed by Kometa</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Advanced Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🔧</span> Advanced Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Advanced operations for specialized use cases.</p>
+
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="op-split-duplicates" data-config-path="operations.split_duplicates">
+                                                Split Duplicates
+                                            </label>
+                                            <span class="checkbox-desc">Automatically split duplicate items in Plex</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="op-update-blank-track-titles" data-config-path="operations.update_blank_track_titles">
+                                                Update Blank Track Titles
+                                            </label>
+                                            <span class="checkbox-desc">Fill in missing track titles from filenames</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="op-remove-title-parentheses" data-config-path="operations.remove_title_parentheses">
+                                                Remove Title Parentheses
+                                            </label>
+                                            <span class="checkbox-desc">Remove year and other info from titles in parentheses</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="op-radarr-add-all" data-config-path="operations.radarr_add_all">
+                                                Radarr Add All
+                                            </label>
+                                            <span class="checkbox-desc">Add all movies in library to Radarr</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="op-sonarr-add-all" data-config-path="operations.sonarr_add_all">
+                                                Sonarr Add All
+                                            </label>
+                                            <span class="checkbox-desc">Add all shows in library to Sonarr</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Collections Sub-tab -->
+                    <div id="subtab-collections" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">📚</span>
+                                <h3>Collection Builder</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/files/collections/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Build collections visually without writing YAML. Select sources, configure filters, and preview the generated configuration.</p>
+
+                        <div class="collection-builder-layout">
+                            <!-- Collections Sidebar -->
+                            <div class="collection-sidebar">
+                                <div class="collection-sidebar-header">
+                                    <h4>Collections</h4>
+                                    <button class="btn btn-sm btn-primary" id="btn-new-collection">
+                                        <span>+</span> New
+                                    </button>
+                                </div>
+                                <div class="collection-search">
+                                    <input type="text" placeholder="Search collections..." id="collection-search">
+                                </div>
+                                <div class="collection-tree" id="collection-tree">
+                                    <div class="collection-group">
+                                        <div class="collection-group-header" data-library="movies">
+                                            <span class="group-toggle">▼</span>
+                                            <span class="group-icon">🎬</span>
+                                            <span class="group-name">Movies</span>
+                                            <span class="group-count">0</span>
+                                        </div>
+                                        <div class="collection-group-items" data-library="movies"></div>
+                                    </div>
+                                    <div class="collection-group">
+                                        <div class="collection-group-header" data-library="tv">
+                                            <span class="group-toggle">▼</span>
+                                            <span class="group-icon">📺</span>
+                                            <span class="group-name">TV Shows</span>
+                                            <span class="group-count">0</span>
+                                        </div>
+                                        <div class="collection-group-items" data-library="tv"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Collection Editor -->
+                            <div class="collection-editor" id="collection-editor">
+                                <!-- Empty State -->
+                                <div class="collection-empty-state" id="collection-empty-state">
+                                    <div class="empty-state-icon">📚</div>
+                                    <h3>No Collection Selected</h3>
+                                    <p>Select a collection from the sidebar or create a new one to get started.</p>
+                                    <button class="btn btn-primary" id="btn-new-collection-empty">
+                                        <span>+</span> Create New Collection
+                                    </button>
+                                </div>
+
+                                <!-- Editor Content (hidden by default) -->
+                                <div class="collection-editor-content hidden" id="collection-editor-content">
+                                    <!-- Collection Name -->
+                                    <div class="collection-name-section">
+                                        <div class="form-group">
+                                            <label for="collection-name" class="label-with-info">
+                                                Collection Name <span class="required">*</span>
+                                            </label>
+                                            <input type="text" id="collection-name" placeholder="e.g., Best of 2024">
+                                        </div>
+                                    </div>
+
+                                    <!-- Builder Sources -->
+                                    <div class="builder-sources-section">
+                                        <div class="section-title-row">
+                                            <h4><span class="group-icon">🔧</span> Builder Sources</h4>
+                                            <button class="btn btn-sm btn-outline" id="btn-add-builder">
+                                                <span>+</span> Add Builder
+                                            </button>
+                                        </div>
+
+                                        <div class="builder-list" id="builder-list">
+                                            <!-- Builders will be added here dynamically -->
+                                            <div class="builder-placeholder">
+                                                <p>No builders added yet. Click "Add Builder" to select a source.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Builder Source Selector (Modal/Dropdown) -->
+                                    <div class="builder-source-selector hidden" id="builder-source-selector">
+                                        <div class="source-selector-header">
+                                            <h4>Select Builder Source</h4>
+                                            <button class="btn-close" id="btn-close-source-selector">&times;</button>
+                                        </div>
+                                        <div class="source-selector-search">
+                                            <input type="text" placeholder="Search sources..." id="source-search">
+                                        </div>
+                                        <div class="source-categories">
+                                            <div class="source-category" data-category="charts">
+                                                <div class="category-header">
+                                                    <span class="category-icon">📊</span>
+                                                    <span class="category-name">Charts & Rankings</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="tmdb_popular">
+                                                        <span class="source-icon">🎬</span>
+                                                        <span class="source-name">TMDb Popular</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="tmdb_top_rated">
+                                                        <span class="source-icon">🎬</span>
+                                                        <span class="source-name">TMDb Top Rated</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="tmdb_trending">
+                                                        <span class="source-icon">🎬</span>
+                                                        <span class="source-name">TMDb Trending</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="tmdb_discover">
+                                                        <span class="source-icon">🎬</span>
+                                                        <span class="source-name">TMDb Discover</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="trakt_trending">
+                                                        <span class="source-icon">📺</span>
+                                                        <span class="source-name">Trakt Trending</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="trakt_popular">
+                                                        <span class="source-icon">📺</span>
+                                                        <span class="source-name">Trakt Popular</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="trakt_watched">
+                                                        <span class="source-icon">📺</span>
+                                                        <span class="source-name">Trakt Most Watched</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="imdb_chart">
+                                                        <span class="source-icon">⭐</span>
+                                                        <span class="source-name">IMDb Chart</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="source-category" data-category="lists">
+                                                <div class="category-header">
+                                                    <span class="category-icon">📋</span>
+                                                    <span class="category-name">User Lists</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="trakt_list">
+                                                        <span class="source-icon">📺</span>
+                                                        <span class="source-name">Trakt List</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="trakt_watchlist">
+                                                        <span class="source-icon">📺</span>
+                                                        <span class="source-name">Trakt Watchlist</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="imdb_list">
+                                                        <span class="source-icon">⭐</span>
+                                                        <span class="source-name">IMDb List</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="letterboxd_list">
+                                                        <span class="source-icon">🎞️</span>
+                                                        <span class="source-name">Letterboxd List</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="mdblist_list">
+                                                        <span class="source-icon">📊</span>
+                                                        <span class="source-name">MDBList</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="source-category" data-category="anime">
+                                                <div class="category-header">
+                                                    <span class="category-icon">🎌</span>
+                                                    <span class="category-name">Anime</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="anilist_popular">
+                                                        <span class="source-icon">🎌</span>
+                                                        <span class="source-name">AniList Popular</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="anilist_top_rated">
+                                                        <span class="source-icon">🎌</span>
+                                                        <span class="source-name">AniList Top Rated</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="mal_popular">
+                                                        <span class="source-icon">🎌</span>
+                                                        <span class="source-name">MAL Popular</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="mal_season">
+                                                        <span class="source-icon">🎌</span>
+                                                        <span class="source-name">MAL Season</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="source-category" data-category="awards">
+                                                <div class="category-header">
+                                                    <span class="category-icon">🏆</span>
+                                                    <span class="category-name">Awards</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="imdb_award">
+                                                        <span class="source-icon">🏆</span>
+                                                        <span class="source-name">IMDb Awards</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="source-category" data-category="plex">
+                                                <div class="category-header">
+                                                    <span class="category-icon">📺</span>
+                                                    <span class="category-name">Plex-Based</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="plex_search">
+                                                        <span class="source-icon">🔍</span>
+                                                        <span class="source-name">Plex Search</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="plex_collectionless">
+                                                        <span class="source-icon">📁</span>
+                                                        <span class="source-name">Collectionless</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="source-category" data-category="streaming">
+                                                <div class="category-header">
+                                                    <span class="category-icon">📡</span>
+                                                    <span class="category-name">Streaming</span>
+                                                </div>
+                                                <div class="category-sources">
+                                                    <button class="source-btn" data-source="flixpatrol_top">
+                                                        <span class="source-icon">📊</span>
+                                                        <span class="source-name">FlixPatrol Top</span>
+                                                    </button>
+                                                    <button class="source-btn" data-source="stevenlu_popular">
+                                                        <span class="source-icon">🔥</span>
+                                                        <span class="source-name">StevenLu Popular</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Collection Settings -->
+                                    <details class="settings-group" open>
+                                        <summary><h4><span class="group-icon">⚙️</span> Collection Settings</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="form-row">
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-sort-title">Sort Title</label>
+                                                    <input type="text" id="collection-sort-title" placeholder="Leave empty for default">
+                                                    <span class="field-help">Overrides alphabetical sorting</span>
+                                                </div>
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-content-rating">Content Rating</label>
+                                                    <input type="text" id="collection-content-rating" placeholder="e.g., PG-13, R">
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-mode">Collection Mode</label>
+                                                    <select id="collection-mode">
+                                                        <option value="default">Default</option>
+                                                        <option value="hide">Hide Collection</option>
+                                                        <option value="hide_items">Hide Items in Library</option>
+                                                        <option value="show_items">Show Items from Collection</option>
+                                                    </select>
+                                                    <span class="field-help">Controls visibility in Plex</span>
+                                                </div>
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-order">Collection Order</label>
+                                                    <select id="collection-order">
+                                                        <option value="">Default</option>
+                                                        <option value="release">Release Date</option>
+                                                        <option value="alpha">Alphabetical</option>
+                                                        <option value="custom">Custom</option>
+                                                        <option value="random">Random</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-sync-mode">Sync Mode</label>
+                                                    <select id="collection-sync-mode">
+                                                        <option value="sync">Sync (add & remove)</option>
+                                                        <option value="append">Append (add only)</option>
+                                                    </select>
+                                                    <span class="field-help">How to handle items not in builder</span>
+                                                </div>
+                                                <div class="form-group flex-1">
+                                                    <label for="collection-minimum">Minimum Items</label>
+                                                    <input type="number" id="collection-minimum" min="0" value="0">
+                                                    <span class="field-help">Required items before collection is created</span>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label for="collection-summary">Summary</label>
+                                                    <textarea id="collection-summary" rows="3" placeholder="Collection description..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="checkbox-with-desc">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="collection-delete-below-minimum">
+                                                        Delete Below Minimum
+                                                    </label>
+                                                    <span class="checkbox-desc">Delete collection if item count drops below minimum</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- Smart Filters -->
+                                    <details class="settings-group">
+                                        <summary><h4><span class="group-icon">🔍</span> Smart Filters</h4></summary>
+                                        <div class="settings-group-content">
+                                            <p class="field-help info mb-4">Add filters to refine which items are included in this collection. Filters work with builder sources.</p>
+
+                                            <div class="filter-mode-row mb-4">
+                                                <label>Match</label>
+                                                <select id="filter-match-mode" class="filter-mode-select">
+                                                    <option value="all">All of the following</option>
+                                                    <option value="any">Any of the following</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="filter-list" id="filter-list">
+                                                <div class="filter-placeholder">
+                                                    <p>No filters added. Click "Add Filter" to narrow down results.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="filter-actions mt-3">
+                                                <button class="btn btn-sm btn-outline" id="btn-add-filter">
+                                                    <span>+</span> Add Filter
+                                                </button>
+                                            </div>
+
+                                            <!-- Add Filter Modal -->
+                                            <div class="filter-selector hidden" id="filter-selector">
+                                                <div class="filter-selector-content">
+                                                    <h5>Add Filter</h5>
+                                                    <div class="form-group">
+                                                        <label>Field</label>
+                                                        <select id="filter-field">
+                                                            <optgroup label="Text Fields">
+                                                                <option value="title">Title</option>
+                                                                <option value="genre">Genre</option>
+                                                                <option value="studio">Studio</option>
+                                                                <option value="director">Director</option>
+                                                                <option value="actor">Actor</option>
+                                                                <option value="writer">Writer</option>
+                                                                <option value="country">Country</option>
+                                                                <option value="content_rating">Content Rating</option>
+                                                                <option value="collection">Collection</option>
+                                                                <option value="label">Label</option>
+                                                            </optgroup>
+                                                            <optgroup label="Numeric Fields">
+                                                                <option value="year">Year</option>
+                                                                <option value="rating">Rating</option>
+                                                                <option value="plays">Plays</option>
+                                                                <option value="duration">Duration (min)</option>
+                                                            </optgroup>
+                                                            <optgroup label="Date Fields">
+                                                                <option value="added">Date Added</option>
+                                                                <option value="release">Release Date</option>
+                                                            </optgroup>
+                                                            <optgroup label="Boolean Fields">
+                                                                <option value="hdr">HDR</option>
+                                                                <option value="unmatched">Unmatched</option>
+                                                                <option value="duplicate">Duplicate</option>
+                                                                <option value="unplayed">Unplayed</option>
+                                                            </optgroup>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Operator</label>
+                                                        <select id="filter-operator">
+                                                            <option value="">is</option>
+                                                            <option value=".not">is not</option>
+                                                            <option value=".contains">contains</option>
+                                                            <option value=".begins">begins with</option>
+                                                            <option value=".ends">ends with</option>
+                                                            <option value=".gt">is greater than</option>
+                                                            <option value=".gte">is at least</option>
+                                                            <option value=".lt">is less than</option>
+                                                            <option value=".lte">is at most</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Value</label>
+                                                        <input type="text" id="filter-value" placeholder="Enter value...">
+                                                    </div>
+                                                    <div class="filter-selector-actions">
+                                                        <button class="btn btn-sm btn-outline" id="btn-cancel-filter">Cancel</button>
+                                                        <button class="btn btn-sm btn-primary" id="btn-confirm-filter">Add Filter</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- YAML Preview -->
+                                    <details class="settings-group">
+                                        <summary><h4><span class="group-icon">📄</span> YAML Preview</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="collection-yaml-preview">
+                                                <pre id="collection-yaml-output">collections:
+  # Enter a collection name to see preview</pre>
+                                            </div>
+                                            <div class="yaml-preview-actions">
+                                                <button class="btn btn-sm btn-outline" id="btn-copy-collection-yaml">
+                                                    <span>📋</span> Copy YAML
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <!-- Action Buttons -->
+                                    <div class="collection-actions">
+                                        <button class="btn btn-outline" id="btn-cancel-collection">Cancel</button>
+                                        <button class="btn btn-primary" id="btn-save-collection">Save Collection</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Playlists Sub-tab -->
+                    <div id="subtab-playlists" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🎵</span>
+                                <h3>Playlist Builder</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/files/playlists/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Create and manage playlists that sync across Plex users. Playlists use the same builder sources as collections.</p>
+
+                        <div class="playlist-builder-layout">
+                            <!-- Playlists Sidebar -->
+                            <div class="playlist-sidebar">
+                                <div class="playlist-sidebar-header">
+                                    <h4>Playlists</h4>
+                                    <button class="btn btn-sm btn-primary" id="btn-new-playlist">
+                                        <span>+</span> New
+                                    </button>
+                                </div>
+                                <div class="playlist-list" id="playlist-list">
+                                    <div class="playlist-placeholder">
+                                        <span class="placeholder-icon">🎵</span>
+                                        <p>No playlists yet</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Playlist Editor -->
+                            <div class="playlist-editor" id="playlist-editor">
+                                <div class="playlist-empty-state" id="playlist-empty-state">
+                                    <div class="empty-state-icon">🎵</div>
+                                    <h3>No Playlist Selected</h3>
+                                    <p>Select a playlist from the sidebar or create a new one to get started.</p>
+                                    <button class="btn btn-primary" id="btn-new-playlist-empty">
+                                        <span>+</span> Create New Playlist
+                                    </button>
+                                </div>
+
+                                <div class="playlist-editor-content hidden" id="playlist-editor-content">
+                                    <div class="form-group">
+                                        <label for="playlist-name" class="label-with-info">
+                                            Playlist Name <span class="required">*</span>
+                                        </label>
+                                        <input type="text" id="playlist-name" placeholder="e.g., Weekend Watch">
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="playlist-summary">Summary</label>
+                                        <textarea id="playlist-summary" rows="2" placeholder="Playlist description..."></textarea>
+                                    </div>
+
+                                    <!-- Playlist-specific settings -->
+                                    <details class="settings-group" open>
+                                        <summary><h4><span class="group-icon">👥</span> User Settings</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="form-group">
+                                                <label>Sync to Users</label>
+                                                <div class="user-checkboxes" id="playlist-users">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" value="all" checked>
+                                                        All Users
+                                                    </label>
+                                                </div>
+                                                <span class="field-help">Select which Plex users should have this playlist</span>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="playlist-exclude-users">Exclude Users</label>
+                                                <input type="text" id="playlist-exclude-users" placeholder="Comma-separated usernames">
+                                                <span class="field-help">Users to exclude even if "All Users" is selected</span>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <details class="settings-group">
+                                        <summary><h4><span class="group-icon">📚</span> Libraries</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="form-group">
+                                                <label>Source Libraries</label>
+                                                <div class="library-checkboxes" id="playlist-libraries">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" value="Movies" checked>
+                                                        Movies
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" value="TV Shows">
+                                                        TV Shows
+                                                    </label>
+                                                </div>
+                                                <span class="field-help">Libraries to pull items from for this playlist</span>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <details class="settings-group">
+                                        <summary><h4><span class="group-icon">🔧</span> Builder Sources</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="builder-list" id="playlist-builder-list">
+                                                <div class="builder-placeholder">
+                                                    <p>No builders added yet. Click below to select a source.</p>
+                                                </div>
+                                            </div>
+                                            <button class="btn btn-sm btn-outline mt-3" id="btn-add-playlist-builder">
+                                                <span>+</span> Add Builder
+                                            </button>
+                                        </div>
+                                    </details>
+
+                                    <details class="settings-group">
+                                        <summary><h4><span class="group-icon">⚙️</span> Sync Settings</h4></summary>
+                                        <div class="settings-group-content">
+                                            <div class="form-row">
+                                                <div class="form-group flex-1">
+                                                    <label for="playlist-sync-mode">Sync Mode</label>
+                                                    <select id="playlist-sync-mode">
+                                                        <option value="sync">Sync (add & remove)</option>
+                                                        <option value="append">Append (add only)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="checkbox-with-desc">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="playlist-delete-not-scheduled">
+                                                        Delete When Not Scheduled
+                                                    </label>
+                                                    <span class="checkbox-desc">Remove playlist when outside of schedule</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
+
+                                    <div class="playlist-actions">
+                                        <button class="btn btn-outline" id="btn-cancel-playlist">Cancel</button>
+                                        <button class="btn btn-primary" id="btn-save-playlist">Save Playlist</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Arr Services Sub-tab -->
                     <div id="subtab-arr" class="subtab-panel hidden">
                         <div class="section-header">
@@ -1669,6 +2913,117 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Mappers Sub-tab -->
+                    <div id="subtab-mappers" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🔄</span>
+                                <h3>Data Mappers</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/operations/#operations-attributes" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Create mappings to transform metadata values. Useful for standardizing genres, ratings, and other text fields.</p>
+
+                        <div class="settings-groups">
+                            <!-- Genre Mapper -->
+                            <details class="settings-group" open>
+                                <summary><h4><span class="group-icon">🎭</span> Genre Mapper</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Map genre names to consistent values. For example, map "Sci-Fi" and "SF" to "Science Fiction".</p>
+
+                                    <div class="mapper-list" id="genre-mapper-list">
+                                        <div class="mapper-row">
+                                            <input type="text" class="mapper-from" placeholder="From genre..." data-mapper="genre">
+                                            <span class="mapper-arrow">→</span>
+                                            <input type="text" class="mapper-to" placeholder="To genre...">
+                                            <button class="btn-icon delete-mapper" title="Remove">🗑️</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline mt-3" id="btn-add-genre-mapping">
+                                        <span>+</span> Add Mapping
+                                    </button>
+
+                                    <div class="mapper-presets mt-4">
+                                        <label class="label-with-info">Quick Presets</label>
+                                        <div class="preset-buttons">
+                                            <button class="btn btn-sm btn-outline" data-preset="sci-fi">Sci-Fi Variants</button>
+                                            <button class="btn btn-sm btn-outline" data-preset="animation">Animation Variants</button>
+                                            <button class="btn btn-sm btn-outline" data-preset="thriller">Thriller/Suspense</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Content Rating Mapper -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🔞</span> Content Rating Mapper</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Standardize content ratings from different regions (UK, AU, etc.) to a consistent format (MPAA, etc.).</p>
+
+                                    <div class="mapper-list" id="rating-mapper-list">
+                                        <div class="mapper-row">
+                                            <input type="text" class="mapper-from" placeholder="From rating (e.g., gb/15)..." data-mapper="rating">
+                                            <span class="mapper-arrow">→</span>
+                                            <input type="text" class="mapper-to" placeholder="To rating (e.g., R)...">
+                                            <button class="btn-icon delete-mapper" title="Remove">🗑️</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline mt-3" id="btn-add-rating-mapping">
+                                        <span>+</span> Add Mapping
+                                    </button>
+
+                                    <div class="mapper-presets mt-4">
+                                        <label class="label-with-info">Quick Presets</label>
+                                        <div class="preset-buttons">
+                                            <button class="btn btn-sm btn-outline" data-preset="uk-mpaa">UK to MPAA</button>
+                                            <button class="btn btn-sm btn-outline" data-preset="au-mpaa">AU to MPAA</button>
+                                            <button class="btn btn-sm btn-outline" data-preset="de-mpaa">DE to MPAA</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Studio Mapper -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🏢</span> Studio Mapper</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info mb-4">Normalize studio names. Map variations to a single consistent name.</p>
+
+                                    <div class="mapper-list" id="studio-mapper-list">
+                                        <div class="mapper-row">
+                                            <input type="text" class="mapper-from" placeholder="From studio..." data-mapper="studio">
+                                            <span class="mapper-arrow">→</span>
+                                            <input type="text" class="mapper-to" placeholder="To studio...">
+                                            <button class="btn-icon delete-mapper" title="Remove">🗑️</button>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline mt-3" id="btn-add-studio-mapping">
+                                        <span>+</span> Add Mapping
+                                    </button>
+                                </div>
+                            </details>
+
+                            <!-- YAML Output -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📄</span> Generated YAML</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="collection-yaml-preview">
+                                        <pre id="mapper-yaml-output">settings:
+  # Add mappings above to see YAML output</pre>
+                                    </div>
+                                    <div class="yaml-preview-actions">
+                                        <button class="btn btn-sm btn-outline" id="btn-copy-mapper-yaml">
+                                            <span>📋</span> Copy YAML
+                                        </button>
+                                    </div>
+                                </div>
+                            </details>
                         </div>
                     </div>
 

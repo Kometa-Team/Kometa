@@ -1516,6 +1516,1561 @@ const overlayGallery = {
     }
 };
 
+// ============================================================================
+// Scheduling Module
+// ============================================================================
+
+const scheduling = {
+    currentSchedule: 'daily',
+    runOrder: ['operations', 'metadata', 'collections', 'overlays'],
+
+    init() {
+        this.initScheduleBuilders();
+        this.initRunOrder();
+        this.initOverlaySchedule();
+        this.updateSchedulePreview();
+    },
+
+    initScheduleBuilders() {
+        // Global schedule builder
+        const globalBuilder = document.getElementById('global-schedule-builder');
+        if (globalBuilder) {
+            this.setupScheduleBuilder(globalBuilder, 'global');
+        }
+
+        // Overlay schedule builder
+        const overlayBuilder = document.getElementById('overlay-schedule-builder');
+        if (overlayBuilder) {
+            this.setupScheduleBuilder(overlayBuilder, 'overlay');
+        }
+    },
+
+    setupScheduleBuilder(container, type) {
+        // Tab switching
+        const tabs = container.querySelectorAll('.schedule-preset-tab');
+        const panels = container.querySelectorAll('.schedule-preset-panel');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const preset = tab.dataset.preset;
+
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show corresponding panel
+                panels.forEach(p => {
+                    p.classList.toggle('active', p.dataset.panel === preset);
+                });
+
+                // Update schedule value
+                this.updateScheduleValue(container, preset, type);
+            });
+        });
+
+        // Day checkboxes
+        const dayCheckboxes = container.querySelectorAll('.day-checkbox input');
+        dayCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.updateWeeklySchedule(container, type);
+            });
+        });
+
+        // Monthly day input
+        const monthlyInput = container.querySelector('input[type="number"][id*="monthly-day"]');
+        if (monthlyInput) {
+            monthlyInput.addEventListener('change', () => {
+                this.updateMonthlySchedule(container, type);
+            });
+        }
+
+        // Date range inputs
+        const rangeStart = container.querySelector('#range-start');
+        const rangeEnd = container.querySelector('#range-end');
+        if (rangeStart && rangeEnd) {
+            rangeStart.addEventListener('change', () => this.updateRangeSchedule(container, type));
+            rangeEnd.addEventListener('change', () => this.updateRangeSchedule(container, type));
+        }
+
+        // Custom input
+        const customInput = container.querySelector('input[type="text"][id*="custom-schedule"]');
+        if (customInput) {
+            customInput.addEventListener('input', () => {
+                this.updateCustomSchedule(container, customInput.value, type);
+            });
+        }
+    },
+
+    updateScheduleValue(container, preset, type) {
+        let value = 'daily';
+        const badge = container.querySelector('.schedule-preset-panel.active .schedule-badge');
+
+        switch (preset) {
+            case 'daily':
+                value = 'daily';
+                break;
+            case 'weekly':
+                value = this.getWeeklyValue(container);
+                break;
+            case 'monthly':
+                const day = container.querySelector('input[type="number"][id*="monthly-day"]')?.value || 1;
+                value = `monthly(${day})`;
+                break;
+            case 'range':
+                value = this.getRangeValue(container);
+                break;
+            case 'custom':
+                value = container.querySelector('input[type="text"][id*="custom-schedule"]')?.value || '';
+                break;
+        }
+
+        if (badge) {
+            badge.textContent = value || preset;
+        }
+
+        // Update hidden input
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    getWeeklyValue(container) {
+        const checked = container.querySelectorAll('.day-checkbox input:checked');
+        if (checked.length === 0) return 'never';
+        if (checked.length === 7) return 'daily';
+
+        const days = Array.from(checked).map(cb => cb.value);
+        return `weekly(${days.join('|')})`;
+    },
+
+    updateWeeklySchedule(container, type) {
+        const value = this.getWeeklyValue(container);
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="weekly"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateMonthlySchedule(container, type) {
+        const dayInput = container.querySelector('input[type="number"][id*="monthly-day"]');
+        const day = dayInput?.value || 1;
+        const value = `monthly(${day})`;
+
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="monthly"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    getRangeValue(container) {
+        const startInput = container.querySelector('#range-start');
+        const endInput = container.querySelector('#range-end');
+
+        if (!startInput?.value || !endInput?.value) return 'range(01/01-12/31)';
+
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+
+        const formatDate = (d) => {
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${month}/${day}`;
+        };
+
+        return `range(${formatDate(start)}-${formatDate(end)})`;
+    },
+
+    updateRangeSchedule(container, type) {
+        const value = this.getRangeValue(container);
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="range"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateCustomSchedule(container, value, type) {
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateSchedulePreview() {
+        const previewList = document.getElementById('global-schedule-preview');
+        if (!previewList) return;
+
+        const runTimeInput = document.getElementById('schedule-run-time');
+        const runTime = runTimeInput?.value || '05:00';
+
+        // Get current schedule
+        const hiddenInput = document.getElementById('global-schedule-value');
+        const schedule = hiddenInput?.value || 'daily';
+
+        // Generate next 3 run dates
+        const dates = this.getNextRunDates(schedule, runTime, 3);
+
+        previewList.innerHTML = dates.map(date => `
+            <div class="schedule-preview-item">
+                <span class="preview-date">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span class="preview-time">${this.formatTime(runTime)}</span>
+            </div>
+        `).join('');
+    },
+
+    getNextRunDates(schedule, runTime, count) {
+        const dates = [];
+        let currentDate = new Date();
+        const [hours, minutes] = runTime.split(':').map(Number);
+
+        // Parse schedule
+        const isDailySchedule = schedule === 'daily' || schedule === 'all';
+        const weeklyMatch = schedule.match(/weekly\(([^)]+)\)/);
+        const monthlyMatch = schedule.match(/monthly\((\d+)\)/);
+
+        let iterations = 0;
+        const maxIterations = 365; // Prevent infinite loops
+
+        while (dates.length < count && iterations < maxIterations) {
+            iterations++;
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+
+            if (isDailySchedule) {
+                dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+            } else if (weeklyMatch) {
+                const days = weeklyMatch[1].toLowerCase().split('|');
+                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const dayOfWeek = dayNames[currentDate.getDay()];
+
+                if (days.includes(dayOfWeek)) {
+                    dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+                }
+            } else if (monthlyMatch) {
+                const targetDay = parseInt(monthlyMatch[1]);
+                if (currentDate.getDate() === targetDay) {
+                    dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+                }
+            } else {
+                // Default to daily if we can't parse
+                dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+            }
+        }
+
+        return dates;
+    },
+
+    formatTime(time24) {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    },
+
+    initRunOrder() {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const items = list.querySelectorAll('.run-order-item');
+        let draggedItem = null;
+
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                items.forEach(i => i.classList.remove('drag-over'));
+                draggedItem = null;
+                this.saveRunOrder();
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedItem && draggedItem !== item) {
+                    item.classList.add('drag-over');
+                }
+            });
+
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+
+                if (draggedItem && draggedItem !== item) {
+                    const allItems = [...list.querySelectorAll('.run-order-item')];
+                    const draggedIdx = allItems.indexOf(draggedItem);
+                    const targetIdx = allItems.indexOf(item);
+
+                    if (draggedIdx < targetIdx) {
+                        item.parentNode.insertBefore(draggedItem, item.nextSibling);
+                    } else {
+                        item.parentNode.insertBefore(draggedItem, item);
+                    }
+                }
+            });
+        });
+
+        // Load saved order
+        const savedOrder = localStorage.getItem('kometa-run-order');
+        if (savedOrder) {
+            try {
+                const order = JSON.parse(savedOrder);
+                this.applyRunOrder(order);
+            } catch (e) {
+                console.error('Failed to load run order:', e);
+            }
+        }
+    },
+
+    saveRunOrder() {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const order = [...list.querySelectorAll('.run-order-item')].map(item => item.dataset.order);
+        this.runOrder = order;
+        localStorage.setItem('kometa-run-order', JSON.stringify(order));
+
+        // Update hidden input
+        const hiddenInput = document.getElementById('run-order-value');
+        if (hiddenInput) {
+            hiddenInput.value = JSON.stringify(order);
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    },
+
+    applyRunOrder(order) {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const items = [...list.querySelectorAll('.run-order-item')];
+        const itemMap = {};
+        items.forEach(item => {
+            itemMap[item.dataset.order] = item;
+        });
+
+        order.forEach(key => {
+            if (itemMap[key]) {
+                list.appendChild(itemMap[key]);
+            }
+        });
+    },
+
+    initOverlaySchedule() {
+        const checkbox = document.getElementById('schedule-overlays-separately');
+        const section = document.getElementById('overlay-schedule-section');
+
+        if (checkbox && section) {
+            const updateVisibility = () => {
+                section.style.display = checkbox.checked ? 'block' : 'none';
+            };
+
+            checkbox.addEventListener('change', updateVisibility);
+            updateVisibility();
+        }
+
+        // Listen for run time changes to update preview
+        const runTimeInput = document.getElementById('schedule-run-time');
+        if (runTimeInput) {
+            runTimeInput.addEventListener('change', () => this.updateSchedulePreview());
+        }
+    }
+};
+
+// ============================================================================
+// Operations Module
+// ============================================================================
+
+const operations = {
+    init() {
+        this.initOperationCards();
+        this.initDependentFields();
+    },
+
+    initOperationCards() {
+        // When operation checkbox is toggled, enable/disable related fields
+        const cards = document.querySelectorAll('.operation-card');
+
+        cards.forEach(card => {
+            const checkbox = card.querySelector('.operation-header input[type="checkbox"]');
+            const selects = card.querySelectorAll('.operation-body select');
+
+            if (checkbox) {
+                const updateSelectState = () => {
+                    selects.forEach(select => {
+                        select.disabled = !checkbox.checked;
+                        select.closest('.form-group')?.classList.toggle('disabled', !checkbox.checked);
+                    });
+                };
+
+                checkbox.addEventListener('change', updateSelectState);
+                updateSelectState();
+            }
+        });
+    },
+
+    initDependentFields() {
+        // Some operations require specific sources to be configured
+        // Add visual feedback when dependencies aren't met
+
+        const sourceSelects = document.querySelectorAll('.operation-body select');
+        sourceSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                const card = select.closest('.operation-card');
+                const checkbox = card?.querySelector('.operation-header input[type="checkbox"]');
+
+                // If a source is selected, auto-enable the operation
+                if (select.value && checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+    },
+
+    getEnabledOperations() {
+        const enabled = [];
+        const cards = document.querySelectorAll('.operation-card');
+
+        cards.forEach(card => {
+            const checkbox = card.querySelector('.operation-header input[type="checkbox"]');
+            if (checkbox?.checked) {
+                const configPath = checkbox.dataset.configPath;
+                const select = card.querySelector('.operation-body select');
+                enabled.push({
+                    operation: configPath,
+                    source: select?.value || null
+                });
+            }
+        });
+
+        return enabled;
+    }
+};
+
+// ============================================================================
+// Collection Builder Module
+// ============================================================================
+
+const collectionBuilder = {
+    collections: [],
+    currentCollection: null,
+    builders: [],
+
+    sourceConfigs: {
+        tmdb_popular: { name: 'TMDb Popular', icon: '🎬', fields: ['limit'] },
+        tmdb_top_rated: { name: 'TMDb Top Rated', icon: '🎬', fields: ['limit'] },
+        tmdb_trending: { name: 'TMDb Trending', icon: '🎬', fields: ['limit', 'time_window'] },
+        tmdb_discover: { name: 'TMDb Discover', icon: '🎬', fields: ['year', 'vote_average', 'with_genres', 'sort_by'] },
+        trakt_trending: { name: 'Trakt Trending', icon: '📺', fields: ['limit'] },
+        trakt_popular: { name: 'Trakt Popular', icon: '📺', fields: ['limit'] },
+        trakt_watched: { name: 'Trakt Most Watched', icon: '📺', fields: ['limit', 'time_period'] },
+        trakt_list: { name: 'Trakt List', icon: '📺', fields: ['list_url'] },
+        trakt_watchlist: { name: 'Trakt Watchlist', icon: '📺', fields: ['username'] },
+        imdb_chart: { name: 'IMDb Chart', icon: '⭐', fields: ['chart'] },
+        imdb_list: { name: 'IMDb List', icon: '⭐', fields: ['list_id'] },
+        letterboxd_list: { name: 'Letterboxd List', icon: '🎞️', fields: ['list_url'] },
+        mdblist_list: { name: 'MDBList', icon: '📊', fields: ['list_url'] },
+        anilist_popular: { name: 'AniList Popular', icon: '🎌', fields: ['limit'] },
+        anilist_top_rated: { name: 'AniList Top Rated', icon: '🎌', fields: ['limit'] },
+        mal_popular: { name: 'MAL Popular', icon: '🎌', fields: ['limit'] },
+        mal_season: { name: 'MAL Season', icon: '🎌', fields: ['season', 'year'] },
+        imdb_award: { name: 'IMDb Awards', icon: '🏆', fields: ['award', 'year'] },
+        plex_search: { name: 'Plex Search', icon: '🔍', fields: ['any', 'title', 'year'] },
+        plex_collectionless: { name: 'Collectionless', icon: '📁', fields: [] },
+        flixpatrol_top: { name: 'FlixPatrol Top', icon: '📊', fields: ['platform', 'location', 'limit'] },
+        stevenlu_popular: { name: 'StevenLu Popular', icon: '🔥', fields: [] }
+    },
+
+    init() {
+        this.loadCollections();
+        this.initEventListeners();
+        this.initSourceSelector();
+    },
+
+    initEventListeners() {
+        // New collection buttons
+        document.getElementById('btn-new-collection')?.addEventListener('click', () => this.newCollection());
+        document.getElementById('btn-new-collection-empty')?.addEventListener('click', () => this.newCollection());
+
+        // Add builder button
+        document.getElementById('btn-add-builder')?.addEventListener('click', () => this.showSourceSelector());
+
+        // Close source selector
+        document.getElementById('btn-close-source-selector')?.addEventListener('click', () => this.hideSourceSelector());
+
+        // Collection name change - update YAML preview
+        document.getElementById('collection-name')?.addEventListener('input', () => this.updateYamlPreview());
+
+        // Save/Cancel buttons
+        document.getElementById('btn-save-collection')?.addEventListener('click', () => this.saveCollection());
+        document.getElementById('btn-cancel-collection')?.addEventListener('click', () => this.cancelEdit());
+
+        // Copy YAML button
+        document.getElementById('btn-copy-collection-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Collection group headers (collapse/expand)
+        document.querySelectorAll('.collection-group-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.closest('.collection-group')?.classList.toggle('collapsed');
+            });
+        });
+
+        // Search collections
+        document.getElementById('collection-search')?.addEventListener('input', (e) => {
+            this.filterCollections(e.target.value);
+        });
+
+        // Source search
+        document.getElementById('source-search')?.addEventListener('input', (e) => {
+            this.filterSources(e.target.value);
+        });
+    },
+
+    initSourceSelector() {
+        // Add click handlers to all source buttons
+        document.querySelectorAll('.source-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const source = btn.dataset.source;
+                this.addBuilder(source);
+                this.hideSourceSelector();
+            });
+        });
+    },
+
+    loadCollections() {
+        // Load from localStorage
+        const saved = localStorage.getItem('kometa-collections');
+        if (saved) {
+            try {
+                this.collections = JSON.parse(saved);
+                this.renderCollectionTree();
+            } catch (e) {
+                console.error('Failed to load collections:', e);
+            }
+        }
+    },
+
+    saveCollections() {
+        localStorage.setItem('kometa-collections', JSON.stringify(this.collections));
+    },
+
+    renderCollectionTree() {
+        const moviesContainer = document.querySelector('.collection-group-items[data-library="movies"]');
+        const tvContainer = document.querySelector('.collection-group-items[data-library="tv"]');
+
+        if (!moviesContainer || !tvContainer) return;
+
+        // Clear containers
+        moviesContainer.innerHTML = '';
+        tvContainer.innerHTML = '';
+
+        let movieCount = 0;
+        let tvCount = 0;
+
+        this.collections.forEach((coll, index) => {
+            const item = document.createElement('div');
+            item.className = 'collection-item';
+            item.dataset.index = index;
+            item.textContent = coll.name || 'Untitled Collection';
+
+            if (this.currentCollection && this.currentCollection.index === index) {
+                item.classList.add('active');
+            }
+
+            item.addEventListener('click', () => this.selectCollection(index));
+
+            if (coll.library === 'tv') {
+                tvContainer.appendChild(item);
+                tvCount++;
+            } else {
+                moviesContainer.appendChild(item);
+                movieCount++;
+            }
+        });
+
+        // Update counts
+        document.querySelector('.collection-group-header[data-library="movies"] .group-count').textContent = movieCount;
+        document.querySelector('.collection-group-header[data-library="tv"] .group-count').textContent = tvCount;
+    },
+
+    newCollection() {
+        this.currentCollection = {
+            index: -1,
+            name: '',
+            library: 'movies',
+            builders: [],
+            settings: {}
+        };
+        this.builders = [];
+        this.showEditor();
+        this.clearForm();
+        document.getElementById('collection-name')?.focus();
+    },
+
+    selectCollection(index) {
+        const coll = this.collections[index];
+        if (!coll) return;
+
+        this.currentCollection = { ...coll, index };
+        this.builders = coll.builders ? [...coll.builders] : [];
+        this.showEditor();
+        this.populateForm(coll);
+        this.renderBuilders();
+        this.updateYamlPreview();
+        this.renderCollectionTree();
+    },
+
+    showEditor() {
+        document.getElementById('collection-empty-state')?.classList.add('hidden');
+        document.getElementById('collection-editor-content')?.classList.remove('hidden');
+    },
+
+    hideEditor() {
+        document.getElementById('collection-empty-state')?.classList.remove('hidden');
+        document.getElementById('collection-editor-content')?.classList.add('hidden');
+    },
+
+    clearForm() {
+        document.getElementById('collection-name').value = '';
+        document.getElementById('collection-sort-title').value = '';
+        document.getElementById('collection-content-rating').value = '';
+        document.getElementById('collection-mode').value = 'default';
+        document.getElementById('collection-order').value = '';
+        document.getElementById('collection-sync-mode').value = 'sync';
+        document.getElementById('collection-minimum').value = '0';
+        document.getElementById('collection-summary').value = '';
+        document.getElementById('collection-delete-below-minimum').checked = false;
+
+        // Clear builders
+        this.builders = [];
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    populateForm(coll) {
+        document.getElementById('collection-name').value = coll.name || '';
+        document.getElementById('collection-sort-title').value = coll.settings?.sort_title || '';
+        document.getElementById('collection-content-rating').value = coll.settings?.content_rating || '';
+        document.getElementById('collection-mode').value = coll.settings?.collection_mode || 'default';
+        document.getElementById('collection-order').value = coll.settings?.collection_order || '';
+        document.getElementById('collection-sync-mode').value = coll.settings?.sync_mode || 'sync';
+        document.getElementById('collection-minimum').value = coll.settings?.minimum_items || '0';
+        document.getElementById('collection-summary').value = coll.settings?.summary || '';
+        document.getElementById('collection-delete-below-minimum').checked = coll.settings?.delete_below_minimum || false;
+    },
+
+    showSourceSelector() {
+        document.getElementById('builder-source-selector')?.classList.remove('hidden');
+        document.getElementById('source-search')?.focus();
+    },
+
+    hideSourceSelector() {
+        document.getElementById('builder-source-selector')?.classList.add('hidden');
+        document.getElementById('source-search').value = '';
+        this.filterSources('');
+    },
+
+    filterSources(query) {
+        const lowerQuery = query.toLowerCase();
+        document.querySelectorAll('.source-btn').forEach(btn => {
+            const name = btn.querySelector('.source-name')?.textContent.toLowerCase() || '';
+            const match = name.includes(lowerQuery);
+            btn.style.display = match ? '' : 'none';
+        });
+
+        // Hide empty categories
+        document.querySelectorAll('.source-category').forEach(category => {
+            const visibleBtns = category.querySelectorAll('.source-btn[style=""], .source-btn:not([style])');
+            category.style.display = visibleBtns.length > 0 ? '' : 'none';
+        });
+    },
+
+    filterCollections(query) {
+        const lowerQuery = query.toLowerCase();
+        document.querySelectorAll('.collection-item').forEach(item => {
+            const name = item.textContent.toLowerCase();
+            item.style.display = name.includes(lowerQuery) ? '' : 'none';
+        });
+    },
+
+    addBuilder(source) {
+        const config = this.sourceConfigs[source];
+        if (!config) return;
+
+        this.builders.push({
+            source,
+            config: config,
+            values: {}
+        });
+
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    removeBuilder(index) {
+        this.builders.splice(index, 1);
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    renderBuilders() {
+        const list = document.getElementById('builder-list');
+        if (!list) return;
+
+        if (this.builders.length === 0) {
+            list.innerHTML = `
+                <div class="builder-placeholder">
+                    <p>No builders added yet. Click "Add Builder" to select a source.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = this.builders.map((builder, index) => `
+            <div class="builder-card" data-index="${index}">
+                <div class="builder-card-header">
+                    <div class="builder-card-title">
+                        <span>${builder.config.icon}</span>
+                        <span>${builder.config.name}</span>
+                    </div>
+                    <div class="builder-card-actions">
+                        <button class="delete" onclick="collectionBuilder.removeBuilder(${index})" title="Remove">🗑️</button>
+                    </div>
+                </div>
+                <div class="builder-card-body">
+                    ${this.renderBuilderFields(builder, index)}
+                </div>
+            </div>
+        `).join('');
+
+        // Re-attach event listeners to field inputs
+        list.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+            input.addEventListener('input', () => this.updateYamlPreview());
+        });
+    },
+
+    renderBuilderFields(builder, builderIndex) {
+        const fields = builder.config.fields || [];
+        if (fields.length === 0) {
+            return '<p class="field-help">No configuration required for this source.</p>';
+        }
+
+        return fields.map(field => {
+            const value = builder.values[field] || '';
+            const fieldId = `builder-${builderIndex}-${field}`;
+
+            switch (field) {
+                case 'limit':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Limit</label>
+                            <input type="number" id="${fieldId}" data-field="${field}" value="${value || 50}" min="1" max="500">
+                        </div>
+                    `;
+                case 'year':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Year</label>
+                            <input type="number" id="${fieldId}" data-field="${field}" value="${value || new Date().getFullYear()}" min="1900" max="2030">
+                        </div>
+                    `;
+                case 'time_window':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Time Window</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="day" ${value === 'day' ? 'selected' : ''}>Day</option>
+                                <option value="week" ${value === 'week' ? 'selected' : ''}>Week</option>
+                            </select>
+                        </div>
+                    `;
+                case 'time_period':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Time Period</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="weekly" ${value === 'weekly' ? 'selected' : ''}>Weekly</option>
+                                <option value="monthly" ${value === 'monthly' ? 'selected' : ''}>Monthly</option>
+                                <option value="yearly" ${value === 'yearly' ? 'selected' : ''}>Yearly</option>
+                                <option value="all" ${value === 'all' ? 'selected' : ''}>All Time</option>
+                            </select>
+                        </div>
+                    `;
+                case 'list_url':
+                case 'list_id':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">${field === 'list_url' ? 'List URL' : 'List ID'}</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}" placeholder="Enter URL or ID...">
+                        </div>
+                    `;
+                case 'username':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Username</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}" placeholder="Enter username...">
+                        </div>
+                    `;
+                case 'chart':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Chart</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="top_250_movies" ${value === 'top_250_movies' ? 'selected' : ''}>Top 250 Movies</option>
+                                <option value="top_250_shows" ${value === 'top_250_shows' ? 'selected' : ''}>Top 250 TV Shows</option>
+                                <option value="popular_movies" ${value === 'popular_movies' ? 'selected' : ''}>Popular Movies</option>
+                                <option value="popular_shows" ${value === 'popular_shows' ? 'selected' : ''}>Popular TV Shows</option>
+                            </select>
+                        </div>
+                    `;
+                case 'season':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Season</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="winter" ${value === 'winter' ? 'selected' : ''}>Winter</option>
+                                <option value="spring" ${value === 'spring' ? 'selected' : ''}>Spring</option>
+                                <option value="summer" ${value === 'summer' ? 'selected' : ''}>Summer</option>
+                                <option value="fall" ${value === 'fall' ? 'selected' : ''}>Fall</option>
+                            </select>
+                        </div>
+                    `;
+                default:
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}">
+                        </div>
+                    `;
+            }
+        }).join('');
+    },
+
+    getBuilderValues() {
+        this.builders.forEach((builder, index) => {
+            const card = document.querySelector(`.builder-card[data-index="${index}"]`);
+            if (!card) return;
+
+            card.querySelectorAll('[data-field]').forEach(input => {
+                const field = input.dataset.field;
+                builder.values[field] = input.value;
+            });
+        });
+    },
+
+    updateYamlPreview() {
+        this.getBuilderValues();
+
+        const name = document.getElementById('collection-name')?.value || 'Collection Name';
+        const output = document.getElementById('collection-yaml-output');
+        if (!output) return;
+
+        let yaml = `collections:\n  ${name}:\n`;
+
+        // Add builders
+        if (this.builders.length > 0) {
+            this.builders.forEach(builder => {
+                const source = builder.source;
+                const values = builder.values;
+
+                if (Object.keys(values).length === 0 || (Object.keys(values).length === 1 && values.limit)) {
+                    yaml += `    ${source}: ${values.limit || 50}\n`;
+                } else if (values.list_url || values.list_id) {
+                    yaml += `    ${source}: ${values.list_url || values.list_id}\n`;
+                } else {
+                    yaml += `    ${source}:\n`;
+                    Object.entries(values).forEach(([key, val]) => {
+                        if (val) yaml += `      ${key}: ${val}\n`;
+                    });
+                }
+            });
+        }
+
+        // Add settings
+        const syncMode = document.getElementById('collection-sync-mode')?.value;
+        if (syncMode && syncMode !== 'sync') {
+            yaml += `    sync_mode: ${syncMode}\n`;
+        }
+
+        const collMode = document.getElementById('collection-mode')?.value;
+        if (collMode && collMode !== 'default') {
+            yaml += `    collection_mode: ${collMode}\n`;
+        }
+
+        const order = document.getElementById('collection-order')?.value;
+        if (order) {
+            yaml += `    collection_order: ${order}\n`;
+        }
+
+        const sortTitle = document.getElementById('collection-sort-title')?.value;
+        if (sortTitle) {
+            yaml += `    sort_title: "${sortTitle}"\n`;
+        }
+
+        const summary = document.getElementById('collection-summary')?.value;
+        if (summary) {
+            yaml += `    summary: "${summary}"\n`;
+        }
+
+        const minimum = document.getElementById('collection-minimum')?.value;
+        if (minimum && minimum !== '0') {
+            yaml += `    minimum_items: ${minimum}\n`;
+        }
+
+        const deleteBelowMin = document.getElementById('collection-delete-below-minimum')?.checked;
+        if (deleteBelowMin) {
+            yaml += `    delete_below_minimum: true\n`;
+        }
+
+        output.textContent = yaml;
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('collection-yaml-output')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            }).catch(() => {
+                toast.show('Failed to copy YAML', 'error');
+            });
+        }
+    },
+
+    saveCollection() {
+        this.getBuilderValues();
+
+        const name = document.getElementById('collection-name')?.value;
+        if (!name) {
+            toast.show('Please enter a collection name', 'warning');
+            return;
+        }
+
+        const collection = {
+            name,
+            library: 'movies', // Could be made selectable
+            builders: this.builders,
+            settings: {
+                sort_title: document.getElementById('collection-sort-title')?.value,
+                content_rating: document.getElementById('collection-content-rating')?.value,
+                collection_mode: document.getElementById('collection-mode')?.value,
+                collection_order: document.getElementById('collection-order')?.value,
+                sync_mode: document.getElementById('collection-sync-mode')?.value,
+                minimum_items: document.getElementById('collection-minimum')?.value,
+                summary: document.getElementById('collection-summary')?.value,
+                delete_below_minimum: document.getElementById('collection-delete-below-minimum')?.checked
+            }
+        };
+
+        if (this.currentCollection.index === -1) {
+            // New collection
+            this.collections.push(collection);
+        } else {
+            // Update existing
+            this.collections[this.currentCollection.index] = collection;
+        }
+
+        this.saveCollections();
+        this.renderCollectionTree();
+        toast.show(`Collection "${name}" saved`, 'success');
+    },
+
+    cancelEdit() {
+        this.currentCollection = null;
+        this.builders = [];
+        this.hideEditor();
+        this.renderCollectionTree();
+    }
+};
+
+// ============================================================================
+// Playlist Builder Module
+// ============================================================================
+
+const playlistBuilder = {
+    playlists: [],
+    currentPlaylist: null,
+
+    init() {
+        this.loadPlaylists();
+        this.initEventListeners();
+    },
+
+    initEventListeners() {
+        document.getElementById('btn-new-playlist')?.addEventListener('click', () => this.newPlaylist());
+        document.getElementById('btn-new-playlist-empty')?.addEventListener('click', () => this.newPlaylist());
+        document.getElementById('btn-save-playlist')?.addEventListener('click', () => this.savePlaylist());
+        document.getElementById('btn-cancel-playlist')?.addEventListener('click', () => this.cancelEdit());
+    },
+
+    loadPlaylists() {
+        const saved = localStorage.getItem('kometa-playlists');
+        if (saved) {
+            try {
+                this.playlists = JSON.parse(saved);
+                this.renderPlaylistList();
+            } catch (e) {
+                console.error('Failed to load playlists:', e);
+            }
+        }
+    },
+
+    savePlaylists() {
+        localStorage.setItem('kometa-playlists', JSON.stringify(this.playlists));
+    },
+
+    renderPlaylistList() {
+        const list = document.getElementById('playlist-list');
+        if (!list) return;
+
+        if (this.playlists.length === 0) {
+            list.innerHTML = `
+                <div class="playlist-placeholder">
+                    <span class="placeholder-icon">🎵</span>
+                    <p>No playlists yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = this.playlists.map((pl, index) => `
+            <div class="playlist-item ${this.currentPlaylist?.index === index ? 'active' : ''}" data-index="${index}">
+                <span>🎵</span>
+                <span>${pl.name || 'Untitled Playlist'}</span>
+            </div>
+        `).join('');
+
+        list.querySelectorAll('.playlist-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.selectPlaylist(parseInt(item.dataset.index));
+            });
+        });
+    },
+
+    newPlaylist() {
+        this.currentPlaylist = { index: -1, name: '', settings: {} };
+        this.showEditor();
+        this.clearForm();
+        document.getElementById('playlist-name')?.focus();
+    },
+
+    selectPlaylist(index) {
+        const pl = this.playlists[index];
+        if (!pl) return;
+
+        this.currentPlaylist = { ...pl, index };
+        this.showEditor();
+        this.populateForm(pl);
+        this.renderPlaylistList();
+    },
+
+    showEditor() {
+        document.getElementById('playlist-empty-state')?.classList.add('hidden');
+        document.getElementById('playlist-editor-content')?.classList.remove('hidden');
+    },
+
+    hideEditor() {
+        document.getElementById('playlist-empty-state')?.classList.remove('hidden');
+        document.getElementById('playlist-editor-content')?.classList.add('hidden');
+    },
+
+    clearForm() {
+        document.getElementById('playlist-name').value = '';
+        document.getElementById('playlist-summary').value = '';
+        document.getElementById('playlist-exclude-users').value = '';
+        document.getElementById('playlist-sync-mode').value = 'sync';
+        document.getElementById('playlist-delete-not-scheduled').checked = false;
+    },
+
+    populateForm(pl) {
+        document.getElementById('playlist-name').value = pl.name || '';
+        document.getElementById('playlist-summary').value = pl.settings?.summary || '';
+        document.getElementById('playlist-exclude-users').value = pl.settings?.exclude_users || '';
+        document.getElementById('playlist-sync-mode').value = pl.settings?.sync_mode || 'sync';
+        document.getElementById('playlist-delete-not-scheduled').checked = pl.settings?.delete_not_scheduled || false;
+    },
+
+    savePlaylist() {
+        const name = document.getElementById('playlist-name')?.value;
+        if (!name) {
+            toast.show('Please enter a playlist name', 'warning');
+            return;
+        }
+
+        const playlist = {
+            name,
+            settings: {
+                summary: document.getElementById('playlist-summary')?.value,
+                exclude_users: document.getElementById('playlist-exclude-users')?.value,
+                sync_mode: document.getElementById('playlist-sync-mode')?.value,
+                delete_not_scheduled: document.getElementById('playlist-delete-not-scheduled')?.checked
+            }
+        };
+
+        if (this.currentPlaylist.index === -1) {
+            this.playlists.push(playlist);
+        } else {
+            this.playlists[this.currentPlaylist.index] = playlist;
+        }
+
+        this.savePlaylists();
+        this.renderPlaylistList();
+        toast.show(`Playlist "${name}" saved`, 'success');
+    },
+
+    cancelEdit() {
+        this.currentPlaylist = null;
+        this.hideEditor();
+        this.renderPlaylistList();
+    }
+};
+
+// ============================================================================
+// Filter Builder Module (extends collectionBuilder)
+// ============================================================================
+
+const filterBuilder = {
+    filters: [],
+
+    init() {
+        this.initEventListeners();
+    },
+
+    initEventListeners() {
+        document.getElementById('btn-add-filter')?.addEventListener('click', () => this.showFilterSelector());
+        document.getElementById('btn-cancel-filter')?.addEventListener('click', () => this.hideFilterSelector());
+        document.getElementById('btn-confirm-filter')?.addEventListener('click', () => this.addFilter());
+    },
+
+    showFilterSelector() {
+        document.getElementById('filter-selector')?.classList.remove('hidden');
+        document.getElementById('filter-field')?.focus();
+    },
+
+    hideFilterSelector() {
+        document.getElementById('filter-selector')?.classList.add('hidden');
+        this.clearFilterForm();
+    },
+
+    clearFilterForm() {
+        document.getElementById('filter-field').value = 'title';
+        document.getElementById('filter-operator').value = '';
+        document.getElementById('filter-value').value = '';
+    },
+
+    addFilter() {
+        const field = document.getElementById('filter-field')?.value;
+        const operator = document.getElementById('filter-operator')?.value;
+        const value = document.getElementById('filter-value')?.value;
+
+        if (!value) {
+            toast.show('Please enter a filter value', 'warning');
+            return;
+        }
+
+        this.filters.push({ field, operator, value });
+        this.renderFilters();
+        this.hideFilterSelector();
+
+        // Update YAML preview
+        if (typeof collectionBuilder !== 'undefined') {
+            collectionBuilder.updateYamlPreview();
+        }
+    },
+
+    removeFilter(index) {
+        this.filters.splice(index, 1);
+        this.renderFilters();
+
+        if (typeof collectionBuilder !== 'undefined') {
+            collectionBuilder.updateYamlPreview();
+        }
+    },
+
+    renderFilters() {
+        const list = document.getElementById('filter-list');
+        if (!list) return;
+
+        if (this.filters.length === 0) {
+            list.innerHTML = `
+                <div class="filter-placeholder">
+                    <p>No filters added. Click "Add Filter" to narrow down results.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const operatorLabels = {
+            '': 'is',
+            '.not': 'is not',
+            '.contains': 'contains',
+            '.begins': 'begins with',
+            '.ends': 'ends with',
+            '.gt': '>',
+            '.gte': '>=',
+            '.lt': '<',
+            '.lte': '<='
+        };
+
+        list.innerHTML = this.filters.map((filter, index) => `
+            <div class="filter-row">
+                <span class="filter-field">${filter.field}</span>
+                <span class="filter-operator">${operatorLabels[filter.operator] || filter.operator}</span>
+                <span class="filter-value">"${filter.value}"</span>
+                <button class="btn-icon" onclick="filterBuilder.removeFilter(${index})" title="Remove">🗑️</button>
+            </div>
+        `).join('');
+    },
+
+    getFilters() {
+        return this.filters;
+    },
+
+    getFilterMatchMode() {
+        return document.getElementById('filter-match-mode')?.value || 'all';
+    },
+
+    generateYaml() {
+        if (this.filters.length === 0) return '';
+
+        let yaml = '    filters:\n';
+        this.filters.forEach(filter => {
+            const key = filter.field + filter.operator;
+            yaml += `      ${key}: ${filter.value}\n`;
+        });
+
+        return yaml;
+    },
+
+    clear() {
+        this.filters = [];
+        this.renderFilters();
+    }
+};
+
+// ============================================================================
+// Data Mappers Module
+// ============================================================================
+
+const dataMappers = {
+    genreMappings: [],
+    ratingMappings: [],
+    studioMappings: [],
+
+    presets: {
+        'sci-fi': [
+            { from: 'Sci-Fi', to: 'Science Fiction' },
+            { from: 'SF', to: 'Science Fiction' },
+            { from: 'SciFi', to: 'Science Fiction' }
+        ],
+        'animation': [
+            { from: 'Anime', to: 'Animation' },
+            { from: 'Animated', to: 'Animation' },
+            { from: 'Cartoon', to: 'Animation' }
+        ],
+        'thriller': [
+            { from: 'Suspense', to: 'Thriller' },
+            { from: 'Mystery Thriller', to: 'Thriller' }
+        ],
+        'uk-mpaa': [
+            { from: 'gb/U', to: 'G' },
+            { from: 'gb/PG', to: 'PG' },
+            { from: 'gb/12', to: 'PG-13' },
+            { from: 'gb/12A', to: 'PG-13' },
+            { from: 'gb/15', to: 'R' },
+            { from: 'gb/18', to: 'NC-17' }
+        ],
+        'au-mpaa': [
+            { from: 'au/G', to: 'G' },
+            { from: 'au/PG', to: 'PG' },
+            { from: 'au/M', to: 'PG-13' },
+            { from: 'au/MA15+', to: 'R' },
+            { from: 'au/R18+', to: 'NC-17' }
+        ],
+        'de-mpaa': [
+            { from: 'de/0', to: 'G' },
+            { from: 'de/6', to: 'PG' },
+            { from: 'de/12', to: 'PG-13' },
+            { from: 'de/16', to: 'R' },
+            { from: 'de/18', to: 'NC-17' }
+        ]
+    },
+
+    init() {
+        this.initEventListeners();
+        this.loadMappings();
+    },
+
+    initEventListeners() {
+        // Add mapping buttons
+        document.getElementById('btn-add-genre-mapping')?.addEventListener('click', () => this.addMappingRow('genre'));
+        document.getElementById('btn-add-rating-mapping')?.addEventListener('click', () => this.addMappingRow('rating'));
+        document.getElementById('btn-add-studio-mapping')?.addEventListener('click', () => this.addMappingRow('studio'));
+
+        // Copy YAML
+        document.getElementById('btn-copy-mapper-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Preset buttons
+        document.querySelectorAll('.preset-buttons button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                this.applyPreset(preset);
+            });
+        });
+
+        // Delete mapping buttons (delegate)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-mapper')) {
+                const row = e.target.closest('.mapper-row');
+                if (row) {
+                    row.remove();
+                    this.updateYamlPreview();
+                }
+            }
+        });
+
+        // Input changes
+        document.querySelectorAll('.mapper-from, .mapper-to').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    loadMappings() {
+        const saved = localStorage.getItem('kometa-data-mappings');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                this.genreMappings = data.genre || [];
+                this.ratingMappings = data.rating || [];
+                this.studioMappings = data.studio || [];
+                this.renderMappings();
+            } catch (e) {
+                console.error('Failed to load mappings:', e);
+            }
+        }
+    },
+
+    saveMappings() {
+        this.collectMappings();
+        localStorage.setItem('kometa-data-mappings', JSON.stringify({
+            genre: this.genreMappings,
+            rating: this.ratingMappings,
+            studio: this.studioMappings
+        }));
+    },
+
+    collectMappings() {
+        this.genreMappings = this.getMappingsFromList('genre-mapper-list');
+        this.ratingMappings = this.getMappingsFromList('rating-mapper-list');
+        this.studioMappings = this.getMappingsFromList('studio-mapper-list');
+    },
+
+    getMappingsFromList(listId) {
+        const list = document.getElementById(listId);
+        if (!list) return [];
+
+        const mappings = [];
+        list.querySelectorAll('.mapper-row').forEach(row => {
+            const from = row.querySelector('.mapper-from')?.value?.trim();
+            const to = row.querySelector('.mapper-to')?.value?.trim();
+            if (from && to) {
+                mappings.push({ from, to });
+            }
+        });
+        return mappings;
+    },
+
+    renderMappings() {
+        this.renderMappingList('genre-mapper-list', this.genreMappings, 'genre');
+        this.renderMappingList('rating-mapper-list', this.ratingMappings, 'rating');
+        this.renderMappingList('studio-mapper-list', this.studioMappings, 'studio');
+        this.updateYamlPreview();
+    },
+
+    renderMappingList(listId, mappings, type) {
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        if (mappings.length === 0) {
+            list.innerHTML = this.createMappingRowHtml(type);
+            return;
+        }
+
+        list.innerHTML = mappings.map(() => this.createMappingRowHtml(type)).join('');
+
+        const rows = list.querySelectorAll('.mapper-row');
+        mappings.forEach((mapping, index) => {
+            if (rows[index]) {
+                rows[index].querySelector('.mapper-from').value = mapping.from;
+                rows[index].querySelector('.mapper-to').value = mapping.to;
+            }
+        });
+    },
+
+    createMappingRowHtml(type) {
+        const placeholders = {
+            genre: { from: 'From genre...', to: 'To genre...' },
+            rating: { from: 'From rating (e.g., gb/15)...', to: 'To rating (e.g., R)...' },
+            studio: { from: 'From studio...', to: 'To studio...' }
+        };
+        const ph = placeholders[type] || { from: 'From...', to: 'To...' };
+
+        return `
+            <div class="mapper-row">
+                <input type="text" class="mapper-from" placeholder="${ph.from}" data-mapper="${type}">
+                <span class="mapper-arrow">→</span>
+                <input type="text" class="mapper-to" placeholder="${ph.to}">
+                <button class="btn-icon delete-mapper" title="Remove">🗑️</button>
+            </div>
+        `;
+    },
+
+    addMappingRow(type) {
+        const listId = `${type}-mapper-list`;
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        const row = document.createElement('div');
+        row.innerHTML = this.createMappingRowHtml(type);
+        list.appendChild(row.firstElementChild);
+
+        // Focus the new from input
+        const newRow = list.lastElementChild;
+        newRow.querySelector('.mapper-from')?.focus();
+
+        // Add change listener
+        newRow.querySelectorAll('input').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    applyPreset(presetName) {
+        const preset = this.presets[presetName];
+        if (!preset) return;
+
+        // Determine which list to add to
+        const isRating = presetName.includes('mpaa');
+        const listId = isRating ? 'rating-mapper-list' : 'genre-mapper-list';
+        const type = isRating ? 'rating' : 'genre';
+
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        // Add preset mappings
+        preset.forEach(mapping => {
+            const row = document.createElement('div');
+            row.innerHTML = this.createMappingRowHtml(type);
+            const rowEl = row.firstElementChild;
+            rowEl.querySelector('.mapper-from').value = mapping.from;
+            rowEl.querySelector('.mapper-to').value = mapping.to;
+            list.appendChild(rowEl);
+
+            rowEl.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', () => this.updateYamlPreview());
+            });
+        });
+
+        this.updateYamlPreview();
+        toast.show(`Applied ${presetName} preset`, 'success');
+    },
+
+    updateYamlPreview() {
+        this.collectMappings();
+
+        const output = document.getElementById('mapper-yaml-output');
+        if (!output) return;
+
+        let yaml = '';
+
+        if (this.genreMappings.length > 0) {
+            yaml += 'settings:\n  genre_mapper:\n';
+            this.genreMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        if (this.ratingMappings.length > 0) {
+            if (!yaml) yaml = 'settings:\n';
+            yaml += '  content_rating_mapper:\n';
+            this.ratingMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        if (this.studioMappings.length > 0) {
+            if (!yaml) yaml = 'settings:\n';
+            yaml += '  studio_mapper:\n';
+            this.studioMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        output.textContent = yaml || 'settings:\n  # Add mappings above to see YAML output';
+
+        // Save to localStorage
+        this.saveMappings();
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('mapper-yaml-output')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            }).catch(() => {
+                toast.show('Failed to copy YAML', 'error');
+            });
+        }
+    }
+};
+
 const preflight = {
     status: {
         config: 'pending',
@@ -5057,6 +6612,12 @@ async function init() {
     profileSwitcher.init();
     preflight.init();
     overlayGallery.init();
+    scheduling.init();
+    operations.init();
+    collectionBuilder.init();
+    playlistBuilder.init();
+    filterBuilder.init();
+    dataMappers.init();
 
     // Load initial data
     await loadConfig();
