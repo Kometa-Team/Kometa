@@ -135,6 +135,106 @@ const elements = {
 };
 
 // ============================================================================
+// Toast Notifications (Design System v1.0)
+// ============================================================================
+
+const toast = {
+    container: null,
+
+    /**
+     * Initialize the toast system
+     */
+    init() {
+        this.container = document.getElementById('toast-container');
+    },
+
+    /**
+     * Show a toast notification
+     * @param {string} message - The message to display
+     * @param {string} type - Type: 'success', 'error', 'warning', 'info'
+     * @param {object} options - Optional settings: { title, duration, closable }
+     */
+    show(message, type = 'info', options = {}) {
+        if (!this.container) this.init();
+
+        const {
+            title = null,
+            duration = 4000,
+            closable = true
+        } = options;
+
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast toast-${type}`;
+
+        // Icon based on type
+        const icons = {
+            success: '✓',
+            error: '✕',
+            warning: '⚠',
+            info: 'ℹ'
+        };
+
+        toastEl.innerHTML = `
+            <span class="toast-icon">${icons[type] || icons.info}</span>
+            <div class="toast-content">
+                ${title ? `<div class="toast-title">${title}</div>` : ''}
+                <div class="toast-message">${message}</div>
+            </div>
+            ${closable ? '<button class="toast-close" aria-label="Close">✕</button>' : ''}
+        `;
+
+        // Close button handler
+        if (closable) {
+            const closeBtn = toastEl.querySelector('.toast-close');
+            closeBtn.addEventListener('click', () => this.dismiss(toastEl));
+        }
+
+        // Add to container
+        this.container.appendChild(toastEl);
+
+        // Auto dismiss
+        if (duration > 0) {
+            setTimeout(() => this.dismiss(toastEl), duration);
+        }
+
+        return toastEl;
+    },
+
+    /**
+     * Dismiss a toast with animation
+     */
+    dismiss(toastEl) {
+        if (!toastEl || !toastEl.parentNode) return;
+
+        toastEl.classList.add('toast-exiting');
+        setTimeout(() => {
+            if (toastEl.parentNode) {
+                toastEl.parentNode.removeChild(toastEl);
+            }
+        }, 150);
+    },
+
+    /**
+     * Convenience methods
+     */
+    success(message, options = {}) {
+        return this.show(message, 'success', options);
+    },
+
+    error(message, options = {}) {
+        return this.show(message, 'error', { duration: 6000, ...options });
+    },
+
+    warning(message, options = {}) {
+        return this.show(message, 'warning', options);
+    },
+
+    info(message, options = {}) {
+        return this.show(message, 'info', options);
+    }
+};
+
+// ============================================================================
 // API Functions
 // ============================================================================
 
@@ -242,6 +342,11 @@ async function saveConfig() {
             message: `Config saved successfully. Backup created: ${result.backup_path || 'N/A'}`
         });
 
+        // Show toast notification
+        toast.success('Configuration saved successfully', {
+            title: 'Saved'
+        });
+
         // Reload backups list
         loadBackups();
     } catch (error) {
@@ -249,6 +354,11 @@ async function saveConfig() {
             valid: false,
             errors: [error.message],
             warnings: []
+        });
+
+        // Show error toast
+        toast.error(error.message, {
+            title: 'Save Failed'
         });
     }
 }
@@ -1605,6 +1715,7 @@ async function testPlexConnection() {
     if (!url || !token) {
         resultEl.textContent = 'URL and Token are required';
         resultEl.className = 'test-result error';
+        toast.warning('URL and Token are required');
         return;
     }
 
@@ -1616,13 +1727,16 @@ async function testPlexConnection() {
         if (result.success) {
             resultEl.textContent = `✓ Connected to ${result.server_name || 'Plex'}`;
             resultEl.className = 'test-result success';
+            toast.success(`Connected to ${result.server_name || 'Plex'}`, { title: 'Plex Connection' });
         } else {
             resultEl.textContent = `✗ ${result.error || 'Connection failed'}`;
             resultEl.className = 'test-result error';
+            toast.error(result.error || 'Connection failed', { title: 'Plex Connection' });
         }
     } catch (error) {
         resultEl.textContent = `✗ ${error.message}`;
         resultEl.className = 'test-result error';
+        toast.error(error.message, { title: 'Plex Connection' });
     }
 }
 

@@ -16,7 +16,7 @@
     <!-- Header -->
     <header class="header">
         <div class="header-content">
-            <h1>Kometa Web UI <span style="font-size: 12px; color: #888; font-weight: normal;">v0.3.0-dev</span></h1>
+            <h1>Kometa Web UI <span class="text-xs text-muted font-normal">v0.3.0-dev</span></h1>
             <div class="status-indicator" id="connection-status">
                 <span class="status-dot"></span>
                 <span class="status-text">Connecting...</span>
@@ -302,7 +302,7 @@
                         <p class="section-description">Configure which Plex libraries Kometa should manage. Each library can have its own collection files, overlay files, metadata files, operations, and schedule. Library-level settings override global settings.</p>
 
                         <!-- Library Configuration Guide -->
-                        <div class="info-box" style="margin-bottom: 20px;">
+                        <div class="info-box mb-4">
                             <span class="info-box-icon">💡</span>
                             <div class="info-box-content">
                                 <strong>Library Configuration Tips:</strong><br>
@@ -326,7 +326,7 @@
                         </div>
 
                         <!-- Library Settings Reference -->
-                        <details class="settings-group" style="margin-top: 20px;">
+                        <details class="settings-group mt-4">
                             <summary><h4><span class="group-icon">📖</span> Library Attributes Reference</h4></summary>
                             <div class="settings-group-content">
                                 <div class="library-reference-grid">
@@ -395,13 +395,13 @@
                                 View Documentation
                             </a>
                         </div>
-                        <p class="section-description">Control Kometa's operational behavior at a global level. These settings can be overridden at the library or collection level. Hover over the <span class="info-icon" style="display: inline; vertical-align: middle;">?</span> icons for more details.</p>
+                        <p class="section-description">Control Kometa's operational behavior at a global level. These settings can be overridden at the library or collection level. Hover over the <span class="info-icon inline-block">?</span> icons for more details.</p>
                         <div class="settings-groups">
                             <!-- Assets Group -->
                             <details class="settings-group" open>
                                 <summary><h4><span class="group-icon">🖼️</span> Assets</h4></summary>
                                 <div class="settings-group-content">
-                                    <p class="field-help info" style="margin-bottom: 16px;">Local assets (posters, backgrounds) that Kometa can use instead of fetching from external sources.</p>
+                                    <p class="field-help info mb-4">Local assets (posters, backgrounds) that Kometa can use instead of fetching from external sources.</p>
                                     <div class="form-row">
                                         <div class="form-group flex-2">
                                             <label for="settings-asset-directory" class="label-with-info">
@@ -602,7 +602,7 @@
                                             Run Order
                                             <span class="default-badge">Default: operations, metadata, collections, overlays</span>
                                         </label>
-                                        <p class="field-help" style="margin-bottom: 8px;">Drag to reorder the execution sequence.</p>
+                                        <p class="field-help mb-2">Drag to reorder the execution sequence.</p>
                                         <ul id="settings-run-order" class="sortable-list" data-config-path="settings.run_order">
                                             <li data-value="operations">Operations</li>
                                             <li data-value="metadata">Metadata</li>
@@ -666,7 +666,7 @@
                             <details class="settings-group">
                                 <summary><h4><span class="group-icon">📋</span> Display & Logging</h4></summary>
                                 <div class="settings-group-content">
-                                    <p class="field-help info" style="margin-bottom: 16px;">Control what information is displayed in logs during Kometa runs.</p>
+                                    <p class="field-help info mb-4">Control what information is displayed in logs during Kometa runs.</p>
                                     <div class="form-row">
                                         <div class="checkbox-with-desc">
                                             <label class="checkbox-label">
@@ -685,13 +685,17 @@
                                         <div class="checkbox-with-desc">
                                             <label class="checkbox-label">
                                                 <input type="checkbox" id="settings-show-missing-episode-assets" data-config-path="settings.show_missing_episode_assets" checked>
-                                            Show Missing Episode Assets
-                                        </label>
-                                        <label class="checkbox-label">
-                                            <input type="checkbox" id="settings-show-missing-season-assets" data-config-path="settings.show_missing_season_assets" checked>
-                                            Show Missing Season Assets
-                                        </label>
-                                    </div>
+                                                Show Missing Episode Assets
+                                            </label>
+                                            <span class="checkbox-desc">Display missing episode asset warnings</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-show-missing-season-assets" data-config-path="settings.show_missing_season_assets" checked>
+                                                Show Missing Season Assets
+                                            </label>
+                                            <span class="checkbox-desc">Display missing season asset warnings</span>
+                                        </div>
                                     <div class="form-row checkboxes">
                                         <label class="checkbox-label">
                                             <input type="checkbox" id="settings-show-unmanaged" data-config-path="settings.show_unmanaged" checked>
@@ -816,11 +820,11 @@
                             <!-- Radarr Section -->
                             <div class="service-card">
                                 <div class="service-card-header">
-                                    <h4><span class="section-icon" style="font-size: 18px;">🎬</span> Radarr</h4>
+                                    <h4><span class="section-icon text-lg">🎬</span> Radarr</h4>
                                     <span id="radarr-status" class="service-status">Not configured</span>
                                 </div>
                                 <div class="service-card-content">
-                                    <p class="field-help info" style="margin-bottom: 12px;">Add missing movies from collections to Radarr for automatic downloading.</p>
+                                    <p class="field-help info mb-3">Add missing movies from collections to Radarr for automatic downloading.</p>
                                     <div class="form-row">
                                         <div class="form-group flex-2">
                                             <label for="radarr-url" class="label-with-info">
@@ -2080,6 +2084,9 @@ libraries:
     <footer class="footer">
         <p>Kometa Web UI | <a href="https://kometa.wiki" target="_blank">Documentation</a></p>
     </footer>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container" role="alert" aria-live="polite"></div>
 
     <!-- YAML parser library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
