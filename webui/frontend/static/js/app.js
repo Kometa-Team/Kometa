@@ -52,8 +52,6 @@ const elements = {
     configEditor: document.getElementById('config-editor'),
     validationMessages: document.getElementById('validation-messages'),
     backupsList: document.getElementById('backups-list'),
-    editorTabs: document.querySelectorAll('.editor-tab'),
-    editorViews: document.querySelectorAll('.editor-view'),
     sourceOptions: document.querySelectorAll('.source-option'),
 
     // Run
@@ -214,6 +212,10 @@ async function loadConfig() {
             if (result.validation) {
                 showValidation(result.validation);
             }
+
+            // Sync forms and render libraries after loading config
+            syncYamlToForms();
+            renderLibrariesFromConfig();
         } else {
             // Show source selector
             document.getElementById('config-source-selector').style.display = 'block';
@@ -340,6 +342,1496 @@ async function restoreBackup(backupName) {
         });
     }
 }
+
+// ============================================================================
+// Config Editor - Sub-tab Management & Form Sync
+// ============================================================================
+
+// Track currently active config subtab
+let currentConfigSubtab = 'plex';
+
+// Parsed config object (synced between forms and YAML)
+let parsedConfig = {};
+
+// Flag to prevent infinite sync loops
+let isSyncing = false;
+
+/**
+ * Initialize config subtabs
+ */
+function initConfigSubtabs() {
+    const subtabs = document.querySelectorAll('.config-subtab');
+    const panels = document.querySelectorAll('.subtab-panel');
+
+    subtabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetSubtab = tab.dataset.subtab;
+
+            // Sync current form to YAML before switching (unless going to YAML tab)
+            if (currentConfigSubtab !== 'yaml' && targetSubtab === 'yaml') {
+                syncFormsToYaml();
+            }
+
+            // Sync YAML to forms when leaving YAML tab
+            if (currentConfigSubtab === 'yaml' && targetSubtab !== 'yaml') {
+                syncYamlToForms();
+            }
+
+            // Update active states
+            subtabs.forEach(t => t.classList.toggle('active', t === tab));
+            panels.forEach(p => {
+                const isActive = p.id === `subtab-${targetSubtab}`;
+                p.classList.toggle('active', isActive);
+                p.classList.toggle('hidden', !isActive);
+            });
+
+            currentConfigSubtab = targetSubtab;
+
+            // Load libraries if switching to libraries tab
+            if (targetSubtab === 'libraries') {
+                renderLibrariesFromConfig();
+            }
+        });
+    });
+
+    // Initialize form field change handlers for real-time sync
+    initFormFieldListeners();
+
+    // Initialize range slider value display
+    initRangeSliders();
+
+    // Initialize sortable run order list
+    initSortableRunOrder();
+}
+
+/**
+ * Initialize form field listeners for real-time YAML sync
+ */
+function initFormFieldListeners() {
+    const formFields = document.querySelectorAll('[data-config-path]');
+
+    formFields.forEach(field => {
+        const eventType = field.type === 'checkbox' ? 'change' : 'input';
+        field.addEventListener(eventType, () => {
+            if (!isSyncing) {
+                syncFormsToYaml();
+            }
+        });
+    });
+}
+
+/**
+ * Initialize range sliders to show their current value
+ */
+function initRangeSliders() {
+    const rangeInputs = document.querySelectorAll('input[type="range"]');
+    rangeInputs.forEach(input => {
+        const valueDisplay = document.getElementById(`${input.id}-value`);
+        if (valueDisplay) {
+            input.addEventListener('input', () => {
+                valueDisplay.textContent = input.value;
+            });
+        }
+    });
+}
+
+/**
+ * Initialize drag-and-drop sortable run order list
+ */
+function initSortableRunOrder() {
+    const list = document.getElementById('settings-run-order');
+    if (!list) return;
+
+    let draggedItem = null;
+
+    list.querySelectorAll('li').forEach(item => {
+        item.setAttribute('draggable', 'true');
+
+        item.addEventListener('dragstart', (e) => {
+            draggedItem = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            draggedItem = null;
+            syncFormsToYaml();
+        });
+
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(list, e.clientY);
+            if (afterElement == null) {
+                list.appendChild(draggedItem);
+            } else {
+                list.insertBefore(draggedItem, afterElement);
+            }
+        });
+    });
+}
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+/**
+ * Parse YAML from the editor into parsedConfig object
+ */
+function parseYamlToConfig() {
+    const yamlContent = elements.configEditor.value;
+    if (!yamlContent.trim()) {
+        parsedConfig = {};
+        return;
+    }
+
+    try {
+        // Use js-yaml if available, otherwise basic parsing
+        if (typeof jsyaml !== 'undefined') {
+            parsedConfig = jsyaml.load(yamlContent) || {};
+        } else {
+            // Basic YAML parsing fallback (limited)
+            parsedConfig = basicYamlParse(yamlContent);
+        }
+    } catch (e) {
+        console.warn('YAML parse error:', e);
+        // Keep existing parsedConfig on error
+    }
+}
+
+/**
+ * Basic YAML parser for simple configs (fallback when js-yaml not available)
+ */
+function basicYamlParse(yaml) {
+    const result = {};
+    const lines = yaml.split('\n');
+    const stack = [{ obj: result, indent: -1 }];
+
+    for (const line of lines) {
+        // Skip empty lines and comments
+        if (!line.trim() || line.trim().startsWith('#')) continue;
+
+        const indent = line.search(/\S/);
+        const content = line.trim();
+
+        // Pop stack to correct level
+        while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
+            stack.pop();
+        }
+
+        const parent = stack[stack.length - 1].obj;
+
+        // Check for key: value
+        const colonIndex = content.indexOf(':');
+        if (colonIndex > 0) {
+            const key = content.substring(0, colonIndex).trim();
+            const value = content.substring(colonIndex + 1).trim();
+
+            if (value === '' || value === '|' || value === '>') {
+                // Nested object or multiline
+                parent[key] = {};
+                stack.push({ obj: parent[key], indent: indent });
+            } else if (value === '[]') {
+                parent[key] = [];
+            } else if (value.startsWith('[') && value.endsWith(']')) {
+                // Inline array
+                parent[key] = value.slice(1, -1).split(',').map(s => s.trim().replace(/['"]/g, ''));
+            } else if (value === 'true') {
+                parent[key] = true;
+            } else if (value === 'false') {
+                parent[key] = false;
+            } else if (!isNaN(value) && value !== '') {
+                parent[key] = Number(value);
+            } else {
+                parent[key] = value.replace(/^['"]|['"]$/g, '');
+            }
+        } else if (content.startsWith('- ')) {
+            // Array item
+            const arrKey = Object.keys(parent).pop();
+            if (arrKey && !Array.isArray(parent[arrKey])) {
+                parent[arrKey] = [];
+            }
+            if (arrKey) {
+                const itemValue = content.substring(2).trim();
+                if (itemValue.includes(':')) {
+                    // Object in array
+                    const itemObj = {};
+                    const [k, v] = itemValue.split(':').map(s => s.trim());
+                    itemObj[k] = v.replace(/^['"]|['"]$/g, '');
+                    parent[arrKey].push(itemObj);
+                } else {
+                    parent[arrKey].push(itemValue.replace(/^['"]|['"]$/g, ''));
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Get nested value from object using dot notation path
+ */
+function getNestedValue(obj, path) {
+    return path.split('.').reduce((current, key) => {
+        return current && current[key] !== undefined ? current[key] : undefined;
+    }, obj);
+}
+
+/**
+ * Set nested value in object using dot notation path
+ */
+function setNestedValue(obj, path, value) {
+    const keys = path.split('.');
+    const lastKey = keys.pop();
+    const parent = keys.reduce((current, key) => {
+        if (current[key] === undefined) {
+            current[key] = {};
+        }
+        return current[key];
+    }, obj);
+
+    if (value === '' || value === undefined || value === null) {
+        delete parent[lastKey];
+    } else {
+        parent[lastKey] = value;
+    }
+}
+
+/**
+ * Sync YAML editor content to form fields
+ */
+function syncYamlToForms() {
+    if (isSyncing) return;
+    isSyncing = true;
+
+    try {
+        parseYamlToConfig();
+
+        const formFields = document.querySelectorAll('[data-config-path]');
+        formFields.forEach(field => {
+            const path = field.dataset.configPath;
+            const value = getNestedValue(parsedConfig, path);
+
+            if (field.type === 'checkbox') {
+                field.checked = value === true;
+            } else if (field.tagName === 'SELECT') {
+                field.value = value !== undefined ? String(value) : '';
+            } else if (field.type === 'number' || field.type === 'range') {
+                field.value = value !== undefined ? value : field.defaultValue || '';
+                // Update range slider display
+                const valueDisplay = document.getElementById(`${field.id}-value`);
+                if (valueDisplay) {
+                    valueDisplay.textContent = field.value;
+                }
+            } else {
+                // Text, password, textarea
+                if (Array.isArray(value)) {
+                    field.value = value.join(', ');
+                } else {
+                    field.value = value !== undefined ? String(value) : '';
+                }
+            }
+        });
+
+        // Update run order list
+        updateRunOrderFromConfig();
+
+        // Update service status badges
+        updateServiceStatuses();
+
+    } finally {
+        isSyncing = false;
+    }
+}
+
+/**
+ * Sync form fields to YAML editor content
+ */
+function syncFormsToYaml() {
+    if (isSyncing) return;
+    isSyncing = true;
+
+    try {
+        parseYamlToConfig();
+
+        const formFields = document.querySelectorAll('[data-config-path]');
+        formFields.forEach(field => {
+            const path = field.dataset.configPath;
+            let value;
+
+            if (field.type === 'checkbox') {
+                value = field.checked;
+            } else if (field.type === 'number' || field.type === 'range') {
+                value = field.value !== '' ? Number(field.value) : undefined;
+            } else {
+                value = field.value.trim();
+                // Convert comma-separated values to arrays for certain fields
+                if (value && (path.includes('ignore_ids') || path.includes('exclude_users') ||
+                    path.includes('sync_to_users') || path.includes('tag'))) {
+                    value = value.split(',').map(s => s.trim()).filter(s => s);
+                }
+            }
+
+            setNestedValue(parsedConfig, path, value);
+        });
+
+        // Get run order from sortable list
+        const runOrderList = document.getElementById('settings-run-order');
+        if (runOrderList) {
+            const runOrder = Array.from(runOrderList.querySelectorAll('li'))
+                .map(li => li.dataset.value);
+            setNestedValue(parsedConfig, 'settings.run_order', runOrder);
+        }
+
+        // Clean up empty sections
+        cleanEmptySections(parsedConfig);
+
+        // Convert back to YAML
+        const yamlContent = configToYaml(parsedConfig);
+        elements.configEditor.value = yamlContent;
+
+        // Update service status badges
+        updateServiceStatuses();
+
+    } finally {
+        isSyncing = false;
+    }
+}
+
+/**
+ * Remove empty objects from config
+ */
+function cleanEmptySections(obj) {
+    Object.keys(obj).forEach(key => {
+        if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])) {
+            cleanEmptySections(obj[key]);
+            if (Object.keys(obj[key]).length === 0) {
+                delete obj[key];
+            }
+        }
+    });
+}
+
+/**
+ * Convert config object to YAML string
+ */
+function configToYaml(config, indent = 0) {
+    let yaml = '';
+    const spaces = '  '.repeat(indent);
+
+    // Define preferred section order
+    const sectionOrder = [
+        'plex', 'tmdb', 'libraries', 'playlist_files', 'settings',
+        'radarr', 'sonarr', 'tautulli', 'mdblist', 'omdb',
+        'trakt', 'mal', 'anidb', 'github',
+        'webhooks', 'notifiarr', 'gotify', 'ntfy'
+    ];
+
+    // Sort keys by preferred order, then alphabetically for unknown keys
+    const sortedKeys = Object.keys(config).sort((a, b) => {
+        const aIndex = sectionOrder.indexOf(a);
+        const bIndex = sectionOrder.indexOf(b);
+        if (aIndex === -1 && bIndex === -1) return a.localeCompare(b);
+        if (aIndex === -1) return 1;
+        if (bIndex === -1) return -1;
+        return aIndex - bIndex;
+    });
+
+    for (const key of sortedKeys) {
+        const value = config[key];
+
+        if (value === undefined || value === null) continue;
+
+        if (Array.isArray(value)) {
+            yaml += `${spaces}${key}:\n`;
+            value.forEach(item => {
+                if (typeof item === 'object' && item !== null) {
+                    // Object in array (like collection_files with file/template_variables)
+                    const firstKey = Object.keys(item)[0];
+                    yaml += `${spaces}  - ${firstKey}: ${formatYamlValue(item[firstKey])}\n`;
+                    Object.keys(item).slice(1).forEach(subKey => {
+                        yaml += `${spaces}    ${subKey}: ${formatYamlValue(item[subKey])}\n`;
+                    });
+                } else {
+                    yaml += `${spaces}  - ${formatYamlValue(item)}\n`;
+                }
+            });
+        } else if (typeof value === 'object') {
+            yaml += `${spaces}${key}:\n`;
+            yaml += configToYaml(value, indent + 1);
+        } else {
+            yaml += `${spaces}${key}: ${formatYamlValue(value)}\n`;
+        }
+    }
+
+    return yaml;
+}
+
+/**
+ * Format a value for YAML output
+ */
+function formatYamlValue(value) {
+    if (typeof value === 'boolean') {
+        return value ? 'true' : 'false';
+    } else if (typeof value === 'number') {
+        return String(value);
+    } else if (typeof value === 'string') {
+        // Quote strings that need it
+        if (value.includes(':') || value.includes('#') || value.includes('\n') ||
+            value.startsWith(' ') || value.endsWith(' ') ||
+            /^[0-9]/.test(value) && isNaN(value)) {
+            return `"${value.replace(/"/g, '\\"')}"`;
+        }
+        return value || '""';
+    }
+    return String(value);
+}
+
+/**
+ * Update run order list from config
+ */
+function updateRunOrderFromConfig() {
+    const list = document.getElementById('settings-run-order');
+    if (!list) return;
+
+    const configOrder = getNestedValue(parsedConfig, 'settings.run_order');
+    if (!Array.isArray(configOrder) || configOrder.length === 0) return;
+
+    const items = Array.from(list.querySelectorAll('li'));
+    const itemMap = {};
+    items.forEach(item => {
+        itemMap[item.dataset.value] = item;
+    });
+
+    // Reorder items according to config
+    list.innerHTML = '';
+    configOrder.forEach(value => {
+        if (itemMap[value]) {
+            list.appendChild(itemMap[value]);
+        }
+    });
+
+    // Add any items not in config at the end
+    items.forEach(item => {
+        if (!configOrder.includes(item.dataset.value)) {
+            list.appendChild(item);
+        }
+    });
+}
+
+/**
+ * Update service status badges based on config
+ */
+function updateServiceStatuses() {
+    const services = [
+        { id: 'radarr', required: ['url', 'token'] },
+        { id: 'sonarr', required: ['url', 'token'] },
+        { id: 'tautulli', required: ['url', 'apikey'] },
+        { id: 'mdblist', required: ['apikey'] },
+        { id: 'omdb', required: ['apikey'] },
+        { id: 'trakt', required: ['client_id', 'client_secret'] },
+        { id: 'mal', required: ['client_id', 'client_secret'] },
+        { id: 'anidb', required: ['client', 'version'] },
+        { id: 'github', required: ['token'] },
+        { id: 'notifiarr', required: ['apikey'] },
+        { id: 'gotify', required: ['url', 'token'] },
+        { id: 'ntfy', required: ['url', 'topic'] }
+    ];
+
+    services.forEach(service => {
+        const statusEl = document.getElementById(`${service.id}-status`);
+        if (!statusEl) return;
+
+        const serviceConfig = parsedConfig[service.id] || {};
+        const isConfigured = service.required.every(key =>
+            serviceConfig[key] && String(serviceConfig[key]).trim() !== ''
+        );
+
+        statusEl.textContent = isConfigured ? 'Configured' : 'Not configured';
+        statusEl.classList.toggle('configured', isConfigured);
+    });
+}
+
+/**
+ * Render libraries from config into the accordion
+ */
+function renderLibrariesFromConfig() {
+    const container = document.getElementById('libraries-accordion');
+    if (!container) return;
+
+    parseYamlToConfig();
+    const libraries = parsedConfig.libraries || {};
+
+    if (Object.keys(libraries).length === 0) {
+        container.innerHTML = '<p class="placeholder-text">No libraries configured. Click "Add Library" or "Refresh from Plex" to get started.</p>';
+        return;
+    }
+
+    container.innerHTML = Object.entries(libraries).map(([name, config]) => {
+        const collectionFiles = config?.collection_files || [];
+        const overlayFiles = config?.overlay_files || [];
+        const metadataFiles = config?.metadata_files || [];
+        const operations = config?.operations || {};
+        const schedule = config?.schedule || '';
+        const scheduleOverlays = config?.schedule_overlays || '';
+        const reportPath = config?.report_path || '';
+        const hasOperations = Object.keys(operations).length > 0;
+
+        // Determine library icon based on name
+        const libraryIcon = getLibraryIcon(name);
+
+        // Build badges
+        const badges = [];
+        if (collectionFiles.length > 0) badges.push(`<span class="library-badge collections">📁 ${collectionFiles.length} collections</span>`);
+        if (overlayFiles.length > 0) badges.push(`<span class="library-badge overlays">🏷️ ${overlayFiles.length} overlays</span>`);
+        if (metadataFiles.length > 0) badges.push(`<span class="library-badge metadata">📝 ${metadataFiles.length} metadata</span>`);
+        if (hasOperations) badges.push(`<span class="library-badge operations">⚙️ operations</span>`);
+
+        return `
+            <div class="library-item" data-library="${name}">
+                <div class="library-item-header" onclick="toggleLibraryItem(this.parentElement)">
+                    <div class="library-item-header-left">
+                        <span class="library-icon">${libraryIcon}</span>
+                        <div class="library-info">
+                            <span class="library-name">${name}</span>
+                            <div class="library-stats">
+                                ${schedule ? `<span class="library-stat"><span class="library-stat-icon">📅</span> ${schedule}</span>` : ''}
+                                ${reportPath ? `<span class="library-stat"><span class="library-stat-icon">📊</span> reports enabled</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="library-badges">
+                        ${badges.join('')}
+                    </div>
+                    <button class="library-item-expand">▼</button>
+                </div>
+                <div class="library-item-content">
+                    <!-- Library Tabs -->
+                    <div class="library-tabs">
+                        <button class="library-tab active" onclick="switchLibraryTab(this, '${name}', 'files')">
+                            <span class="library-tab-icon">📁</span> Files
+                        </button>
+                        <button class="library-tab" onclick="switchLibraryTab(this, '${name}', 'operations')">
+                            <span class="library-tab-icon">⚙️</span> Operations
+                        </button>
+                        <button class="library-tab" onclick="switchLibraryTab(this, '${name}', 'settings')">
+                            <span class="library-tab-icon">🔧</span> Settings
+                        </button>
+                    </div>
+
+                    <!-- Files Tab Panel -->
+                    <div class="library-tab-panel active" data-panel="${name}-files">
+                        <div class="file-list-section">
+                            <h5>📁 Collection Files</h5>
+                            <div class="file-list">
+                                ${renderFileList(collectionFiles, 'collection', name)}
+                            </div>
+                            <button class="add-file-btn" onclick="addFileToLibrary('${name}', 'collection_files')">+ Add Collection File</button>
+                        </div>
+                        <div class="file-list-section">
+                            <h5>🏷️ Overlay Files</h5>
+                            <div class="file-list">
+                                ${renderFileList(overlayFiles, 'overlay', name)}
+                            </div>
+                            <button class="add-file-btn" onclick="addFileToLibrary('${name}', 'overlay_files')">+ Add Overlay File</button>
+                        </div>
+                        <div class="file-list-section">
+                            <h5>📝 Metadata Files</h5>
+                            <div class="file-list">
+                                ${renderFileList(metadataFiles, 'metadata', name)}
+                            </div>
+                            <button class="add-file-btn" onclick="addFileToLibrary('${name}', 'metadata_files')">+ Add Metadata File</button>
+                        </div>
+                        ${config?.template_variables ? `
+                        <div class="template-vars-section">
+                            <h5>📋 Template Variables</h5>
+                            <p class="field-help" style="margin-bottom: 8px;">JSON object passed to all templates in this library</p>
+                            <textarea class="template-vars-editor"
+                                data-library="${name}"
+                                onchange="updateLibraryTemplateVars('${name}', this.value)"
+                            >${JSON.stringify(config.template_variables, null, 2)}</textarea>
+                        </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Operations Tab Panel -->
+                    <div class="library-tab-panel" data-panel="${name}-operations">
+                        <p class="field-help info" style="margin-bottom: 12px;">Operations are batch actions performed on all items in the library. <a href="https://kometa.wiki/en/latest/config/operations/" target="_blank" class="inline-link">Learn more ↗</a></p>
+                        ${hasOperations ? `
+                        <div class="operations-list">
+                            ${renderOperationsList(operations)}
+                        </div>
+                        ` : '<p class="placeholder-text" style="font-size: 12px;">No operations configured for this library.</p>'}
+                        <div class="library-settings-grid" style="margin-top: 16px;">
+                            <div class="library-setting-item">
+                                <label>Schedule</label>
+                                <input type="text" value="${schedule}" placeholder="daily" onchange="updateLibraryAttribute('${name}', 'schedule', this.value)">
+                                <span class="field-help">e.g., daily, weekly(monday), monthly(1)</span>
+                            </div>
+                            <div class="library-setting-item">
+                                <label>Schedule Overlays</label>
+                                <input type="text" value="${scheduleOverlays}" placeholder="daily" onchange="updateLibraryAttribute('${name}', 'schedule_overlays', this.value)">
+                                <span class="field-help">Separate schedule for overlay processing</span>
+                            </div>
+                            <div class="library-setting-item">
+                                <label>Report Path</label>
+                                <input type="text" value="${reportPath}" placeholder="config/reports/library.yml" onchange="updateLibraryAttribute('${name}', 'report_path', this.value)">
+                                <span class="field-help">Path to save library report</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab Panel -->
+                    <div class="library-tab-panel" data-panel="${name}-settings">
+                        <p class="field-help info" style="margin-bottom: 12px;">Override global settings for this library only. Leave blank to use global values.</p>
+                        <div class="library-settings-grid">
+                            ${renderLibrarySettingsOverrides(name, config?.settings || {})}
+                        </div>
+                        <div class="checkbox-with-desc" style="margin-top: 16px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" ${config?.remove_overlays ? 'checked' : ''} onchange="updateLibraryAttribute('${name}', 'remove_overlays', this.checked)">
+                                Remove Overlays
+                            </label>
+                            <span class="checkbox-desc">Remove all overlays from this library (one-time operation)</span>
+                        </div>
+                        <div class="checkbox-with-desc" style="margin-top: 8px;">
+                            <label class="checkbox-label">
+                                <input type="checkbox" ${config?.reapply_overlays ? 'checked' : ''} onchange="updateLibraryAttribute('${name}', 'reapply_overlays', this.checked)">
+                                Reapply Overlays
+                            </label>
+                            <span class="checkbox-desc">Reapply overlays to all items (useful after changes)</span>
+                        </div>
+                        <div class="library-setting-item" style="margin-top: 12px;">
+                            <label>Reset Overlays</label>
+                            <select onchange="updateLibraryAttribute('${name}', 'reset_overlays', this.value || null)">
+                                <option value="">-- Don't reset --</option>
+                                <option value="plex" ${config?.reset_overlays === 'plex' ? 'selected' : ''}>Plex (use current Plex images)</option>
+                                <option value="tmdb" ${config?.reset_overlays === 'tmdb' ? 'selected' : ''}>TMDb (fetch fresh from TMDb)</option>
+                            </select>
+                            <span class="field-help">Reset base images before applying overlays</span>
+                        </div>
+                    </div>
+
+                    <!-- Library Actions -->
+                    <div class="library-actions">
+                        <div class="library-quick-actions">
+                            <button class="library-quick-action" onclick="addFileToLibrary('${name}', 'collection_files')">+ Collection</button>
+                            <button class="library-quick-action" onclick="addFileToLibrary('${name}', 'overlay_files')">+ Overlay</button>
+                        </div>
+                        <button class="btn btn-danger" onclick="removeLibrary('${name}')">Remove Library</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get appropriate icon for library based on name
+ */
+function getLibraryIcon(name) {
+    const nameLower = name.toLowerCase();
+    if (nameLower.includes('movie') || nameLower.includes('film')) return '🎬';
+    if (nameLower.includes('tv') || nameLower.includes('show') || nameLower.includes('series')) return '📺';
+    if (nameLower.includes('anime') || nameLower.includes('animation')) return '🎌';
+    if (nameLower.includes('music') || nameLower.includes('audio')) return '🎵';
+    if (nameLower.includes('documentary') || nameLower.includes('doc')) return '🎥';
+    if (nameLower.includes('kids') || nameLower.includes('children') || nameLower.includes('family')) return '👶';
+    return '📚';
+}
+
+/**
+ * Render operations list
+ */
+function renderOperationsList(operations) {
+    return Object.entries(operations).map(([key, value]) => {
+        const displayValue = typeof value === 'boolean' ? (value ? '✓' : '✗') : value;
+        return `<span class="operation-tag">${key}<span class="op-value">: ${displayValue}</span></span>`;
+    }).join('');
+}
+
+/**
+ * Render library settings overrides
+ */
+function renderLibrarySettingsOverrides(libraryName, settings) {
+    const commonSettings = [
+        { key: 'asset_directory', label: 'Asset Directory', type: 'text' },
+        { key: 'sync_mode', label: 'Sync Mode', type: 'select', options: ['', 'append', 'sync'] },
+        { key: 'minimum_items', label: 'Minimum Items', type: 'number' },
+        { key: 'delete_below_minimum', label: 'Delete Below Minimum', type: 'checkbox' }
+    ];
+
+    return commonSettings.map(setting => {
+        const value = settings[setting.key] || '';
+        if (setting.type === 'checkbox') {
+            return `
+                <div class="library-setting-item">
+                    <label class="checkbox-label">
+                        <input type="checkbox" ${value ? 'checked' : ''} onchange="updateLibrarySetting('${libraryName}', '${setting.key}', this.checked)">
+                        ${setting.label}
+                    </label>
+                </div>
+            `;
+        } else if (setting.type === 'select') {
+            return `
+                <div class="library-setting-item">
+                    <label>${setting.label}</label>
+                    <select onchange="updateLibrarySetting('${libraryName}', '${setting.key}', this.value || null)">
+                        ${setting.options.map(opt => `<option value="${opt}" ${value === opt ? 'selected' : ''}>${opt || '-- Use global --'}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="library-setting-item">
+                    <label>${setting.label}</label>
+                    <input type="${setting.type}" value="${value}" placeholder="Use global" onchange="updateLibrarySetting('${libraryName}', '${setting.key}', this.value || null)">
+                </div>
+            `;
+        }
+    }).join('');
+}
+
+/**
+ * Switch between library tabs
+ */
+function switchLibraryTab(button, libraryName, tabName) {
+    const libraryItem = button.closest('.library-item');
+
+    // Update tab buttons
+    libraryItem.querySelectorAll('.library-tab').forEach(tab => tab.classList.remove('active'));
+    button.classList.add('active');
+
+    // Update tab panels
+    libraryItem.querySelectorAll('.library-tab-panel').forEach(panel => panel.classList.remove('active'));
+    const targetPanel = libraryItem.querySelector(`[data-panel="${libraryName}-${tabName}"]`);
+    if (targetPanel) targetPanel.classList.add('active');
+}
+
+/**
+ * Update a library attribute
+ */
+function updateLibraryAttribute(libraryName, attribute, value) {
+    if (!parsedConfig.libraries?.[libraryName]) return;
+
+    if (value === null || value === '' || value === false) {
+        delete parsedConfig.libraries[libraryName][attribute];
+    } else {
+        parsedConfig.libraries[libraryName][attribute] = value;
+    }
+
+    syncFormsToYaml();
+}
+
+/**
+ * Update a library setting override
+ */
+function updateLibrarySetting(libraryName, settingKey, value) {
+    if (!parsedConfig.libraries?.[libraryName]) return;
+
+    if (!parsedConfig.libraries[libraryName].settings) {
+        parsedConfig.libraries[libraryName].settings = {};
+    }
+
+    if (value === null || value === '') {
+        delete parsedConfig.libraries[libraryName].settings[settingKey];
+        // Clean up empty settings object
+        if (Object.keys(parsedConfig.libraries[libraryName].settings).length === 0) {
+            delete parsedConfig.libraries[libraryName].settings;
+        }
+    } else {
+        parsedConfig.libraries[libraryName].settings[settingKey] = value;
+    }
+
+    syncFormsToYaml();
+}
+
+/**
+ * Render file list items
+ */
+// Descriptions for default Kometa collection files
+const defaultCollectionDescriptions = {
+    'basic': 'Newly Released, New Episodes, and fundamental chart-based groupings',
+    'tmdb': 'Popular, trending, and airing content from The Movie Database',
+    'imdb': 'IMDb\'s top-rated and popular lists (Top 250, Popular, Lowest Rated)',
+    'trakt': 'Trakt\'s trending and popular content rankings',
+    'tautulli': 'Your Plex server\'s most-watched and popular items',
+    'anilist': 'Anime-focused charts and seasonal rankings from AniList',
+    'myanimelist': 'Anime popularity and top-rated series from MyAnimeList',
+    'letterboxd': 'Film enthusiast rankings and curated lists from Letterboxd',
+    'genre': 'Organizes items by categories (Action, Drama, Sci-Fi, etc.)',
+    'franchise': 'Groups related film/show series together (Star Wars, MCU, etc.)',
+    'universe': 'Collections for shared fictional universes (Marvel, DC, etc.)',
+    'based': '"Based on a Book", "Based on a True Story" and similar groupings',
+    'actor': 'Collections organized by popular cast members',
+    'director': 'Film directors and their complete works',
+    'studio': 'Production companies and studios',
+    'network': 'Television networks (NBC, HBO, etc.) - shows only',
+    'streaming': 'Streaming services (Netflix, Disney+, etc.)',
+    'seasonal': 'Holiday and seasonal themes (Christmas, Halloween, etc.)',
+    'decade': 'Organized by decades (80s, 90s, 2000s, 2010s, etc.)',
+    'year': 'Annual "Best of" and yearly release collections',
+    'content_rating_us': 'US content ratings (G, PG, PG-13, R, NC-17)',
+    'content_rating_uk': 'UK content ratings (U, PG, 12, 15, 18)',
+    'content_rating_de': 'German content ratings (FSK 0, 6, 12, 16, 18)',
+    'award': 'Award-winning films and shows (Oscar, Emmy, etc.)',
+    'flixpatrol': 'Top streaming charts from FlixPatrol',
+    'other_chart': 'Miscellaneous chart collections',
+    'separator': 'Visual separators between collection groups',
+    'collectionless': 'Items not belonging to any collection'
+};
+
+// Descriptions for default Kometa overlay files
+const defaultOverlayDescriptions = {
+    'resolution': 'Displays quality badges (4K, 1080p, 720p, etc.)',
+    'audio_codec': 'Shows audio format logos (Dolby Atmos, DTS:X, etc.)',
+    'video_format': 'Labels like REMUX, Blu-Ray, HDTV, WEB-DL',
+    'ratings': 'Adds IMDb, Rotten Tomatoes, Metacritic rating badges',
+    'ribbon': 'Award ribbons (IMDb Top 250, RT Certified Fresh, etc.)',
+    'streaming': 'Streaming service availability logos',
+    'network': 'TV network logos (HBO, ABC, etc.)',
+    'studio': 'Production studio logos',
+    'status': 'Show status badges (Airing, Returning, Canceled, Ended)',
+    'episode_info': 'Episode numbering on episode posters (S01E01)',
+    'mediastinger': 'Indicates after/mid-credit scenes in movies',
+    'content_rating_us': 'US content rating badges (G, PG, R, etc.)',
+    'content_rating_uk': 'UK content rating badges (U, PG, 12, 15, 18)',
+    'content_rating_de': 'German content rating badges (FSK)',
+    'content_rating_au': 'Australian content rating badges',
+    'content_rating_nz': 'New Zealand content rating badges',
+    'commonsense': 'Common Sense Media age ratings (1+ to 18+)',
+    'aspect_ratio': 'Video aspect ratio indicators',
+    'language_count': 'Multi-audio/subtitle availability indicators',
+    'languages': 'Flag-based audio/subtitle language indicators',
+    'runtimes': 'Shows runtime duration on posters',
+    'versions': 'Indicates multiple versions available',
+    'direct_play': 'Labels "Direct Play Only" content',
+    'separator': 'Visual separators between overlay groups'
+};
+
+// Descriptions for common template variables
+const templateVariableDescriptions = {
+    // Collection visibility & organization
+    'use_separator': 'Show/hide visual separators between collection groups',
+    'collection_section': 'Sort order position for this collection group (lower numbers appear first)',
+    'collection_mode': 'How the collection appears: "default" (normal), "hide" (hidden in library), "hide_items" (hides items when in collection)',
+    'collection_order': 'Sort order of items within collections: "custom", "alpha", "release", etc.',
+    'sort_by': 'Sorting method for collection items (e.g., "release.desc", "title.asc", "rating.desc")',
+    'minimum_items': 'Minimum number of items required to create the collection',
+    'limit': 'Maximum number of items to include in the collection',
+
+    // Visibility settings
+    'visible_home': 'Pin collection to server owner\'s home screen',
+    'visible_library': 'Show collection in the library tab',
+    'visible_shared': 'Make collection visible on shared users\' home screens',
+    'visible_home_top': 'Pin collection to the TOP of server owner\'s home screen',
+    'visible_library_top': 'Show collection at the TOP of the library tab',
+    'visible_shared_top': 'Pin collection to TOP of shared users\' home screens',
+
+    // Sync & scheduling
+    'sync_mode': 'How to sync: "sync" (add & remove), "append" (add only)',
+    'schedule': 'When to run: "daily", "weekly(monday)", "monthly(1)", "yearly(01/01)", etc.',
+
+    // Arr integration
+    'radarr_add_missing': 'Automatically add missing movies to Radarr',
+    'radarr_add_missing_popular': 'Add missing items from "Popular" list to Radarr',
+    'radarr_add_missing_top': 'Add missing items from "Top" list to Radarr',
+    'radarr_add_missing_trending': 'Add missing items from "Trending" list to Radarr',
+    'radarr_add_missing_watched': 'Add missing items from "Watched" list to Radarr',
+    'radarr_add_missing_lowest': 'Add missing items from "Lowest Rated" list to Radarr',
+    'radarr_add_missing_episodes': 'Add missing episodes to Radarr',
+    'radarr_add_missing_released': 'Add missing released items to Radarr',
+    'sonarr_add_missing': 'Automatically add missing shows to Sonarr',
+    'sonarr_add_missing_popular': 'Add missing items from "Popular" list to Sonarr',
+    'sonarr_add_missing_top': 'Add missing items from "Top" list to Sonarr',
+    'sonarr_add_missing_trending': 'Add missing items from "Trending" list to Sonarr',
+    'sonarr_add_missing_watched': 'Add missing items from "Watched" list to Sonarr',
+
+    // Use flags (enable/disable specific collections)
+    'use_popular': 'Enable/disable the "Popular" collection',
+    'use_top': 'Enable/disable the "Top Rated" collection',
+    'use_trending': 'Enable/disable the "Trending" collection',
+    'use_watched': 'Enable/disable the "Most Watched" collection',
+    'use_lowest': 'Enable/disable the "Lowest Rated" collection',
+    'use_released': 'Enable/disable the "Recently Released" collection',
+    'use_episodes': 'Enable/disable episode-level collections',
+    'use_edition': 'Enable/disable edition overlays (Director\'s Cut, Extended, etc.)',
+
+    // Appearance
+    'style': 'Visual style variant: "color" (colorful), "white" (monochrome), "standards" (standard badges)',
+    'sep_style': 'Separator style: "orig", "blue", "green", "gray", "purple", "red", etc.',
+    'name_format': 'Custom naming format for collections',
+    'summary_format': 'Custom summary format for collections',
+    'file_poster': 'Path to custom poster image file',
+    'file_background': 'Path to custom background/art image file',
+    'url_poster': 'URL to custom poster image',
+    'url_background': 'URL to custom background image',
+
+    // Overlay positioning
+    'horizontal_align': 'Horizontal position: "left", "center", "right"',
+    'vertical_align': 'Vertical position: "top", "center", "bottom"',
+    'horizontal_offset': 'Pixels to offset horizontally from alignment edge',
+    'vertical_offset': 'Pixels to offset vertically from alignment edge',
+    'back_color': 'Background color for text overlays (hex or color name)',
+    'back_width': 'Width of overlay background',
+    'back_height': 'Height of overlay background',
+    'font_size': 'Font size for text overlays',
+    'font_color': 'Font color for text overlays',
+
+    // Advanced
+    'builder_level': 'Level to apply: "movie", "show", "season", "episode"',
+    'language': 'Language code for collection names and summaries',
+    'placeholder_imdb_id': 'IMDb ID to use for placeholder/separator posters',
+    'originals_only': 'Only include original content (not remakes/reboots)',
+    'delete_collections_named': 'List of collection names to delete before creating new ones',
+    'ignore_ids': 'List of IDs to exclude from the collection',
+    'ignore_imdb_ids': 'List of IMDb IDs to exclude',
+    'item_radarr_tag': 'Tag to apply in Radarr for items in this collection',
+    'item_sonarr_tag': 'Tag to apply in Sonarr for items in this collection'
+};
+
+function renderFileList(files, type, libraryName) {
+    if (!files || files.length === 0) {
+        return '<p class="placeholder-text" style="font-size: 12px; padding: 8px;">No files configured</p>';
+    }
+
+    const descriptions = type === 'overlay' ? defaultOverlayDescriptions : defaultCollectionDescriptions;
+
+    return files.map((file, index) => {
+        // Handle different file formats
+        let displayName, isDefault, hasTemplateVars, templateVars;
+
+        if (typeof file === 'string') {
+            displayName = file;
+            isDefault = false;
+        } else if (file.default) {
+            displayName = file.default;
+            isDefault = true;
+            templateVars = file.template_variables || {};
+            hasTemplateVars = Object.keys(templateVars).length > 0;
+        } else if (file.file) {
+            displayName = file.file;
+            isDefault = false;
+            templateVars = file.template_variables || {};
+            hasTemplateVars = Object.keys(templateVars).length > 0;
+        } else {
+            displayName = 'Unknown';
+            isDefault = false;
+        }
+
+        // Get description for default files
+        const description = isDefault ? (descriptions[displayName] || 'Kometa default file') : '';
+        const varCount = hasTemplateVars ? Object.keys(templateVars).length : 0;
+        const fileId = `file-${libraryName}-${type}-${index}`.replace(/[^a-zA-Z0-9-]/g, '_');
+
+        // Render template variables display
+        let varsHtml = '';
+        if (hasTemplateVars) {
+            varsHtml = `
+                <div class="file-vars-panel" id="${fileId}-vars" style="display: none;">
+                    <div class="file-vars-header">
+                        <span>Template Variables</span>
+                        <button class="btn-small" onclick="editFileTemplateVars('${libraryName}', '${type}_files', ${index})" title="Edit variables">Edit</button>
+                    </div>
+                    <div class="file-vars-grid">
+                        ${Object.entries(templateVars).map(([key, value]) => {
+                            const displayValue = typeof value === 'boolean' ? (value ? '✓ true' : '✗ false') :
+                                                 typeof value === 'object' ? JSON.stringify(value) : String(value);
+                            const valueClass = typeof value === 'boolean' ? (value ? 'var-true' : 'var-false') : '';
+                            const varDescription = getVariableDescription(key);
+                            return `
+                                <div class="file-var-item" ${varDescription ? `title="${varDescription}"` : ''}>
+                                    <span class="var-key">${key}</span>
+                                    <span class="var-value ${valueClass}">${displayValue}</span>
+                                    ${varDescription ? '<span class="var-help-icon">?</span>' : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        return `
+            <div class="file-list-item ${isDefault ? 'is-default' : ''} ${hasTemplateVars ? 'has-vars' : ''}" data-file-id="${fileId}">
+                <div class="file-item-row">
+                    <div class="file-item-main">
+                        <span class="file-type ${isDefault ? 'default' : ''}">${isDefault ? 'DEFAULT' : 'FILE'}</span>
+                        <div class="file-info">
+                            <span class="file-path">${displayName}</span>
+                            ${description ? `<span class="file-description">${description}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="file-item-actions">
+                        ${hasTemplateVars ? `<button class="file-vars-badge" onclick="toggleFileVars('${fileId}')" title="Click to view ${varCount} template variables">${varCount} vars ▼</button>` : ''}
+                        <button class="btn-remove" onclick="removeFileFromLibrary('${libraryName}', '${type}_files', ${index})" title="Remove this file">×</button>
+                    </div>
+                </div>
+                ${varsHtml}
+            </div>
+        `;
+    }).join('');
+}
+
+/**
+ * Get description for a template variable
+ */
+function getVariableDescription(key) {
+    // Direct match
+    if (templateVariableDescriptions[key]) {
+        return templateVariableDescriptions[key];
+    }
+
+    // Pattern matching for common prefixes
+    if (key.startsWith('use_')) {
+        return `Enable/disable the "${key.replace('use_', '').replace(/_/g, ' ')}" feature`;
+    }
+    if (key.startsWith('radarr_add_missing')) {
+        return 'Add missing items to Radarr automatically';
+    }
+    if (key.startsWith('sonarr_add_missing')) {
+        return 'Add missing items to Sonarr automatically';
+    }
+    if (key.startsWith('visible_')) {
+        return 'Control visibility of this collection in Plex';
+    }
+    if (key.startsWith('collection_')) {
+        return 'Collection display/organization setting';
+    }
+
+    return null; // No description available
+}
+
+/**
+ * Toggle template variables panel visibility
+ */
+function toggleFileVars(fileId) {
+    const panel = document.getElementById(`${fileId}-vars`);
+    const badge = document.querySelector(`[data-file-id="${fileId}"] .file-vars-badge`);
+    if (panel) {
+        const isHidden = panel.style.display === 'none';
+        panel.style.display = isHidden ? 'block' : 'none';
+        if (badge) {
+            const varCount = badge.textContent.match(/\d+/)?.[0] || '0';
+            badge.innerHTML = `${varCount} vars ${isHidden ? '▲' : '▼'}`;
+        }
+    }
+}
+
+/**
+ * Edit template variables for a file
+ */
+function editFileTemplateVars(libraryName, fileType, fileIndex) {
+    const files = parsedConfig.libraries?.[libraryName]?.[fileType];
+    if (!files || !files[fileIndex]) return;
+
+    const file = files[fileIndex];
+    const currentVars = file.template_variables || {};
+    const varsJson = JSON.stringify(currentVars, null, 2);
+
+    // Create a modal for editing
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+        <div class="modal-content template-vars-modal">
+            <div class="modal-header">
+                <h3>Edit Template Variables</h3>
+                <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="field-help" style="margin-bottom: 12px;">
+                    Edit the template variables as JSON. These override default values for this file.
+                    <a href="https://kometa.wiki/en/latest/config/paths/#template-variables" target="_blank" class="inline-link">Learn more ↗</a>
+                </p>
+                <textarea id="template-vars-editor" class="template-vars-textarea">${varsJson}</textarea>
+                <div id="template-vars-error" class="error-message" style="display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveFileTemplateVars('${libraryName}', '${fileType}', ${fileIndex})">Save Changes</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Focus the textarea
+    setTimeout(() => document.getElementById('template-vars-editor')?.focus(), 100);
+}
+
+/**
+ * Save template variables from modal
+ */
+function saveFileTemplateVars(libraryName, fileType, fileIndex) {
+    const textarea = document.getElementById('template-vars-editor');
+    const errorDiv = document.getElementById('template-vars-error');
+    if (!textarea) return;
+
+    try {
+        const newVars = JSON.parse(textarea.value);
+
+        // Update the config
+        if (parsedConfig.libraries?.[libraryName]?.[fileType]?.[fileIndex]) {
+            parsedConfig.libraries[libraryName][fileType][fileIndex].template_variables = newVars;
+        }
+
+        // Sync and refresh
+        syncFormsToYaml();
+        renderLibrariesFromConfig();
+
+        // Close modal
+        document.querySelector('.modal-overlay')?.remove();
+
+    } catch (e) {
+        if (errorDiv) {
+            errorDiv.textContent = `Invalid JSON: ${e.message}`;
+            errorDiv.style.display = 'block';
+        }
+    }
+}
+
+/**
+ * Toggle library item expansion
+ */
+function toggleLibraryItem(item) {
+    item.classList.toggle('expanded');
+}
+
+/**
+ * Add file to library
+ */
+function addFileToLibrary(libraryName, fileType) {
+    const filePath = prompt(`Enter ${fileType.replace('_files', '')} file path or "default:<name>":`);
+    if (!filePath) return;
+
+    if (!parsedConfig.libraries) parsedConfig.libraries = {};
+    if (!parsedConfig.libraries[libraryName]) parsedConfig.libraries[libraryName] = {};
+    if (!parsedConfig.libraries[libraryName][fileType]) parsedConfig.libraries[libraryName][fileType] = [];
+
+    // Check if it's a default or file path
+    if (filePath.startsWith('default:') || !filePath.includes('/')) {
+        parsedConfig.libraries[libraryName][fileType].push(filePath);
+    } else {
+        parsedConfig.libraries[libraryName][fileType].push({ file: filePath });
+    }
+
+    syncFormsToYaml();
+    renderLibrariesFromConfig();
+}
+
+/**
+ * Remove file from library
+ */
+function removeFileFromLibrary(libraryName, fileType, index) {
+    if (!parsedConfig.libraries?.[libraryName]?.[fileType]) return;
+
+    parsedConfig.libraries[libraryName][fileType].splice(index, 1);
+
+    // Clean up empty arrays
+    if (parsedConfig.libraries[libraryName][fileType].length === 0) {
+        delete parsedConfig.libraries[libraryName][fileType];
+    }
+
+    syncFormsToYaml();
+    renderLibrariesFromConfig();
+}
+
+/**
+ * Remove library
+ */
+function removeLibrary(libraryName) {
+    if (!confirm(`Remove library "${libraryName}" from configuration?`)) return;
+
+    if (parsedConfig.libraries?.[libraryName]) {
+        delete parsedConfig.libraries[libraryName];
+    }
+
+    syncFormsToYaml();
+    renderLibrariesFromConfig();
+}
+
+/**
+ * Update library template variables
+ */
+function updateLibraryTemplateVars(libraryName, jsonValue) {
+    try {
+        const vars = JSON.parse(jsonValue);
+        if (parsedConfig.libraries?.[libraryName]) {
+            parsedConfig.libraries[libraryName].template_variables = vars;
+            syncFormsToYaml();
+        }
+    } catch (e) {
+        console.warn('Invalid JSON for template variables');
+    }
+}
+
+// ============================================================================
+// Connection Testing
+// ============================================================================
+
+/**
+ * Test Plex connection
+ */
+async function testPlexConnection() {
+    const resultEl = document.getElementById('plex-test-result');
+    const url = document.getElementById('plex-url').value;
+    const token = document.getElementById('plex-token').value;
+
+    if (!url || !token) {
+        resultEl.textContent = 'URL and Token are required';
+        resultEl.className = 'test-result error';
+        return;
+    }
+
+    resultEl.textContent = 'Testing...';
+    resultEl.className = 'test-result loading';
+
+    try {
+        const result = await api.post('/test/plex', { url, token });
+        if (result.success) {
+            resultEl.textContent = `✓ Connected to ${result.server_name || 'Plex'}`;
+            resultEl.className = 'test-result success';
+        } else {
+            resultEl.textContent = `✗ ${result.error || 'Connection failed'}`;
+            resultEl.className = 'test-result error';
+        }
+    } catch (error) {
+        resultEl.textContent = `✗ ${error.message}`;
+        resultEl.className = 'test-result error';
+    }
+}
+
+/**
+ * Test TMDb API key
+ */
+async function testTmdbConnection() {
+    const resultEl = document.getElementById('tmdb-test-result');
+    const apikey = document.getElementById('tmdb-apikey').value;
+
+    if (!apikey) {
+        resultEl.textContent = 'API Key is required';
+        resultEl.className = 'test-result error';
+        return;
+    }
+
+    resultEl.textContent = 'Testing...';
+    resultEl.className = 'test-result loading';
+
+    try {
+        const result = await api.post('/test/tmdb', { apikey });
+        if (result.success) {
+            resultEl.textContent = '✓ API key is valid';
+            resultEl.className = 'test-result success';
+        } else {
+            resultEl.textContent = `✗ ${result.error || 'Invalid API key'}`;
+            resultEl.className = 'test-result error';
+        }
+    } catch (error) {
+        resultEl.textContent = `✗ ${error.message}`;
+        resultEl.className = 'test-result error';
+    }
+}
+
+/**
+ * Generic service connection test
+ */
+async function testServiceConnection(serviceName, endpoint, params) {
+    const resultEl = document.getElementById(`${serviceName}-test-result`);
+
+    resultEl.textContent = 'Testing...';
+    resultEl.className = 'test-result loading';
+
+    try {
+        const result = await api.post(`/test/${endpoint}`, params);
+        if (result.success) {
+            resultEl.textContent = `✓ ${result.message || 'Connection successful'}`;
+            resultEl.className = 'test-result success';
+        } else {
+            resultEl.textContent = `✗ ${result.error || 'Connection failed'}`;
+            resultEl.className = 'test-result error';
+        }
+    } catch (error) {
+        resultEl.textContent = `✗ ${error.message}`;
+        resultEl.className = 'test-result error';
+    }
+}
+
+/**
+ * Initialize connection test buttons
+ */
+function initConnectionTestButtons() {
+    // Plex
+    document.getElementById('btn-test-plex')?.addEventListener('click', testPlexConnection);
+
+    // TMDb
+    document.getElementById('btn-test-tmdb')?.addEventListener('click', testTmdbConnection);
+
+    // Radarr
+    document.getElementById('btn-test-radarr')?.addEventListener('click', () => {
+        testServiceConnection('radarr', 'radarr', {
+            url: document.getElementById('radarr-url').value,
+            token: document.getElementById('radarr-token').value
+        });
+    });
+
+    // Sonarr
+    document.getElementById('btn-test-sonarr')?.addEventListener('click', () => {
+        testServiceConnection('sonarr', 'sonarr', {
+            url: document.getElementById('sonarr-url').value,
+            token: document.getElementById('sonarr-token').value
+        });
+    });
+
+    // Tautulli
+    document.getElementById('btn-test-tautulli')?.addEventListener('click', () => {
+        testServiceConnection('tautulli', 'tautulli', {
+            url: document.getElementById('tautulli-url').value,
+            apikey: document.getElementById('tautulli-apikey').value
+        });
+    });
+
+    // MDBList
+    document.getElementById('btn-test-mdblist')?.addEventListener('click', () => {
+        testServiceConnection('mdblist', 'mdblist', {
+            apikey: document.getElementById('mdblist-apikey').value
+        });
+    });
+
+    // OMDb
+    document.getElementById('btn-test-omdb')?.addEventListener('click', () => {
+        testServiceConnection('omdb', 'omdb', {
+            apikey: document.getElementById('omdb-apikey').value
+        });
+    });
+
+    // Trakt
+    document.getElementById('btn-test-trakt')?.addEventListener('click', () => {
+        testServiceConnection('trakt', 'trakt', {
+            client_id: document.getElementById('trakt-client-id').value,
+            client_secret: document.getElementById('trakt-client-secret').value
+        });
+    });
+
+    // MAL
+    document.getElementById('btn-test-mal')?.addEventListener('click', () => {
+        testServiceConnection('mal', 'mal', {
+            client_id: document.getElementById('mal-client-id').value
+        });
+    });
+
+    // AniDB
+    document.getElementById('btn-test-anidb')?.addEventListener('click', () => {
+        testServiceConnection('anidb', 'anidb', {
+            client: document.getElementById('anidb-client').value,
+            version: document.getElementById('anidb-version').value
+        });
+    });
+
+    // GitHub
+    document.getElementById('btn-test-github')?.addEventListener('click', () => {
+        testServiceConnection('github', 'github', {
+            token: document.getElementById('github-token').value
+        });
+    });
+
+    // Notifiarr
+    document.getElementById('btn-test-notifiarr')?.addEventListener('click', () => {
+        testServiceConnection('notifiarr', 'notifiarr', {
+            apikey: document.getElementById('notifiarr-apikey').value
+        });
+    });
+
+    // Gotify
+    document.getElementById('btn-test-gotify')?.addEventListener('click', () => {
+        testServiceConnection('gotify', 'gotify', {
+            url: document.getElementById('gotify-url').value,
+            token: document.getElementById('gotify-token').value
+        });
+    });
+
+    // ntfy
+    document.getElementById('btn-test-ntfy')?.addEventListener('click', () => {
+        testServiceConnection('ntfy', 'ntfy', {
+            url: document.getElementById('ntfy-url').value,
+            topic: document.getElementById('ntfy-topic').value
+        });
+    });
+}
+
+/**
+ * Initialize Add Library button
+ */
+function initAddLibraryButton() {
+    document.getElementById('btn-add-library')?.addEventListener('click', () => {
+        const name = prompt('Enter library name (must match Plex library name):');
+        if (!name) return;
+
+        if (!parsedConfig.libraries) parsedConfig.libraries = {};
+        if (parsedConfig.libraries[name]) {
+            alert('Library already exists!');
+            return;
+        }
+
+        parsedConfig.libraries[name] = {
+            collection_files: []
+        };
+
+        syncFormsToYaml();
+        renderLibrariesFromConfig();
+    });
+
+    document.getElementById('btn-refresh-libraries')?.addEventListener('click', async () => {
+        try {
+            const result = await api.get('/media/libraries');
+            const libraries = result.libraries || [];
+
+            if (libraries.length === 0) {
+                alert('No libraries found. Make sure Plex is configured and connected.');
+                return;
+            }
+
+            const existingLibs = Object.keys(parsedConfig.libraries || {});
+            const newLibs = libraries.filter(lib => !existingLibs.includes(lib.title));
+
+            if (newLibs.length === 0) {
+                alert('All Plex libraries are already configured.');
+                return;
+            }
+
+            const addLibs = confirm(`Found ${newLibs.length} new libraries:\n${newLibs.map(l => l.title).join('\n')}\n\nAdd them to config?`);
+            if (!addLibs) return;
+
+            if (!parsedConfig.libraries) parsedConfig.libraries = {};
+            newLibs.forEach(lib => {
+                parsedConfig.libraries[lib.title] = {
+                    collection_files: []
+                };
+            });
+
+            syncFormsToYaml();
+            renderLibrariesFromConfig();
+        } catch (error) {
+            alert(`Failed to fetch libraries: ${error.message}`);
+        }
+    });
+}
+
+// Expose library functions to global scope
+window.toggleLibraryItem = toggleLibraryItem;
+window.addFileToLibrary = addFileToLibrary;
+window.removeFileFromLibrary = removeFileFromLibrary;
+window.removeLibrary = removeLibrary;
+window.updateLibraryTemplateVars = updateLibraryTemplateVars;
 
 // ============================================================================
 // Run Management
@@ -1490,25 +2982,15 @@ function initEventListeners() {
     document.getElementById('btn-validate').addEventListener('click', validateConfig);
     document.getElementById('btn-save-config').addEventListener('click', saveConfig);
 
-    // Editor tabs
-    elements.editorTabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            elements.editorTabs.forEach(t => t.classList.toggle('active', t === tab));
-            elements.editorViews.forEach(v => {
-                v.classList.toggle('active', v.id === `view-${tab.dataset.view}`);
-                v.classList.toggle('hidden', v.id !== `view-${tab.dataset.view}`);
-            });
-        });
-    });
-
     // Source options
     elements.sourceOptions.forEach(option => {
-        option.addEventListener('click', () => {
+        option.addEventListener('click', async () => {
             elements.sourceOptions.forEach(o => o.classList.remove('selected'));
             option.classList.add('selected');
 
             if (option.dataset.source === 'existing') {
-                loadConfig();
+                await loadConfig();
+                syncYamlToForms();
             } else if (option.dataset.source === 'upload') {
                 // Trigger file upload dialog
                 document.getElementById('config-file-input').click();
@@ -1531,6 +3013,7 @@ libraries:
     collection_files:
       - file: config/Movies.yml
 `;
+                syncYamlToForms();
             }
         });
     });
@@ -1546,8 +3029,9 @@ libraries:
                     document.getElementById('config-source-selector').style.display = 'none';
                     document.getElementById('config-editor-container').style.display = 'block';
                     elements.configEditor.value = event.target.result;
-                    // Validate the uploaded config
+                    // Validate the uploaded config and sync to forms
                     validateConfig();
+                    syncYamlToForms();
                 };
                 reader.onerror = () => {
                     showValidation({
@@ -1688,10 +3172,18 @@ libraries:
 async function init() {
     initEventListeners();
 
+    // Initialize config editor subtabs and form sync
+    initConfigSubtabs();
+    initConnectionTestButtons();
+    initAddLibraryButton();
+
     // Load initial data
     await loadConfig();
     await loadBackups();
     await checkRunStatus();
+
+    // Sync loaded config to forms
+    syncYamlToForms();
 
     // Connect WebSocket for status updates
     connectStatusWebSocket();
@@ -3808,3 +5300,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Expose to global scope
 window.visualEditor = visualEditor;
+
+// Expose library functions to global scope for onclick handlers
+window.switchLibraryTab = switchLibraryTab;
+window.updateLibraryAttribute = updateLibraryAttribute;
+window.updateLibrarySetting = updateLibrarySetting;
+window.getLibraryIcon = getLibraryIcon;
+window.toggleFileVars = toggleFileVars;
+window.editFileTemplateVars = editFileTemplateVars;
+window.saveFileTemplateVars = saveFileTemplateVars;

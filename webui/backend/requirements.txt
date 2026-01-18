@@ -9,3 +9,4 @@ aiosqlite>=0.19.0
 Pillow>=10.0.0
 requests>=2.31.0
 jinja2>=3.1.0
+httpx>=0.25.0

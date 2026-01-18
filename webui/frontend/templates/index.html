@@ -74,16 +74,1378 @@
             <!-- Validation Messages -->
             <div id="validation-messages" class="validation-messages hidden"></div>
 
-            <!-- Config Editor -->
+            <!-- Config Editor Container -->
             <div class="config-editor-container" id="config-editor-container">
-                <div class="editor-tabs">
-                    <button class="editor-tab active" data-view="yaml">YAML Editor</button>
-                    <button class="editor-tab" data-view="form">Form View</button>
+                <!-- Sub-tab Navigation -->
+                <div class="config-subtabs">
+                    <button class="config-subtab active" data-subtab="plex">Plex</button>
+                    <button class="config-subtab" data-subtab="tmdb">TMDb</button>
+                    <button class="config-subtab" data-subtab="libraries">Libraries</button>
+                    <button class="config-subtab" data-subtab="settings">Settings</button>
+                    <button class="config-subtab" data-subtab="arr">Arr Services</button>
+                    <button class="config-subtab" data-subtab="metadata">Metadata</button>
+                    <button class="config-subtab" data-subtab="lists">Lists</button>
+                    <button class="config-subtab" data-subtab="notifications">Notifications</button>
+                    <button class="config-subtab" data-subtab="yaml">Raw YAML</button>
                 </div>
 
-                <!-- YAML Editor View -->
-                <div id="view-yaml" class="editor-view active">
-                    <textarea id="config-editor" class="config-editor" spellcheck="false" placeholder="# Kometa Configuration
+                <!-- Sub-tab Content Panels -->
+                <div class="config-subtab-content">
+                    <!-- Plex Sub-tab -->
+                    <div id="subtab-plex" class="subtab-panel active">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">📺</span>
+                                <h3>Plex Configuration</h3>
+                                <span class="feature-status required">Required</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/plex/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Connect Kometa to your Plex Media Server. The URL must be the direct server address, not app.plex.tv. Direct access is recommended to avoid proxy-related issues.</p>
+
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-group flex-2">
+                                    <label for="plex-url" class="label-with-info">
+                                        Plex URL <span class="required">*</span>
+                                        <span class="tooltip-wrapper">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltip">The direct URL to your Plex server. Use the local IP address if running in Docker. Example: http://192.168.1.100:32400</span>
+                                        </span>
+                                    </label>
+                                    <input type="text" id="plex-url" data-config-path="plex.url" placeholder="http://192.168.1.100:32400">
+                                    <span class="field-help">Direct URL to your Plex server (not app.plex.tv)</span>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="plex-timeout" class="label-with-info">
+                                        Timeout
+                                        <span class="default-badge">Default: 60s</span>
+                                    </label>
+                                    <input type="number" id="plex-timeout" data-config-path="plex.timeout" value="60" min="10" max="300">
+                                    <span class="field-help">Seconds to wait for Plex responses</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group flex-2">
+                                    <label for="plex-token" class="label-with-info">
+                                        Plex Token <span class="required">*</span>
+                                        <span class="tooltip-wrapper">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltip">Authentication token for your Plex account. Required to access your server's API.</span>
+                                        </span>
+                                    </label>
+                                    <input type="password" id="plex-token" data-config-path="plex.token" placeholder="Your Plex token">
+                                    <span class="field-help"><a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/" target="_blank" class="inline-link">How to find your token ↗</a></span>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="plex-db-cache" class="label-with-info">
+                                        DB Cache (MB)
+                                        <span class="default-badge">Default: 40</span>
+                                    </label>
+                                    <input type="number" id="plex-db-cache" data-config-path="plex.db_cache" value="40" min="0">
+                                    <span class="field-help">Plex database cache size in megabytes</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="checkbox-with-desc">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="plex-verify-ssl" data-config-path="plex.verify_ssl">
+                                        Verify SSL
+                                    </label>
+                                    <span class="checkbox-desc">Enable SSL certificate verification for HTTPS connections</span>
+                                </div>
+                            </div>
+
+                            <div class="form-section-divider"></div>
+
+                            <h4><span class="group-icon">🔧</span> Maintenance Operations</h4>
+                            <div class="info-box">
+                                <span class="info-box-icon">ℹ️</span>
+                                <div class="info-box-content">These operations run <strong>after all collection files are processed</strong>. They can also accept schedule options instead of true/false.</div>
+                            </div>
+                            <div class="form-row">
+                                <div class="checkbox-with-desc">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="plex-clean-bundles" data-config-path="plex.clean_bundles">
+                                        Clean Bundles
+                                    </label>
+                                    <span class="checkbox-desc">Remove unused bundle files from Plex</span>
+                                </div>
+                                <div class="checkbox-with-desc">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="plex-empty-trash" data-config-path="plex.empty_trash">
+                                        Empty Trash
+                                    </label>
+                                    <span class="checkbox-desc">Empty the trash for all libraries</span>
+                                </div>
+                                <div class="checkbox-with-desc">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="plex-optimize" data-config-path="plex.optimize">
+                                        Optimize Database
+                                    </label>
+                                    <span class="checkbox-desc field-help warning">⚠️ May make Plex temporarily unresponsive</span>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button id="btn-test-plex" class="btn btn-secondary">Test Connection</button>
+                                <span id="plex-test-result" class="test-result"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TMDb Sub-tab -->
+                    <div id="subtab-tmdb" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🎬</span>
+                                <h3>TMDb Configuration</h3>
+                                <span class="feature-status required">Required</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/tmdb/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">The Movie Database (TMDb) is required for Kometa to function. You'll need a free <strong>V3 API key</strong> to fetch movie and TV show metadata, posters, and other information.</p>
+
+                        <div class="form-section">
+                            <div class="form-row">
+                                <div class="form-group flex-2">
+                                    <label for="tmdb-apikey" class="label-with-info">
+                                        API Key <span class="required">*</span>
+                                        <span class="tooltip-wrapper">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltip">Your TMDb V3 API key. Make sure to use the V3 key, not V4. You can validate your key on TMDb's authentication page.</span>
+                                        </span>
+                                    </label>
+                                    <input type="password" id="tmdb-apikey" data-config-path="tmdb.apikey" placeholder="Your TMDb V3 API key">
+                                    <span class="field-help"><a href="https://www.themoviedb.org/settings/api" target="_blank" class="inline-link">Get your free API key from TMDb ↗</a></span>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="tmdb-cache-expiration" class="label-with-info">
+                                        Cache Expiration
+                                        <span class="default-badge">Default: 60 days</span>
+                                    </label>
+                                    <input type="number" id="tmdb-cache-expiration" data-config-path="tmdb.cache_expiration" value="60" min="1">
+                                    <span class="field-help">Days before cached TMDb data expires</span>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="tmdb-language" class="label-with-info">
+                                        Language
+                                        <span class="default-badge">Default: en</span>
+                                        <span class="tooltip-wrapper">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltip">ISO 639-1 language code for TMDb data. Affects collection names, separators, and other translated labels.</span>
+                                        </span>
+                                    </label>
+                                    <select id="tmdb-language" data-config-path="tmdb.language">
+                                        <option value="en">English (en)</option>
+                                        <option value="es">Spanish (es)</option>
+                                        <option value="fr">French (fr)</option>
+                                        <option value="de">German (de)</option>
+                                        <option value="it">Italian (it)</option>
+                                        <option value="pt">Portuguese (pt)</option>
+                                        <option value="ja">Japanese (ja)</option>
+                                        <option value="ko">Korean (ko)</option>
+                                        <option value="zh">Chinese (zh)</option>
+                                        <option value="ru">Russian (ru)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="tmdb-region" class="label-with-info">
+                                        Region
+                                        <span class="tooltip-wrapper">
+                                            <span class="info-icon">?</span>
+                                            <span class="tooltip">ISO 3166-1 country code. Used with TMDb Chart Builders to get region-specific trending/popular lists.</span>
+                                        </span>
+                                    </label>
+                                    <select id="tmdb-region" data-config-path="tmdb.region">
+                                        <option value="">-- None --</option>
+                                        <option value="US">United States (US)</option>
+                                        <option value="GB">United Kingdom (GB)</option>
+                                        <option value="CA">Canada (CA)</option>
+                                        <option value="AU">Australia (AU)</option>
+                                        <option value="DE">Germany (DE)</option>
+                                        <option value="FR">France (FR)</option>
+                                        <option value="ES">Spain (ES)</option>
+                                        <option value="IT">Italy (IT)</option>
+                                        <option value="JP">Japan (JP)</option>
+                                        <option value="KR">South Korea (KR)</option>
+                                    </select>
+                                    <span class="field-help">Used with TMDb Chart Builders for regional content</span>
+                                </div>
+                            </div>
+                            <div class="form-actions">
+                                <button id="btn-test-tmdb" class="btn btn-secondary">Test API Key</button>
+                                <span id="tmdb-test-result" class="test-result"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Libraries Sub-tab -->
+                    <div id="subtab-libraries" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">📚</span>
+                                <h3>Libraries Configuration</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/libraries/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Configure which Plex libraries Kometa should manage. Each library can have its own collection files, overlay files, metadata files, operations, and schedule. Library-level settings override global settings.</p>
+
+                        <!-- Library Configuration Guide -->
+                        <div class="info-box" style="margin-bottom: 20px;">
+                            <span class="info-box-icon">💡</span>
+                            <div class="info-box-content">
+                                <strong>Library Configuration Tips:</strong><br>
+                                • <strong>Collection Files</strong> - Define what collections to create (actors, genres, charts, etc.)<br>
+                                • <strong>Overlay Files</strong> - Add visual badges/overlays to posters (resolution, ratings, etc.)<br>
+                                • <strong>Metadata Files</strong> - Manage metadata for individual items<br>
+                                • <strong>Operations</strong> - Batch operations like mass genre updates, splits, or ratings sync<br>
+                                • Use <code>default:</code> prefix for built-in Kometa files (e.g., <code>default: basic</code>)
+                            </div>
+                        </div>
+
+                        <div class="libraries-container">
+                            <div class="libraries-toolbar">
+                                <button id="btn-add-library" class="btn btn-secondary">+ Add Library</button>
+                                <button id="btn-refresh-libraries" class="btn btn-secondary">Refresh from Plex</button>
+                            </div>
+                            <div id="libraries-accordion" class="libraries-accordion">
+                                <!-- Libraries will be dynamically rendered here -->
+                                <p class="placeholder-text">Loading libraries...</p>
+                            </div>
+                        </div>
+
+                        <!-- Library Settings Reference -->
+                        <details class="settings-group" style="margin-top: 20px;">
+                            <summary><h4><span class="group-icon">📖</span> Library Attributes Reference</h4></summary>
+                            <div class="settings-group-content">
+                                <div class="library-reference-grid">
+                                    <div class="reference-item">
+                                        <strong>collection_files</strong>
+                                        <span class="field-help">YAML files defining collections to create</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>overlay_files</strong>
+                                        <span class="field-help">YAML files defining overlays to apply to posters</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>metadata_files</strong>
+                                        <span class="field-help">YAML files for individual item metadata</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>operations</strong>
+                                        <span class="field-help">Batch operations (mass_genre_update, split_duplicates, etc.)</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>schedule</strong>
+                                        <span class="field-help">When to run this library (daily, weekly(monday), etc.)</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>schedule_overlays</strong>
+                                        <span class="field-help">Separate schedule for overlay processing</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>report_path</strong>
+                                        <span class="field-help">Path to save library report YAML file</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>template_variables</strong>
+                                        <span class="field-help">Variables passed to all templates in this library</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>remove_overlays</strong>
+                                        <span class="field-help">Remove all overlays from library (true/false)</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>reapply_overlays</strong>
+                                        <span class="field-help">Reapply overlays to all items (true/false)</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>reset_overlays</strong>
+                                        <span class="field-help">Reset base images using 'plex' or 'tmdb'</span>
+                                    </div>
+                                    <div class="reference-item">
+                                        <strong>settings</strong>
+                                        <span class="field-help">Override global settings for this library</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+
+                    <!-- Settings Sub-tab -->
+                    <div id="subtab-settings" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">⚙️</span>
+                                <h3>Global Settings</h3>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/settings/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Control Kometa's operational behavior at a global level. These settings can be overridden at the library or collection level. Hover over the <span class="info-icon" style="display: inline; vertical-align: middle;">?</span> icons for more details.</p>
+                        <div class="settings-groups">
+                            <!-- Assets Group -->
+                            <details class="settings-group" open>
+                                <summary><h4><span class="group-icon">🖼️</span> Assets</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info" style="margin-bottom: 16px;">Local assets (posters, backgrounds) that Kometa can use instead of fetching from external sources.</p>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="settings-asset-directory" class="label-with-info">
+                                                Asset Directory
+                                                <span class="default-badge">Default: config/assets</span>
+                                            </label>
+                                            <input type="text" id="settings-asset-directory" data-config-path="settings.asset_directory" placeholder="config/assets">
+                                            <span class="field-help">Location of local assets (posters, backgrounds)</span>
+                                        </div>
+                                        <div class="form-group flex-1">
+                                            <label for="settings-asset-depth" class="label-with-info">
+                                                Asset Depth
+                                                <span class="default-badge">Default: 0</span>
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Number of folder levels to scan in asset directory. Requires Asset Folders to be enabled.</span>
+                                                </span>
+                                            </label>
+                                            <input type="number" id="settings-asset-depth" data-config-path="settings.asset_depth" value="0" min="0">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-asset-folders" data-config-path="settings.asset_folders" checked>
+                                                Asset Folders
+                                            </label>
+                                            <span class="checkbox-desc">Search for dedicated folders per item vs. image files</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-create-asset-folders" data-config-path="settings.create_asset_folders" checked>
+                                                Create Asset Folders
+                                            </label>
+                                            <span class="checkbox-desc">Auto-create asset folders if missing</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-prioritize-assets" data-config-path="settings.prioritize_assets" checked>
+                                                Prioritize Assets
+                                            </label>
+                                            <span class="checkbox-desc">Use local assets over external sources</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-dimensional-asset-rename" data-config-path="settings.dimensional_asset_rename" checked>
+                                                Dimensional Asset Rename
+                                            </label>
+                                            <span class="checkbox-desc">Auto-rename images based on dimensions (poster vs background)</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-download-url-assets" data-config-path="settings.download_url_assets" checked>
+                                                Download URL Assets
+                                            </label>
+                                            <span class="checkbox-desc">Download URL images to asset folder</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Cache Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">💾</span> Cache</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="info-box warning">
+                                        <span class="info-box-icon">⚠️</span>
+                                        <div class="info-box-content"><strong>Warning:</strong> Disabling cache causes overlays to reapply on every run, resulting in "image bloat" over time.</div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-cache" data-config-path="settings.cache" checked>
+                                                Enable Cache
+                                            </label>
+                                            <span class="checkbox-desc">Local cache database for faster processing</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-cache-expiration" class="label-with-info">
+                                                Cache Expiration
+                                                <span class="default-badge">Default: 60 days</span>
+                                            </label>
+                                            <input type="number" id="settings-cache-expiration" data-config-path="settings.cache_expiration" value="60" min="1">
+                                            <span class="field-help">Days before cache entries expire</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Collections Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📁</span> Collections</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-default-collection-order" class="label-with-info">
+                                                Default Collection Order
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Default sorting method for items within collections. Can be overridden per collection.</span>
+                                                </span>
+                                            </label>
+                                            <select id="settings-default-collection-order" data-config-path="settings.default_collection_order">
+                                                <option value="">-- None --</option>
+                                                <option value="release.asc">Release Date (Ascending)</option>
+                                                <option value="release.desc">Release Date (Descending)</option>
+                                                <option value="title.asc">Title (A-Z)</option>
+                                                <option value="title.desc">Title (Z-A)</option>
+                                                <option value="critic_rating.asc">Critic Rating (Ascending)</option>
+                                                <option value="critic_rating.desc">Critic Rating (Descending)</option>
+                                                <option value="audience_rating.asc">Audience Rating (Ascending)</option>
+                                                <option value="audience_rating.desc">Audience Rating (Descending)</option>
+                                                <option value="added.asc">Date Added (Ascending)</option>
+                                                <option value="added.desc">Date Added (Descending)</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-minimum-items" class="label-with-info">
+                                                Minimum Items
+                                                <span class="default-badge">Default: 1</span>
+                                            </label>
+                                            <input type="number" id="settings-minimum-items" data-config-path="settings.minimum_items" value="1" min="1">
+                                            <span class="field-help">Minimum items required for collection/playlist</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-sync-mode" class="label-with-info">
+                                                Sync Mode
+                                                <span class="default-badge">Default: append</span>
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip"><strong>sync:</strong> removes items no longer in source<br><strong>append:</strong> only adds new items</span>
+                                                </span>
+                                            </label>
+                                            <select id="settings-sync-mode" data-config-path="settings.sync_mode">
+                                                <option value="append">Append</option>
+                                                <option value="sync">Sync</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-delete-below-minimum" data-config-path="settings.delete_below_minimum">
+                                                Delete Below Minimum
+                                            </label>
+                                            <span class="checkbox-desc">Delete collections below minimum item count</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-delete-not-scheduled" data-config-path="settings.delete_not_scheduled">
+                                                Delete Not Scheduled
+                                            </label>
+                                            <span class="checkbox-desc">Delete collections that are skipped by schedule</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Overlays Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🏷️</span> Overlays</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-overlay-artwork-filetype" class="label-with-info">
+                                                Artwork Filetype
+                                                <span class="default-badge">Default: webp_lossy</span>
+                                            </label>
+                                            <select id="settings-overlay-artwork-filetype" data-config-path="settings.overlay_artwork_filetype">
+                                                <option value="jpg">JPG</option>
+                                                <option value="png">PNG</option>
+                                                <option value="webp_lossy" selected>WebP (Lossy)</option>
+                                                <option value="webp_lossless">WebP (Lossless)</option>
+                                            </select>
+                                            <span class="field-help">Format for overlay images</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-overlay-artwork-quality" class="label-with-info">
+                                                Artwork Quality
+                                                <span class="default-badge">Default: 90</span>
+                                            </label>
+                                            <input type="range" id="settings-overlay-artwork-quality" data-config-path="settings.overlay_artwork_quality" value="90" min="1" max="100">
+                                            <span id="settings-overlay-artwork-quality-value">90</span>
+                                            <span class="field-help">Quality for JPG/Lossy WEBP overlays (1-100)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Run Behavior Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">▶️</span> Run Behavior</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-group">
+                                        <label class="label-with-info">
+                                            Run Order
+                                            <span class="default-badge">Default: operations, metadata, collections, overlays</span>
+                                        </label>
+                                        <p class="field-help" style="margin-bottom: 8px;">Drag to reorder the execution sequence.</p>
+                                        <ul id="settings-run-order" class="sortable-list" data-config-path="settings.run_order">
+                                            <li data-value="operations">Operations</li>
+                                            <li data-value="metadata">Metadata</li>
+                                            <li data-value="collections">Collections</li>
+                                            <li data-value="overlays">Overlays</li>
+                                        </ul>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-run-again-delay" class="label-with-info">
+                                                Run Again Delay
+                                                <span class="default-badge">Default: 0</span>
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Minutes to delay run_again collections after their first run.</span>
+                                                </span>
+                                            </label>
+                                            <input type="number" id="settings-run-again-delay" data-config-path="settings.run_again_delay" value="0" min="0">
+                                            <span class="field-help">Minutes</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-item-refresh-delay" class="label-with-info">
+                                                Item Refresh Delay
+                                                <span class="default-badge">Default: 0</span>
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Seconds between item refreshes. Useful if Plex rate-limits requests.</span>
+                                                </span>
+                                            </label>
+                                            <input type="number" id="settings-item-refresh-delay" data-config-path="settings.item_refresh_delay" value="0" min="0">
+                                            <span class="field-help">Seconds</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Reports Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📊</span> Reports</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-save-report" data-config-path="settings.save_report" checked>
+                                                Save Report
+                                            </label>
+                                            <span class="checkbox-desc">Save collection/playlist report to YAML file</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-playlist-report" data-config-path="settings.playlist_report">
+                                                Playlist Report
+                                            </label>
+                                            <span class="checkbox-desc">Print playlist report at run end</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Display/Logging Group -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">📋</span> Display & Logging</h4></summary>
+                                <div class="settings-group-content">
+                                    <p class="field-help info" style="margin-bottom: 16px;">Control what information is displayed in logs during Kometa runs.</p>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-show-missing" data-config-path="settings.show_missing" checked>
+                                                Show Missing
+                                            </label>
+                                            <span class="checkbox-desc">Display missing collection/playlist items</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-show-missing-assets" data-config-path="settings.show_missing_assets" checked>
+                                                Show Missing Assets
+                                            </label>
+                                            <span class="checkbox-desc">Display missing asset warnings</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="settings-show-missing-episode-assets" data-config-path="settings.show_missing_episode_assets" checked>
+                                            Show Missing Episode Assets
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-missing-season-assets" data-config-path="settings.show_missing_season_assets" checked>
+                                            Show Missing Season Assets
+                                        </label>
+                                    </div>
+                                    <div class="form-row checkboxes">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-unmanaged" data-config-path="settings.show_unmanaged" checked>
+                                            Show Unmanaged
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-unconfigured" data-config-path="settings.show_unconfigured" checked>
+                                            Show Unconfigured
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-filtered" data-config-path="settings.show_filtered">
+                                            Show Filtered
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-options" data-config-path="settings.show_options">
+                                            Show Options
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-show-asset-not-needed" data-config-path="settings.show_asset_not_needed" checked>
+                                            Show Asset Not Needed
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Playlists Group -->
+                            <details class="settings-group">
+                                <summary><h4>Playlists</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-playlist-sync-to-users">Sync to Users</label>
+                                            <input type="text" id="settings-playlist-sync-to-users" data-config-path="settings.playlist_sync_to_users" placeholder="user1, user2">
+                                            <small>Comma-separated list of usernames</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-playlist-exclude-users">Exclude Users</label>
+                                            <input type="text" id="settings-playlist-exclude-users" data-config-path="settings.playlist_exclude_users" placeholder="user1, user2">
+                                            <small>Comma-separated list of usernames</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Ignore Lists Group -->
+                            <details class="settings-group">
+                                <summary><h4>Ignore Lists</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-ignore-ids">Ignore TMDb/TVDb IDs</label>
+                                            <textarea id="settings-ignore-ids" data-config-path="settings.ignore_ids" placeholder="12345, 67890" rows="2"></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-ignore-imdb-ids">Ignore IMDb IDs</label>
+                                            <textarea id="settings-ignore-imdb-ids" data-config-path="settings.ignore_imdb_ids" placeholder="tt1234567, tt7654321" rows="2"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Other Group -->
+                            <details class="settings-group">
+                                <summary><h4>Other</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="settings-custom-repo">Custom Repository</label>
+                                            <input type="text" id="settings-custom-repo" data-config-path="settings.custom_repo" placeholder="https://github.com/user/repo">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="settings-tvdb-language">TVDb Language</label>
+                                            <select id="settings-tvdb-language" data-config-path="settings.tvdb_language">
+                                                <option value="eng">English</option>
+                                                <option value="deu">German</option>
+                                                <option value="fra">French</option>
+                                                <option value="spa">Spanish</option>
+                                                <option value="ita">Italian</option>
+                                                <option value="por">Portuguese</option>
+                                                <option value="jpn">Japanese</option>
+                                                <option value="kor">Korean</option>
+                                                <option value="zho">Chinese</option>
+                                                <option value="rus">Russian</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row checkboxes">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-verify-ssl" data-config-path="settings.verify_ssl" checked>
+                                            Verify SSL
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-missing-only-released" data-config-path="settings.missing_only_released">
+                                            Missing Only Released
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="settings-only-filter-missing" data-config-path="settings.only_filter_missing">
+                                            Only Filter Missing
+                                        </label>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+                    </div>
+
+                    <!-- Arr Services Sub-tab -->
+                    <div id="subtab-arr" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">📥</span>
+                                <h3>Arr Services</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/radarr/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Connect Radarr and Sonarr to automatically add missing movies and shows from your collections. Kometa can send items from collections directly to your *arr applications for downloading.</p>
+
+                        <div class="arr-services-container">
+                            <!-- Radarr Section -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4><span class="section-icon" style="font-size: 18px;">🎬</span> Radarr</h4>
+                                    <span id="radarr-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="field-help info" style="margin-bottom: 12px;">Add missing movies from collections to Radarr for automatic downloading.</p>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="radarr-url" class="label-with-info">
+                                                URL
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Radarr server URL. Use the internal Docker hostname if both services are in Docker.</span>
+                                                </span>
+                                            </label>
+                                            <input type="text" id="radarr-url" data-config-path="radarr.url" placeholder="http://radarr:7878">
+                                        </div>
+                                        <div class="form-group flex-2">
+                                            <label for="radarr-token" class="label-with-info">
+                                                API Token
+                                                <span class="tooltip-wrapper">
+                                                    <span class="info-icon">?</span>
+                                                    <span class="tooltip">Found in Radarr → Settings → General → API Key</span>
+                                                </span>
+                                            </label>
+                                            <input type="password" id="radarr-token" data-config-path="radarr.token" placeholder="API token from Radarr settings">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="radarr-root-folder-path">Root Folder Path</label>
+                                            <input type="text" id="radarr-root-folder-path" data-config-path="radarr.root_folder_path" placeholder="/movies">
+                                            <span class="field-help">Default storage location for new movies</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="radarr-quality-profile">Quality Profile</label>
+                                            <input type="text" id="radarr-quality-profile" data-config-path="radarr.quality_profile" placeholder="HD-1080p">
+                                            <span class="field-help">Quality tier name for new content</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="radarr-availability" class="label-with-info">
+                                                Availability
+                                                <span class="default-badge">Default: announced</span>
+                                            </label>
+                                            <select id="radarr-availability" data-config-path="radarr.availability">
+                                                <option value="announced">Announced</option>
+                                                <option value="cinemas">In Cinemas</option>
+                                                <option value="released">Released</option>
+                                                <option value="db">DB</option>
+                                            </select>
+                                            <span class="field-help">Release status threshold</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="radarr-add-missing" data-config-path="radarr.add_missing">
+                                                Add Missing
+                                            </label>
+                                            <span class="checkbox-desc">Add missing movies from collections</span>
+                                        </div>
+                                        <div class="checkbox-with-desc">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="radarr-add-existing" data-config-path="radarr.add_existing">
+                                            Add Existing
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="radarr-monitor" data-config-path="radarr.monitor" checked>
+                                            Monitor
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="radarr-search" data-config-path="radarr.search">
+                                            Search
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="radarr-upgrade-existing" data-config-path="radarr.upgrade_existing">
+                                            Upgrade Existing
+                                        </label>
+                                    </div>
+                                    <details class="advanced-options">
+                                        <summary>Advanced Options</summary>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="radarr-tag">Tags</label>
+                                                <input type="text" id="radarr-tag" data-config-path="radarr.tag" placeholder="tag1, tag2">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="radarr-monitor-existing" data-config-path="radarr.monitor_existing">
+                                                    Monitor Existing
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="radarr-ignore-cache" data-config-path="radarr.ignore_cache">
+                                                    Ignore Cache
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="radarr-plex-path">Plex Path</label>
+                                                <input type="text" id="radarr-plex-path" data-config-path="radarr.plex_path" placeholder="/plex/movies">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="radarr-radarr-path">Radarr Path</label>
+                                                <input type="text" id="radarr-radarr-path" data-config-path="radarr.radarr_path" placeholder="/radarr/movies">
+                                            </div>
+                                        </div>
+                                    </details>
+                                    <div class="form-actions">
+                                        <button id="btn-test-radarr" class="btn btn-secondary">Test Connection</button>
+                                        <span id="radarr-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sonarr Section -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Sonarr</h4>
+                                    <span id="sonarr-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="sonarr-url">URL</label>
+                                            <input type="text" id="sonarr-url" data-config-path="sonarr.url" placeholder="http://sonarr:8989">
+                                        </div>
+                                        <div class="form-group flex-2">
+                                            <label for="sonarr-token">API Token</label>
+                                            <input type="password" id="sonarr-token" data-config-path="sonarr.token" placeholder="API token from Sonarr settings">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="sonarr-root-folder-path">Root Folder Path</label>
+                                            <input type="text" id="sonarr-root-folder-path" data-config-path="sonarr.root_folder_path" placeholder="/tv">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sonarr-quality-profile">Quality Profile</label>
+                                            <input type="text" id="sonarr-quality-profile" data-config-path="sonarr.quality_profile" placeholder="HD-1080p">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sonarr-language-profile">Language Profile</label>
+                                            <input type="text" id="sonarr-language-profile" data-config-path="sonarr.language_profile" placeholder="English">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="sonarr-monitor">Monitor</label>
+                                            <select id="sonarr-monitor" data-config-path="sonarr.monitor">
+                                                <option value="all">All</option>
+                                                <option value="future">Future</option>
+                                                <option value="missing">Missing</option>
+                                                <option value="existing">Existing</option>
+                                                <option value="pilot">Pilot</option>
+                                                <option value="first">First Season</option>
+                                                <option value="latest">Latest Season</option>
+                                                <option value="none">None</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="sonarr-series-type">Series Type</label>
+                                            <select id="sonarr-series-type" data-config-path="sonarr.series_type">
+                                                <option value="standard">Standard</option>
+                                                <option value="daily">Daily</option>
+                                                <option value="anime">Anime</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-row checkboxes">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sonarr-add-missing" data-config-path="sonarr.add_missing">
+                                            Add Missing
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sonarr-add-existing" data-config-path="sonarr.add_existing">
+                                            Add Existing
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sonarr-season-folder" data-config-path="sonarr.season_folder" checked>
+                                            Season Folder
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sonarr-search" data-config-path="sonarr.search">
+                                            Search
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="sonarr-cutoff-search" data-config-path="sonarr.cutoff_search">
+                                            Cutoff Search
+                                        </label>
+                                    </div>
+                                    <details class="advanced-options">
+                                        <summary>Advanced Options</summary>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="sonarr-tag">Tags</label>
+                                                <input type="text" id="sonarr-tag" data-config-path="sonarr.tag" placeholder="tag1, tag2">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="sonarr-upgrade-existing" data-config-path="sonarr.upgrade_existing">
+                                                    Upgrade Existing
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="sonarr-monitor-existing" data-config-path="sonarr.monitor_existing">
+                                                    Monitor Existing
+                                                </label>
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="checkbox-label">
+                                                    <input type="checkbox" id="sonarr-ignore-cache" data-config-path="sonarr.ignore_cache">
+                                                    Ignore Cache
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="sonarr-plex-path">Plex Path</label>
+                                                <input type="text" id="sonarr-plex-path" data-config-path="sonarr.plex_path" placeholder="/plex/tv">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="sonarr-sonarr-path">Sonarr Path</label>
+                                                <input type="text" id="sonarr-sonarr-path" data-config-path="sonarr.sonarr_path" placeholder="/sonarr/tv">
+                                            </div>
+                                        </div>
+                                    </details>
+                                    <div class="form-actions">
+                                        <button id="btn-test-sonarr" class="btn btn-secondary">Test Connection</button>
+                                        <span id="sonarr-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata Services Sub-tab -->
+                    <div id="subtab-metadata" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🏷️</span>
+                                <h3>Metadata Services</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/tautulli/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Connect to external metadata services for additional ratings, watch statistics, and content lists. These integrations enhance collection building with data from various sources.</p>
+                        <div class="metadata-services-container">
+                            <!-- Tautulli -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Tautulli</h4>
+                                    <span id="tautulli-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Watch statistics for popular/most watched content.</p>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="tautulli-url">URL</label>
+                                            <input type="text" id="tautulli-url" data-config-path="tautulli.url" placeholder="http://tautulli:8181">
+                                        </div>
+                                        <div class="form-group flex-2">
+                                            <label for="tautulli-apikey">API Key</label>
+                                            <input type="password" id="tautulli-apikey" data-config-path="tautulli.apikey" placeholder="API key from Tautulli settings">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-tautulli" class="btn btn-secondary">Test Connection</button>
+                                        <span id="tautulli-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MDBList -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>MDBList</h4>
+                                    <span id="mdblist-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Curated lists and ratings aggregation.</p>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="mdblist-apikey">API Key</label>
+                                            <input type="password" id="mdblist-apikey" data-config-path="mdblist.apikey" placeholder="API key from mdblist.com/preferences">
+                                            <small><a href="https://mdblist.com/preferences/" target="_blank">Get API key</a> (1000 free requests/day)</small>
+                                        </div>
+                                        <div class="form-group flex-1">
+                                            <label for="mdblist-cache-expiration">Cache Expiration (days)</label>
+                                            <input type="number" id="mdblist-cache-expiration" data-config-path="mdblist.cache_expiration" value="60" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-mdblist" class="btn btn-secondary">Test API Key</button>
+                                        <span id="mdblist-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- OMDb -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>OMDb</h4>
+                                    <span id="omdb-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Additional movie metadata from Open Movie Database.</p>
+                                    <div class="form-row">
+                                        <div class="form-group flex-2">
+                                            <label for="omdb-apikey">API Key</label>
+                                            <input type="password" id="omdb-apikey" data-config-path="omdb.apikey" placeholder="API key from omdbapi.com">
+                                            <small><a href="https://www.omdbapi.com/apikey.aspx" target="_blank">Get API key</a> (1000 free requests/day)</small>
+                                        </div>
+                                        <div class="form-group flex-1">
+                                            <label for="omdb-cache-expiration">Cache Expiration (days)</label>
+                                            <input type="number" id="omdb-cache-expiration" data-config-path="omdb.cache_expiration" value="60" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-omdb" class="btn btn-secondary">Test API Key</button>
+                                        <span id="omdb-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List Services Sub-tab -->
+                    <div id="subtab-lists" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">📋</span>
+                                <h3>List Services</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/trakt/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Connect to external list providers to build collections from curated user lists, recommendations, and anime databases. Trakt is particularly powerful for watchlist synchronization.</p>
+                        <div class="list-services-container">
+                            <!-- Trakt -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Trakt</h4>
+                                    <span id="trakt-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Lists, recommendations, and watch history.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="trakt-client-id">Client ID</label>
+                                            <input type="password" id="trakt-client-id" data-config-path="trakt.client_id" placeholder="Trakt application client ID">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="trakt-client-secret">Client Secret</label>
+                                            <input type="password" id="trakt-client-secret" data-config-path="trakt.client_secret" placeholder="Trakt application client secret">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="trakt-pin">PIN</label>
+                                            <input type="text" id="trakt-pin" data-config-path="trakt.pin" placeholder="PIN from Trakt authorization">
+                                            <small><a href="https://trakt.tv/oauth/applications" target="_blank">Create Trakt application</a></small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="checkbox-label">
+                                                <input type="checkbox" id="trakt-force-refresh" data-config-path="trakt.force_refresh">
+                                                Force Refresh on Every Run
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div id="trakt-auth-status" class="auth-status hidden">
+                                        <span class="auth-label">Authorization:</span>
+                                        <span class="auth-value">Active</span>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-trakt" class="btn btn-secondary">Test Connection</button>
+                                        <span id="trakt-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MyAnimeList -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>MyAnimeList</h4>
+                                    <span id="mal-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Anime tracking and recommendations.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="mal-client-id">Client ID</label>
+                                            <input type="password" id="mal-client-id" data-config-path="mal.client_id" placeholder="MAL application client ID">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="mal-client-secret">Client Secret</label>
+                                            <input type="password" id="mal-client-secret" data-config-path="mal.client_secret" placeholder="MAL application client secret">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="mal-localhost-url">Localhost URL</label>
+                                            <input type="text" id="mal-localhost-url" data-config-path="mal.localhost_url" placeholder="http://localhost:9999">
+                                            <small>Redirect URL for OAuth flow</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-mal" class="btn btn-secondary">Test Connection</button>
+                                        <span id="mal-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AniDB -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>AniDB</h4>
+                                    <span id="anidb-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Anime database for detailed metadata.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="anidb-client">Client Name</label>
+                                            <input type="text" id="anidb-client" data-config-path="anidb.client" placeholder="lowercase client name">
+                                            <small>Must be lowercase</small>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="anidb-version">Client Version</label>
+                                            <input type="text" id="anidb-version" data-config-path="anidb.version" placeholder="1">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="anidb-username">Username (optional)</label>
+                                            <input type="text" id="anidb-username" data-config-path="anidb.username" placeholder="For mature content access">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="anidb-password">Password (optional)</label>
+                                            <input type="password" id="anidb-password" data-config-path="anidb.password" placeholder="For mature content access">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="anidb-language">Language</label>
+                                            <select id="anidb-language" data-config-path="anidb.language">
+                                                <option value="en">English</option>
+                                                <option value="ja">Japanese</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="anidb-cache-expiration">Cache Expiration (days)</label>
+                                            <input type="number" id="anidb-cache-expiration" data-config-path="anidb.cache_expiration" value="60" min="1">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-anidb" class="btn btn-secondary">Test Connection</button>
+                                        <span id="anidb-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GitHub -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>GitHub</h4>
+                                    <span id="github-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Personal access token for higher API rate limits.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="github-token">Personal Access Token</label>
+                                            <input type="password" id="github-token" data-config-path="github.token" placeholder="ghp_xxxxxxxxxxxx">
+                                            <small><a href="https://github.com/settings/tokens" target="_blank">Generate token</a> (only needs read access)</small>
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-github" class="btn btn-secondary">Test Token</button>
+                                        <span id="github-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Sub-tab -->
+                    <div id="subtab-notifications" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🔔</span>
+                                <h3>Notifications</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/webhooks/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Get notified about Kometa runs, errors, and updates via webhooks to Discord, Slack, or dedicated notification services like Notifiarr, Gotify, and ntfy.</p>
+                        <div class="notifications-container">
+                            <!-- Webhooks -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Webhooks</h4>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Send notifications to custom URLs (Discord, Slack, etc.)</p>
+                                    <div class="form-group">
+                                        <label for="webhooks-error">Error Webhook</label>
+                                        <input type="text" id="webhooks-error" data-config-path="webhooks.error" placeholder="https://discord.com/api/webhooks/...">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="webhooks-version">Version Webhook</label>
+                                        <input type="text" id="webhooks-version" data-config-path="webhooks.version" placeholder="Sent when new version available">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="webhooks-run-start">Run Start Webhook</label>
+                                        <input type="text" id="webhooks-run-start" data-config-path="webhooks.run_start" placeholder="Sent at beginning of run">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="webhooks-run-end">Run End Webhook</label>
+                                        <input type="text" id="webhooks-run-end" data-config-path="webhooks.run_end" placeholder="Sent at end of run with stats">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="webhooks-changes">Changes Webhook</label>
+                                        <input type="text" id="webhooks-changes" data-config-path="webhooks.changes" placeholder="Sent when collections change">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="webhooks-delete">Delete Webhook</label>
+                                        <input type="text" id="webhooks-delete" data-config-path="webhooks.delete" placeholder="Sent when collections deleted">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Notifiarr -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Notifiarr</h4>
+                                    <span id="notifiarr-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Unified notification service for media automation.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="notifiarr-apikey">API Key</label>
+                                            <input type="password" id="notifiarr-apikey" data-config-path="notifiarr.apikey" placeholder="Notifiarr API key">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-notifiarr" class="btn btn-secondary">Test Connection</button>
+                                        <span id="notifiarr-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gotify -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>Gotify</h4>
+                                    <span id="gotify-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Self-hosted push notification server.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="gotify-url">URL</label>
+                                            <input type="text" id="gotify-url" data-config-path="gotify.url" placeholder="https://gotify.example.com">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="gotify-token">Application Token</label>
+                                            <input type="password" id="gotify-token" data-config-path="gotify.token" placeholder="Gotify app token">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-gotify" class="btn btn-secondary">Test Connection</button>
+                                        <span id="gotify-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ntfy -->
+                            <div class="service-card">
+                                <div class="service-card-header">
+                                    <h4>ntfy</h4>
+                                    <span id="ntfy-status" class="service-status">Not configured</span>
+                                </div>
+                                <div class="service-card-content">
+                                    <p class="service-desc">Simple HTTP-based pub-sub notifications.</p>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="ntfy-url">URL</label>
+                                            <input type="text" id="ntfy-url" data-config-path="ntfy.url" placeholder="https://ntfy.sh">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="ntfy-topic">Topic</label>
+                                            <input type="text" id="ntfy-topic" data-config-path="ntfy.topic" placeholder="kometa-notifications">
+                                        </div>
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label for="ntfy-token">Access Token (optional)</label>
+                                            <input type="password" id="ntfy-token" data-config-path="ntfy.token" placeholder="For authenticated access">
+                                        </div>
+                                    </div>
+                                    <div class="form-actions">
+                                        <button id="btn-test-ntfy" class="btn btn-secondary">Test Connection</button>
+                                        <span id="ntfy-test-result" class="test-result"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Raw YAML Sub-tab -->
+                    <div id="subtab-yaml" class="subtab-panel hidden">
+                        <div class="subtab-header">
+                            <h3>Raw YAML Editor</h3>
+                            <p class="subtab-desc">Edit the complete configuration file directly.</p>
+                        </div>
+                        <div class="yaml-editor-container">
+                            <textarea id="config-editor" class="config-editor" spellcheck="false" placeholder="# Kometa Configuration
 # Paste your config.yml here or start typing...
 
 plex:
@@ -95,43 +1457,18 @@ libraries:
     collection_files:
       - file: config/Movies.yml
 "></textarea>
-                </div>
-
-                <!-- Form View (simplified) -->
-                <div id="view-form" class="editor-view hidden">
-                    <div class="form-section">
-                        <h3>Plex Connection</h3>
-                        <div class="form-group">
-                            <label for="plex-url">Plex URL</label>
-                            <input type="text" id="plex-url" placeholder="http://plex:32400">
-                        </div>
-                        <div class="form-group">
-                            <label for="plex-token">Plex Token</label>
-                            <input type="password" id="plex-token" placeholder="Your Plex token">
-                            <small><a href="https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/" target="_blank">How to find your token</a></small>
                         </div>
                     </div>
-
-                    <div class="form-section">
-                        <h3>TMDb</h3>
-                        <div class="form-group">
-                            <label for="tmdb-apikey">API Key</label>
-                            <input type="password" id="tmdb-apikey" placeholder="Your TMDb API key">
-                            <small><a href="https://www.themoviedb.org/settings/api" target="_blank">Get API key</a></small>
-                        </div>
-                    </div>
-
-                    <p class="form-note">For advanced configuration, use the YAML Editor tab.</p>
                 </div>
             </div>
 
-            <!-- Backup List -->
-            <div class="backups-section">
-                <h3>Backups</h3>
+            <!-- Backup List (Collapsible) -->
+            <details class="backups-section">
+                <summary><h3>Backups</h3></summary>
                 <div id="backups-list" class="backups-list">
                     <p class="loading">Loading backups...</p>
                 </div>
-            </div>
+            </details>
         </section>
 
         <!-- Overlays Tab -->
@@ -744,6 +2081,8 @@ libraries:
         <p>Kometa Web UI | <a href="https://kometa.wiki" target="_blank">Documentation</a></p>
     </footer>
 
+    <!-- YAML parser library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <script src="/static/js/app.js"></script>
 </body>
 </html>

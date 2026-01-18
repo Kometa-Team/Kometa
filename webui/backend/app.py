@@ -614,6 +614,423 @@ async def get_poster(
 
 
 # ============================================================================
+# Connection Test Endpoints
+# ============================================================================
+
+class PlexTestRequest(BaseModel):
+    url: str
+    token: str
+
+
+class TmdbTestRequest(BaseModel):
+    apikey: str
+
+
+class ArrTestRequest(BaseModel):
+    url: str
+    token: str
+
+
+class TautulliTestRequest(BaseModel):
+    url: str
+    apikey: str
+
+
+class ApiKeyTestRequest(BaseModel):
+    apikey: str
+
+
+class TraktTestRequest(BaseModel):
+    client_id: str
+    client_secret: Optional[str] = None
+
+
+class MalTestRequest(BaseModel):
+    client_id: str
+
+
+class AnidbTestRequest(BaseModel):
+    client: str
+    version: str
+
+
+class GithubTestRequest(BaseModel):
+    token: str
+
+
+class GotifyTestRequest(BaseModel):
+    url: str
+    token: str
+
+
+class NtfyTestRequest(BaseModel):
+    url: str
+    topic: str
+
+
+@app.post("/api/test/plex")
+async def test_plex_connection(request: PlexTestRequest):
+    """Test Plex server connection."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+        headers = {
+            "X-Plex-Token": request.token,
+            "Accept": "application/json"
+        }
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            response = await client.get(f"{url}/", headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                server_name = data.get("MediaContainer", {}).get("friendlyName", "Plex Server")
+                return {"success": True, "server_name": server_name}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid token"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/tmdb")
+async def test_tmdb_connection(request: TmdbTestRequest):
+    """Test TMDb API key."""
+    import httpx
+
+    try:
+        url = f"https://api.themoviedb.org/3/configuration?api_key={request.apikey}"
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url)
+
+            if response.status_code == 200:
+                return {"success": True, "message": "API key is valid"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API key"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/radarr")
+async def test_radarr_connection(request: ArrTestRequest):
+    """Test Radarr connection."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+        headers = {"X-Api-Key": request.token}
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            response = await client.get(f"{url}/api/v3/system/status", headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                version = data.get("version", "unknown")
+                return {"success": True, "message": f"Connected to Radarr v{version}"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API token"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/sonarr")
+async def test_sonarr_connection(request: ArrTestRequest):
+    """Test Sonarr connection."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+        headers = {"X-Api-Key": request.token}
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            response = await client.get(f"{url}/api/v3/system/status", headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                version = data.get("version", "unknown")
+                return {"success": True, "message": f"Connected to Sonarr v{version}"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API token"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/tautulli")
+async def test_tautulli_connection(request: TautulliTestRequest):
+    """Test Tautulli connection."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+        params = {"apikey": request.apikey, "cmd": "get_server_info"}
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            response = await client.get(f"{url}/api/v2", params=params)
+
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("response", {}).get("result") == "success":
+                    return {"success": True, "message": "Connected to Tautulli"}
+                else:
+                    return {"success": False, "error": "Invalid API key"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/mdblist")
+async def test_mdblist_connection(request: ApiKeyTestRequest):
+    """Test MDBList API key."""
+    import httpx
+
+    try:
+        url = f"https://mdblist.com/api/user/?apikey={request.apikey}"
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                if "error" not in data:
+                    return {"success": True, "message": "API key is valid"}
+                else:
+                    return {"success": False, "error": data.get("error", "Unknown error")}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API key"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/omdb")
+async def test_omdb_connection(request: ApiKeyTestRequest):
+    """Test OMDb API key."""
+    import httpx
+
+    try:
+        url = f"https://www.omdbapi.com/?apikey={request.apikey}&t=test"
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(url)
+
+            if response.status_code == 200:
+                data = response.json()
+                if data.get("Response") == "True" or "Error" not in data or "Invalid API key" not in data.get("Error", ""):
+                    return {"success": True, "message": "API key is valid"}
+                elif "Invalid API key" in data.get("Error", ""):
+                    return {"success": False, "error": "Invalid API key"}
+                else:
+                    return {"success": True, "message": "API key is valid"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/trakt")
+async def test_trakt_connection(request: TraktTestRequest):
+    """Test Trakt API credentials."""
+    import httpx
+
+    try:
+        headers = {
+            "Content-Type": "application/json",
+            "trakt-api-version": "2",
+            "trakt-api-key": request.client_id
+        }
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get("https://api.trakt.tv/lists/trending", headers=headers)
+
+            if response.status_code == 200:
+                return {"success": True, "message": "Client ID is valid"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid Client ID"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/mal")
+async def test_mal_connection(request: MalTestRequest):
+    """Test MyAnimeList API credentials."""
+    import httpx
+
+    try:
+        headers = {"X-MAL-CLIENT-ID": request.client_id}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(
+                "https://api.myanimelist.net/v2/anime/ranking?ranking_type=all&limit=1",
+                headers=headers
+            )
+
+            if response.status_code == 200:
+                return {"success": True, "message": "Client ID is valid"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid Client ID"}
+            elif response.status_code == 403:
+                return {"success": False, "error": "Client ID forbidden - check app settings"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/anidb")
+async def test_anidb_connection(request: AnidbTestRequest):
+    """Test AniDB API credentials."""
+    # AniDB API is rate-limited and doesn't have a simple test endpoint
+    # Just validate that the client name is lowercase and version is numeric
+    if not request.client.islower():
+        return {"success": False, "error": "Client name must be lowercase"}
+
+    if not request.version.isdigit():
+        return {"success": False, "error": "Version must be a number"}
+
+    return {"success": True, "message": "Credentials format is valid (AniDB connection will be tested during run)"}
+
+
+@app.post("/api/test/github")
+async def test_github_connection(request: GithubTestRequest):
+    """Test GitHub personal access token."""
+    import httpx
+
+    try:
+        headers = {"Authorization": f"token {request.token}"}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get("https://api.github.com/user", headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                username = data.get("login", "unknown")
+                return {"success": True, "message": f"Authenticated as {username}"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid token"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/notifiarr")
+async def test_notifiarr_connection(request: ApiKeyTestRequest):
+    """Test Notifiarr API key."""
+    import httpx
+
+    try:
+        headers = {"x-api-key": request.apikey}
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get("https://notifiarr.com/api/v1/user/validate", headers=headers)
+
+            if response.status_code == 200:
+                return {"success": True, "message": "API key is valid"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid API key"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/gotify")
+async def test_gotify_connection(request: GotifyTestRequest):
+    """Test Gotify connection."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+        headers = {"X-Gotify-Key": request.token}
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            response = await client.get(f"{url}/version", headers=headers)
+
+            if response.status_code == 200:
+                data = response.json()
+                version = data.get("version", "unknown")
+                return {"success": True, "message": f"Connected to Gotify v{version}"}
+            elif response.status_code == 401:
+                return {"success": False, "error": "Invalid token"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+@app.post("/api/test/ntfy")
+async def test_ntfy_connection(request: NtfyTestRequest):
+    """Test ntfy connection by sending a test notification."""
+    import httpx
+
+    try:
+        url = request.url.rstrip('/')
+
+        async with httpx.AsyncClient(timeout=10.0, verify=False) as client:
+            # Just check if the ntfy server is reachable
+            response = await client.get(f"{url}/{request.topic}/json?poll=1")
+
+            if response.status_code in [200, 304]:
+                return {"success": True, "message": f"Connected to ntfy topic '{request.topic}'"}
+            elif response.status_code == 404:
+                return {"success": False, "error": "Topic not found"}
+            else:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# ============================================================================
 # Main entry point
 # ============================================================================
 
