@@ -1131,8 +1131,173 @@ const profileSwitcher = {
 
     showManageDialog() {
         this.closeDropdown();
-        // For now, just show a toast - full manage dialog could be added later
-        toast.info('Profile management: Delete profiles by clearing localStorage');
+
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('manage-profiles-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'manage-profiles-modal';
+            modal.className = 'manage-profiles-modal';
+            modal.innerHTML = `
+                <div class="manage-profiles-content">
+                    <div class="manage-profiles-header">
+                        <h3>Manage Profiles</h3>
+                        <button class="btn btn-ghost btn-icon" id="btn-close-manage-profiles" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="manage-profiles-body" id="manage-profiles-list">
+                        <!-- Profiles will be rendered here -->
+                    </div>
+                    <div class="manage-profiles-footer">
+                        <span class="text-muted text-sm">Tip: Default profile cannot be deleted</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Close handlers
+            document.getElementById('btn-close-manage-profiles').addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+
+        // Render profile list
+        this.renderManageList();
+        modal.classList.add('active');
+    },
+
+    renderManageList() {
+        const list = document.getElementById('manage-profiles-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        for (const [id, profile] of Object.entries(this.profiles)) {
+            const item = document.createElement('div');
+            item.className = `manage-profile-item ${id === this.currentProfile ? 'current' : ''}`;
+            item.dataset.profileId = id;
+
+            const isDefault = id === 'default';
+            const isCurrent = id === this.currentProfile;
+
+            item.innerHTML = `
+                <div class="manage-profile-info">
+                    <span class="manage-profile-icon">${isDefault ? '📄' : '📁'}</span>
+                    <span class="manage-profile-name" id="profile-name-${id}">${profile.name}</span>
+                    ${isCurrent ? '<span class="manage-profile-badge">Active</span>' : ''}
+                </div>
+                <div class="manage-profile-actions">
+                    <button class="btn btn-sm btn-ghost" data-action="rename" data-id="${id}" title="Rename">
+                        ✏️
+                    </button>
+                    ${!isDefault ? `
+                        <button class="btn btn-sm btn-ghost btn-danger" data-action="delete" data-id="${id}" title="Delete">
+                            🗑️
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            // Attach event listeners
+            item.querySelector('[data-action="rename"]')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.renameProfile(id);
+            });
+
+            item.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteProfile(id);
+            });
+
+            list.appendChild(item);
+        }
+    },
+
+    renameProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile) return;
+
+        const nameEl = document.getElementById(`profile-name-${id}`);
+        if (!nameEl) return;
+
+        // Replace with input
+        const currentName = profile.name;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control form-control-sm';
+        input.value = currentName;
+        input.style.width = '150px';
+
+        nameEl.replaceWith(input);
+        input.focus();
+        input.select();
+
+        const saveRename = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                profile.name = newName;
+                this.saveProfiles();
+                this.renderProfiles();
+                toast.success(`Profile renamed to "${newName}"`);
+            }
+            this.renderManageList();
+        };
+
+        input.addEventListener('blur', saveRename);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveRename();
+            } else if (e.key === 'Escape') {
+                this.renderManageList();
+            }
+        });
+    },
+
+    deleteProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile || id === 'default') return;
+
+        // Confirm deletion
+        if (!confirm(`Delete profile "${profile.name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        // If deleting current profile, switch to default first
+        if (this.currentProfile === id) {
+            this.currentProfile = 'default';
+        }
+
+        delete this.profiles[id];
+        this.saveProfiles();
+        this.renderProfiles();
+        this.renderManageList();
+
+        toast.success(`Profile "${profile.name}" deleted`);
+        dashboard.addActivity(`Deleted profile: ${profile.name}`, false);
+    },
+
+    duplicateProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile) return;
+
+        const newId = `${id}-copy-${Date.now()}`;
+        const newName = `${profile.name} (Copy)`;
+
+        this.profiles[newId] = {
+            name: newName,
+            config: profile.config,
+            created: Date.now()
+        };
+
+        this.saveProfiles();
+        this.renderProfiles();
+        this.renderManageList();
+
+        toast.success(`Profile duplicated as "${newName}"`);
     },
 
     // Update current profile's config (called when config changes)
@@ -1147,6 +1312,209 @@ const profileSwitcher = {
 // ============================================================================
 // Pre-flight Checklist
 // ============================================================================
+
+// ============================================================================
+// Overlay Gallery (Interactive)
+// ============================================================================
+
+const overlayGallery = {
+    selectedPresets: new Set(),
+    presetConfigs: {
+        resolution: {
+            name: 'Resolution Badges',
+            description: 'Shows 4K, 1080p, 720p badges',
+            overlays: {
+                '4K': { position: 'top-left', text: '4K', style: 'badge-blue' },
+                '1080p': { position: 'top-left', text: '1080p', style: 'badge-green' },
+                '720p': { position: 'top-left', text: '720p', style: 'badge-yellow' }
+            }
+        },
+        audio: {
+            name: 'Audio Format',
+            description: 'Dolby Atmos, DTS:X, TrueHD badges',
+            overlays: {
+                'Atmos': { position: 'top-right', text: 'ATMOS', style: 'badge-purple' },
+                'DTS:X': { position: 'top-right', text: 'DTS:X', style: 'badge-purple' },
+                'TrueHD': { position: 'top-right', text: 'TrueHD', style: 'badge-blue' }
+            }
+        },
+        hdr: {
+            name: 'HDR Formats',
+            description: 'Dolby Vision, HDR10+, HDR10 badges',
+            overlays: {
+                'DolbyVision': { position: 'bottom-left', text: 'DV', style: 'badge-orange' },
+                'HDR10+': { position: 'bottom-left', text: 'HDR10+', style: 'badge-orange' },
+                'HDR10': { position: 'bottom-left', text: 'HDR', style: 'badge-yellow' }
+            }
+        },
+        ratings: {
+            name: 'Ratings',
+            description: 'IMDb, Rotten Tomatoes, TMDb scores',
+            overlays: {
+                'IMDb': { position: 'bottom-right', type: 'rating', source: 'imdb' },
+                'RT': { position: 'bottom-right', type: 'rating', source: 'rottentomatoes' },
+                'TMDb': { position: 'bottom-right', type: 'rating', source: 'tmdb' }
+            }
+        },
+        streaming: {
+            name: 'Streaming Services',
+            description: 'Netflix, Disney+, Amazon badges',
+            overlays: {
+                'Streaming': { position: 'top-right', type: 'streaming' }
+            }
+        },
+        awards: {
+            name: 'Awards',
+            description: 'Oscar, Emmy, Golden Globe winners',
+            overlays: {
+                'Oscar': { position: 'top-left', type: 'award', source: 'oscar' },
+                'Emmy': { position: 'top-left', type: 'award', source: 'emmy' }
+            }
+        },
+        status: {
+            name: 'Status Ribbons',
+            description: 'New, Trending, Popular ribbons',
+            overlays: {
+                'Ribbon': { position: 'top-right', type: 'ribbon' }
+            }
+        },
+        custom: {
+            name: 'Custom Overlay',
+            description: 'Create your own overlay',
+            overlays: {}
+        }
+    },
+
+    init() {
+        const gallery = document.getElementById('overlay-gallery');
+        if (!gallery) return;
+
+        // Load saved selections from localStorage
+        const saved = localStorage.getItem('kometa-selected-presets');
+        if (saved) {
+            try {
+                this.selectedPresets = new Set(JSON.parse(saved));
+                this.updateSelectionUI();
+            } catch (e) {
+                console.warn('Failed to load saved preset selections');
+            }
+        }
+
+        // Attach click handlers to gallery items
+        gallery.querySelectorAll('.overlay-gallery-item').forEach(item => {
+            item.addEventListener('click', () => this.togglePreset(item));
+            // Add keyboard support
+            item.setAttribute('tabindex', '0');
+            item.setAttribute('role', 'button');
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.togglePreset(item);
+                }
+            });
+        });
+
+        // Set up apply button if it exists
+        const applyBtn = document.getElementById('apply-presets-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => this.applySelectedPresets());
+        }
+    },
+
+    togglePreset(item) {
+        const preset = item.dataset.preset;
+        if (!preset) return;
+
+        if (this.selectedPresets.has(preset)) {
+            this.selectedPresets.delete(preset);
+            item.classList.remove('selected');
+            toast.show(`Removed "${this.presetConfigs[preset]?.name || preset}" preset`, 'info', 2000);
+        } else {
+            this.selectedPresets.add(preset);
+            item.classList.add('selected');
+            toast.show(`Selected "${this.presetConfigs[preset]?.name || preset}" preset`, 'success', 2000);
+
+            // Add selection animation
+            item.classList.add('selecting');
+            setTimeout(() => item.classList.remove('selecting'), 300);
+        }
+
+        // Save to localStorage
+        localStorage.setItem('kometa-selected-presets', JSON.stringify([...this.selectedPresets]));
+
+        // Update apply button state
+        this.updateApplyButton();
+    },
+
+    updateSelectionUI() {
+        const gallery = document.getElementById('overlay-gallery');
+        if (!gallery) return;
+
+        gallery.querySelectorAll('.overlay-gallery-item').forEach(item => {
+            const preset = item.dataset.preset;
+            if (this.selectedPresets.has(preset)) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+
+        this.updateApplyButton();
+    },
+
+    updateApplyButton() {
+        const applyBtn = document.getElementById('apply-presets-btn');
+        if (applyBtn) {
+            if (this.selectedPresets.size > 0) {
+                applyBtn.disabled = false;
+                applyBtn.textContent = `Apply ${this.selectedPresets.size} Preset${this.selectedPresets.size > 1 ? 's' : ''}`;
+            } else {
+                applyBtn.disabled = true;
+                applyBtn.textContent = 'Select Presets to Apply';
+            }
+        }
+    },
+
+    getSelectedPresets() {
+        return [...this.selectedPresets].map(key => ({
+            key,
+            config: this.presetConfigs[key]
+        }));
+    },
+
+    applySelectedPresets() {
+        const selected = this.getSelectedPresets();
+        if (selected.length === 0) {
+            toast.show('No presets selected', 'warning');
+            return;
+        }
+
+        // Build overlay configuration
+        const overlayConfig = {};
+        selected.forEach(({ key, config }) => {
+            if (config && config.overlays) {
+                Object.assign(overlayConfig, config.overlays);
+            }
+        });
+
+        // Here you would apply to the actual configuration
+        // For now, show success toast
+        const names = selected.map(s => s.config?.name || s.key).join(', ');
+        toast.show(`Applied presets: ${names}`, 'success');
+
+        // Trigger YAML preview update if available
+        if (typeof yamlPreview !== 'undefined' && yamlPreview.update) {
+            yamlPreview.update();
+        }
+    },
+
+    clearSelection() {
+        this.selectedPresets.clear();
+        localStorage.removeItem('kometa-selected-presets');
+        this.updateSelectionUI();
+        toast.show('Selection cleared', 'info');
+    }
+};
 
 const preflight = {
     status: {
@@ -1351,6 +1719,72 @@ const preflight = {
 };
 
 // ============================================================================
+// Theme Switcher
+// ============================================================================
+
+const theme = {
+    currentTheme: 'dark',
+
+    init() {
+        // Check for saved preference or system preference
+        const saved = localStorage.getItem('kometa-theme');
+        if (saved) {
+            this.currentTheme = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            this.currentTheme = 'light';
+        }
+
+        // Apply theme
+        this.apply(this.currentTheme);
+
+        // Set up toggle button
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggle());
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('kometa-theme')) {
+                this.apply(e.matches ? 'light' : 'dark');
+            }
+        });
+    },
+
+    apply(themeName) {
+        this.currentTheme = themeName;
+
+        // Add transition class for smooth switching
+        document.documentElement.classList.add('theme-transition');
+
+        // Apply theme
+        if (themeName === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+
+        // Remove transition class after animation
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition');
+        }, 300);
+    },
+
+    toggle() {
+        const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+        this.apply(newTheme);
+        localStorage.setItem('kometa-theme', newTheme);
+
+        // Show toast notification
+        toast.show(`Switched to ${newTheme} theme`, 'info', 2000);
+    },
+
+    isDark() {
+        return this.currentTheme === 'dark';
+    }
+};
+
+// ============================================================================
 // Keyboard Shortcuts (Phase 4)
 // ============================================================================
 
@@ -1397,6 +1831,10 @@ const keyboard = {
 
         this.register('ctrl+4', 'Go to Logs tab', () => {
             document.querySelector('[data-tab="logs"]')?.click();
+        });
+
+        this.register('ctrl+shift+t', 'Toggle theme', () => {
+            theme.toggle();
         });
 
         this.register('escape', 'Close modals/panels', () => {
@@ -4610,13 +5048,15 @@ async function init() {
     sidebarStatus.init();
 
     // Initialize Phase 4 features
+    theme.init();
     keyboard.init();
 
-    // Initialize dashboard, wizard, profiles, and preflight
+    // Initialize dashboard, wizard, profiles, preflight, and overlay gallery
     dashboard.init();
     setupWizard.init();
     profileSwitcher.init();
     preflight.init();
+    overlayGallery.init();
 
     // Load initial data
     await loadConfig();

@@ -1,8 +1,8 @@
 # Kometa Web UI - Design System Style Guide
 
-> **Version:** 1.0
+> **Version:** 2.0
 > **Last Updated:** January 2026
-> **Status:** Reference Document
+> **Status:** Complete Reference Document
 
 This style guide defines the visual language, components, and patterns for the Kometa Web UI. All new features and modifications should follow these guidelines to ensure consistency.
 
@@ -25,6 +25,14 @@ This style guide defines the visual language, components, and patterns for the K
 13. [Utility Classes](#13-utility-classes)
 14. [Component Patterns](#14-component-patterns)
 15. [Accessibility](#15-accessibility)
+16. [Dashboard Components](#16-dashboard-components)
+17. [Setup Wizard](#17-setup-wizard)
+18. [Profile Switcher](#18-profile-switcher)
+19. [Overlay Gallery](#19-overlay-gallery)
+20. [Pre-flight Checklist](#20-pre-flight-checklist)
+21. [YAML Preview Panel](#21-yaml-preview-panel)
+22. [Keyboard Shortcuts](#22-keyboard-shortcuts)
+23. [Animations](#23-animations)
 
 ---
 
@@ -1413,11 +1421,1368 @@ Current emoji usage should be replaced with SVG icons:
 
 ---
 
+## 16. Dashboard Components
+
+The Dashboard tab is the landing page showing system status at a glance.
+
+### Status Cards
+
+```css
+.dashboard-status-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.status-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  transition: all 200ms ease;
+}
+
+.status-card:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.status-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+
+.status-card-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  font-size: 20px;
+}
+
+.status-card-title {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.status-card-value {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+/* Status variants */
+.status-card.connected .status-card-icon {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.status-card.error .status-card-icon {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.status-card.pending .status-card-icon {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+```
+
+### Library Cards
+
+```css
+.dashboard-libraries {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-3);
+}
+
+.library-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  text-align: center;
+  transition: all 200ms ease;
+}
+
+.library-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.library-card-icon {
+  font-size: 32px;
+  margin-bottom: var(--space-2);
+}
+
+.library-card-name {
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.library-card-type {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+```
+
+### Quick Actions
+
+```css
+.dashboard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+}
+
+.dashboard-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.dashboard-action-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--color-primary);
+}
+
+.dashboard-action-btn.primary {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
+}
+```
+
+### Recent Activity Feed
+
+```css
+.activity-feed {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.activity-feed-header {
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+  font-weight: var(--font-semibold);
+}
+
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}
+
+.activity-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.activity-content {
+  flex: 1;
+}
+
+.activity-message {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.activity-time {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="dashboard-status-cards">
+  <div class="status-card connected">
+    <div class="status-card-header">
+      <span class="status-card-icon">P</span>
+      <span class="status-badge connected">
+        <span class="status-dot"></span>
+        Connected
+      </span>
+    </div>
+    <div class="status-card-title">Plex Server</div>
+    <div class="status-card-value">Online</div>
+  </div>
+  <!-- More status cards -->
+</div>
+```
+
+---
+
+## 17. Setup Wizard
+
+A 4-step guided wizard for first-time users.
+
+### Wizard Modal
+
+```css
+.wizard-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 200ms ease;
+}
+
+.wizard-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 300ms ease;
+}
+
+.wizard-header {
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.wizard-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.wizard-subtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+```
+
+### Step Progress
+
+```css
+.wizard-progress {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-primary);
+}
+
+.wizard-step-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.wizard-step-dot {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  border: 2px solid var(--border-default);
+  transition: all 200ms ease;
+}
+
+.wizard-step-indicator.active .wizard-step-dot {
+  background: var(--color-primary);
+  color: var(--text-inverse);
+  border-color: var(--color-primary);
+}
+
+.wizard-step-indicator.completed .wizard-step-dot {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.wizard-step-line {
+  width: 40px;
+  height: 2px;
+  background: var(--border-default);
+}
+
+.wizard-step-indicator.completed + .wizard-step-line,
+.wizard-step-line.completed {
+  background: var(--color-success);
+}
+```
+
+### Step Content
+
+```css
+.wizard-content {
+  flex: 1;
+  padding: var(--space-5);
+  overflow-y: auto;
+}
+
+.wizard-step {
+  display: none;
+  animation: fadeIn 200ms ease;
+}
+
+.wizard-step.active {
+  display: block;
+}
+
+.wizard-step h3 {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-4);
+}
+
+.wizard-step .form-group {
+  margin-bottom: var(--space-4);
+}
+```
+
+### Wizard Footer
+
+```css
+.wizard-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-tertiary);
+  border-top: 1px solid var(--border-default);
+}
+
+.wizard-footer .btn-group {
+  display: flex;
+  gap: var(--space-2);
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="wizard-overlay" id="setup-wizard">
+  <div class="wizard-modal">
+    <div class="wizard-header">
+      <h2 class="wizard-title">Welcome to Kometa</h2>
+      <p class="wizard-subtitle">Let's get you set up in just a few steps</p>
+    </div>
+
+    <div class="wizard-progress">
+      <div class="wizard-step-indicator active">
+        <span class="wizard-step-dot">1</span>
+      </div>
+      <div class="wizard-step-line"></div>
+      <div class="wizard-step-indicator">
+        <span class="wizard-step-dot">2</span>
+      </div>
+      <!-- More steps -->
+    </div>
+
+    <div class="wizard-content">
+      <div class="wizard-step active" data-step="1">
+        <h3>Connect to Plex</h3>
+        <!-- Step content -->
+      </div>
+    </div>
+
+    <div class="wizard-footer">
+      <button class="btn btn-ghost">Skip Setup</button>
+      <div class="btn-group">
+        <button class="btn btn-secondary">Back</button>
+        <button class="btn btn-primary">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## 18. Profile Switcher
+
+Header dropdown for switching between configuration profiles.
+
+### Profile Dropdown
+
+```css
+.profile-switcher {
+  position: relative;
+}
+
+.profile-switcher-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.profile-switcher-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.profile-switcher-btn .profile-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+}
+
+.profile-switcher-btn .chevron {
+  transition: transform 200ms ease;
+}
+
+.profile-switcher.open .profile-switcher-btn .chevron {
+  transform: rotate(180deg);
+}
+```
+
+### Dropdown Menu
+
+```css
+.profile-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: var(--space-1);
+  min-width: 200px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 200ms ease;
+}
+
+.profile-switcher.open .profile-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.profile-dropdown-header {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.profile-list {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.profile-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.profile-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.profile-item.active {
+  color: var(--color-primary);
+  background: var(--bg-tertiary);
+}
+
+.profile-item.active::after {
+  content: "✓";
+  color: var(--color-success);
+}
+
+.profile-dropdown-footer {
+  padding: var(--space-2) var(--space-3);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.save-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.save-profile-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="profile-switcher">
+  <button class="profile-switcher-btn">
+    <span class="profile-name">Default Profile</span>
+    <span class="chevron">▼</span>
+  </button>
+  <div class="profile-dropdown">
+    <div class="profile-dropdown-header">Profiles</div>
+    <div class="profile-list">
+      <div class="profile-item active">Default Profile</div>
+      <div class="profile-item">Production</div>
+      <div class="profile-item">Testing</div>
+    </div>
+    <div class="profile-dropdown-footer">
+      <button class="save-profile-btn">
+        <span>+</span> Save Current as New
+      </button>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## 19. Overlay Gallery
+
+Visual gallery showing available overlay presets.
+
+### Gallery Grid
+
+```css
+.overlay-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.overlay-preset {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  text-align: center;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.overlay-preset:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.overlay-preset.selected {
+  border-color: var(--color-primary);
+  background: rgba(229, 160, 13, 0.1);
+}
+```
+
+### Preset Item
+
+```css
+.overlay-preset-preview {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.overlay-preset-preview .overlay-badge {
+  position: absolute;
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+/* Overlay badge positions */
+.overlay-badge.top-left {
+  top: var(--space-2);
+  left: var(--space-2);
+}
+
+.overlay-badge.top-right {
+  top: var(--space-2);
+  right: var(--space-2);
+}
+
+.overlay-badge.bottom-left {
+  bottom: var(--space-2);
+  left: var(--space-2);
+}
+
+.overlay-badge.bottom-right {
+  bottom: var(--space-2);
+  right: var(--space-2);
+}
+
+/* Overlay badge colors */
+.overlay-badge.resolution {
+  background: #3b82f6;
+  color: white;
+}
+
+.overlay-badge.audio {
+  background: #8b5cf6;
+  color: white;
+}
+
+.overlay-badge.hdr {
+  background: #f59e0b;
+  color: black;
+}
+
+.overlay-badge.rating {
+  background: #22c55e;
+  color: white;
+}
+
+.overlay-badge.streaming {
+  background: #ef4444;
+  color: white;
+}
+
+.overlay-preset-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+.overlay-preset-desc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="overlay-gallery">
+  <div class="overlay-preset" data-preset="4k-badge">
+    <div class="overlay-preset-preview">
+      <span class="overlay-badge resolution top-left">4K</span>
+    </div>
+    <div class="overlay-preset-name">4K Resolution</div>
+    <div class="overlay-preset-desc">Shows 4K badge on media</div>
+  </div>
+
+  <div class="overlay-preset" data-preset="hdr">
+    <div class="overlay-preset-preview">
+      <span class="overlay-badge hdr top-right">HDR</span>
+    </div>
+    <div class="overlay-preset-name">HDR Format</div>
+    <div class="overlay-preset-desc">Dolby Vision, HDR10+</div>
+  </div>
+
+  <!-- More presets -->
+</div>
+```
+
+---
+
+## 20. Pre-flight Checklist
+
+Run tab checklist verifying configuration before running Kometa.
+
+### Checklist Container
+
+```css
+.preflight-checklist {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+}
+
+.preflight-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.preflight-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--font-semibold);
+}
+
+.preflight-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.preflight-status.ready {
+  color: var(--color-success);
+}
+
+.preflight-status.issues {
+  color: var(--color-warning);
+}
+```
+
+### Checklist Items
+
+```css
+.preflight-items {
+  padding: var(--space-3) var(--space-4);
+}
+
+.preflight-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.preflight-item:last-child {
+  border-bottom: none;
+}
+
+.preflight-item-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+}
+
+.preflight-item.pass .preflight-item-icon {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.preflight-item.fail .preflight-item-icon {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+.preflight-item.warning .preflight-item-icon {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.preflight-item.checking .preflight-item-icon {
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+}
+
+.preflight-item-content {
+  flex: 1;
+}
+
+.preflight-item-label {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.preflight-item-detail {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.preflight-item-action {
+  font-size: var(--text-xs);
+  color: var(--color-info);
+  cursor: pointer;
+}
+
+.preflight-item-action:hover {
+  text-decoration: underline;
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="preflight-checklist">
+  <div class="preflight-header">
+    <div class="preflight-title">
+      <span>Pre-flight Checklist</span>
+    </div>
+    <div class="preflight-status ready">
+      <span>All checks passed</span>
+    </div>
+  </div>
+
+  <div class="preflight-items">
+    <div class="preflight-item pass">
+      <div class="preflight-item-icon">✓</div>
+      <div class="preflight-item-content">
+        <div class="preflight-item-label">Configuration Loaded</div>
+        <div class="preflight-item-detail">config.yml valid and loaded</div>
+      </div>
+    </div>
+
+    <div class="preflight-item pass">
+      <div class="preflight-item-icon">✓</div>
+      <div class="preflight-item-content">
+        <div class="preflight-item-label">Plex Connection</div>
+        <div class="preflight-item-detail">Connected to Plex server</div>
+      </div>
+    </div>
+
+    <div class="preflight-item fail">
+      <div class="preflight-item-icon">✗</div>
+      <div class="preflight-item-content">
+        <div class="preflight-item-label">TMDb API</div>
+        <div class="preflight-item-detail">API key not configured</div>
+      </div>
+      <span class="preflight-item-action">Configure →</span>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## 21. YAML Preview Panel
+
+Split-pane view showing real-time YAML output.
+
+### Split Layout
+
+```css
+.config-split-view {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  height: calc(100vh - 200px);
+}
+
+.config-split-view.preview-collapsed {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 1024px) {
+  .config-split-view {
+    grid-template-columns: 1fr;
+  }
+
+  .yaml-preview-panel {
+    display: none;
+  }
+
+  .yaml-preview-panel.mobile-visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+  }
+}
+```
+
+### Preview Panel
+
+```css
+.yaml-preview-panel {
+  background: var(--bg-base);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.yaml-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.yaml-preview-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+.yaml-preview-actions {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.yaml-preview-content {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-3);
+}
+
+.yaml-preview-content pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--text-primary);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+```
+
+### YAML Syntax Highlighting
+
+```css
+.yaml-key {
+  color: #7dd3fc; /* Light blue */
+}
+
+.yaml-string {
+  color: #86efac; /* Light green */
+}
+
+.yaml-number {
+  color: #fca5a5; /* Light red */
+}
+
+.yaml-boolean {
+  color: #c4b5fd; /* Light purple */
+}
+
+.yaml-comment {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.yaml-null {
+  color: #f59e0b;
+}
+```
+
+### Toggle Button
+
+```css
+.yaml-preview-toggle {
+  position: fixed;
+  bottom: var(--space-5);
+  left: var(--space-5);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  z-index: 100;
+}
+
+.yaml-preview-toggle:hover {
+  background: var(--bg-elevated);
+  border-color: var(--color-primary);
+}
+```
+
+---
+
+## 22. Keyboard Shortcuts
+
+System for handling keyboard shortcuts throughout the app.
+
+### Shortcuts Modal
+
+```css
+.shortcuts-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 150ms ease;
+}
+
+.shortcuts-modal {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: slideUp 200ms ease;
+}
+
+.shortcuts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.shortcuts-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+}
+
+.shortcuts-content {
+  padding: var(--space-4);
+  overflow-y: auto;
+  max-height: 60vh;
+}
+```
+
+### Shortcut List
+
+```css
+.shortcuts-group {
+  margin-bottom: var(--space-4);
+}
+
+.shortcuts-group:last-child {
+  margin-bottom: 0;
+}
+
+.shortcuts-group-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.shortcut-item:last-child {
+  border-bottom: none;
+}
+
+.shortcut-description {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.shortcut-keys {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.shortcut-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  padding: var(--space-1) var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 2px 0 var(--border-default);
+}
+```
+
+### HTML Pattern
+
+```html
+<div class="shortcuts-modal-overlay" id="shortcuts-modal">
+  <div class="shortcuts-modal">
+    <div class="shortcuts-header">
+      <h3 class="shortcuts-title">Keyboard Shortcuts</h3>
+      <button class="btn btn-ghost btn-icon" onclick="keyboard.hideShortcuts()">✕</button>
+    </div>
+    <div class="shortcuts-content">
+      <div class="shortcuts-group">
+        <div class="shortcuts-group-title">General</div>
+        <div class="shortcut-item">
+          <span class="shortcut-description">Save configuration</span>
+          <div class="shortcut-keys">
+            <span class="shortcut-key">Ctrl</span>
+            <span class="shortcut-key">S</span>
+          </div>
+        </div>
+        <div class="shortcut-item">
+          <span class="shortcut-description">Toggle YAML preview</span>
+          <div class="shortcut-keys">
+            <span class="shortcut-key">Ctrl</span>
+            <span class="shortcut-key">P</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="shortcuts-group">
+        <div class="shortcuts-group-title">Navigation</div>
+        <div class="shortcut-item">
+          <span class="shortcut-description">Go to Dashboard</span>
+          <div class="shortcut-keys">
+            <span class="shortcut-key">Ctrl</span>
+            <span class="shortcut-key">1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+## 23. Animations
+
+Micro-animations for improved user feedback.
+
+### Standard Durations
+
+```css
+:root {
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+}
+```
+
+### Easing Functions
+
+```css
+:root {
+  --ease-default: ease;
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+```
+
+### Common Animations
+
+```css
+/* Fade in */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Fade out */
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Slide up */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Slide down */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scale in */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Shimmer (for skeletons) */
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Pulse */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Shake (for errors) */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-4px); }
+  40%, 80% { transform: translateX(4px); }
+}
+```
+
+### Interactive States
+
+```css
+/* Button press effect */
+.btn:active {
+  transform: translateY(1px);
+  transition: transform 50ms ease;
+}
+
+/* Card hover lift */
+.card:hover {
+  transform: translateY(-2px);
+  transition: transform var(--duration-normal) var(--ease-out);
+}
+
+/* Input focus glow */
+.form-input:focus {
+  box-shadow: var(--shadow-focus);
+  transition: box-shadow var(--duration-fast) ease;
+}
+
+/* Link underline animation */
+.animated-link {
+  position: relative;
+}
+
+.animated-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width var(--duration-normal) var(--ease-out);
+}
+
+.animated-link:hover::after {
+  width: 100%;
+}
+```
+
+### Reduced Motion
+
+```css
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
 ## Changelog
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01 | Initial style guide |
+| 2.0 | 2026-01 | Added Dashboard, Setup Wizard, Profile Switcher, Overlay Gallery, Pre-flight Checklist, YAML Preview, Keyboard Shortcuts, and Animations sections |
 
 ---
 
