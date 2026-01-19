@@ -341,3 +341,342 @@ class ConfigManager:
             return obj
         else:
             return str(obj)
+
+    # =========================================================================
+    # Settings Management Methods
+    # =========================================================================
+
+    def _load_parsed_config(self) -> Optional[Dict]:
+        """Load and parse config.yml, returning the parsed dict."""
+        if not self.config_path.exists():
+            return None
+        try:
+            from io import StringIO
+            content = self.config_path.read_text(encoding="utf-8")
+            return self.yaml.load(StringIO(content))
+        except Exception:
+            return None
+
+    def _save_parsed_config(self, config: Dict) -> bool:
+        """Save a parsed config dict back to config.yml with backup."""
+        try:
+            from io import StringIO
+            # Create backup first
+            if self.config_path.exists():
+                self._create_backup()
+            # Write config
+            stream = StringIO()
+            self.yaml.dump(config, stream)
+            self.config_path.write_text(stream.getvalue(), encoding="utf-8")
+            return True
+        except Exception as e:
+            print(f"Error saving config: {e}")
+            return False
+
+    def get_schedule_settings(self) -> Dict[str, Any]:
+        """Get scheduling settings from config."""
+        config = self._load_parsed_config()
+        if not config:
+            return {
+                "run_order": ["operations", "metadata", "collections", "overlays"],
+                "global_schedule": None,
+                "library_schedules": {}
+            }
+
+        settings = config.get("settings", {}) or {}
+        libraries = config.get("libraries", {}) or {}
+
+        # Extract library schedules
+        library_schedules = {}
+        for lib_name, lib_config in libraries.items():
+            if lib_config and isinstance(lib_config, dict):
+                lib_schedule = {}
+                if "schedule" in lib_config:
+                    lib_schedule["schedule"] = lib_config["schedule"]
+                if "schedule_overlays" in lib_config:
+                    lib_schedule["schedule_overlays"] = lib_config["schedule_overlays"]
+                if lib_schedule:
+                    library_schedules[lib_name] = lib_schedule
+
+        return {
+            "run_order": settings.get("run_order", ["operations", "metadata", "collections", "overlays"]),
+            "global_schedule": settings.get("schedule"),
+            "library_schedules": library_schedules
+        }
+
+    def save_schedule_settings(self, run_order: List[str] = None,
+                                global_schedule: str = None,
+                                library_schedules: Dict = None) -> bool:
+        """Save scheduling settings to config."""
+        config = self._load_parsed_config()
+        if not config:
+            config = {}
+
+        # Ensure settings section exists
+        if "settings" not in config:
+            config["settings"] = {}
+
+        if run_order is not None:
+            config["settings"]["run_order"] = run_order
+
+        if global_schedule is not None:
+            config["settings"]["schedule"] = global_schedule
+
+        # Update library schedules
+        if library_schedules is not None and "libraries" in config:
+            for lib_name, schedule_config in library_schedules.items():
+                if lib_name in config["libraries"]:
+                    if config["libraries"][lib_name] is None:
+                        config["libraries"][lib_name] = {}
+                    for key, value in schedule_config.items():
+                        config["libraries"][lib_name][key] = value
+
+        return self._save_parsed_config(config)
+
+    def get_mapper_settings(self) -> Dict[str, Any]:
+        """Get data mapper settings from config."""
+        config = self._load_parsed_config()
+        if not config:
+            return {
+                "genre_mapper": {},
+                "content_rating_mapper": {},
+                "studio_mapper": {}
+            }
+
+        settings = config.get("settings", {}) or {}
+
+        return {
+            "genre_mapper": self._serialize_for_json(settings.get("genre_mapper", {})) or {},
+            "content_rating_mapper": self._serialize_for_json(settings.get("content_rating_mapper", {})) or {},
+            "studio_mapper": self._serialize_for_json(settings.get("studio_mapper", {})) or {}
+        }
+
+    def save_mapper_settings(self, genre_mapper: Dict = None,
+                              content_rating_mapper: Dict = None,
+                              studio_mapper: Dict = None) -> bool:
+        """Save data mapper settings to config."""
+        config = self._load_parsed_config()
+        if not config:
+            config = {}
+
+        if "settings" not in config:
+            config["settings"] = {}
+
+        if genre_mapper is not None:
+            if genre_mapper:
+                config["settings"]["genre_mapper"] = genre_mapper
+            elif "genre_mapper" in config["settings"]:
+                del config["settings"]["genre_mapper"]
+
+        if content_rating_mapper is not None:
+            if content_rating_mapper:
+                config["settings"]["content_rating_mapper"] = content_rating_mapper
+            elif "content_rating_mapper" in config["settings"]:
+                del config["settings"]["content_rating_mapper"]
+
+        if studio_mapper is not None:
+            if studio_mapper:
+                config["settings"]["studio_mapper"] = studio_mapper
+            elif "studio_mapper" in config["settings"]:
+                del config["settings"]["studio_mapper"]
+
+        return self._save_parsed_config(config)
+
+    def get_webhook_settings(self) -> Dict[str, Any]:
+        """Get webhook/notification settings from config."""
+        config = self._load_parsed_config()
+        if not config:
+            return {"webhooks": {}, "notifiarr": None, "gotify": None}
+
+        webhooks = config.get("webhooks", {}) or {}
+
+        return {
+            "webhooks": self._serialize_for_json(webhooks),
+            "notifiarr": self._serialize_for_json(config.get("notifiarr")),
+            "gotify": self._serialize_for_json(config.get("gotify"))
+        }
+
+    def save_webhook_settings(self, webhooks: Dict = None) -> bool:
+        """Save webhook settings to config."""
+        config = self._load_parsed_config()
+        if not config:
+            config = {}
+
+        if webhooks is not None:
+            if webhooks:
+                config["webhooks"] = webhooks
+            elif "webhooks" in config:
+                del config["webhooks"]
+
+        return self._save_parsed_config(config)
+
+    def get_operations_settings(self) -> Dict[str, Any]:
+        """Get operations settings from libraries."""
+        config = self._load_parsed_config()
+        if not config:
+            return {"operations": {}}
+
+        # Operations can be at library level or in settings
+        settings = config.get("settings", {}) or {}
+        libraries = config.get("libraries", {}) or {}
+
+        # Get global operations from settings if any
+        global_ops = {}
+
+        # Get per-library operations
+        library_ops = {}
+        for lib_name, lib_config in libraries.items():
+            if lib_config and isinstance(lib_config, dict) and "operations" in lib_config:
+                library_ops[lib_name] = self._serialize_for_json(lib_config["operations"])
+
+        return {
+            "global_operations": global_ops,
+            "library_operations": library_ops,
+            "settings": self._serialize_for_json(settings)
+        }
+
+    def save_operations_settings(self, library_name: str, operations: Dict) -> bool:
+        """Save operations settings for a specific library."""
+        config = self._load_parsed_config()
+        if not config:
+            config = {}
+
+        if "libraries" not in config:
+            config["libraries"] = {}
+
+        if library_name not in config["libraries"]:
+            config["libraries"][library_name] = {}
+
+        if config["libraries"][library_name] is None:
+            config["libraries"][library_name] = {}
+
+        if operations:
+            config["libraries"][library_name]["operations"] = operations
+        elif "operations" in config["libraries"][library_name]:
+            del config["libraries"][library_name]["operations"]
+
+        return self._save_parsed_config(config)
+
+    # =========================================================================
+    # Collection/Playlist File Management
+    # =========================================================================
+
+    def get_collection_files(self) -> List[Dict[str, Any]]:
+        """Get list of collection files referenced in config."""
+        config = self._load_parsed_config()
+        if not config:
+            return []
+
+        collection_files = []
+        libraries = config.get("libraries", {}) or {}
+
+        for lib_name, lib_config in libraries.items():
+            if lib_config and isinstance(lib_config, dict):
+                files = lib_config.get("collection_files", [])
+                if isinstance(files, list):
+                    for f in files:
+                        if isinstance(f, str):
+                            collection_files.append({
+                                "library": lib_name,
+                                "path": f,
+                                "file_path": self._resolve_path(f)
+                            })
+                        elif isinstance(f, dict) and "file" in f:
+                            collection_files.append({
+                                "library": lib_name,
+                                "path": f["file"],
+                                "file_path": self._resolve_path(f["file"]),
+                                "template_variables": f.get("template_variables", {})
+                            })
+
+        return collection_files
+
+    def _resolve_path(self, path: str) -> str:
+        """Resolve a config path to absolute path."""
+        if path.startswith("/"):
+            return path
+        if path.startswith("config/"):
+            return str(self.config_dir / path[7:])
+        return str(self.config_dir / path)
+
+    def load_collection_file(self, file_path: str) -> Dict[str, Any]:
+        """Load and parse a collection file."""
+        resolved_path = Path(self._resolve_path(file_path))
+
+        if not resolved_path.exists():
+            return {"exists": False, "collections": [], "error": "File not found"}
+
+        try:
+            from io import StringIO
+            content = resolved_path.read_text(encoding="utf-8")
+            parsed = self.yaml.load(StringIO(content))
+
+            collections = []
+            if parsed and "collections" in parsed:
+                for name, config in parsed["collections"].items():
+                    collections.append({
+                        "name": name,
+                        "config": self._serialize_for_json(config)
+                    })
+
+            return {
+                "exists": True,
+                "path": str(resolved_path),
+                "collections": collections,
+                "raw_content": content
+            }
+        except Exception as e:
+            return {"exists": True, "collections": [], "error": str(e)}
+
+    def save_collection_file(self, file_path: str, collections: List[Dict]) -> bool:
+        """Save collections to a YAML file."""
+        resolved_path = Path(self._resolve_path(file_path))
+
+        # Ensure directory exists
+        resolved_path.parent.mkdir(parents=True, exist_ok=True)
+
+        # Build collections dict
+        collections_dict = {}
+        for coll in collections:
+            collections_dict[coll["name"]] = coll.get("config", {})
+
+        # Write file
+        try:
+            from io import StringIO
+            stream = StringIO()
+            self.yaml.dump({"collections": collections_dict}, stream)
+            resolved_path.write_text(stream.getvalue(), encoding="utf-8")
+            return True
+        except Exception as e:
+            print(f"Error saving collection file: {e}")
+            return False
+
+    def get_playlist_files(self) -> List[Dict[str, Any]]:
+        """Get list of playlist files referenced in config."""
+        config = self._load_parsed_config()
+        if not config:
+            return []
+
+        playlist_files = []
+        libraries = config.get("libraries", {}) or {}
+
+        for lib_name, lib_config in libraries.items():
+            if lib_config and isinstance(lib_config, dict):
+                files = lib_config.get("playlist_files", [])
+                if isinstance(files, list):
+                    for f in files:
+                        if isinstance(f, str):
+                            playlist_files.append({
+                                "library": lib_name,
+                                "path": f,
+                                "file_path": self._resolve_path(f)
+                            })
+                        elif isinstance(f, dict) and "file" in f:
+                            playlist_files.append({
+                                "library": lib_name,
+                                "path": f["file"],
+                                "file_path": self._resolve_path(f["file"])
+                            })
+
+        return playlist_files
+
