@@ -135,6 +135,4139 @@ const elements = {
 };
 
 // ============================================================================
+// Toast Notifications (Design System v1.0)
+// ============================================================================
+
+const toast = {
+    container: null,
+
+    /**
+     * Initialize the toast system
+     */
+    init() {
+        this.container = document.getElementById('toast-container');
+    },
+
+    /**
+     * Show a toast notification
+     * @param {string} message - The message to display
+     * @param {string} type - Type: 'success', 'error', 'warning', 'info'
+     * @param {object} options - Optional settings: { title, duration, closable }
+     */
+    show(message, type = 'info', options = {}) {
+        if (!this.container) this.init();
+
+        const {
+            title = null,
+            duration = 4000,
+            closable = true
+        } = options;
+
+        const toastEl = document.createElement('div');
+        toastEl.className = `toast toast-${type}`;
+
+        // Icon based on type
+        const icons = {
+            success: '✓',
+            error: '✕',
+            warning: '⚠',
+            info: 'ℹ'
+        };
+
+        toastEl.innerHTML = `
+            <span class="toast-icon">${icons[type] || icons.info}</span>
+            <div class="toast-content">
+                ${title ? `<div class="toast-title">${title}</div>` : ''}
+                <div class="toast-message">${message}</div>
+            </div>
+            ${closable ? '<button class="toast-close" aria-label="Close">✕</button>' : ''}
+        `;
+
+        // Close button handler
+        if (closable) {
+            const closeBtn = toastEl.querySelector('.toast-close');
+            closeBtn.addEventListener('click', () => this.dismiss(toastEl));
+        }
+
+        // Add to container
+        this.container.appendChild(toastEl);
+
+        // Auto dismiss
+        if (duration > 0) {
+            setTimeout(() => this.dismiss(toastEl), duration);
+        }
+
+        return toastEl;
+    },
+
+    /**
+     * Dismiss a toast with animation
+     */
+    dismiss(toastEl) {
+        if (!toastEl || !toastEl.parentNode) return;
+
+        toastEl.classList.add('toast-exiting');
+        setTimeout(() => {
+            if (toastEl.parentNode) {
+                toastEl.parentNode.removeChild(toastEl);
+            }
+        }, 150);
+    },
+
+    /**
+     * Convenience methods
+     */
+    success(message, options = {}) {
+        return this.show(message, 'success', options);
+    },
+
+    error(message, options = {}) {
+        return this.show(message, 'error', { duration: 6000, ...options });
+    },
+
+    warning(message, options = {}) {
+        return this.show(message, 'warning', options);
+    },
+
+    info(message, options = {}) {
+        return this.show(message, 'info', options);
+    }
+};
+
+// ============================================================================
+// YAML Preview Panel (Phase 3)
+// ============================================================================
+
+const yamlPreview = {
+    panel: null,
+    toggleBtn: null,
+    previewCode: null,
+    container: null,
+    isActive: false,
+
+    init() {
+        this.panel = document.getElementById('yaml-preview-panel');
+        this.toggleBtn = document.getElementById('btn-toggle-yaml-preview');
+        this.previewCode = document.getElementById('yaml-preview-code');
+        this.container = document.getElementById('config-editor-container');
+
+        if (!this.panel || !this.toggleBtn) return;
+
+        // Toggle button click
+        this.toggleBtn.addEventListener('click', () => this.toggle());
+
+        // Close button
+        document.getElementById('btn-close-preview')?.addEventListener('click', () => this.hide());
+
+        // Copy button
+        document.getElementById('btn-copy-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Initial update
+        this.update();
+    },
+
+    toggle() {
+        if (this.isActive) {
+            this.hide();
+        } else {
+            this.show();
+        }
+    },
+
+    show() {
+        this.isActive = true;
+        this.panel?.classList.add('active');
+        this.toggleBtn?.classList.add('active');
+        this.container?.classList.add('with-preview');
+        this.update();
+    },
+
+    hide() {
+        this.isActive = false;
+        this.panel?.classList.remove('active');
+        this.toggleBtn?.classList.remove('active');
+        this.container?.classList.remove('with-preview');
+    },
+
+    update() {
+        if (!this.isActive || !this.previewCode) return;
+
+        const yamlContent = elements.configEditor?.value || '';
+        this.previewCode.innerHTML = this.highlightYaml(yamlContent);
+    },
+
+    highlightYaml(yaml) {
+        if (!yaml) return '<span class="yaml-comment"># No configuration loaded</span>';
+
+        // Simple YAML syntax highlighting
+        return yaml
+            .split('\n')
+            .map(line => {
+                // Comments
+                if (line.trim().startsWith('#')) {
+                    return `<span class="yaml-comment">${this.escapeHtml(line)}</span>`;
+                }
+
+                // Key-value pairs
+                const colonIndex = line.indexOf(':');
+                if (colonIndex > 0) {
+                    const key = line.substring(0, colonIndex);
+                    const rest = line.substring(colonIndex);
+
+                    // Check if there's a value after the colon
+                    const valueMatch = rest.match(/^:\s*(.+)$/);
+                    if (valueMatch) {
+                        const value = valueMatch[1].trim();
+                        let valueClass = 'yaml-value';
+
+                        // Determine value type
+                        if (value === 'true' || value === 'false') {
+                            valueClass = 'yaml-boolean';
+                        } else if (/^-?\d+(\.\d+)?$/.test(value)) {
+                            valueClass = 'yaml-number';
+                        } else if (value.startsWith('"') || value.startsWith("'")) {
+                            valueClass = 'yaml-string';
+                        }
+
+                        return `<span class="yaml-key">${this.escapeHtml(key)}</span>: <span class="${valueClass}">${this.escapeHtml(valueMatch[1])}</span>`;
+                    }
+
+                    return `<span class="yaml-key">${this.escapeHtml(key)}</span>${this.escapeHtml(rest)}`;
+                }
+
+                // List items
+                if (line.trim().startsWith('-')) {
+                    return this.escapeHtml(line);
+                }
+
+                return this.escapeHtml(line);
+            })
+            .join('\n');
+    },
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    copyYaml() {
+        const yamlContent = elements.configEditor?.value || '';
+        navigator.clipboard.writeText(yamlContent).then(() => {
+            toast.success('YAML copied to clipboard');
+        }).catch(() => {
+            toast.error('Failed to copy YAML');
+        });
+    }
+};
+
+// ============================================================================
+// Sidebar Status Updates (Phase 3)
+// ============================================================================
+
+const sidebarStatus = {
+    plexDot: null,
+    tmdbDot: null,
+
+    init() {
+        this.plexDot = document.getElementById('sidebar-plex-status');
+        this.tmdbDot = document.getElementById('sidebar-tmdb-status');
+    },
+
+    updatePlex(connected) {
+        if (this.plexDot) {
+            this.plexDot.classList.toggle('connected', connected);
+            this.plexDot.classList.toggle('disconnected', !connected);
+        }
+    },
+
+    updateTmdb(connected) {
+        if (this.tmdbDot) {
+            this.tmdbDot.classList.toggle('connected', connected);
+            this.tmdbDot.classList.toggle('disconnected', !connected);
+        }
+    }
+};
+
+// ============================================================================
+// Dashboard Module
+// ============================================================================
+
+const dashboard = {
+    elements: {},
+
+    init() {
+        // Cache dashboard elements
+        this.elements = {
+            plexCard: document.getElementById('dashboard-plex-card'),
+            plexStatus: document.getElementById('dashboard-plex-status'),
+            plexDetail: document.getElementById('dashboard-plex-detail'),
+            tmdbCard: document.getElementById('dashboard-tmdb-card'),
+            tmdbStatus: document.getElementById('dashboard-tmdb-status'),
+            tmdbDetail: document.getElementById('dashboard-tmdb-detail'),
+            configCard: document.getElementById('dashboard-config-card'),
+            configStatus: document.getElementById('dashboard-config-status'),
+            configDetail: document.getElementById('dashboard-config-detail'),
+            libraries: document.getElementById('dashboard-libraries'),
+            activity: document.getElementById('dashboard-activity')
+        };
+
+        // Set up event listeners
+        document.getElementById('dashboard-test-plex')?.addEventListener('click', () => this.testPlex());
+        document.getElementById('dashboard-test-tmdb')?.addEventListener('click', () => this.testTmdb());
+        document.getElementById('dashboard-go-config')?.addEventListener('click', () => switchTab('config'));
+        document.getElementById('dashboard-add-library')?.addEventListener('click', () => {
+            switchTab('config');
+            // Activate libraries subtab
+            document.querySelector('[data-subtab="libraries"]')?.click();
+        });
+
+        // Quick action buttons
+        document.getElementById('dashboard-action-run')?.addEventListener('click', () => {
+            switchTab('run');
+        });
+        document.getElementById('dashboard-action-dry-run')?.addEventListener('click', () => {
+            switchTab('run');
+        });
+        document.getElementById('dashboard-action-validate')?.addEventListener('click', () => {
+            validateConfig();
+        });
+        document.getElementById('dashboard-action-backup')?.addEventListener('click', () => {
+            this.backupConfig();
+        });
+        document.getElementById('dashboard-action-wizard')?.addEventListener('click', () => {
+            setupWizard.show();
+        });
+    },
+
+    async testPlex() {
+        const btn = document.getElementById('dashboard-test-plex');
+        if (btn) btn.disabled = true;
+
+        this.updateCardStatus('plex', 'loading', 'Testing connection...');
+
+        try {
+            const url = document.getElementById('plex-url')?.value;
+            const token = document.getElementById('plex-token')?.value;
+
+            if (!url || !token) {
+                this.updateCardStatus('plex', 'error', 'Not configured', 'Add Plex URL and token in Configuration');
+                toast.warning('Plex URL and token required');
+                return;
+            }
+
+            const result = await api.post('/test/plex', { url, token });
+            if (result.success) {
+                this.updateCardStatus('plex', 'connected', 'Connected', result.server_name || 'Plex Server');
+                sidebarStatus.updatePlex(true);
+                toast.success(`Connected to ${result.server_name || 'Plex'}`);
+            } else {
+                this.updateCardStatus('plex', 'error', 'Connection failed', result.error);
+                sidebarStatus.updatePlex(false);
+                toast.error(result.error || 'Connection failed');
+            }
+        } catch (error) {
+            this.updateCardStatus('plex', 'error', 'Connection failed', error.message);
+            sidebarStatus.updatePlex(false);
+            toast.error(error.message);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
+
+    async testTmdb() {
+        const btn = document.getElementById('dashboard-test-tmdb');
+        if (btn) btn.disabled = true;
+
+        this.updateCardStatus('tmdb', 'loading', 'Testing API key...');
+
+        try {
+            const apikey = document.getElementById('tmdb-apikey')?.value;
+
+            if (!apikey) {
+                this.updateCardStatus('tmdb', 'error', 'Not configured', 'Add TMDb API key in Configuration');
+                toast.warning('TMDb API key required');
+                return;
+            }
+
+            const result = await api.post('/test/tmdb', { apikey });
+            if (result.success) {
+                this.updateCardStatus('tmdb', 'connected', 'API key valid', 'TMDb API');
+                sidebarStatus.updateTmdb(true);
+                toast.success('TMDb API key is valid');
+            } else {
+                this.updateCardStatus('tmdb', 'error', 'Invalid API key', result.error);
+                sidebarStatus.updateTmdb(false);
+                toast.error(result.error || 'Invalid API key');
+            }
+        } catch (error) {
+            this.updateCardStatus('tmdb', 'error', 'API test failed', error.message);
+            sidebarStatus.updateTmdb(false);
+            toast.error(error.message);
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    },
+
+    updateCardStatus(type, status, text, detail = '-') {
+        const card = this.elements[`${type}Card`];
+        const statusEl = this.elements[`${type}Status`];
+        const detailEl = this.elements[`${type}Detail`];
+
+        if (card) {
+            card.classList.remove('status-connected', 'status-error');
+            if (status === 'connected') card.classList.add('status-connected');
+            if (status === 'error') card.classList.add('status-error');
+        }
+
+        if (statusEl) {
+            const dot = statusEl.querySelector('.status-dot');
+            const textEl = statusEl.querySelector('.status-text');
+
+            if (dot) {
+                dot.classList.remove('connected', 'error');
+                if (status === 'connected') dot.classList.add('connected');
+                if (status === 'error') dot.classList.add('error');
+            }
+            if (textEl) textEl.textContent = text;
+        }
+
+        if (detailEl) {
+            detailEl.textContent = detail;
+        }
+    },
+
+    updateConfigStatus(loaded, libraryCount = 0) {
+        if (loaded) {
+            this.updateCardStatus('config', 'connected', 'Loaded', `${libraryCount} ${libraryCount === 1 ? 'library' : 'libraries'} configured`);
+        } else {
+            this.updateCardStatus('config', 'error', 'Not loaded', 'No configuration found');
+        }
+    },
+
+    updateLibraries(libraries) {
+        if (!this.elements.libraries) return;
+
+        if (!libraries || Object.keys(libraries).length === 0) {
+            this.elements.libraries.innerHTML = `
+                <div class="dashboard-empty-state">
+                    <span class="empty-icon">📚</span>
+                    <p>No libraries configured</p>
+                    <button class="btn btn-primary btn-sm" id="dashboard-add-library">Add Library</button>
+                </div>
+            `;
+            // Re-attach event listener
+            document.getElementById('dashboard-add-library')?.addEventListener('click', () => {
+                switchTab('config');
+                document.querySelector('[data-subtab="libraries"]')?.click();
+            });
+            return;
+        }
+
+        let html = '';
+        for (const [name, config] of Object.entries(libraries)) {
+            const type = config.library_type || 'movie';
+            const icon = type === 'movie' ? '🎬' : type === 'show' ? '📺' : '🎵';
+            html += `
+                <div class="dashboard-library-card">
+                    <div class="library-icon">${icon}</div>
+                    <div class="library-name">${name}</div>
+                    <div class="library-type">${type}</div>
+                </div>
+            `;
+        }
+        this.elements.libraries.innerHTML = html;
+    },
+
+    addActivity(title, success = true) {
+        if (!this.elements.activity) return;
+
+        const time = new Date().toLocaleTimeString();
+        const iconClass = success ? 'success' : 'error';
+        const icon = success ? '✓' : '✗';
+
+        // Remove empty state if present
+        const empty = this.elements.activity.querySelector('.activity-empty');
+        if (empty) empty.remove();
+
+        // Add new activity at the top
+        const item = document.createElement('div');
+        item.className = 'activity-item fade-in';
+        item.innerHTML = `
+            <div class="activity-icon ${iconClass}">${icon}</div>
+            <div class="activity-content">
+                <div class="activity-title">${title}</div>
+                <div class="activity-time">${time}</div>
+            </div>
+        `;
+
+        this.elements.activity.insertBefore(item, this.elements.activity.firstChild);
+
+        // Keep only last 5 activities
+        const items = this.elements.activity.querySelectorAll('.activity-item');
+        if (items.length > 5) {
+            items[items.length - 1].remove();
+        }
+    },
+
+    async backupConfig() {
+        try {
+            const result = await api.post('/config/backup');
+            if (result.success) {
+                toast.success('Configuration backed up successfully');
+                this.addActivity('Configuration backup created', true);
+            } else {
+                toast.error(result.error || 'Backup failed');
+                this.addActivity('Configuration backup failed', false);
+            }
+        } catch (error) {
+            toast.error(error.message);
+            this.addActivity('Configuration backup failed', false);
+        }
+    },
+
+    // Called when config is loaded to update dashboard
+    refresh() {
+        // Update config status
+        const hasConfig = elements.configEditor?.value?.trim().length > 0;
+        const libraries = parsedConfig?.libraries || {};
+        const libraryCount = Object.keys(libraries).length;
+
+        this.updateConfigStatus(hasConfig, libraryCount);
+        this.updateLibraries(libraries);
+
+        // Check Plex config
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        if (plexUrl && plexToken) {
+            this.updateCardStatus('plex', '', 'Configured', 'Click Test to verify');
+        } else {
+            this.updateCardStatus('plex', 'error', 'Not configured', 'Add in Configuration tab');
+        }
+
+        // Check TMDb config
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        if (tmdbKey) {
+            this.updateCardStatus('tmdb', '', 'Configured', 'Click Test to verify');
+        } else {
+            this.updateCardStatus('tmdb', 'error', 'Not configured', 'Add in Configuration tab');
+        }
+    }
+};
+
+// ============================================================================
+// Setup Wizard
+// ============================================================================
+
+const setupWizard = {
+    modal: null,
+    currentStep: 1,
+    config: {
+        plex: { url: '', token: '', serverName: '' },
+        tmdb: { apikey: '' },
+        library: { name: '', type: 'movie' }
+    },
+
+    init() {
+        this.modal = document.getElementById('setup-wizard');
+        if (!this.modal) return;
+
+        // Setup event listeners
+        document.getElementById('wizard-close')?.addEventListener('click', () => this.close());
+
+        // Step 1: Plex
+        document.getElementById('wizard-test-plex')?.addEventListener('click', () => this.testPlex());
+        document.getElementById('wizard-skip-plex')?.addEventListener('click', () => this.goToStep(2));
+
+        // Step 2: TMDb
+        document.getElementById('wizard-back-1')?.addEventListener('click', () => this.goToStep(1));
+        document.getElementById('wizard-test-tmdb')?.addEventListener('click', () => this.testTmdb());
+        document.getElementById('wizard-skip-tmdb')?.addEventListener('click', () => this.goToStep(3));
+
+        // Step 3: Library
+        document.getElementById('wizard-back-2')?.addEventListener('click', () => this.goToStep(2));
+        document.getElementById('wizard-add-library')?.addEventListener('click', () => this.addLibrary());
+        document.getElementById('wizard-skip-library')?.addEventListener('click', () => this.goToStep(4));
+
+        // Step 4: Complete
+        document.getElementById('wizard-back-3')?.addEventListener('click', () => this.goToStep(3));
+        document.getElementById('wizard-finish')?.addEventListener('click', () => this.finish());
+
+        // Close on backdrop click
+        this.modal.addEventListener('click', (e) => {
+            if (e.target === this.modal) this.close();
+        });
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.modal.classList.contains('active')) {
+                this.close();
+            }
+        });
+    },
+
+    show() {
+        if (this.modal) {
+            this.modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            this.goToStep(1);
+        }
+    },
+
+    close() {
+        if (this.modal) {
+            this.modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    },
+
+    goToStep(step) {
+        this.currentStep = step;
+
+        // Update progress indicators
+        document.querySelectorAll('.wizard-step').forEach(el => {
+            const stepNum = parseInt(el.dataset.step);
+            el.classList.remove('active', 'completed');
+            if (stepNum < step) el.classList.add('completed');
+            if (stepNum === step) el.classList.add('active');
+        });
+
+        // Update panels
+        document.querySelectorAll('.wizard-panel').forEach(el => {
+            const panelNum = parseInt(el.dataset.panel);
+            el.classList.toggle('active', panelNum === step);
+        });
+
+        // Update summary on final step
+        if (step === 4) {
+            this.updateSummary();
+        }
+    },
+
+    async testPlex() {
+        const url = document.getElementById('wizard-plex-url')?.value?.trim();
+        const token = document.getElementById('wizard-plex-token')?.value?.trim();
+        const resultEl = document.getElementById('wizard-plex-result');
+
+        if (!url || !token) {
+            this.showResult(resultEl, 'error', 'Please enter both URL and token');
+            return;
+        }
+
+        this.showResult(resultEl, 'loading', 'Testing connection...');
+
+        try {
+            const result = await api.post('/test/plex', { url, token });
+            if (result.success) {
+                this.config.plex = { url, token, serverName: result.server_name || 'Plex' };
+                this.showResult(resultEl, 'success', `Connected to ${result.server_name || 'Plex'}!`);
+
+                // Also update the main config form
+                document.getElementById('plex-url').value = url;
+                document.getElementById('plex-token').value = token;
+
+                // Auto-advance after a short delay
+                setTimeout(() => this.goToStep(2), 1000);
+            } else {
+                this.showResult(resultEl, 'error', result.error || 'Connection failed');
+            }
+        } catch (error) {
+            this.showResult(resultEl, 'error', error.message);
+        }
+    },
+
+    async testTmdb() {
+        const apikey = document.getElementById('wizard-tmdb-key')?.value?.trim();
+        const resultEl = document.getElementById('wizard-tmdb-result');
+
+        if (!apikey) {
+            this.showResult(resultEl, 'error', 'Please enter an API key');
+            return;
+        }
+
+        this.showResult(resultEl, 'loading', 'Testing API key...');
+
+        try {
+            const result = await api.post('/test/tmdb', { apikey });
+            if (result.success) {
+                this.config.tmdb = { apikey };
+                this.showResult(resultEl, 'success', 'API key is valid!');
+
+                // Also update the main config form
+                document.getElementById('tmdb-apikey').value = apikey;
+
+                // Auto-advance
+                setTimeout(() => this.goToStep(3), 1000);
+            } else {
+                this.showResult(resultEl, 'error', result.error || 'Invalid API key');
+            }
+        } catch (error) {
+            this.showResult(resultEl, 'error', error.message);
+        }
+    },
+
+    addLibrary() {
+        const name = document.getElementById('wizard-library-name')?.value?.trim();
+        const type = document.getElementById('wizard-library-type')?.value;
+
+        if (!name) {
+            toast.warning('Please enter a library name');
+            return;
+        }
+
+        this.config.library = { name, type };
+
+        // Add to parsed config
+        if (!parsedConfig.libraries) {
+            parsedConfig.libraries = {};
+        }
+        parsedConfig.libraries[name] = {
+            library_type: type
+        };
+
+        // Sync to YAML
+        syncFormsToYaml();
+
+        toast.success(`Library "${name}" added`);
+        this.goToStep(4);
+    },
+
+    showResult(el, type, message) {
+        if (!el) return;
+        el.className = `wizard-test-result visible ${type}`;
+        el.textContent = message;
+    },
+
+    updateSummary() {
+        // Plex
+        const plexItem = document.getElementById('wizard-summary-plex');
+        if (plexItem) {
+            const status = plexItem.querySelector('.summary-status');
+            if (this.config.plex.url) {
+                plexItem.classList.add('configured');
+                status.textContent = this.config.plex.serverName || 'Connected';
+            } else {
+                plexItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+
+        // TMDb
+        const tmdbItem = document.getElementById('wizard-summary-tmdb');
+        if (tmdbItem) {
+            const status = tmdbItem.querySelector('.summary-status');
+            if (this.config.tmdb.apikey) {
+                tmdbItem.classList.add('configured');
+                status.textContent = 'API key valid';
+            } else {
+                tmdbItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+
+        // Library
+        const libraryItem = document.getElementById('wizard-summary-library');
+        if (libraryItem) {
+            const status = libraryItem.querySelector('.summary-status');
+            if (this.config.library.name) {
+                libraryItem.classList.add('configured');
+                status.textContent = this.config.library.name;
+            } else {
+                libraryItem.classList.remove('configured');
+                status.textContent = 'Not configured';
+            }
+        }
+    },
+
+    async finish() {
+        // Save the configuration
+        try {
+            await saveConfig();
+            toast.success('Configuration saved!');
+            dashboard.addActivity('Initial setup completed', true);
+        } catch (error) {
+            toast.error('Failed to save configuration');
+        }
+
+        this.close();
+
+        // Refresh dashboard
+        dashboard.refresh();
+
+        // Mark wizard as completed in localStorage
+        localStorage.setItem('kometa-wizard-completed', 'true');
+    },
+
+    // Check if wizard should be shown (first-time user)
+    shouldShow() {
+        // Don't show if already completed
+        if (localStorage.getItem('kometa-wizard-completed') === 'true') {
+            return false;
+        }
+
+        // Show if no Plex or TMDb configured
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+
+        return !plexUrl && !tmdbKey;
+    }
+};
+
+// ============================================================================
+// Profile Switcher
+// ============================================================================
+
+const profileSwitcher = {
+    currentProfile: 'default',
+    profiles: {},
+    dropdownBtn: null,
+    dropdown: null,
+
+    init() {
+        this.dropdownBtn = document.getElementById('profile-switcher-btn');
+        this.dropdown = document.getElementById('profile-dropdown');
+
+        if (!this.dropdownBtn || !this.dropdown) return;
+
+        // Load saved profiles from localStorage
+        this.loadProfiles();
+
+        // Toggle dropdown
+        this.dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleDropdown();
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.profile-switcher')) {
+                this.closeDropdown();
+            }
+        });
+
+        // Save profile button
+        document.getElementById('btn-save-profile')?.addEventListener('click', () => {
+            this.showSaveDialog();
+        });
+
+        // Manage profiles button
+        document.getElementById('btn-manage-profiles')?.addEventListener('click', () => {
+            this.showManageDialog();
+        });
+
+        // Render profiles
+        this.renderProfiles();
+    },
+
+    toggleDropdown() {
+        const isOpen = this.dropdown.classList.toggle('active');
+        this.dropdownBtn.setAttribute('aria-expanded', isOpen);
+    },
+
+    closeDropdown() {
+        this.dropdown.classList.remove('active');
+        this.dropdownBtn.setAttribute('aria-expanded', 'false');
+    },
+
+    loadProfiles() {
+        const saved = localStorage.getItem('kometa-profiles');
+        if (saved) {
+            try {
+                this.profiles = JSON.parse(saved);
+            } catch (e) {
+                this.profiles = {};
+            }
+        }
+
+        // Ensure default profile exists
+        if (!this.profiles.default) {
+            this.profiles.default = {
+                name: 'Default',
+                config: null,
+                created: Date.now()
+            };
+        }
+
+        // Load current profile
+        this.currentProfile = localStorage.getItem('kometa-current-profile') || 'default';
+    },
+
+    saveProfiles() {
+        localStorage.setItem('kometa-profiles', JSON.stringify(this.profiles));
+        localStorage.setItem('kometa-current-profile', this.currentProfile);
+    },
+
+    renderProfiles() {
+        const list = document.getElementById('profile-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        for (const [id, profile] of Object.entries(this.profiles)) {
+            const btn = document.createElement('button');
+            btn.className = `profile-item ${id === this.currentProfile ? 'active' : ''}`;
+            btn.dataset.profile = id;
+            btn.setAttribute('role', 'menuitem');
+            btn.innerHTML = `
+                <span class="profile-item-icon">${id === 'default' ? '📄' : '📁'}</span>
+                <span class="profile-item-name">${profile.name}</span>
+                <span class="profile-item-check">✓</span>
+            `;
+            btn.addEventListener('click', () => this.switchProfile(id));
+            list.appendChild(btn);
+        }
+
+        // Update header display
+        const nameEl = document.getElementById('current-profile-name');
+        if (nameEl && this.profiles[this.currentProfile]) {
+            nameEl.textContent = this.profiles[this.currentProfile].name;
+        }
+    },
+
+    async switchProfile(id) {
+        if (!this.profiles[id]) return;
+
+        // Save current config to current profile before switching
+        if (this.currentProfile !== id) {
+            this.profiles[this.currentProfile].config = elements.configEditor?.value || '';
+        }
+
+        this.currentProfile = id;
+        this.saveProfiles();
+
+        // Load the selected profile's config
+        if (this.profiles[id].config) {
+            elements.configEditor.value = this.profiles[id].config;
+            parseYamlToConfig();
+            syncYamlToForms();
+        }
+
+        this.renderProfiles();
+        this.closeDropdown();
+
+        toast.success(`Switched to "${this.profiles[id].name}" profile`);
+        dashboard.addActivity(`Switched to ${this.profiles[id].name} profile`, true);
+    },
+
+    showSaveDialog() {
+        this.closeDropdown();
+
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('save-profile-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'save-profile-modal';
+            modal.className = 'save-profile-modal';
+            modal.innerHTML = `
+                <div class="save-profile-content">
+                    <h3>Save as Profile</h3>
+                    <div class="form-group">
+                        <label for="new-profile-name">Profile Name</label>
+                        <input type="text" id="new-profile-name" class="form-control" placeholder="e.g., Production, Testing">
+                    </div>
+                    <div class="form-actions">
+                        <button class="btn btn-secondary" id="btn-cancel-save-profile">Cancel</button>
+                        <button class="btn btn-primary" id="btn-confirm-save-profile">Save Profile</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Event listeners
+            document.getElementById('btn-cancel-save-profile').addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            document.getElementById('btn-confirm-save-profile').addEventListener('click', () => {
+                this.saveNewProfile();
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+
+        // Clear and show
+        document.getElementById('new-profile-name').value = '';
+        modal.classList.add('active');
+        document.getElementById('new-profile-name').focus();
+    },
+
+    saveNewProfile() {
+        const nameInput = document.getElementById('new-profile-name');
+        const name = nameInput?.value?.trim();
+
+        if (!name) {
+            toast.warning('Please enter a profile name');
+            return;
+        }
+
+        // Generate ID from name
+        const id = name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+        // Check for duplicates
+        if (this.profiles[id] && id !== 'default') {
+            toast.warning('A profile with this name already exists');
+            return;
+        }
+
+        // Save profile
+        this.profiles[id] = {
+            name: name,
+            config: elements.configEditor?.value || '',
+            created: Date.now()
+        };
+
+        this.currentProfile = id;
+        this.saveProfiles();
+        this.renderProfiles();
+
+        // Close modal
+        document.getElementById('save-profile-modal').classList.remove('active');
+
+        toast.success(`Profile "${name}" saved`);
+        dashboard.addActivity(`Created profile: ${name}`, true);
+    },
+
+    showManageDialog() {
+        this.closeDropdown();
+
+        // Create modal if it doesn't exist
+        let modal = document.getElementById('manage-profiles-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'manage-profiles-modal';
+            modal.className = 'manage-profiles-modal';
+            modal.innerHTML = `
+                <div class="manage-profiles-content">
+                    <div class="manage-profiles-header">
+                        <h3>Manage Profiles</h3>
+                        <button class="btn btn-ghost btn-icon" id="btn-close-manage-profiles" aria-label="Close">&times;</button>
+                    </div>
+                    <div class="manage-profiles-body" id="manage-profiles-list">
+                        <!-- Profiles will be rendered here -->
+                    </div>
+                    <div class="manage-profiles-footer">
+                        <span class="text-muted text-sm">Tip: Default profile cannot be deleted</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            // Close handlers
+            document.getElementById('btn-close-manage-profiles').addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) modal.classList.remove('active');
+            });
+        }
+
+        // Render profile list
+        this.renderManageList();
+        modal.classList.add('active');
+    },
+
+    renderManageList() {
+        const list = document.getElementById('manage-profiles-list');
+        if (!list) return;
+
+        list.innerHTML = '';
+
+        for (const [id, profile] of Object.entries(this.profiles)) {
+            const item = document.createElement('div');
+            item.className = `manage-profile-item ${id === this.currentProfile ? 'current' : ''}`;
+            item.dataset.profileId = id;
+
+            const isDefault = id === 'default';
+            const isCurrent = id === this.currentProfile;
+
+            item.innerHTML = `
+                <div class="manage-profile-info">
+                    <span class="manage-profile-icon">${isDefault ? '📄' : '📁'}</span>
+                    <span class="manage-profile-name" id="profile-name-${id}">${profile.name}</span>
+                    ${isCurrent ? '<span class="manage-profile-badge">Active</span>' : ''}
+                </div>
+                <div class="manage-profile-actions">
+                    <button class="btn btn-sm btn-ghost" data-action="rename" data-id="${id}" title="Rename">
+                        ✏️
+                    </button>
+                    ${!isDefault ? `
+                        <button class="btn btn-sm btn-ghost btn-danger" data-action="delete" data-id="${id}" title="Delete">
+                            🗑️
+                        </button>
+                    ` : ''}
+                </div>
+            `;
+
+            // Attach event listeners
+            item.querySelector('[data-action="rename"]')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.renameProfile(id);
+            });
+
+            item.querySelector('[data-action="delete"]')?.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteProfile(id);
+            });
+
+            list.appendChild(item);
+        }
+    },
+
+    renameProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile) return;
+
+        const nameEl = document.getElementById(`profile-name-${id}`);
+        if (!nameEl) return;
+
+        // Replace with input
+        const currentName = profile.name;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'form-control form-control-sm';
+        input.value = currentName;
+        input.style.width = '150px';
+
+        nameEl.replaceWith(input);
+        input.focus();
+        input.select();
+
+        const saveRename = () => {
+            const newName = input.value.trim();
+            if (newName && newName !== currentName) {
+                profile.name = newName;
+                this.saveProfiles();
+                this.renderProfiles();
+                toast.success(`Profile renamed to "${newName}"`);
+            }
+            this.renderManageList();
+        };
+
+        input.addEventListener('blur', saveRename);
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveRename();
+            } else if (e.key === 'Escape') {
+                this.renderManageList();
+            }
+        });
+    },
+
+    deleteProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile || id === 'default') return;
+
+        // Confirm deletion
+        if (!confirm(`Delete profile "${profile.name}"? This cannot be undone.`)) {
+            return;
+        }
+
+        // If deleting current profile, switch to default first
+        if (this.currentProfile === id) {
+            this.currentProfile = 'default';
+        }
+
+        delete this.profiles[id];
+        this.saveProfiles();
+        this.renderProfiles();
+        this.renderManageList();
+
+        toast.success(`Profile "${profile.name}" deleted`);
+        dashboard.addActivity(`Deleted profile: ${profile.name}`, false);
+    },
+
+    duplicateProfile(id) {
+        const profile = this.profiles[id];
+        if (!profile) return;
+
+        const newId = `${id}-copy-${Date.now()}`;
+        const newName = `${profile.name} (Copy)`;
+
+        this.profiles[newId] = {
+            name: newName,
+            config: profile.config,
+            created: Date.now()
+        };
+
+        this.saveProfiles();
+        this.renderProfiles();
+        this.renderManageList();
+
+        toast.success(`Profile duplicated as "${newName}"`);
+    },
+
+    // Update current profile's config (called when config changes)
+    updateCurrentProfile() {
+        if (this.profiles[this.currentProfile]) {
+            this.profiles[this.currentProfile].config = elements.configEditor?.value || '';
+            this.saveProfiles();
+        }
+    }
+};
+
+// ============================================================================
+// Pre-flight Checklist
+// ============================================================================
+
+// ============================================================================
+// Overlay Gallery (Interactive)
+// ============================================================================
+
+const overlayGallery = {
+    selectedPresets: new Set(),
+    presetConfigs: {
+        resolution: {
+            name: 'Resolution Badges',
+            description: 'Shows 4K, 1080p, 720p badges',
+            overlays: {
+                '4K': { position: 'top-left', text: '4K', style: 'badge-blue' },
+                '1080p': { position: 'top-left', text: '1080p', style: 'badge-green' },
+                '720p': { position: 'top-left', text: '720p', style: 'badge-yellow' }
+            }
+        },
+        audio: {
+            name: 'Audio Format',
+            description: 'Dolby Atmos, DTS:X, TrueHD badges',
+            overlays: {
+                'Atmos': { position: 'top-right', text: 'ATMOS', style: 'badge-purple' },
+                'DTS:X': { position: 'top-right', text: 'DTS:X', style: 'badge-purple' },
+                'TrueHD': { position: 'top-right', text: 'TrueHD', style: 'badge-blue' }
+            }
+        },
+        hdr: {
+            name: 'HDR Formats',
+            description: 'Dolby Vision, HDR10+, HDR10 badges',
+            overlays: {
+                'DolbyVision': { position: 'bottom-left', text: 'DV', style: 'badge-orange' },
+                'HDR10+': { position: 'bottom-left', text: 'HDR10+', style: 'badge-orange' },
+                'HDR10': { position: 'bottom-left', text: 'HDR', style: 'badge-yellow' }
+            }
+        },
+        ratings: {
+            name: 'Ratings',
+            description: 'IMDb, Rotten Tomatoes, TMDb scores',
+            overlays: {
+                'IMDb': { position: 'bottom-right', type: 'rating', source: 'imdb' },
+                'RT': { position: 'bottom-right', type: 'rating', source: 'rottentomatoes' },
+                'TMDb': { position: 'bottom-right', type: 'rating', source: 'tmdb' }
+            }
+        },
+        streaming: {
+            name: 'Streaming Services',
+            description: 'Netflix, Disney+, Amazon badges',
+            overlays: {
+                'Streaming': { position: 'top-right', type: 'streaming' }
+            }
+        },
+        awards: {
+            name: 'Awards',
+            description: 'Oscar, Emmy, Golden Globe winners',
+            overlays: {
+                'Oscar': { position: 'top-left', type: 'award', source: 'oscar' },
+                'Emmy': { position: 'top-left', type: 'award', source: 'emmy' }
+            }
+        },
+        status: {
+            name: 'Status Ribbons',
+            description: 'New, Trending, Popular ribbons',
+            overlays: {
+                'Ribbon': { position: 'top-right', type: 'ribbon' }
+            }
+        },
+        custom: {
+            name: 'Custom Overlay',
+            description: 'Create your own overlay',
+            overlays: {}
+        }
+    },
+
+    init() {
+        const gallery = document.getElementById('overlay-gallery');
+        if (!gallery) return;
+
+        // Load saved selections from localStorage
+        const saved = localStorage.getItem('kometa-selected-presets');
+        if (saved) {
+            try {
+                this.selectedPresets = new Set(JSON.parse(saved));
+                this.updateSelectionUI();
+            } catch (e) {
+                console.warn('Failed to load saved preset selections');
+            }
+        }
+
+        // Attach click handlers to gallery items
+        gallery.querySelectorAll('.overlay-gallery-item').forEach(item => {
+            item.addEventListener('click', () => this.togglePreset(item));
+            // Add keyboard support
+            item.setAttribute('tabindex', '0');
+            item.setAttribute('role', 'button');
+            item.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.togglePreset(item);
+                }
+            });
+        });
+
+        // Set up apply button if it exists
+        const applyBtn = document.getElementById('apply-presets-btn');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => this.applySelectedPresets());
+        }
+    },
+
+    togglePreset(item) {
+        const preset = item.dataset.preset;
+        if (!preset) return;
+
+        if (this.selectedPresets.has(preset)) {
+            this.selectedPresets.delete(preset);
+            item.classList.remove('selected');
+            toast.show(`Removed "${this.presetConfigs[preset]?.name || preset}" preset`, 'info', 2000);
+        } else {
+            this.selectedPresets.add(preset);
+            item.classList.add('selected');
+            toast.show(`Selected "${this.presetConfigs[preset]?.name || preset}" preset`, 'success', 2000);
+
+            // Add selection animation
+            item.classList.add('selecting');
+            setTimeout(() => item.classList.remove('selecting'), 300);
+        }
+
+        // Save to localStorage
+        localStorage.setItem('kometa-selected-presets', JSON.stringify([...this.selectedPresets]));
+
+        // Update apply button state
+        this.updateApplyButton();
+    },
+
+    updateSelectionUI() {
+        const gallery = document.getElementById('overlay-gallery');
+        if (!gallery) return;
+
+        gallery.querySelectorAll('.overlay-gallery-item').forEach(item => {
+            const preset = item.dataset.preset;
+            if (this.selectedPresets.has(preset)) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        });
+
+        this.updateApplyButton();
+    },
+
+    updateApplyButton() {
+        const applyBtn = document.getElementById('apply-presets-btn');
+        if (applyBtn) {
+            if (this.selectedPresets.size > 0) {
+                applyBtn.disabled = false;
+                applyBtn.textContent = `Apply ${this.selectedPresets.size} Preset${this.selectedPresets.size > 1 ? 's' : ''}`;
+            } else {
+                applyBtn.disabled = true;
+                applyBtn.textContent = 'Select Presets to Apply';
+            }
+        }
+    },
+
+    getSelectedPresets() {
+        return [...this.selectedPresets].map(key => ({
+            key,
+            config: this.presetConfigs[key]
+        }));
+    },
+
+    applySelectedPresets() {
+        const selected = this.getSelectedPresets();
+        if (selected.length === 0) {
+            toast.show('No presets selected', 'warning');
+            return;
+        }
+
+        // Build overlay configuration
+        const overlayConfig = {};
+        selected.forEach(({ key, config }) => {
+            if (config && config.overlays) {
+                Object.assign(overlayConfig, config.overlays);
+            }
+        });
+
+        // Here you would apply to the actual configuration
+        // For now, show success toast
+        const names = selected.map(s => s.config?.name || s.key).join(', ');
+        toast.show(`Applied presets: ${names}`, 'success');
+
+        // Trigger YAML preview update if available
+        if (typeof yamlPreview !== 'undefined' && yamlPreview.update) {
+            yamlPreview.update();
+        }
+    },
+
+    clearSelection() {
+        this.selectedPresets.clear();
+        localStorage.removeItem('kometa-selected-presets');
+        this.updateSelectionUI();
+        toast.show('Selection cleared', 'info');
+    }
+};
+
+// ============================================================================
+// Scheduling Module
+// ============================================================================
+// TODO: API Integration Required
+// - GET /api/settings/schedule - Load scheduling config
+// - POST /api/settings/schedule - Save run_order and schedules to config
+// Currently uses localStorage for run_order
+// See docs/API_INTEGRATION.md for full details
+
+const scheduling = {
+    currentSchedule: 'daily',
+    runOrder: ['operations', 'metadata', 'collections', 'overlays'],
+
+    init() {
+        this.initScheduleBuilders();
+        this.initRunOrder();
+        this.initOverlaySchedule();
+        this.updateSchedulePreview();
+    },
+
+    initScheduleBuilders() {
+        // Global schedule builder
+        const globalBuilder = document.getElementById('global-schedule-builder');
+        if (globalBuilder) {
+            this.setupScheduleBuilder(globalBuilder, 'global');
+        }
+
+        // Overlay schedule builder
+        const overlayBuilder = document.getElementById('overlay-schedule-builder');
+        if (overlayBuilder) {
+            this.setupScheduleBuilder(overlayBuilder, 'overlay');
+        }
+    },
+
+    setupScheduleBuilder(container, type) {
+        // Tab switching
+        const tabs = container.querySelectorAll('.schedule-preset-tab');
+        const panels = container.querySelectorAll('.schedule-preset-panel');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const preset = tab.dataset.preset;
+
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show corresponding panel
+                panels.forEach(p => {
+                    p.classList.toggle('active', p.dataset.panel === preset);
+                });
+
+                // Update schedule value
+                this.updateScheduleValue(container, preset, type);
+            });
+        });
+
+        // Day checkboxes
+        const dayCheckboxes = container.querySelectorAll('.day-checkbox input');
+        dayCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.updateWeeklySchedule(container, type);
+            });
+        });
+
+        // Monthly day input
+        const monthlyInput = container.querySelector('input[type="number"][id*="monthly-day"]');
+        if (monthlyInput) {
+            monthlyInput.addEventListener('change', () => {
+                this.updateMonthlySchedule(container, type);
+            });
+        }
+
+        // Date range inputs
+        const rangeStart = container.querySelector('#range-start');
+        const rangeEnd = container.querySelector('#range-end');
+        if (rangeStart && rangeEnd) {
+            rangeStart.addEventListener('change', () => this.updateRangeSchedule(container, type));
+            rangeEnd.addEventListener('change', () => this.updateRangeSchedule(container, type));
+        }
+
+        // Custom input
+        const customInput = container.querySelector('input[type="text"][id*="custom-schedule"]');
+        if (customInput) {
+            customInput.addEventListener('input', () => {
+                this.updateCustomSchedule(container, customInput.value, type);
+            });
+        }
+    },
+
+    updateScheduleValue(container, preset, type) {
+        let value = 'daily';
+        const badge = container.querySelector('.schedule-preset-panel.active .schedule-badge');
+
+        switch (preset) {
+            case 'daily':
+                value = 'daily';
+                break;
+            case 'weekly':
+                value = this.getWeeklyValue(container);
+                break;
+            case 'monthly':
+                const day = container.querySelector('input[type="number"][id*="monthly-day"]')?.value || 1;
+                value = `monthly(${day})`;
+                break;
+            case 'range':
+                value = this.getRangeValue(container);
+                break;
+            case 'custom':
+                value = container.querySelector('input[type="text"][id*="custom-schedule"]')?.value || '';
+                break;
+        }
+
+        if (badge) {
+            badge.textContent = value || preset;
+        }
+
+        // Update hidden input
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    getWeeklyValue(container) {
+        const checked = container.querySelectorAll('.day-checkbox input:checked');
+        if (checked.length === 0) return 'never';
+        if (checked.length === 7) return 'daily';
+
+        const days = Array.from(checked).map(cb => cb.value);
+        return `weekly(${days.join('|')})`;
+    },
+
+    updateWeeklySchedule(container, type) {
+        const value = this.getWeeklyValue(container);
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="weekly"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateMonthlySchedule(container, type) {
+        const dayInput = container.querySelector('input[type="number"][id*="monthly-day"]');
+        const day = dayInput?.value || 1;
+        const value = `monthly(${day})`;
+
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="monthly"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    getRangeValue(container) {
+        const startInput = container.querySelector('#range-start');
+        const endInput = container.querySelector('#range-end');
+
+        if (!startInput?.value || !endInput?.value) return 'range(01/01-12/31)';
+
+        const start = new Date(startInput.value);
+        const end = new Date(endInput.value);
+
+        const formatDate = (d) => {
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${month}/${day}`;
+        };
+
+        return `range(${formatDate(start)}-${formatDate(end)})`;
+    },
+
+    updateRangeSchedule(container, type) {
+        const value = this.getRangeValue(container);
+        const badge = container.querySelector('.schedule-preset-panel[data-panel="range"] .schedule-badge');
+        if (badge) {
+            badge.textContent = value;
+        }
+
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateCustomSchedule(container, value, type) {
+        const hiddenInput = container.querySelector('input[type="hidden"]');
+        if (hiddenInput) {
+            hiddenInput.value = value;
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (type === 'global') {
+            this.updateSchedulePreview();
+        }
+    },
+
+    updateSchedulePreview() {
+        const previewList = document.getElementById('global-schedule-preview');
+        if (!previewList) return;
+
+        const runTimeInput = document.getElementById('schedule-run-time');
+        const runTime = runTimeInput?.value || '05:00';
+
+        // Get current schedule
+        const hiddenInput = document.getElementById('global-schedule-value');
+        const schedule = hiddenInput?.value || 'daily';
+
+        // Generate next 3 run dates
+        const dates = this.getNextRunDates(schedule, runTime, 3);
+
+        previewList.innerHTML = dates.map(date => `
+            <div class="schedule-preview-item">
+                <span class="preview-date">${date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                <span class="preview-time">${this.formatTime(runTime)}</span>
+            </div>
+        `).join('');
+    },
+
+    getNextRunDates(schedule, runTime, count) {
+        const dates = [];
+        let currentDate = new Date();
+        const [hours, minutes] = runTime.split(':').map(Number);
+
+        // Parse schedule
+        const isDailySchedule = schedule === 'daily' || schedule === 'all';
+        const weeklyMatch = schedule.match(/weekly\(([^)]+)\)/);
+        const monthlyMatch = schedule.match(/monthly\((\d+)\)/);
+
+        let iterations = 0;
+        const maxIterations = 365; // Prevent infinite loops
+
+        while (dates.length < count && iterations < maxIterations) {
+            iterations++;
+            currentDate = new Date(currentDate.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+
+            if (isDailySchedule) {
+                dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+            } else if (weeklyMatch) {
+                const days = weeklyMatch[1].toLowerCase().split('|');
+                const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const dayOfWeek = dayNames[currentDate.getDay()];
+
+                if (days.includes(dayOfWeek)) {
+                    dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+                }
+            } else if (monthlyMatch) {
+                const targetDay = parseInt(monthlyMatch[1]);
+                if (currentDate.getDate() === targetDay) {
+                    dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+                }
+            } else {
+                // Default to daily if we can't parse
+                dates.push(new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), hours, minutes));
+            }
+        }
+
+        return dates;
+    },
+
+    formatTime(time24) {
+        const [hours, minutes] = time24.split(':').map(Number);
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const hours12 = hours % 12 || 12;
+        return `${hours12}:${String(minutes).padStart(2, '0')} ${ampm}`;
+    },
+
+    initRunOrder() {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const items = list.querySelectorAll('.run-order-item');
+        let draggedItem = null;
+
+        items.forEach(item => {
+            item.addEventListener('dragstart', (e) => {
+                draggedItem = item;
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                items.forEach(i => i.classList.remove('drag-over'));
+                draggedItem = null;
+                this.saveRunOrder();
+            });
+
+            item.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+
+                if (draggedItem && draggedItem !== item) {
+                    item.classList.add('drag-over');
+                }
+            });
+
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+
+            item.addEventListener('drop', (e) => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+
+                if (draggedItem && draggedItem !== item) {
+                    const allItems = [...list.querySelectorAll('.run-order-item')];
+                    const draggedIdx = allItems.indexOf(draggedItem);
+                    const targetIdx = allItems.indexOf(item);
+
+                    if (draggedIdx < targetIdx) {
+                        item.parentNode.insertBefore(draggedItem, item.nextSibling);
+                    } else {
+                        item.parentNode.insertBefore(draggedItem, item);
+                    }
+                }
+            });
+        });
+
+        // Load saved order
+        const savedOrder = localStorage.getItem('kometa-run-order');
+        if (savedOrder) {
+            try {
+                const order = JSON.parse(savedOrder);
+                this.applyRunOrder(order);
+            } catch (e) {
+                console.error('Failed to load run order:', e);
+            }
+        }
+    },
+
+    saveRunOrder() {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const order = [...list.querySelectorAll('.run-order-item')].map(item => item.dataset.order);
+        this.runOrder = order;
+        localStorage.setItem('kometa-run-order', JSON.stringify(order));
+
+        // Update hidden input
+        const hiddenInput = document.getElementById('run-order-value');
+        if (hiddenInput) {
+            hiddenInput.value = JSON.stringify(order);
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+    },
+
+    applyRunOrder(order) {
+        const list = document.getElementById('run-order-list');
+        if (!list) return;
+
+        const items = [...list.querySelectorAll('.run-order-item')];
+        const itemMap = {};
+        items.forEach(item => {
+            itemMap[item.dataset.order] = item;
+        });
+
+        order.forEach(key => {
+            if (itemMap[key]) {
+                list.appendChild(itemMap[key]);
+            }
+        });
+    },
+
+    initOverlaySchedule() {
+        const checkbox = document.getElementById('schedule-overlays-separately');
+        const section = document.getElementById('overlay-schedule-section');
+
+        if (checkbox && section) {
+            const updateVisibility = () => {
+                section.style.display = checkbox.checked ? 'block' : 'none';
+            };
+
+            checkbox.addEventListener('change', updateVisibility);
+            updateVisibility();
+        }
+
+        // Listen for run time changes to update preview
+        const runTimeInput = document.getElementById('schedule-run-time');
+        if (runTimeInput) {
+            runTimeInput.addEventListener('change', () => this.updateSchedulePreview());
+        }
+    }
+};
+
+// ============================================================================
+// Operations Module
+// ============================================================================
+
+const operations = {
+    init() {
+        this.initOperationCards();
+        this.initDependentFields();
+    },
+
+    initOperationCards() {
+        // When operation checkbox is toggled, enable/disable related fields
+        const cards = document.querySelectorAll('.operation-card');
+
+        cards.forEach(card => {
+            const checkbox = card.querySelector('.operation-header input[type="checkbox"]');
+            const selects = card.querySelectorAll('.operation-body select');
+
+            if (checkbox) {
+                const updateSelectState = () => {
+                    selects.forEach(select => {
+                        select.disabled = !checkbox.checked;
+                        select.closest('.form-group')?.classList.toggle('disabled', !checkbox.checked);
+                    });
+                };
+
+                checkbox.addEventListener('change', updateSelectState);
+                updateSelectState();
+            }
+        });
+    },
+
+    initDependentFields() {
+        // Some operations require specific sources to be configured
+        // Add visual feedback when dependencies aren't met
+
+        const sourceSelects = document.querySelectorAll('.operation-body select');
+        sourceSelects.forEach(select => {
+            select.addEventListener('change', () => {
+                const card = select.closest('.operation-card');
+                const checkbox = card?.querySelector('.operation-header input[type="checkbox"]');
+
+                // If a source is selected, auto-enable the operation
+                if (select.value && checkbox && !checkbox.checked) {
+                    checkbox.checked = true;
+                    checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
+        });
+    },
+
+    getEnabledOperations() {
+        const enabled = [];
+        const cards = document.querySelectorAll('.operation-card');
+
+        cards.forEach(card => {
+            const checkbox = card.querySelector('.operation-header input[type="checkbox"]');
+            if (checkbox?.checked) {
+                const configPath = checkbox.dataset.configPath;
+                const select = card.querySelector('.operation-body select');
+                enabled.push({
+                    operation: configPath,
+                    source: select?.value || null
+                });
+            }
+        });
+
+        return enabled;
+    }
+};
+
+// ============================================================================
+// Collection Builder Module
+// ============================================================================
+// TODO: API Integration Required
+// - GET /api/collections/{library} - Load existing collections
+// - POST /api/collections/save - Save collection to YAML file
+// - POST /api/collections/preview - Preview YAML output
+// - GET /api/builders/sources - Load available builder sources dynamically
+// Currently uses localStorage - should save to collection YAML files
+// See docs/API_INTEGRATION.md for full details
+
+const collectionBuilder = {
+    collections: [],
+    currentCollection: null,
+    builders: [],
+
+    sourceConfigs: {
+        tmdb_popular: { name: 'TMDb Popular', icon: '🎬', fields: ['limit'] },
+        tmdb_top_rated: { name: 'TMDb Top Rated', icon: '🎬', fields: ['limit'] },
+        tmdb_trending: { name: 'TMDb Trending', icon: '🎬', fields: ['limit', 'time_window'] },
+        tmdb_discover: { name: 'TMDb Discover', icon: '🎬', fields: ['year', 'vote_average', 'with_genres', 'sort_by'] },
+        trakt_trending: { name: 'Trakt Trending', icon: '📺', fields: ['limit'] },
+        trakt_popular: { name: 'Trakt Popular', icon: '📺', fields: ['limit'] },
+        trakt_watched: { name: 'Trakt Most Watched', icon: '📺', fields: ['limit', 'time_period'] },
+        trakt_list: { name: 'Trakt List', icon: '📺', fields: ['list_url'] },
+        trakt_watchlist: { name: 'Trakt Watchlist', icon: '📺', fields: ['username'] },
+        imdb_chart: { name: 'IMDb Chart', icon: '⭐', fields: ['chart'] },
+        imdb_list: { name: 'IMDb List', icon: '⭐', fields: ['list_id'] },
+        letterboxd_list: { name: 'Letterboxd List', icon: '🎞️', fields: ['list_url'] },
+        mdblist_list: { name: 'MDBList', icon: '📊', fields: ['list_url'] },
+        anilist_popular: { name: 'AniList Popular', icon: '🎌', fields: ['limit'] },
+        anilist_top_rated: { name: 'AniList Top Rated', icon: '🎌', fields: ['limit'] },
+        mal_popular: { name: 'MAL Popular', icon: '🎌', fields: ['limit'] },
+        mal_season: { name: 'MAL Season', icon: '🎌', fields: ['season', 'year'] },
+        imdb_award: { name: 'IMDb Awards', icon: '🏆', fields: ['award', 'year'] },
+        plex_search: { name: 'Plex Search', icon: '🔍', fields: ['any', 'title', 'year'] },
+        plex_collectionless: { name: 'Collectionless', icon: '📁', fields: [] },
+        flixpatrol_top: { name: 'FlixPatrol Top', icon: '📊', fields: ['platform', 'location', 'limit'] },
+        stevenlu_popular: { name: 'StevenLu Popular', icon: '🔥', fields: [] }
+    },
+
+    init() {
+        this.loadCollections();
+        this.initEventListeners();
+        this.initSourceSelector();
+    },
+
+    initEventListeners() {
+        // New collection buttons
+        document.getElementById('btn-new-collection')?.addEventListener('click', () => this.newCollection());
+        document.getElementById('btn-new-collection-empty')?.addEventListener('click', () => this.newCollection());
+
+        // Add builder button
+        document.getElementById('btn-add-builder')?.addEventListener('click', () => this.showSourceSelector());
+
+        // Close source selector
+        document.getElementById('btn-close-source-selector')?.addEventListener('click', () => this.hideSourceSelector());
+
+        // Collection name change - update YAML preview
+        document.getElementById('collection-name')?.addEventListener('input', () => this.updateYamlPreview());
+
+        // Save/Cancel buttons
+        document.getElementById('btn-save-collection')?.addEventListener('click', () => this.saveCollection());
+        document.getElementById('btn-cancel-collection')?.addEventListener('click', () => this.cancelEdit());
+
+        // Copy YAML button
+        document.getElementById('btn-copy-collection-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Collection group headers (collapse/expand)
+        document.querySelectorAll('.collection-group-header').forEach(header => {
+            header.addEventListener('click', () => {
+                header.closest('.collection-group')?.classList.toggle('collapsed');
+            });
+        });
+
+        // Search collections
+        document.getElementById('collection-search')?.addEventListener('input', (e) => {
+            this.filterCollections(e.target.value);
+        });
+
+        // Source search
+        document.getElementById('source-search')?.addEventListener('input', (e) => {
+            this.filterSources(e.target.value);
+        });
+    },
+
+    initSourceSelector() {
+        // Add click handlers to all source buttons
+        document.querySelectorAll('.source-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const source = btn.dataset.source;
+                this.addBuilder(source);
+                this.hideSourceSelector();
+            });
+        });
+    },
+
+    loadCollections() {
+        // Load from localStorage
+        const saved = localStorage.getItem('kometa-collections');
+        if (saved) {
+            try {
+                this.collections = JSON.parse(saved);
+                this.renderCollectionTree();
+            } catch (e) {
+                console.error('Failed to load collections:', e);
+            }
+        }
+    },
+
+    saveCollections() {
+        localStorage.setItem('kometa-collections', JSON.stringify(this.collections));
+    },
+
+    renderCollectionTree() {
+        const moviesContainer = document.querySelector('.collection-group-items[data-library="movies"]');
+        const tvContainer = document.querySelector('.collection-group-items[data-library="tv"]');
+
+        if (!moviesContainer || !tvContainer) return;
+
+        // Clear containers
+        moviesContainer.innerHTML = '';
+        tvContainer.innerHTML = '';
+
+        let movieCount = 0;
+        let tvCount = 0;
+
+        this.collections.forEach((coll, index) => {
+            const item = document.createElement('div');
+            item.className = 'collection-item';
+            item.dataset.index = index;
+            item.textContent = coll.name || 'Untitled Collection';
+
+            if (this.currentCollection && this.currentCollection.index === index) {
+                item.classList.add('active');
+            }
+
+            item.addEventListener('click', () => this.selectCollection(index));
+
+            if (coll.library === 'tv') {
+                tvContainer.appendChild(item);
+                tvCount++;
+            } else {
+                moviesContainer.appendChild(item);
+                movieCount++;
+            }
+        });
+
+        // Update counts
+        document.querySelector('.collection-group-header[data-library="movies"] .group-count').textContent = movieCount;
+        document.querySelector('.collection-group-header[data-library="tv"] .group-count').textContent = tvCount;
+    },
+
+    newCollection() {
+        this.currentCollection = {
+            index: -1,
+            name: '',
+            library: 'movies',
+            builders: [],
+            settings: {}
+        };
+        this.builders = [];
+        this.showEditor();
+        this.clearForm();
+        document.getElementById('collection-name')?.focus();
+    },
+
+    selectCollection(index) {
+        const coll = this.collections[index];
+        if (!coll) return;
+
+        this.currentCollection = { ...coll, index };
+        this.builders = coll.builders ? [...coll.builders] : [];
+        this.showEditor();
+        this.populateForm(coll);
+        this.renderBuilders();
+        this.updateYamlPreview();
+        this.renderCollectionTree();
+    },
+
+    showEditor() {
+        document.getElementById('collection-empty-state')?.classList.add('hidden');
+        document.getElementById('collection-editor-content')?.classList.remove('hidden');
+    },
+
+    hideEditor() {
+        document.getElementById('collection-empty-state')?.classList.remove('hidden');
+        document.getElementById('collection-editor-content')?.classList.add('hidden');
+    },
+
+    clearForm() {
+        document.getElementById('collection-name').value = '';
+        document.getElementById('collection-sort-title').value = '';
+        document.getElementById('collection-content-rating').value = '';
+        document.getElementById('collection-mode').value = 'default';
+        document.getElementById('collection-order').value = '';
+        document.getElementById('collection-sync-mode').value = 'sync';
+        document.getElementById('collection-minimum').value = '0';
+        document.getElementById('collection-summary').value = '';
+        document.getElementById('collection-delete-below-minimum').checked = false;
+
+        // Clear builders
+        this.builders = [];
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    populateForm(coll) {
+        document.getElementById('collection-name').value = coll.name || '';
+        document.getElementById('collection-sort-title').value = coll.settings?.sort_title || '';
+        document.getElementById('collection-content-rating').value = coll.settings?.content_rating || '';
+        document.getElementById('collection-mode').value = coll.settings?.collection_mode || 'default';
+        document.getElementById('collection-order').value = coll.settings?.collection_order || '';
+        document.getElementById('collection-sync-mode').value = coll.settings?.sync_mode || 'sync';
+        document.getElementById('collection-minimum').value = coll.settings?.minimum_items || '0';
+        document.getElementById('collection-summary').value = coll.settings?.summary || '';
+        document.getElementById('collection-delete-below-minimum').checked = coll.settings?.delete_below_minimum || false;
+    },
+
+    showSourceSelector() {
+        document.getElementById('builder-source-selector')?.classList.remove('hidden');
+        document.getElementById('source-search')?.focus();
+    },
+
+    hideSourceSelector() {
+        document.getElementById('builder-source-selector')?.classList.add('hidden');
+        document.getElementById('source-search').value = '';
+        this.filterSources('');
+    },
+
+    filterSources(query) {
+        const lowerQuery = query.toLowerCase();
+        document.querySelectorAll('.source-btn').forEach(btn => {
+            const name = btn.querySelector('.source-name')?.textContent.toLowerCase() || '';
+            const match = name.includes(lowerQuery);
+            btn.style.display = match ? '' : 'none';
+        });
+
+        // Hide empty categories
+        document.querySelectorAll('.source-category').forEach(category => {
+            const visibleBtns = category.querySelectorAll('.source-btn[style=""], .source-btn:not([style])');
+            category.style.display = visibleBtns.length > 0 ? '' : 'none';
+        });
+    },
+
+    filterCollections(query) {
+        const lowerQuery = query.toLowerCase();
+        document.querySelectorAll('.collection-item').forEach(item => {
+            const name = item.textContent.toLowerCase();
+            item.style.display = name.includes(lowerQuery) ? '' : 'none';
+        });
+    },
+
+    addBuilder(source) {
+        const config = this.sourceConfigs[source];
+        if (!config) return;
+
+        this.builders.push({
+            source,
+            config: config,
+            values: {}
+        });
+
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    removeBuilder(index) {
+        this.builders.splice(index, 1);
+        this.renderBuilders();
+        this.updateYamlPreview();
+    },
+
+    renderBuilders() {
+        const list = document.getElementById('builder-list');
+        if (!list) return;
+
+        if (this.builders.length === 0) {
+            list.innerHTML = `
+                <div class="builder-placeholder">
+                    <p>No builders added yet. Click "Add Builder" to select a source.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = this.builders.map((builder, index) => `
+            <div class="builder-card" data-index="${index}">
+                <div class="builder-card-header">
+                    <div class="builder-card-title">
+                        <span>${builder.config.icon}</span>
+                        <span>${builder.config.name}</span>
+                    </div>
+                    <div class="builder-card-actions">
+                        <button class="delete" onclick="collectionBuilder.removeBuilder(${index})" title="Remove">🗑️</button>
+                    </div>
+                </div>
+                <div class="builder-card-body">
+                    ${this.renderBuilderFields(builder, index)}
+                </div>
+            </div>
+        `).join('');
+
+        // Re-attach event listeners to field inputs
+        list.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+            input.addEventListener('input', () => this.updateYamlPreview());
+        });
+    },
+
+    renderBuilderFields(builder, builderIndex) {
+        const fields = builder.config.fields || [];
+        if (fields.length === 0) {
+            return '<p class="field-help">No configuration required for this source.</p>';
+        }
+
+        return fields.map(field => {
+            const value = builder.values[field] || '';
+            const fieldId = `builder-${builderIndex}-${field}`;
+
+            switch (field) {
+                case 'limit':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Limit</label>
+                            <input type="number" id="${fieldId}" data-field="${field}" value="${value || 50}" min="1" max="500">
+                        </div>
+                    `;
+                case 'year':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Year</label>
+                            <input type="number" id="${fieldId}" data-field="${field}" value="${value || new Date().getFullYear()}" min="1900" max="2030">
+                        </div>
+                    `;
+                case 'time_window':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Time Window</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="day" ${value === 'day' ? 'selected' : ''}>Day</option>
+                                <option value="week" ${value === 'week' ? 'selected' : ''}>Week</option>
+                            </select>
+                        </div>
+                    `;
+                case 'time_period':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Time Period</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="weekly" ${value === 'weekly' ? 'selected' : ''}>Weekly</option>
+                                <option value="monthly" ${value === 'monthly' ? 'selected' : ''}>Monthly</option>
+                                <option value="yearly" ${value === 'yearly' ? 'selected' : ''}>Yearly</option>
+                                <option value="all" ${value === 'all' ? 'selected' : ''}>All Time</option>
+                            </select>
+                        </div>
+                    `;
+                case 'list_url':
+                case 'list_id':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">${field === 'list_url' ? 'List URL' : 'List ID'}</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}" placeholder="Enter URL or ID...">
+                        </div>
+                    `;
+                case 'username':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Username</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}" placeholder="Enter username...">
+                        </div>
+                    `;
+                case 'chart':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Chart</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="top_250_movies" ${value === 'top_250_movies' ? 'selected' : ''}>Top 250 Movies</option>
+                                <option value="top_250_shows" ${value === 'top_250_shows' ? 'selected' : ''}>Top 250 TV Shows</option>
+                                <option value="popular_movies" ${value === 'popular_movies' ? 'selected' : ''}>Popular Movies</option>
+                                <option value="popular_shows" ${value === 'popular_shows' ? 'selected' : ''}>Popular TV Shows</option>
+                            </select>
+                        </div>
+                    `;
+                case 'season':
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">Season</label>
+                            <select id="${fieldId}" data-field="${field}">
+                                <option value="winter" ${value === 'winter' ? 'selected' : ''}>Winter</option>
+                                <option value="spring" ${value === 'spring' ? 'selected' : ''}>Spring</option>
+                                <option value="summer" ${value === 'summer' ? 'selected' : ''}>Summer</option>
+                                <option value="fall" ${value === 'fall' ? 'selected' : ''}>Fall</option>
+                            </select>
+                        </div>
+                    `;
+                default:
+                    return `
+                        <div class="form-group">
+                            <label for="${fieldId}">${field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</label>
+                            <input type="text" id="${fieldId}" data-field="${field}" value="${value}">
+                        </div>
+                    `;
+            }
+        }).join('');
+    },
+
+    getBuilderValues() {
+        this.builders.forEach((builder, index) => {
+            const card = document.querySelector(`.builder-card[data-index="${index}"]`);
+            if (!card) return;
+
+            card.querySelectorAll('[data-field]').forEach(input => {
+                const field = input.dataset.field;
+                builder.values[field] = input.value;
+            });
+        });
+    },
+
+    updateYamlPreview() {
+        this.getBuilderValues();
+
+        const name = document.getElementById('collection-name')?.value || 'Collection Name';
+        const output = document.getElementById('collection-yaml-output');
+        if (!output) return;
+
+        let yaml = `collections:\n  ${name}:\n`;
+
+        // Add builders
+        if (this.builders.length > 0) {
+            this.builders.forEach(builder => {
+                const source = builder.source;
+                const values = builder.values;
+
+                if (Object.keys(values).length === 0 || (Object.keys(values).length === 1 && values.limit)) {
+                    yaml += `    ${source}: ${values.limit || 50}\n`;
+                } else if (values.list_url || values.list_id) {
+                    yaml += `    ${source}: ${values.list_url || values.list_id}\n`;
+                } else {
+                    yaml += `    ${source}:\n`;
+                    Object.entries(values).forEach(([key, val]) => {
+                        if (val) yaml += `      ${key}: ${val}\n`;
+                    });
+                }
+            });
+        }
+
+        // Add settings
+        const syncMode = document.getElementById('collection-sync-mode')?.value;
+        if (syncMode && syncMode !== 'sync') {
+            yaml += `    sync_mode: ${syncMode}\n`;
+        }
+
+        const collMode = document.getElementById('collection-mode')?.value;
+        if (collMode && collMode !== 'default') {
+            yaml += `    collection_mode: ${collMode}\n`;
+        }
+
+        const order = document.getElementById('collection-order')?.value;
+        if (order) {
+            yaml += `    collection_order: ${order}\n`;
+        }
+
+        const sortTitle = document.getElementById('collection-sort-title')?.value;
+        if (sortTitle) {
+            yaml += `    sort_title: "${sortTitle}"\n`;
+        }
+
+        const summary = document.getElementById('collection-summary')?.value;
+        if (summary) {
+            yaml += `    summary: "${summary}"\n`;
+        }
+
+        const minimum = document.getElementById('collection-minimum')?.value;
+        if (minimum && minimum !== '0') {
+            yaml += `    minimum_items: ${minimum}\n`;
+        }
+
+        const deleteBelowMin = document.getElementById('collection-delete-below-minimum')?.checked;
+        if (deleteBelowMin) {
+            yaml += `    delete_below_minimum: true\n`;
+        }
+
+        output.textContent = yaml;
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('collection-yaml-output')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            }).catch(() => {
+                toast.show('Failed to copy YAML', 'error');
+            });
+        }
+    },
+
+    saveCollection() {
+        this.getBuilderValues();
+
+        const name = document.getElementById('collection-name')?.value;
+        if (!name) {
+            toast.show('Please enter a collection name', 'warning');
+            return;
+        }
+
+        const collection = {
+            name,
+            library: 'movies', // Could be made selectable
+            builders: this.builders,
+            settings: {
+                sort_title: document.getElementById('collection-sort-title')?.value,
+                content_rating: document.getElementById('collection-content-rating')?.value,
+                collection_mode: document.getElementById('collection-mode')?.value,
+                collection_order: document.getElementById('collection-order')?.value,
+                sync_mode: document.getElementById('collection-sync-mode')?.value,
+                minimum_items: document.getElementById('collection-minimum')?.value,
+                summary: document.getElementById('collection-summary')?.value,
+                delete_below_minimum: document.getElementById('collection-delete-below-minimum')?.checked
+            }
+        };
+
+        if (this.currentCollection.index === -1) {
+            // New collection
+            this.collections.push(collection);
+        } else {
+            // Update existing
+            this.collections[this.currentCollection.index] = collection;
+        }
+
+        this.saveCollections();
+        this.renderCollectionTree();
+        toast.show(`Collection "${name}" saved`, 'success');
+    },
+
+    cancelEdit() {
+        this.currentCollection = null;
+        this.builders = [];
+        this.hideEditor();
+        this.renderCollectionTree();
+    }
+};
+
+// ============================================================================
+// Playlist Builder Module
+// ============================================================================
+// TODO: API Integration Required
+// - GET /api/playlists - Load existing playlists
+// - POST /api/playlists/save - Save playlist to YAML file
+// Currently uses localStorage - should save to playlist YAML files
+// See docs/API_INTEGRATION.md for full details
+
+const playlistBuilder = {
+    playlists: [],
+    currentPlaylist: null,
+
+    init() {
+        this.loadPlaylists();
+        this.initEventListeners();
+    },
+
+    initEventListeners() {
+        document.getElementById('btn-new-playlist')?.addEventListener('click', () => this.newPlaylist());
+        document.getElementById('btn-new-playlist-empty')?.addEventListener('click', () => this.newPlaylist());
+        document.getElementById('btn-save-playlist')?.addEventListener('click', () => this.savePlaylist());
+        document.getElementById('btn-cancel-playlist')?.addEventListener('click', () => this.cancelEdit());
+    },
+
+    loadPlaylists() {
+        const saved = localStorage.getItem('kometa-playlists');
+        if (saved) {
+            try {
+                this.playlists = JSON.parse(saved);
+                this.renderPlaylistList();
+            } catch (e) {
+                console.error('Failed to load playlists:', e);
+            }
+        }
+    },
+
+    savePlaylists() {
+        localStorage.setItem('kometa-playlists', JSON.stringify(this.playlists));
+    },
+
+    renderPlaylistList() {
+        const list = document.getElementById('playlist-list');
+        if (!list) return;
+
+        if (this.playlists.length === 0) {
+            list.innerHTML = `
+                <div class="playlist-placeholder">
+                    <span class="placeholder-icon">🎵</span>
+                    <p>No playlists yet</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = this.playlists.map((pl, index) => `
+            <div class="playlist-item ${this.currentPlaylist?.index === index ? 'active' : ''}" data-index="${index}">
+                <span>🎵</span>
+                <span>${pl.name || 'Untitled Playlist'}</span>
+            </div>
+        `).join('');
+
+        list.querySelectorAll('.playlist-item').forEach(item => {
+            item.addEventListener('click', () => {
+                this.selectPlaylist(parseInt(item.dataset.index));
+            });
+        });
+    },
+
+    newPlaylist() {
+        this.currentPlaylist = { index: -1, name: '', settings: {} };
+        this.showEditor();
+        this.clearForm();
+        document.getElementById('playlist-name')?.focus();
+    },
+
+    selectPlaylist(index) {
+        const pl = this.playlists[index];
+        if (!pl) return;
+
+        this.currentPlaylist = { ...pl, index };
+        this.showEditor();
+        this.populateForm(pl);
+        this.renderPlaylistList();
+    },
+
+    showEditor() {
+        document.getElementById('playlist-empty-state')?.classList.add('hidden');
+        document.getElementById('playlist-editor-content')?.classList.remove('hidden');
+    },
+
+    hideEditor() {
+        document.getElementById('playlist-empty-state')?.classList.remove('hidden');
+        document.getElementById('playlist-editor-content')?.classList.add('hidden');
+    },
+
+    clearForm() {
+        document.getElementById('playlist-name').value = '';
+        document.getElementById('playlist-summary').value = '';
+        document.getElementById('playlist-exclude-users').value = '';
+        document.getElementById('playlist-sync-mode').value = 'sync';
+        document.getElementById('playlist-delete-not-scheduled').checked = false;
+    },
+
+    populateForm(pl) {
+        document.getElementById('playlist-name').value = pl.name || '';
+        document.getElementById('playlist-summary').value = pl.settings?.summary || '';
+        document.getElementById('playlist-exclude-users').value = pl.settings?.exclude_users || '';
+        document.getElementById('playlist-sync-mode').value = pl.settings?.sync_mode || 'sync';
+        document.getElementById('playlist-delete-not-scheduled').checked = pl.settings?.delete_not_scheduled || false;
+    },
+
+    savePlaylist() {
+        const name = document.getElementById('playlist-name')?.value;
+        if (!name) {
+            toast.show('Please enter a playlist name', 'warning');
+            return;
+        }
+
+        const playlist = {
+            name,
+            settings: {
+                summary: document.getElementById('playlist-summary')?.value,
+                exclude_users: document.getElementById('playlist-exclude-users')?.value,
+                sync_mode: document.getElementById('playlist-sync-mode')?.value,
+                delete_not_scheduled: document.getElementById('playlist-delete-not-scheduled')?.checked
+            }
+        };
+
+        if (this.currentPlaylist.index === -1) {
+            this.playlists.push(playlist);
+        } else {
+            this.playlists[this.currentPlaylist.index] = playlist;
+        }
+
+        this.savePlaylists();
+        this.renderPlaylistList();
+        toast.show(`Playlist "${name}" saved`, 'success');
+    },
+
+    cancelEdit() {
+        this.currentPlaylist = null;
+        this.hideEditor();
+        this.renderPlaylistList();
+    }
+};
+
+// ============================================================================
+// Filter Builder Module (extends collectionBuilder)
+// ============================================================================
+
+const filterBuilder = {
+    filters: [],
+
+    init() {
+        this.initEventListeners();
+    },
+
+    initEventListeners() {
+        document.getElementById('btn-add-filter')?.addEventListener('click', () => this.showFilterSelector());
+        document.getElementById('btn-cancel-filter')?.addEventListener('click', () => this.hideFilterSelector());
+        document.getElementById('btn-confirm-filter')?.addEventListener('click', () => this.addFilter());
+    },
+
+    showFilterSelector() {
+        document.getElementById('filter-selector')?.classList.remove('hidden');
+        document.getElementById('filter-field')?.focus();
+    },
+
+    hideFilterSelector() {
+        document.getElementById('filter-selector')?.classList.add('hidden');
+        this.clearFilterForm();
+    },
+
+    clearFilterForm() {
+        document.getElementById('filter-field').value = 'title';
+        document.getElementById('filter-operator').value = '';
+        document.getElementById('filter-value').value = '';
+    },
+
+    addFilter() {
+        const field = document.getElementById('filter-field')?.value;
+        const operator = document.getElementById('filter-operator')?.value;
+        const value = document.getElementById('filter-value')?.value;
+
+        if (!value) {
+            toast.show('Please enter a filter value', 'warning');
+            return;
+        }
+
+        this.filters.push({ field, operator, value });
+        this.renderFilters();
+        this.hideFilterSelector();
+
+        // Update YAML preview
+        if (typeof collectionBuilder !== 'undefined') {
+            collectionBuilder.updateYamlPreview();
+        }
+    },
+
+    removeFilter(index) {
+        this.filters.splice(index, 1);
+        this.renderFilters();
+
+        if (typeof collectionBuilder !== 'undefined') {
+            collectionBuilder.updateYamlPreview();
+        }
+    },
+
+    renderFilters() {
+        const list = document.getElementById('filter-list');
+        if (!list) return;
+
+        if (this.filters.length === 0) {
+            list.innerHTML = `
+                <div class="filter-placeholder">
+                    <p>No filters added. Click "Add Filter" to narrow down results.</p>
+                </div>
+            `;
+            return;
+        }
+
+        const operatorLabels = {
+            '': 'is',
+            '.not': 'is not',
+            '.contains': 'contains',
+            '.begins': 'begins with',
+            '.ends': 'ends with',
+            '.gt': '>',
+            '.gte': '>=',
+            '.lt': '<',
+            '.lte': '<='
+        };
+
+        list.innerHTML = this.filters.map((filter, index) => `
+            <div class="filter-row">
+                <span class="filter-field">${filter.field}</span>
+                <span class="filter-operator">${operatorLabels[filter.operator] || filter.operator}</span>
+                <span class="filter-value">"${filter.value}"</span>
+                <button class="btn-icon" onclick="filterBuilder.removeFilter(${index})" title="Remove">🗑️</button>
+            </div>
+        `).join('');
+    },
+
+    getFilters() {
+        return this.filters;
+    },
+
+    getFilterMatchMode() {
+        return document.getElementById('filter-match-mode')?.value || 'all';
+    },
+
+    generateYaml() {
+        if (this.filters.length === 0) return '';
+
+        let yaml = '    filters:\n';
+        this.filters.forEach(filter => {
+            const key = filter.field + filter.operator;
+            yaml += `      ${key}: ${filter.value}\n`;
+        });
+
+        return yaml;
+    },
+
+    clear() {
+        this.filters = [];
+        this.renderFilters();
+    }
+};
+
+// ============================================================================
+// Data Mappers Module
+// ============================================================================
+// TODO: API Integration Required
+// - GET /api/settings/mappers - Load mapper settings from config
+// - POST /api/settings/mappers - Save mappers to config.yml settings section
+// Currently uses localStorage - should persist to config.yml
+// See docs/API_INTEGRATION.md for full details
+
+const dataMappers = {
+    genreMappings: [],
+    ratingMappings: [],
+    studioMappings: [],
+
+    presets: {
+        'sci-fi': [
+            { from: 'Sci-Fi', to: 'Science Fiction' },
+            { from: 'SF', to: 'Science Fiction' },
+            { from: 'SciFi', to: 'Science Fiction' }
+        ],
+        'animation': [
+            { from: 'Anime', to: 'Animation' },
+            { from: 'Animated', to: 'Animation' },
+            { from: 'Cartoon', to: 'Animation' }
+        ],
+        'thriller': [
+            { from: 'Suspense', to: 'Thriller' },
+            { from: 'Mystery Thriller', to: 'Thriller' }
+        ],
+        'uk-mpaa': [
+            { from: 'gb/U', to: 'G' },
+            { from: 'gb/PG', to: 'PG' },
+            { from: 'gb/12', to: 'PG-13' },
+            { from: 'gb/12A', to: 'PG-13' },
+            { from: 'gb/15', to: 'R' },
+            { from: 'gb/18', to: 'NC-17' }
+        ],
+        'au-mpaa': [
+            { from: 'au/G', to: 'G' },
+            { from: 'au/PG', to: 'PG' },
+            { from: 'au/M', to: 'PG-13' },
+            { from: 'au/MA15+', to: 'R' },
+            { from: 'au/R18+', to: 'NC-17' }
+        ],
+        'de-mpaa': [
+            { from: 'de/0', to: 'G' },
+            { from: 'de/6', to: 'PG' },
+            { from: 'de/12', to: 'PG-13' },
+            { from: 'de/16', to: 'R' },
+            { from: 'de/18', to: 'NC-17' }
+        ]
+    },
+
+    init() {
+        this.initEventListeners();
+        this.loadMappings();
+    },
+
+    initEventListeners() {
+        // Add mapping buttons
+        document.getElementById('btn-add-genre-mapping')?.addEventListener('click', () => this.addMappingRow('genre'));
+        document.getElementById('btn-add-rating-mapping')?.addEventListener('click', () => this.addMappingRow('rating'));
+        document.getElementById('btn-add-studio-mapping')?.addEventListener('click', () => this.addMappingRow('studio'));
+
+        // Copy YAML
+        document.getElementById('btn-copy-mapper-yaml')?.addEventListener('click', () => this.copyYaml());
+
+        // Preset buttons
+        document.querySelectorAll('.preset-buttons button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                this.applyPreset(preset);
+            });
+        });
+
+        // Delete mapping buttons (delegate)
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete-mapper')) {
+                const row = e.target.closest('.mapper-row');
+                if (row) {
+                    row.remove();
+                    this.updateYamlPreview();
+                }
+            }
+        });
+
+        // Input changes
+        document.querySelectorAll('.mapper-from, .mapper-to').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    loadMappings() {
+        const saved = localStorage.getItem('kometa-data-mappings');
+        if (saved) {
+            try {
+                const data = JSON.parse(saved);
+                this.genreMappings = data.genre || [];
+                this.ratingMappings = data.rating || [];
+                this.studioMappings = data.studio || [];
+                this.renderMappings();
+            } catch (e) {
+                console.error('Failed to load mappings:', e);
+            }
+        }
+    },
+
+    saveMappings() {
+        this.collectMappings();
+        localStorage.setItem('kometa-data-mappings', JSON.stringify({
+            genre: this.genreMappings,
+            rating: this.ratingMappings,
+            studio: this.studioMappings
+        }));
+    },
+
+    collectMappings() {
+        this.genreMappings = this.getMappingsFromList('genre-mapper-list');
+        this.ratingMappings = this.getMappingsFromList('rating-mapper-list');
+        this.studioMappings = this.getMappingsFromList('studio-mapper-list');
+    },
+
+    getMappingsFromList(listId) {
+        const list = document.getElementById(listId);
+        if (!list) return [];
+
+        const mappings = [];
+        list.querySelectorAll('.mapper-row').forEach(row => {
+            const from = row.querySelector('.mapper-from')?.value?.trim();
+            const to = row.querySelector('.mapper-to')?.value?.trim();
+            if (from && to) {
+                mappings.push({ from, to });
+            }
+        });
+        return mappings;
+    },
+
+    renderMappings() {
+        this.renderMappingList('genre-mapper-list', this.genreMappings, 'genre');
+        this.renderMappingList('rating-mapper-list', this.ratingMappings, 'rating');
+        this.renderMappingList('studio-mapper-list', this.studioMappings, 'studio');
+        this.updateYamlPreview();
+    },
+
+    renderMappingList(listId, mappings, type) {
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        if (mappings.length === 0) {
+            list.innerHTML = this.createMappingRowHtml(type);
+            return;
+        }
+
+        list.innerHTML = mappings.map(() => this.createMappingRowHtml(type)).join('');
+
+        const rows = list.querySelectorAll('.mapper-row');
+        mappings.forEach((mapping, index) => {
+            if (rows[index]) {
+                rows[index].querySelector('.mapper-from').value = mapping.from;
+                rows[index].querySelector('.mapper-to').value = mapping.to;
+            }
+        });
+    },
+
+    createMappingRowHtml(type) {
+        const placeholders = {
+            genre: { from: 'From genre...', to: 'To genre...' },
+            rating: { from: 'From rating (e.g., gb/15)...', to: 'To rating (e.g., R)...' },
+            studio: { from: 'From studio...', to: 'To studio...' }
+        };
+        const ph = placeholders[type] || { from: 'From...', to: 'To...' };
+
+        return `
+            <div class="mapper-row">
+                <input type="text" class="mapper-from" placeholder="${ph.from}" data-mapper="${type}">
+                <span class="mapper-arrow">→</span>
+                <input type="text" class="mapper-to" placeholder="${ph.to}">
+                <button class="btn-icon delete-mapper" title="Remove">🗑️</button>
+            </div>
+        `;
+    },
+
+    addMappingRow(type) {
+        const listId = `${type}-mapper-list`;
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        const row = document.createElement('div');
+        row.innerHTML = this.createMappingRowHtml(type);
+        list.appendChild(row.firstElementChild);
+
+        // Focus the new from input
+        const newRow = list.lastElementChild;
+        newRow.querySelector('.mapper-from')?.focus();
+
+        // Add change listener
+        newRow.querySelectorAll('input').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    applyPreset(presetName) {
+        const preset = this.presets[presetName];
+        if (!preset) return;
+
+        // Determine which list to add to
+        const isRating = presetName.includes('mpaa');
+        const listId = isRating ? 'rating-mapper-list' : 'genre-mapper-list';
+        const type = isRating ? 'rating' : 'genre';
+
+        const list = document.getElementById(listId);
+        if (!list) return;
+
+        // Add preset mappings
+        preset.forEach(mapping => {
+            const row = document.createElement('div');
+            row.innerHTML = this.createMappingRowHtml(type);
+            const rowEl = row.firstElementChild;
+            rowEl.querySelector('.mapper-from').value = mapping.from;
+            rowEl.querySelector('.mapper-to').value = mapping.to;
+            list.appendChild(rowEl);
+
+            rowEl.querySelectorAll('input').forEach(input => {
+                input.addEventListener('change', () => this.updateYamlPreview());
+            });
+        });
+
+        this.updateYamlPreview();
+        toast.show(`Applied ${presetName} preset`, 'success');
+    },
+
+    updateYamlPreview() {
+        this.collectMappings();
+
+        const output = document.getElementById('mapper-yaml-output');
+        if (!output) return;
+
+        let yaml = '';
+
+        if (this.genreMappings.length > 0) {
+            yaml += 'settings:\n  genre_mapper:\n';
+            this.genreMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        if (this.ratingMappings.length > 0) {
+            if (!yaml) yaml = 'settings:\n';
+            yaml += '  content_rating_mapper:\n';
+            this.ratingMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        if (this.studioMappings.length > 0) {
+            if (!yaml) yaml = 'settings:\n';
+            yaml += '  studio_mapper:\n';
+            this.studioMappings.forEach(m => {
+                yaml += `    ${m.from}: ${m.to}\n`;
+            });
+        }
+
+        output.textContent = yaml || 'settings:\n  # Add mappings above to see YAML output';
+
+        // Save to localStorage
+        this.saveMappings();
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('mapper-yaml-output')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            }).catch(() => {
+                toast.show('Failed to copy YAML', 'error');
+            });
+        }
+    }
+};
+
+// ============================================================================
+// Phase 7: Enhanced Notifications Module
+// ============================================================================
+// TODO: API Integration Required
+// - POST /api/webhooks/test - Replace simulated webhook testing
+// - POST /api/settings/notifications - Save enabled events to config
+// - GET /api/settings/notifications - Load settings on init
+// See docs/API_INTEGRATION.md for full details
+
+const notifications = {
+    enabledEvents: new Set(),
+    webhookTemplates: {
+        discord: {
+            placeholder: 'https://discord.com/api/webhooks/...',
+            testPayload: (event) => ({
+                content: null,
+                embeds: [{
+                    title: `Kometa Test - ${event}`,
+                    description: 'This is a test notification from Kometa Web UI',
+                    color: 15105570, // Kometa gold
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        },
+        slack: {
+            placeholder: 'https://hooks.slack.com/services/...',
+            testPayload: (event) => ({
+                text: `Kometa Test - ${event}`,
+                blocks: [{
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: '*Kometa Test Notification*\nThis is a test notification from Kometa Web UI'
+                    }
+                }]
+            })
+        },
+        teams: {
+            placeholder: 'https://outlook.office.com/webhook/...',
+            testPayload: (event) => ({
+                '@type': 'MessageCard',
+                themeColor: 'e5a00d',
+                title: `Kometa Test - ${event}`,
+                text: 'This is a test notification from Kometa Web UI'
+            })
+        },
+        custom: {
+            placeholder: 'https://your-webhook-url.com/...',
+            testPayload: (event) => ({
+                event: event,
+                message: 'Kometa test notification',
+                timestamp: new Date().toISOString()
+            })
+        }
+    },
+
+    init() {
+        // Initialize event toggles
+        this.initEventToggles();
+        // Initialize quick setup buttons
+        this.initQuickSetup();
+        // Initialize test buttons
+        this.initTestButtons();
+        // Load saved state
+        this.loadState();
+        // Update counter
+        this.updateEventCount();
+    },
+
+    initEventToggles() {
+        document.querySelectorAll('.event-toggle input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const event = e.target.dataset.event;
+                const eventCard = e.target.closest('.notification-event');
+
+                if (e.target.checked) {
+                    this.enabledEvents.add(event);
+                    eventCard?.classList.add('enabled');
+                } else {
+                    this.enabledEvents.delete(event);
+                    eventCard?.classList.remove('enabled');
+                }
+
+                this.updateEventCount();
+                this.saveState();
+            });
+        });
+    },
+
+    initQuickSetup() {
+        document.querySelectorAll('.quick-setup-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const template = e.currentTarget.dataset.template;
+                this.applyTemplate(template);
+
+                // Update active state
+                document.querySelectorAll('.quick-setup-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+    },
+
+    initTestButtons() {
+        document.querySelectorAll('.test-webhook-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const event = e.target.dataset.event;
+                const eventCard = e.target.closest('.notification-event');
+                const urlInput = eventCard?.querySelector('input[type="text"]');
+                const url = urlInput?.value?.trim();
+
+                if (!url) {
+                    this.showTestResult('error', 'Please enter a webhook URL first');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'Testing...';
+
+                try {
+                    await this.testWebhook(url, event);
+                    this.showTestResult('success', `Test notification sent successfully for "${event}" event`);
+                } catch (error) {
+                    this.showTestResult('error', `Failed to send test: ${error.message}`);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Test';
+                }
+            });
+        });
+    },
+
+    applyTemplate(template) {
+        const config = this.webhookTemplates[template];
+        if (!config) return;
+
+        // Update all webhook URL placeholders
+        document.querySelectorAll('.event-config input[type="text"]').forEach(input => {
+            if (!input.value) {
+                input.placeholder = config.placeholder;
+            }
+        });
+
+        toast.show(`Applied ${template} webhook template`, 'success');
+    },
+
+    async testWebhook(url, event) {
+        // Determine the template type based on URL
+        let template = 'custom';
+        if (url.includes('discord.com')) template = 'discord';
+        else if (url.includes('slack.com') || url.includes('hooks.slack')) template = 'slack';
+        else if (url.includes('office.com') || url.includes('webhook.office')) template = 'teams';
+
+        const payload = this.webhookTemplates[template].testPayload(event);
+
+        // In a real implementation, this would make an API call
+        // For now, we simulate success/failure
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // Simulate 90% success rate
+                if (Math.random() > 0.1) {
+                    resolve({ success: true });
+                } else {
+                    reject(new Error('Connection timeout'));
+                }
+            }, 1000);
+        });
+    },
+
+    showTestResult(type, message) {
+        const resultEl = document.getElementById('webhook-test-result');
+        if (!resultEl) return;
+
+        resultEl.textContent = message;
+        resultEl.className = 'webhook-test-result ' + type;
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            resultEl.className = 'webhook-test-result';
+        }, 5000);
+    },
+
+    updateEventCount() {
+        const countEl = document.getElementById('events-configured-count');
+        if (countEl) {
+            const count = this.enabledEvents.size;
+            countEl.textContent = `${count} event${count !== 1 ? 's' : ''} configured`;
+        }
+    },
+
+    loadState() {
+        try {
+            const saved = localStorage.getItem('kometa-notifications');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.enabledEvents = new Set(data.enabledEvents || []);
+
+                // Restore toggle states
+                this.enabledEvents.forEach(event => {
+                    const toggle = document.querySelector(`.event-toggle input[data-event="${event}"]`);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.notification-event')?.classList.add('enabled');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Failed to load notification state:', e);
+        }
+    },
+
+    saveState() {
+        localStorage.setItem('kometa-notifications', JSON.stringify({
+            enabledEvents: Array.from(this.enabledEvents)
+        }));
+    }
+};
+
+// ============================================================================
+// Phase 8: Metadata Editor Module
+// ============================================================================
+// TODO: API Integration Required - CRITICAL
+// - GET /api/metadata/browse/{library} - Replace generateSampleMedia()
+// - GET /api/metadata/item/{id} - Load full item details
+// - POST /api/metadata/item/{id} - Save metadata edits
+// - POST /api/metadata/generate-yaml - Generate metadata YAML file
+// Currently uses SIMULATED DATA - see generateSampleMedia() at line ~3370
+// See docs/API_INTEGRATION.md for full details
+
+const metadataEditor = {
+    currentLibrary: null,
+    currentPage: 1,
+    itemsPerPage: 24,
+    mediaItems: [],
+    selectedItem: null,
+    editedItems: new Map(),
+    viewMode: 'grid',
+
+    init() {
+        this.initEventListeners();
+        this.loadEditedItems();
+    },
+
+    initEventListeners() {
+        // Library selector
+        const librarySelect = document.getElementById('metadata-library-select');
+        librarySelect?.addEventListener('change', (e) => {
+            this.currentLibrary = e.target.value;
+            this.currentPage = 1;
+            this.loadLibrary();
+        });
+
+        // Search
+        const searchInput = document.getElementById('metadata-search');
+        let searchTimeout;
+        searchInput?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.filterMedia(e.target.value);
+            }, 300);
+        });
+
+        // View mode buttons
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const view = e.currentTarget.dataset.view;
+                this.setViewMode(view);
+            });
+        });
+
+        // Filters
+        document.getElementById('metadata-type-filter')?.addEventListener('change', () => this.applyFilters());
+        document.getElementById('metadata-sort')?.addEventListener('change', () => this.applyFilters());
+        document.getElementById('metadata-show-edited')?.addEventListener('change', () => this.applyFilters());
+
+        // Pagination
+        document.getElementById('metadata-prev')?.addEventListener('click', () => this.prevPage());
+        document.getElementById('metadata-next')?.addEventListener('click', () => this.nextPage());
+
+        // Editor actions
+        document.getElementById('btn-save-metadata')?.addEventListener('click', () => this.saveMetadata());
+        document.getElementById('btn-reset-metadata')?.addEventListener('click', () => this.resetMetadata());
+        document.getElementById('btn-generate-yaml')?.addEventListener('click', () => this.generateYaml());
+        document.getElementById('btn-copy-metadata-yaml')?.addEventListener('click', () => this.copyYaml());
+    },
+
+    async loadLibrary() {
+        if (!this.currentLibrary) {
+            this.showEmptyState();
+            return;
+        }
+
+        // Show loading state
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.innerHTML = '<div class="media-grid-loading">Loading media...</div>';
+        }
+
+        // Simulate loading media from Plex
+        // In real implementation, this would call the API
+        this.mediaItems = this.generateSampleMedia();
+        this.renderMediaGrid();
+    },
+
+    generateSampleMedia() {
+        // Sample data for demonstration
+        const items = [];
+        const titles = [
+            'The Matrix', 'Inception', 'Interstellar', 'The Dark Knight',
+            'Pulp Fiction', 'Fight Club', 'Forrest Gump', 'The Shawshank Redemption',
+            'The Godfather', 'Goodfellas', 'Schindler\'s List', 'The Silence of the Lambs',
+            'Se7en', 'The Usual Suspects', 'Memento', 'The Prestige',
+            'Django Unchained', 'Inglourious Basterds', 'Kill Bill', 'Reservoir Dogs',
+            'The Lord of the Rings', 'Star Wars', 'Blade Runner', 'Alien'
+        ];
+
+        titles.forEach((title, i) => {
+            items.push({
+                id: `media-${i}`,
+                title: title,
+                year: 1990 + Math.floor(Math.random() * 35),
+                type: Math.random() > 0.3 ? 'movie' : 'show',
+                rating: (Math.random() * 3 + 7).toFixed(1),
+                genres: ['Action', 'Drama', 'Thriller'].slice(0, Math.floor(Math.random() * 3) + 1)
+            });
+        });
+
+        return items;
+    },
+
+    renderMediaGrid() {
+        const grid = document.getElementById('media-grid');
+        if (!grid) return;
+
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        const pageItems = this.mediaItems.slice(start, end);
+
+        if (pageItems.length === 0) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">📭</span>
+                    <p>No media found</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = pageItems.map(item => `
+            <div class="media-card ${this.selectedItem?.id === item.id ? 'selected' : ''} ${this.editedItems.has(item.id) ? 'edited' : ''}"
+                 data-id="${item.id}"
+                 onclick="metadataEditor.selectItem('${item.id}')">
+                <div class="media-card-poster">🎬</div>
+                <div class="media-card-info">
+                    <div class="media-card-title" title="${item.title}">${item.title}</div>
+                    <div class="media-card-year">${item.year}</div>
+                </div>
+            </div>
+        `).join('');
+
+        this.updatePagination();
+    },
+
+    selectItem(id) {
+        const item = this.mediaItems.find(m => m.id === id);
+        if (!item) return;
+
+        this.selectedItem = item;
+
+        // Update selection in grid
+        document.querySelectorAll('.media-card').forEach(card => {
+            card.classList.toggle('selected', card.dataset.id === id);
+        });
+
+        // Show edit form
+        this.showEditForm(item);
+    },
+
+    showEditForm(item) {
+        const content = document.getElementById('edit-panel-content');
+        const form = document.getElementById('edit-panel-form');
+
+        if (content) content.classList.add('hidden');
+        if (form) form.classList.remove('hidden');
+
+        // Update header
+        document.getElementById('edit-item-title').textContent = item.title;
+        document.getElementById('edit-item-type').textContent = item.type;
+
+        // Load existing edits or original values
+        const edits = this.editedItems.get(item.id) || {};
+
+        document.getElementById('edit-title').value = edits.title || item.title;
+        document.getElementById('edit-sort-title').value = edits.sort_title || '';
+        document.getElementById('edit-year').value = edits.year || item.year;
+        document.getElementById('edit-content-rating').value = edits.content_rating || '';
+        document.getElementById('edit-summary').value = edits.summary || '';
+        document.getElementById('edit-genres').value = edits.genres || item.genres?.join(', ') || '';
+        document.getElementById('edit-labels').value = edits.labels || '';
+
+        // Hide YAML output until generated
+        document.getElementById('metadata-yaml-output')?.classList.add('hidden');
+    },
+
+    showEmptyState() {
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">📚</span>
+                    <p>Select a library to browse media</p>
+                </div>
+            `;
+        }
+    },
+
+    setViewMode(mode) {
+        this.viewMode = mode;
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === mode);
+        });
+
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.classList.toggle('list-view', mode === 'list');
+        }
+    },
+
+    applyFilters() {
+        // Re-render with filters
+        this.renderMediaGrid();
+    },
+
+    filterMedia(query) {
+        if (!query) {
+            this.renderMediaGrid();
+            return;
+        }
+
+        const filtered = this.mediaItems.filter(item =>
+            item.title.toLowerCase().includes(query.toLowerCase())
+        );
+
+        const grid = document.getElementById('media-grid');
+        if (!grid) return;
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">🔍</span>
+                    <p>No results for "${query}"</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = filtered.slice(0, this.itemsPerPage).map(item => `
+            <div class="media-card ${this.selectedItem?.id === item.id ? 'selected' : ''}"
+                 data-id="${item.id}"
+                 onclick="metadataEditor.selectItem('${item.id}')">
+                <div class="media-card-poster">🎬</div>
+                <div class="media-card-info">
+                    <div class="media-card-title">${item.title}</div>
+                    <div class="media-card-year">${item.year}</div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    updatePagination() {
+        const totalPages = Math.ceil(this.mediaItems.length / this.itemsPerPage);
+        const info = document.getElementById('metadata-pagination-info');
+        const prevBtn = document.getElementById('metadata-prev');
+        const nextBtn = document.getElementById('metadata-next');
+
+        if (info) info.textContent = `Page ${this.currentPage} of ${totalPages}`;
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= totalPages;
+    },
+
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.renderMediaGrid();
+        }
+    },
+
+    nextPage() {
+        const totalPages = Math.ceil(this.mediaItems.length / this.itemsPerPage);
+        if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.renderMediaGrid();
+        }
+    },
+
+    saveMetadata() {
+        if (!this.selectedItem) return;
+
+        const edits = {
+            title: document.getElementById('edit-title')?.value,
+            sort_title: document.getElementById('edit-sort-title')?.value,
+            year: document.getElementById('edit-year')?.value,
+            content_rating: document.getElementById('edit-content-rating')?.value,
+            summary: document.getElementById('edit-summary')?.value,
+            genres: document.getElementById('edit-genres')?.value,
+            labels: document.getElementById('edit-labels')?.value
+        };
+
+        // Remove empty values
+        Object.keys(edits).forEach(key => {
+            if (!edits[key]) delete edits[key];
+        });
+
+        if (Object.keys(edits).length > 0) {
+            this.editedItems.set(this.selectedItem.id, edits);
+        } else {
+            this.editedItems.delete(this.selectedItem.id);
+        }
+
+        this.saveEditedItems();
+        this.renderMediaGrid();
+        toast.show('Metadata saved', 'success');
+    },
+
+    resetMetadata() {
+        if (!this.selectedItem) return;
+
+        this.editedItems.delete(this.selectedItem.id);
+        this.showEditForm(this.selectedItem);
+        this.saveEditedItems();
+        this.renderMediaGrid();
+        toast.show('Metadata reset', 'info');
+    },
+
+    generateYaml() {
+        if (!this.selectedItem) return;
+
+        const edits = this.editedItems.get(this.selectedItem.id);
+        if (!edits || Object.keys(edits).length === 0) {
+            toast.show('No changes to generate', 'info');
+            return;
+        }
+
+        let yaml = `metadata:\n  "${this.selectedItem.title}":\n`;
+
+        if (edits.title && edits.title !== this.selectedItem.title) {
+            yaml += `    title: "${edits.title}"\n`;
+        }
+        if (edits.sort_title) yaml += `    sort_title: "${edits.sort_title}"\n`;
+        if (edits.year) yaml += `    year: ${edits.year}\n`;
+        if (edits.content_rating) yaml += `    content_rating: "${edits.content_rating}"\n`;
+        if (edits.summary) yaml += `    summary: |\n      ${edits.summary.replace(/\n/g, '\n      ')}\n`;
+        if (edits.genres) yaml += `    genre.sync: [${edits.genres}]\n`;
+        if (edits.labels) yaml += `    label.sync: [${edits.labels}]\n`;
+
+        const preview = document.getElementById('metadata-yaml-preview');
+        const output = document.getElementById('metadata-yaml-output');
+
+        if (preview) preview.textContent = yaml;
+        if (output) output.classList.remove('hidden');
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('metadata-yaml-preview')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            });
+        }
+    },
+
+    loadEditedItems() {
+        try {
+            const saved = localStorage.getItem('kometa-edited-metadata');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.editedItems = new Map(Object.entries(data));
+            }
+        } catch (e) {
+            console.error('Failed to load edited items:', e);
+        }
+    },
+
+    saveEditedItems() {
+        const data = Object.fromEntries(this.editedItems);
+        localStorage.setItem('kometa-edited-metadata', JSON.stringify(data));
+    }
+};
+
+// Expose to global scope
+window.metadataEditor = metadataEditor;
+
+// ============================================================================
+// Phase 10: Advanced Operations Module
+// ============================================================================
+// TODO: API Integration Required
+// - GET /api/operations/config - Load enabled operations from config
+// - POST /api/operations/config - Save operations settings to config
+// Currently uses localStorage - should persist to config.yml
+// See docs/API_INTEGRATION.md for full details
+
+const advancedOperations = {
+    enabledOps: new Set(),
+
+    init() {
+        this.initToggleSwitches();
+        this.initYamlGeneration();
+        this.loadState();
+    },
+
+    initToggleSwitches() {
+        document.querySelectorAll('#subtab-advanced-ops .toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const opCard = e.target.closest('.advanced-op-card');
+                const opId = e.target.id;
+
+                if (e.target.checked) {
+                    this.enabledOps.add(opId);
+                    opCard?.classList.add('enabled');
+                } else {
+                    this.enabledOps.delete(opId);
+                    opCard?.classList.remove('enabled');
+                }
+
+                this.updateYamlPreview();
+                this.saveState();
+            });
+        });
+    },
+
+    initYamlGeneration() {
+        // Copy button
+        document.getElementById('btn-copy-advanced-ops-yaml')?.addEventListener('click', () => {
+            const yaml = document.getElementById('advanced-ops-yaml-preview')?.textContent;
+            if (yaml) {
+                navigator.clipboard.writeText(yaml).then(() => {
+                    toast.show('YAML copied to clipboard', 'success');
+                });
+            }
+        });
+
+        // Update on any config field change
+        document.querySelectorAll('#subtab-advanced-ops input, #subtab-advanced-ops select').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    updateYamlPreview() {
+        const preview = document.getElementById('advanced-ops-yaml-preview');
+        if (!preview) return;
+
+        if (this.enabledOps.size === 0) {
+            preview.textContent = 'operations:\n  # Enable operations above to see YAML output';
+            return;
+        }
+
+        let yaml = 'operations:\n';
+
+        // Title Operations
+        if (this.enabledOps.has('op-remove-title-parentheses')) {
+            yaml += '  remove_title_parentheses: true\n';
+        }
+        if (this.enabledOps.has('op-split-duplicates')) {
+            yaml += '  split_duplicates: true\n';
+        }
+
+        // Music Operations
+        if (this.enabledOps.has('op-update-blank-track-titles')) {
+            yaml += '  update_blank_track_titles: true\n';
+        }
+
+        // Asset Operations
+        if (this.enabledOps.has('op-assets-for-all')) {
+            yaml += '  assets_for_all: true\n';
+        }
+        if (this.enabledOps.has('op-delete-collections-not-managed')) {
+            yaml += '  delete_collections:\n';
+            yaml += '    managed: false\n';
+        }
+
+        // Backup & Maintenance
+        if (this.enabledOps.has('op-metadata-backup')) {
+            const path = document.getElementById('op-backup-path')?.value || '/config/backups';
+            yaml += `  metadata_backup:\n    path: "${path}"\n`;
+        }
+        if (this.enabledOps.has('op-delete-collections-less')) {
+            const threshold = document.getElementById('op-delete-less-threshold')?.value || 5;
+            yaml += `  delete_collections:\n    less: ${threshold}\n`;
+        }
+        if (this.enabledOps.has('op-mass-originally-available')) {
+            const source = document.getElementById('op-originally-available-source')?.value || 'tmdb';
+            yaml += `  mass_originally_available_update: ${source}\n`;
+        }
+
+        // Genre & Label Sync
+        if (this.enabledOps.has('op-genre-sync')) {
+            const source = document.getElementById('op-genre-source')?.value || 'tmdb';
+            yaml += `  mass_genre_update: ${source}\n`;
+        }
+        if (this.enabledOps.has('op-mass-imdb-parental-labels')) {
+            yaml += '  mass_imdb_parental_labels: true\n';
+        }
+
+        preview.textContent = yaml;
+    },
+
+    loadState() {
+        try {
+            const saved = localStorage.getItem('kometa-advanced-ops');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.enabledOps = new Set(data.enabledOps || []);
+
+                // Restore toggle states
+                this.enabledOps.forEach(opId => {
+                    const toggle = document.getElementById(opId);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.advanced-op-card')?.classList.add('enabled');
+                    }
+                });
+
+                this.updateYamlPreview();
+            }
+        } catch (e) {
+            console.error('Failed to load advanced ops state:', e);
+        }
+    },
+
+    saveState() {
+        localStorage.setItem('kometa-advanced-ops', JSON.stringify({
+            enabledOps: Array.from(this.enabledOps)
+        }));
+    }
+};
+
+const preflight = {
+    status: {
+        config: 'pending',
+        plex: 'pending',
+        tmdb: 'pending',
+        libraries: 'pending'
+    },
+
+    init() {
+        // Event listeners
+        document.getElementById('btn-recheck-preflight')?.addEventListener('click', () => this.checkAll());
+        document.getElementById('btn-verify-connections')?.addEventListener('click', () => this.verifyConnections());
+    },
+
+    checkAll() {
+        this.checkConfig();
+        this.checkPlex();
+        this.checkTmdb();
+        this.checkLibraries();
+        this.updateOverallStatus();
+    },
+
+    checkConfig() {
+        const hasConfig = elements.configEditor?.value?.trim().length > 0;
+        const item = document.getElementById('preflight-config');
+        const detail = document.getElementById('preflight-config-detail');
+
+        if (hasConfig) {
+            this.status.config = 'ready';
+            item?.classList.remove('warning', 'error');
+            item?.classList.add('ready');
+            if (detail) detail.textContent = 'Loaded';
+        } else {
+            this.status.config = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'No configuration loaded';
+        }
+    },
+
+    checkPlex() {
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        const item = document.getElementById('preflight-plex');
+        const detail = document.getElementById('preflight-plex-detail');
+
+        if (plexUrl && plexToken) {
+            this.status.plex = 'warning'; // Configured but not verified
+            item?.classList.remove('ready', 'error');
+            item?.classList.add('warning');
+            if (detail) detail.textContent = 'Configured (click Verify to test)';
+        } else {
+            this.status.plex = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'Not configured';
+        }
+    },
+
+    checkTmdb() {
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        const item = document.getElementById('preflight-tmdb');
+        const detail = document.getElementById('preflight-tmdb-detail');
+
+        if (tmdbKey) {
+            this.status.tmdb = 'warning'; // Configured but not verified
+            item?.classList.remove('ready', 'error');
+            item?.classList.add('warning');
+            if (detail) detail.textContent = 'Configured (click Verify to test)';
+        } else {
+            this.status.tmdb = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'Not configured';
+        }
+    },
+
+    checkLibraries() {
+        const libraries = parsedConfig?.libraries || {};
+        const count = Object.keys(libraries).length;
+        const item = document.getElementById('preflight-libraries');
+        const detail = document.getElementById('preflight-libraries-detail');
+
+        if (count > 0) {
+            this.status.libraries = 'ready';
+            item?.classList.remove('warning', 'error');
+            item?.classList.add('ready');
+            if (detail) detail.textContent = `${count} ${count === 1 ? 'library' : 'libraries'}`;
+        } else {
+            this.status.libraries = 'error';
+            item?.classList.remove('ready', 'warning');
+            item?.classList.add('error');
+            if (detail) detail.textContent = 'No libraries configured';
+        }
+    },
+
+    async verifyConnections() {
+        // Test Plex
+        const plexUrl = document.getElementById('plex-url')?.value;
+        const plexToken = document.getElementById('plex-token')?.value;
+        const plexItem = document.getElementById('preflight-plex');
+        const plexDetail = document.getElementById('preflight-plex-detail');
+
+        if (plexUrl && plexToken) {
+            if (plexDetail) plexDetail.textContent = 'Testing...';
+            try {
+                const result = await api.post('/test/plex', { url: plexUrl, token: plexToken });
+                if (result.success) {
+                    this.status.plex = 'ready';
+                    plexItem?.classList.remove('warning', 'error');
+                    plexItem?.classList.add('ready');
+                    if (plexDetail) plexDetail.textContent = result.server_name || 'Connected';
+                    sidebarStatus.updatePlex(true);
+                } else {
+                    this.status.plex = 'error';
+                    plexItem?.classList.remove('ready', 'warning');
+                    plexItem?.classList.add('error');
+                    if (plexDetail) plexDetail.textContent = result.error || 'Connection failed';
+                    sidebarStatus.updatePlex(false);
+                }
+            } catch (error) {
+                this.status.plex = 'error';
+                plexItem?.classList.remove('ready', 'warning');
+                plexItem?.classList.add('error');
+                if (plexDetail) plexDetail.textContent = error.message;
+                sidebarStatus.updatePlex(false);
+            }
+        }
+
+        // Test TMDb
+        const tmdbKey = document.getElementById('tmdb-apikey')?.value;
+        const tmdbItem = document.getElementById('preflight-tmdb');
+        const tmdbDetail = document.getElementById('preflight-tmdb-detail');
+
+        if (tmdbKey) {
+            if (tmdbDetail) tmdbDetail.textContent = 'Testing...';
+            try {
+                const result = await api.post('/test/tmdb', { apikey: tmdbKey });
+                if (result.success) {
+                    this.status.tmdb = 'ready';
+                    tmdbItem?.classList.remove('warning', 'error');
+                    tmdbItem?.classList.add('ready');
+                    if (tmdbDetail) tmdbDetail.textContent = 'API key valid';
+                    sidebarStatus.updateTmdb(true);
+                } else {
+                    this.status.tmdb = 'error';
+                    tmdbItem?.classList.remove('ready', 'warning');
+                    tmdbItem?.classList.add('error');
+                    if (tmdbDetail) tmdbDetail.textContent = result.error || 'Invalid API key';
+                    sidebarStatus.updateTmdb(false);
+                }
+            } catch (error) {
+                this.status.tmdb = 'error';
+                tmdbItem?.classList.remove('ready', 'warning');
+                tmdbItem?.classList.add('error');
+                if (tmdbDetail) tmdbDetail.textContent = error.message;
+                sidebarStatus.updateTmdb(false);
+            }
+        }
+
+        this.updateOverallStatus();
+        toast.success('Connection verification complete');
+    },
+
+    updateOverallStatus() {
+        const checklist = document.getElementById('preflight-checklist');
+        const statusEl = document.getElementById('preflight-status');
+
+        const values = Object.values(this.status);
+        const hasErrors = values.includes('error');
+        const hasWarnings = values.includes('warning');
+        const allReady = values.every(s => s === 'ready');
+
+        checklist?.classList.remove('all-ready', 'has-warnings', 'has-errors');
+
+        if (allReady) {
+            checklist?.classList.add('all-ready');
+            if (statusEl) {
+                statusEl.textContent = 'Ready to run';
+                statusEl.className = 'preflight-status ready';
+            }
+        } else if (hasErrors) {
+            checklist?.classList.add('has-errors');
+            if (statusEl) {
+                statusEl.textContent = 'Issues found';
+                statusEl.className = 'preflight-status error';
+            }
+        } else if (hasWarnings) {
+            checklist?.classList.add('has-warnings');
+            if (statusEl) {
+                statusEl.textContent = 'Verify connections';
+                statusEl.className = 'preflight-status warning';
+            }
+        }
+    },
+
+    // Called when switching to Run tab
+    refresh() {
+        this.checkAll();
+    }
+};
+
+// ============================================================================
+// Theme Switcher
+// ============================================================================
+
+const theme = {
+    currentTheme: 'dark',
+
+    init() {
+        // Check for saved preference or system preference
+        const saved = localStorage.getItem('kometa-theme');
+        if (saved) {
+            this.currentTheme = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+            this.currentTheme = 'light';
+        }
+
+        // Apply theme
+        this.apply(this.currentTheme);
+
+        // Set up toggle button
+        const toggleBtn = document.getElementById('theme-toggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => this.toggle());
+        }
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('kometa-theme')) {
+                this.apply(e.matches ? 'light' : 'dark');
+            }
+        });
+    },
+
+    apply(themeName) {
+        this.currentTheme = themeName;
+
+        // Add transition class for smooth switching
+        document.documentElement.classList.add('theme-transition');
+
+        // Apply theme
+        if (themeName === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+        }
+
+        // Remove transition class after animation
+        setTimeout(() => {
+            document.documentElement.classList.remove('theme-transition');
+        }, 300);
+    },
+
+    toggle() {
+        const newTheme = this.currentTheme === 'dark' ? 'light' : 'dark';
+        this.apply(newTheme);
+        localStorage.setItem('kometa-theme', newTheme);
+
+        // Show toast notification
+        toast.show(`Switched to ${newTheme} theme`, 'info', 2000);
+    },
+
+    isDark() {
+        return this.currentTheme === 'dark';
+    }
+};
+
+// ============================================================================
+// Keyboard Shortcuts (Phase 4)
+// ============================================================================
+
+const keyboard = {
+    shortcuts: new Map(),
+    helpModal: null,
+
+    init() {
+        // Register default shortcuts
+        this.register('ctrl+s', 'Save configuration', () => {
+            document.getElementById('btn-save')?.click();
+        });
+
+        this.register('ctrl+shift+s', 'Save and run', () => {
+            // Save first, then trigger run
+            const saveBtn = document.getElementById('btn-save');
+            if (saveBtn) {
+                saveBtn.click();
+                setTimeout(() => {
+                    document.getElementById('btn-run')?.click();
+                }, 500);
+            }
+        });
+
+        this.register('ctrl+/', 'Show keyboard shortcuts', () => {
+            this.showHelp();
+        });
+
+        this.register('ctrl+p', 'Toggle YAML preview', () => {
+            yamlPreview.toggle();
+        });
+
+        this.register('ctrl+1', 'Go to Dashboard', () => {
+            document.querySelector('[data-tab="dashboard"]')?.click();
+        });
+
+        this.register('ctrl+2', 'Go to Config tab', () => {
+            document.querySelector('[data-tab="config"]')?.click();
+        });
+
+        this.register('ctrl+3', 'Go to Run tab', () => {
+            document.querySelector('[data-tab="run"]')?.click();
+        });
+
+        this.register('ctrl+4', 'Go to Logs tab', () => {
+            document.querySelector('[data-tab="logs"]')?.click();
+        });
+
+        this.register('ctrl+shift+t', 'Toggle theme', () => {
+            theme.toggle();
+        });
+
+        this.register('escape', 'Close modals/panels', () => {
+            // Close YAML preview if open
+            if (yamlPreview.isActive) {
+                yamlPreview.hide();
+                return;
+            }
+            // Close help modal if open
+            if (this.helpModal?.classList.contains('active')) {
+                this.hideHelp();
+                return;
+            }
+        });
+
+        // Global keydown listener
+        document.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+        // Create help modal
+        this.createHelpModal();
+    },
+
+    register(combo, description, callback) {
+        this.shortcuts.set(combo.toLowerCase(), { description, callback });
+    },
+
+    handleKeydown(e) {
+        // Don't trigger shortcuts when typing in inputs
+        if (e.target.matches('input, textarea, select')) {
+            // Allow Escape in inputs
+            if (e.key !== 'Escape') return;
+        }
+
+        const combo = this.getCombo(e);
+        const shortcut = this.shortcuts.get(combo);
+
+        if (shortcut) {
+            e.preventDefault();
+            shortcut.callback();
+        }
+    },
+
+    getCombo(e) {
+        const parts = [];
+        if (e.ctrlKey || e.metaKey) parts.push('ctrl');
+        if (e.shiftKey) parts.push('shift');
+        if (e.altKey) parts.push('alt');
+
+        // Normalize key
+        let key = e.key.toLowerCase();
+        if (key === ' ') key = 'space';
+        if (key !== 'control' && key !== 'shift' && key !== 'alt' && key !== 'meta') {
+            parts.push(key);
+        }
+
+        return parts.join('+');
+    },
+
+    createHelpModal() {
+        const modal = document.createElement('div');
+        modal.className = 'keyboard-help-modal';
+        modal.id = 'keyboard-help-modal';
+        modal.innerHTML = `
+            <div class="keyboard-help-content">
+                <div class="keyboard-help-header">
+                    <h3>Keyboard Shortcuts</h3>
+                    <button class="btn-close-help" aria-label="Close">&times;</button>
+                </div>
+                <div class="keyboard-help-body">
+                    ${this.renderShortcutsList()}
+                </div>
+                <div class="keyboard-help-footer">
+                    <span class="text-muted">Press <kbd>Ctrl</kbd> + <kbd>/</kbd> to toggle this help</span>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        this.helpModal = modal;
+
+        // Close button handler
+        modal.querySelector('.btn-close-help')?.addEventListener('click', () => this.hideHelp());
+
+        // Click outside to close
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) this.hideHelp();
+        });
+    },
+
+    renderShortcutsList() {
+        let html = '<div class="shortcuts-list">';
+        for (const [combo, { description }] of this.shortcuts) {
+            const keys = combo.split('+').map(k => `<kbd>${k}</kbd>`).join(' + ');
+            html += `
+                <div class="shortcut-item">
+                    <span class="shortcut-keys">${keys}</span>
+                    <span class="shortcut-desc">${description}</span>
+                </div>
+            `;
+        }
+        html += '</div>';
+        return html;
+    },
+
+    showHelp() {
+        if (this.helpModal) {
+            this.helpModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    },
+
+    hideHelp() {
+        if (this.helpModal) {
+            this.helpModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    }
+};
+
+// ============================================================================
 // API Functions
 // ============================================================================
 
@@ -171,7 +4304,10 @@ function switchTab(tabName) {
 
     // Update nav tabs
     elements.navTabs.forEach(tab => {
-        tab.classList.toggle('active', tab.dataset.tab === tabName);
+        const isActive = tab.dataset.tab === tabName;
+        tab.classList.toggle('active', isActive);
+        // Update ARIA attributes for accessibility
+        tab.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     // Update tab contents
@@ -183,6 +4319,7 @@ function switchTab(tabName) {
     // Load tab-specific data
     if (tabName === 'run') {
         loadRunPlan();
+        preflight.refresh();
     } else if (tabName === 'history') {
         loadRunHistory();
     } else if (tabName === 'overlays') {
@@ -242,6 +4379,11 @@ async function saveConfig() {
             message: `Config saved successfully. Backup created: ${result.backup_path || 'N/A'}`
         });
 
+        // Show toast notification
+        toast.success('Configuration saved successfully', {
+            title: 'Saved'
+        });
+
         // Reload backups list
         loadBackups();
     } catch (error) {
@@ -249,6 +4391,11 @@ async function saveConfig() {
             valid: false,
             errors: [error.message],
             warnings: []
+        });
+
+        // Show error toast
+        toast.error(error.message, {
+            title: 'Save Failed'
         });
     }
 }
@@ -357,10 +4504,11 @@ let parsedConfig = {};
 let isSyncing = false;
 
 /**
- * Initialize config subtabs
+ * Initialize config subtabs (supports both legacy tabs and new sidebar nav)
  */
 function initConfigSubtabs() {
-    const subtabs = document.querySelectorAll('.config-subtab');
+    // Support both old .config-subtab and new .config-nav-item classes
+    const subtabs = document.querySelectorAll('.config-subtab, .config-nav-item');
     const panels = document.querySelectorAll('.subtab-panel');
 
     subtabs.forEach(tab => {
@@ -377,8 +4525,8 @@ function initConfigSubtabs() {
                 syncYamlToForms();
             }
 
-            // Update active states
-            subtabs.forEach(t => t.classList.toggle('active', t === tab));
+            // Update active states for ALL navigation items (both old and new)
+            subtabs.forEach(t => t.classList.toggle('active', t.dataset.subtab === targetSubtab));
             panels.forEach(p => {
                 const isActive = p.id === `subtab-${targetSubtab}`;
                 p.classList.toggle('active', isActive);
@@ -703,6 +4851,9 @@ function syncFormsToYaml() {
 
         // Update service status badges
         updateServiceStatuses();
+
+        // Update YAML preview panel
+        yamlPreview.update();
 
     } finally {
         isSyncing = false;
@@ -1605,6 +5756,7 @@ async function testPlexConnection() {
     if (!url || !token) {
         resultEl.textContent = 'URL and Token are required';
         resultEl.className = 'test-result error';
+        toast.warning('URL and Token are required');
         return;
     }
 
@@ -1616,13 +5768,19 @@ async function testPlexConnection() {
         if (result.success) {
             resultEl.textContent = `✓ Connected to ${result.server_name || 'Plex'}`;
             resultEl.className = 'test-result success';
+            toast.success(`Connected to ${result.server_name || 'Plex'}`, { title: 'Plex Connection' });
+            sidebarStatus.updatePlex(true);
         } else {
             resultEl.textContent = `✗ ${result.error || 'Connection failed'}`;
             resultEl.className = 'test-result error';
+            toast.error(result.error || 'Connection failed', { title: 'Plex Connection' });
+            sidebarStatus.updatePlex(false);
         }
     } catch (error) {
         resultEl.textContent = `✗ ${error.message}`;
         resultEl.className = 'test-result error';
+        toast.error(error.message, { title: 'Plex Connection' });
+        sidebarStatus.updatePlex(false);
     }
 }
 
@@ -1647,13 +5805,19 @@ async function testTmdbConnection() {
         if (result.success) {
             resultEl.textContent = '✓ API key is valid';
             resultEl.className = 'test-result success';
+            toast.success('TMDb API key is valid', { title: 'TMDb Connection' });
+            sidebarStatus.updateTmdb(true);
         } else {
             resultEl.textContent = `✗ ${result.error || 'Invalid API key'}`;
             resultEl.className = 'test-result error';
+            toast.error(result.error || 'Invalid API key', { title: 'TMDb Connection' });
+            sidebarStatus.updateTmdb(false);
         }
     } catch (error) {
         resultEl.textContent = `✗ ${error.message}`;
         resultEl.className = 'test-result error';
+        toast.error(error.message, { title: 'TMDb Connection' });
+        sidebarStatus.updateTmdb(false);
     }
 }
 
@@ -3192,13 +7356,48 @@ async function init() {
     initConnectionTestButtons();
     initAddLibraryButton();
 
+    // Initialize Phase 3 features
+    yamlPreview.init();
+    sidebarStatus.init();
+
+    // Initialize Phase 4 features
+    theme.init();
+    keyboard.init();
+
+    // Initialize dashboard, wizard, profiles, preflight, and overlay gallery
+    dashboard.init();
+    setupWizard.init();
+    profileSwitcher.init();
+    preflight.init();
+    overlayGallery.init();
+    scheduling.init();
+    operations.init();
+    collectionBuilder.init();
+    playlistBuilder.init();
+    filterBuilder.init();
+    dataMappers.init();
+    notifications.init();
+    metadataEditor.init();
+    advancedOperations.init();
+
     // Load initial data
     await loadConfig();
     await loadBackups();
     await checkRunStatus();
 
+    // Refresh dashboard after config is loaded
+    dashboard.refresh();
+
+    // Show setup wizard for first-time users
+    if (setupWizard.shouldShow()) {
+        setTimeout(() => setupWizard.show(), 500);
+    }
+
     // Sync loaded config to forms
     syncYamlToForms();
+
+    // Update YAML preview after initial load
+    yamlPreview.update();
 
     // Connect WebSocket for status updates
     connectStatusWebSocket();
