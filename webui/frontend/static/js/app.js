@@ -1519,21 +1519,32 @@ const overlayGallery = {
 // ============================================================================
 // Scheduling Module
 // ============================================================================
-// TODO: API Integration Required
-// - GET /api/settings/schedule - Load scheduling config
-// - POST /api/settings/schedule - Save run_order and schedules to config
-// Currently uses localStorage for run_order
-// See docs/API_INTEGRATION.md for full details
+// API Integration: Uses /api/settings/schedule for persistence
 
 const scheduling = {
     currentSchedule: 'daily',
     runOrder: ['operations', 'metadata', 'collections', 'overlays'],
 
-    init() {
+    async init() {
+        await this.loadFromApi();
         this.initScheduleBuilders();
         this.initRunOrder();
         this.initOverlaySchedule();
         this.updateSchedulePreview();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/settings/schedule');
+            if (result.run_order) {
+                this.runOrder = result.run_order;
+            }
+            if (result.global_schedule) {
+                this.currentSchedule = result.global_schedule;
+            }
+        } catch (e) {
+            console.log('Using default schedule settings');
+        }
     },
 
     initScheduleBuilders() {
@@ -1875,12 +1886,21 @@ const scheduling = {
         }
     },
 
-    saveRunOrder() {
+    async saveRunOrder() {
         const list = document.getElementById('run-order-list');
         if (!list) return;
 
         const order = [...list.querySelectorAll('.run-order-item')].map(item => item.dataset.order);
         this.runOrder = order;
+
+        // Save to API
+        try {
+            await api.post('/settings/schedule', { run_order: order });
+        } catch (e) {
+            console.error('Failed to save run order to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-run-order', JSON.stringify(order));
 
         // Update hidden input
@@ -2041,10 +2061,23 @@ const collectionBuilder = {
         stevenlu_popular: { name: 'StevenLu Popular', icon: '🔥', fields: [] }
     },
 
-    init() {
-        this.loadCollections();
+    async init() {
+        await this.loadFromApi();
         this.initEventListeners();
         this.initSourceSelector();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/collections');
+            if (result.collections && Array.isArray(result.collections)) {
+                this.collections = result.collections;
+                this.renderCollectionTree();
+            }
+        } catch (e) {
+            console.log('Loading collections from localStorage fallback');
+            this.loadCollectionsFromStorage();
+        }
     },
 
     initEventListeners() {
@@ -2097,8 +2130,8 @@ const collectionBuilder = {
         });
     },
 
-    loadCollections() {
-        // Load from localStorage
+    loadCollectionsFromStorage() {
+        // Load from localStorage as fallback
         const saved = localStorage.getItem('kometa-collections');
         if (saved) {
             try {
@@ -2110,7 +2143,17 @@ const collectionBuilder = {
         }
     },
 
-    saveCollections() {
+    async saveCollections() {
+        // Save to API
+        try {
+            await api.post('/collections', {
+                collections: this.collections
+            });
+        } catch (e) {
+            console.error('Failed to save collections to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-collections', JSON.stringify(this.collections));
     },
 
@@ -2556,9 +2599,22 @@ const playlistBuilder = {
     playlists: [],
     currentPlaylist: null,
 
-    init() {
-        this.loadPlaylists();
+    async init() {
+        await this.loadFromApi();
         this.initEventListeners();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/playlists');
+            if (result.playlists && Array.isArray(result.playlists)) {
+                this.playlists = result.playlists;
+                this.renderPlaylistList();
+            }
+        } catch (e) {
+            console.log('Loading playlists from localStorage fallback');
+            this.loadPlaylistsFromStorage();
+        }
     },
 
     initEventListeners() {
@@ -2568,7 +2624,7 @@ const playlistBuilder = {
         document.getElementById('btn-cancel-playlist')?.addEventListener('click', () => this.cancelEdit());
     },
 
-    loadPlaylists() {
+    loadPlaylistsFromStorage() {
         const saved = localStorage.getItem('kometa-playlists');
         if (saved) {
             try {
@@ -2580,7 +2636,17 @@ const playlistBuilder = {
         }
     },
 
-    savePlaylists() {
+    async savePlaylists() {
+        // Save to API
+        try {
+            await api.post('/playlists', {
+                playlists: this.playlists
+            });
+        } catch (e) {
+            console.error('Failed to save playlists to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-playlists', JSON.stringify(this.playlists));
     },
 
@@ -2866,9 +2932,28 @@ const dataMappers = {
         ]
     },
 
-    init() {
+    async init() {
         this.initEventListeners();
-        this.loadMappings();
+        await this.loadFromApi();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/settings/mappers');
+            if (result.genre_mapper) {
+                this.genreMappings = Object.entries(result.genre_mapper).map(([from, to]) => ({ from, to }));
+            }
+            if (result.content_rating_mapper) {
+                this.ratingMappings = Object.entries(result.content_rating_mapper).map(([from, to]) => ({ from, to }));
+            }
+            if (result.studio_mapper) {
+                this.studioMappings = Object.entries(result.studio_mapper).map(([from, to]) => ({ from, to }));
+            }
+            this.renderMappings();
+        } catch (e) {
+            console.log('Loading mappings from localStorage fallback');
+            this.loadMappingsFromStorage();
+        }
     },
 
     initEventListeners() {
@@ -2905,7 +2990,7 @@ const dataMappers = {
         });
     },
 
-    loadMappings() {
+    loadMappingsFromStorage() {
         const saved = localStorage.getItem('kometa-data-mappings');
         if (saved) {
             try {
@@ -2920,8 +3005,31 @@ const dataMappers = {
         }
     },
 
-    saveMappings() {
+    async saveMappings() {
         this.collectMappings();
+
+        // Convert array format to object format for API
+        const genreMapper = {};
+        this.genreMappings.forEach(m => { genreMapper[m.from] = m.to; });
+
+        const contentRatingMapper = {};
+        this.ratingMappings.forEach(m => { contentRatingMapper[m.from] = m.to; });
+
+        const studioMapper = {};
+        this.studioMappings.forEach(m => { studioMapper[m.from] = m.to; });
+
+        // Save to API
+        try {
+            await api.post('/settings/mappers', {
+                genre_mapper: genreMapper,
+                content_rating_mapper: contentRatingMapper,
+                studio_mapper: studioMapper
+            });
+        } catch (e) {
+            console.error('Failed to save mappings to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-data-mappings', JSON.stringify({
             genre: this.genreMappings,
             rating: this.ratingMappings,
@@ -3149,17 +3257,37 @@ const notifications = {
         }
     },
 
-    init() {
+    async init() {
         // Initialize event toggles
         this.initEventToggles();
         // Initialize quick setup buttons
         this.initQuickSetup();
         // Initialize test buttons
         this.initTestButtons();
-        // Load saved state
-        this.loadState();
+        // Load saved state from API
+        await this.loadFromApi();
         // Update counter
         this.updateEventCount();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/settings/notifications');
+            if (result.enabled_events) {
+                this.enabledEvents = new Set(result.enabled_events);
+                // Restore toggle states
+                this.enabledEvents.forEach(event => {
+                    const toggle = document.querySelector(`.event-toggle input[data-event="${event}"]`);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.notification-event')?.classList.add('enabled');
+                    }
+                });
+            }
+        } catch (e) {
+            console.log('Loading notification state from localStorage fallback');
+            this.loadStateFromStorage();
+        }
     },
 
     initEventToggles() {
@@ -3240,25 +3368,22 @@ const notifications = {
 
     async testWebhook(url, event) {
         // Determine the template type based on URL
-        let template = 'custom';
-        if (url.includes('discord.com')) template = 'discord';
-        else if (url.includes('slack.com') || url.includes('hooks.slack')) template = 'slack';
-        else if (url.includes('office.com') || url.includes('webhook.office')) template = 'teams';
+        let service = 'custom';
+        if (url.includes('discord.com')) service = 'discord';
+        else if (url.includes('slack.com') || url.includes('hooks.slack')) service = 'slack';
+        else if (url.includes('office.com') || url.includes('webhook.office')) service = 'teams';
 
-        const payload = this.webhookTemplates[template].testPayload(event);
-
-        // In a real implementation, this would make an API call
-        // For now, we simulate success/failure
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                // Simulate 90% success rate
-                if (Math.random() > 0.1) {
-                    resolve({ success: true });
-                } else {
-                    reject(new Error('Connection timeout'));
-                }
-            }, 1000);
-        });
+        // Call the real API
+        try {
+            const result = await api.post('/webhooks/test', {
+                url: url,
+                event: event,
+                service: service
+            });
+            return result;
+        } catch (error) {
+            throw new Error(error.message || 'Failed to send test webhook');
+        }
     },
 
     showTestResult(type, message) {
@@ -3282,7 +3407,7 @@ const notifications = {
         }
     },
 
-    loadState() {
+    loadStateFromStorage() {
         try {
             const saved = localStorage.getItem('kometa-notifications');
             if (saved) {
@@ -3303,9 +3428,21 @@ const notifications = {
         }
     },
 
-    saveState() {
+    async saveState() {
+        const enabledEvents = Array.from(this.enabledEvents);
+
+        // Save to API
+        try {
+            await api.post('/settings/notifications', {
+                enabled_events: enabledEvents
+            });
+        } catch (e) {
+            console.error('Failed to save notification state to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-notifications', JSON.stringify({
-            enabledEvents: Array.from(this.enabledEvents)
+            enabledEvents: enabledEvents
         }));
     }
 };
@@ -3697,10 +3834,33 @@ window.metadataEditor = metadataEditor;
 const advancedOperations = {
     enabledOps: new Set(),
 
-    init() {
+    async init() {
         this.initToggleSwitches();
         this.initYamlGeneration();
-        this.loadState();
+        await this.loadFromApi();
+    },
+
+    async loadFromApi() {
+        try {
+            const result = await api.get('/operations/config');
+            if (result.enabled && Array.isArray(result.enabled)) {
+                this.enabledOps = new Set(result.enabled);
+
+                // Restore toggle states
+                this.enabledOps.forEach(opId => {
+                    const toggle = document.getElementById(opId);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.advanced-op-card')?.classList.add('enabled');
+                    }
+                });
+
+                this.updateYamlPreview();
+            }
+        } catch (e) {
+            console.log('Loading advanced ops state from localStorage fallback');
+            this.loadStateFromStorage();
+        }
     },
 
     initToggleSwitches() {
@@ -3799,7 +3959,7 @@ const advancedOperations = {
         preview.textContent = yaml;
     },
 
-    loadState() {
+    loadStateFromStorage() {
         try {
             const saved = localStorage.getItem('kometa-advanced-ops');
             if (saved) {
@@ -3822,9 +3982,21 @@ const advancedOperations = {
         }
     },
 
-    saveState() {
+    async saveState() {
+        const enabledOps = Array.from(this.enabledOps);
+
+        // Save to API
+        try {
+            await api.post('/operations/config', {
+                enabled: enabledOps
+            });
+        } catch (e) {
+            console.error('Failed to save advanced ops state to API:', e);
+        }
+
+        // Also keep localStorage as fallback
         localStorage.setItem('kometa-advanced-ops', JSON.stringify({
-            enabledOps: Array.from(this.enabledOps)
+            enabledOps: enabledOps
         }));
     }
 };

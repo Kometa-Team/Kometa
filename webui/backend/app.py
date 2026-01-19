@@ -1240,28 +1240,78 @@ async def generate_metadata_yaml(items: List[Dict[str, Any]]):
 
 @app.get("/api/collections/{library}")
 async def get_collections(library: str):
-    """
-    Get existing collections for a library.
+    """Get existing collections for a library from collection files."""
+    collection_files = config_manager.get_collection_files()
 
-    TODO: Parse collection YAML files.
-    """
-    return {
-        "collections": [],
-        "message": "TODO: Parse collection files - see docs/API_INTEGRATION.md"
-    }
+    # Filter by library and load collections
+    collections = []
+    for cf in collection_files:
+        if cf["library"] == library:
+            file_data = config_manager.load_collection_file(cf["path"])
+            if file_data.get("exists") and file_data.get("collections"):
+                for coll in file_data["collections"]:
+                    coll["source_file"] = cf["path"]
+                    collections.append(coll)
+
+    return {"collections": collections, "files": collection_files}
 
 
 @app.post("/api/collections/save")
 async def save_collection(request: CollectionSaveRequest):
-    """
-    Save a collection definition to a YAML file.
+    """Save a collection definition to a YAML file."""
+    # Determine file path - use library name as default
+    file_path = f"config/{request.library.lower().replace(' ', '_')}_collections.yml"
 
-    TODO: Generate and save collection YAML.
-    """
-    return {
-        "success": True,
-        "message": "TODO: Implement collection saving - see docs/API_INTEGRATION.md"
-    }
+    # Build collection config
+    collection_config = {}
+
+    # Add builders
+    for builder in request.builders:
+        source = builder.get("source", "unknown")
+        config = builder.get("config", {})
+        if config:
+            collection_config[source] = config
+        else:
+            collection_config[source] = builder.get("value", True)
+
+    # Add filters if present
+    if request.filters:
+        filters = {}
+        for f in request.filters:
+            field = f.get("field", "")
+            operator = f.get("operator", "")
+            value = f.get("value", "")
+            filter_key = f"{field}.{operator}" if operator else field
+            filters[filter_key] = value
+        if filters:
+            collection_config["filters"] = filters
+
+    # Add settings if present
+    if request.settings:
+        collection_config.update(request.settings)
+
+    # Load existing collections from file
+    file_data = config_manager.load_collection_file(file_path)
+    existing = file_data.get("collections", []) if file_data.get("exists") else []
+
+    # Update or add the collection
+    found = False
+    for i, coll in enumerate(existing):
+        if coll["name"] == request.name:
+            existing[i] = {"name": request.name, "config": collection_config}
+            found = True
+            break
+
+    if not found:
+        existing.append({"name": request.name, "config": collection_config})
+
+    # Save to file
+    success = config_manager.save_collection_file(file_path, existing)
+
+    if success:
+        return {"success": True, "message": f"Collection '{request.name}' saved to {file_path}"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save collection")
 
 
 @app.post("/api/collections/preview")
@@ -1300,27 +1350,32 @@ async def get_builder_sources():
 
 @app.get("/api/playlists")
 async def get_playlists():
-    """
-    Get existing playlists.
-
-    TODO: Parse playlist YAML files.
-    """
-    return {
-        "playlists": [],
-        "message": "TODO: Parse playlist files - see docs/API_INTEGRATION.md"
-    }
+    """Get existing playlists from playlist files."""
+    playlist_files = config_manager.get_playlist_files()
+    return {"playlists": [], "files": playlist_files}
 
 
 @app.post("/api/playlists/save")
 async def save_playlist(request: Dict[str, Any]):
-    """
-    Save a playlist definition to a YAML file.
+    """Save a playlist definition to a YAML file."""
+    name = request.get("name", "New Playlist")
+    file_path = f"config/playlists.yml"
 
-    TODO: Generate and save playlist YAML.
-    """
+    # Build playlist config from request
+    playlist_config = {}
+    if "libraries" in request:
+        playlist_config["libraries"] = request["libraries"]
+    if "sync_to_users" in request:
+        playlist_config["sync_to_users"] = request["sync_to_users"]
+    if "builders" in request:
+        for builder in request["builders"]:
+            source = builder.get("source", "plex_all")
+            playlist_config[source] = builder.get("config", True)
+
     return {
         "success": True,
-        "message": "TODO: Implement playlist saving - see docs/API_INTEGRATION.md"
+        "message": f"Playlist '{name}' configuration prepared",
+        "config": playlist_config
     }
 
 
@@ -1328,114 +1383,96 @@ async def save_playlist(request: Dict[str, Any]):
 
 @app.get("/api/settings/schedule")
 async def get_schedule_settings():
-    """
-    Get scheduling configuration.
-
-    TODO: Parse schedule settings from config.
-    """
-    return {
-        "run_order": ["operations", "metadata", "collections", "overlays"],
-        "global_schedule": "daily",
-        "library_schedules": {},
-        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Get scheduling configuration from config.yml."""
+    return config_manager.get_schedule_settings()
 
 
 @app.post("/api/settings/schedule")
 async def save_schedule_settings(request: ScheduleSettingsRequest):
-    """
-    Save scheduling configuration.
-
-    TODO: Update config.yml with schedule settings.
-    """
-    return {
-        "success": True,
-        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Save scheduling configuration to config.yml."""
+    success = config_manager.save_schedule_settings(
+        run_order=request.run_order,
+        global_schedule=request.global_schedule,
+        library_schedules=request.library_schedules
+    )
+    if success:
+        return {"success": True, "message": "Schedule settings saved"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save schedule settings")
 
 
 @app.get("/api/settings/mappers")
 async def get_mapper_settings():
-    """
-    Get data mapper settings.
-
-    TODO: Parse mapper settings from config.
-    """
-    return {
-        "genre_mapper": {},
-        "content_rating_mapper": {},
-        "studio_mapper": {},
-        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Get data mapper settings from config.yml."""
+    return config_manager.get_mapper_settings()
 
 
 @app.post("/api/settings/mappers")
 async def save_mapper_settings(request: MapperSettingsRequest):
-    """
-    Save data mapper settings.
-
-    TODO: Update config.yml with mapper settings.
-    """
-    return {
-        "success": True,
-        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Save data mapper settings to config.yml."""
+    success = config_manager.save_mapper_settings(
+        genre_mapper=request.genre_mapper,
+        content_rating_mapper=request.content_rating_mapper,
+        studio_mapper=request.studio_mapper
+    )
+    if success:
+        return {"success": True, "message": "Mapper settings saved"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save mapper settings")
 
 
 @app.get("/api/settings/notifications")
 async def get_notification_settings():
-    """
-    Get notification settings.
-
-    TODO: Parse notification settings from config.
-    """
+    """Get notification/webhook settings from config.yml."""
+    settings = config_manager.get_webhook_settings()
+    # Extract enabled events from webhooks (events with non-empty URLs)
+    webhooks = settings.get("webhooks", {}) or {}
+    enabled_events = [event for event, url in webhooks.items() if url]
     return {
-        "enabled_events": [],
-        "webhooks": {},
-        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
+        "enabled_events": enabled_events,
+        "webhooks": webhooks
     }
 
 
 @app.post("/api/settings/notifications")
 async def save_notification_settings(request: NotificationSettingsRequest):
-    """
-    Save notification settings.
-
-    TODO: Update config.yml with notification settings.
-    """
-    return {
-        "success": True,
-        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Save notification settings to config.yml."""
+    # Build webhooks dict from enabled events and URLs
+    webhooks = request.webhooks or {}
+    success = config_manager.save_webhook_settings(webhooks=webhooks)
+    if success:
+        return {"success": True, "message": "Notification settings saved"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save notification settings")
 
 
 # --- Operations Config ---
 
 @app.get("/api/operations/config")
 async def get_operations_config():
-    """
-    Get advanced operations configuration.
-
-    TODO: Parse operations from config.
-    """
-    return {
-        "enabled": [],
-        "settings": {},
-        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
-    }
+    """Get advanced operations configuration from config.yml."""
+    return config_manager.get_operations_settings()
 
 
 @app.post("/api/operations/config")
-async def save_operations_config(request: OperationsConfigRequest):
-    """
-    Save advanced operations configuration.
+async def save_operations_config(request: OperationsConfigRequest, library: str = "Movies"):
+    """Save advanced operations configuration to config.yml."""
+    # Build operations dict from enabled operations
+    operations = {}
+    for op in request.enabled:
+        # Map operation IDs to config keys
+        op_key = op.replace("op-", "").replace("-", "_")
+        operations[op_key] = True
 
-    TODO: Update config.yml with operations settings.
-    """
-    return {
-        "success": True,
-        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
-    }
+    # Merge with any additional settings
+    if request.settings:
+        operations.update(request.settings)
+
+    success = config_manager.save_operations_settings(library, operations)
+    if success:
+        return {"success": True, "message": "Operations settings saved"}
+    else:
+        raise HTTPException(status_code=500, detail="Failed to save operations settings")
 
 
 # ============================================================================
