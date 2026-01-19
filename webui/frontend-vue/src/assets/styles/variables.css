@@ -1,0 +1,168 @@
+/* Kometa Web UI Design Tokens */
+/* Theme-aware CSS variables */
+
+:root {
+  /* Dark theme (default) */
+  color-scheme: dark;
+
+  /* ===========================================
+     SPACING SYSTEM (4pt grid)
+     =========================================== */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --space-10: 64px;
+
+  /* ===========================================
+     COLOR SYSTEM - Dark Theme
+     =========================================== */
+  /* Brand */
+  --primary-color: #e5a00d;
+  --primary-hover: #f0b020;
+  --primary-active: #cc8f0c;
+
+  /* Status */
+  --danger-color: #dc3545;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --safe-color: #28a745;
+  --armed-color: #dc3545;
+
+  /* Semantic colors */
+  --color-success: #22c55e;
+  --color-success-bg: rgba(34, 197, 94, 0.1);
+  --color-warning: #f59e0b;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-error: #ef4444;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
+  --color-info: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.1);
+
+  /* Backgrounds */
+  --bg-base: #0d0d1a;
+  --bg-color: #1a1a2e;
+  --bg-primary: #1a1a2e;
+  --bg-secondary: #16213e;
+  --bg-tertiary: #0f3460;
+  --bg-elevated: #1e3a5f;
+
+  /* Borders */
+  --border-color: #2a2a4e;
+  --border-subtle: #1f1f3a;
+  --border-strong: #3a3a6e;
+
+  /* Text */
+  --text-color: #e0e0e0;
+  --text-primary: #f0f0f0;
+  --text-secondary: #b0b0b0;
+  --text-muted: #a0a0a0;
+  --text-disabled: #606060;
+  --text-inverse: #0d0d1a;
+
+  /* ===========================================
+     TYPOGRAPHY
+     =========================================== */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+
+  /* Font sizes */
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 24px;
+  --text-2xl: 32px;
+
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  /* Line heights */
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* ===========================================
+     BORDERS & SHADOWS
+     =========================================== */
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-focus: 0 0 0 3px rgba(229, 160, 13, 0.3);
+  --shadow-focus-error: 0 0 0 3px rgba(239, 68, 68, 0.3);
+
+  /* ===========================================
+     LAYOUT
+     =========================================== */
+  --container-sm: 640px;
+  --container-md: 960px;
+  --container-lg: 1200px;
+  --container-xl: 1400px;
+
+  /* ===========================================
+     TRANSITIONS
+     =========================================== */
+  --transition-fast: 100ms ease;
+  --transition-normal: 150ms ease;
+  --transition-slow: 300ms ease;
+}
+
+/* ===========================================
+   LIGHT THEME
+   =========================================== */
+.light {
+  color-scheme: light;
+
+  /* Backgrounds */
+  --bg-base: #ffffff;
+  --bg-color: #f5f5f7;
+  --bg-primary: #f5f5f7;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e8ed;
+  --bg-elevated: #f0f0f5;
+
+  /* Borders */
+  --border-color: #d1d1d6;
+  --border-subtle: #e5e5ea;
+  --border-strong: #c7c7cc;
+
+  /* Text */
+  --text-color: #1d1d1f;
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-muted: #8e8e93;
+  --text-disabled: #aeaeb2;
+  --text-inverse: #ffffff;
+
+  /* Semantic colors adjusted for light bg */
+  --color-success-bg: rgba(34, 197, 94, 0.15);
+  --color-warning-bg: rgba(245, 158, 11, 0.15);
+  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-info-bg: rgba(59, 130, 246, 0.15);
+
+  /* Shadows - lighter for light theme */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.15);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+}

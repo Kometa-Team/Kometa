@@ -1,0 +1,65 @@
+# Docker Compose for Kometa Web UI with Vue 3 Frontend
+#
+# Usage:
+#   docker-compose -f docker-compose.vue.yml up -d --build
+#
+# This uses the new Vue 3 frontend instead of the legacy vanilla JS version.
+
+version: '3.8'
+
+services:
+  kometa-webui:
+    build:
+      context: .
+      dockerfile: Dockerfile.vue
+    container_name: kometa-webui
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      # Mount your Kometa config directory
+      - /path/to/kometa/config:/config
+      # Mount Kometa installation (for running kometa.py)
+      - /path/to/kometa:/kometa:ro
+    environment:
+      # Web UI configuration
+      - KOMETA_CONFIG_DIR=/config
+      - KOMETA_ROOT=/kometa
+      - KOMETA_UI_PORT=8080
+      - KOMETA_UI_HOST=0.0.0.0
+      # Safety: Set to 'true' to enable apply mode (default: false)
+      - KOMETA_UI_APPLY_ENABLED=false
+      # Optional: Protect Web UI with a password
+      # - KOMETA_UI_PASSWORD=your_password_here
+      # Use Vue frontend
+      - KOMETA_UI_MODE=vue
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+# Example with all options:
+#
+# services:
+#   kometa-webui:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.vue
+#     container_name: kometa-webui
+#     restart: unless-stopped
+#     ports:
+#       - "8080:8080"
+#     volumes:
+#       - ./config:/config
+#       - ../:/kometa:ro
+#     environment:
+#       - KOMETA_CONFIG_DIR=/config
+#       - KOMETA_ROOT=/kometa
+#       - KOMETA_UI_PORT=8080
+#       - KOMETA_UI_HOST=0.0.0.0
+#       - KOMETA_UI_APPLY_ENABLED=false
+#       - KOMETA_UI_PASSWORD=secret
+#       - KOMETA_UI_MODE=vue
+#       - TZ=America/New_York
