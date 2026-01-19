@@ -1519,6 +1519,11 @@ const overlayGallery = {
 // ============================================================================
 // Scheduling Module
 // ============================================================================
+// TODO: API Integration Required
+// - GET /api/settings/schedule - Load scheduling config
+// - POST /api/settings/schedule - Save run_order and schedules to config
+// Currently uses localStorage for run_order
+// See docs/API_INTEGRATION.md for full details
 
 const scheduling = {
     currentSchedule: 'daily',
@@ -1998,6 +2003,13 @@ const operations = {
 // ============================================================================
 // Collection Builder Module
 // ============================================================================
+// TODO: API Integration Required
+// - GET /api/collections/{library} - Load existing collections
+// - POST /api/collections/save - Save collection to YAML file
+// - POST /api/collections/preview - Preview YAML output
+// - GET /api/builders/sources - Load available builder sources dynamically
+// Currently uses localStorage - should save to collection YAML files
+// See docs/API_INTEGRATION.md for full details
 
 const collectionBuilder = {
     collections: [],
@@ -2534,6 +2546,11 @@ const collectionBuilder = {
 // ============================================================================
 // Playlist Builder Module
 // ============================================================================
+// TODO: API Integration Required
+// - GET /api/playlists - Load existing playlists
+// - POST /api/playlists/save - Save playlist to YAML file
+// Currently uses localStorage - should save to playlist YAML files
+// See docs/API_INTEGRATION.md for full details
 
 const playlistBuilder = {
     playlists: [],
@@ -2799,6 +2816,11 @@ const filterBuilder = {
 // ============================================================================
 // Data Mappers Module
 // ============================================================================
+// TODO: API Integration Required
+// - GET /api/settings/mappers - Load mapper settings from config
+// - POST /api/settings/mappers - Save mappers to config.yml settings section
+// Currently uses localStorage - should persist to config.yml
+// See docs/API_INTEGRATION.md for full details
 
 const dataMappers = {
     genreMappings: [],
@@ -3074,6 +3096,11 @@ const dataMappers = {
 // ============================================================================
 // Phase 7: Enhanced Notifications Module
 // ============================================================================
+// TODO: API Integration Required
+// - POST /api/webhooks/test - Replace simulated webhook testing
+// - POST /api/settings/notifications - Save enabled events to config
+// - GET /api/settings/notifications - Load settings on init
+// See docs/API_INTEGRATION.md for full details
 
 const notifications = {
     enabledEvents: new Set(),
@@ -3286,6 +3313,13 @@ const notifications = {
 // ============================================================================
 // Phase 8: Metadata Editor Module
 // ============================================================================
+// TODO: API Integration Required - CRITICAL
+// - GET /api/metadata/browse/{library} - Replace generateSampleMedia()
+// - GET /api/metadata/item/{id} - Load full item details
+// - POST /api/metadata/item/{id} - Save metadata edits
+// - POST /api/metadata/generate-yaml - Generate metadata YAML file
+// Currently uses SIMULATED DATA - see generateSampleMedia() at line ~3370
+// See docs/API_INTEGRATION.md for full details
 
 const metadataEditor = {
     currentLibrary: null,
@@ -3654,6 +3688,11 @@ window.metadataEditor = metadataEditor;
 // ============================================================================
 // Phase 10: Advanced Operations Module
 // ============================================================================
+// TODO: API Integration Required
+// - GET /api/operations/config - Load enabled operations from config
+// - POST /api/operations/config - Save operations settings to config
+// Currently uses localStorage - should persist to config.yml
+// See docs/API_INTEGRATION.md for full details
 
 const advancedOperations = {
     enabledOps: new Set(),
