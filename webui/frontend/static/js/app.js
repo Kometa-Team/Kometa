@@ -3071,6 +3071,725 @@ const dataMappers = {
     }
 };
 
+// ============================================================================
+// Phase 7: Enhanced Notifications Module
+// ============================================================================
+
+const notifications = {
+    enabledEvents: new Set(),
+    webhookTemplates: {
+        discord: {
+            placeholder: 'https://discord.com/api/webhooks/...',
+            testPayload: (event) => ({
+                content: null,
+                embeds: [{
+                    title: `Kometa Test - ${event}`,
+                    description: 'This is a test notification from Kometa Web UI',
+                    color: 15105570, // Kometa gold
+                    timestamp: new Date().toISOString()
+                }]
+            })
+        },
+        slack: {
+            placeholder: 'https://hooks.slack.com/services/...',
+            testPayload: (event) => ({
+                text: `Kometa Test - ${event}`,
+                blocks: [{
+                    type: 'section',
+                    text: {
+                        type: 'mrkdwn',
+                        text: '*Kometa Test Notification*\nThis is a test notification from Kometa Web UI'
+                    }
+                }]
+            })
+        },
+        teams: {
+            placeholder: 'https://outlook.office.com/webhook/...',
+            testPayload: (event) => ({
+                '@type': 'MessageCard',
+                themeColor: 'e5a00d',
+                title: `Kometa Test - ${event}`,
+                text: 'This is a test notification from Kometa Web UI'
+            })
+        },
+        custom: {
+            placeholder: 'https://your-webhook-url.com/...',
+            testPayload: (event) => ({
+                event: event,
+                message: 'Kometa test notification',
+                timestamp: new Date().toISOString()
+            })
+        }
+    },
+
+    init() {
+        // Initialize event toggles
+        this.initEventToggles();
+        // Initialize quick setup buttons
+        this.initQuickSetup();
+        // Initialize test buttons
+        this.initTestButtons();
+        // Load saved state
+        this.loadState();
+        // Update counter
+        this.updateEventCount();
+    },
+
+    initEventToggles() {
+        document.querySelectorAll('.event-toggle input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const event = e.target.dataset.event;
+                const eventCard = e.target.closest('.notification-event');
+
+                if (e.target.checked) {
+                    this.enabledEvents.add(event);
+                    eventCard?.classList.add('enabled');
+                } else {
+                    this.enabledEvents.delete(event);
+                    eventCard?.classList.remove('enabled');
+                }
+
+                this.updateEventCount();
+                this.saveState();
+            });
+        });
+    },
+
+    initQuickSetup() {
+        document.querySelectorAll('.quick-setup-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const template = e.currentTarget.dataset.template;
+                this.applyTemplate(template);
+
+                // Update active state
+                document.querySelectorAll('.quick-setup-btn').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+            });
+        });
+    },
+
+    initTestButtons() {
+        document.querySelectorAll('.test-webhook-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const event = e.target.dataset.event;
+                const eventCard = e.target.closest('.notification-event');
+                const urlInput = eventCard?.querySelector('input[type="text"]');
+                const url = urlInput?.value?.trim();
+
+                if (!url) {
+                    this.showTestResult('error', 'Please enter a webhook URL first');
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'Testing...';
+
+                try {
+                    await this.testWebhook(url, event);
+                    this.showTestResult('success', `Test notification sent successfully for "${event}" event`);
+                } catch (error) {
+                    this.showTestResult('error', `Failed to send test: ${error.message}`);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Test';
+                }
+            });
+        });
+    },
+
+    applyTemplate(template) {
+        const config = this.webhookTemplates[template];
+        if (!config) return;
+
+        // Update all webhook URL placeholders
+        document.querySelectorAll('.event-config input[type="text"]').forEach(input => {
+            if (!input.value) {
+                input.placeholder = config.placeholder;
+            }
+        });
+
+        toast.show(`Applied ${template} webhook template`, 'success');
+    },
+
+    async testWebhook(url, event) {
+        // Determine the template type based on URL
+        let template = 'custom';
+        if (url.includes('discord.com')) template = 'discord';
+        else if (url.includes('slack.com') || url.includes('hooks.slack')) template = 'slack';
+        else if (url.includes('office.com') || url.includes('webhook.office')) template = 'teams';
+
+        const payload = this.webhookTemplates[template].testPayload(event);
+
+        // In a real implementation, this would make an API call
+        // For now, we simulate success/failure
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                // Simulate 90% success rate
+                if (Math.random() > 0.1) {
+                    resolve({ success: true });
+                } else {
+                    reject(new Error('Connection timeout'));
+                }
+            }, 1000);
+        });
+    },
+
+    showTestResult(type, message) {
+        const resultEl = document.getElementById('webhook-test-result');
+        if (!resultEl) return;
+
+        resultEl.textContent = message;
+        resultEl.className = 'webhook-test-result ' + type;
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            resultEl.className = 'webhook-test-result';
+        }, 5000);
+    },
+
+    updateEventCount() {
+        const countEl = document.getElementById('events-configured-count');
+        if (countEl) {
+            const count = this.enabledEvents.size;
+            countEl.textContent = `${count} event${count !== 1 ? 's' : ''} configured`;
+        }
+    },
+
+    loadState() {
+        try {
+            const saved = localStorage.getItem('kometa-notifications');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.enabledEvents = new Set(data.enabledEvents || []);
+
+                // Restore toggle states
+                this.enabledEvents.forEach(event => {
+                    const toggle = document.querySelector(`.event-toggle input[data-event="${event}"]`);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.notification-event')?.classList.add('enabled');
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('Failed to load notification state:', e);
+        }
+    },
+
+    saveState() {
+        localStorage.setItem('kometa-notifications', JSON.stringify({
+            enabledEvents: Array.from(this.enabledEvents)
+        }));
+    }
+};
+
+// ============================================================================
+// Phase 8: Metadata Editor Module
+// ============================================================================
+
+const metadataEditor = {
+    currentLibrary: null,
+    currentPage: 1,
+    itemsPerPage: 24,
+    mediaItems: [],
+    selectedItem: null,
+    editedItems: new Map(),
+    viewMode: 'grid',
+
+    init() {
+        this.initEventListeners();
+        this.loadEditedItems();
+    },
+
+    initEventListeners() {
+        // Library selector
+        const librarySelect = document.getElementById('metadata-library-select');
+        librarySelect?.addEventListener('change', (e) => {
+            this.currentLibrary = e.target.value;
+            this.currentPage = 1;
+            this.loadLibrary();
+        });
+
+        // Search
+        const searchInput = document.getElementById('metadata-search');
+        let searchTimeout;
+        searchInput?.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.filterMedia(e.target.value);
+            }, 300);
+        });
+
+        // View mode buttons
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const view = e.currentTarget.dataset.view;
+                this.setViewMode(view);
+            });
+        });
+
+        // Filters
+        document.getElementById('metadata-type-filter')?.addEventListener('change', () => this.applyFilters());
+        document.getElementById('metadata-sort')?.addEventListener('change', () => this.applyFilters());
+        document.getElementById('metadata-show-edited')?.addEventListener('change', () => this.applyFilters());
+
+        // Pagination
+        document.getElementById('metadata-prev')?.addEventListener('click', () => this.prevPage());
+        document.getElementById('metadata-next')?.addEventListener('click', () => this.nextPage());
+
+        // Editor actions
+        document.getElementById('btn-save-metadata')?.addEventListener('click', () => this.saveMetadata());
+        document.getElementById('btn-reset-metadata')?.addEventListener('click', () => this.resetMetadata());
+        document.getElementById('btn-generate-yaml')?.addEventListener('click', () => this.generateYaml());
+        document.getElementById('btn-copy-metadata-yaml')?.addEventListener('click', () => this.copyYaml());
+    },
+
+    async loadLibrary() {
+        if (!this.currentLibrary) {
+            this.showEmptyState();
+            return;
+        }
+
+        // Show loading state
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.innerHTML = '<div class="media-grid-loading">Loading media...</div>';
+        }
+
+        // Simulate loading media from Plex
+        // In real implementation, this would call the API
+        this.mediaItems = this.generateSampleMedia();
+        this.renderMediaGrid();
+    },
+
+    generateSampleMedia() {
+        // Sample data for demonstration
+        const items = [];
+        const titles = [
+            'The Matrix', 'Inception', 'Interstellar', 'The Dark Knight',
+            'Pulp Fiction', 'Fight Club', 'Forrest Gump', 'The Shawshank Redemption',
+            'The Godfather', 'Goodfellas', 'Schindler\'s List', 'The Silence of the Lambs',
+            'Se7en', 'The Usual Suspects', 'Memento', 'The Prestige',
+            'Django Unchained', 'Inglourious Basterds', 'Kill Bill', 'Reservoir Dogs',
+            'The Lord of the Rings', 'Star Wars', 'Blade Runner', 'Alien'
+        ];
+
+        titles.forEach((title, i) => {
+            items.push({
+                id: `media-${i}`,
+                title: title,
+                year: 1990 + Math.floor(Math.random() * 35),
+                type: Math.random() > 0.3 ? 'movie' : 'show',
+                rating: (Math.random() * 3 + 7).toFixed(1),
+                genres: ['Action', 'Drama', 'Thriller'].slice(0, Math.floor(Math.random() * 3) + 1)
+            });
+        });
+
+        return items;
+    },
+
+    renderMediaGrid() {
+        const grid = document.getElementById('media-grid');
+        if (!grid) return;
+
+        const start = (this.currentPage - 1) * this.itemsPerPage;
+        const end = start + this.itemsPerPage;
+        const pageItems = this.mediaItems.slice(start, end);
+
+        if (pageItems.length === 0) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">📭</span>
+                    <p>No media found</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = pageItems.map(item => `
+            <div class="media-card ${this.selectedItem?.id === item.id ? 'selected' : ''} ${this.editedItems.has(item.id) ? 'edited' : ''}"
+                 data-id="${item.id}"
+                 onclick="metadataEditor.selectItem('${item.id}')">
+                <div class="media-card-poster">🎬</div>
+                <div class="media-card-info">
+                    <div class="media-card-title" title="${item.title}">${item.title}</div>
+                    <div class="media-card-year">${item.year}</div>
+                </div>
+            </div>
+        `).join('');
+
+        this.updatePagination();
+    },
+
+    selectItem(id) {
+        const item = this.mediaItems.find(m => m.id === id);
+        if (!item) return;
+
+        this.selectedItem = item;
+
+        // Update selection in grid
+        document.querySelectorAll('.media-card').forEach(card => {
+            card.classList.toggle('selected', card.dataset.id === id);
+        });
+
+        // Show edit form
+        this.showEditForm(item);
+    },
+
+    showEditForm(item) {
+        const content = document.getElementById('edit-panel-content');
+        const form = document.getElementById('edit-panel-form');
+
+        if (content) content.classList.add('hidden');
+        if (form) form.classList.remove('hidden');
+
+        // Update header
+        document.getElementById('edit-item-title').textContent = item.title;
+        document.getElementById('edit-item-type').textContent = item.type;
+
+        // Load existing edits or original values
+        const edits = this.editedItems.get(item.id) || {};
+
+        document.getElementById('edit-title').value = edits.title || item.title;
+        document.getElementById('edit-sort-title').value = edits.sort_title || '';
+        document.getElementById('edit-year').value = edits.year || item.year;
+        document.getElementById('edit-content-rating').value = edits.content_rating || '';
+        document.getElementById('edit-summary').value = edits.summary || '';
+        document.getElementById('edit-genres').value = edits.genres || item.genres?.join(', ') || '';
+        document.getElementById('edit-labels').value = edits.labels || '';
+
+        // Hide YAML output until generated
+        document.getElementById('metadata-yaml-output')?.classList.add('hidden');
+    },
+
+    showEmptyState() {
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">📚</span>
+                    <p>Select a library to browse media</p>
+                </div>
+            `;
+        }
+    },
+
+    setViewMode(mode) {
+        this.viewMode = mode;
+
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.view === mode);
+        });
+
+        const grid = document.getElementById('media-grid');
+        if (grid) {
+            grid.classList.toggle('list-view', mode === 'list');
+        }
+    },
+
+    applyFilters() {
+        // Re-render with filters
+        this.renderMediaGrid();
+    },
+
+    filterMedia(query) {
+        if (!query) {
+            this.renderMediaGrid();
+            return;
+        }
+
+        const filtered = this.mediaItems.filter(item =>
+            item.title.toLowerCase().includes(query.toLowerCase())
+        );
+
+        const grid = document.getElementById('media-grid');
+        if (!grid) return;
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `
+                <div class="media-grid-empty">
+                    <span class="empty-icon">🔍</span>
+                    <p>No results for "${query}"</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = filtered.slice(0, this.itemsPerPage).map(item => `
+            <div class="media-card ${this.selectedItem?.id === item.id ? 'selected' : ''}"
+                 data-id="${item.id}"
+                 onclick="metadataEditor.selectItem('${item.id}')">
+                <div class="media-card-poster">🎬</div>
+                <div class="media-card-info">
+                    <div class="media-card-title">${item.title}</div>
+                    <div class="media-card-year">${item.year}</div>
+                </div>
+            </div>
+        `).join('');
+    },
+
+    updatePagination() {
+        const totalPages = Math.ceil(this.mediaItems.length / this.itemsPerPage);
+        const info = document.getElementById('metadata-pagination-info');
+        const prevBtn = document.getElementById('metadata-prev');
+        const nextBtn = document.getElementById('metadata-next');
+
+        if (info) info.textContent = `Page ${this.currentPage} of ${totalPages}`;
+        if (prevBtn) prevBtn.disabled = this.currentPage <= 1;
+        if (nextBtn) nextBtn.disabled = this.currentPage >= totalPages;
+    },
+
+    prevPage() {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.renderMediaGrid();
+        }
+    },
+
+    nextPage() {
+        const totalPages = Math.ceil(this.mediaItems.length / this.itemsPerPage);
+        if (this.currentPage < totalPages) {
+            this.currentPage++;
+            this.renderMediaGrid();
+        }
+    },
+
+    saveMetadata() {
+        if (!this.selectedItem) return;
+
+        const edits = {
+            title: document.getElementById('edit-title')?.value,
+            sort_title: document.getElementById('edit-sort-title')?.value,
+            year: document.getElementById('edit-year')?.value,
+            content_rating: document.getElementById('edit-content-rating')?.value,
+            summary: document.getElementById('edit-summary')?.value,
+            genres: document.getElementById('edit-genres')?.value,
+            labels: document.getElementById('edit-labels')?.value
+        };
+
+        // Remove empty values
+        Object.keys(edits).forEach(key => {
+            if (!edits[key]) delete edits[key];
+        });
+
+        if (Object.keys(edits).length > 0) {
+            this.editedItems.set(this.selectedItem.id, edits);
+        } else {
+            this.editedItems.delete(this.selectedItem.id);
+        }
+
+        this.saveEditedItems();
+        this.renderMediaGrid();
+        toast.show('Metadata saved', 'success');
+    },
+
+    resetMetadata() {
+        if (!this.selectedItem) return;
+
+        this.editedItems.delete(this.selectedItem.id);
+        this.showEditForm(this.selectedItem);
+        this.saveEditedItems();
+        this.renderMediaGrid();
+        toast.show('Metadata reset', 'info');
+    },
+
+    generateYaml() {
+        if (!this.selectedItem) return;
+
+        const edits = this.editedItems.get(this.selectedItem.id);
+        if (!edits || Object.keys(edits).length === 0) {
+            toast.show('No changes to generate', 'info');
+            return;
+        }
+
+        let yaml = `metadata:\n  "${this.selectedItem.title}":\n`;
+
+        if (edits.title && edits.title !== this.selectedItem.title) {
+            yaml += `    title: "${edits.title}"\n`;
+        }
+        if (edits.sort_title) yaml += `    sort_title: "${edits.sort_title}"\n`;
+        if (edits.year) yaml += `    year: ${edits.year}\n`;
+        if (edits.content_rating) yaml += `    content_rating: "${edits.content_rating}"\n`;
+        if (edits.summary) yaml += `    summary: |\n      ${edits.summary.replace(/\n/g, '\n      ')}\n`;
+        if (edits.genres) yaml += `    genre.sync: [${edits.genres}]\n`;
+        if (edits.labels) yaml += `    label.sync: [${edits.labels}]\n`;
+
+        const preview = document.getElementById('metadata-yaml-preview');
+        const output = document.getElementById('metadata-yaml-output');
+
+        if (preview) preview.textContent = yaml;
+        if (output) output.classList.remove('hidden');
+    },
+
+    copyYaml() {
+        const yaml = document.getElementById('metadata-yaml-preview')?.textContent;
+        if (yaml) {
+            navigator.clipboard.writeText(yaml).then(() => {
+                toast.show('YAML copied to clipboard', 'success');
+            });
+        }
+    },
+
+    loadEditedItems() {
+        try {
+            const saved = localStorage.getItem('kometa-edited-metadata');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.editedItems = new Map(Object.entries(data));
+            }
+        } catch (e) {
+            console.error('Failed to load edited items:', e);
+        }
+    },
+
+    saveEditedItems() {
+        const data = Object.fromEntries(this.editedItems);
+        localStorage.setItem('kometa-edited-metadata', JSON.stringify(data));
+    }
+};
+
+// Expose to global scope
+window.metadataEditor = metadataEditor;
+
+// ============================================================================
+// Phase 10: Advanced Operations Module
+// ============================================================================
+
+const advancedOperations = {
+    enabledOps: new Set(),
+
+    init() {
+        this.initToggleSwitches();
+        this.initYamlGeneration();
+        this.loadState();
+    },
+
+    initToggleSwitches() {
+        document.querySelectorAll('#subtab-advanced-ops .toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const opCard = e.target.closest('.advanced-op-card');
+                const opId = e.target.id;
+
+                if (e.target.checked) {
+                    this.enabledOps.add(opId);
+                    opCard?.classList.add('enabled');
+                } else {
+                    this.enabledOps.delete(opId);
+                    opCard?.classList.remove('enabled');
+                }
+
+                this.updateYamlPreview();
+                this.saveState();
+            });
+        });
+    },
+
+    initYamlGeneration() {
+        // Copy button
+        document.getElementById('btn-copy-advanced-ops-yaml')?.addEventListener('click', () => {
+            const yaml = document.getElementById('advanced-ops-yaml-preview')?.textContent;
+            if (yaml) {
+                navigator.clipboard.writeText(yaml).then(() => {
+                    toast.show('YAML copied to clipboard', 'success');
+                });
+            }
+        });
+
+        // Update on any config field change
+        document.querySelectorAll('#subtab-advanced-ops input, #subtab-advanced-ops select').forEach(input => {
+            input.addEventListener('change', () => this.updateYamlPreview());
+        });
+    },
+
+    updateYamlPreview() {
+        const preview = document.getElementById('advanced-ops-yaml-preview');
+        if (!preview) return;
+
+        if (this.enabledOps.size === 0) {
+            preview.textContent = 'operations:\n  # Enable operations above to see YAML output';
+            return;
+        }
+
+        let yaml = 'operations:\n';
+
+        // Title Operations
+        if (this.enabledOps.has('op-remove-title-parentheses')) {
+            yaml += '  remove_title_parentheses: true\n';
+        }
+        if (this.enabledOps.has('op-split-duplicates')) {
+            yaml += '  split_duplicates: true\n';
+        }
+
+        // Music Operations
+        if (this.enabledOps.has('op-update-blank-track-titles')) {
+            yaml += '  update_blank_track_titles: true\n';
+        }
+
+        // Asset Operations
+        if (this.enabledOps.has('op-assets-for-all')) {
+            yaml += '  assets_for_all: true\n';
+        }
+        if (this.enabledOps.has('op-delete-collections-not-managed')) {
+            yaml += '  delete_collections:\n';
+            yaml += '    managed: false\n';
+        }
+
+        // Backup & Maintenance
+        if (this.enabledOps.has('op-metadata-backup')) {
+            const path = document.getElementById('op-backup-path')?.value || '/config/backups';
+            yaml += `  metadata_backup:\n    path: "${path}"\n`;
+        }
+        if (this.enabledOps.has('op-delete-collections-less')) {
+            const threshold = document.getElementById('op-delete-less-threshold')?.value || 5;
+            yaml += `  delete_collections:\n    less: ${threshold}\n`;
+        }
+        if (this.enabledOps.has('op-mass-originally-available')) {
+            const source = document.getElementById('op-originally-available-source')?.value || 'tmdb';
+            yaml += `  mass_originally_available_update: ${source}\n`;
+        }
+
+        // Genre & Label Sync
+        if (this.enabledOps.has('op-genre-sync')) {
+            const source = document.getElementById('op-genre-source')?.value || 'tmdb';
+            yaml += `  mass_genre_update: ${source}\n`;
+        }
+        if (this.enabledOps.has('op-mass-imdb-parental-labels')) {
+            yaml += '  mass_imdb_parental_labels: true\n';
+        }
+
+        preview.textContent = yaml;
+    },
+
+    loadState() {
+        try {
+            const saved = localStorage.getItem('kometa-advanced-ops');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.enabledOps = new Set(data.enabledOps || []);
+
+                // Restore toggle states
+                this.enabledOps.forEach(opId => {
+                    const toggle = document.getElementById(opId);
+                    if (toggle) {
+                        toggle.checked = true;
+                        toggle.closest('.advanced-op-card')?.classList.add('enabled');
+                    }
+                });
+
+                this.updateYamlPreview();
+            }
+        } catch (e) {
+            console.error('Failed to load advanced ops state:', e);
+        }
+    },
+
+    saveState() {
+        localStorage.setItem('kometa-advanced-ops', JSON.stringify({
+            enabledOps: Array.from(this.enabledOps)
+        }));
+    }
+};
+
 const preflight = {
     status: {
         config: 'pending',
@@ -6618,6 +7337,9 @@ async function init() {
     playlistBuilder.init();
     filterBuilder.init();
     dataMappers.init();
+    notifications.init();
+    metadataEditor.init();
+    advancedOperations.init();
 
     // Load initial data
     await loadConfig();

@@ -314,6 +314,16 @@
                                 <span class="nav-label">Data Mappers</span>
                                 <span class="nav-badge optional">Optional</span>
                             </button>
+                            <button class="config-nav-item" data-subtab="metadata-editor">
+                                <span class="nav-icon">🎬</span>
+                                <span class="nav-label">Metadata Editor</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
+                            <button class="config-nav-item" data-subtab="advanced-ops">
+                                <span class="nav-icon">🔧</span>
+                                <span class="nav-label">Advanced Ops</span>
+                                <span class="nav-badge optional">Optional</span>
+                            </button>
                             <button class="config-nav-item" data-subtab="yaml">
                                 <span class="nav-icon">📝</span>
                                 <span class="nav-label">Raw YAML</span>
@@ -2803,37 +2813,149 @@
                         </div>
                         <p class="section-description">Get notified about Kometa runs, errors, and updates via webhooks to Discord, Slack, or dedicated notification services like Notifiarr, Gotify, and ntfy.</p>
                         <div class="notifications-container">
-                            <!-- Webhooks -->
-                            <div class="service-card">
+                            <!-- Quick Setup Templates -->
+                            <div class="notification-quick-setup">
+                                <h4>Quick Setup</h4>
+                                <div class="quick-setup-buttons">
+                                    <button class="quick-setup-btn" data-template="discord">
+                                        <span class="quick-setup-icon">💬</span>
+                                        <span>Discord</span>
+                                    </button>
+                                    <button class="quick-setup-btn" data-template="slack">
+                                        <span class="quick-setup-icon">📱</span>
+                                        <span>Slack</span>
+                                    </button>
+                                    <button class="quick-setup-btn" data-template="teams">
+                                        <span class="quick-setup-icon">👥</span>
+                                        <span>Teams</span>
+                                    </button>
+                                    <button class="quick-setup-btn" data-template="custom">
+                                        <span class="quick-setup-icon">🔧</span>
+                                        <span>Custom</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Event-Based Webhooks -->
+                            <div class="service-card notification-events-card">
                                 <div class="service-card-header">
-                                    <h4>Webhooks</h4>
+                                    <h4>Webhook Events</h4>
+                                    <span class="events-configured" id="events-configured-count">0 events configured</span>
                                 </div>
                                 <div class="service-card-content">
-                                    <p class="service-desc">Send notifications to custom URLs (Discord, Slack, etc.)</p>
-                                    <div class="form-group">
-                                        <label for="webhooks-error">Error Webhook</label>
-                                        <input type="text" id="webhooks-error" data-config-path="webhooks.error" placeholder="https://discord.com/api/webhooks/...">
+                                    <p class="service-desc">Configure webhooks for specific events. Each event can have its own webhook URL.</p>
+
+                                    <div class="notification-events-grid">
+                                        <!-- Run Start Event -->
+                                        <div class="notification-event" data-event="run_start">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-run-start-enabled" data-event="run_start">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">🚀</span>
+                                                    <span class="event-name">Run Started</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-run-start" data-config-path="webhooks.run_start" placeholder="Webhook URL for run start">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="run_start">Test</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Run End Event -->
+                                        <div class="notification-event" data-event="run_end">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-run-end-enabled" data-event="run_end">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">✅</span>
+                                                    <span class="event-name">Run Completed</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-run-end" data-config-path="webhooks.run_end" placeholder="Webhook URL for run complete">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="run_end">Test</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Error Event -->
+                                        <div class="notification-event" data-event="error">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-error-enabled" data-event="error">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">❌</span>
+                                                    <span class="event-name">Errors</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-error" data-config-path="webhooks.error" placeholder="Webhook URL for errors">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="error">Test</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Changes Event -->
+                                        <div class="notification-event" data-event="changes">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-changes-enabled" data-event="changes">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">📝</span>
+                                                    <span class="event-name">Collection Changes</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-changes" data-config-path="webhooks.changes" placeholder="Webhook URL for changes">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="changes">Test</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Delete Event -->
+                                        <div class="notification-event" data-event="delete">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-delete-enabled" data-event="delete">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">🗑️</span>
+                                                    <span class="event-name">Collections Deleted</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-delete" data-config-path="webhooks.delete" placeholder="Webhook URL for deletions">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="delete">Test</button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Version Event -->
+                                        <div class="notification-event" data-event="version">
+                                            <div class="event-header">
+                                                <label class="event-toggle">
+                                                    <input type="checkbox" id="event-version-enabled" data-event="version">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="event-info">
+                                                    <span class="event-icon">🆕</span>
+                                                    <span class="event-name">New Version Available</span>
+                                                </div>
+                                            </div>
+                                            <div class="event-config">
+                                                <input type="text" id="webhooks-version" data-config-path="webhooks.version" placeholder="Webhook URL for version updates">
+                                                <button class="btn btn-sm btn-outline test-webhook-btn" data-event="version">Test</button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label for="webhooks-version">Version Webhook</label>
-                                        <input type="text" id="webhooks-version" data-config-path="webhooks.version" placeholder="Sent when new version available">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="webhooks-run-start">Run Start Webhook</label>
-                                        <input type="text" id="webhooks-run-start" data-config-path="webhooks.run_start" placeholder="Sent at beginning of run">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="webhooks-run-end">Run End Webhook</label>
-                                        <input type="text" id="webhooks-run-end" data-config-path="webhooks.run_end" placeholder="Sent at end of run with stats">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="webhooks-changes">Changes Webhook</label>
-                                        <input type="text" id="webhooks-changes" data-config-path="webhooks.changes" placeholder="Sent when collections change">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="webhooks-delete">Delete Webhook</label>
-                                        <input type="text" id="webhooks-delete" data-config-path="webhooks.delete" placeholder="Sent when collections deleted">
-                                    </div>
+
+                                    <div class="webhook-test-result" id="webhook-test-result"></div>
                                 </div>
                             </div>
 
@@ -3024,6 +3146,480 @@
                                     </div>
                                 </div>
                             </details>
+                        </div>
+                    </div>
+
+                    <!-- Metadata Editor Sub-tab (Phase 8) -->
+                    <div id="subtab-metadata-editor" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🎬</span>
+                                <h3>Metadata Editor</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/files/metadata/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Browse your media library and edit metadata for individual items. Create metadata files for collections, movies, and shows.</p>
+
+                        <div class="metadata-editor-layout">
+                            <!-- Library Browser -->
+                            <div class="media-browser">
+                                <div class="browser-header">
+                                    <div class="browser-controls">
+                                        <select id="metadata-library-select" class="form-select">
+                                            <option value="">Select Library...</option>
+                                        </select>
+                                        <div class="browser-search">
+                                            <input type="text" id="metadata-search" placeholder="Search media..." class="form-input">
+                                            <span class="search-icon">🔍</span>
+                                        </div>
+                                    </div>
+                                    <div class="browser-view-options">
+                                        <button class="view-btn active" data-view="grid" title="Grid view">
+                                            <span>▦</span>
+                                        </button>
+                                        <button class="view-btn" data-view="list" title="List view">
+                                            <span>☰</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="media-filters">
+                                    <div class="filter-group">
+                                        <label>Type:</label>
+                                        <select id="metadata-type-filter" class="form-select form-select-sm">
+                                            <option value="all">All</option>
+                                            <option value="movie">Movies</option>
+                                            <option value="show">Shows</option>
+                                            <option value="collection">Collections</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label>Sort:</label>
+                                        <select id="metadata-sort" class="form-select form-select-sm">
+                                            <option value="title">Title</option>
+                                            <option value="added">Date Added</option>
+                                            <option value="year">Year</option>
+                                            <option value="rating">Rating</option>
+                                        </select>
+                                    </div>
+                                    <div class="filter-group">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" id="metadata-show-edited">
+                                            Show only edited
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="media-grid" id="media-grid">
+                                    <div class="media-grid-empty">
+                                        <span class="empty-icon">📚</span>
+                                        <p>Select a library to browse media</p>
+                                    </div>
+                                </div>
+
+                                <div class="browser-pagination">
+                                    <button class="btn btn-sm btn-outline" id="metadata-prev" disabled>Previous</button>
+                                    <span class="pagination-info" id="metadata-pagination-info">Page 1 of 1</span>
+                                    <button class="btn btn-sm btn-outline" id="metadata-next" disabled>Next</button>
+                                </div>
+                            </div>
+
+                            <!-- Metadata Editor Panel -->
+                            <div class="metadata-edit-panel">
+                                <div class="edit-panel-header">
+                                    <h4 id="edit-item-title">Select an Item</h4>
+                                    <span class="edit-item-type" id="edit-item-type"></span>
+                                </div>
+
+                                <div class="edit-panel-content" id="edit-panel-content">
+                                    <div class="edit-panel-empty">
+                                        <span class="empty-icon">🎬</span>
+                                        <p>Select a media item from the grid to edit its metadata</p>
+                                    </div>
+                                </div>
+
+                                <div class="edit-panel-form hidden" id="edit-panel-form">
+                                    <div class="edit-poster-section">
+                                        <div class="edit-poster" id="edit-poster">
+                                            <span class="poster-placeholder">No Poster</span>
+                                        </div>
+                                        <div class="poster-actions">
+                                            <button class="btn btn-sm btn-outline" id="btn-change-poster">Change Poster</button>
+                                            <button class="btn btn-sm btn-outline" id="btn-reset-poster">Reset</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="edit-fields">
+                                        <div class="form-group">
+                                            <label for="edit-title">Title</label>
+                                            <input type="text" id="edit-title" class="form-input" placeholder="Title">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-sort-title">Sort Title</label>
+                                            <input type="text" id="edit-sort-title" class="form-input" placeholder="Sort title (for ordering)">
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="edit-year">Year</label>
+                                                <input type="number" id="edit-year" class="form-input" placeholder="2024">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-content-rating">Content Rating</label>
+                                                <input type="text" id="edit-content-rating" class="form-input" placeholder="PG-13">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-summary">Summary</label>
+                                            <textarea id="edit-summary" class="form-textarea" rows="4" placeholder="Description..."></textarea>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-genres">Genres</label>
+                                            <input type="text" id="edit-genres" class="form-input" placeholder="Action, Adventure, Sci-Fi">
+                                            <span class="field-help">Comma-separated list</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-labels">Labels</label>
+                                            <input type="text" id="edit-labels" class="form-input" placeholder="Favorite, Must Watch">
+                                            <span class="field-help">Comma-separated list</span>
+                                        </div>
+
+                                        <details class="advanced-options">
+                                            <summary>Advanced Metadata</summary>
+                                            <div class="form-group">
+                                                <label for="edit-studio">Studio</label>
+                                                <input type="text" id="edit-studio" class="form-input" placeholder="Studio name">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-tagline">Tagline</label>
+                                                <input type="text" id="edit-tagline" class="form-input" placeholder="Movie tagline">
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label for="edit-critic-rating">Critic Rating</label>
+                                                    <input type="number" id="edit-critic-rating" class="form-input" min="0" max="10" step="0.1" placeholder="0.0">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="edit-audience-rating">Audience Rating</label>
+                                                    <input type="number" id="edit-audience-rating" class="form-input" min="0" max="10" step="0.1" placeholder="0.0">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="edit-original-title">Original Title</label>
+                                                <input type="text" id="edit-original-title" class="form-input" placeholder="Original language title">
+                                            </div>
+                                        </details>
+                                    </div>
+
+                                    <div class="edit-actions">
+                                        <button class="btn btn-primary" id="btn-save-metadata">Save Changes</button>
+                                        <button class="btn btn-secondary" id="btn-reset-metadata">Reset</button>
+                                        <button class="btn btn-outline" id="btn-generate-yaml">Generate YAML</button>
+                                    </div>
+                                </div>
+
+                                <!-- YAML Output -->
+                                <div class="metadata-yaml-output hidden" id="metadata-yaml-output">
+                                    <div class="yaml-output-header">
+                                        <h5>Generated YAML</h5>
+                                        <button class="btn btn-sm btn-outline" id="btn-copy-metadata-yaml">Copy</button>
+                                    </div>
+                                    <pre class="yaml-preview-code" id="metadata-yaml-preview"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Operations Sub-tab (Phase 10) -->
+                    <div id="subtab-advanced-ops" class="subtab-panel hidden">
+                        <div class="section-header">
+                            <div class="section-title">
+                                <span class="section-icon">🔧</span>
+                                <h3>Advanced Operations</h3>
+                                <span class="feature-status optional">Optional</span>
+                            </div>
+                            <a href="https://kometa.wiki/en/latest/config/operations/" target="_blank" class="wiki-link">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                                View Documentation
+                            </a>
+                        </div>
+                        <p class="section-description">Advanced maintenance and cleanup operations for your Plex library. These operations help fix common metadata issues and maintain library quality.</p>
+
+                        <div class="settings-groups">
+                            <!-- Title Operations -->
+                            <details class="settings-group" open>
+                                <summary><h4><span class="group-icon">📝</span> Title Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="advanced-ops-grid">
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-remove-title-parentheses" data-config-path="operations.remove_title_parentheses">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Remove Title Parentheses</span>
+                                                    <span class="op-desc">Remove year and other parenthetical info from titles</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-example">
+                                                <span class="example-before">"The Matrix (1999)"</span>
+                                                <span class="example-arrow">→</span>
+                                                <span class="example-after">"The Matrix"</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-split-duplicates" data-config-path="operations.split_duplicates">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Split Duplicates</span>
+                                                    <span class="op-desc">Split items that were incorrectly merged</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Music Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🎵</span> Music Library Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="advanced-ops-grid">
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-update-blank-track-titles" data-config-path="operations.update_blank_track_titles">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Update Blank Track Titles</span>
+                                                    <span class="op-desc">Set track titles from filename for tracks missing titles</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-remove-title-parentheses-music" data-config-path="operations.remove_title_parentheses">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Remove Album/Track Parentheses</span>
+                                                    <span class="op-desc">Clean up album and track titles with parenthetical info</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-example">
+                                                <span class="example-before">"Song Title (Remastered)"</span>
+                                                <span class="example-arrow">→</span>
+                                                <span class="example-after">"Song Title"</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Asset Operations -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🖼️</span> Asset Operations</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="advanced-ops-grid">
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-assets-for-all" data-config-path="operations.assets_for_all">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Assets for All</span>
+                                                    <span class="op-desc">Search for and apply assets to all library items, not just collections</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-group">
+                                                    <label for="op-asset-directory">Asset Directory</label>
+                                                    <input type="text" id="op-asset-directory" class="form-input" data-config-path="settings.asset_directory" placeholder="/config/assets">
+                                                </div>
+                                                <div class="form-row checkboxes">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-asset-folders" data-config-path="settings.asset_folders" checked>
+                                                        Use Asset Folders
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-create-asset-folders" data-config-path="settings.create_asset_folders">
+                                                        Create Missing Folders
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-delete-collections-not-managed" data-config-path="operations.delete_collections.managed">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Delete Unmanaged Collections</span>
+                                                    <span class="op-desc">Remove collections not managed by Kometa</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Backup & Maintenance -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">💾</span> Backup & Maintenance</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="advanced-ops-grid">
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-metadata-backup" data-config-path="operations.metadata_backup">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Metadata Backup</span>
+                                                    <span class="op-desc">Create a YAML backup of all metadata for restoration</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-group">
+                                                    <label for="op-backup-path">Backup Path</label>
+                                                    <input type="text" id="op-backup-path" class="form-input" placeholder="/config/backups">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-delete-collections-less" data-config-path="operations.delete_collections.less">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Delete Small Collections</span>
+                                                    <span class="op-desc">Remove collections with fewer than N items</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-group">
+                                                    <label for="op-delete-less-threshold">Minimum Items</label>
+                                                    <input type="number" id="op-delete-less-threshold" class="form-input" min="1" value="5" placeholder="5">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-mass-originally-available" data-config-path="operations.mass_originally_available_update">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Mass Originally Available Update</span>
+                                                    <span class="op-desc">Bulk update original release dates from metadata sources</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-group">
+                                                    <label for="op-originally-available-source">Source</label>
+                                                    <select id="op-originally-available-source" class="form-select">
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="omdb">OMDb</option>
+                                                        <option value="mdb">MDb</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+
+                            <!-- Genre & Label Sync -->
+                            <details class="settings-group">
+                                <summary><h4><span class="group-icon">🏷️</span> Genre & Label Sync</h4></summary>
+                                <div class="settings-group-content">
+                                    <div class="advanced-ops-grid">
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-genre-sync" data-config-path="operations.mass_genre_update">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">Mass Genre Update</span>
+                                                    <span class="op-desc">Sync genres from external sources</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-group">
+                                                    <label for="op-genre-source">Source</label>
+                                                    <select id="op-genre-source" class="form-select">
+                                                        <option value="tmdb">TMDb</option>
+                                                        <option value="tvdb">TVDb</option>
+                                                        <option value="omdb">OMDb</option>
+                                                        <option value="imdb">IMDb</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="advanced-op-card">
+                                            <div class="op-header">
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" id="op-mass-imdb-parental-labels" data-config-path="operations.mass_imdb_parental_labels">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                                <div class="op-info">
+                                                    <span class="op-name">IMDb Parental Labels</span>
+                                                    <span class="op-desc">Add parental guidance labels from IMDb</span>
+                                                </div>
+                                            </div>
+                                            <div class="op-config">
+                                                <div class="form-row checkboxes">
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-parental-sex" checked> Sex/Nudity
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-parental-violence" checked> Violence
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-parental-profanity" checked> Profanity
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-parental-drugs" checked> Drugs
+                                                    </label>
+                                                    <label class="checkbox-label">
+                                                        <input type="checkbox" id="op-parental-frightening" checked> Frightening
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>
+                        </div>
+
+                        <!-- YAML Preview -->
+                        <div class="advanced-ops-yaml-preview mt-5">
+                            <div class="yaml-preview-header">
+                                <h5>Generated Operations YAML</h5>
+                                <button class="btn btn-sm btn-outline" id="btn-copy-advanced-ops-yaml">Copy YAML</button>
+                            </div>
+                            <pre class="yaml-preview-code" id="advanced-ops-yaml-preview">operations:
+  # Enable operations above to see YAML output</pre>
                         </div>
                     </div>
 
