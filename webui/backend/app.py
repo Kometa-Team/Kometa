@@ -41,6 +41,9 @@ APPLY_ENABLED = os.environ.get("KOMETA_UI_APPLY_ENABLED", "false").lower() == "t
 # Optional simple password protection
 UI_PASSWORD = os.environ.get("KOMETA_UI_PASSWORD", "")
 
+# UI Mode: 'vue' for Vue 3 SPA, 'legacy' for Jinja2 templates
+UI_MODE = os.environ.get("KOMETA_UI_MODE", "legacy").lower()
+
 
 # Initialize managers
 config_manager: Optional[ConfigManager] = None
@@ -81,6 +84,7 @@ async def lifespan(app: FastAPI):
     print(f"Kometa Web UI starting on http://{UI_HOST}:{UI_PORT}")
     print(f"Config directory: {CONFIG_DIR}")
     print(f"Apply mode: {'ENABLED (use with caution!)' if APPLY_ENABLED else 'DISABLED (safe mode)'}")
+    print(f"UI Mode: {UI_MODE.upper()}" + (" (Vue build available)" if vue_available else " (Vue build not found, using legacy)" if UI_MODE == "vue" else ""))
 
     yield
 
@@ -98,8 +102,18 @@ app = FastAPI(
 
 # Static files and templates
 frontend_dir = Path(__file__).parent.parent / "frontend"
-app.mount("/static", StaticFiles(directory=frontend_dir / "static"), name="static")
-templates = Jinja2Templates(directory=frontend_dir / "templates")
+vue_frontend_dir = Path(__file__).parent.parent / "frontend-vue" / "dist"
+
+# Check if Vue build exists
+vue_available = vue_frontend_dir.exists() and (vue_frontend_dir / "index.html").exists()
+
+if UI_MODE == "vue" and vue_available:
+    # Serve Vue 3 SPA
+    app.mount("/assets", StaticFiles(directory=vue_frontend_dir / "assets"), name="assets")
+else:
+    # Serve legacy static files
+    app.mount("/static", StaticFiles(directory=frontend_dir / "static"), name="static")
+    templates = Jinja2Templates(directory=frontend_dir / "templates")
 
 # Mount overlay images from defaults directory
 overlay_images_dir = KOMETA_ROOT / "defaults" / "overlays" / "images"
@@ -134,10 +148,38 @@ class ApplyConfirmation(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Main UI page."""
-    return templates.TemplateResponse("index.html", {
-        "request": request,
-        "apply_enabled": APPLY_ENABLED
-    })
+    if UI_MODE == "vue" and vue_available:
+        # Serve Vue SPA
+        from fastapi.responses import FileResponse
+        return FileResponse(vue_frontend_dir / "index.html")
+    else:
+        # Serve legacy Jinja2 template
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "apply_enabled": APPLY_ENABLED
+        })
+
+
+# Catch-all route for Vue SPA client-side routing
+@app.get("/{full_path:path}")
+async def serve_spa(request: Request, full_path: str):
+    """Serve Vue SPA for all non-API routes (client-side routing support)."""
+    # Skip API and WebSocket routes
+    if full_path.startswith(("api/", "ws/", "static/", "assets/", "overlay-images/")):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if UI_MODE == "vue" and vue_available:
+        # Check if it's a static file
+        file_path = vue_frontend_dir / full_path
+        if file_path.exists() and file_path.is_file():
+            from fastapi.responses import FileResponse
+            return FileResponse(file_path)
+        # Otherwise return index.html for client-side routing
+        from fastapi.responses import FileResponse
+        return FileResponse(vue_frontend_dir / "index.html")
+    else:
+        # Legacy mode - 404 for unknown routes
+        raise HTTPException(status_code=404, detail="Not found")
 
 
 # ============================================================================
@@ -153,6 +195,45 @@ async def health_check():
         "config_dir": str(CONFIG_DIR),
         "timestamp": datetime.utcnow().isoformat()
     }
+
+
+@app.get("/api/settings")
+async def get_settings():
+    """Get current Web UI settings."""
+    return {
+        "apply_enabled": APPLY_ENABLED,
+        "password_required": bool(UI_PASSWORD),
+        "ui_mode": UI_MODE,
+        "vue_available": vue_available,
+        "version": "1.0.0"
+    }
+
+
+@app.get("/api/libraries")
+async def get_libraries():
+    """Get list of libraries from config."""
+    try:
+        result = config_manager.load_config()
+        parsed = result.get("parsed", {})
+        libraries = []
+
+        if parsed and "libraries" in parsed:
+            for name, config in parsed["libraries"].items():
+                lib_type = "unknown"
+                # Try to determine library type from config
+                if config:
+                    if "collection_files" in config:
+                        lib_type = "collection"
+                    elif "overlay_files" in config:
+                        lib_type = "overlay"
+                libraries.append({
+                    "name": name,
+                    "type": lib_type
+                })
+
+        return libraries
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 # ============================================================================
