@@ -6,6 +6,7 @@ from modules.util import Failed, logger
 import gzip
 import io
 import traceback
+import xml.etree.ElementTree as ET
 
 logger = util.logger
 
@@ -82,6 +83,33 @@ class AniDBObj:
         self.anidb_id = anidb_id
         self._data = data
 
+
+        # def _parse(self, field_name, xpath, is_dict=False):
+        #     # Find all elements matching the XPath
+        #     nodes = self.xml_root.xpath(xpath) 
+            
+        #     if not nodes:
+        #         return {} if is_dict else []
+
+        #     if is_dict:
+        #         result = {}
+        #         for node in nodes:
+        #             # Use the 'id' attribute as the primary key
+        #             tag_id = node.get('id')
+                    
+        #             # Map internal children to dictionary keys
+        #             tag_data = {
+        #                 'name': node.findtext('name'),
+        #                 'weight': node.get('weight'),
+        #                 'description': node.findtext('description'),
+        #                 'parentid': node.get('parentid')
+        #             }
+        #             result[tag_id] = tag_data
+        #         return result
+            
+        #     # Default behavior for non-dict parsing
+        #     return [node.text for node in nodes]
+ 
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
                 # Handle data if it's coming from a dictionary (Cache)
@@ -99,10 +127,26 @@ class AniDBObj:
                     # API Titles: <title xml:lang="en" type="official">Title</title>
                     return {ta.get("{http://www.w3.org/XML/1998/namespace}lang"): ta.text for ta in parse_results}
 
+                if attr == "tags":
+                    result = {}
+                    for node in parse_results:
+                        # Use the 'id' attribute as the primary key
+                        tag_id = node.get('id')
+                        
+                        # Map internal children to dictionary keys
+                        tag_data = {
+                            'name': node.findtext('name'),
+                            'weight': node.get('weight'),
+                            'description': node.findtext('description'),
+                            'parentid': node.get('parentid')
+                        }
+                        result[tag_id] = tag_data
+                    return result
+
                 if parse_results:
                     if is_list:
                         return [r.text.strip() if hasattr(r, 'text') else str(r).strip() for r in parse_results]
-                    
+                    # 
                     val = parse_results[0]
                     text_val = val.text if hasattr(val, 'text') else str(val)
                     
@@ -128,6 +172,16 @@ class AniDBObj:
         self.score = _parse("score", "//ratings/review/text()", is_float=True)
         self.released = _parse("released", "//startdate/text()", is_date=True)
         
+        self.tags = _parse("tags", "//anime/tags/tag", is_list=True)
+#   <tags>
+#     <tag id="36" parentid="2607" weight="300" localspoiler="false" globalspoiler="false" verified="true" update="2018-01-21">
+#       <name>military</name>
+#       <description>The military, also known as the armed forces, are forces authorized and legally entitled to use deadly force so as to support the interests of the state and its citizens. The task of the military is usually defined as defence of the state and its citizens and the prosecution of war against foreign powers. The military may also have additional functions within a society, including construction, emergency services, social ceremonies, and guarding critical areas.
+# Source: Wikipedia</description>
+#       <picurl>212184.jpg</picurl>
+#     </tag>
+
+
         # Resources (External Links)
         self.mal_id = _parse("mal_id", "//resource[@type='2']/externalentity/identifier/text()", is_int=True)
         self.imdb_id = _parse("imdb_id", "//resource[@type='43']/externalentity/identifier/text()")
@@ -340,6 +394,7 @@ class AniDB:
         if expired or not anidb_dict:
             # This calls the method that handles the 2s delay and XML file caching
             anidb_xml = self._request(api_params={"request": "anime", "aid": anidb_id})
+            # http://api.anidb.net:9001/httpapi?request=anime&client={str}&clientver={int}&protover=1&aid={int}
             if anidb_xml is None:
                 raise Failed(f"AniDB Error: Could not fetch Anime ID {anidb_id}")
             data_source = anidb_xml
