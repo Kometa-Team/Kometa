@@ -17,6 +17,8 @@ api_url = "http://api.anidb.net:9001/httpapi"
 kometa_client = "kometaofficial"
 kometa_client_version = 1
 
+weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
+
 class AniDBTitles:
     TITLES_URL = "https://anidb.net/api/anime-titles.xml.gz"
     CACHE_FILE = "config/anidb_cache/anime-titles.xml"
@@ -113,35 +115,47 @@ class AniDBObj:
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
                 # Handle data if it's coming from a dictionary (Cache)
+                lookup_attr = attr if not attr == 'tmdb' else 'tmdb_id'
+
+                if lookup_attr == "tmdb_id":
+                    result = [str(data['tmdb_id']), str(data['tmdb_type'])] if 'tmdb_id' in data and data['tmdb_id'] else []
+                    return result
+
                 if isinstance(data, dict):
-                    if is_list: return data[attr].split("|") if data[attr] else []
-                    if is_dict: return json.loads(data[attr]) if data[attr] else {}
-                    if is_int or is_float: return util.check_num(data[attr], is_int=is_int)
-                    if is_date: return datetime.strptime(data[attr], "%Y-%m-%d") if data[attr] else None
-                    return data[attr]
+                    if is_list: return data[lookup_attr].split("|") if data[lookup_attr] else []
+                    if is_dict: return json.loads(data[lookup_attr]) if data[lookup_attr] else {}
+                    if is_int or is_float: return util.check_num(data[lookup_attr], is_int=is_int)
+                    if is_date: return datetime.strptime(data[lookup_attr], "%Y-%m-%d") if data[lookup_attr] else None
+                    return data[lookup_attr]
 
                 # Handle data if it's an XML Element (Fresh API Response)
                 parse_results = data.xpath(xpath)
-                
+
+                if attr == "tmdb":
+                    return parse_results if parse_results else []
+
+                if attr == "tags":
+                    return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
+
                 if  attr == "titles":
                     # API Titles: <title xml:lang="en" type="official">Title</title>
                     return {ta.get("{http://www.w3.org/XML/1998/namespace}lang"): ta.text for ta in parse_results}
 
-                if attr == "tags":
-                    result = {}
-                    for node in parse_results:
-                        # Use the 'id' attribute as the primary key
-                        tag_id = node.get('id')
+                # if attr == "tags":
+                #     result = {}
+                #     for node in parse_results:
+                #         # Use the 'id' attribute as the primary key
+                #         tag_id = node.get('id')
                         
-                        # Map internal children to dictionary keys
-                        tag_data = {
-                            'name': node.findtext('name'),
-                            'weight': node.get('weight'),
-                            'description': node.findtext('description'),
-                            'parentid': node.get('parentid')
-                        }
-                        result[tag_id] = tag_data
-                    return result
+                #         # Map internal children to dictionary keys
+                #         tag_data = {
+                #             'name': node.findtext('name'),
+                #             'weight': node.get('weight'),
+                #             'description': node.findtext('description'),
+                #             'parentid': node.get('parentid')
+                #         }
+                #         result[tag_id] = tag_data
+                #     return result
 
                 if parse_results:
                     if is_list:
@@ -173,14 +187,6 @@ class AniDBObj:
         self.released = _parse("released", "//startdate/text()", is_date=True)
         
         self.tags = _parse("tags", "//anime/tags/tag", is_list=True)
-#   <tags>
-#     <tag id="36" parentid="2607" weight="300" localspoiler="false" globalspoiler="false" verified="true" update="2018-01-21">
-#       <name>military</name>
-#       <description>The military, also known as the armed forces, are forces authorized and legally entitled to use deadly force so as to support the interests of the state and its citizens. The task of the military is usually defined as defence of the state and its citizens and the prosecution of war against foreign powers. The military may also have additional functions within a society, including construction, emergency services, social ceremonies, and guarding critical areas.
-# Source: Wikipedia</description>
-#       <picurl>212184.jpg</picurl>
-#     </tag>
-
 
         # Resources (External Links)
         self.mal_id = _parse("mal_id", "//resource[@type='2']/externalentity/identifier/text()", is_int=True)
