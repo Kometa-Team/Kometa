@@ -1031,6 +1031,414 @@ async def test_ntfy_connection(request: NtfyTestRequest):
 
 
 # ============================================================================
+# NEW API ENDPOINTS - Stubs for Phase 7-10 Features
+# See docs/API_INTEGRATION.md for full implementation details
+# ============================================================================
+
+# Request/Response Models for new endpoints
+class WebhookTestRequest(BaseModel):
+    """Request model for testing webhooks."""
+    url: str
+    event: str = "test"
+    service: str = "custom"  # discord, slack, teams, custom
+
+
+class MetadataBrowseResponse(BaseModel):
+    """Response model for metadata browsing."""
+    items: List[Dict[str, Any]]
+    total: int
+    page: int
+    total_pages: int
+
+
+class MetadataEditRequest(BaseModel):
+    """Request model for editing item metadata."""
+    title: Optional[str] = None
+    sort_title: Optional[str] = None
+    year: Optional[int] = None
+    content_rating: Optional[str] = None
+    summary: Optional[str] = None
+    genres: Optional[str] = None
+    labels: Optional[str] = None
+
+
+class CollectionSaveRequest(BaseModel):
+    """Request model for saving a collection."""
+    library: str
+    name: str
+    builders: List[Dict[str, Any]]
+    filters: Optional[List[Dict[str, Any]]] = None
+    settings: Optional[Dict[str, Any]] = None
+
+
+class ScheduleSettingsRequest(BaseModel):
+    """Request model for schedule settings."""
+    run_order: Optional[List[str]] = None
+    global_schedule: Optional[str] = None
+    library_schedules: Optional[Dict[str, Dict[str, Any]]] = None
+
+
+class MapperSettingsRequest(BaseModel):
+    """Request model for data mapper settings."""
+    genre_mapper: Optional[Dict[str, str]] = None
+    content_rating_mapper: Optional[Dict[str, str]] = None
+    studio_mapper: Optional[Dict[str, str]] = None
+
+
+class NotificationSettingsRequest(BaseModel):
+    """Request model for notification settings."""
+    enabled_events: List[str]
+    webhooks: Optional[Dict[str, str]] = None
+
+
+class OperationsConfigRequest(BaseModel):
+    """Request model for advanced operations configuration."""
+    enabled: List[str]
+    settings: Optional[Dict[str, Any]] = None
+
+
+# --- Webhook Testing ---
+
+@app.post("/api/webhooks/test")
+async def test_webhook(request: WebhookTestRequest):
+    """
+    Test a webhook by sending a test notification.
+
+    TODO: Implement actual webhook delivery based on service type.
+    Currently returns a stub response.
+    """
+    import httpx
+
+    try:
+        # Detect service from URL if not specified
+        service = request.service
+        if "discord.com" in request.url:
+            service = "discord"
+        elif "slack.com" in request.url or "hooks.slack" in request.url:
+            service = "slack"
+        elif "office.com" in request.url:
+            service = "teams"
+
+        # Build payload based on service
+        if service == "discord":
+            payload = {
+                "content": None,
+                "embeds": [{
+                    "title": f"Kometa Test - {request.event}",
+                    "description": "This is a test notification from Kometa Web UI",
+                    "color": 15105570  # Kometa gold
+                }]
+            }
+        elif service == "slack":
+            payload = {
+                "text": f"Kometa Test - {request.event}",
+                "blocks": [{
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": "*Kometa Test Notification*\nThis is a test notification from Kometa Web UI"
+                    }
+                }]
+            }
+        elif service == "teams":
+            payload = {
+                "@type": "MessageCard",
+                "themeColor": "e5a00d",
+                "title": f"Kometa Test - {request.event}",
+                "text": "This is a test notification from Kometa Web UI"
+            }
+        else:
+            payload = {
+                "event": request.event,
+                "message": "Kometa test notification",
+                "timestamp": datetime.now().isoformat()
+            }
+
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.post(request.url, json=payload)
+
+            if response.status_code in [200, 204]:
+                return {"success": True, "message": f"Test notification sent successfully ({service})"}
+            else:
+                return {"success": False, "error": f"Webhook returned HTTP {response.status_code}"}
+
+    except httpx.ConnectError:
+        return {"success": False, "error": "Connection refused - check URL"}
+    except httpx.TimeoutException:
+        return {"success": False, "error": "Connection timeout"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# --- Metadata Editor ---
+
+@app.get("/api/metadata/browse/{library}")
+async def browse_metadata(
+    library: str,
+    page: int = 1,
+    per_page: int = 24,
+    search: str = "",
+    type: str = "all",
+    sort: str = "title"
+):
+    """
+    Browse media items in a library for metadata editing.
+
+    TODO: Connect to Plex API to fetch real library contents.
+    Currently returns a stub response.
+    """
+    # Stub: Return placeholder data
+    # Real implementation should query Plex API
+    return {
+        "items": [],
+        "total": 0,
+        "page": page,
+        "total_pages": 0,
+        "message": "TODO: Connect to Plex API - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.get("/api/metadata/item/{item_id}")
+async def get_metadata_item(item_id: str):
+    """
+    Get full metadata for a specific item.
+
+    TODO: Connect to Plex API to fetch item details.
+    """
+    return {
+        "id": item_id,
+        "message": "TODO: Connect to Plex API - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/metadata/item/{item_id}")
+async def update_metadata_item(item_id: str, request: MetadataEditRequest):
+    """
+    Update metadata for a specific item.
+
+    TODO: Connect to Plex API to update item metadata.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Implement Plex metadata update - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/metadata/generate-yaml")
+async def generate_metadata_yaml(items: List[Dict[str, Any]]):
+    """
+    Generate YAML for metadata edits.
+
+    TODO: Generate valid Kometa metadata YAML.
+    """
+    # Stub implementation
+    yaml_output = "metadata:\n  # Generated metadata will appear here\n"
+    return {"yaml": yaml_output}
+
+
+# --- Collection Builder ---
+
+@app.get("/api/collections/{library}")
+async def get_collections(library: str):
+    """
+    Get existing collections for a library.
+
+    TODO: Parse collection YAML files.
+    """
+    return {
+        "collections": [],
+        "message": "TODO: Parse collection files - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/collections/save")
+async def save_collection(request: CollectionSaveRequest):
+    """
+    Save a collection definition to a YAML file.
+
+    TODO: Generate and save collection YAML.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Implement collection saving - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/collections/preview")
+async def preview_collection(request: CollectionSaveRequest):
+    """
+    Preview the YAML that would be generated for a collection.
+    """
+    # Generate YAML preview
+    yaml_output = f"collections:\n  {request.name}:\n"
+    for builder in request.builders:
+        source = builder.get("source", "unknown")
+        yaml_output += f"    {source}:\n"
+        for key, value in builder.get("config", {}).items():
+            yaml_output += f"      {key}: {value}\n"
+
+    return {"yaml": yaml_output}
+
+
+@app.get("/api/builders/sources")
+async def get_builder_sources():
+    """
+    Get available builder sources and their configuration options.
+    """
+    # Return available sources
+    sources = {
+        "tmdb_popular": {"name": "TMDb Popular", "category": "charts", "fields": ["limit"]},
+        "tmdb_trending": {"name": "TMDb Trending", "category": "charts", "fields": ["limit", "time_window"]},
+        "trakt_list": {"name": "Trakt List", "category": "lists", "fields": ["list_url"]},
+        "imdb_list": {"name": "IMDb List", "category": "lists", "fields": ["list_id"]},
+        "plex_search": {"name": "Plex Search", "category": "plex", "fields": ["any"]},
+    }
+    return {"sources": sources}
+
+
+# --- Playlist Builder ---
+
+@app.get("/api/playlists")
+async def get_playlists():
+    """
+    Get existing playlists.
+
+    TODO: Parse playlist YAML files.
+    """
+    return {
+        "playlists": [],
+        "message": "TODO: Parse playlist files - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/playlists/save")
+async def save_playlist(request: Dict[str, Any]):
+    """
+    Save a playlist definition to a YAML file.
+
+    TODO: Generate and save playlist YAML.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Implement playlist saving - see docs/API_INTEGRATION.md"
+    }
+
+
+# --- Settings Endpoints ---
+
+@app.get("/api/settings/schedule")
+async def get_schedule_settings():
+    """
+    Get scheduling configuration.
+
+    TODO: Parse schedule settings from config.
+    """
+    return {
+        "run_order": ["operations", "metadata", "collections", "overlays"],
+        "global_schedule": "daily",
+        "library_schedules": {},
+        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/settings/schedule")
+async def save_schedule_settings(request: ScheduleSettingsRequest):
+    """
+    Save scheduling configuration.
+
+    TODO: Update config.yml with schedule settings.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.get("/api/settings/mappers")
+async def get_mapper_settings():
+    """
+    Get data mapper settings.
+
+    TODO: Parse mapper settings from config.
+    """
+    return {
+        "genre_mapper": {},
+        "content_rating_mapper": {},
+        "studio_mapper": {},
+        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/settings/mappers")
+async def save_mapper_settings(request: MapperSettingsRequest):
+    """
+    Save data mapper settings.
+
+    TODO: Update config.yml with mapper settings.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.get("/api/settings/notifications")
+async def get_notification_settings():
+    """
+    Get notification settings.
+
+    TODO: Parse notification settings from config.
+    """
+    return {
+        "enabled_events": [],
+        "webhooks": {},
+        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/settings/notifications")
+async def save_notification_settings(request: NotificationSettingsRequest):
+    """
+    Save notification settings.
+
+    TODO: Update config.yml with notification settings.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+# --- Operations Config ---
+
+@app.get("/api/operations/config")
+async def get_operations_config():
+    """
+    Get advanced operations configuration.
+
+    TODO: Parse operations from config.
+    """
+    return {
+        "enabled": [],
+        "settings": {},
+        "message": "TODO: Parse from config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+@app.post("/api/operations/config")
+async def save_operations_config(request: OperationsConfigRequest):
+    """
+    Save advanced operations configuration.
+
+    TODO: Update config.yml with operations settings.
+    """
+    return {
+        "success": True,
+        "message": "TODO: Save to config.yml - see docs/API_INTEGRATION.md"
+    }
+
+
+# ============================================================================
 # Main entry point
 # ============================================================================
 
