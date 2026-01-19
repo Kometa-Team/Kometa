@@ -580,7 +580,7 @@ class Cache:
                              "released = ?, tags = ?, mal_id = ?, imdb_id = ?, tmdb_id = ?, tmdb_type = ?, expiration_date = ? WHERE anidb_id = ?"
                 cursor.execute(update_sql, (
                     anidb.main_title, json.dumps(anidb.titles), anidb.studio, anidb.rating, anidb.average, anidb.score,
-                    anidb.released.strftime("%Y-%m-%d") if anidb.released else None, json.dumps(anidb.tags),
+                    anidb.released.strftime("%Y-%m-%d") if anidb.released else None, None,
                     anidb.mal_id, anidb.imdb_id, anidb.tmdb_id, anidb.tmdb_type,
                     expiration_date.strftime("%Y-%m-%d"), anidb_id
                 ))

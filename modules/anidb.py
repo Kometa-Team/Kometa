@@ -169,7 +169,7 @@ class AniDB:
         """
         return self._is_authorized
 
-    def authorize(self, client, version, expiration):
+    def authorize(self, expiration):
         self.expiration = expiration
         self._is_authorized = False
 

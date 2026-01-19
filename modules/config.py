@@ -752,8 +752,6 @@ class ConfigFile:
 
                 try:
                     self.AniDB.authorize(
-                        check_for_attribute(self.data, "client", parent="anidb", throw=True),
-                        check_for_attribute(self.data, "version", parent="anidb", var_type="int", throw=True),
                         check_for_attribute(self.data, "cache_expiration", parent="anidb", var_type="int", default=60, int_min=1)
                     )
                 except Failed as e:
