@@ -36,4 +36,3 @@ Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
 Update network logos to the current rebrand '5', 'U', 'U&Abli', 'U&Dave' and 'U&Eden'
-Update network logos overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
