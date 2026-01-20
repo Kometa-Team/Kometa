@@ -283,16 +283,6 @@ class Cache:
                     media_type TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS letterboxd_incremental_state (
-                    key INTEGER PRIMARY KEY,
-                    username TEXT,
-                    page_type TEXT,
-                    last_timestamp TEXT,
-                    last_item_ids TEXT,
-                    last_updated TEXT,
-                    UNIQUE(username, page_type))"""
-                )
-                cursor.execute(
                     """CREATE TABLE IF NOT EXISTS imdb_keywords (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
@@ -1153,29 +1143,3 @@ class Cache:
                 cursor.execute(f"INSERT OR IGNORE INTO testing(name) VALUES(?)", (name,))
                 sql = f"UPDATE testing SET value1 = ?, value2 = ?, success = ? WHERE name = ?"
                 cursor.execute(sql, (value1, value2, success, name))
-
-    def query_letterboxd_incremental_state(self, username, page_type):
-        last_timestamp = None
-        last_item_ids = []
-        with sqlite3.connect(self.cache_path) as connection:
-            connection.row_factory = sqlite3.Row
-            with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM letterboxd_incremental_state WHERE username = ? AND page_type = ?", (username, page_type))
-                row = cursor.fetchone()
-                if row:
-                    last_timestamp = row["last_timestamp"] if row["last_timestamp"] else None
-                    if row["last_item_ids"]:
-                        import json
-                        last_item_ids = json.loads(row["last_item_ids"])
-        return last_timestamp, last_item_ids
-
-    def update_letterboxd_incremental_state(self, username, page_type, last_timestamp, last_item_ids):
-        import json
-        last_updated = datetime.now().isoformat()
-        item_ids_json = json.dumps(last_item_ids) if last_item_ids else None
-        with sqlite3.connect(self.cache_path) as connection:
-            connection.row_factory = sqlite3.Row
-            with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO letterboxd_incremental_state(username, page_type) VALUES(?, ?)", (username, page_type))
-                cursor.execute("UPDATE letterboxd_incremental_state SET last_timestamp = ?, last_item_ids = ?, last_updated = ? WHERE username = ? AND page_type = ?",
-                               (last_timestamp, item_ids_json, last_updated, username, page_type))

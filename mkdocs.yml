@@ -394,8 +394,6 @@ nav:
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md
-        - User Films: files/builders/letterboxd/user_films.md
-        - User Reviews: files/builders/letterboxd/user_reviews.md
       - ICheckMovies:
         - Overview: files/builders/icheckmovies/overview.md
         - List: files/builders/icheckmovies/list.md

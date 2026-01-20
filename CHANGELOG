@@ -10,16 +10,10 @@ Updated python-dotenv requirement to 1.2.1
 Updated ruamel.yaml requirement to 0.19.1
 
 # New Features
-Adds `|` as a preferred delimiter for run times.
-Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
-Adds new filters `show_title` and `season_title`
-Adds Producer's Cut to resolution/edition default overlay
-Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` builders for improved performance with large collections
 Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
 Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
-Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 
 # Docs
 Add docs around requirements for those lists
@@ -35,4 +29,4 @@ Improve API-based handling of MDBList "external" lists.
 Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
-Update networks to the current logos '5', 'U', 'U&Alibi', 'U&Dave' and 'U&Eden'
+Update network logos to the current rebrand '5', 'U', 'U&Abli', 'U&Dave' and 'U&Eden
