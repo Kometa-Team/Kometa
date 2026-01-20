@@ -24,7 +24,7 @@ show_only_builders = [
     "tmdb_on_the_air", "builder_level", "item_tmdb_season_titles", "sonarr_all", "sonarr_taglist"
 ]
 movie_only_builders = [
-    "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
+    "letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing", "item_edition",
     "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist",
     "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
@@ -1750,6 +1750,50 @@ class CollectionBuilder:
                 self.builders.append(("letterboxd_list", letterboxd_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
+        elif method_name.startswith("letterboxd_user_films"):
+            page_type = "films"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
+            letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
+            for letterboxd_page in letterboxd_pages:
+                self.builders.append(("letterboxd_user_films", letterboxd_page))
+            if method_name.endswith("_details"):
+                # For user pages, we don't have a description like lists do, so we'll leave it empty
+                pass
+        elif method_name.startswith("letterboxd_user_reviews"):
+            page_type = "reviews"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
+            letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
+            for letterboxd_page in letterboxd_pages:
+                self.builders.append(("letterboxd_user_reviews", letterboxd_page))
+            if method_name.endswith("_details"):
+                # For user pages, we don't have a description like lists do, so we'll leave it empty
+                pass
 
     def _mal(self, method_name, method_data):
         if method_name == "mal_id":
