@@ -211,7 +211,7 @@ class AniDB:
         self.username = None
         self.password = None
         self.last_request_time = 0
-        self.min_delay = 2.1
+        self.min_delay = 4.1
         self._is_authorized = False
         self.titles_db = AniDBTitles(self.requests)
 
