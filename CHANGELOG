@@ -19,6 +19,7 @@ Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
 Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
+Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 
 # Docs
 Add docs around requirements for those lists
@@ -35,3 +36,4 @@ Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
 Update network logos to the current rebrand '5', 'U', 'U&Abli', 'U&Dave' and 'U&Eden'
+Update network logos overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
