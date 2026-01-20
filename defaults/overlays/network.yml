@@ -1039,7 +1039,7 @@ overlays:
 
   "U&Eden":
     variables: { weight: 10}
-    template: [name: standard, name: networks]
+    template: [name: standard, {name: networks, search: ["U&Eden", "Eden"]}]
 
   "U&Gold":
     variables: { weight: 10}
