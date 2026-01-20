@@ -69,6 +69,10 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
+  5:
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: ["5", "Channel 5"]}]
+
   7mate:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -104,11 +108,6 @@ overlays:
   AHC:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-
-  "U&Alibi":
-    variables: { weight: 10}
-    template: [name: standard, {name: networks, search: ["U&Alibi", "Alibi"]}]
-
 
   ALTBalaji:
     variables: { weight: 10}
@@ -286,10 +285,6 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  5:
-    variables: { weight: 10}
-    template: [name: standard, {name: networks, search: ["5", "Channel 5"]}]
-
   CHCH-DT:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -342,10 +337,6 @@ overlays:
     variables: { weight: 10}
     template: [name: standard, name: networks]
 
-  "U&Dave":
-    variables: { weight: 10}
-    template: [name: standard, {name: networks, search: ["U&Dave", "Dave"]}]
-
   DC Universe:
     variables: { weight: 10}
     template: [name: standard, name: networks]
@@ -385,10 +376,6 @@ overlays:
   Dropout:
     variables: { weight: 10}
     template: [name: standard, name: networks]
-
-  "U&Eden":
-    variables: { weight: 10}
-    template: [name: standard, {name: networks, search: ["U&Eden", "Eden"]}]
 
   Elisa Viihde:
     variables: { weight: 10}
@@ -1037,6 +1024,34 @@ overlays:
   U:
     variables: { weight: 10}
     template: [name: standard, {name: networks, search: [UKTV, U]}]
+
+  "U&Alibi":
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: ["U&Alibi", "Alibi"]}]
+
+  "U&Dave":
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: ["U&Dave", "Dave"]}]
+
+  "U&Drama":
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  "U&Eden":
+    variables: { weight: 10}
+    template: [name: standard, {name: networks, search: ["U&Eden", "Eden"]}]
+
+  "U&Gold":
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  "U&W":
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
+
+  "U&Yesterday":
+    variables: { weight: 10}
+    template: [name: standard, name: networks]
 
   UniMás:
     variables: { weight: 10}
