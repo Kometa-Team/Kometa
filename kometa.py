@@ -865,7 +865,10 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.debug(f"Builder: {method}: {value}")
                     logger.info("")
                     try:
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
+                        ids = builder.gather_ids(method, value)
+                        if len(ids) == 0:
+                            logger.info(f"No items found for builder: {method}")
+                        builder.filter_and_save_items(ids)
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
