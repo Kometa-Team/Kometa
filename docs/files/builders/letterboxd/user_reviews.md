@@ -24,7 +24,7 @@ The `sync_mode: sync` and `collection_order: custom` Setting are recommended sin
 
 ???+ tip "Incremental Parsing"
 
-    Incremental parsing is enabled by default. When enabled with `incremental: true`, only new items added since the last run will be parsed, significantly improving performance for large collections. On the first run, all items are parsed and the state is saved. Subsequent runs will only process new items. This is useful for users with very large collections who frequently add new reviews. Set `incremental: false` to disable and parse all items on every run.
+    By default, incremental parsing is enabled. This means only new items added since the last run will be parsed, significantly improving performance for large collections. On the first run, all items are parsed and the state is saved. Subsequent runs will only process new items. Set `incremental: false` to disable this behavior and parse all items every time.
 
 Using the `limit` filter attribute is recommended when using a user with many reviewed films as the number of results returned could be very large.
 

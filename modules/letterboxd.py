@@ -1,6 +1,9 @@
 import re, time
 from datetime import datetime
+<<<<<<< HEAD
 from lxml import html as lxml_html
+=======
+>>>>>>> upstream/nightly
 from modules import util
 from modules.util import Failed
 
@@ -151,6 +154,7 @@ class Letterboxd:
             url = f"{base_url}/{username}/films/{sort_path}"
         else:
             url = f"{base_url}/{username}/films/"
+<<<<<<< HEAD
         logger.debug(f"Fetching Letterboxd films from: {url}")
         items, next_url = self._parse_user_page(url, language)
         initial_item_count = len(items)
@@ -163,6 +167,13 @@ class Letterboxd:
             items_after_id_filter = len(items)
             if items_before_filter > 0 and items_after_id_filter == 0:
                 logger.debug(f"Incremental parsing filtered out all {items_before_filter} items from first page (already processed)")
+=======
+        items, next_url = self._parse_user_page(url, language)
+        
+        # Handle incremental parsing
+        if incremental and last_item_ids:
+            items = [item for item in items if item[0] not in last_item_ids]  # Filter out already seen items
+>>>>>>> upstream/nightly
             # Stop if we hit items older than last_timestamp
             if last_timestamp and items:
                 try:
@@ -219,6 +230,7 @@ class Letterboxd:
             
             items.extend(new_items)
             if limit and len(items) >= limit:
+<<<<<<< HEAD
                 final_items = items[:limit]
                 if incremental and initial_item_count > 0 and len(final_items) == 0:
                     logger.debug(f"Incremental parsing: All {initial_item_count} items from {username} were already processed")
@@ -227,6 +239,9 @@ class Letterboxd:
         # Log summary if incremental parsing filtered out all items
         if incremental and initial_item_count > 0 and len(items) == 0:
             logger.debug(f"Incremental parsing: All items from {username} were already processed (no new items)")
+=======
+                return items[:limit]
+>>>>>>> upstream/nightly
         return items
 
     def _parse_user_reviews(self, username, sort_by, limit, language, incremental=False, last_timestamp=None, last_item_ids=None):
@@ -238,6 +253,7 @@ class Letterboxd:
             url = f"{base_url}/{username}/reviews/{sort_path}"
         else:
             url = f"{base_url}/{username}/reviews/"
+<<<<<<< HEAD
         logger.debug(f"Fetching Letterboxd reviews from: {url}")
         items, next_url = self._parse_user_page(url, language)
         initial_item_count = len(items)
@@ -250,6 +266,13 @@ class Letterboxd:
             items_after_id_filter = len(items)
             if items_before_filter > 0 and items_after_id_filter == 0:
                 logger.debug(f"Incremental parsing filtered out all {items_before_filter} items from first page (already processed)")
+=======
+        items, next_url = self._parse_user_page(url, language)
+        
+        # Handle incremental parsing
+        if incremental and last_item_ids:
+            items = [item for item in items if item[0] not in last_item_ids]
+>>>>>>> upstream/nightly
             if last_timestamp and items:
                 from datetime import datetime
                 try:
@@ -304,6 +327,7 @@ class Letterboxd:
             
             items.extend(new_items)
             if limit and len(items) >= limit:
+<<<<<<< HEAD
                 final_items = items[:limit]
                 if incremental and initial_item_count > 0 and len(final_items) == 0:
                     logger.debug(f"Incremental parsing: All {initial_item_count} items from {username} were already processed")
@@ -312,6 +336,9 @@ class Letterboxd:
         # Log summary if incremental parsing filtered out all items
         if incremental and initial_item_count > 0 and len(items) == 0:
             logger.debug(f"Incremental parsing: All items from {username} were already processed (no new items)")
+=======
+                return items[:limit]
+>>>>>>> upstream/nightly
         return items
 
     def _tmdb(self, letterboxd_url, language):
@@ -496,6 +523,7 @@ class Letterboxd:
             page_type = "films" if method == "letterboxd_user_films" else "reviews"
             logger.info(f"Processing Letterboxd User {page_type.capitalize()}: {data['username']}")
             
+<<<<<<< HEAD
             # Check if incremental parsing is enabled
             incremental_enabled = data.get("incremental", True)
             
@@ -503,16 +531,29 @@ class Letterboxd:
             last_timestamp = None
             last_item_ids = []
             if incremental_enabled and self.cache:
+=======
+            # Get incremental state if enabled
+            last_timestamp = None
+            last_item_ids = []
+            if data.get("incremental", True) and self.cache:
+>>>>>>> upstream/nightly
                 last_timestamp, last_item_ids = self.cache.query_letterboxd_incremental_state(data["username"], page_type)
                 if last_timestamp or last_item_ids:
                     logger.info(f"Incremental parsing: Found {len(last_item_ids)} previously parsed items")
             
             if page_type == "films":
                 items = self._parse_user_films(data["username"], data["sort_by"], data["limit"], language, 
+<<<<<<< HEAD
                                                incremental_enabled, last_timestamp, last_item_ids)
             else:
                 items = self._parse_user_reviews(data["username"], data["sort_by"], data["limit"], language,
                                                  incremental_enabled, last_timestamp, last_item_ids)
+=======
+                                               data.get("incremental", True), last_timestamp, last_item_ids)
+            else:
+                items = self._parse_user_reviews(data["username"], data["sort_by"], data["limit"], language,
+                                                 data.get("incremental", True), last_timestamp, last_item_ids)
+>>>>>>> upstream/nightly
             total_items = len(items)
             if total_items > 0:
                 ids = []
@@ -572,6 +613,7 @@ class Letterboxd:
                     logger.info(f"Filtered: {filtered_ids}")
                 return ids
             else:
+<<<<<<< HEAD
                 # Handle empty results
                 # First run with no items - create initial state
                 if incremental_enabled and self.cache and not last_timestamp and not last_item_ids:
@@ -585,5 +627,11 @@ class Letterboxd:
                 # Return empty list instead of raising error to allow collection to continue with other users
                 logger.warning(f"No {page_type} found for {data['username']} - this may indicate an empty account or parsing issue, but continuing with other users")
                 return []
+=======
+                # First run with no items - create initial state
+                if data.get("incremental", True) and self.cache and not last_timestamp and not last_item_ids:
+                    self.cache.update_letterboxd_incremental_state(data["username"], page_type, None, [])
+                raise Failed(f"Letterboxd Error: No {page_type.capitalize()} Items found for {data['username']}")
+>>>>>>> upstream/nightly
         else:
             raise Failed(f"Letterboxd Error: Method {method} not supported")

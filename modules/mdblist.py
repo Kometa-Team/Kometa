@@ -246,8 +246,11 @@ class MDBList:
                 page_data, headers = self._request(items_url, params=params)
                 has_more = headers.get("X-Has-More", "false").lower() == "true"
                 total_items = int(headers.get("X-Total-Items", 0))
-                total_matched_items = int(headers.get("X-Matched-Items", 0))
+                total_matched_items = int(headers.get("X-Matched-Items", total_items))
                 
+                if total_matched_items == 0:
+                    total_matched_items = total_items
+
                 items = [] 
                 if isinstance(page_data, dict):
                     if is_movie:

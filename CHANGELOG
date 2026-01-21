@@ -18,10 +18,13 @@ Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` b
 Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
+Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
+Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 
 # Docs
 Add docs around requirements for those lists
 Sync MDBList sort options with MDBList API Docs
+Add docs around Plex token types, add Plex Token generation form
 
 # Defaults
 
@@ -30,5 +33,7 @@ Fix a logic error that caused an infinite loop on reauthentication with private 
 Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
 Improve API-based handling of MDBList "external" lists.
 Sync MDBList sort options with MDBList API Docs
+Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
 Fix Letterboxd `user_films` and `user_reviews` builders failing due to Cloudflare protection blocking requests. Switched to using cloudscraper (similar to icheckmovies) to bypass Cloudflare. Improved error handling to gracefully handle empty results from incremental parsing, allowing collections to continue processing other users even if one returns empty results.
+Update networks to the current logos '5', 'U', 'U&Alibi', 'U&Dave' and 'U&Eden'
