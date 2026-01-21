@@ -38,16 +38,21 @@ jobs:
             git remote add -f upstream https://github.com/Kometa-Team/${{ vars.REPO_NAME }}.git
             git remote update
             if [[ ${{ github.event.action }} == "labeled" ]]; then
-                echo "files=$(git diff --name-only upstream/nightly HEAD | xargs)" >> $GITHUB_OUTPUT
+                echo "files<<EOF" >> $GITHUB_OUTPUT
+                git diff --name-only upstream/nightly HEAD >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
             else
-                echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
+                echo "files<<EOF" >> $GITHUB_OUTPUT
+                git diff --name-only HEAD^ >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
             fi
 
       - name: List changed files
         id: list-changes
         run: |
-            for file in ${{ steps.get-changes.outputs.files }}; do
-                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
+            readarray -t files <<< "${{ steps.get-changes.outputs.files }}"
+            for file in "${files[@]}"; do
+                if [[ -n "$file" && "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
                     echo "$file will trigger docker build"
                     echo "build=true" >> $GITHUB_OUTPUT
                 else
