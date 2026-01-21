@@ -416,7 +416,7 @@ class Letterboxd:
     
     def _validate_single_user_page(self, err_type, letterboxd_dict, page_type, language):
         dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
-        incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", datatype="bool", default=False) if "incremental" in dict_methods else False
+        incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", datatype="bool", default=True) if "incremental" in dict_methods else True
         sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest")
         
         # If incremental is enabled, force sort to when_added_newest
@@ -497,7 +497,7 @@ class Letterboxd:
             logger.info(f"Processing Letterboxd User {page_type.capitalize()}: {data['username']}")
             
             # Check if incremental parsing is enabled
-            incremental_enabled = data.get("incremental", False)
+            incremental_enabled = data.get("incremental", True)
             
             # Get incremental state if enabled
             last_timestamp = None
@@ -556,14 +556,14 @@ class Letterboxd:
                     ids.append((tmdb_id, "tmdb"))
                 
                 # Update incremental state if we have new items
-                if data.get("incremental", False) and self.cache and new_item_ids:
+                if data.get("incremental", True) and self.cache and new_item_ids:
                     # Keep last 100 item IDs to handle edge cases
                     updated_item_ids = (last_item_ids + new_item_ids)[-100:]
                     # Use newest timestamp or keep existing if no new timestamp
                     final_timestamp = new_timestamp if new_timestamp else last_timestamp
                     self.cache.update_letterboxd_incremental_state(data["username"], page_type, final_timestamp, updated_item_ids)
                     logger.info(f"Incremental state updated: {len(new_item_ids)} new items, {len(updated_item_ids)} total tracked")
-                elif data.get("incremental", False) and self.cache and not last_timestamp and not last_item_ids and total_items == 0:
+                elif data.get("incremental", True) and self.cache and not last_timestamp and not last_item_ids and total_items == 0:
                     # First run with no items - create initial state to mark as processed
                     self.cache.update_letterboxd_incremental_state(data["username"], page_type, None, [])
                 

@@ -18,13 +18,13 @@ You can add different filters directly to this Builder.
 | `limit`                                                                                           | **Description:** Max number of items per returned.<br>**Values:** number greater than `1`                                                                                                                  |
 | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-1" }   | **Description:** Search for the specified year range.<br>**Values:** range of int i.e. `1990-1999`                                                                                                         |
 | `note` :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-letterboxd-filters-2" }   | **Description:** Search for the specified value in the note. The note is the user's note for the film.<br>**Values:** Any String                                                               |
-| `incremental`                                                                                      | **Description:** Enable incremental parsing to only parse new items since last run (improves performance for large collections)<br>**Default:** `false`<br>**Values:** `true` or `false`<br>**Note:** When enabled, automatically uses `when_added_newest` sort and tracks parsed items |
+| `incremental`                                                                                      | **Description:** Enable incremental parsing to only parse new items since last run (improves performance for large collections)<br>**Default:** `true`<br>**Values:** `true` or `false`<br>**Note:** When enabled, automatically uses `when_added_newest` sort and tracks parsed items |
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
 ???+ tip "Incremental Parsing"
 
-    Incremental parsing is disabled by default. When enabled with `incremental: true`, only new items added since the last run will be parsed, significantly improving performance for large collections. On the first run, all items are parsed and the state is saved. Subsequent runs will only process new items. This is useful for users with very large collections who frequently add new reviews.
+    Incremental parsing is enabled by default. When enabled with `incremental: true`, only new items added since the last run will be parsed, significantly improving performance for large collections. On the first run, all items are parsed and the state is saved. Subsequent runs will only process new items. This is useful for users with very large collections who frequently add new reviews. Set `incremental: false` to disable and parse all items on every run.
 
 Using the `limit` filter attribute is recommended when using a user with many reviewed films as the number of results returned could be very large.
 
