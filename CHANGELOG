@@ -36,7 +36,11 @@ Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
 <<<<<<< HEAD
+<<<<<<< HEAD
 Update networks to the current logos '5', 'U', 'U&Alibi', 'U&Dave' and 'U&Eden'
 =======
 Fix Letterboxd `user_films` and `user_reviews` builders failing when incremental parsing filters out all items (all items already processed). Changed default for `incremental` parameter from `true` to `false` to prevent this issue. Collections now continue processing other users even if one returns empty results.
 >>>>>>> 5aa57461 (Fix Letterboxd parsing issues: use cloudscraper, default incremental to false, improve error handling)
+=======
+Fix Letterboxd `user_films` and `user_reviews` builders failing due to Cloudflare protection blocking requests. Switched to using cloudscraper (similar to icheckmovies) to bypass Cloudflare. Improved error handling to gracefully handle empty results from incremental parsing, allowing collections to continue processing other users even if one returns empty results.
+>>>>>>> 8f46bfe3 (Update CHANGELOG to accurately reflect Letterboxd fixes)
