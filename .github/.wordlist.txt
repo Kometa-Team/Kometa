@@ -292,6 +292,7 @@ readwriteonce
 realtime
 reauthenticating
 reauthentication
+rebrand
 reciperr
 reddit
 redheadjedi
