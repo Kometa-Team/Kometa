@@ -31,4 +31,4 @@ Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
 Improve API-based handling of MDBList "external" lists.
 Sync MDBList sort options with MDBList API Docs
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
-Fix Letterboxd `user_films` and `user_reviews` builders failing when incremental parsing filters out all items (all items already processed). Changed default for `incremental` parameter from `true` to `false` to prevent this issue. Collections now continue processing other users even if one returns empty results.
+Fix Letterboxd `user_films` and `user_reviews` builders failing due to Cloudflare protection blocking requests. Switched to using cloudscraper (similar to icheckmovies) to bypass Cloudflare. Improved error handling to gracefully handle empty results from incremental parsing, allowing collections to continue processing other users even if one returns empty results.
