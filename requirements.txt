@@ -3,7 +3,7 @@ cloudscraper==1.2.71
 GitPython==3.1.46
 lxml==6.0.2
 num2words==0.5.14
-packaging==25.0
+packaging==26.0
 pathvalidate==3.3.1
 pillow==12.1.0
 PlexAPI==4.17.2
