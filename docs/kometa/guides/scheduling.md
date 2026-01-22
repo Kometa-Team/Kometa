@@ -22,7 +22,7 @@ to without any visible impact to the user (other than the Plex libraries and pla
 This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
 
 **You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like. 
-That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../config/schedule)**
+That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../../config/schedule)**
 
 IMPORTANT: Every time you see `/path/to/` below, it's a placeholder for the path to that directory on *your* system. 
 You will need to change that to the relevant path on your machine. The same goes for things like `YOUR_USERNAME`.
