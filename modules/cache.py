@@ -601,7 +601,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mal_data3 WHERE mal_id = ?", (mal_id,))
+                cursor.execute("SELECT * FROM mal_data4 WHERE mal_id = ?", (mal_id,))
                 row = cursor.fetchone()
                 if row:
                     mal_dict["title"] = row["title"]
@@ -629,8 +629,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mal_data3(mal_id) VALUES(?)", (mal_id,))
-                update_sql = "UPDATE mal_data3 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mal_data4(mal_id) VALUES(?)", (mal_id,))
+                update_sql = "UPDATE mal_data4 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
                              "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, explicit_genres = ?, themes = ?, demographics = ?, studio = ?, expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
