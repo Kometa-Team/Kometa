@@ -21,7 +21,7 @@ class Cache:
                     "guids", "guid_map", "imdb_to_tvdb_map", "tmdb_to_tvdb_map", "imdb_map",
                     "mdb_data", "mdb_data2", "mdb_data3", "mdb_data4", "omdb_data", "omdb_data2",
                     "tvdb_data", "tvdb_data2", "tvdb_data3", "tmdb_show_data", "tmdb_show_data2",
-                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data", "mal_data2"
+                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data", "mal_data2", "mal_data3"
                     "overlay_special_text"
                 ]:
                     cursor.execute(f"DROP TABLE IF EXISTS {old_table}")
@@ -135,7 +135,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mal_data3 (
+                    """CREATE TABLE IF NOT EXISTS mal_data4 (
                     key INTEGER PRIMARY KEY,
                     mal_id INTEGER UNIQUE,
                     title TEXT,
@@ -149,7 +149,6 @@ class Cache:
                     rank INTEGER,
                     popularity TEXT,
                     genres TEXT,
-                    themes TEXT,
                     studio TEXT,
                     expiration_date TEXT,
                     explicit_genres TEXT,
