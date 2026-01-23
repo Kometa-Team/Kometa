@@ -21,7 +21,7 @@ class Cache:
                     "guids", "guid_map", "imdb_to_tvdb_map", "tmdb_to_tvdb_map", "imdb_map",
                     "mdb_data", "mdb_data2", "mdb_data3", "mdb_data4", "omdb_data", "omdb_data2",
                     "tvdb_data", "tvdb_data2", "tvdb_data3", "tmdb_show_data", "tmdb_show_data2",
-                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data",
+                    "overlay_ratings", "anidb_data", "anidb_data2", "anidb_data3", "mal_data", "mal_data2"
                     "overlay_special_text"
                 ]:
                     cursor.execute(f"DROP TABLE IF EXISTS {old_table}")
@@ -135,7 +135,7 @@ class Cache:
                     expiration_date TEXT)"""
                 )
                 cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mal_data2 (
+                    """CREATE TABLE IF NOT EXISTS mal_data3 (
                     key INTEGER PRIMARY KEY,
                     mal_id INTEGER UNIQUE,
                     title TEXT,
@@ -153,7 +153,10 @@ class Cache:
                     themes TEXT,
                     demographics TEXT,
                     studio TEXT,
-                    expiration_date TEXT)"""
+                    expiration_date TEXT,
+                    explicit_genres TEXT,
+                    themes TEXT,
+                    demographics TEXT)"""
                 )
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS tmdb_movie_data (
@@ -601,7 +604,7 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mal_data2 WHERE mal_id = ?", (mal_id,))
+                cursor.execute("SELECT * FROM mal_data3 WHERE mal_id = ?", (mal_id,))
                 row = cursor.fetchone()
                 if row:
                     mal_dict["title"] = row["title"]
@@ -629,8 +632,8 @@ class Cache:
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mal_data2(mal_id) VALUES(?)", (mal_id,))
-                update_sql = "UPDATE mal_data2 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
+                cursor.execute("INSERT OR IGNORE INTO mal_data3(mal_id) VALUES(?)", (mal_id,))
+                update_sql = "UPDATE mal_data3 SET title = ?, title_english = ?, title_japanese = ?, status = ?, airing = ?, " \
                              "aired = ?, rating = ?, score = ?, rank = ?, popularity = ?, genres = ?, explicit_genres = ?, themes = ?, demographics = ?, studio = ?, expiration_date = ? WHERE mal_id = ?"
                 cursor.execute(update_sql, (
                     mal.title, mal.title_english, mal.title_japanese, mal.status, mal.airing, mal.aired.strftime("%Y-%m-%d") if mal.aired else None,
