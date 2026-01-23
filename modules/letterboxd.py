@@ -1,5 +1,6 @@
 import re, time
 from datetime import datetime
+from lxml import html as lxml_html
 from modules import util
 from modules.util import Failed
 
@@ -30,8 +31,10 @@ user_sort_options = {
     "length_longest": "by/longest/"
 }
 
-builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
+builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details",
+            "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
 base_url = "https://letterboxd.com"
+
 
 class Letterboxd:
     def __init__(self, requests, cache=None):
@@ -40,7 +43,8 @@ class Letterboxd:
 
     def _request(self, url, language, xpath=None):
         logger.trace(f"URL: {url}")
-        response = self.requests.get_html(url, language=language)
+        # Use cloudscraper for Letterboxd to bypass Cloudflare protection
+        response = self.requests.get_scrape_html(url)
         return response.xpath(xpath) if xpath else response
 
     def _parse_page(self, list_url, language):
@@ -62,7 +66,8 @@ class Letterboxd:
                 match = re.search("rated-(\\d+)", ratings[0])
                 if match:
                     rating = int(match.group(1))
-            items.append((letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating))
+            items.append(
+                (letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating))
         next_url = response.xpath("//a[@class='next']/@href")
         return items, next_url
 
@@ -80,6 +85,36 @@ class Letterboxd:
         # User pages don't use /ajax/ endpoints, use regular URL
         response = self._request(page_url, language)
         letterboxd_elements = response.xpath("//div[@data-film-id]")
+        # Try fallback selectors if primary fails
+        if len(letterboxd_elements) == 0:
+            logger.debug(f"Primary XPath found 0 elements, trying fallback selectors for {page_url}")
+            letterboxd_elements = response.xpath("//li[@data-film-id]")
+            if len(letterboxd_elements) == 0:
+                letterboxd_elements = response.xpath("//article[@data-film-id]")
+            if len(letterboxd_elements) == 0:
+                # Try finding any element with data-film-id
+                letterboxd_elements = response.xpath("//*[@data-film-id]")
+        logger.debug(f"Parsing {page_url}: Found {len(letterboxd_elements)} elements with data-film-id attribute")
+        # Verify page loaded correctly by checking for common Letterboxd elements
+        if len(letterboxd_elements) == 0:
+            # Check if page has any content at all
+            page_title = response.xpath("//title/text()")
+            title_text = page_title[0] if page_title else 'Unknown'
+            logger.debug(f"Page title: {title_text}")
+            # Check for pagination or other Letterboxd elements
+            pagination = response.xpath("//div[@class='pagination']")
+            logger.debug(f"Found {len(pagination)} pagination elements")
+            # Check if we got a Cloudflare challenge page
+            if "cloudflare" in title_text.lower() or "just a moment" in title_text.lower():
+                logger.warning(f"Letterboxd page may be blocked by Cloudflare protection for {page_url}")
+            # Log a sample of the HTML to help diagnose
+            try:
+                html_text = lxml_html.tostring(response, encoding='unicode', method='html')[:1000] if hasattr(response,
+                                                                                                              'getroottree') else str(
+                    response)[:1000]
+                logger.trace(f"HTML sample (first 1000 chars): {html_text}")
+            except Exception:
+                logger.trace(f"Could not extract HTML sample from response")
         items = []
         for letterboxd_element in letterboxd_elements:
             slug_list = letterboxd_element.xpath("@data-target-link")
@@ -108,11 +143,14 @@ class Letterboxd:
                 match = re.search("rated-(\\d+)", ratings[0])
                 if match:
                     rating = int(match.group(1))
-            items.append((letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating, when_added))
+            items.append(
+                (letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating,
+                 when_added))
         next_url = response.xpath("//a[@class='next']/@href")
         return items, next_url
 
-    def _parse_user_films(self, username, sort_by, limit, language, incremental=False, last_timestamp=None, last_item_ids=None):
+    def _parse_user_films(self, username, sort_by, limit, language, incremental=False, last_timestamp=None,
+                          last_item_ids=None):
         # Force when_added_newest sort for incremental
         if incremental:
             sort_by = "when_added_newest"
@@ -121,11 +159,19 @@ class Letterboxd:
             url = f"{base_url}/{username}/films/{sort_path}"
         else:
             url = f"{base_url}/{username}/films/"
+        logger.debug(f"Fetching Letterboxd films from: {url}")
         items, next_url = self._parse_user_page(url, language)
-        
+        initial_item_count = len(items)
+        logger.debug(f"Initial parse returned {initial_item_count} items from {username}")
+
         # Handle incremental parsing
         if incremental and last_item_ids:
+            items_before_filter = len(items)
             items = [item for item in items if item[0] not in last_item_ids]  # Filter out already seen items
+            items_after_id_filter = len(items)
+            if items_before_filter > 0 and items_after_id_filter == 0:
+                logger.debug(
+                    f"Incremental parsing filtered out all {items_before_filter} items from first page (already processed)")
             # Stop if we hit items older than last_timestamp
             if last_timestamp and items:
                 try:
@@ -146,7 +192,7 @@ class Letterboxd:
                     items = filtered_items
                 except (ValueError, AttributeError):
                     pass  # If timestamp parsing fails, continue with item ID filtering
-        
+
         while len(next_url) > 0 and (not limit or len(items) < limit):
             if incremental and last_item_ids and items:
                 # Check if we should stop (all new items processed)
@@ -154,7 +200,7 @@ class Letterboxd:
                     break
             time.sleep(2)
             new_items, next_url = self._parse_user_page(f"{base_url}{next_url[0]}", language)
-            
+
             # Apply incremental filtering to new items
             if incremental and last_item_ids:
                 new_items = [item for item in new_items if item[0] not in last_item_ids]
@@ -179,13 +225,22 @@ class Letterboxd:
                             break
                     except (ValueError, AttributeError):
                         pass
-            
+
             items.extend(new_items)
             if limit and len(items) >= limit:
-                return items[:limit]
+                final_items = items[:limit]
+                if incremental and initial_item_count > 0 and len(final_items) == 0:
+                    logger.debug(
+                        f"Incremental parsing: All {initial_item_count} items from {username} were already processed")
+                return final_items
+
+        # Log summary if incremental parsing filtered out all items
+        if incremental and initial_item_count > 0 and len(items) == 0:
+            logger.debug(f"Incremental parsing: All items from {username} were already processed (no new items)")
         return items
 
-    def _parse_user_reviews(self, username, sort_by, limit, language, incremental=False, last_timestamp=None, last_item_ids=None):
+    def _parse_user_reviews(self, username, sort_by, limit, language, incremental=False, last_timestamp=None,
+                            last_item_ids=None):
         # Force when_added_newest sort for incremental
         if incremental:
             sort_by = "when_added_newest"
@@ -194,11 +249,19 @@ class Letterboxd:
             url = f"{base_url}/{username}/reviews/{sort_path}"
         else:
             url = f"{base_url}/{username}/reviews/"
+        logger.debug(f"Fetching Letterboxd reviews from: {url}")
         items, next_url = self._parse_user_page(url, language)
-        
+        initial_item_count = len(items)
+        logger.debug(f"Initial parse returned {initial_item_count} items from {username}")
+
         # Handle incremental parsing
         if incremental and last_item_ids:
+            items_before_filter = len(items)
             items = [item for item in items if item[0] not in last_item_ids]
+            items_after_id_filter = len(items)
+            if items_before_filter > 0 and items_after_id_filter == 0:
+                logger.debug(
+                    f"Incremental parsing filtered out all {items_before_filter} items from first page (already processed)")
             if last_timestamp and items:
                 from datetime import datetime
                 try:
@@ -219,14 +282,14 @@ class Letterboxd:
                     items = filtered_items
                 except (ValueError, AttributeError):
                     pass
-        
+
         while len(next_url) > 0 and (not limit or len(items) < limit):
             if incremental and last_item_ids and items:
                 if all(item[0] in last_item_ids for item in items[-10:]):
                     break
             time.sleep(2)
             new_items, next_url = self._parse_user_page(f"{base_url}{next_url[0]}", language)
-            
+
             if incremental and last_item_ids:
                 new_items = [item for item in new_items if item[0] not in last_item_ids]
                 if last_timestamp and new_items:
@@ -250,14 +313,23 @@ class Letterboxd:
                             break
                     except (ValueError, AttributeError):
                         pass
-            
+
             items.extend(new_items)
             if limit and len(items) >= limit:
-                return items[:limit]
+                final_items = items[:limit]
+                if incremental and initial_item_count > 0 and len(final_items) == 0:
+                    logger.debug(
+                        f"Incremental parsing: All {initial_item_count} items from {username} were already processed")
+                return final_items
+
+        # Log summary if incremental parsing filtered out all items
+        if incremental and initial_item_count > 0 and len(items) == 0:
+            logger.debug(f"Incremental parsing: All items from {username} were already processed (no new items)")
         return items
 
     def _tmdb(self, letterboxd_url, language):
-        ids = self._request(letterboxd_url, language, "//a[@data-track-action='TMDb' or @data-track-action='TMDB']/@href")
+        ids = self._request(letterboxd_url, language,
+                            "//a[@data-track-action='TMDb' or @data-track-action='TMDB']/@href")
         if len(ids) > 0 and ids[0]:
             if "themoviedb.org/movie" in ids[0]:
                 return util.regex_first_int(ids[0], "TMDb Movie ID")
@@ -287,11 +359,18 @@ class Letterboxd:
                 letterboxd_dict = {"url": letterboxd_dict}
             dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
             final = {
-                "url": util.parse(err_type, "url", letterboxd_dict, methods=dict_methods, parent="letterboxd_list").strip(),
-                "limit": util.parse(err_type, "limit", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", default=0) if "limit" in dict_methods else 0,
-                "note": util.parse(err_type, "note", letterboxd_dict, methods=dict_methods, parent="letterboxd_list") if "note" in dict_methods else None,
-                "rating": util.parse(err_type, "rating", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", maximum=10, range_split="-") if "rating" in dict_methods else None,
-                "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", minimum=1000, maximum=3000, range_split="-") if "year" in dict_methods else None
+                "url": util.parse(err_type, "url", letterboxd_dict, methods=dict_methods,
+                                  parent="letterboxd_list").strip(),
+                "limit": util.parse(err_type, "limit", letterboxd_dict, methods=dict_methods, datatype="int",
+                                    parent="letterboxd_list", default=0) if "limit" in dict_methods else 0,
+                "note": util.parse(err_type, "note", letterboxd_dict, methods=dict_methods,
+                                   parent="letterboxd_list") if "note" in dict_methods else None,
+                "rating": util.parse(err_type, "rating", letterboxd_dict, methods=dict_methods, datatype="int",
+                                     parent="letterboxd_list", maximum=10,
+                                     range_split="-") if "rating" in dict_methods else None,
+                "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int",
+                                   parent="letterboxd_list", minimum=1000, maximum=3000,
+                                   range_split="-") if "year" in dict_methods else None
             }
             if not final["url"].startswith(base_url):
                 raise Failed(f"{err_type} Error: {final['url']} must begin with: {base_url}")
@@ -308,7 +387,7 @@ class Letterboxd:
         # 2. {0: user1, 1: user2, min_rating: 8} (when YAML parses list with dict keys)
         shared_params = {}
         usernames_list = None
-        
+
         if isinstance(letterboxd_user_pages, dict):
             dict_methods = {dm.lower(): dm for dm in letterboxd_user_pages}
             # Check for explicit usernames key
@@ -319,25 +398,27 @@ class Letterboxd:
                 pass
             else:
                 # Look for numeric keys (0, 1, 2) or list-like structure indicating a list was parsed
-                numeric_keys = [k for k in letterboxd_user_pages.keys() if isinstance(k, (int, str)) and str(k).isdigit()]
+                numeric_keys = [k for k in letterboxd_user_pages.keys() if
+                                isinstance(k, (int, str)) and str(k).isdigit()]
                 if numeric_keys:
                     # This might be a list parsed as dict (YAML can do this in some cases)
                     sorted_numeric = sorted([int(k) for k in numeric_keys])
                     if len(sorted_numeric) == len(numeric_keys) and sorted_numeric == list(range(len(numeric_keys))):
                         # Looks like a list parsed as dict
-                        usernames_list = [letterboxd_user_pages[str(i)] for i in sorted_numeric if isinstance(letterboxd_user_pages[str(i)], str)]
+                        usernames_list = [letterboxd_user_pages[str(i)] for i in sorted_numeric if
+                                          isinstance(letterboxd_user_pages[str(i)], str)]
                 else:
                     # Look for any list value that contains strings (usernames)
                     for key, value in letterboxd_user_pages.items():
                         if isinstance(value, list) and all(isinstance(item, str) for item in value):
                             usernames_list = value
                             break
-            
+
             # Extract shared parameters (exclude username/usernames and numeric keys)
             for param_key in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
                 if param_key in dict_methods:
                     shared_params[param_key] = letterboxd_user_pages[dict_methods[param_key]]
-        
+
         # Process usernames from extracted list with shared parameters
         if usernames_list and isinstance(usernames_list, list):
             # Apply shared parameters to each username (if any)
@@ -353,28 +434,40 @@ class Letterboxd:
                 if not isinstance(letterboxd_dict, dict):
                     letterboxd_dict = {"username": letterboxd_dict}
                 valid_pages.append(self._validate_single_user_page(err_type, letterboxd_dict, page_type, language))
-        
+
         return valid_pages
-    
+
     def _validate_single_user_page(self, err_type, letterboxd_dict, page_type, language):
         dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
-        incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", datatype="bool", default=True) if "incremental" in dict_methods else True
-        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}", options=user_sort_options, default="release_date_newest")
-        
+        incremental = util.parse(err_type, "incremental", letterboxd_dict, methods=dict_methods,
+                                 parent=f"letterboxd_user_{page_type}", datatype="bool",
+                                 default=True) if "incremental" in dict_methods else True
+        sort_by = util.parse(err_type, "sort_by", letterboxd_dict, methods=dict_methods,
+                             parent=f"letterboxd_user_{page_type}", options=user_sort_options,
+                             default="release_date_newest")
+
         # If incremental is enabled, force sort to when_added_newest
         if incremental and sort_by != "when_added_newest":
-            logger.warning(f"{err_type} Warning: incremental parsing requires 'when_added_newest' sort. Disabling incremental or using when_added_newest.")
+            logger.warning(
+                f"{err_type} Warning: incremental parsing requires 'when_added_newest' sort. Disabling incremental or using when_added_newest.")
             if sort_by != "when_added_newest":
                 incremental = False
-        
+
         final = {
-            "username": util.parse(err_type, "username", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}").strip(),
+            "username": util.parse(err_type, "username", letterboxd_dict, methods=dict_methods,
+                                   parent=f"letterboxd_user_{page_type}").strip(),
             "sort_by": sort_by,
             "incremental": incremental,
-            "min_rating": util.parse(err_type, "min_rating", letterboxd_dict, methods=dict_methods, datatype="int", parent=f"letterboxd_user_{page_type}", minimum=0, maximum=10) if "min_rating" in dict_methods else None,
-            "limit": util.parse(err_type, "limit", letterboxd_dict, methods=dict_methods, datatype="int", parent=f"letterboxd_user_{page_type}", default=0) if "limit" in dict_methods else 0,
-            "note": util.parse(err_type, "note", letterboxd_dict, methods=dict_methods, parent=f"letterboxd_user_{page_type}") if "note" in dict_methods else None,
-            "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int", parent=f"letterboxd_user_{page_type}", minimum=1000, maximum=3000, range_split="-") if "year" in dict_methods else None
+            "min_rating": util.parse(err_type, "min_rating", letterboxd_dict, methods=dict_methods, datatype="int",
+                                     parent=f"letterboxd_user_{page_type}", minimum=0,
+                                     maximum=10) if "min_rating" in dict_methods else None,
+            "limit": util.parse(err_type, "limit", letterboxd_dict, methods=dict_methods, datatype="int",
+                                parent=f"letterboxd_user_{page_type}", default=0) if "limit" in dict_methods else 0,
+            "note": util.parse(err_type, "note", letterboxd_dict, methods=dict_methods,
+                               parent=f"letterboxd_user_{page_type}") if "note" in dict_methods else None,
+            "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int",
+                               parent=f"letterboxd_user_{page_type}", minimum=1000, maximum=3000,
+                               range_split="-") if "year" in dict_methods else None
         }
         # Test if the page is accessible and parseable
         test_url = f"{base_url}/{final['username']}/{page_type}/"
@@ -386,7 +479,8 @@ class Letterboxd:
             # Re-raise Failed exceptions as-is
             raise
         except Exception as e:
-            raise Failed(f"{err_type} Error: {final['username']}'s {page_type} page failed to parse: {type(e).__name__}: {e}")
+            raise Failed(
+                f"{err_type} Error: {final['username']}'s {page_type} page failed to parse: {type(e).__name__}: {e}")
         return final
 
     def get_tmdb_ids(self, method, data, language):
@@ -437,21 +531,25 @@ class Letterboxd:
         elif method in ["letterboxd_user_films", "letterboxd_user_reviews"]:
             page_type = "films" if method == "letterboxd_user_films" else "reviews"
             logger.info(f"Processing Letterboxd User {page_type.capitalize()}: {data['username']}")
-            
+
+            # Check if incremental parsing is enabled
+            incremental_enabled = data.get("incremental", True)
+
             # Get incremental state if enabled
             last_timestamp = None
             last_item_ids = []
-            if data.get("incremental", True) and self.cache:
-                last_timestamp, last_item_ids = self.cache.query_letterboxd_incremental_state(data["username"], page_type)
+            if incremental_enabled and self.cache:
+                last_timestamp, last_item_ids = self.cache.query_letterboxd_incremental_state(data["username"],
+                                                                                              page_type)
                 if last_timestamp or last_item_ids:
                     logger.info(f"Incremental parsing: Found {len(last_item_ids)} previously parsed items")
-            
+
             if page_type == "films":
-                items = self._parse_user_films(data["username"], data["sort_by"], data["limit"], language, 
-                                               data.get("incremental", True), last_timestamp, last_item_ids)
+                items = self._parse_user_films(data["username"], data["sort_by"], data["limit"], language,
+                                               incremental_enabled, last_timestamp, last_item_ids)
             else:
                 items = self._parse_user_reviews(data["username"], data["sort_by"], data["limit"], language,
-                                                 data.get("incremental", True), last_timestamp, last_item_ids)
+                                                 incremental_enabled, last_timestamp, last_item_ids)
             total_items = len(items)
             if total_items > 0:
                 ids = []
@@ -493,27 +591,41 @@ class Letterboxd:
                         if self.cache:
                             self.cache.update_letterboxd_map(expired, letterboxd_id, tmdb_id)
                     ids.append((tmdb_id, "tmdb"))
-                
+
                 # Update incremental state if we have new items
                 if data.get("incremental", True) and self.cache and new_item_ids:
                     # Keep last 100 item IDs to handle edge cases
                     updated_item_ids = (last_item_ids + new_item_ids)[-100:]
                     # Use newest timestamp or keep existing if no new timestamp
                     final_timestamp = new_timestamp if new_timestamp else last_timestamp
-                    self.cache.update_letterboxd_incremental_state(data["username"], page_type, final_timestamp, updated_item_ids)
-                    logger.info(f"Incremental state updated: {len(new_item_ids)} new items, {len(updated_item_ids)} total tracked")
-                elif data.get("incremental", True) and self.cache and not last_timestamp and not last_item_ids and total_items == 0:
+                    self.cache.update_letterboxd_incremental_state(data["username"], page_type, final_timestamp,
+                                                                   updated_item_ids)
+                    logger.info(
+                        f"Incremental state updated: {len(new_item_ids)} new items, {len(updated_item_ids)} total tracked")
+                elif data.get("incremental",
+                              True) and self.cache and not last_timestamp and not last_item_ids and total_items == 0:
                     # First run with no items - create initial state to mark as processed
                     self.cache.update_letterboxd_incremental_state(data["username"], page_type, None, [])
-                
+
                 logger.info(f"Processed {total_items} TMDb IDs")
                 if filtered_ids:
                     logger.info(f"Filtered: {filtered_ids}")
                 return ids
             else:
+                # Handle empty results
                 # First run with no items - create initial state
-                if data.get("incremental", True) and self.cache and not last_timestamp and not last_item_ids:
+                if incremental_enabled and self.cache and not last_timestamp and not last_item_ids:
                     self.cache.update_letterboxd_incremental_state(data["username"], page_type, None, [])
-                raise Failed(f"Letterboxd Error: No {page_type.capitalize()} Items found for {data['username']}")
+
+                # If incremental parsing was used and returned 0 items, this is valid (all items already processed)
+                if incremental_enabled and (last_timestamp or last_item_ids):
+                    logger.info(
+                        f"No new {page_type} found for {data['username']} (incremental parsing: all items already processed)")
+                    return []
+
+                # Return empty list instead of raising error to allow collection to continue with other users
+                logger.warning(
+                    f"No {page_type} found for {data['username']} - this may indicate an empty account or parsing issue, but continuing with other users")
+                return []
         else:
             raise Failed(f"Letterboxd Error: Method {method} not supported")
