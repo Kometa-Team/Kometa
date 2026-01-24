@@ -130,6 +130,7 @@ hemsworth
 hk
 homescreen
 homescreens
+hlg
 hra
 html
 http
@@ -291,6 +292,7 @@ readme
 readwriteonce
 realtime
 reauthenticating
+reauthentication
 reciperr
 reddit
 redheadjedi

@@ -29,6 +29,14 @@ hide:
 | MP3                    | `mp3`          | `20`   |
 | Opus                   | `opus`         | `10`   |
 
+??? warning
+
+    These overlays are based on the file name, assuming TRaSH naming, and the **titles** of the audio tracks found in the file.  This YAML file looks for text patterns in those two strings and bases the decision on "does this file qualify for this overlay" on those tests.  **NOTABLY**, Kometa does not examine the **format** or **codec** of any audio track.  If, for example, you have an audio track in the Opus format which is named "Dolby TrueHD", Kometa sees that as a "Dolby TrueHD" track.
+
+    Further, Kometa looks at **all** the audio tracks in the file, not just the one that might be "default" or "primary".
+    
+    If you are seeing unexpected results, verify that the names of either or both the files and audio tracks accurately reflect their contents, and double-check the weights on the overlays.
+
 {% include-markdown "./../../templates/snippets/standard_style.md" replace='{"CODE_NAME": "audio_codec"}' %}
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

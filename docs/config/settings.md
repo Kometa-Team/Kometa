@@ -34,8 +34,23 @@ The available setting attributes which can be set at each level are outlined bel
 
     At each asset level, Kometa will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder containing `poster.ext`.
 
-    i.e. `<path_to_assets>/Star Wars/poster.png` and `<path_to_assets>/Star Wars.png` are both asset depth 0, whilst `<path_to_assets>/Movies/Star Wars/poster.png` and
-    `<path_to_assets>/Movies/Star Wars.png` are both asset level 1.
+    For example, if your asset directory is `/path/to/assets/`, and your `asset_depth` is 2, then Kometa will look for an asset match in any of these locations:
+
+    ```
+    /path/to/assets/level-0
+    /path/to/assets/level-0/level-1
+    /path/to/assets/level-0/level-1/level-2
+    ```
+    
+    The first match will be accepted.
+
+    Specifically, if Kometa is looking for the asset name "Star Wars (1977)", then it would be found in any of:
+    
+    ```
+    /path/to/assets/Star Wars (1977)
+    /path/to/assets/Movies/Star Wars (1977)
+    /path/to/assets/Movies/Sci-fi/Star Wars (1977)
+    ```
 
     ???+ tip
 
@@ -754,6 +769,8 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Default Value:** `true`
 
+    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
+
     ???+ example "Example"
 
         ```yaml
@@ -819,6 +836,8 @@ The available setting attributes which can be set at each level are outlined bel
     **Accepted Values:** `true` or `false`.
 
     **Default Value:** `true`
+
+    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
 
     ???+ example "Example"
 

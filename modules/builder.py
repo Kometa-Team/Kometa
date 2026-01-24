@@ -24,7 +24,7 @@ show_only_builders = [
     "tmdb_on_the_air", "builder_level", "item_tmdb_season_titles", "sonarr_all", "sonarr_taglist"
 ]
 movie_only_builders = [
-    "letterboxd_list", "letterboxd_list_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
+    "letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details", "icheckmovies_list", "icheckmovies_list_details", "stevenlu_popular",
     "tmdb_collection", "tmdb_collection_details", "tmdb_movie", "tmdb_movie_details", "tmdb_now_playing", "item_edition",
     "tvdb_movie", "tvdb_movie_details", "tmdb_upcoming", "trakt_boxoffice", "reciperr_list", "radarr_all", "radarr_taglist",
     "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
@@ -57,8 +57,8 @@ collectionless_details = ["collection_order", "plex_collectionless", "label", "l
                          poster_details + background_details + summary_details + string_details + all_builders
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
 item_bool_details = ["item_tmdb_season_titles", "revert_overlay", "item_assets", "item_refresh", "item_analyze"] + item_false_details
-item_details = ["non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
-none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition"]
+item_details = ["item_critic_rating", "item_audience_rating", "item_user_rating", "non_item_remove_label", "item_label", "item_genre", "item_edition", "item_radarr_tag", "item_sonarr_tag", "item_refresh_delay"] + item_bool_details + list(plex.item_advance_keys.keys())
+none_details = ["label.sync", "item_label.sync", "item_genre.sync", "radarr_taglist", "sonarr_taglist", "item_edition", "item_critic_rating", "item_audience_rating", "item_user_rating"]
 none_builders = ["radarr_taglist", "sonarr_taglist"]
 radarr_details = [
     "radarr_add_missing", "radarr_add_existing", "radarr_upgrade_existing", "radarr_monitor_existing", "radarr_folder", "radarr_monitor",
@@ -1337,6 +1337,8 @@ class CollectionBuilder:
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "item_edition":
             self.item_details[method_final] = str(method_data) if method_data else "" # noqa
+        elif method_name in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+            self.item_details[method_final] = util.parse(self.Type, method_name, method_data, datatype="float", minimum=0, maximum=10) if method_data is not None else None
         elif method_name == "non_item_remove_label":
             if not method_data:
                 raise Failed(f"{self.Type} Error: non_item_remove_label is blank")
@@ -1748,6 +1750,50 @@ class CollectionBuilder:
                 self.builders.append(("letterboxd_list", letterboxd_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
+        elif method_name.startswith("letterboxd_user_films"):
+            page_type = "films"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
+            letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
+            for letterboxd_page in letterboxd_pages:
+                self.builders.append(("letterboxd_user_films", letterboxd_page))
+            if method_name.endswith("_details"):
+                # For user pages, we don't have a description like lists do, so we'll leave it empty
+                pass
+        elif method_name.startswith("letterboxd_user_reviews"):
+            page_type = "reviews"
+            # If method_data is a list, check for shared parameters at collection level
+            if isinstance(method_data, list) and all(isinstance(item, str) for item in method_data):
+                # Check if there are shared parameters in collection data
+                methods = {m.lower(): m for m in self.data}
+                shared_params = {}
+                for param in ["min_rating", "limit", "note", "year", "sort_by", "incremental"]:
+                    if param in methods:
+                        param_key = methods[param]
+                        if param_key in self.data:
+                            shared_params[param] = self.data[param_key]
+                # If we found shared params, convert list to dict format
+                if shared_params:
+                    method_data = {"usernames": method_data}
+                    method_data.update(shared_params)
+            letterboxd_pages = self.config.Letterboxd.validate_letterboxd_user_pages(self.Type, method_data, page_type, self.language)
+            for letterboxd_page in letterboxd_pages:
+                self.builders.append(("letterboxd_user_reviews", letterboxd_page))
+            if method_name.endswith("_details"):
+                # For user pages, we don't have a description like lists do, so we'll leave it empty
+                pass
 
     def _mal(self, method_name, method_data):
         if method_name == "mal_id":
@@ -3106,6 +3152,8 @@ class CollectionBuilder:
     def run_missing(self):
         added_to_radarr = 0
         added_to_sonarr = 0
+        i = 0
+        total_ids = len(self.missing_movies)
         if len(self.missing_movies) > 0 and (self.library.is_movie or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
@@ -3114,6 +3162,7 @@ class CollectionBuilder:
             missing_movies_with_names = []
             filtered_movies_with_names = []
             for missing_id in self.missing_movies:
+                i += 1
                 try:
                     movie = self.config.TMDb.get_movie(missing_id)
                 except Failed as e:
@@ -3123,11 +3172,15 @@ class CollectionBuilder:
                 if self.check_missing_filters(missing_id, True, tmdb_item=movie, check_released=self.details["missing_only_released"]):
                     missing_movies_with_names.append((current_title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
                 else:
                     filtered_movies_with_names.append((current_title, missing_id))
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {current_title} (TMDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {current_title} (TMDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
             logger.info("")
             logger.info(f"{len(missing_movies_with_names)} Movie{'s' if len(missing_movies_with_names) > 1 else ''} Missing")
             if len(missing_movies_with_names) > 0:
@@ -3158,6 +3211,8 @@ class CollectionBuilder:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
                 self.library.add_filtered(self.name, filtered_movies_with_names, True)
+        i = 0
+        total_ids = len(self.missing_shows)
         if len(self.missing_shows) > 0 and (self.library.is_show or self.is_playlist):
             if self.details["show_missing"] is True:
                 logger.info("")
@@ -3166,6 +3221,7 @@ class CollectionBuilder:
             missing_shows_with_names = []
             filtered_shows_with_names = []
             for missing_id in self.missing_shows:
+                i += 1
                 try:
                     title = self.config.TVDb.get_tvdb_obj(missing_id).title
                 except Failed as e:
@@ -3174,11 +3230,15 @@ class CollectionBuilder:
                 if self.check_missing_filters(missing_id, False, check_released=self.details["missing_only_released"]):
                     missing_shows_with_names.append((title, missing_id))
                     if self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
                 else:
                     filtered_shows_with_names.append((title, missing_id))
                     if self.details["show_filtered"] is True and self.details["show_missing"] is True:
-                        logger.info(f"{self.name} {self.Type} | X | {title} (TVDb: {missing_id})")
+                        logger.info(f"{i}/{total_ids} {self.name} {self.Type} | ? | {title} (TVDb: {missing_id})")
+                    else:
+                        logger.ghost(f"Parsing ID {i}/{total_ids}")
             logger.info("")
             logger.info(f"{len(missing_shows_with_names)} Show{'s' if len(missing_shows_with_names) > 1 else ''} Missing")
             if len(missing_shows_with_names) > 0:
@@ -3259,6 +3319,13 @@ class CollectionBuilder:
             if "item_edition" in self.item_details and item.editionTitle != self.item_details["item_edition"]:
                 self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
                 logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
+            for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+                if _rating in self.item_details:
+                    plex_attr = plex.attribute_translation[_rating[5:]]
+                    current_rating = getattr(item, plex_attr)
+                    if current_rating != self.item_details[_rating]:
+                        item.editField(plex_attr, self.item_details[_rating])
+                        logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
             path = None
             if "item_radarr_tag" in self.item_details or self.radarr_details["add_existing"] or "item_sonarr_tag" in self.item_details or self.sonarr_details["add_existing"]:
                 if item.locations:

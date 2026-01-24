@@ -471,6 +471,8 @@ class Operations:
                                     new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]] # noqa
                                 elif option == "mal":
                                     new_genres = mal_obj().genres # noqa
+                                elif option == "mal_all":
+                                    new_genres = mal_obj().genres + mal_obj().explicit_genres + mal_obj().themes + mal_obj().demographics # noqa
                                 else:
                                     new_genres = option
                                 if not new_genres:
@@ -527,7 +529,9 @@ class Operations:
                                     _rating = mdb_obj().content_rating # noqa
                                     new_rating = _rating if _rating else None
                                 elif str(option).startswith("mdb_commonsense"):
-                                    _rating = mdb_obj().commonsense # noqa
+                                    _rating = None
+                                    if mdb_obj().commonsense:
+                                        _rating = mdb_obj().age_rating # noqa
                                     if not _rating:
                                         new_rating = None
                                     elif option == "mdb_commonsense0":
@@ -1004,7 +1008,7 @@ class Operations:
                 for tag_operation, batch_edits in edit_dict.items():
                         plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
             for item_attr, rt_edits in rating_edits.items():
-                plex_update_in_batches(rt_edits, item_attr)
+                plex_update_in_batches(rt_edits, display_attr=item_attr)
             plex_update_in_batches(content_edits, display_attr="contentRating")
             plex_update_in_batches(studio_edits, display_attr="studio")
             plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt")
