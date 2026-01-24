@@ -3,10 +3,12 @@ Python 3.9 is no longer supported as it is End-of-Life, please use Python 3.10+
 
 # Requirements Update (requirements will need to be reinstalled)
 Updated gitpython requirement to 3.1.46
+Updated packaging requirement to 26.0
 Updated pillow requirement to 12.1.0
 Updated plexapi requirement to 4.17.2
 Updated psutil requirement to 7.2.1
 Updated python-dotenv requirement to 1.2.1
+Updated setuptools requirement to 80.10.1
 Updated ruamel.yaml requirement to 0.19.1
 
 # New Features
@@ -36,3 +38,4 @@ Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
 Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
 Update networks to the current logos '5', 'U', 'U&Alibi', 'U&Dave' and 'U&Eden'
+Fixed an issue with Letterboxd builders being blocked by a 403 error
