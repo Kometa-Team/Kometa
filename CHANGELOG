@@ -29,10 +29,10 @@ Add docs around Plex token types, add Plex Token generation form
 # Defaults
 
 # Bug Fixes
-Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
-Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
-Improve API-based handling of MDBList "external" lists.
-Sync MDBList sort options with MDBList API Docs
-Update several networks to cater for updated names
-Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
-Update networks to the current logos '5', 'U', 'U&Alibi', 'U&Dave' and 'U&Eden'
+Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
+Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
+Fixes #2802 the list now acts as a list
+Fixes logic issue with reauthenticating trakt
+Fixes an issue with the `dovi` attribute of `plex_search` where shows and seasons never returned anything
+Fixes `.regex` tag filters
+Fix Letterboxd requests being blocked by Cloudflare protection by implementing cloudscraper bypass
