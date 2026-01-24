@@ -201,6 +201,76 @@ collections:
       - name: arr
       - name: custom
 
+  "Top 250 International":
+    variables:
+      style: color
+      key: international
+    template:
+      - name: letterboxd_list
+        user: brsan
+        list: letterboxds-top-250-international-films
+      - name: shared
+        translation_key: top_250_international
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 250 Sci-Fi Films":
+    variables:
+      style: color
+      key: science
+    template:
+      - name: letterboxd_list
+        user: chris_coke
+        list: letterboxds-top-250-science-fiction-films
+      - name: shared
+        translation_key: top_250_science
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "One Million Watched Club":
+    variables:
+      style: color
+      key: million
+    template:
+      - name: letterboxd_list
+        user: alexanderh
+        list: letterboxd-one-million-watched-club
+      - name: shared
+        translation_key: one_million_watched
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 100 Western Films":
+    variables:
+      style: color
+      key: western
+    template:
+      - name: letterboxd_list
+        user: dave
+        list: letterboxds-top-100-western-films
+      - name: shared
+        translation_key: top_100_western
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 100 Silent Films":
+    variables:
+      style: color
+      key: silent
+    template:
+      - name: letterboxd_list
+        user: brsan
+        list: letterboxds-top-100-silent-films
+      - name: shared
+        translation_key: top_100_silent
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
   "IMDb Top 250 (Letterboxd)":
     variables:
       style: color

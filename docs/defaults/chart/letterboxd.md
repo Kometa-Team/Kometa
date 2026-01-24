@@ -37,6 +37,11 @@ collections on within the Letterboxd defaults using Template Variables.
 | `Top 250 Horror`                 | `horror`            | Collection of the Top 250 horror films on Letterboxd.                         |
 | `Top 250 Most Fans`              | `most_fans`         | Collection of the Top 250 films with the most fans on Letterboxd.             |
 | `Top 250 Women-Directed`         | `women_directors`   | Collection of the Top 250 Women-Directed films on Letterboxd.                 |
+| `Top 250 International`          | `international`     | Collection of the Top 250 international films on Letterboxd.                  |
+| `Top 250 Sci-Fi Films`           | `science`           | Collection of the Top 250 science-fiction films on Letterboxd.                |
+| `Top 100 Western Films`          | `western`           | Collection of the Top 100 western films on Letterboxd.                        |
+| `Top 100 Silent Films`           | `silent`            | Collection of the Top 100 silent films on Letterboxd.                         |
+| `One Million Watched Club`       | `million`           | Collection of films in the One Million Watched Club on Letterboxd.            |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "letterboxd"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "letterboxd"}' include-tags='all|movie' %}
