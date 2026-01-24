@@ -1,5 +1,8 @@
-import re, time
+import re
+import time
+import cloudscraper
 from datetime import datetime
+from lxml import html
 from modules import util
 from modules.util import Failed
 
@@ -37,10 +40,35 @@ class Letterboxd:
     def __init__(self, requests, cache=None):
         self.requests = requests
         self.cache = cache
+        self.scraper = cloudscraper.create_scraper()
+
+    def _request_via_cloudscraper(self, url, language):
+        """Route request through cloudscraper to bypass Cloudflare protection."""
+        headers = None
+        if language:
+            headers = {"Accept-Language": "eng" if language == "default" else language}
+        
+        try:
+            response = self.scraper.get(url, headers=headers, timeout=30)
+            if response.status_code == 403:
+                time.sleep(3)
+                self.scraper = cloudscraper.create_scraper()
+                response = self.scraper.get(url, headers=headers, timeout=30)
+            
+            if response.status_code != 200:
+                raise Failed(f"Letterboxd Error: HTTP {response.status_code} for URL: {url}")
+            
+            response.encoding = response.apparent_encoding
+            return html.fromstring(response.content)
+        except Failed:
+            raise  # Re-raise Failed exceptions to preserve original error message
+        except Exception as e:
+            raise Failed(f"Letterboxd Error: Failed to fetch {url}: {str(e)}")
 
     def _request(self, url, language, xpath=None):
         logger.trace(f"URL: {url}")
-        response = self.requests.get_html(url, language=language)
+        response = self._request_via_cloudscraper(url, language=language)
+        
         return response.xpath(xpath) if xpath else response
 
     def _parse_page(self, list_url, language):
@@ -52,11 +80,11 @@ class Letterboxd:
         for letterboxd_element in letterboxd_elements:
             slug = letterboxd_element.xpath("@data-target-link")[0]
             letterboxd_id = letterboxd_element.xpath("@data-film-id")[0]
-            comments = letterboxd_element.xpath(f"parent::article/div[@class='body']/div/p/text()")
+            comments = letterboxd_element.xpath("parent::article/div[@class='body']/div/p/text()")
             ratings = letterboxd_element.xpath("parent::article/div[@class='body']/div/span/@class")
             if not ratings:
                 ratings = letterboxd_element.xpath("parent::li/p/span[contains(@class, 'rating')]/@class")
-            years = letterboxd_element.xpath(f"parent::article/div[@class='body']/div/header/span/span/a/text()")
+            years = letterboxd_element.xpath("parent::article/div[@class='body']/div/header/span/span/a/text()")
             rating = None
             if ratings:
                 match = re.search("rated-(\\d+)", ratings[0])
@@ -295,8 +323,11 @@ class Letterboxd:
             }
             if not final["url"].startswith(base_url):
                 raise Failed(f"{err_type} Error: {final['url']} must begin with: {base_url}")
-            elif not self._parse_page(final["url"], language)[0]:
-                raise Failed(f"{err_type} Error: {final['url']} failed to parse")
+            try:
+                if not self._parse_page(final["url"], language)[0]:
+                    logger.warning(f"{err_type} Warning: {final['url']} returned no items during validation")
+            except Failed as e:
+                logger.warning(f"{err_type} Warning: Could not validate {final['url']}: {e}")
             valid_lists.append(final)
         return valid_lists
 

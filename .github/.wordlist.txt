@@ -47,6 +47,7 @@ bw
 cappella
 cd
 chazlarson
+cloudflare
 cloudscraper
 cn
 codec
