@@ -48,11 +48,7 @@ class Letterboxd:
 
     def _request(self, url, language, xpath=None):
         logger.trace(f"URL: {url}")
-
-        if "letterboxd.com" in url:
-            response = self._request_via_cloudscraper(url, language=language)
-        else:
-            response = self.requests.get_html(url, language=language)
+        response = self._request_via_cloudscraper(url, language=language)
         
         return response.xpath(xpath) if xpath else response
 
