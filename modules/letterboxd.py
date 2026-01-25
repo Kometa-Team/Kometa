@@ -1,8 +1,5 @@
-import re
-import time
-import cloudscraper
+import re, time
 from datetime import datetime
-from lxml import html
 from modules import util
 from modules.util import Failed
 
@@ -40,35 +37,10 @@ class Letterboxd:
     def __init__(self, requests, cache=None):
         self.requests = requests
         self.cache = cache
-        self.scraper = cloudscraper.create_scraper()
-
-    def _request_via_cloudscraper(self, url, language):
-        """Route request through cloudscraper to bypass Cloudflare protection."""
-        headers = None
-        if language:
-            headers = {"Accept-Language": "eng" if language == "default" else language}
-        
-        try:
-            response = self.scraper.get(url, headers=headers, timeout=30)
-            if response.status_code == 403:
-                time.sleep(3)
-                self.scraper = cloudscraper.create_scraper()
-                response = self.scraper.get(url, headers=headers, timeout=30)
-            
-            if response.status_code != 200:
-                raise Failed(f"Letterboxd Error: HTTP {response.status_code} for URL: {url}")
-            
-            response.encoding = response.apparent_encoding
-            return html.fromstring(response.content)
-        except Failed:
-            raise  # Re-raise Failed exceptions to preserve original error message
-        except Exception as e:
-            raise Failed(f"Letterboxd Error: Failed to fetch {url}: {str(e)}")
 
     def _request(self, url, language, xpath=None):
         logger.trace(f"URL: {url}")
-        response = self._request_via_cloudscraper(url, language=language)
-        
+        response = self.requests.get_cloudscrape_html(url, language=language)
         return response.xpath(xpath) if xpath else response
 
     def _parse_page(self, list_url, language):
