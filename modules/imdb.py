@@ -387,7 +387,7 @@ class IMDb:
         if params:
             logger.trace(f"Params: {params}")
         try:
-            response = self.requests.get_html(url, params=params, header=True, language=language)
+            response = self.requests.get_cloudscrape_html(url, params=params, language=language)
         except Exception as e:
             raise Failed(e)
         if page_props:

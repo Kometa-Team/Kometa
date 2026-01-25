@@ -3,7 +3,7 @@ cloudscraper==1.2.71
 GitPython==3.1.46
 lxml==6.0.2
 num2words==0.5.14
-packaging==25.0
+packaging==26.0
 pathvalidate==3.3.1
 pillow==12.1.0
 PlexAPI==4.17.2
@@ -14,6 +14,6 @@ pywin32==311; sys_platform == 'win32'
 requests==2.32.5
 ruamel.yaml==0.19.1
 schedule==1.2.2
-setuptools==80.9.0
+setuptools==80.10.1
 tenacity==9.1.2
 tmdbapis==1.2.30

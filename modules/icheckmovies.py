@@ -12,7 +12,7 @@ class ICheckMovies:
 
     def _request(self, url, xpath):
         logger.trace(f"URL: {url}")
-        return self.requests.get_scrape_html(url).xpath(xpath)
+        return self.requests.get_cloudscrape_html(url).xpath(xpath)
 
     def _parse_list(self, list_url):
         imdb_urls = self._request(list_url, "//a[@class='optionIcon optionIMDB external']/@href")
