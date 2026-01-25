@@ -1,4 +1,4 @@
-import base64, cloudscraper, os, ruamel.yaml, requests
+import base64, cloudscraper, os, ruamel.yaml, requests, time
 from lxml import html
 from modules import util
 from modules.poster import ImageData
@@ -71,7 +71,7 @@ class Requests:
         self._latest = None
         self._newest = None
         self.session = self.create_session()
-        self.scraper = cloudscraper.create_scraper()
+        self.cloudscraper = cloudscraper.create_scraper()
         self.global_ssl = verify_ssl
         if not self.global_ssl:
             self.no_verify_ssl()
@@ -142,8 +142,15 @@ class Requests:
                     logger.ghost(f"Downloading {info}: {dl / total_length * 100:6.2f}%")
                 logger.exorcise()
 
-    def get_scrape_html(self, url):
-        return html.fromstring(self.scraper.get(url).content)
+    def get_cloudscrape_html(self, url, headers=None, params=None, language=None):
+        cloud_headers = get_header(headers, True, language)
+        cloud_headers.pop("User-Agent")
+        response = self.cloudscraper.get(url, params=params, headers=cloud_headers)
+        if response.status_code == 403:
+            time.sleep(3)
+            self.cloudscraper = cloudscraper.create_scraper()
+            response = self.cloudscraper.get(url, params=params, headers=cloud_headers)
+        return html.fromstring(response.content)
 
     def get_html(self, url, headers=None, params=None, header=None, language=None):
         return html.fromstring(self.get(url, headers=headers, params=params, header=header, language=language).content)
