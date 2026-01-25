@@ -138,7 +138,7 @@ collections:
     template:
       - name: letterboxd_list
         user: jack
-        list: black-directors-the-official-top-100-narrative
+        list: black-directors-the-official-top-250-narrative
       - name: shared
         translation_key: top_250_black_directed
         summary: <<summary_<<key>>>>
