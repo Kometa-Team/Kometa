@@ -194,6 +194,7 @@ templates:
             value: movie, tv_movie
           - library_type: show
             value: tv_series, tv_mini_series
+    smart_label: <<sort_by_<<key>>>>
 
   tmdb_person:
     default:
