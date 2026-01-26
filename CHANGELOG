@@ -21,6 +21,7 @@ Add new `mal_all` genre option to include Explicit Genres, Themes and Demographi
 Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 IMDB "Document is empty" no longer CRITICAL
+Updated Based On collections to smart-label collections
 
 # Docs
 Add docs around requirements for those lists
