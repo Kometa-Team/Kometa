@@ -178,14 +178,14 @@ templates:
 
   based:
     default:
-      sort_by: popularity.asc
-      sort_by_<<key>>: <<sort_by>>
       limit: 200
+      sort_by: release.desc
+      sort_by_<<key>>: <<sort_by>>
     imdb_search:
       keyword.any: <<keywords>>
       limit: <<limit>>
       type: <<type>>
-      sort_by: <<sort_by_<<key>>>>
+      sort_by: popularity.asc
     conditionals:
       type:
         default: bob
@@ -194,6 +194,7 @@ templates:
             value: movie, tv_movie
           - library_type: show
             value: tv_series, tv_mini_series
+    smart_label: <<sort_by_<<key>>>>
 
   tmdb_person:
     default:
