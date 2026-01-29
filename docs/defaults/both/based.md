@@ -60,5 +60,5 @@ hide:
 
     === "Based On A ... Collections"
         
-        The Based On A ... collections are created using Kometa-maintained MDBLists.
+        The Based On A ... collections are created using IMDb keyword searches.
 
