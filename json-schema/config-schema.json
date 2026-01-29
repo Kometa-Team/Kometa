@@ -392,12 +392,6 @@
                     "type": "integer",
                     "minimum": 1,
                     "description": "An integer greater than 0 in days"
-                },
-                "username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
                 }
             },
             "required": [],

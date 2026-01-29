@@ -760,17 +760,6 @@ class ConfigFile:
                     else:
                         logger.error(e)
                 logger.info(f"AniDB API Connection {'Successful' if self.AniDB.is_authorized else 'Failed'}")
-                try:
-                    self.AniDB.verify_user(
-                        check_for_attribute(self.data, "username", parent="anidb", throw=True),
-                        check_for_attribute(self.data, "password", parent="anidb", throw=True)
-                    )
-                except Failed as e:
-                    if str(e).endswith("is blank"):
-                        logger.warning(e)
-                    else:
-                        logger.error(e)
-                logger.info(f"AniDB Login {'Successful' if self.AniDB.username else 'Failed Continuing as Guest'}")
 
             logger.separator()
 

@@ -10,9 +10,9 @@ import xml.etree.ElementTree as ET
 
 logger = util.logger
 
-builders = ["anidb_id", "anidb_relation", "anidb_popular"]
+builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
 base_url = "https://anidb.net"
-api_url = "http://api.anidb.net:9001/httpapi"
+api_url = "http://utilities.kometa.wiki/anidb-service"
 
 kometa_client = "kometaofficial"
 kometa_client_version = 1
@@ -115,13 +115,13 @@ class AniDBObj:
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
                 # Handle data if it's coming from a dictionary (Cache)
-                lookup_attr = attr if not attr == 'tmdb' else 'tmdb_id'
-
-                if lookup_attr == "tmdb_id":
-                    result = [str(data['tmdb_id']), str(data['tmdb_type'])] if 'tmdb_id' in data and data['tmdb_id'] else []
-                    return result
-
                 if isinstance(data, dict):
+                    lookup_attr = attr if not attr == 'tmdb' else 'tmdb_id'
+                    
+                    if lookup_attr == "tmdb_id":
+                        result = [str(data['tmdb_id']), str(data['tmdb_type'])] if 'tmdb_id' in data and data['tmdb_id'] else []
+                        return result
+
                     if is_list: return data[lookup_attr].split("|") if data[lookup_attr] else []
                     if is_dict: return json.loads(data[lookup_attr]) if data[lookup_attr] else {}
                     if is_int or is_float: return util.check_num(data[lookup_attr], is_int=is_int)
@@ -132,7 +132,9 @@ class AniDBObj:
                 parse_results = data.xpath(xpath)
 
                 if attr == "tmdb":
-                    return parse_results if parse_results else []
+                    # Return text results as strings
+                    result = [str(r).strip() if isinstance(r, str) else str(r.text).strip() if hasattr(r, 'text') else str(r) for r in parse_results] if parse_results else []
+                    return result
 
                 if attr == "tags":
                     return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
@@ -186,7 +188,7 @@ class AniDBObj:
         self.score = _parse("score", "//ratings/review/text()", is_float=True)
         self.released = _parse("released", "//startdate/text()", is_date=True)
         
-        self.tags = _parse("tags", "//anime/tags/tag", is_list=True)
+        self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
 
         # Resources (External Links)
         self.mal_id = _parse("mal_id", "//resource[@type='2']/externalentity/identifier/text()", is_int=True)
@@ -197,9 +199,9 @@ class AniDBObj:
         self.tmdb_id = None
         self.tmdb_type = None
         for item in tmdb_list:
-            if item.isdigit():
+            if isinstance(item, str) and item.isdigit():
                 self.tmdb_id = int(item)
-            else:
+            elif isinstance(item, str):
                 self.tmdb_type = item
 
 class AniDB:
@@ -208,10 +210,11 @@ class AniDB:
         self.cache = cache
         self.language = data.get("language", "en")
         self.expiration = data.get("expiration", 60)
-        self.username = None
-        self.password = None
+        # Hardcoded credentials for utilities.kometa.wiki API
+        self.username = "kometa_admin"
+        self.password = "kometa_is_cool"
         self.last_request_time = 0
-        self.min_delay = 4.1
+        self.min_delay = 0.1  # New API has no rate limiting, minimal delay for safety
         self._is_authorized = False
         self.titles_db = AniDBTitles(self.requests)
 
@@ -233,7 +236,7 @@ class AniDB:
         self.expiration = expiration
         self._is_authorized = False
 
-        # Verify connectivity/auth by requesting a known small anime (Serial Experiments Lain: ID 99)
+        # Verify connectivity by requesting a known anime (Serial Experiments Lain: ID 99)
         try:
             self.get_anime(99, ignore_cache=True)
             if self.cache:
@@ -242,47 +245,8 @@ class AniDB:
         except Exception as e:
             raise Failed(f"AniDB Authorization Failed: {e}")
 
-    def verify_user(self, username, password):
-        """
-        Verifies credentials and ensures mature content access is active.
-        """
-        logger.info(f"Verifying AniDB credentials and mature access.")
-        
-        # Temporarily set for the probe
-        original_user, original_pass = self.username, self.password
-        self.username, self.password = username, password
-
-        try:
-            # AID 107 is a restricted title. 
-            # If mature access is NOT working, AniDB returns an <error> or empty node.
-            test_xml = self._request(api_params={'request': 'anime', 'aid': 107}, cache_days=0)
-            
-            if test_xml is not None:
-                # 1. Check for standard Auth Errors
-                error_node = test_xml.xpath("//error/text()")
-                if error_node:
-                    raise Failed(f"AniDB Auth Failed: {error_node[0]}")
-                
-                # 2. Check for Mature Access specifically
-                # If access is denied, 'restricted' attribute is often '1' or tags are missing
-                is_restricted = test_xml.get("restricted") == "1"
-                # If the title node is missing or says "Restricted", the probe failed
-                main_title = test_xml.xpath("//title[@type='main']/text()")
-                
-                if not main_title or "restricted" in main_title[0].lower():
-                    raise Failed("Login successful, but Mature Content access is disabled in AniDB settings.")
-
-                logger.info("AniDB login and Mature Access verified.")
-                return True
-            else:
-                raise Failed("No response from AniDB during verification.")
-
-        except Exception as e:
-            self.username, self.password = original_user, original_pass
-            raise Failed(f"AniDB Verification Failed: {e}")
-
-    def _request(self, api_params=None, rss_url=None, cache_days=7):
-        # 1. Rate Limiting Check (2.1s rule)
+    def _request(self, api_params=None, rss_url=None, cache_days=7, endpoint=None):
+        # 1. Rate Limiting Check (minimal delay for new API)
         elapsed = time.perf_counter() - self.last_request_time
         if elapsed < self.min_delay:
             time.sleep(self.min_delay - elapsed)
@@ -290,33 +254,37 @@ class AniDB:
         # 2. Check Cache
         aid = api_params.get('aid') if api_params else None
         cache_file = f"config/anidb_cache/anime_{aid}.xml" if aid else None
-        if cache_file and os.path.exists(cache_file):
+        if cache_file and os.path.exists(cache_file) and cache_days > 0:
             file_age = datetime.fromtimestamp(os.path.getmtime(cache_file))
             if datetime.now() - file_age < timedelta(days=cache_days):
                 with open(cache_file, 'rb') as f:
                     return etree.fromstring(f.read())
 
         # 3. Setup Target and Headers
-        target_url = rss_url if rss_url else api_url
+        if rss_url:
+            target_url = rss_url
+        elif endpoint:
+            target_url = f"{api_url}/{endpoint}"
+        else:
+            # Default to anime endpoint with aid
+            target_url = f"{api_url}/anime/{aid}" if aid else api_url
+            
         headers = {
             'Accept-Encoding': 'gzip',
             'User-Agent': f'Kometa/1.0 ({kometa_client})'
         }
         
+        # Build query parameters (for search endpoints)
         payload = {}
-        if not rss_url:
-            payload = {
-                'client': kometa_client if kometa_client else "kometaofficial", 
-                'clientver': str(kometa_client_version) if kometa_client_version is not None else "1", # Coerce to string to avoid TypeErrors
-                'protover': '1',
-                'request': 'anime'
-            }
-            if self.username: payload['user'] = self.username
-            if self.password: payload['pass'] = self.password
-            if api_params: payload.update(api_params)
+        if api_params and 'aid' not in api_params:
+            payload.update(api_params)
+        
+        # Add hardcoded authentication for utilities.kometa.wiki API
+        payload['username'] = self.username
+        payload['password'] = self.password
 
         # 4. Execute Request
-        response = self.requests.get(target_url, params=payload, headers=headers)
+        response = self.requests.get(target_url, params=payload if payload else None, headers=headers)
         self.last_request_time = time.perf_counter()
 
         if response.status_code == 200:
@@ -348,7 +316,7 @@ class AniDB:
         return util.get_int_list(xml.xpath("//item/guid/text()"), "AniDB ID") if xml is not None else []
 
     def _relations(self, anidb_id):
-        xml = self._request(api_params={'request': 'anime', 'aid': anidb_id})
+        xml = self._request(api_params={'aid': anidb_id})
         return util.get_int_list(xml.xpath("//relatedanime/anime/@aid"), "AniDB ID") if xml is not None else []
 
     def _validate(self, anidb_id):
@@ -398,9 +366,9 @@ class AniDB:
 
         # 2. If not in Module Cache, check File Cache/API via _request
         if expired or not anidb_dict:
-            # This calls the method that handles the 2s delay and XML file caching
-            anidb_xml = self._request(api_params={"request": "anime", "aid": anidb_id})
-            # http://api.anidb.net:9001/httpapi?request=anime&client={str}&clientver={int}&protover=1&aid={int}
+            # This calls the method that handles the delay and XML file caching
+            anidb_xml = self._request(api_params={"aid": anidb_id})
+            # http://utilities.kometa.wiki/anidb-service/anime/{aid}
             if anidb_xml is None:
                 raise Failed(f"AniDB Error: Could not fetch Anime ID {anidb_id}")
             data_source = anidb_xml
@@ -415,8 +383,20 @@ class AniDB:
             self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 
+    def _search_by_tags(self, tags, min_weight=0):
+        """
+        Search anime by tags using the new API endpoint.
+        """
+        tag_list = tags if isinstance(tags, list) else [tags]
+        params = {
+            'tags': ','.join(tag_list),
+            'min_weight': min_weight
+        }
+        xml = self._request(api_params=params, endpoint="search/tags", cache_days=1)
+        return util.get_int_list(xml.xpath("//anime/@aid"), "AniDB ID") if xml is not None else []
+
     def get_anidb_ids(self, method, data):
-        # (This remains largely the same but utilizes the new helper methods)
+        # Utilizes helper methods for various search types
         anidb_ids = []
         if method == "anidb_popular":
             anidb_ids.extend(self._popular()[:data])
@@ -424,6 +404,11 @@ class AniDB:
             anidb_ids.append(data)
         elif method == "anidb_relation":
             anidb_ids.extend(self._relations(data))
+        elif method == "anidb_tag":
+            # data should be a dict with 'tags' and optionally 'min_weight'
+            tags = data.get('tags', data) if isinstance(data, dict) else data
+            min_weight = data.get('min_weight', 0) if isinstance(data, dict) else 0
+            anidb_ids.extend(self._search_by_tags(tags, min_weight))
         
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found via {method}")
         return anidb_ids
