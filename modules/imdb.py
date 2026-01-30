@@ -386,7 +386,10 @@ class IMDb:
         logger.trace(f"URL: {url}")
         if params:
             logger.trace(f"Params: {params}")
-        response = self.requests.get_html(url, params=params, header=True, language=language)
+        try:
+            response = self.requests.get_cloudscrape_html(url, params=params, language=language)
+        except Exception as e:
+            raise Failed(e)
         if page_props:
             return json.loads(response.xpath("//script[@id='__NEXT_DATA__']/text()")[0])["props"]["pageProps"]
         return response.xpath(xpath) if xpath else response

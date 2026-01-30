@@ -131,19 +131,20 @@ collections:
       - name: arr
       - name: custom
 
-  "Top 100 Black-Directed":
+  "Top 250 Black-Directed":
     variables:
       style: color
       key: black_directors
     template:
       - name: letterboxd_list
         user: jack
-        list: black-directors-the-official-top-100-narrative
+        list: black-directors-the-official-top-250-narrative
       - name: shared
-        translation_key: top_100_black_directed
+        translation_key: top_250_black_directed
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
+    delete_collections_named: "Top 100 Black-Directed"
 
   "Top 250 Most Fans":
     variables:
@@ -197,6 +198,76 @@ collections:
         list: letterboxds-top-250-horror-films
       - name: shared
         translation_key: top_250_horror
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 250 International":
+    variables:
+      style: color
+      key: international
+    template:
+      - name: letterboxd_list
+        user: brsan
+        list: letterboxds-top-250-international-films
+      - name: shared
+        translation_key: top_250_international
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 250 Sci-Fi Films":
+    variables:
+      style: color
+      key: science
+    template:
+      - name: letterboxd_list
+        user: chris_coke
+        list: letterboxds-top-250-science-fiction-films
+      - name: shared
+        translation_key: top_250_sci-fi_films
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "One Million Watched Club":
+    variables:
+      style: color
+      key: million
+    template:
+      - name: letterboxd_list
+        user: alexanderh
+        list: letterboxd-one-million-watched-club
+      - name: shared
+        translation_key: one_million_watched_club
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 100 Western Films":
+    variables:
+      style: color
+      key: western
+    template:
+      - name: letterboxd_list
+        user: dave
+        list: letterboxds-top-100-western-films
+      - name: shared
+        translation_key: top_100_western_films
+        summary: <<summary_<<key>>>>
+      - name: arr
+      - name: custom
+
+  "Top 100 Silent Films":
+    variables:
+      style: color
+      key: silent
+    template:
+      - name: letterboxd_list
+        user: brsan
+        list: letterboxds-top-100-silent-films
+      - name: shared
+        translation_key: top_100_silent_films
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom

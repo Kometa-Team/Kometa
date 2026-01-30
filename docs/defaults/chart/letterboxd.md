@@ -32,11 +32,16 @@ collections on within the Letterboxd defaults using Template Variables.
 | `Roger Ebert's Great Movies`     | `rogerebert`        | Collection of films from Roger Ebert's "Great Movies" essays.                 |
 | `Sight & Sound Greatest Films`   | `sight_sound`       | Collection of Sight and Sound's Greatest Films of All Time.                   |
 | `Top 100 Animation`              | `animation`         | Collection of the Top 100 animated films on Letterboxd.                       |
-| `Top 100 Black-Directed`         | `black_directors`   | Collection of the Top 100 Black-Directed films on Letterboxd.                 |
+| `Top 250 Black-Directed`         | `black_directors`   | Collection of the Top 250 Black-Directed films on Letterboxd.                 |
 | `Top 250 Documentaries`          | `documentaries`     | Collection of the Top 250 documentary films on Letterboxd.                    |
 | `Top 250 Horror`                 | `horror`            | Collection of the Top 250 horror films on Letterboxd.                         |
 | `Top 250 Most Fans`              | `most_fans`         | Collection of the Top 250 films with the most fans on Letterboxd.             |
 | `Top 250 Women-Directed`         | `women_directors`   | Collection of the Top 250 Women-Directed films on Letterboxd.                 |
+| `Top 250 International`          | `international`     | Collection of the Top 250 international films on Letterboxd.                  |
+| `Top 250 Sci-Fi Films`           | `science`           | Collection of the Top 250 science-fiction films on Letterboxd.                |
+| `Top 100 Western Films`          | `western`           | Collection of the Top 100 western films on Letterboxd.                        |
+| `Top 100 Silent Films`           | `silent`            | Collection of the Top 100 silent films on Letterboxd.                         |
+| `One Million Watched Club`       | `million`           | Collection of films in the One Million Watched Club on Letterboxd.            |
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "letterboxd"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "letterboxd"}' include-tags='all|movie' %}
