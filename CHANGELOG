@@ -20,8 +20,7 @@ Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
 Replace AniDB scraping with purpose-built cache server. [Issue #2932]
-Removes auth-related AniDB configuration entries.
-
+Removes authentication-related AniDB configuration entries.
 Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 IMDB "Document is empty" no longer CRITICAL
