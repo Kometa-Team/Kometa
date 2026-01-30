@@ -210,6 +210,7 @@ class AniDB:
         self.cache = cache
         self.language = data.get("language", "en")
         self.expiration = data.get("expiration", 60)
+        self.enable_mature = data.get("enable_mature", False)
         # Hardcoded credentials for utilities.kometa.wiki API
         self.username = "kometa_admin"
         self.password = "kometa_is_cool"
@@ -282,6 +283,7 @@ class AniDB:
         # Add hardcoded authentication for utilities.kometa.wiki API
         payload['username'] = self.username
         payload['password'] = self.password
+        payload['mature'] = 'true' if self.enable_mature else 'false'
 
         # 4. Execute Request
         response = self.requests.get(target_url, params=payload if payload else None, headers=headers)

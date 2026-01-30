@@ -128,6 +128,7 @@ ntfy:
 anidb:
   cache_expiration: 60
   language: en
+  enable_mature: false
 radarr:                            # Can be individually specified per library as well
   url: http://192.168.1.12:7878    # Enter Radarr server URL (Optional)
   token:                           # Enter Radarr API Key (Optional)

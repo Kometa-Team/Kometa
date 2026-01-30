@@ -392,6 +392,10 @@
                     "type": "integer",
                     "minimum": 1,
                     "description": "An integer greater than 0 in days"
+                },
+                "enable_mature": {
+                    "type": "boolean",
+                    "description": "Enable access to mature/restricted content"
                 }
             },
             "required": [],
