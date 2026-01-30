@@ -13,13 +13,15 @@ Updated ruamel.yaml requirement to 0.19.1
 Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
-Refactor AniDB module to use API rather than scraping. `anidb_tag` builder removed as a result. [Issue #2932]
+Replace AniDB scraping with purpose-built cache server. [Issue #2932]
+Removes auth-related AniDB configuration entries.
+
 
 # Docs
 Add docs around requirements for those lists
 Sync MDBList sort options with MDBList API Docs
 Add docs around Plex token types, add Plex Token generation form
-Tweak AniDB docs to reflect loss of tag builder.
+Tweak AniDB docs to reflect loss of tag builder and reduced config.
 
 # Defaults
 
