@@ -2283,7 +2283,7 @@
             "language": {
                 "description": "Set the language of Collection Names and Summaries that Kometa has been translated to with weblate",
                 "type": "string",
-            "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv", "ru", "bg", "hu"]
+                "enum": ["en", "fr", "ar", "da", "nl", "de", "it", "pt-br", "nb-no", "es", "sv", "ru", "bg", "hu"]
             },
             "placeholder_imdb_id": {
                 "description": "Add a placeholder Movie/Show to the Separator to ensure Plex sees a collection with 1 item because 0 item collections can be problematic for Plex.\nValid for Movie or Show libraries assuming the ID points to an item of the correct type and that its in your library.",
