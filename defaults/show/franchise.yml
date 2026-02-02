@@ -90,7 +90,7 @@ dynamic_collections:
     template:
       - tmdbshow
     addons:
-      121: [57243, 1057, 424, 203, 64073]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class
+      121: [57243, 1057, 424, 203, 64073, 239770]  # Doctor Who: K-9 & Company, Torchwood, The Sarah Jane Adventures, Class, Doctor Who (2023)
       253: [655, 580, 1855, 1992, 314, 103516, 67198, 82491, 85948, 85949, 106393] # TOS, TAS, TNG, DS9, VOY, ENT, DIS, SHO, PIC, LOW, PRO, SNW
       549: [2734, 4601, 3357, 32632, 72496, 106158, 7098]  # Law & Order: Special Victims Unit, Criminal Intent, Trial by Jury, LA, True Crime, Organized Crime, UK
       951: [25641, 4489, 24211, 9829, 605, 69050, 79242, 87539] # The Archie Show, Sabrina, The Teenage Witch, Josie and the Pussycats, Josie and the Pussycats in Outer Space, The New Archies, Riverdale, Chilling Adventures of Sabrina, Katy Keene
