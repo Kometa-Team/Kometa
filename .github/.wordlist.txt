@@ -401,6 +401,7 @@ wachowski
 walkthrough
 walkthroughs
 watchlist
+webapp
 webhook
 webhooks
 webp
