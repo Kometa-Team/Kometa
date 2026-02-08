@@ -416,9 +416,9 @@ nav:
       - AniDB:
         - Overview: files/builders/anidb/overview.md
         - ID: files/builders/anidb/id.md
-        - Popular: files/builders/anidb/popular.md
         - Relation: files/builders/anidb/relation.md
         - Tag: files/builders/anidb/tag.md
+        - Tag Name: files/builders/anidb/tag_name.md
       - AniList:
         - Overview: files/builders/anilist/overview.md
         - ID: files/builders/anilist/id.md

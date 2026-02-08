@@ -149,7 +149,7 @@ smart_url_invalid = ["filters", "run_again", "sync_mode", "show_filtered", "show
 custom_sort_builders = [
     "plex_search", "plex_watchlist", "plex_pilots", "tmdb_list", "tmdb_popular", "tmdb_now_playing", "tmdb_top_rated",
     "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_discover", "reciperr_list", "trakt_chart", "trakt_userlist",
-    "tvdb_list", "imdb_chart", "imdb_list", "imdb_award", "imdb_search", "imdb_watchlist", "stevenlu_popular", "anidb_popular",
+    "tvdb_list", "imdb_chart", "imdb_list", "imdb_award", "imdb_search", "imdb_watchlist", "stevenlu_popular",
     "tmdb_upcoming", "tmdb_airing_today", "tmdb_on_the_air", "trakt_list", "trakt_watchlist", "trakt_collection",
     "trakt_trending", "trakt_popular", "trakt_boxoffice", "trakt_collected_daily", "trakt_collected_weekly",
     "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all", "trakt_recommendations",
@@ -160,7 +160,8 @@ custom_sort_builders = [
     "anilist_top_rated", "anilist_popular", "anilist_trending", "anilist_search", "anilist_userlist",
     "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_movie", "mal_ova", "mal_special", "mal_search",
     "mal_popular", "mal_favorite", "mal_suggested", "mal_userlist", "mal_season", "mal_genre", "mal_studio",
-    "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never"
+    "mojo_world", "mojo_domestic", "mojo_international", "mojo_record", "mojo_all_time", "mojo_never",
+    "anidb_tag", "anidb_tag_name"
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
@@ -1412,23 +1413,11 @@ class CollectionBuilder:
             self.builders.append((method_name, True))
 
     def _anidb(self, method_name, method_data):
-        if method_name == "anidb_popular":
-            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=30, maximum=30)))
-        elif method_name in ["anidb_id", "anidb_relation"]:
+        if method_name in ["anidb_id", "anidb_relation"]:
             for anidb_id in self.config.AniDB.validate_anidb_ids(method_data):
                 self.builders.append((method_name, anidb_id))
-        elif method_name == "anidb_tag":
-            for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
-                dict_methods = {dm.lower(): dm for dm in dict_data}
-                new_dictionary = {}
-                if "tag" not in dict_methods:
-                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is required")
-                elif not dict_data[dict_methods["tag"]]:
-                    raise Failed(f"{self.Type} Error: anidb_tag tag attribute is blank")
-                else:
-                    new_dictionary["tag"] = util.regex_first_int(dict_data[dict_methods["tag"]], "AniDB Tag ID")
-                new_dictionary["limit"] = util.parse(self.Type, "limit", dict_data, datatype="int", methods=dict_methods, default=0, parent=method_name, minimum=0)
-                self.builders.append((method_name, new_dictionary))
+        elif method_name in ["anidb_tag", "anidb_tag_name"]:
+            self.builders.append((method_name, method_data))
 
     def _anilist(self, method_name, method_data):
         if method_name in ["anilist_id", "anilist_relations", "anilist_studio"]:
