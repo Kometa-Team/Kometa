@@ -1,39 +1,42 @@
-# Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.14
-Updated lxml requirement to 6.0.2
-Updated plexapi requirement to 4.17.1
-Updated psutil requirement to 7.1.0
-Updated ruamel-yaml requirement to 0.18.15
-Updated requests requirement to 2.32.5
-Updated tmdbapis requirement to 1.2.30
-
 # Important Changes
-Sponsor's Images are now listed on the ReadMe, Wiki Homepage, and acknowledgements page.
-Updated the Sponsorship Tier Rewards (credit to @mrbuckwheet for sponsoring and driving the updates)
+Python 3.9 is no longer supported as it is End-of-Life, please use Python 3.10+
+
+# Requirements Update (requirements will need to be reinstalled)
+Updated gitpython requirement to 3.1.46
+Updated pillow requirement to 12.1.0
+Updated plexapi requirement to 4.18.0
+Updated psutil requirement to 7.2.2
+Update setuptools requirement to 80.10.2
+Updated python-dotenv requirement to 1.2.1
+Updated ruamel.yaml requirement to 0.19.1
+Update tenacity requirement to 9.1.3
 
 # New Features
 Adds `|` as a preferred delimiter for run times.
 Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
 Adds new filters `show_title` and `season_title`
 Adds Producer's Cut to resolution/edition default overlay
+Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` builders for improved performance with large collections
+Change MDBList module to use API rather than JSON endpoint.
+Add visible (X/Y) logging while processing missing items.
+Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
+Replace AniDB scraping with purpose-built cache server. Removed popular builder. [Issue #2932]
+Removes authentication-related AniDB configuration entries.
+IMDB "Document is empty" no longer CRITICAL
 
 # Docs
-Fixed an issue where the home page logo and shield images appeared as raw text
-Fixed an issue where the builder overview page had multiple dead links
-Added some clarification on Library types to defaults pages
+Sync MDBList sort options with MDBList API Docs
+Add docs around Plex token types, add Plex Token generation form
+Tweak AniDB docs to reflect loss of tag builder and reduced config.
+updated wiki to remove aniDB from Wiki; replaced example of anidb with metacritic
 
 # Defaults
-Add Movistar Plus + as streaming service
-Add Atres Player as streaming service
-Add AMC+ as streaming service
-Add Filmin as streaming service
-Update BAFTA Best Films to include BAFTA Award for Best Film From Any Source
-Fixes #2806 separators placeholder now work with minimum items.
+removed aniDB from Defaults
 
 # Bug Fixes
-Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
-Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
-Fixes #2802 the list now acts as a list
-Fixes logic issue with reauthenticating trakt
-Fixes an issue with the `dovi` attribute of `plex_search` where shows and seasons never returned anything
-Fixes `.regex` tag filters
+Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
+Pin dockerfile to Python 3.13.x, since 3.14.1 introduces memory bloat issues
+Improve API-based handling of MDBList "external" lists.
+Sync MDBList sort options with MDBList API Docs
+Update several networks to cater for updated names
+Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
