@@ -23,14 +23,6 @@
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
             "works_with_playlists_and_custom_sort": "No"
-        },
-        {
-            "builder": "anidb_tags",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/anidb/#anidb-tag",
-            "description": "Finds every anime in a AniDB Tag.",
-            "works_with_movies": "Yes",
-            "works_with_shows": "Yes",
-            "works_with_playlists_and_custom_sort": "No"
         }
     ],
     "AniList": [

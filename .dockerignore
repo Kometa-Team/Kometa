@@ -3,6 +3,7 @@
 *.spec
 **/__pycache__
 /.vscode
+/tests
 **/log
 *.psd
 .git

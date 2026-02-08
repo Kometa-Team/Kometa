@@ -19,6 +19,8 @@ Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` b
 Change MDBList module to use API rather than JSON endpoint.
 Add visible (X/Y) logging while processing missing items.
 Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
+Replace AniDB scraping with purpose-built cache server. [Issue #2932]
+Removes authentication-related AniDB configuration entries.
 Add new networks 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 Add new networks overlays 'U&Drama', 'U&Gold', 'U&W' and 'U&Yesterday'
 IMDB "Document is empty" no longer CRITICAL
@@ -26,12 +28,13 @@ IMDB "Document is empty" no longer CRITICAL
 # Docs
 Sync MDBList sort options with MDBList API Docs
 Add docs around Plex token types, add Plex Token generation form
+Tweak AniDB docs to reflect loss of tag builder and reduced config.
 
 # Defaults
 
 # Bug Fixes
 Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
-Pin dockerfile to 3.13.x, since 3.14.1 introduces memory bloat issues
+Pin dockerfile to Python 3.13.x, since 3.14.1 introduces memory bloat issues
 Improve API-based handling of MDBList "external" lists.
 Sync MDBList sort options with MDBList API Docs
 Update several networks to cater for updated names
