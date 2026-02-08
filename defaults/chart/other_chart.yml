@@ -12,11 +12,6 @@ external_templates:
     image: chart/<<style>>/<<mapping_name_encoded>>
 
 templates:
-  anidb:
-    default:
-      limit_anidb: 30
-    anidb_popular: <<limit_anidb>>
-
   commonsense:
     mdblist_list: https://mdblist.com/lists/k0meta/cssfamilies<<library_type>>s
 
