@@ -4,22 +4,56 @@ hide:
 ---
 # AniDB Tag
 
-Finds anime with the specified AniDB Tag the options are detailed below. 
+Finds anime with a specific AniDB tag ID.
 
-| Attribute | Description                                                   |                  Required                  | Default |
-|:----------|:--------------------------------------------------------------|:------------------------------------------:|:-------:|
-| `tag`     | AniDB Tag ID to search by                                     | :fontawesome-solid-circle-check:{ .green } |   N/A   |
-| `limit`   | Number of Anime to query from AniDB (use 0 for all; max: 500) |  :fontawesome-solid-circle-xmark:{ .red }  |    0    |
+The expected input is an AniDB tag ID with an optional `limit` parameter.
+
+You can find tag IDs by browsing tags at [https://utilities.kometa.wiki/tags](https://utilities.kometa.wiki/tags).
 
 ### Example AniDB Tag Builder(s)
 
 ```yaml
 collections:
-  Pirates Anime:
+  Military Anime:
+    anidb_tag: 36
+    collection_order: custom
+    sync_mode: sync
+```
+```yaml
+collections:
+  Top 10 Military Anime:
     anidb_tag:
-      tag: 1700
-      limit: 500
+      tag_id: 36
+      limit: 10
+    collection_order: custom
+    sync_mode: sync
+```
+```yaml
+collections:
+  Future Setting:
+    anidb_tag:
+      tag_id: 2626
+      limit: 50
+    collection_order: custom
     sync_mode: sync
 ```
 
-To find a list of AniDB tags, go to the [AniDB Anime](https://anidb.net/tag) page. On the tag you want, copy the link and find the tag ID at the end of the url.
+### Tag ID Examples
+
+| Tag Name | Tag ID |
+|:---------|-------:|
+| Military | 36     |
+| Future   | 2626   |
+| Comedy   | 2853   |
+| Action   | 2604   |
+| Fantasy  | 2849   |
+| Sci-Fi   | 2846   |
+
+## Attributes
+
+| Attribute | Description                                          | Required |
+|:----------|:-----------------------------------------------------|:--------:|
+| `tag_id`  | AniDB Tag ID                                         | Yes      |
+| `limit`   | Maximum number of anime to return (default: 1000)    | No       |
+
+**Note:** The `mature` setting from your AniDB configuration controls whether mature/adult anime are included in the results.
