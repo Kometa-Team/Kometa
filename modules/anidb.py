@@ -10,9 +10,9 @@ import xml.etree.ElementTree as ET
 
 logger = util.logger
 
-builders = ["anidb_id", "anidb_relation", "anidb_popular", "anidb_tag"]
+builders = ["anidb_id", "anidb_relation", "anidb_tag", "anidb_tag_name"]
 base_url = "https://anidb.net"
-api_url = "http://utilities.kometa.wiki/anidb-service"
+api_url = "https://utilities.kometa.wiki/anidb-service"
 
 kometa_client = "kometaofficial"
 kometa_client_version = 1
@@ -211,9 +211,6 @@ class AniDB:
         self.language = data.get("language", "en")
         self.expiration = data.get("expiration", 60)
         self.enable_mature = data.get("enable_mature", False)
-        # Hardcoded credentials for utilities.kometa.wiki API
-        self.username = "kometa_admin"
-        self.password = "kometa_is_cool"
         self.last_request_time = 0
         self.min_delay = 0.1  # New API has no rate limiting, minimal delay for safety
         self._is_authorized = False
@@ -280,9 +277,7 @@ class AniDB:
         if api_params and 'aid' not in api_params:
             payload.update(api_params)
         
-        # Add hardcoded authentication for utilities.kometa.wiki API
-        payload['username'] = self.username
-        payload['password'] = self.password
+        # Add mature flag as query parameter
         payload['mature'] = 'true' if self.enable_mature else 'false'
 
         # 4. Execute Request
@@ -300,26 +295,54 @@ class AniDB:
                 except Exception as e:
                     raise Failed(f"AniDB Error: Failed to decompress Gzip response: {e}")
 
-            # 6. Save and Return
+            # Check if content is empty or invalid
+            if not content or len(content.strip()) == 0:
+                logger.warning(f"AniDB Warning: Empty response from {target_url}")
+                return None
+
+            # 6. Check if response is JSON (for tag endpoints)
+            content_type = response.headers.get('content-type', '')
+            if 'json' in content_type or content.strip().startswith(b'{') or content.strip().startswith(b'['):
+                try:
+                    return json.loads(content)
+                except json.JSONDecodeError as e:
+                    logger.error(f"AniDB Error: Invalid JSON response from {target_url}")
+                    raise Failed(f"AniDB Error: Invalid JSON response - {e}")
+
+            # 7. Parse XML with error handling
+            try:
+                xml_result = etree.fromstring(content)
+            except etree.XMLSyntaxError as e:
+                logger.error(f"AniDB Error: Invalid XML response from {target_url}")
+                logger.error(f"Response content type: {response.headers.get('content-type', 'unknown')}")
+                try:
+                    logger.error(f"Response preview: {content[:500].decode('utf-8', errors='replace')}")
+                except:
+                    logger.error(f"Response preview (bytes): {content[:500]}")
+                raise Failed(f"AniDB Error: Endpoint may not be implemented - {target_url}")
+            
+            # 8. Save to cache
             if cache_file:
                 os.makedirs(os.path.dirname(cache_file), exist_ok=True)
                 with open(cache_file, 'wb') as f:
                     f.write(content)
             
-            return etree.fromstring(content)
+            return xml_result
         
         elif response.status_code == 403:
             raise Failed("AniDB Error: 403 Banned (Too many requests or invalid Client ID)")
+        elif response.status_code == 404:
+            logger.warning(f"AniDB Warning: 404 Not Found - {target_url}")
+            return None
+        else:
+            logger.error(f"AniDB Error: HTTP {response.status_code} from {target_url}")
+            return None
             
         return None
 
-    def _popular(self):
-        xml = self._request(rss_url="https://anidb.net/feeds/popular.xml")
-        return util.get_int_list(xml.xpath("//item/guid/text()"), "AniDB ID") if xml is not None else []
-
     def _relations(self, anidb_id):
         xml = self._request(api_params={'aid': anidb_id})
-        return util.get_int_list(xml.xpath("//relatedanime/anime/@aid"), "AniDB ID") if xml is not None else []
+        return util.get_int_list(xml.xpath("//relatedanime/anime/@id"), "AniDB ID") if xml is not None else []
 
     def _validate(self, anidb_id):
         """
@@ -385,32 +408,71 @@ class AniDB:
             self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 
-    def _search_by_tags(self, tags, min_weight=0):
+    def _search_by_tags(self, tag_id, limit=None):
         """
-        Search anime by tags using the new API endpoint.
+        Search anime by tag ID using the new API endpoint.
+        Args:
+            tag_id: The AniDB tag ID (e.g., 36 for "military")
+            limit: Maximum number of results to return (default: API default)
+        """
+        params = {}
+        if limit is not None:
+            params['limit'] = limit
+        
+        response = self._request(api_params=params, endpoint=f"tags/{tag_id}", cache_days=1)
+        if response is None:
+            return []
+        
+        # Handle JSON response
+        if isinstance(response, dict):
+            results = response.get('results', [])
+            return [anime['aid'] for anime in results if 'aid' in anime]
+        
+        # Fallback to XML parsing if needed
+        return util.get_int_list(response.xpath("//anime/@id"), "AniDB ID")
+
+    def _search_by_tag_names(self, tags, min_weight=0):
+        """
+        Search anime by tag names using the search/tags endpoint.
+        Args:
+            tags: Single tag name or list of tag names (e.g., ['action', 'comedy'])
+            min_weight: Minimum tag weight filter (default: 0)
         """
         tag_list = tags if isinstance(tags, list) else [tags]
         params = {
             'tags': ','.join(tag_list),
             'min_weight': min_weight
         }
-        xml = self._request(api_params=params, endpoint="search/tags", cache_days=1)
-        return util.get_int_list(xml.xpath("//anime/@aid"), "AniDB ID") if xml is not None else []
+        
+        response = self._request(api_params=params, endpoint="search/tags", cache_days=1)
+        if response is None:
+            return []
+        
+        # Handle JSON response
+        if isinstance(response, dict):
+            results = response.get('results', [])
+            return [anime['aid'] for anime in results if 'aid' in anime]
+        
+        # Fallback to XML parsing if needed
+        return util.get_int_list(response.xpath("//anime/@id"), "AniDB ID")
 
     def get_anidb_ids(self, method, data):
         # Utilizes helper methods for various search types
         anidb_ids = []
-        if method == "anidb_popular":
-            anidb_ids.extend(self._popular()[:data])
-        elif method == "anidb_id":
+        if method == "anidb_id":
             anidb_ids.append(data)
         elif method == "anidb_relation":
             anidb_ids.extend(self._relations(data))
         elif method == "anidb_tag":
-            # data should be a dict with 'tags' and optionally 'min_weight'
+            # data should be a dict with 'tag_id' and optionally 'limit'
+            tag_id = data.get('tag_id', data) if isinstance(data, dict) else data
+            limit = data.get('limit') if isinstance(data, dict) else None
+            anidb_ids.extend(self._search_by_tags(tag_id, limit))
+        elif method == "anidb_tag_name":
+            # data should be a dict with 'tags' (list or string) and optionally 'min_weight'
             tags = data.get('tags', data) if isinstance(data, dict) else data
             min_weight = data.get('min_weight', 0) if isinstance(data, dict) else 0
-            anidb_ids.extend(self._search_by_tags(tags, min_weight))
+            anidb_ids.extend(self._search_by_tag_names(tags, min_weight))
         
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found via {method}")
         return anidb_ids

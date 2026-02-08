@@ -747,7 +747,8 @@ class ConfigFile:
                 logger.info("Connecting to AniDB...")
 
                 self.AniDB = AniDB(self.Requests, self.Cache, {
-                    "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
+                    "language": check_for_attribute(self.data, "language", parent="anidb", default="en"),
+                    "enable_mature": check_for_attribute(self.data, "enable_mature", parent="anidb", default=False)
                 })
 
                 try:
