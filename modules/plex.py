@@ -17,6 +17,7 @@ from plexapi.video import Movie, Show, Season, Episode
 from requests.exceptions import ConnectionError, ConnectTimeout
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 from xml.etree.ElementTree import ParseError
+from typing import List
 
 logger = util.logger
 
@@ -1046,6 +1047,22 @@ class Plex(Library):
         except IndexError:
             return {"library": False, "home": False, "shared": False}
 
+    def is_collection_visible(self, collection) -> bool:
+        """
+        Check if a collection is visible on any recommendation hub (library Recommended tab, home page, shared home).
+
+        :param collection: The Plex Collection to check.
+        :return: True if the collection is visible on any hub, False otherwise.
+        """
+        visibility = self.collection_visibility(collection)
+        return any(
+            [
+                visibility.get("library", False),
+                visibility.get("home", False),
+                visibility.get("shared", False)
+            ]
+        )
+
     def collection_visibility_update(self, collection, visibility=None, library=None, home=None, shared=None):
         if visibility is None:
             visibility = self.collection_visibility(collection)
@@ -1054,6 +1071,30 @@ class Plex(Library):
         key += f"&promotedToOwnHome={1 if (home is None and visibility['home']) or home else 0}"
         key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
         self._query(key, post=True)
+
+    def sort_collection_hubs_by_sort_title(self) -> None:
+        """
+        Sort collections for this library on recommendation hubs (home page and per-library Recommended tabs)
+        by sort title.
+        This mirrors how collections are automatically sorted by their "sort title" properties in the
+        per-library Collections tab.
+
+        :return: None
+        """
+        collections: List[Collection] = self.get_all_collections()
+        # e.g. "001_Action" above "001____Adventure" above "005_Something-Else"
+        collections = sorted(collections, key=lambda c: c.titleSort)  # Plex calls them Hubs
+        collections = [collection for collection in collections if
+                       self.is_collection_visible(collection)]  # Only sort visible collections
+
+        previous_hub_id = None
+        for hub in collections:  # Plex calls the rows on the home page and Recommended tab "Hubs"
+            key = f"/hubs/sections/{self.Plex.key}/manage/{hub.ratingKey}/move"
+            if previous_hub_id:  # Move the first hub to the top, others sequentially after the previous one
+                key += f"?after={previous_hub_id}"
+            self._query(key, put=True)
+
+            previous_hub_id = hub.ratingKey
 
     def get_playlist(self, title):
         try:

@@ -664,6 +664,7 @@ def run_libraries(config):
             logger.debug(f"Delete Below Minimum: {library.delete_below_minimum}")
             logger.debug(f"Delete Not Scheduled: {library.delete_not_scheduled}")
             logger.debug(f"Default Collection Order: {library.default_collection_order}")
+            logger.debug(f"Auto-Sort Hubs: {library.auto_sort_hubs}")
             logger.debug(f"Missing Only Released: {library.missing_only_released}")
             logger.debug(f"Only Filter Missing: {library.only_filter_missing}")
             logger.debug(f"Show Unmanaged: {library.show_unmanaged}")
@@ -992,6 +993,10 @@ def run_collection(config, library, metadata, requested_collections):
         logger.info("")
         logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
         #logger.remove_collection_handler(library.mapping_name, collection_log_name)
+
+    # Once all collections have been modified as needed, sort all the visible collection hubs if needed
+    if library.auto_sort_hubs:
+        library.sort_collection_hubs_by_sort_title()
 
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
