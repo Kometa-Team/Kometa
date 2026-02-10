@@ -2888,21 +2888,49 @@ class CollectionBuilder:
             return util.parse(self.Type, attribute, data, datatype="bool")
         elif attribute in ["seasons", "episodes", "albums", "tracks"]:
             if isinstance(data, dict) and data:
-                percentage = self.default_percent
-                if "percentage" in data:
+                has_percentage = "percentage" in data
+                has_count = "count" in data
+                
+                if has_percentage and has_count:
+                    raise Failed(f"{self.Type} Error: Cannot use both percentage and count in {attribute} filter. Please use one or the other.")
+                
+                percentage = None
+                count = None
+                
+                if has_count:
+                    if data["count"] is None:
+                        logger.warning(f"{self.Type} Warning: count filter attribute is blank")
+                    else:
+                        maybe = util.check_num(data["count"])
+                        if maybe < 1:
+                            logger.warning(f"{self.Type} Warning: count filter attribute must be a number 1 or greater")
+                        else:
+                            count = maybe
+                elif has_percentage:
                     if data["percentage"] is None:
                         logger.warning(f"{self.Type} Warning: percentage filter attribute is blank using {self.default_percent} as default")
+                        percentage = self.default_percent
                     else:
                         maybe = util.check_num(data["percentage"])
                         if maybe < 0 or maybe > 100:
                             logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using {self.default_percent} as default")
+                            percentage = self.default_percent
                         else:
                             percentage = maybe
-                final_filters = {"percentage": percentage}
+                else:
+                    # Default to percentage if neither is specified
+                    percentage = self.default_percent
+                
+                final_filters = {}
+                if count is not None:
+                    final_filters["count"] = count
+                else:
+                    final_filters["percentage"] = percentage
+                    
                 for filter_method, filter_data in data.items():
                     filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
                     message = None
-                    if filter_final == "percentage":
+                    if filter_final in ["percentage", "count"]:
                         continue
                     if filter_final not in all_filters:
                         message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
