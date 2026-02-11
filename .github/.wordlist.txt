@@ -428,6 +428,7 @@ walkthrough
 walkthroughs
 watchlist
 webapp
+webapps
 webhook
 webhooks
 webp
