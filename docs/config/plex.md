@@ -50,7 +50,7 @@ It can be a web client token as described in this [support article](https://supp
 
 It absolutely **should not** be a server token like you will find in your Plex `Preferences.xml` file.  Using a server token can cause problems like all your remote users losing their shares until you restart the server.
 
-If you need help generating such a token you can use [this webapp](https://plex-oauth-0b43dcf08594.herokuapp.com/).
+If you need help generating such a token you can use [this webapp](https://utilities.kometa.wiki/plex-oauth).
 
 No information is logged.  However, if you want to run it locally, all the source is available [here](https://github.com/Kometa-Team/Plex-OAuth).
 
