@@ -24,7 +24,7 @@ These are the File types that can be utilized against Plex servers:
           - file: config/TVShows.yml
           - folder: config/TV Shows/
         overlay_files:
-          - default: imdb
+          - default: ribbon
           - repo: overlays
     playlist_files:
       - url: https://somewhere.com/Playlists.yml
