@@ -29,5 +29,6 @@ but it is not intended for end user use, and is expressed in a different format 
 
     **These lists are provided for reference only.**
 
-    If you want to customize these collections, refer to the [Defaults Usage Guide](./../../../defaults/guide#customizing-these-defaults) to learn how to use Template Variables.
+    If you want to customize these collections, refer to the [Defaults Usage Guide](../../../defaults/guide#customizing-these-defaults) to learn how to use Template Variables.
+    
 
