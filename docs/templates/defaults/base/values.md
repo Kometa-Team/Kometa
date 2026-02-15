@@ -13,7 +13,7 @@ but it is not intended for end user use, and is expressed in a different format 
 
     <div id="i-want-to-customize-this-default" />
 
-    To learn how to customize any Defaults File using Template Variables see the [Defaults Usage Guide](./../../../defaults/guide).
+    To learn how to customize any Defaults File using Template Variables see the [Defaults Usage Guide](./../../../defaults/guide.md).
     
     Each Defaults File has its own set of Template Variables, which are used to control the behavior of that default.
     The Template Variables for this file can be found [here](#template-variables).
@@ -29,5 +29,6 @@ but it is not intended for end user use, and is expressed in a different format 
 
     **These lists are provided for reference only.**
 
-    If you want to customize these collections, refer to the [Defaults Usage Guide](./../../../defaults/guide#customizing-these-defaults) to learn how to use Template Variables.
+    If you want to customize these collections, refer to the [Defaults Usage Guide](./../../../defaults/guide.md#customizing-these-defaults) to learn how to use Template Variables.
+    
 
