@@ -418,6 +418,8 @@ class Library(ABC):
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 key = item.ratingKey
                 guid = item.guid
+            if not guid:
+                continue
             if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
                 if isinstance(item, tuple):
                     item_type, check_id = self.config.Convert.scan_guid(guid)

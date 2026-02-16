@@ -402,11 +402,11 @@ class Convert:
                 logger.debug(f"TMDb: {tmdb_id}, IMDb: {imdb_id}, TVDb: {tvdb_id}")
                 raise Failed(f"No ID to convert")
         except Failed as e:
-            logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
+            logger.info(f'Mapping Error | {str(item.guid or ""):<46} | {e} for "{item.title}"')
         except NonExisting as e:
             if not library.is_other:
-                logger.info(f'Mapping Error | {item.guid:<46} | {e} for "{item.title}"')
+                logger.info(f'Mapping Error | {str(item.guid or ""):<46} | {e} for "{item.title}"')
         except BadRequest:
             logger.stacktrace()
-            logger.info(f'Mapping Error | {item.guid:<46} | Bad Request for "{item.title}"')
+            logger.info(f'Mapping Error | {str(item.guid or ""):<46} | Bad Request for "{item.title}"')
         return None, None, None
