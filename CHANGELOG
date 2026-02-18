@@ -1,40 +1,12 @@
 # Important Changes
-Python 3.9 is no longer supported as it is End-of-Life, please use Python 3.10+
 
 # Requirements Update (requirements will need to be reinstalled)
-Updated gitpython requirement to 3.1.46
-Updated pillow requirement to 12.1.0
-Updated plexapi requirement to 4.18.0
-Updated psutil requirement to 7.2.2
-Update setuptools requirement to 82.0.0
-Updated python-dotenv requirement to 1.2.1
-Updated ruamel.yaml requirement to 0.19.1
-Update tenacity requirement to 9.1.4
 
 # New Features
-Adds `|` as a preferred delimiter for run times.
-Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
-Adds new filters `show_title` and `season_title`
-Adds Producer's Cut to resolution/edition default overlay
-Adds incremental parsing support to Letterboxd `user_films` and `user_reviews` builders for improved performance with large collections
-Change MDBList module to use API rather than JSON endpoint.
-Add visible (X/Y) logging while processing missing items.
-Add new `mal_all` genre option to include Explicit Genres, Themes and Demographics.
-Replace AniDB scraping with purpose-built cache server. Removed popular builder. [Issue #2932]
-Removes authentication-related AniDB configuration entries.
-IMDB "Document is empty" no longer CRITICAL
 
 # Docs
-Sync MDBList sort options with MDBList API Docs
-Add docs around Plex token types, add Plex Token generation form
-Tweak AniDB docs to reflect loss of tag builder and reduced config.
 
 # Defaults
 
 # Bug Fixes
-Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
-Pin dockerfile to Python 3.13.x, since 3.14.1 introduces memory bloat issues
-Improve API-based handling of MDBList "external" lists.
-Sync MDBList sort options with MDBList API Docs
-Update several networks to cater for updated names
-Adjust behavior of `mdb_commonsense` and `mdb_commonsense0` content rating operations to reflect current response from MDBList.
+Catch KeyError on Plex NFO build.
