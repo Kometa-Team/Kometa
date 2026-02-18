@@ -176,6 +176,8 @@ jpeg
 jpg
 json
 kesleyalfa
+KeyError
+keyerror
 kkelly
 koltom
 kometa
@@ -243,6 +245,8 @@ namespace
 nas
 natively
 ncis
+nfo
+NFO
 nfr
 nitsua
 nl
