@@ -742,16 +742,17 @@ class ConfigFile:
             else:
                 logger.info("mal attribute not found")
 
-            self.AniDB = AniDB(self.Requests, self.Cache, {
-                "language": check_for_attribute(self.data, "language", parent="anidb", default="en")
-            })
             if "anidb" in self.data:
                 logger.separator()
                 logger.info("Connecting to AniDB...")
+
+                self.AniDB = AniDB(self.Requests, self.Cache, {
+                    "language": check_for_attribute(self.data, "language", parent="anidb", default="en"),
+                    "enable_mature": check_for_attribute(self.data, "enable_mature", parent="anidb", default=False)
+                })
+
                 try:
                     self.AniDB.authorize(
-                        check_for_attribute(self.data, "client", parent="anidb", throw=True),
-                        check_for_attribute(self.data, "version", parent="anidb", var_type="int", throw=True),
                         check_for_attribute(self.data, "cache_expiration", parent="anidb", var_type="int", default=60, int_min=1)
                     )
                 except Failed as e:
@@ -760,17 +761,6 @@ class ConfigFile:
                     else:
                         logger.error(e)
                 logger.info(f"AniDB API Connection {'Successful' if self.AniDB.is_authorized else 'Failed'}")
-                try:
-                    self.AniDB.login(
-                        check_for_attribute(self.data, "username", parent="anidb", throw=True),
-                        check_for_attribute(self.data, "password", parent="anidb", throw=True)
-                    )
-                except Failed as e:
-                    if str(e).endswith("is blank"):
-                        logger.warning(e)
-                    else:
-                        logger.error(e)
-                logger.info(f"AniDB Login {'Successful' if self.AniDB.username else 'Failed Continuing as Guest'}")
 
             logger.separator()
 

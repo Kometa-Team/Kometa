@@ -10,7 +10,7 @@ __pycache__/
 .idea
 .vscode
 .Python
-/test*
+
 logs/
 config/*
 !config/overlays/

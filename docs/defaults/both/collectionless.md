@@ -38,7 +38,7 @@ Requirements:
 
 | Collection       | Description                                                                                                                    |
 |:-----------------|:-------------------------------------------------------------------------------------------------------------------------------|
-| `Collectionless` | [Collectionless collection](../../files/builders/plex/collectionless) to help Show/Hide Movies/Shows properly in your library. |
+| `Collectionless` | [Collectionless collection](../../files/builders/plex/collectionless.md) to help Show/Hide Movies/Shows properly in your library. |
 
 {% include-markdown "./../../templates/defaults/base/mid.md" 
     replace='{"CODE_NAME": "collectionless"}'

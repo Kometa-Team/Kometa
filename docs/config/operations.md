@@ -149,13 +149,13 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`tvdb`</td><td>Use TVDb for Genres.</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb for Genres.</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb through OMDb for Genres. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Main Tags for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_3_0`</td><td>Use AniDB Main Tags and All 3 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_2_5`</td><td>Use AniDB Main Tags and All 2.5 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_2_0`</td><td>Use AniDB Main Tags and All 2 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_1_5`</td><td>Use AniDB Main Tags and All 1.5 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_1_0`</td><td>Use AniDB Main Tags and All 1 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_0_5`</td><td>Use AniDB Main Tags and All 0.5 Star Tags and above for Genres. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Main Tags for Genres.</td></tr>
+      <tr><td>`anidb_3_0`</td><td>Use AniDB Main Tags and All 3 Star Tags and above for Genres.</td></tr>
+      <tr><td>`anidb_2_5`</td><td>Use AniDB Main Tags and All 2.5 Star Tags and above for Genres.</td></tr>
+      <tr><td>`anidb_2_0`</td><td>Use AniDB Main Tags and All 2 Star Tags and above for Genres.</td></tr>
+      <tr><td>`anidb_1_5`</td><td>Use AniDB Main Tags and All 1.5 Star Tags and above for Genres.</td></tr>
+      <tr><td>`anidb_1_0`</td><td>Use AniDB Main Tags and All 1 Star Tags and above for Genres.</td></tr>
+      <tr><td>`anidb_0_5`</td><td>Use AniDB Main Tags and All 0.5 Star Tags and above for Genres.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList for Genres. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`mal_all`</td><td>Use MyAnimeList for Genres (includes Explicit Genres, Themes and Demographics). Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`lock`</td><td>Lock all Genre Field.</td></tr>
@@ -235,8 +235,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
 
     <table class="clearTable">
-      <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_official`</td><td>Use AniDB Official Title based on the language attribute in the config file for Original Titles. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles.</td></tr>
+      <tr><td>`anidb_official`</td><td>Use AniDB Official Title based on the language attribute in the config file for Original Titles.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Main Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`mal_english`</td><td>Use MyAnimeList English Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`mal_japanese`</td><td>Use MyAnimeList Japanese Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
@@ -272,7 +272,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
 
     <table class="clearTable">
-      <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Studio for Studio. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`tmdb`</td><td>Use TMDb Studio for Studio.</td></tr>
       <tr><td>`lock`</td><td>Lock Studio Field.</td></tr>
@@ -322,7 +322,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
       <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`mdb_digital`</td><td>Use MDBList Digital Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Release Date. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Release Date.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Release Date. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`lock`</td><td>Lock Originally Available Field.</td></tr>
       <tr><td>`unlock`</td><td>Unlock Originally Available Field.</td></tr>
@@ -367,7 +367,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
       <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`mdb_digital`</td><td>Use MDBList Digital Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Release Date. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb`</td><td>Use AniDB Release Date.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Release Date. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`lock`</td><td>Lock Added At Field.</td></tr>
       <tr><td>`unlock`</td><td>Unlock Added At Field.</td></tr>
@@ -415,9 +415,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
         directly.
 
     <table class="clearTable">
-      <tr><td>`anidb_average`</td><td>Use AniDB Average. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_rating`</td><td>Use AniDB Rating. Requires [AniDB clientID](../config/anidb.md).</td></tr>
-      <tr><td>`anidb_score`</td><td>Use AniDB Review Score. Requires [AniDB clientID](../config/anidb.md).</td></tr>
+      <tr><td>`anidb_average`</td><td>Use AniDB Average.</td></tr>
+      <tr><td>`anidb_rating`</td><td>Use AniDB Rating.</td></tr>
+      <tr><td>`anidb_score`</td><td>Use AniDB Review Score.</td></tr>
       <tr><td>`imdb`</td><td>Use IMDb Rating.</td></tr>
       <tr><td>`mal`</td><td>Use MyAnimeList Score. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
       <tr><td>`mdb_average`</td><td>Use MDBList Average Score. Requires [MDBList key](../config/mdblist.md).</td></tr>

@@ -363,13 +363,6 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-                "client": {
-                    "type": "string"
-                },
-                "version": {
-                    "type": "integer",
-                    "minimum": 1
-                },
                 "language": {
                     "type": ["string", "null"],
                     "enum": ["",
@@ -400,17 +393,12 @@
                     "minimum": 1,
                     "description": "An integer greater than 0 in days"
                 },
-                "username": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
+                "enable_mature": {
+                    "type": "boolean",
+                    "description": "Enable access to mature/restricted content"
                 }
             },
-            "required": [
-                "username",
-                "password"
-            ],
+            "required": [],
             "title": "anidb"
         },
         "sonarr-api": {
