@@ -32,6 +32,7 @@ collections:
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
+    delete_collections_named: "Letterboxd Top 250"
 
   "Box Office Mojo All Time 100":
     variables:
