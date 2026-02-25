@@ -3,6 +3,7 @@
 # Requirements Update (requirements will need to be reinstalled)
 
 # New Features
+Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
 
 # Docs
 
@@ -10,3 +11,4 @@
 
 # Bug Fixes
 Catch KeyError on Plex NFO build.
+Fixing "IndexError: list index out of range" error when processing imdb charts #3006
