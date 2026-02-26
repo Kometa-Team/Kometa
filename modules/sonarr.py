@@ -197,11 +197,11 @@ class Sonarr:
                     if self.cache:
                         self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
                 if upgrade_qp:
-                    self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
+                    self.api.edit_multiple_series([s.tvdbId for s in upgrade_qp], quality_profile=qp.id)
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
                 if remonitor:
-                    self.api.edit_multiple_series(remonitor, monitor=monitor)
+                    self.api.edit_multiple_series([s.tvdbId for s in remonitor], monitor=monitor)
                     for series in remonitor:
                         logger.info(f"Monitored: {monitor} in Sonarr | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:
