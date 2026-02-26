@@ -19,19 +19,20 @@ templates:
     letterboxd_list: https://letterboxd.com/<<user>>/list/<<list>>
 
 collections:
-  "Letterboxd Top 250":
+  "Letterboxd Top 500":
     variables:
       style: color
-      key: top_250
+      key: top_500
     template:
       - name: letterboxd_list
-        user: dave
-        list: official-top-250-narrative-feature-films
+        user: official
+        list: letterboxds-top-500-films
       - name: shared
-        translation_key: letterboxd_top_250
+        translation_key: letterboxd_top_500
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
+    delete_collections_named: "Letterboxd Top 250"
 
   "Box Office Mojo All Time 100":
     variables:
@@ -40,7 +41,7 @@ collections:
     template:
       - name: letterboxd_list
         user: matthew
-        list: box-office-mojo-all-time-worldwide
+        list: all-time-worldwide-box-office
       - name: shared
         translation_key: box_office_mojo_all_time_100
         summary: <<summary_<<key>>>>
@@ -82,7 +83,7 @@ collections:
     template:
       - name: letterboxd_list
         user: gubarenko
-        list: 1001-movies-you-must-see-before-you-die-2021
+        list: 1001-movies-you-must-see-before-you-die-2024
       - name: shared
         translation_key: 1001_movies_to_see_before_you_die
         summary: <<summary_<<key>>>>
@@ -123,8 +124,8 @@ collections:
       key: women_directors
     template:
       - name: letterboxd_list
-        user: jack
-        list: women-directors-the-official-top-250-narrative
+        user: official
+        list: top-250-films-by-women-directors
       - name: shared
         translation_key: top_250_women_directed
         summary: <<summary_<<key>>>>
@@ -137,8 +138,8 @@ collections:
       key: black_directors
     template:
       - name: letterboxd_list
-        user: jack
-        list: black-directors-the-official-top-250-narrative
+        user: official
+        list: top-250-films-by-black-directors
       - name: shared
         translation_key: top_250_black_directed
         summary: <<summary_<<key>>>>
@@ -152,8 +153,8 @@ collections:
       key: most_fans
     template:
       - name: letterboxd_list
-        user: jack
-        list: official-top-250-films-with-the-most-fans
+        user: official
+        list: top-250-films-with-the-most-fans
       - name: shared
         translation_key: top_250_most_fans
         summary: <<summary_<<key>>>>
@@ -166,8 +167,8 @@ collections:
       key: documentaries
     template:
       - name: letterboxd_list
-        user: jack
-        list: official-top-250-documentary-films
+        user: official
+        list: top-250-documentary-films
       - name: shared
         translation_key: top_250_documentaries
         summary: <<summary_<<key>>>>
@@ -180,8 +181,8 @@ collections:
       key: animation
     template:
       - name: letterboxd_list
-        user: lifeasfiction
-        list: letterboxd-100-animation
+        user: official
+        list: top-250-animated-films
       - name: shared
         translation_key: top_100_animation
         summary: <<summary_<<key>>>>
@@ -194,8 +195,8 @@ collections:
       key: horror
     template:
       - name: letterboxd_list
-        user: darrencb
-        list: letterboxds-top-250-horror-films
+        user: official
+        list: top-250-horror-films
       - name: shared
         translation_key: top_250_horror
         summary: <<summary_<<key>>>>
@@ -222,8 +223,8 @@ collections:
       key: science
     template:
       - name: letterboxd_list
-        user: chris_coke
-        list: letterboxds-top-250-science-fiction-films
+        user: official
+        list: top-250-science-fiction-films
       - name: shared
         translation_key: top_250_sci-fi_films
         summary: <<summary_<<key>>>>
@@ -250,7 +251,7 @@ collections:
       key: western
     template:
       - name: letterboxd_list
-        user: dave
+        user: clintarantino
         list: letterboxds-top-100-western-films
       - name: shared
         translation_key: top_100_western_films
@@ -293,8 +294,8 @@ collections:
       key: oscars
     template:
       - name: letterboxd_list
-        user: jake_ziegler
-        list: academy-award-winners-for-best-picture
+        user: oscars
+        list: oscar-winning-films-best-picture
       - name: shared
         translation_key: oscars_best_picture_winners
         summary: <<summary_<<key>>>>

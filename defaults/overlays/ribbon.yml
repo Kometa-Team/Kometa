@@ -215,10 +215,10 @@ overlays:
     variables: {key: imdb, weight: 60, imdb_key: top}
     template: [name: standard, name: ribbon]
 
-  Letterboxd Top 250:
+  Letterboxd Top 500:
     variables: {key: letterboxd, weight: 50}
     template: {name: standard, allowed_libraries: movie}
-    letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
+    letterboxd_list: https://letterboxd.com/official/list/letterboxds-top-500-films/
 
   Rotten Tomatoes Verified Hot:
     variables: {key: rottenverified, weight: 45, mdb_key: verifiedhot}
