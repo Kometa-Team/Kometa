@@ -27,7 +27,7 @@ collections on within the Letterboxd defaults using Template Variables.
 | `Cannes Palme d'Or Winners`      | `cannes`            | Collection of films that have won the Palme d'Or at the Cannes Film Festival. |
 | `Edgar Wright's 1,000 Favorites` | `edgarwright`       | Collection of Edgar Wright's 1,000 Favorite Movies.                           |
 | `IMDb Top 250 (Letterboxd)`      | `imdb_top_250`      | Collection of the Top 250 Movies on IMDb, from Letterboxd.                    |
-| `Letterboxd Top 250`             | `top_250`           | Collection of the Top 250 films on Letterboxd.                                |
+| `Letterboxd Top 500`             | `top_500`           | Collection of the Top 500 films on Letterboxd.                                |
 | `Oscar Best Picture Winners`     | `oscars`            | Collection of films that have won the Academy Award for Best Picture.         |
 | `Roger Ebert's Great Movies`     | `rogerebert`        | Collection of films from Roger Ebert's "Great Movies" essays.                 |
 | `Sight & Sound Greatest Films`   | `sight_sound`       | Collection of Sight and Sound's Greatest Films of All Time.                   |
