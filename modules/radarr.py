@@ -173,11 +173,11 @@ class Radarr:
                     if self.cache:
                         self.cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
                 if upgrade_qp:
-                    self.api.edit_multiple_movies(upgrade_qp, quality_profile=qp)
+                    self.api.edit_multiple_movies([m.tmdbId for m in upgrade_qp], quality_profile=qp.id)
                     for movie in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {movie.tmdbId:<7} | {movie.title}")
                 if remonitor:
-                    self.api.edit_multiple_movies(remonitor, monitored=monitor)
+                    self.api.edit_multiple_movies([m.tmdbId for m in remonitor], monitored=monitor)
                     for movie in remonitor:
                         logger.info(f"Monitored: {monitor} in Radarr | {movie.tmdbId:<7} | {movie.title}")
             if len(skipped) > 0:
