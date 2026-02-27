@@ -43,6 +43,28 @@ chart_urls = {
     "trending_telugu": "india/telugu",
 }
 
+# Direct GraphQL chart query mapping — each chart maps to a specific GraphQL API query
+# that returns exact chart data in correct rank order (bypasses HTML scraping + AWS WAF)
+chart_graphql_map = {
+    # chartTitles query: returns edges->node->id, has total field
+    "top_movies":       {"query": "chartTitles", "chartType": "TOP_RATED_MOVIES", "first": 250},
+    "top_shows":        {"query": "chartTitles", "chartType": "TOP_RATED_TV_SHOWS", "first": 250},
+    "popular_movies":   {"query": "chartTitles", "chartType": "MOST_POPULAR_MOVIES", "first": 100},
+    "popular_shows":    {"query": "chartTitles", "chartType": "MOST_POPULAR_TV_SHOWS", "first": 100},
+    "lowest_rated":     {"query": "chartTitles", "chartType": "LOWEST_RATED_MOVIES", "first": 100},
+    "top_english":      {"query": "chartTitles", "chartType": "TOP_RATED_ENGLISH_MOVIES", "first": 250},
+    "top_indian":       {"query": "chartTitles", "chartType": "TOP_RATED_INDIAN_MOVIES", "first": 250},
+    "top_tamil":        {"query": "chartTitles", "chartType": "TOP_RATED_TAMIL_MOVIES", "first": 250},
+    "top_telugu":       {"query": "chartTitles", "chartType": "TOP_RATED_TELUGU_MOVIES", "first": 250},
+    "top_malayalam":    {"query": "chartTitles", "chartType": "TOP_RATED_MALAYALAM_MOVIES", "first": 250},
+    # boxOfficeWeekendChart query: returns entries->title->id
+    "box_office":       {"query": "boxOfficeWeekendChart"},
+    # topTrendingSetsPredefined query: returns edges->node->item->...on Title->id
+    "trending_india":   {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_UPCOMING", "first": 50},
+    "trending_tamil":   {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TAMIL", "first": 200},
+    "trending_telugu":  {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TELUGU", "first": 200},
+}
+
 imdb_search_attributes = [
     "limit",
     "sort_by",
@@ -687,9 +709,49 @@ class IMDb:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
+    def _chart_graphql(self, chart):
+        """Fetch chart IMDb IDs directly via the GraphQL API (no HTML scraping needed)."""
+        cfg = chart_graphql_map[chart]
+        query_type = cfg["query"]
+
+        if query_type == "chartTitles":
+            gql = (
+                "{ chartTitles(chart: { chartType: %s }, first: %d) "
+                "{ edges { node { id } } total } }" % (cfg["chartType"], cfg["first"])
+            )
+            data = self._graph_request({"query": gql})["data"]
+            return [edge["node"]["id"] for edge in data["chartTitles"]["edges"]]
+
+        elif query_type == "boxOfficeWeekendChart":
+            gql = "{ boxOfficeWeekendChart(limit: 50) { entries { title { id } } } }"
+            data = self._graph_request({"query": gql})["data"]
+            return [entry["title"]["id"] for entry in data["boxOfficeWeekendChart"]["entries"]]
+
+        elif query_type == "topTrendingSetsPredefined":
+            gql = (
+                "{ topTrendingSetsPredefined(first: %d, input: "
+                "{ topTrendingSetPredefined: %s }) "
+                "{ edges { node { item { ... on Title { id } } } } } }"
+                % (cfg["first"], cfg["predefined"])
+            )
+            data = self._graph_request({"query": gql})["data"]
+            return [edge["node"]["item"]["id"] for edge in data["topTrendingSetsPredefined"]["edges"]]
+
+        raise Failed(f"IMDb Error: Unknown GraphQL chart query type: {query_type}")
+
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
+        # Primary: use direct GraphQL API (bypasses HTML scraping issues)
+        if chart in chart_graphql_map:
+            try:
+                ids = self._chart_graphql(chart)
+                if ids:
+                    logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
+                    return ids
+            except Exception as e:
+                logger.debug(f"GraphQL chart query error for {chart}: {e}")
+        # Fallback: HTML scraping via original xpath method
         script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
         return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 

@@ -129,6 +129,7 @@ gitpython
 glightbox
 gotify
 gp
+GraphQL
 grenvilles
 guid
 Gzip
