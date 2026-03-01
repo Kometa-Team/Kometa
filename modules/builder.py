@@ -1131,11 +1131,19 @@ class CollectionBuilder:
             self.radarr_details["add_missing"] = self.library.Radarr.add_missing if self.library.Radarr else False
         if "add_existing" not in self.radarr_details:
             self.radarr_details["add_existing"] = self.library.Radarr.add_existing if self.library.Radarr else False
+        if "upgrade_existing" not in self.radarr_details:
+            self.radarr_details["upgrade_existing"] = self.library.Radarr.upgrade_existing if self.library.Radarr else False
+        if "monitor_existing" not in self.radarr_details:
+            self.radarr_details["monitor_existing"] = self.library.Radarr.monitor_existing if self.library.Radarr else False
 
         if "add_missing" not in self.sonarr_details:
             self.sonarr_details["add_missing"] = self.library.Sonarr.add_missing if self.library.Sonarr else False
         if "add_existing" not in self.sonarr_details:
             self.sonarr_details["add_existing"] = self.library.Sonarr.add_existing if self.library.Sonarr else False
+        if "upgrade_existing" not in self.sonarr_details:
+            self.sonarr_details["upgrade_existing"] = self.library.Sonarr.upgrade_existing if self.library.Sonarr else False
+        if "monitor_existing" not in self.sonarr_details:
+            self.sonarr_details["monitor_existing"] = self.library.Sonarr.monitor_existing if self.library.Sonarr else False
 
         if self.smart_url or self.collectionless or self.library.is_music:
             self.radarr_details["add_missing"] = False
@@ -1145,6 +1153,10 @@ class CollectionBuilder:
 
         if (self.radarr_details["add_existing"] or self.sonarr_details["add_existing"]) and not self.parts_collection:
             self.item_details["add_existing"] = True
+        if (self.radarr_details["upgrade_existing"] or self.sonarr_details["upgrade_existing"]) and not self.parts_collection:
+            self.item_details["upgrade_existing"] = True
+        if (self.radarr_details["monitor_existing"] or self.sonarr_details["monitor_existing"]) and not self.parts_collection:
+            self.item_details["monitor_existing"] = True
 
         if self.collectionless:
             self.details["collection_mode"] = "hide"
@@ -3316,7 +3328,16 @@ class CollectionBuilder:
                         item.editField(plex_attr, self.item_details[_rating])
                         logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
             path = None
-            if "item_radarr_tag" in self.item_details or self.radarr_details["add_existing"] or "item_sonarr_tag" in self.item_details or self.sonarr_details["add_existing"]:
+            if (
+                "item_radarr_tag" in self.item_details
+                or self.radarr_details["add_existing"]
+                or self.radarr_details["upgrade_existing"]
+                or self.radarr_details["monitor_existing"]
+                or "item_sonarr_tag" in self.item_details
+                or self.sonarr_details["add_existing"]
+                or self.sonarr_details["upgrade_existing"]
+                or self.sonarr_details["monitor_existing"]
+            ):
                 if item.locations:
                     if self.library.is_movie:
                         path = os.path.dirname(str(item.locations[0]))
@@ -3379,7 +3400,7 @@ class CollectionBuilder:
             try:
                 if "item_radarr_tag" in self.item_details:
                     self.library.Radarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tmdb_paths], self.item_details["item_radarr_tag"], self.item_details["apply_tags"])
-                if self.radarr_details["add_existing"] or self.radarr_details["upgrade_existing"]:
+                if self.radarr_details["add_existing"] or self.radarr_details["upgrade_existing"] or self.radarr_details["monitor_existing"]:
                     added = self.library.Radarr.add_tmdb(tmdb_paths, **self.radarr_details)
                     self.added_to_radarr.extend([{"title": movie.title, "id": movie.tmdbId} for movie in added])
             except Failed as e:
@@ -3392,7 +3413,7 @@ class CollectionBuilder:
             try:
                 if "item_sonarr_tag" in self.item_details:
                     self.library.Sonarr.edit_tags([t[0] if isinstance(t, tuple) else t for t in tvdb_paths], self.item_details["item_sonarr_tag"], self.item_details["apply_tags"])
-                if self.sonarr_details["add_existing"] or self.sonarr_details["upgrade_existing"]:
+                if self.sonarr_details["add_existing"] or self.sonarr_details["upgrade_existing"] or self.sonarr_details["monitor_existing"]:
                     added = self.library.Sonarr.add_tvdb(tvdb_paths, **self.sonarr_details)
                     self.added_to_sonarr.extend([{"title": show.title, "id": show.tvdbId} for show in added])
             except Failed as e:

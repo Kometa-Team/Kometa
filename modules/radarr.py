@@ -51,9 +51,9 @@ class Radarr:
             else:
                 _ids.append(tmdb_id)
         logger.info("")
-        logger.separator(f"Adding {'Missing' if _ids else 'Existing'} to Radarr", space=False, border=False)
+        logger.separator(f"{'Adding Missing' if _ids else 'Adding/Updating Existing'} to Radarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"Radarr Adds: {_ids if _ids else ''}")
+        logger.debug(f"Radarr Adds/Updates: {_ids if _ids else ''}")
         for tmdb_id in _paths:
             logger.debug(tmdb_id)
         logger.trace("")

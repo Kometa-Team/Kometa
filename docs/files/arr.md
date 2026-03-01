@@ -49,7 +49,7 @@ All the following attributes can override the global/library [Radarr](../config/
 | `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                    |
 | `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
 | `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                          |
-| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `movie`, `collection`, or `none`                                                                                                                                                              |
+| `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `true` or `false`                                                                                                                                                                             |
 | `radarr_availability`     | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                                                                                                                 |
 | `radarr_quality`          | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                                                                                                                |
 | `radarr_tag`              | **Description:** Override Radarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                          |
@@ -114,4 +114,3 @@ When adding a show in Sonarr you get the screen below to set these options use `
 ## Arr Edit Settings
 
 When editing the details of items that exist in the collection/playlist and in Radarr/Sonarr use `item_radarr_tag` and `item_sonarr_tag`
-

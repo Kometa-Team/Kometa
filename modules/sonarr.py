@@ -71,9 +71,9 @@ class Sonarr:
             else:
                 _ids.append(tvdb_id)
         logger.info("")
-        logger.separator(f"Adding {'Missing' if _ids else 'Existing'} to Sonarr", space=False, border=False)
+        logger.separator(f"{'Adding Missing' if _ids else 'Adding/Updating Existing'} to Sonarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
+        logger.debug(f"Sonarr Adds/Updates: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
