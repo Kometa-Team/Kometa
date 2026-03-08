@@ -1,6 +1,8 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
+Bump python-dotenv to 1.2.2
+Bump pillow to 12.1.1
 
 # New Features
 Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
