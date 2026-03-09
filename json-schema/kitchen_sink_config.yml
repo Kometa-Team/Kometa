@@ -819,6 +819,7 @@ settings:                                           # Can be individually specif
   minimum_items: 1
   delete_below_minimum: true
   delete_not_scheduled: false
+  auto_sort_hubs: false
   run_again_delay: 1
   missing_only_released: true
   show_unconfigured: true

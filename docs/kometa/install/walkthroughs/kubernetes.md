@@ -146,6 +146,7 @@ data:
       default_collection_order:
       delete_below_minimum: true
       delete_not_scheduled: false
+      auto_sort_hubs: false
       run_again_delay: 2
       missing_only_released: false
       only_filter_missing: false

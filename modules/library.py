@@ -91,6 +91,7 @@ class Library(ABC):
         self.assets_for_all = params["assets_for_all"]
         self.assets_for_all_collections = params["assets_for_all_collections"]
         self.delete_collections = params["delete_collections"]
+        self.auto_sort_hubs = params["auto_sort_hubs"]
         self.mass_studio_update = params["mass_studio_update"]
         self.mass_genre_update = params["mass_genre_update"]
         self.mass_audience_rating_update = params["mass_audience_rating_update"]
