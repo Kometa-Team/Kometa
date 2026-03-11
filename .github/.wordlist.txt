@@ -5,9 +5,11 @@ addon
 addons
 adlib
 afi's
+Ahsoka
 amblin
 amc
 analytics
+Andor
 anidb
 anidb's
 AniDBObj
@@ -102,6 +104,7 @@ dtd
 dts
 dv
 ee
+eedd
 el
 emmys
 env
@@ -110,6 +113,7 @@ eventartworks
 exc
 favorited
 fawkes
+fbca
 ffffff
 fi
 filepath
@@ -176,10 +180,12 @@ joost
 jpeg
 jpg
 json
+Kenobi
 kesleyalfa
-KeyError
 keyerror
+KeyError
 kkelly
+Klamath
 koltom
 kometa
 kometa's
@@ -206,6 +212,7 @@ lv
 lxml
 macos
 mal
+Mandalorian
 mb
 mcu
 md
@@ -350,6 +357,7 @@ sohjiro
 sohjiro's
 sonarr
 spartacus
+Springland
 ssl
 stderr
 stdout
@@ -395,6 +403,7 @@ transcoding
 trash
 truehd
 TrueNAS
+tt
 ttf
 tubi
 tutin
