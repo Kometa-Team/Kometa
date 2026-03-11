@@ -109,6 +109,39 @@ def test_text_file_accepts_show_plex_guid():
         os.unlink(path)
 
 
+def test_text_file_accepts_tvdb_season_and_episode_values():
+    path = _write_temp_file("tvdb_season:12345/1\n" "tvdb_episode:12345-1-2\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=False) == [("12345_1", "tvdb_season"), ("12345_1_2", "tvdb_episode")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_accepts_episode_json_items():
+    path = _write_temp_file("url:https://example.com/episodes.json\n")
+    try:
+        text_builder = TextFile(
+            FakeRequests(
+                {
+                    "https://example.com/episodes.json": [
+                        {"tvdb_season": "12345_1"},
+                        {"tvdb_episode": {"tvdb_id": 12345, "season": 1, "episode": 2}},
+                        {"type": "tvdb_episode", "id": [12345, 1, 3]},
+                    ]
+                }
+            )
+        )
+
+        assert text_builder.get_ids(path, is_movie=False) == [
+            ("12345_1", "tvdb_season"),
+            ("12345_1_2", "tvdb_episode"),
+            ("12345_1_3", "tvdb_episode"),
+        ]
+    finally:
+        os.unlink(path)
+
+
 def test_text_file_concatenates_multiple_files_in_order():
     first_path = _write_temp_file("tt1234567\n12345\n")
     second_path = _write_temp_file("plex://movie/5d7768244de0ee001fcc7ff0\n")

@@ -580,6 +580,7 @@ parts_collection_valid = (
         "filters",
         "plex_all",
         "plex_search",
+        "text_file",
         "trakt_list",
         "trakt_list_details",
         "collection_filtering",
@@ -3408,10 +3409,22 @@ class CollectionBuilder:
                         return pl_library.plex_map[plex_id]
         return None
 
+    def _log_missing_part(self, input_label, missing_text):
+        self.missing_parts.append(missing_text)
+        logger.warning(f"{self.Type} Warning: {input_label} -> {missing_text}")
+
+    def _log_episode_count(self, total_ids, expanded_total=None, unique_total=None):
+        if self.builder_level != "episode":
+            return
+        if expanded_total is not None:
+            logger.info(f"{expanded_total} Episode{'s' if expanded_total != 1 else ''} Expanded from {total_ids} ID{'s' if total_ids != 1 else ''}")
+        if unique_total is not None:
+            logger.info(f"{unique_total} Unique Episode{'s' if unique_total != 1 else ''} Kept")
+
     def filter_and_save_items(self, ids):
+        total_ids = len(ids)
         items = []
         if len(ids) > 0:
-            total_ids = len(ids)
             logger.debug("")
             logger.debug(f"{total_ids} IDs Found")
             logger.trace(f"IDs: {ids}")
@@ -3461,7 +3474,7 @@ class CollectionBuilder:
                                                 try:
                                                     items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                                                 except NotFound:
-                                                    self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                                                    self._log_missing_part(f"imdb:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                                                 break
                                         if not found and tvdb_id not in self.missing_shows and self.do_missing:
                                             self.missing_shows.append(tvdb_id)
@@ -3526,7 +3539,7 @@ class CollectionBuilder:
                         else:
                             logger.warning(f"{self.Type} Warning: Numeric ID: {input_id} not found in the defined libraries")
                             continue
-                    elif id_type == "tvdb_season" and (self.builder_level == "season" or self.playlist):
+                    elif id_type == "tvdb_season" and (self.builder_level in ["season", "episode"] or self.playlist):
                         tvdb_id, season_num = input_id.split("_")
                         tvdb_id = int(tvdb_id)
                         found = False
@@ -3536,12 +3549,12 @@ class CollectionBuilder:
                                 show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
                                 try:
                                     season_obj = show_item.season(season=int(season_num))
-                                    if self.playlist:
+                                    if self.playlist or self.builder_level == "episode":
                                         items.extend(season_obj.episodes())
                                     else:
                                         items.append(season_obj)
                                 except NotFound:
-                                    self.missing_parts.append(f"{show_item.title} Season: {season_num} Missing")
+                                    self._log_missing_part(f"tvdb_season:{input_id}", f"{show_item.title} Season: {season_num} Missing")
                                 break
                         if not found and tvdb_id not in self.missing_shows:
                             self.missing_shows.append(tvdb_id)
@@ -3556,7 +3569,7 @@ class CollectionBuilder:
                                 try:
                                     items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                                 except NotFound:
-                                    self.missing_parts.append(f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                                    self._log_missing_part(f"tvdb_episode:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                         if not found and tvdb_id not in self.missing_shows and self.do_missing:
                             self.missing_shows.append(tvdb_id)
                     elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"]:
@@ -3632,11 +3645,14 @@ class CollectionBuilder:
                     logger.error(e)
                     logger.info(input_data)
             logger.exorcise()
+        self._log_episode_count(total_ids, expanded_total=len(items))
         if not items:
+            self._log_episode_count(total_ids, unique_total=0)
             return None
         name = self.obj.title if self.obj else self.name
         total = len(items)
         max_length = len(str(total))
+        found_before = len(self.found_items)
         if self.filters and (self.details["show_filtered"] is True or self.details["show_unfiltered"] is True):
             logger.info("")
             logger.info("Filtering Builders:")
@@ -3660,6 +3676,7 @@ class CollectionBuilder:
                         self.filtered_keys[item.ratingKey] = current_title
                         if self.details["show_filtered"] is True:
                             logger.info(f"{name} {self.Type} | X | {current_title}")
+        self._log_episode_count(total_ids, unique_total=len(self.found_items) - found_before)
         if self.do_report and filtered_items:
             self.library.add_filtered(
                 self.name,

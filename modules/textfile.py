@@ -11,6 +11,8 @@ builders = ["text_file"]
 imdb_pattern = re.compile(r"^(tt\d+)$", re.IGNORECASE)
 plex_guid_pattern = re.compile(r"^plex://[a-z_]+/[0-9a-f]{24}$", re.IGNORECASE)
 plex_id_pattern = re.compile(r"^[0-9a-f]{24}$", re.IGNORECASE)
+tvdb_season_pattern = re.compile(r"^([0-9]+)\s*[_/:-]\s*([0-9]+)$")
+tvdb_episode_pattern = re.compile(r"^([0-9]+)\s*[_/:-]\s*([0-9]+)\s*[_/:-]\s*([0-9]+)$")
 
 json_id_keys = {
     "imdb": "imdb",
@@ -19,11 +21,21 @@ json_id_keys = {
     "tmdb_id": "tmdb",
     "tvdb": "tvdb",
     "tvdb_id": "tvdb",
+    "tvdb_season": "tvdb_season",
+    "tvdb_episode": "tvdb_episode",
     "plex": "plex",
     "plex_id": "plex",
     "plex_guid": "plex",
 }
-typed_id_keys = {"imdb": "imdb", "tmdb": "tmdb", "tvdb": "tvdb", "plex": "plex", "url": "url"}
+typed_id_keys = {
+    "imdb": "imdb",
+    "tmdb": "tmdb",
+    "tvdb": "tvdb",
+    "tvdb_season": "tvdb_season",
+    "tvdb_episode": "tvdb_episode",
+    "plex": "plex",
+    "url": "url",
+}
 
 
 class TextFile:
@@ -72,6 +84,38 @@ class TextFile:
             return [(plex_value, "plex")]
         raise Failed(f"Text File Error: Plex ID not supported in {source}: {value}")
 
+    def _first_value(self, data, keys):
+        for key in keys:
+            if key in data and data[key] is not None:
+                return data[key]
+        return None
+
+    def _normalize_tvdb_part(self, value_type, value, source):
+        item_label = "TVDb Episode" if value_type == "tvdb_episode" else "TVDb Season"
+        if isinstance(value, dict):
+            values = [
+                self._first_value(value, ["tvdb_id", "tvdb", "show_id", "id"]),
+                self._first_value(value, ["season", "season_num", "season_number"]),
+            ]
+            if value_type == "tvdb_episode":
+                values.append(self._first_value(value, ["episode", "episode_num", "episode_number"]))
+        elif isinstance(value, (list, tuple)):
+            values = list(value)
+        else:
+            match = (tvdb_episode_pattern if value_type == "tvdb_episode" else tvdb_season_pattern).match(str(value).strip())
+            values = list(match.groups()) if match else None
+
+        expected = 3 if value_type == "tvdb_episode" else 2
+        if not values or len(values) != expected or any(part is None for part in values):
+            raise Failed(f"Text File Error: {item_label} not supported in {source}: {value}")
+
+        try:
+            normalized = [int(str(part).strip()) for part in values]
+        except ValueError:
+            raise Failed(f"Text File Error: {item_label} not supported in {source}: {value}")
+
+        return [("_".join(str(part) for part in normalized), value_type)]
+
     def _normalize_value(self, value_type, value, source, is_movie=None):
         if value_type == "imdb":
             imdb_id = util.get_id_from_imdb_url(value) if "imdb.com/title/" in str(value) else str(value).strip()
@@ -82,6 +126,8 @@ class TextFile:
             return [(util.regex_first_int(value, "TMDb ID"), "tmdb")]
         if value_type == "tvdb":
             return [(util.regex_first_int(value, "TVDb ID"), "tvdb")]
+        if value_type in ["tvdb_season", "tvdb_episode"]:
+            return self._normalize_tvdb_part(value_type, value, source)
         if value_type == "plex":
             return self._normalize_plex(value, source)
         if value_type == "url":
