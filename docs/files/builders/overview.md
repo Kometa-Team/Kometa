@@ -217,19 +217,6 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Reciperr logo](../../assets/images/files/builders/reciperr.png){ align=right }
-
-    **[Reciperr](../reciperr/overview)** builders grab items based on lists on Reciperr.com
-
-    [:octicons-home-16: View Builder](../reciperr/overview){ .md-button .md-button--primary }
-    [:octicons-alert-24:](""){ .card-link title="Only works with Movie libraries" }
-
-    ??? quicklink "Popular Builders"
-
-        - [:material-chef-hat: Reciperr List](../reciperr/list) - Gets every movie returned by the Reciperr JSON data URL.
-
-!!! builder
-
     ![StevenLu logo](../../assets/images/files/builders/stevenlu.png){ align=right }
 
     **[StevenLu](../stevenlu/overview)** builders grab items based on lists on StevenLu.com

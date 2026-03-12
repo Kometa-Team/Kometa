@@ -10,7 +10,7 @@ from plexapi.exceptions import NotFound
 from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, reciperr, sonarr, tautulli, textfile, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
 from modules.overlay import Overlay
 from modules.poster import KometaImage
 from modules.request import quote
@@ -35,7 +35,7 @@ all_builders = (
     + mal.builders
     + mojo.builders
     + plex.builders
-    + reciperr.builders
+    + stevenlu.builders
     + tautulli.builders
     + textfile.builders
     + tmdb.builders
@@ -78,7 +78,6 @@ movie_only_builders = [
     "tvdb_movie_details",
     "tmdb_upcoming",
     "trakt_boxoffice",
-    "reciperr_list",
     "radarr_all",
     "radarr_taglist",
     "mojo_world",
@@ -487,7 +486,6 @@ custom_sort_builders = [
     "tmdb_trending_daily",
     "tmdb_trending_weekly",
     "tmdb_discover",
-    "reciperr_list",
     "text_file",
     "trakt_chart",
     "trakt_userlist",
@@ -1573,8 +1571,8 @@ class CollectionBuilder:
                     self._mojo(method_name, method_data)
                 elif method_name in plex.builders or method_final in plex.searches:
                     self._plex(method_name, method_data)
-                elif method_name in reciperr.builders:
-                    self._reciperr(method_name, method_data)
+                elif method_name in stevenlu.builders:
+                    self._stevenlu(method_name, method_data)
                 elif method_name in textfile.builders:
                     self._textfile(method_name, method_data)
                 elif method_name in tautulli.builders:
@@ -3025,11 +3023,8 @@ class CollectionBuilder:
                 else:
                     raise Failed(str(e))
 
-    def _reciperr(self, method_name, method_data):
-        if method_name == "reciperr_list":
-            for reciperr_list in self.config.Reciperr.validate_list(method_data):
-                self.builders.append((method_name, reciperr_list))
-        elif method_name == "stevenlu_popular":
+    def _stevenlu(self, method_name, method_data):
+        if method_name == "stevenlu_popular":
             self.builders.append((method_name, util.parse(self.Type, method_name, method_data, "bool")))
 
     def _textfile(self, method_name, method_data):
@@ -3369,8 +3364,8 @@ class CollectionBuilder:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif method in textfile.builders:
             ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
-        elif "reciperr" in method or "stevenlu" in method:
-            ids = self.config.Reciperr.get_imdb_ids(method, value)
+        elif "stevenlu" in method:
+            ids = self.config.StevenLu.get_imdb_ids(method, value)
         elif "mojo" in method:
             ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "mdblist" in method:

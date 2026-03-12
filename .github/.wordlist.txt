@@ -302,6 +302,7 @@ popularplex
 portainer
 powershell
 pre
+precommit
 prepend
 prepended
 preroll
@@ -324,7 +325,7 @@ readwriteonce
 realtime
 reauthenticating
 reauthentication
-reciperr
+Reciperr
 reddit
 redheadjedi
 remux
