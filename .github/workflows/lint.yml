@@ -2,9 +2,9 @@ name: Lint and Format Check
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ nightly ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ nightly ]
 
 jobs:
   lint:
