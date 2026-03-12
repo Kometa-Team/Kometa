@@ -7,6 +7,7 @@ builders = ["reciperr_list", "stevenlu_popular"]
 
 stevenlu_url = "https://s3.amazonaws.com/popular-movies/movies.json"
 
+
 class Reciperr:
     def __init__(self, requests):
         self.requests = requests
@@ -19,8 +20,9 @@ class Reciperr:
 
     def validate_list(self, data):
         valid_lists = []
-        for reciperr_list in util.get_list(data, split=False):
-            if "imdb_id" not in self._request(reciperr_list)[0]:
+        for reciperr_list in util.get_list(data, split=False) or []:
+            id_data = self._request(reciperr_list) or []
+            if not id_data or "imdb_id" not in id_data[0]:
                 raise Failed(f"Reciperr Error: imdb_id not found in the JSON at {reciperr_list}")
             valid_lists.append(reciperr_list)
         return valid_lists
@@ -29,9 +31,9 @@ class Reciperr:
         name = "StevenLu" if method == "stevenlu_popular" else "Reciperr"
         logger.info(f"Processing {name} Movies")
         if method == "reciperr_list":
-            id_data = self._request(data)
+            id_data = self._request(data) or []
         elif method == "stevenlu_popular":
-            id_data = self._request(stevenlu_url, name="StevenLu")
+            id_data = self._request(stevenlu_url, name="StevenLu") or []
         else:
             raise Failed(f"Config Error: Method {method} not supported")
         ids = [(i["imdb_id"], "imdb") for i in id_data if "imdb_id" in i]

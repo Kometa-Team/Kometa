@@ -413,6 +413,9 @@ nav:
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md
+      - Text File:
+        - Overview: files/builders/textfile/overview.md
+        - Text File: files/builders/textfile/text-file.md
       - AniDB:
         - Overview: files/builders/anidb/overview.md
         - ID: files/builders/anidb/id.md

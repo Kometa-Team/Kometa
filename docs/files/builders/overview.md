@@ -226,7 +226,7 @@ Builders use third-party services to source items to be added to the collection.
 
     ??? quicklink "Popular Builders"
 
-        - [:material-chef-hat: Reciperr List](../reciperr.md/list) - Gets every movie returned by the Reciperr JSON data URL.
+        - [:material-chef-hat: Reciperr List](../reciperr/list) - Gets every movie returned by the Reciperr JSON data URL.
 
 !!! builder
 
@@ -240,3 +240,15 @@ Builders use third-party services to source items to be added to the collection.
     ??? quicklink "Popular Builders"
 
         - [:material-pirate: StevenLu Popular](../stevenlu/popular) - Gets every movie on StevenLu's Popular Movies List.
+
+!!! builder
+
+    ![Text File logo](../../assets/images/files/builders/text.png){ align=right }
+
+    **[Text File](textfile/overview.md)** builders read items from a manually maintained local text file.
+
+    [:octicons-home-16: View Builder](textfile/overview.md){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:material-file-document-outline: Text File](textfile/text-file.md) - Reads supported IDs and URLs from a local text file while preserving file order.
