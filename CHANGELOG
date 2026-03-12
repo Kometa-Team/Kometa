@@ -7,6 +7,8 @@ Bump pillow to 12.1.1
 # New Features
 Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
 Adds new `text_file` builder.
+Reciperr site hasn't responded for a while, so the builder has been removed.
+Added spellcheck to precommit configuration
 
 # Docs
 
