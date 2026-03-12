@@ -123,7 +123,8 @@ class TextFile:
                 return [(imdb_id, "imdb")]
             raise Failed(f"Text File Error: IMDb ID not supported in {source}: {value}")
         if value_type == "tmdb":
-            return [(util.regex_first_int(value, "TMDb ID"), "tmdb")]
+            tmdb_type = "tmdb" if is_movie is not False else "tmdb_show"
+            return [(util.regex_first_int(value, "TMDb ID"), tmdb_type)]
         if value_type == "tvdb":
             return [(util.regex_first_int(value, "TVDb ID"), "tvdb")]
         if value_type in ["tvdb_season", "tvdb_episode"]:
