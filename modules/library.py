@@ -1,13 +1,17 @@
-import os, time
+import os
+import time
 from abc import ABC, abstractmethod
+
+from PIL import Image
+
 from modules import util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
 from modules.util import Failed, NotScheduled
-from PIL import Image
 
 logger = util.logger
+
 
 class Library(ABC):
     def __init__(self, config, params):
@@ -39,6 +43,8 @@ class Library(ABC):
         self.movie_rating_key_map = {}
         self.show_rating_key_map = {}
         self.imdb_rating_key_map = {}
+        self.plex_map = {}
+        self.plex_map_levels = set()
         self.cached_items = {}
         self.run_again = []
         self.type = ""
@@ -120,20 +126,59 @@ class Library(ABC):
         self.genre_mapper = params["genre_mapper"]
         self.content_rating_mapper = params["content_rating_mapper"]
         self.changes_webhooks = params["changes_webhooks"]
-        self.split_duplicates = params["split_duplicates"] # TODO: Here or just in Plex?
-        self.stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
+        self.split_duplicates = params["split_duplicates"]  # TODO: Here or just in Plex?
+        self.stats = {
+            "created": 0,
+            "modified": 0,
+            "deleted": 0,
+            "added": 0,
+            "unchanged": 0,
+            "removed": 0,
+            "radarr": 0,
+            "sonarr": 0,
+            "names": [],
+        }
         self.status = {}
         self.plex_bulk_edit_batch_size = params["plex_bulk_edit_batch_size"]
 
-        self.items_library_operation = True if self.assets_for_all or self.mass_genre_update or self.remove_title_parentheses \
-                                               or self.mass_audience_rating_update or self.mass_critic_rating_update or self.mass_user_rating_update \
-                                               or self.mass_episode_audience_rating_update or self.mass_episode_critic_rating_update or self.mass_episode_user_rating_update \
-                                               or self.mass_content_rating_update or self.mass_originally_available_update or self.mass_added_at_update or self.mass_original_title_update\
-                                               or self.mass_imdb_parental_labels or self.genre_mapper or self.content_rating_mapper or self.mass_studio_update\
-                                               or self.radarr_add_all_existing or self.sonarr_add_all_existing or self.mass_poster_update or self.mass_background_update else False
-        self.library_operation = True if self.items_library_operation or self.delete_collections or self.mass_collection_mode \
-                                         or self.radarr_remove_by_tag or self.sonarr_remove_by_tag or self.show_unmanaged or self.show_unconfigured \
-                                         or self.metadata_backup or self.update_blank_track_titles else False
+        self.items_library_operation = (
+            True
+            if self.assets_for_all
+            or self.mass_genre_update
+            or self.remove_title_parentheses
+            or self.mass_audience_rating_update
+            or self.mass_critic_rating_update
+            or self.mass_user_rating_update
+            or self.mass_episode_audience_rating_update
+            or self.mass_episode_critic_rating_update
+            or self.mass_episode_user_rating_update
+            or self.mass_content_rating_update
+            or self.mass_originally_available_update
+            or self.mass_added_at_update
+            or self.mass_original_title_update
+            or self.mass_imdb_parental_labels
+            or self.genre_mapper
+            or self.content_rating_mapper
+            or self.mass_studio_update
+            or self.radarr_add_all_existing
+            or self.sonarr_add_all_existing
+            or self.mass_poster_update
+            or self.mass_background_update
+            else False
+        )
+        self.library_operation = (
+            True
+            if self.items_library_operation
+            or self.delete_collections
+            or self.mass_collection_mode
+            or self.radarr_remove_by_tag
+            or self.sonarr_remove_by_tag
+            or self.show_unmanaged
+            or self.show_unconfigured
+            or self.metadata_backup
+            or self.update_blank_track_titles
+            else False
+        )
         self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels else False
 
         if self.asset_directory:
@@ -265,6 +310,34 @@ class Library(ABC):
         elif key in self.show_rating_key_map:
             return self.show_rating_key_map[key]
 
+    def _add_to_plex_map(self, key, values):
+        key = int(key)
+        for value in values:
+            value = str(value).lower()
+            if value in self.plex_map:
+                if key not in self.plex_map[value]:
+                    self.plex_map[value].append(key)
+            else:
+                self.plex_map[value] = [key]
+
+    def map_plex_ids(self, items, builder_level=None):
+        for item in items:
+            if isinstance(item, tuple):
+                key, guid = item
+            else:
+                key = item.ratingKey
+                guid = item.guid
+            guid = str(guid).lower()
+            if guid.startswith("plex://"):
+                self._add_to_plex_map(key, [guid, guid.rsplit("/", 1)[-1]])
+        if builder_level:
+            self.plex_map_levels.add(str(builder_level).lower())
+
+    def ensure_plex_map(self, builder_level):
+        builder_level = str(builder_level).lower()
+        if builder_level not in self.plex_map_levels:
+            self.map_plex_ids(self.get_all(builder_level=builder_level), builder_level=builder_level)
+
     @abstractmethod
     def notify(self, text, collection=None, critical=True):
         pass
@@ -300,20 +373,45 @@ class Library(ABC):
                 logger.debug(f"Method: {i} {image_type.capitalize()}: {images[i]}")
             if prioritize_assets and "asset_directory" in images:
                 return images["asset_directory"]
-            for attr in ["style_data", f"url_{image_type}", f"file_{image_type}", f"tmdb_{image_type}", "tmdb_profile",
-                         "tmdb_list_poster", "tvdb_list_poster", f"tvdb_{image_type}", "asset_directory",
-                         f"pmm_{image_type}",
-                         "tmdb_person", "tmdb_collection_details", "tmdb_actor_details", "tmdb_crew_details",
-                         "tmdb_director_details",
-                         "tmdb_producer_details", "tmdb_writer_details", "tmdb_movie_details", "tmdb_list_details",
-                         "tvdb_list_details", "tvdb_movie_details", "tvdb_show_details", "tmdb_show_details"]:
+            for attr in [
+                "style_data",
+                f"url_{image_type}",
+                f"file_{image_type}",
+                f"tmdb_{image_type}",
+                "tmdb_profile",
+                "tmdb_list_poster",
+                "tvdb_list_poster",
+                f"tvdb_{image_type}",
+                "asset_directory",
+                f"pmm_{image_type}",
+                "tmdb_person",
+                "tmdb_collection_details",
+                "tmdb_actor_details",
+                "tmdb_crew_details",
+                "tmdb_director_details",
+                "tmdb_producer_details",
+                "tmdb_writer_details",
+                "tmdb_movie_details",
+                "tmdb_list_details",
+                "tvdb_list_details",
+                "tvdb_movie_details",
+                "tvdb_show_details",
+                "tmdb_show_details",
+            ]:
                 if attr in images:
                     if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
                         if "asset_directory" in images:
                             return images["asset_directory"]
                         else:
                             try:
-                                return self.config.Requests.download_image(title, images[attr], item_dir, session=self.session, image_type=image_type, filename=image_name)
+                                return self.config.Requests.download_image(
+                                    title,
+                                    images[attr],
+                                    item_dir,
+                                    session=self.session,
+                                    image_type=image_type,
+                                    filename=image_name,
+                                )
                             except Failed as e:
                                 logger.error(e)
                     if attr in ["asset_directory", f"pmm_{image_type}"]:
@@ -342,7 +440,7 @@ class Library(ABC):
             time.sleep(1)
         with Image.open(image_path) as image:
             exif_tags = image.getexif()
-        if 0x04bc in exif_tags and exif_tags[0x04bc] == "overlay":
+        if 0x04BC in exif_tags and exif_tags[0x04BC] == "overlay":
             os.remove(image_path)
             raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required.")
         if remove:
@@ -418,6 +516,7 @@ class Library(ABC):
                 logger.ghost(f"Processing: {i}/{len(items)} {item.title}")
                 key = item.ratingKey
                 guid = item.guid
+            self.map_plex_ids([(key, guid)])
             if key not in self.movie_rating_key_map and key not in self.show_rating_key_map:
                 if isinstance(item, tuple):
                     item_type, check_id = self.config.Convert.scan_guid(guid)
@@ -458,5 +557,6 @@ class Library(ABC):
         self.reverse_mal = {}
         for k, v in self.mal_map.items():
             self.reverse_mal[v] = k
+        self.plex_map_levels.update({self.type, self.type.lower()})
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
