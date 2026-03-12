@@ -1,0 +1,59 @@
+name: Lint and Format Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt', '**/dev-requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install -r dev-requirements.txt
+
+    - name: Run prek hooks
+      run: |
+        prek run --all-files --show-diff-on-failure
+
+    - name: Run Black check
+      run: |
+        black --check --diff src/ tests/ *.py
+
+    - name: Run isort check
+      run: |
+        isort --check-only --diff src/ tests/ *.py
+
+    - name: Run flake8
+      run: |
+        flake8 src/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
+
+    - name: Run mypy
+      run: |
+        mypy src/
+      continue-on-error: true
+
+    - name: Run bandit security check
+      run: |
+        bandit -r src/ -c pyproject.toml
+      continue-on-error: true

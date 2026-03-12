@@ -1,0 +1,11 @@
+[tool.black]
+line-length = 256
+target-version = ["py310", "py311", "py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 256
+
+[tool.bandit]
+exclude_dirs = ["tests", "config", ".venv", "test_venv", ".direnv"]
+skips = ["B101"]
