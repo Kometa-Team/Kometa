@@ -407,9 +407,6 @@ nav:
         - Never Hit: files/builders/boxofficemojo/never.md
         - Other Records: files/builders/boxofficemojo/record.md
         - Worldwide: files/builders/boxofficemojo/world.md
-      - Reciperr:
-        - Overview: files/builders/reciperr/overview.md
-        - List: files/builders/reciperr/list.md
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md

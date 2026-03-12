@@ -324,7 +324,6 @@ readwriteonce
 realtime
 reauthenticating
 reauthentication
-reciperr
 reddit
 redheadjedi
 remux
