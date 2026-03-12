@@ -345,16 +345,6 @@
             "works_with_playlists_and_custom_sort": "No"
         }
     ],
-    "Reciperr": [
-        {
-            "builder": "reciperr_list",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/reciperr/#reciperr-list",
-            "description": "Finds every movie at a Reciperr JSON data URL.",
-            "works_with_movies": "Yes",
-            "works_with_shows": "No",
-            "works_with_playlists_and_custom_sort": "Yes"
-        }
-    ],
     "Sonarr": [
         {
             "builder": "sonarr_all",

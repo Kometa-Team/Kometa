@@ -16,3 +16,13 @@ repos:
     hooks:
       - id: flake8
         args: ["--max-line-length=256", "--extend-ignore=E203,W503,E501"]
+
+  - repo: local
+    hooks:
+      - id: pyspelling
+        name: pyspelling
+        entry: pyspelling --config .spellcheck.yml
+        language: python
+        additional_dependencies: [pyspelling]
+        types: [markdown]
+        pass_filenames: false
