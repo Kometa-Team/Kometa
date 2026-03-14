@@ -17,3 +17,4 @@ Added spellcheck to precommit configuration
 # Bug Fixes
 Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
+TMDB language now reflected in mass_poster_update; cache extension
