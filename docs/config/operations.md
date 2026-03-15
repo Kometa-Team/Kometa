@@ -534,6 +534,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     <table class="clearTable">
       <tr><td>`source`</td><td>Source of the poster update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`language`</td><td>Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
@@ -555,6 +556,17 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 episodes: false
         ```
 
+    ???+ example "Textless Posters Example"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              mass_poster_update:
+                source: tmdb
+                language: xx
+        ```
+
 ###### Mass Background Update
 
 ??? blank "`mass_background_update` - Updates the background of every item in the library.<a class="headerlink" href="#mass-background-update" title="Permanent link">¶</a>"
@@ -570,6 +582,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     <table class="clearTable">
       <tr><td>`source`</td><td>Source of the background update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`ignore_locked`</td><td>Skip updating image if the background field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>

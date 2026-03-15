@@ -792,6 +792,27 @@ class Operations:
                     except Failed:
                         tmdb_item = None
 
+                    def _get_tmdb_image_url(image_config, is_poster=True):
+                        """Get the TMDb image URL, using language override if configured."""
+                        lang = image_config.get("language") if image_config else None
+                        source = image_config.get("source") if image_config else None
+                        if lang and source != "tmdb":
+                            logger.info(f"{item.title[:25]:<25} | Language '{lang}' ignored (source is not tmdb)")
+                        if lang and source == "tmdb" and tmdb_item:
+                            original_language = self.config.TMDb.language
+                            original_api_language = self.config.TMDb.TMDb.language
+                            try:
+                                self.config.TMDb.language = lang
+                                self.config.TMDb.TMDb.language = lang
+                                lang_tmdb_item = self.config.TMDb.get_movie(tmdb_item.tmdb_id, ignore_cache=True) if self.library.is_movie else self.config.TMDb.get_show(tmdb_item.tmdb_id, ignore_cache=True)  # noqa
+                                return lang_tmdb_item.poster_url if is_poster else lang_tmdb_item.backdrop_url
+                            except Failed:
+                                return None
+                            finally:
+                                self.config.TMDb.language = original_language
+                                self.config.TMDb.TMDb.language = original_api_language
+                        return (tmdb_item.poster_url if is_poster else tmdb_item.backdrop_url) if tmdb_item else None
+
                     if self.library.mass_poster_update:
                         source = self.library.mass_poster_update["source"]
                         ignore_locked = self.library.mass_poster_update["ignore_locked"]
@@ -799,10 +820,11 @@ class Operations:
                         thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
                         labels = [la.tag for la in self.library.item_labels(item)]
                         has_overlay_label = "Overlay" in labels
+                        tmdb_poster_url = _get_tmdb_image_url(self.library.mass_poster_update, is_poster=True)
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
                         if source in ["unlock", "lock"]:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
                         elif ignore_locked and thumb_locked:
                             # Skip processing if ignore_locked is True and thumb is locked
                             pass
@@ -810,77 +832,95 @@ class Operations:
                             # Skip processing if ignore_overlays is True and Overlay label is found
                             pass
                         else:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
 
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
                         ignore_locked = self.library.mass_background_update["ignore_locked"]
                         ignore_overlays = self.library.mass_background_update["ignore_overlays"]
                         art_locked = any(f.name == "art" and f.locked for f in item.fields)
+                        tmdb_backdrop_url = _get_tmdb_image_url(self.library.mass_background_update, is_poster=False)
 
                         if source in ["unlock", "lock"]:
-                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
 
                         elif not (ignore_locked and art_locked):
-                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
 
                     if self.library.is_show and (
                         (self.library.mass_poster_update and (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"]))
                         or (self.library.mass_background_update and (self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]))
                     ):
-                        real_show = None
+                        # Determine if any language override applies for season/episode TMDb fetches
+                        _image_lang = None
+                        if self.library.mass_poster_update and self.library.mass_poster_update.get("language") and self.library.mass_poster_update["source"] == "tmdb":
+                            _image_lang = self.library.mass_poster_update["language"]
+                        elif self.library.mass_background_update and self.library.mass_background_update.get("language") and self.library.mass_background_update["source"] == "tmdb":
+                            _image_lang = self.library.mass_background_update["language"]
+
+                        _orig_lang = self.config.TMDb.language
+                        _orig_api_lang = self.config.TMDb.TMDb.language
+                        if _image_lang:
+                            self.config.TMDb.language = _image_lang
+                            self.config.TMDb.TMDb.language = _image_lang
                         try:
-                            real_show = tmdb_item.load_show() if tmdb_item else None  # noqa
-                        except Failed as e:
-                            logger.error(e)
-                        tmdb_season_numbers = {s.season_number for s in real_show.seasons} if real_show else set()
-                        for season in self.library.query(item.seasons):
-                            tmdb_season = None
-                            if tmdb_item and season.seasonNumber in tmdb_season_numbers:
-                                try:
-                                    tmdb_season = self.config.TMDb.get_season(tmdb_item.tmdb_id, season.seasonNumber)
-                                except Failed:
-                                    pass
-                            if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
-                                try:
-                                    season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
-                                except Failed:
-                                    season_poster = None
-                                    season_background = None
-                                season_title = f"S{season.seasonNumber} {season.title}"
-                                tmdb_poster = tmdb_season.poster_url if tmdb_season else None
-                                if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
-                                    self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
-                                if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
-                                    self.library.background_update(season, season_background, title=season_title if season else None)
+                            real_show = None
+                            try:
+                                real_show = tmdb_item.load_show() if tmdb_item else None  # noqa
+                            except Failed as e:
+                                logger.error(e)
+                            tmdb_season_numbers = {s.season_number for s in real_show.seasons} if real_show else set()
+                            for season in self.library.query(item.seasons):
+                                tmdb_season = None
+                                if tmdb_item and season.seasonNumber in tmdb_season_numbers:
+                                    try:
+                                        tmdb_season = self.config.TMDb.get_season(tmdb_item.tmdb_id, season.seasonNumber)
+                                    except Failed:
+                                        pass
+                                if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
+                                    try:
+                                        season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                                    except Failed:
+                                        season_poster = None
+                                        season_background = None
+                                    season_title = f"S{season.seasonNumber} {season.title}"
+                                    tmdb_poster = tmdb_season.poster_url if tmdb_season else None
+                                    if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
+                                        self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
+                                    if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
+                                        self.library.background_update(season, season_background, title=season_title if season else None)
 
-                            if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
-                                tmdb_episodes = {}
-                                if tmdb_season:
-                                    for episode in tmdb_season.episodes:
-                                        episode._partial = False
+                                if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
+                                    tmdb_episodes = {}
+                                    if tmdb_season:
+                                        for episode in tmdb_season.episodes:
+                                            episode._partial = False
+                                            try:
+                                                tmdb_episodes[episode.episode_number] = episode
+                                            except NotFound:
+                                                logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
+
+                                    for episode in self.library.query(season.episodes):
                                         try:
-                                            tmdb_episodes[episode.episode_number] = episode
-                                        except NotFound:
-                                            logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
-
-                                for episode in self.library.query(season.episodes):
-                                    try:
-                                        episode = self.library.reload(episode)
-                                    except Failed:
-                                        logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
-                                        continue
-                                    try:
-                                        episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
-                                    except Failed:
-                                        episode_poster = None
-                                        episode_background = None
-                                    episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
-                                    tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
-                                    if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
-                                        self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
-                                    if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
-                                        self.library.background_update(episode, episode_background, title=episode_title if episode else None)
+                                            episode = self.library.reload(episode)
+                                        except Failed:
+                                            logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
+                                            continue
+                                        try:
+                                            episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                                        except Failed:
+                                            episode_poster = None
+                                            episode_background = None
+                                        episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
+                                        tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
+                                        if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
+                                            self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
+                                        if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
+                                            self.library.background_update(episode, episode_background, title=episode_title if episode else None)
+                        finally:
+                            if _image_lang:
+                                self.config.TMDb.language = _orig_lang
+                                self.config.TMDb.TMDb.language = _orig_api_lang
 
                 episode_ops = [(self.library.mass_episode_audience_rating_update, "audienceRating"), (self.library.mass_episode_critic_rating_update, "rating"), (self.library.mass_episode_user_rating_update, "userRating")]
 

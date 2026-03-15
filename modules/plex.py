@@ -1575,7 +1575,9 @@ class Plex(Library):
 
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         text = f"{f'{title} ' if title else ''}{'Poster' if poster else 'Background'}"
-        attr = self.mass_poster_update["source"] if poster else self.mass_background_update["source"]
+        image_config = self.mass_poster_update if poster else self.mass_background_update
+        attr = image_config["source"]
+        lang = image_config.get("language")
         if attr == "lock":
             self.query(item.lockPoster if poster else item.lockArt)
             logger.info(f"{text} | Locked")
@@ -1589,7 +1591,7 @@ class Plex(Library):
             if not image:
                 if attr == "tmdb" and tmdb:
                     image = tmdb
-                    location = "TMDb"
+                    location = f"TMDb (language: {lang})" if lang else "TMDb"
                 if not image:
                     images = item.posters() if poster else item.arts()
                     temp_image = next((p for p in images), None)

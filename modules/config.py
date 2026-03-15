@@ -1477,6 +1477,11 @@ class ConfigFile:
                                 if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
                                 elif op in ["mass_poster_update", "mass_background_update"]:
+                                    _language = check_for_attribute(input_dict, "language", default_is_none=True, save=False)
+                                    if _language is not None:
+                                        _language = str(_language).lower()
+                                        if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
+                                            raise Failed(f"Config Error: {op} language {_language} is not a valid ISO 639-1 language code")
                                     section_final[op] = {
                                         "source": check_for_attribute(
                                             input_dict,
@@ -1485,6 +1490,7 @@ class ConfigFile:
                                             default_is_none=True,
                                             save=False,
                                         ),
+                                        "language": _language,
                                         "seasons": check_for_attribute(input_dict, "seasons", var_type="bool", default=True, save=False),
                                         "episodes": check_for_attribute(input_dict, "episodes", var_type="bool", default=True, save=False),
                                         "ignore_locked": check_for_attribute(input_dict, "ignore_locked", var_type="bool", default=False, save=False),
