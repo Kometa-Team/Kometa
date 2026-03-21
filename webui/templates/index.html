@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kometa Web UI</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <span class="logo">🎬 Kometa</span>
+      <div class="status-badge" id="status-badge">
+        <span class="dot" id="status-dot"></span>
+        <span id="status-text">Checking…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- ─── LEFT PANEL: Controls ─────────────────────────────────────── -->
+    <aside class="panel panel-controls">
+      <h2 class="panel-title">Run Settings</h2>
+
+      <!-- Config file -->
+      <section class="form-section">
+        <label class="form-label" for="config-select">Config File</label>
+        <div class="input-row">
+          <select id="config-select" class="form-input">
+            <option value="">— use default (config/config.yml) —</option>
+          </select>
+          <button class="btn btn-sm btn-ghost" id="refresh-configs" title="Refresh config list">⟳</button>
+        </div>
+      </section>
+
+      <!-- Run Mode -->
+      <section class="form-section">
+        <label class="form-label">Run Mode</label>
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-run" checked />
+            <span>Run Once</span>
+            <small>--run</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-test" />
+            <span>Test Mode</span>
+            <small>--tests</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-ignore-schedules" />
+            <span>Ignore Schedules</span>
+            <small>--ignore-schedules</small>
+          </label>
+        </div>
+        <div class="field-row" id="scheduled-row">
+          <label class="form-label-sm" for="opt-times">Schedule Times (HH:MM, comma-separated)</label>
+          <input type="text" id="opt-times" class="form-input" placeholder="e.g. 05:00,20:00" />
+        </div>
+        <div class="field-row">
+          <label class="form-label-sm" for="opt-resume">Resume from Collection</label>
+          <input type="text" id="opt-resume" class="form-input" placeholder="Collection name" />
+        </div>
+      </section>
+
+      <!-- Scope -->
+      <section class="form-section">
+        <label class="form-label">Scope (leave all off = run everything)</label>
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-collections-only" />
+            <span>Collections Only</span>
+            <small>--collections-only</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-metadata-only" />
+            <span>Metadata Only</span>
+            <small>--metadata-only</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-overlays-only" />
+            <span>Overlays Only</span>
+            <small>--overlays-only</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-playlists-only" />
+            <span>Playlists Only</span>
+            <small>--playlists-only</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-operations-only" />
+            <span>Operations Only</span>
+            <small>--operations-only</small>
+          </label>
+        </div>
+      </section>
+
+      <!-- Filters -->
+      <section class="form-section">
+        <label class="form-label">Filters</label>
+        <div class="field-row">
+          <label class="form-label-sm" for="opt-run-libraries">Libraries (pipe-separated)</label>
+          <input type="text" id="opt-run-libraries" class="form-input" placeholder="Movies|TV Shows" />
+        </div>
+        <div class="field-row">
+          <label class="form-label-sm" for="opt-run-collections">Collections (pipe-separated)</label>
+          <input type="text" id="opt-run-collections" class="form-input" placeholder="Action Movies|Sci-Fi" />
+        </div>
+        <div class="field-row">
+          <label class="form-label-sm" for="opt-run-files">Files (pipe-separated)</label>
+          <input type="text" id="opt-run-files" class="form-input" placeholder="config/movies.yml" />
+        </div>
+      </section>
+
+      <!-- Logging -->
+      <section class="form-section">
+        <label class="form-label">Logging</label>
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-debug" />
+            <span>Debug</span>
+            <small>--debug</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-trace" />
+            <span>Trace</span>
+            <small>--trace</small>
+          </label>
+        </div>
+      </section>
+
+      <!-- Danger Zone -->
+      <section class="form-section form-section-danger">
+        <label class="form-label">Danger Zone</label>
+        <div class="toggle-group">
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-delete-collections" />
+            <span>Delete Collections First</span>
+            <small>--delete-collections</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-delete-labels" />
+            <span>Delete Labels First</span>
+            <small>--delete-labels</small>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-no-verify-ssl" />
+            <span>Skip SSL Verification</span>
+            <small>--no-verify-ssl</small>
+          </label>
+        </div>
+      </section>
+
+      <!-- Advanced -->
+      <section class="form-section">
+        <label class="form-label">Advanced</label>
+        <div class="field-row two-col">
+          <div>
+            <label class="form-label-sm" for="opt-timeout">Timeout (seconds)</label>
+            <input type="number" id="opt-timeout" class="form-input" placeholder="180" min="1" />
+          </div>
+          <div>
+            <label class="form-label-sm" for="opt-width">Console Width</label>
+            <input type="number" id="opt-width" class="form-input" placeholder="100" min="90" max="300" />
+          </div>
+        </div>
+        <div class="toggle-group" style="margin-top:8px">
+          <label class="toggle-item">
+            <input type="checkbox" id="opt-no-countdown" />
+            <span>No Countdown</span>
+            <small>--no-countdown</small>
+          </label>
+        </div>
+      </section>
+
+      <!-- Command Preview -->
+      <section class="form-section">
+        <label class="form-label">Command Preview</label>
+        <pre id="cmd-preview" class="cmd-preview">python kometa.py</pre>
+      </section>
+
+      <!-- Actions -->
+      <div class="action-bar">
+        <button class="btn btn-primary" id="btn-run">▶ Run Kometa</button>
+        <button class="btn btn-danger" id="btn-stop" disabled>■ Stop</button>
+      </div>
+    </aside>
+
+    <!-- ─── RIGHT PANEL: Logs + History ──────────────────────────────── -->
+    <section class="panel panel-logs">
+      <div class="log-header">
+        <h2 class="panel-title">Live Output</h2>
+        <div class="log-actions">
+          <label class="toggle-item" style="margin:0">
+            <input type="checkbox" id="autoscroll" checked />
+            <span>Auto-scroll</span>
+          </label>
+          <button class="btn btn-sm btn-ghost" id="btn-clear-logs">Clear</button>
+          <button class="btn btn-sm btn-ghost" id="btn-copy-logs">Copy</button>
+        </div>
+      </div>
+      <div id="log-container" class="log-container">
+        <div id="log-output" class="log-output"></div>
+      </div>
+
+      <!-- History -->
+      <div class="history-section">
+        <h3 class="history-title">Run History</h3>
+        <div id="history-list" class="history-list">
+          <p class="dim">No runs yet.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
