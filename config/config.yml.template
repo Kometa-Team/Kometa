@@ -116,6 +116,9 @@ omdb:
 mdblist:
   apikey:                          # Enter MDBList API Key (Optional)
   cache_expiration: 60
+simkl:
+  user_token:                      # Enter SIMKL User Token (Optional)
+                                   # Get one at https://utilities.kometa.wiki/simkl-service
 notifiarr:
   apikey:                          # Enter Notifiarr API Key (Optional)
 gotify:
