@@ -8,18 +8,21 @@ hide:
         "OVERLAY_NAME": "Ratings", 
         "CODE_NAME": "ratings",
         "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library.
-
-This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info"
+        "DESCRIPTION": "an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library."
     }'
-    replace-tags='{"title-sub": "**Please read [Kometa Ratings Explained](../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with ratings.**"}'
+    replace-tags='{"title-sub": ""}'
     end='<!--rec-sub-->'
 %}
 
-Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
-Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass-rating-update) and the
-[Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode-rating-update) to update Plex to the Ratings you want on the Overlay.
+!!! warning "IMPORTANT CHANGES TO RATINGS IN KOMETA 2.2.3"
+
+    A new way to apply Ratings overlays has been released as part of Kometa 2.2.3,
+
+    This new system allows the rating to be applied to posters without having to first run Operations to override Plex's in-built ratings slots.
+
+    This is an opt-in feature, any existing configs will continue to work.
+
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 
@@ -31,53 +34,17 @@ Recommendations: Use the [Mass * Rating Update Library Operation](../../config/o
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: critic #(1)!
-              rating1_image: imdb #(2)!
-              rating2: audience #(3)!
-              rating2_image: rt_popcorn #(4)!
-              rating3: user #(5)!
-              rating3_image: tmdb #(6)!
-              horizontal_position: right #(7)!
-        operations: #(8)!
-          mass_critic_rating_update: imdb
-          mass_audience_rating_update: mdb_tomatoesaudience
-          mass_user_rating_update: tmdb
+              rating1: critic
+              rating2: audience
+              rating3: user
       TV Shows:
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: critic #(1)!
-              rating1_image: imdb #(2)!
-              rating2: audience #(3)!
-              rating2_image: rt_popcorn #(4)!
-              rating3: user #(5)!
-              rating3_image: tmdb #(6)!
-              horizontal_position: right #(7)!
-          - default: ratings
-            template_variables:
               builder_level: episode
-              rating1: critic #(1)!
-              rating1_image: imdb #(2)!
-              rating2: audience #(3)!
-              rating2_image: tmdb #(9)!
-              horizontal_position: right #(7)!
-        operations: #(8)!
-          mass_critic_rating_update: imdb
-          mass_audience_rating_update: mdb_tomatoesaudience
-          mass_user_rating_update: tmdb
-          mass_episode_critic_rating_update: imdb
-          mass_episode_audience_rating_update: tmdb
+              rating1: critic
+              rating2: audience
     ```
-
-    1.  In the first slot on the overlay, insert the value of the `critic` rating
-    2.  In the first slot on the overlay, use the `imdb` image
-    3.  In the second slot on the overlay, insert the value of the `audience` rating
-    4.  In the second slot on the overlay, use the `rt_popcorn` image
-    5.  In the third slot on the overlay, insert the value of the `user` rating
-    6.  In the third slot on the overlay, use the `tmdb` image
-    7.  Place the rating value to the right of the image
-    8.  Operations are used to force ratings from third-party services into the Plex ratings slots.
-    9.  In the second slot on the overlay, use the `tmdb` image
 
 {% 
     include-markdown "./../../templates/defaults/base/overlays/variables_header.md"

@@ -22,16 +22,9 @@ libraries:
 
 <!--ratings-->
         template_variables:
-          rating1: critic
-          rating2: audience
-          rating3: user
-          rating1_image: imdb
-          rating2_image: rt_popcorn
-          rating3_image: tmdb
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
+          rating1: imdb
+          rating2: mdb_tomatoesaudience
+          rating3: tmdb
 <!--ratings-->
 
 <!--show-->
@@ -50,12 +43,9 @@ libraries:
   
 <!--ratings-->
         template_variables:
-          rating1: critic
-          rating2: audience
-          rating3: user
-          rating1_image: imdb
-          rating2_image: rt_popcorn
-          rating3_image: tmdb
+          rating1: imdb
+          rating2: mdb_tomatoesaudience
+          rating3: tmdb
 <!--ratings-->
 
 <!--episode-->
@@ -65,10 +55,8 @@ libraries:
 <!--episode-->
 
 <!--ratings-->
-          rating1: critic
-          rating2: audience
-          rating1_image: imdb
-          rating2_image: tmdb
+          rating1: tmdb
+          rating2: imdb
 <!--ratings-->
 
 <!--season-->
@@ -77,14 +65,6 @@ libraries:
           builder_level: season
 <!--season-->
 
-<!--ratings-->
-    operations:
-      mass_critic_rating_update: imdb
-      mass_audience_rating_update: mdb_tomatoesaudience
-      mass_user_rating_update: tmdb
-      mass_episode_critic_rating_update: imdb
-      mass_episode_audience_rating_update: tmdb
-<!--ratings-->
       
 <!--all-->
 ```

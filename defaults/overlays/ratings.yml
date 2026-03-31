@@ -42,6 +42,7 @@ templates:
       minimum_rating: 0.0
       fresh_rating: 6.0
       maximum_rating: 10.0
+      plex_all: false
       side: left
       horizontal_position: left
       vertical_position: center
@@ -72,47 +73,144 @@ templates:
       - back_line_color
       - back_line_width
     conditionals:
+      rating1_image:
+        conditions:
+          - rating1: [tmdb, mdb_tmdb, plex_tmdb]
+            value: tmdb
+          - rating1: [imdb, mdb_imdb, plex_imdb]
+            value: imdb
+          - rating1: [omdb]
+            value: omdb
+          - rating1: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating1: [mdb_letterboxd]
+            value: letterboxd
+          - rating1: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating1: [mdb_tomatoesaudience, plex_tomatoesaudience]
+            value: rt_popcorn
+          - rating1: [mdb_tomatoes, plex_tomatoes]
+            value: rt_tomato
+          - rating1: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating1: [mal, mdb_myanimelist]
+            value: mal
+          - rating1: [mdb, mdb_average]
+            value: mdb
+          - rating1: [user]
+            value: star
+          - rating1: [critic]
+            value: critic
+          - rating1: [audience]
+            value: audience
+      rating2_image:
+        conditions:
+          - rating2: [tmdb, mdb_tmdb, plex_tmdb]
+            value: tmdb
+          - rating2: [imdb, mdb_imdb, plex_imdb]
+            value: imdb
+          - rating2: [omdb]
+            value: omdb
+          - rating2: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating2: [mdb_letterboxd]
+            value: letterboxd
+          - rating2: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating2: [mdb_tomatoesaudience, plex_tomatoesaudience]
+            value: rt_popcorn
+          - rating2: [mdb_tomatoes, plex_tomatoes]
+            value: rt_tomato
+          - rating2: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating2: [mal, mdb_myanimelist]
+            value: mal
+          - rating2: [mdb, mdb_average]
+            value: mdb
+          - rating2: [user]
+            value: star
+          - rating2: [critic]
+            value: critic
+          - rating2: [audience]
+            value: audience
+      rating3_image:
+        conditions:
+          - rating3: [tmdb, mdb_tmdb, plex_tmdb]
+            value: tmdb
+          - rating3: [imdb, mdb_imdb, plex_imdb]
+            value: imdb
+          - rating3: [omdb]
+            value: omdb
+          - rating3: [anidb, anidb_average, anidb_score]
+            value: anidb
+          - rating3: [mdb_letterboxd]
+            value: letterboxd
+          - rating3: [mdb_metacritic, mdb_metacriticuser]
+            value: metacritic
+          - rating3: [mdb_tomatoesaudience, plex_tomatoesaudience]
+            value: rt_popcorn
+          - rating3: [mdb_tomatoes, plex_tomatoes]
+            value: rt_tomato
+          - rating3: [trakt, trakt_user, mdb_trakt]
+            value: trakt
+          - rating3: [mal, mdb_myanimelist]
+            value: mal
+          - rating3: [mdb, mdb_average]
+            value: mdb
+          - rating3: [user]
+            value: star
+          - rating3: [critic]
+            value: critic
+          - rating3: [audience]
+            value: audience
       mdblist_top:
         conditions:
           - image_level: Top
+            builder_level.not: [season, episode]
             rating<<rating_num>>_image: rt_popcorn
             value: https://mdblist.com/lists/k0meta/verifiedhot<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: rt_tomato
+            builder_level.not: [season, episode]
             value: https://mdblist.com/lists/k0meta/certifiedfresh<<library_type>>s
           - image_level: Top
             rating<<rating_num>>_image: metacritic
+            builder_level.not: [season, episode]
             value: https://mdblist.com/lists/k0meta/metacriticmustsee<<library_type>>s
       imdb_top:
         conditions:
           - image_level: Top
             rating<<rating_num>>_image: imdb
+            builder_level.not: [season, episode]
             value: top_<<library_type>>s
+      plex_all:
+        conditions:
+          - image_level: [Rotten, Fresh, Direct]
+            rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, plex_tmdb, plex_tomatoes, plex_tomatoesaudience]
+            value: true
       run_this:
         default: true
         conditions:
-          - image_level: Top
-            rating<<rating_num>>_image: rt_popcorn
-            library_type: show
+          - builder_level: [episode, season]
+            weight: 110
             value: false
           - image_level: Top
-            rating<<rating_num>>_image: [anidb, letterboxd, mdb, tmdb, trakt, mal, star]
+            rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
+            value: true
+          - rating<<rating_num>>.not: [audience, critic, user]
+            image_level: Rotten
+            value: false
+          - builder_level: episode
+            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb]
+            value: false
+          - builder_level: season
+            rating<<rating_num>>.not: [user, tmdb]
             value: false
           - image_level: Top
-            builder_level: episode
-            value: false
-          - image_level: Top
-            overlay_level: episode
+            rating<<rating_num>>_image: [anidb, letterboxd, rt_popcorn, mdb, tmdb, trakt, mal, star, critic, audience]
             value: false
           - rating<<rating_num>>: none
             value: false
-      rating_level_prefix:
-        default: ""
-        conditions:
-          - builder_level: episode
-            value: episode_
-          - overlay_level: episode
-            value: episode_
       rating<<rating_num>>_style:
         default: ""
         conditions:
@@ -128,9 +226,12 @@ templates:
       image_extra:
         default: ""
         conditions:
-          - rating<<rating_num>>_image: [imdb, rt_popcorn, rt_tomato, metacritic]
+          - rating<<rating_num>>_image: [imdb, rt_tomato, metacritic]
             image_level: Top
             value: Top
+          - rating<<rating_num>>: [mdb_tomatoes, mdb_tomatoesaudience, plex_tomatoes, plex_tomatoesaudience]
+            image_level: Fresh
+            value: Direct
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]
             value: <<image_level>>
       rating<<rating_num>>_image_url:
@@ -139,6 +240,8 @@ templates:
             value: AniDB
           - rating<<rating_num>>_image: imdb
             value: IMDb
+          - rating<<rating_num>>_image: omdb
+            value: OMDb
           - rating<<rating_num>>_image: letterboxd
             value: Letterboxd
           - rating<<rating_num>>_image: mdb
@@ -157,6 +260,10 @@ templates:
             value: MAL
           - rating<<rating_num>>_image: star
             value: Star
+          - rating<<rating_num>>_image: critic
+            value: Critic
+          - rating<<rating_num>>_image: audience
+            value: Audience
       rating<<rating_num>>_horizontal_align:
         default: left
         conditions:
@@ -429,22 +536,26 @@ templates:
         conditions:
           - image_level: Fresh
             value: <<fresh_rating>>
+          - rating<<rating_num>>: [imdb, mdb_imdb, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_tmdb, plex_imdb, plex_tomatoes, plex_tomatoesaudience]
+            value: <<gte>>
       lte:
         default: <<fresh_rating>>
         conditions:
           - image_level: Fresh
             value: <<maximum_rating>>
+          - rating<<rating_num>>: [tmdb, imdb, trakt_user, omdb, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_tmdb, plex_imdb, plex_tomatoes, plex_tomatoesaudience]
+            value: <<lte>>
       gsuffix:
         conditions:
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: [Fresh, Rotten]
             value: gte
       lsuffix:
         conditions:
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: Fresh
             value: lte
-          - rating<<rating_num>>: [critic, audience, user]
+          - rating<<rating_num>>: [audience, critic, user]
             image_level: Rotten
             value: lt
       rating<<rating_num>>_default:
@@ -460,10 +571,11 @@ templates:
             value: rating/<<rating<<rating_num>>_image_url>><<image_extra>>
     plex_search:
       all:
-        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
-        <<rating_level_prefix>><<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
+        <<rating<<rating_num>>>>_rating.<<gsuffix>>: <<gte>>
+        <<rating<<rating_num>>>>_rating.<<lsuffix>>: <<lte>>
     mdblist_list: <<mdblist_top>>
     imdb_chart: <<imdb_top>>
+    plex_all: <<plex_all>>
     builder_level: <<builder_level>>
     run_definition: <<run_this>>
     ignore_blank_results: true
@@ -502,20 +614,20 @@ overlays:
   Rating1Rotten:
     template: {name: Rating, rating_num: "1", image_level: Rotten}
   Rating1Fresh:
-    template: {name: Rating, rating_num: "1", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "1", image_level: Fresh}
   Rating1Top:
     template: {name: Rating, weight: 110, rating_num: "1", image_level: Top}
 
   Rating2Rotten:
     template: {name: Rating, rating_num: "2", image_level: Rotten}
   Rating2Fresh:
-    template: {name: Rating, rating_num: "2", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "2", image_level: Fresh}
   Rating2Top:
     template: {name: Rating, weight: 110, rating_num: "2", image_level: Top}
 
   Rating3Rotten:
     template: {name: Rating, rating_num: "3", image_level: Rotten}
   Rating3Fresh:
-    template: {name: Rating, rating_num: "3", image_level: Fresh}
+    template: {name: Rating, weight: 105, rating_num: "3", image_level: Fresh}
   Rating3Top:
     template: {name: Rating, weight: 110, rating_num: "3", image_level: Top}
