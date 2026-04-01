@@ -1,8 +1,10 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
+Bump plexapi to 4.18.1
 Bump python-dotenv to 1.2.2
 Bump pillow to 12.1.1
+Bump requests to 2.33.1
 Bump setuptools to 82.0.1
 
 # New Features
@@ -21,3 +23,4 @@ Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
 TMDB language now reflected in mass_poster_update; cache extension
 Reduce size of FILMIN logo
+Replace top-ten-pirated default list with an updated, kometa-controlled one.
