@@ -12,6 +12,7 @@ Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old
 Adds new `text_file` builder.
 Reciperr site hasn't responded for a while, so the builder has been removed.
 Added spellcheck to precommit configuration
+Added `language` parameter to `mass_poster_update` and `mass_background_update` operations to override TMDb language for image fetching (e.g. `xx` for textless posters)
 
 # Docs
 
@@ -20,5 +21,6 @@ Added spellcheck to precommit configuration
 # Bug Fixes
 Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
+TMDB language now reflected in mass_poster_update; cache extension
 Reduce size of FILMIN logo
 Replace top-ten-pirated default list with an updated, kometa-controlled one.

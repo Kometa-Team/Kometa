@@ -1,30 +1,39 @@
-import math, os, re
-from datetime import datetime, timedelta, timezone
-from modules import plex, util, anidb
-from modules.util import Failed, LimitReached
+import math
+import os
+import re
+from datetime import datetime, timezone
+
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
+
+from modules import anidb, plex, util
+from modules.util import Failed, LimitReached
 
 logger = util.logger
 
 meta_operations = [
-    "mass_audience_rating_update", "mass_user_rating_update", "mass_critic_rating_update",
-    "mass_episode_audience_rating_update", "mass_episode_user_rating_update", "mass_episode_critic_rating_update",
-    "mass_genre_update", "mass_content_rating_update", "mass_originally_available_update", "mass_added_at_update",
-    "mass_original_title_update", "mass_poster_update", "mass_background_update", "mass_studio_update"
+    "mass_audience_rating_update",
+    "mass_user_rating_update",
+    "mass_critic_rating_update",
+    "mass_episode_audience_rating_update",
+    "mass_episode_user_rating_update",
+    "mass_episode_critic_rating_update",
+    "mass_genre_update",
+    "mass_content_rating_update",
+    "mass_originally_available_update",
+    "mass_added_at_update",
+    "mass_original_title_update",
+    "mass_poster_update",
+    "mass_background_update",
+    "mass_studio_update",
 ]
-name_display = {
-    "audienceRating": "Audience Rating",
-    "rating": "Critic Rating",
-    "userRating": "User Rating",
-    "originallyAvailableAt": "Originally Available Date",
-    "addedAt": "Added At Date",
-    "contentRating": "Content Rating"
-}
+name_display = {"audienceRating": "Audience Rating", "rating": "Critic Rating", "userRating": "User Rating", "originallyAvailableAt": "Originally Available Date", "addedAt": "Added At Date", "contentRating": "Content Rating"}
+
 
 def _item_batches(items_iterable, batch_size):
     for batch_num in range(0, math.ceil(len(items_iterable) / batch_size)):
-        yield items_iterable[batch_num * batch_size:(batch_num + 1) * batch_size]
+        yield items_iterable[batch_num * batch_size : (batch_num + 1) * batch_size]
+
 
 class Operations:
     def __init__(self, config, library):
@@ -117,7 +126,6 @@ class Operations:
             items = self.library.get_all()
             total_items = len(items)
 
-
             radarr_adds = []
             sonarr_adds = []
             label_edits = {"add": {}, "remove": {}}
@@ -183,7 +191,7 @@ class Operations:
                     path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
-                        path = path[:-1] if path.endswith(('/', '\\')) else path
+                        path = path[:-1] if path.endswith(("/", "\\")) else path
                         radarr_adds.append((tmdb_id, path))
                     if self.library.Sonarr and self.library.sonarr_add_all_existing and tvdb_id:
                         path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
@@ -191,6 +199,7 @@ class Operations:
                         sonarr_adds.append((tvdb_id, path))
 
                 _trakt_ratings = None
+
                 def trakt_ratings():
                     nonlocal _trakt_ratings
                     if _trakt_ratings is None:
@@ -200,6 +209,7 @@ class Operations:
                     return _trakt_ratings
 
                 _tmdb_obj = None
+
                 def tmdb_obj():
                     nonlocal _tmdb_obj
                     if _tmdb_obj is None:
@@ -215,6 +225,7 @@ class Operations:
                     return _tmdb_obj
 
                 _omdb_obj = None
+
                 def omdb_obj():
                     nonlocal _omdb_obj
                     if _omdb_obj is None:
@@ -236,6 +247,7 @@ class Operations:
                     return _omdb_obj
 
                 _tvdb_obj = None
+
                 def tvdb_obj():
                     nonlocal _tvdb_obj
                     if _tvdb_obj is None:
@@ -252,6 +264,7 @@ class Operations:
                     return _tvdb_obj
 
                 _mdb_obj = None
+
                 def mdb_obj():
                     nonlocal _mdb_obj
                     if _mdb_obj is None:
@@ -294,11 +307,13 @@ class Operations:
                     return _mdb_obj
 
                 anidb_id = None
+
                 def get_anidb_id():
                     temp_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
                     return temp_id if temp_id else False
 
                 _anidb_obj = None
+
                 def anidb_obj():
                     nonlocal anidb_id, _anidb_obj
                     if _anidb_obj is None:
@@ -317,6 +332,7 @@ class Operations:
                     return _anidb_obj
 
                 _mal_obj = None
+
                 def mal_obj():
                     nonlocal anidb_id, _mal_obj
                     if _mal_obj is None:
@@ -342,11 +358,7 @@ class Operations:
                         raise Failed
                     return _mal_obj
 
-                for attribute, item_attr in [
-                    (self.library.mass_audience_rating_update, "audienceRating"),
-                    (self.library.mass_critic_rating_update, "rating"),
-                    (self.library.mass_user_rating_update, "userRating")
-                ]:
+                for attribute, item_attr in [(self.library.mass_audience_rating_update, "audienceRating"), (self.library.mass_critic_rating_update, "rating"), (self.library.mass_user_rating_update, "userRating")]:
                     if attribute:
                         current = getattr(item, item_attr)
                         for option in attribute:
@@ -377,7 +389,7 @@ class Operations:
                             else:
                                 try:
                                     if option == "tmdb":
-                                        found_rating = tmdb_obj().vote_average # noqa
+                                        found_rating = tmdb_obj().vote_average  # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
                                     elif option == "trakt":
@@ -392,49 +404,49 @@ class Operations:
                                     elif str(option).startswith("plex"):
                                         ratings = self.library.get_ratings(item)
                                         try:
-                                            found_rating = ratings[option] # noqa
+                                            found_rating = ratings[option]  # noqa
                                         except KeyError:
                                             found_rating = None
                                     elif str(option).startswith("omdb"):
                                         omdb_item = omdb_obj()
                                         if option == "omdb_metascore":
-                                            found_rating = omdb_item.metacritic_rating / 10 if omdb_item.metacritic_rating else None # noqa
+                                            found_rating = omdb_item.metacritic_rating / 10 if omdb_item.metacritic_rating else None  # noqa
                                         elif option == "omdb_tomatoes":
-                                            found_rating = omdb_item.rotten_tomatoes / 10 if omdb_item.rotten_tomatoes else None # noqa
+                                            found_rating = omdb_item.rotten_tomatoes / 10 if omdb_item.rotten_tomatoes else None  # noqa
                                         else:
-                                            found_rating = omdb_item.imdb_rating # noqa
+                                            found_rating = omdb_item.imdb_rating  # noqa
                                     elif str(option).startswith("mdb"):
                                         mdb_item = mdb_obj()
                                         if option == "mdb_average":
-                                            found_rating = mdb_item.average / 10 if mdb_item.average else None # noqa
+                                            found_rating = mdb_item.average / 10 if mdb_item.average else None  # noqa
                                         elif option == "mdb_imdb":
-                                            found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None # noqa
+                                            found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None  # noqa
                                         elif option == "mdb_metacritic":
-                                            found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None # noqa
+                                            found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None  # noqa
                                         elif option == "mdb_metacriticuser":
-                                            found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None # noqa
+                                            found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None  # noqa
                                         elif option == "mdb_trakt":
-                                            found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None # noqa
+                                            found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None  # noqa
                                         elif option == "mdb_tomatoes":
-                                            found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None # noqa
+                                            found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None  # noqa
                                         elif option == "mdb_tomatoesaudience":
-                                            found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None # noqa
+                                            found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None  # noqa
                                         elif option == "mdb_tmdb":
-                                            found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None # noqa
+                                            found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None  # noqa
                                         elif option == "mdb_letterboxd":
-                                            found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None # noqa
+                                            found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None  # noqa
                                         elif option == "mdb_myanimelist":
-                                            found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None # noqa
+                                            found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None  # noqa
                                         else:
-                                            found_rating = mdb_item.score / 10 if mdb_item.score else None # noqa
+                                            found_rating = mdb_item.score / 10 if mdb_item.score else None  # noqa
                                     elif option == "anidb_rating":
-                                        found_rating = anidb_obj().rating # noqa
+                                        found_rating = anidb_obj().rating  # noqa
                                     elif option == "anidb_average":
-                                        found_rating = anidb_obj().average # noqa
+                                        found_rating = anidb_obj().average  # noqa
                                     elif option == "anidb_score":
-                                        found_rating = anidb_obj().score # noqa
+                                        found_rating = anidb_obj().score  # noqa
                                     elif option == "mal":
-                                        found_rating = mal_obj().score # noqa
+                                        found_rating = mal_obj().score  # noqa
                                     else:
                                         found_rating = option
                                     if not found_rating:
@@ -460,19 +472,19 @@ class Operations:
                                 break
                             try:
                                 if option == "tmdb":
-                                    new_genres = tmdb_obj().genres # noqa
+                                    new_genres = tmdb_obj().genres  # noqa
                                 elif option == "imdb":
                                     new_genres = self.config.IMDb.get_genres(imdb_id)
                                 elif option == "omdb":
-                                    new_genres = omdb_obj().genres # noqa
+                                    new_genres = omdb_obj().genres  # noqa
                                 elif option == "tvdb":
-                                    new_genres = tvdb_obj().genres # noqa
+                                    new_genres = tvdb_obj().genres  # noqa
                                 elif str(option) in anidb.weights:
-                                    new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]] # noqa
+                                    new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]]  # noqa
                                 elif option == "mal":
-                                    new_genres = mal_obj().genres # noqa
+                                    new_genres = mal_obj().genres  # noqa
                                 elif option == "mal_all":
-                                    new_genres = mal_obj().genres + mal_obj().explicit_genres + mal_obj().themes + mal_obj().demographics # noqa
+                                    new_genres = mal_obj().genres + mal_obj().explicit_genres + mal_obj().themes + mal_obj().demographics  # noqa
                                 else:
                                     new_genres = option
                                 if not new_genres:
@@ -524,14 +536,14 @@ class Operations:
                                 break
                             try:
                                 if option == "omdb":
-                                    new_rating = omdb_obj().content_rating # noqa
+                                    new_rating = omdb_obj().content_rating  # noqa
                                 elif option == "mdb":
-                                    _rating = mdb_obj().content_rating # noqa
+                                    _rating = mdb_obj().content_rating  # noqa
                                     new_rating = _rating if _rating else None
                                 elif str(option).startswith("mdb_commonsense"):
                                     _rating = None
                                     if mdb_obj().commonsense:
-                                        _rating = mdb_obj().age_rating # noqa
+                                        _rating = mdb_obj().age_rating  # noqa
                                     if not _rating:
                                         new_rating = None
                                     elif option == "mdb_commonsense0":
@@ -539,7 +551,7 @@ class Operations:
                                     else:
                                         new_rating = _rating
                                 elif str(option).startswith("mdb_age_rating"):
-                                    _rating = mdb_obj().age_rating # noqa
+                                    _rating = mdb_obj().age_rating  # noqa
                                     if not _rating:
                                         new_rating = None
                                     elif option == "mdb_age_rating0":
@@ -547,7 +559,7 @@ class Operations:
                                     else:
                                         new_rating = _rating
                                 elif option == "mal":
-                                    new_rating = mal_obj().rating # noqa
+                                    new_rating = mal_obj().rating  # noqa
                                 else:
                                     new_rating = option
                                 if new_rating is None:
@@ -634,15 +646,15 @@ class Operations:
                         else:
                             try:
                                 if option == "anidb":
-                                    new_original_title = anidb_obj().main_title # noqa
+                                    new_original_title = anidb_obj().main_title  # noqa
                                 elif option == "anidb_official":
-                                    new_original_title = anidb_obj().official_title # noqa
+                                    new_original_title = anidb_obj().official_title  # noqa
                                 elif option == "mal":
-                                    new_original_title = mal_obj().title # noqa
+                                    new_original_title = mal_obj().title  # noqa
                                 elif option == "mal_english":
-                                    new_original_title = mal_obj().title_english # noqa
+                                    new_original_title = mal_obj().title_english  # noqa
                                 elif option == "mal_japanese":
-                                    new_original_title = mal_obj().title_japanese # noqa
+                                    new_original_title = mal_obj().title_japanese  # noqa
                                 else:
                                     new_original_title = option
                                 if not new_original_title:
@@ -685,11 +697,11 @@ class Operations:
                         else:
                             try:
                                 if option == "tmdb":
-                                    new_studio = tmdb_obj().studio # noqa
+                                    new_studio = tmdb_obj().studio  # noqa
                                 elif option == "anidb":
-                                    new_studio = anidb_obj().studio # noqa
+                                    new_studio = anidb_obj().studio  # noqa
                                 elif option == "mal":
-                                    new_studio = mal_obj().studio # noqa
+                                    new_studio = mal_obj().studio  # noqa
                                 else:
                                     new_studio = option
                                 if not new_studio:
@@ -704,10 +716,7 @@ class Operations:
                             except Failed:
                                 continue
 
-                for attribute, item_attr in [
-                    (self.library.mass_originally_available_update, "originallyAvailableAt"),
-                    (self.library.mass_added_at_update, "addedAt")
-                ]:
+                for attribute, item_attr in [(self.library.mass_originally_available_update, "originallyAvailableAt"), (self.library.mass_added_at_update, "addedAt")]:
                     if attribute:
                         current = getattr(item, item_attr)
                         if current:
@@ -775,13 +784,34 @@ class Operations:
 
                 if self.library.mass_poster_update or self.library.mass_background_update:
                     try:
-                        new_poster, new_background, logo, item_dir, name = self.library.find_item_assets(item)
+                        new_poster, new_background, _logo, item_dir, name = self.library.find_item_assets(item)  # noqa: F841
                     except Failed:
-                        new_poster, new_background, logo, item_dir, name = None, None, None, None, None
+                        new_poster, new_background, _logo, item_dir, name = None, None, None, None, None  # noqa: F841
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
                         tmdb_item = None
+
+                    def _get_tmdb_image_url(image_config, is_poster=True):
+                        """Get the TMDb image URL, using language override if configured."""
+                        lang = image_config.get("language") if image_config else None
+                        source = image_config.get("source") if image_config else None
+                        if lang and source != "tmdb":
+                            logger.info(f"{item.title[:25]:<25} | Language '{lang}' ignored (source is not tmdb)")
+                        if lang and source == "tmdb" and tmdb_item:
+                            original_language = self.config.TMDb.language
+                            original_api_language = self.config.TMDb.TMDb.language
+                            try:
+                                self.config.TMDb.language = lang
+                                self.config.TMDb.TMDb.language = lang
+                                lang_tmdb_item = self.config.TMDb.get_movie(tmdb_item.tmdb_id, ignore_cache=True) if self.library.is_movie else self.config.TMDb.get_show(tmdb_item.tmdb_id, ignore_cache=True)  # noqa
+                                return lang_tmdb_item.poster_url if is_poster else lang_tmdb_item.backdrop_url
+                            except Failed:
+                                return None
+                            finally:
+                                self.config.TMDb.language = original_language
+                                self.config.TMDb.TMDb.language = original_api_language
+                        return (tmdb_item.poster_url if is_poster else tmdb_item.backdrop_url) if tmdb_item else None
 
                     if self.library.mass_poster_update:
                         source = self.library.mass_poster_update["source"]
@@ -790,10 +820,11 @@ class Operations:
                         thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
                         labels = [la.tag for la in self.library.item_labels(item)]
                         has_overlay_label = "Overlay" in labels
+                        tmdb_poster_url = _get_tmdb_image_url(self.library.mass_poster_update, is_poster=True)
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
                         if source in ["unlock", "lock"]:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
                         elif ignore_locked and thumb_locked:
                             # Skip processing if ignore_locked is True and thumb is locked
                             pass
@@ -801,82 +832,97 @@ class Operations:
                             # Skip processing if ignore_overlays is True and Overlay label is found
                             pass
                         else:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_item.poster_url if tmdb_item else None, title=item.title)  # noqa
+                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
 
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
                         ignore_locked = self.library.mass_background_update["ignore_locked"]
                         ignore_overlays = self.library.mass_background_update["ignore_overlays"]
                         art_locked = any(f.name == "art" and f.locked for f in item.fields)
+                        tmdb_backdrop_url = _get_tmdb_image_url(self.library.mass_background_update, is_poster=False)
 
                         if source in ["unlock", "lock"]:
-                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title) # noqa
+                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
 
                         elif not (ignore_locked and art_locked):
-                            self.library.background_update(item, new_background, tmdb=tmdb_item.backdrop_url if tmdb_item else None, title=item.title) # noqa
-
+                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
 
                     if self.library.is_show and (
-                            (self.library.mass_poster_update and
-                                (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"])) or
-                            (self.library.mass_background_update and
-                                (self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]))
+                        (self.library.mass_poster_update and (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"]))
+                        or (self.library.mass_background_update and (self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]))
                     ):
-                        real_show = None
+                        # Determine if any language override applies for season/episode TMDb fetches
+                        _image_lang = None
+                        if self.library.mass_poster_update and self.library.mass_poster_update.get("language") and self.library.mass_poster_update["source"] == "tmdb":
+                            _image_lang = self.library.mass_poster_update["language"]
+                        elif self.library.mass_background_update and self.library.mass_background_update.get("language") and self.library.mass_background_update["source"] == "tmdb":
+                            _image_lang = self.library.mass_background_update["language"]
+
+                        _orig_lang = self.config.TMDb.language
+                        _orig_api_lang = self.config.TMDb.TMDb.language
+                        if _image_lang:
+                            self.config.TMDb.language = _image_lang
+                            self.config.TMDb.TMDb.language = _image_lang
                         try:
-                            real_show = tmdb_item.load_show() if tmdb_item else None # noqa
-                        except Failed as e:
-                            logger.error(e)
-                        tmdb_seasons = {s.season_number: s for s in real_show.seasons} if real_show else {}
-                        for season in self.library.query(item.seasons):
-                            if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or \
-                                    (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
-                                try:
-                                    season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
-                                except Failed:
-                                    season_poster = None
-                                    season_background = None
-                                season_title = f"S{season.seasonNumber} {season.title}"
-                                tmdb_poster = tmdb_seasons[season.seasonNumber].poster_url if season.seasonNumber in tmdb_seasons else None
-                                if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
-                                    self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
-                                if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
-                                    self.library.background_update(season, season_background, title=season_title if season else None)
+                            real_show = None
+                            try:
+                                real_show = tmdb_item.load_show() if tmdb_item else None  # noqa
+                            except Failed as e:
+                                logger.error(e)
+                            tmdb_season_numbers = {s.season_number for s in real_show.seasons} if real_show else set()
+                            for season in self.library.query(item.seasons):
+                                tmdb_season = None
+                                if tmdb_item and season.seasonNumber in tmdb_season_numbers:
+                                    try:
+                                        tmdb_season = self.config.TMDb.get_season(tmdb_item.tmdb_id, season.seasonNumber)
+                                    except Failed:
+                                        pass
+                                if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
+                                    try:
+                                        season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                                    except Failed:
+                                        season_poster = None
+                                        season_background = None
+                                    season_title = f"S{season.seasonNumber} {season.title}"
+                                    tmdb_poster = tmdb_season.poster_url if tmdb_season else None
+                                    if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
+                                        self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
+                                    if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
+                                        self.library.background_update(season, season_background, title=season_title if season else None)
 
-                            if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or \
-                                    (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
-                                tmdb_episodes = {}
-                                if season.seasonNumber in tmdb_seasons:
-                                    for episode in tmdb_seasons[season.seasonNumber].episodes:
-                                        episode._partial = False
+                                if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
+                                    tmdb_episodes = {}
+                                    if tmdb_season:
+                                        for episode in tmdb_season.episodes:
+                                            episode._partial = False
+                                            try:
+                                                tmdb_episodes[episode.episode_number] = episode
+                                            except NotFound:
+                                                logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
+
+                                    for episode in self.library.query(season.episodes):
                                         try:
-                                            tmdb_episodes[episode.episode_number] = episode
-                                        except NotFound:
-                                            logger.error(f"TMDb Error: An Episode of Season {season.seasonNumber} was Not Found")
+                                            episode = self.library.reload(episode)
+                                        except Failed:
+                                            logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
+                                            continue
+                                        try:
+                                            episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                                        except Failed:
+                                            episode_poster = None
+                                            episode_background = None
+                                        episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
+                                        tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
+                                        if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
+                                            self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
+                                        if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
+                                            self.library.background_update(episode, episode_background, title=episode_title if episode else None)
+                        finally:
+                            if _image_lang:
+                                self.config.TMDb.language = _orig_lang
+                                self.config.TMDb.TMDb.language = _orig_api_lang
 
-                                for episode in self.library.query(season.episodes):
-                                    try:
-                                        episode = self.library.reload(episode)
-                                    except Failed:
-                                        logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
-                                        continue
-                                    try:
-                                        episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
-                                    except Failed:
-                                        episode_poster = None
-                                        episode_background = None
-                                    episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
-                                    tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
-                                    if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
-                                        self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
-                                    if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
-                                        self.library.background_update(episode, episode_background, title=episode_title if episode else None)
-
-                episode_ops = [
-                    (self.library.mass_episode_audience_rating_update, "audienceRating"),
-                    (self.library.mass_episode_critic_rating_update, "rating"),
-                    (self.library.mass_episode_user_rating_update, "userRating")
-                ]
+                episode_ops = [(self.library.mass_episode_audience_rating_update, "audienceRating"), (self.library.mass_episode_critic_rating_update, "rating"), (self.library.mass_episode_user_rating_update, "userRating")]
 
                 if any([x is not None for x, _ in episode_ops]):
 
@@ -966,6 +1012,7 @@ class Operations:
             logger.info("")
 
             epoch = datetime(1970, 1, 1)
+
             def plex_update_in_batches(_edits, display_attr=None, out_type=None, tag_type=None, is_episode=None):
                 _size = len(_edits.items())
                 for j, (update_value, rating_keys) in enumerate(sorted(_edits.items()), 1):
@@ -976,10 +1023,12 @@ class Operations:
                     update_attr = update_value if display_attr is None else name_display[display_attr] if display_attr in name_display else display_attr.capitalize()
                     display_value = update_value if out_type is None else None
                     item_type_name = f"{'Episode' if is_episode else 'Movie' if self.library.is_movie else 'Show'}{'s' if total_update_items > 1 else ''}"
-                    logger.info(f"Plex {update_attr} Update ({j}/{_size}): "
-                                f"{f'{out_type.capitalize()} ' if out_type else ''}"
-                                f"{f'Adding {display_value} to ' if tag_type == 'add' else f'Removing {display_value} from ' if tag_type == 'remove' else ''}"
-                                f"{total_update_items} {item_type_name}{'' if out_type or tag_type else f' updated to {display_value}'}")
+                    logger.info(
+                        f"Plex {update_attr} Update ({j}/{_size}): "
+                        f"{f'{out_type.capitalize()} ' if out_type else ''}"
+                        f"{f'Adding {display_value} to ' if tag_type == 'add' else f'Removing {display_value} from ' if tag_type == 'remove' else ''}"
+                        f"{total_update_items} {item_type_name}{'' if out_type or tag_type else f' updated to {display_value}'}"
+                    )
                     for batch_num, batch_items in enumerate(_item_batches(update_items, batch_size), 1):
                         if num_batches > 1:
                             logger.info(f"    Processing Batch {batch_num}/{num_batches} {len(batch_items)} {item_type_name}")
@@ -992,7 +1041,7 @@ class Operations:
                                 offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
                                 update_value = int((update_date - epoch).total_seconds()) - offset
                         elif isinstance(update_value, datetime):
-                            update_value = update_value.strftime('%Y-%m-%d')
+                            update_value = update_value.strftime("%Y-%m-%d")
                         if out_type is not None:
                             if out_type in ["remove", "reset"]:
                                 self.library.Plex.editField(update_value, None, locked=out_type == "remove")
@@ -1006,7 +1055,7 @@ class Operations:
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
-                        plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
+                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
             for item_attr, rt_edits in rating_edits.items():
                 plex_update_in_batches(rt_edits, display_attr=item_attr)
             plex_update_in_batches(content_edits, display_attr="contentRating")
@@ -1134,8 +1183,7 @@ class Operations:
                 logger.separator(f"Unconfigured Mass Collection Mode to {self.library.mass_collection_mode} for {self.library.name} Library", space=False, border=False)
                 logger.info("")
                 for col in unconfigured_collections:
-                    if int(col.collectionMode) not in plex.collection_mode_keys \
-                            or plex.collection_mode_keys[int(col.collectionMode)] != self.library.mass_collection_mode:
+                    if int(col.collectionMode) not in plex.collection_mode_keys or plex.collection_mode_keys[int(col.collectionMode)] != self.library.mass_collection_mode:
                         self.library.collection_mode_query(col, self.library.mass_collection_mode)
                         logger.info(f"{col.title} Collection Mode Updated")
 
@@ -1198,7 +1246,7 @@ class Operations:
             yaml.save()
             logger.info(f"{len(yaml.data['metadata'])} {self.library.type}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
 
-        operation_run_time = str(datetime.now() - operation_start).split('.')[0]
+        operation_run_time = str(datetime.now() - operation_start).split(".")[0]
         logger.info("")
         logger.separator(f"Finished {self.library.name} Library Operations\nOperations Run Time: {operation_run_time}")
         return operation_run_time

@@ -2155,6 +2155,9 @@
                         "type": "string",
                         "enum": ["tmdb", "plex", "lock", "unlock"]
                     },
+                        "language": {
+                        "type": "string"
+                    },
                         "seasons": {
                         "type": "boolean"
                     },
@@ -2176,6 +2179,9 @@
                     "source": {
                         "type": "string",
                         "enum": ["tmdb", "plex", "lock", "unlock"]
+                    },
+                        "language": {
+                        "type": "string"
                     },
                         "seasons": {
                         "type": "boolean"
