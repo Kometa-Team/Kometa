@@ -381,6 +381,7 @@ tautulli's
 telesync
 templatizing
 TestAniDB
+textless
 th
 themoviedb
 theposterdb

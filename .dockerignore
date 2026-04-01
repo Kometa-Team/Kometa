@@ -1,7 +1,8 @@
 **/dist
 **/build
-*.spec
+*.specz
 **/__pycache__
+**/.DS_Store
 /.vscode
 /tests
 **/log

@@ -1,22 +1,27 @@
-import os, plexapi, re, time
+import os
+import re
+import time
 from datetime import datetime, timedelta
+from xml.etree.ElementTree import ParseError
+
+import plexapi
+from PIL import Image
+from plexapi import utils
+from plexapi.audio import Album, Artist, Track
+from plexapi.collection import Collection
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from plexapi.library import FilterChoice, Role
+from plexapi.playlist import Playlist
+from plexapi.server import PlexServer
+from plexapi.video import Episode, Movie, Season, Show
+from requests.exceptions import ConnectionError, ConnectTimeout
+from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+
 from modules import builder, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed
-from PIL import Image
-from plexapi import utils
-from plexapi.audio import Artist, Track, Album
-from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.collection import Collection
-from plexapi.library import Role, FilterChoice
-from plexapi.playlist import Playlist
-from plexapi.server import PlexServer
-from plexapi.video import Movie, Show, Season, Episode
-from requests.exceptions import ConnectionError, ConnectTimeout
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
-from xml.etree.ElementTree import ParseError
 
 logger = util.logger
 
@@ -99,7 +104,7 @@ search_translation = {
     "track_added": "track.addedAt",
     "track_trash": "track.trash",
     "track_source": "track.source",
-    "track_label": "track.label"
+    "track_label": "track.label",
 }
 show_translation = {
     "title": "show.title",
@@ -127,10 +132,7 @@ show_translation = {
     "label": "show.label",
 }
 get_tags_translation = {"episode.actor": "actor"}
-modifier_translation = {
-    "": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C",
-    ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": "", ".rated": ""
-}
+modifier_translation = {"": "", ".not": "!", ".is": "%3D", ".isnot": "!%3D", ".gt": "%3E%3E", ".gte": "%3E", ".lt": "%3C%3C", ".lte": "%3C", ".before": "%3C%3C", ".after": "%3E%3E", ".begins": "%3C", ".ends": "%3E", ".regex": "", ".rated": ""}
 attribute_translation = {
     "aspect": "aspectRatio",
     "channels": "audioChannels",
@@ -167,14 +169,23 @@ attribute_translation = {
     "runtime": "duration",
     "season_title": "parentTitle",
     "episode_count": "leafCount",
-    "versions": "media"
+    "versions": "media",
 }
 method_alias = {
-    "actors": "actor", "role": "actor", "roles": "actor",
-    "show_actor": "actor", "show_actors": "actor", "show_role": "actor", "show_roles": "actor",
-    "collections": "collection", "plex_collection": "collection",
-    "show_collections": "collection", "show_collection": "collection",
-    "content_ratings": "content_rating", "contentRating": "content_rating", "contentRatings": "content_rating",
+    "actors": "actor",
+    "role": "actor",
+    "roles": "actor",
+    "show_actor": "actor",
+    "show_actors": "actor",
+    "show_role": "actor",
+    "show_roles": "actor",
+    "collections": "collection",
+    "plex_collection": "collection",
+    "show_collections": "collection",
+    "show_collection": "collection",
+    "content_ratings": "content_rating",
+    "contentRating": "content_rating",
+    "contentRatings": "content_rating",
     "countries": "country",
     "decades": "decade",
     "directors": "director",
@@ -187,26 +198,50 @@ method_alias = {
     "show_user_rating": "user_rating",
     "video_resolution": "resolution",
     "tmdb_trending": "tmdb_trending_daily",
-    "play": "plays", "show_plays": "plays", "show_play": "plays", "episode_play": "episode_plays",
-    "originally_available": "release", "episode_originally_available": "episode_air_date",
-    "episode_release": "episode_air_date", "episode_released": "episode_air_date",
-    "show_originally_available": "release", "show_release": "release", "show_air_date": "release",
-    "released": "release", "show_released": "release", "max_age": "release",
+    "play": "plays",
+    "show_plays": "plays",
+    "show_play": "plays",
+    "episode_play": "episode_plays",
+    "originally_available": "release",
+    "episode_originally_available": "episode_air_date",
+    "episode_release": "episode_air_date",
+    "episode_released": "episode_air_date",
+    "show_originally_available": "release",
+    "show_release": "release",
+    "show_air_date": "release",
+    "released": "release",
+    "show_released": "release",
+    "max_age": "release",
     "studios": "studio",
     "networks": "network",
     "producers": "producer",
     "writers": "writer",
-    "years": "year", "show_year": "year", "show_years": "year",
+    "years": "year",
+    "show_year": "year",
+    "show_years": "year",
     "filter": "filters",
-    "seasonyear": "year", "isadult": "adult", "startdate": "start", "enddate": "end", "averagescore": "score",
-    "minimum_tag_percentage": "min_tag_percent", "minimumtagrank": "min_tag_percent", "minimum_tag_rank": "min_tag_percent",
-    "anilist_tag": "anilist_search", "anilist_genre": "anilist_search", "anilist_season": "anilist_search",
-    "mal_producer": "mal_studio", "mal_licensor": "mal_studio",
-    "trakt_recommended": "trakt_recommended_weekly", "trakt_watched": "trakt_watched_weekly", "trakt_collected": "trakt_collected_weekly",
+    "seasonyear": "year",
+    "isadult": "adult",
+    "startdate": "start",
+    "enddate": "end",
+    "averagescore": "score",
+    "minimum_tag_percentage": "min_tag_percent",
+    "minimumtagrank": "min_tag_percent",
+    "minimum_tag_rank": "min_tag_percent",
+    "anilist_tag": "anilist_search",
+    "anilist_genre": "anilist_search",
+    "anilist_season": "anilist_search",
+    "mal_producer": "mal_studio",
+    "mal_licensor": "mal_studio",
+    "trakt_recommended": "trakt_recommended_weekly",
+    "trakt_watched": "trakt_watched_weekly",
+    "trakt_collected": "trakt_collected_weekly",
     "collection_changes_webhooks": "changes_webhooks",
-    "radarr_add": "radarr_add_missing", "sonarr_add": "sonarr_add_missing",
+    "radarr_add": "radarr_add_missing",
+    "sonarr_add": "sonarr_add_missing",
     "trakt_recommended_personal": "trakt_recommendations",
-    "collection_level": "builder_level", "overlay_level": "builder_level",
+    "collection_level": "builder_level",
+    "overlay_level": "builder_level",
 }
 modifier_alias = {".greater": ".gt", ".less": ".lt"}
 date_sub_mods = {"s": "Seconds", "m": "Minutes", "h": "Hours", "d": "Days", "w": "Weeks", "o": "Months", "y": "Years"}
@@ -216,10 +251,51 @@ keep_episodes_options = {"all": 0, "5_latest": 5, "3_latest": 3, "latest": 1, "p
 delete_episodes_options = {"never": 0, "day": 1, "week": 7, "month": 30, "refresh": 100}
 season_display_options = {"default": -1, "show": 0, "hide": 1}
 episode_ordering_options = {"default": None, "tmdb_aired": "tmdbAiring", "tvdb_aired": "tvdbAiring", "tvdb_dvd": "tvdbDvd", "tvdb_absolute": "tvdbAbsolute"}
-plex_languages = ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US",
-                  "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID",
-                  "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO",
-                  "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"]
+plex_languages = [
+    "default",
+    "ar-SA",
+    "ca-ES",
+    "cs-CZ",
+    "da-DK",
+    "de-DE",
+    "el-GR",
+    "en-AU",
+    "en-CA",
+    "en-GB",
+    "en-US",
+    "es-ES",
+    "es-MX",
+    "et-EE",
+    "fa-IR",
+    "fi-FI",
+    "fr-CA",
+    "fr-FR",
+    "he-IL",
+    "hi-IN",
+    "hu-HU",
+    "id-ID",
+    "it-IT",
+    "ja-JP",
+    "ko-KR",
+    "lt-LT",
+    "lv-LV",
+    "nb-NO",
+    "nl-NL",
+    "pl-PL",
+    "pt-BR",
+    "pt-PT",
+    "ro-RO",
+    "ru-RU",
+    "sk-SK",
+    "sv-SE",
+    "th-TH",
+    "tr-TR",
+    "uk-UA",
+    "vi-VN",
+    "zh-CN",
+    "zh-HK",
+    "zh-TW",
+]
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
 metadata_language_options["default"] = None
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
@@ -231,11 +307,7 @@ subtitle_language_options["en"] = "en"
 subtitle_mode_options = {"default": -1, "manual": 0, "foreign": 1, "always": 2}
 collection_order_options = ["release", "alpha", "custom"]
 collection_filtering_options = ["user", "admin"]
-collection_mode_options = {
-    "default": "default", "hide": "hide",
-    "hide_items": "hideItems", "hideitems": "hideItems",
-    "show_items": "showItems", "showitems": "showItems"
-}
+collection_mode_options = {"default": "default", "hide": "hide", "hide_items": "hideItems", "hideitems": "hideItems", "show_items": "showItems", "showitems": "showItems"}
 builder_level_show_options = ["episode", "season"]
 builder_level_music_options = ["album", "track"]
 builder_level_options = builder_level_show_options + builder_level_music_options
@@ -253,180 +325,362 @@ item_advance_keys = {
     "item_credits_detection": ("enableCreditsMarkerGeneration", credits_detection_options),
     "item_audio_language": ("audioLanguage", audio_language_options),
     "item_subtitle_language": ("subtitleLanguage", subtitle_language_options),
-    "item_subtitle_mode": ("subtitleMode", subtitle_mode_options)
+    "item_subtitle_mode": ("subtitleMode", subtitle_mode_options),
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
-and_searches = [
-    "title.and", "studio.and", "actor.and", "audio_language.and", "collection.and",
-    "content_rating.and", "country.and",  "director.and", "genre.and", "label.and",
-    "network.and", "producer.and", "subtitle_language.and", "writer.and"
-]
-or_searches = [
-    "title", "studio", "actor", "audio_language", "collection", "content_rating",
-    "country", "director", "genre", "label", "network", "producer", "subtitle_language",
-    "writer", "decade", "resolution", "year", "episode_title", "episode_year"
-]
+and_searches = ["title.and", "studio.and", "actor.and", "audio_language.and", "collection.and", "content_rating.and", "country.and", "director.and", "genre.and", "label.and", "network.and", "producer.and", "subtitle_language.and", "writer.and"]
+or_searches = ["title", "studio", "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer", "decade", "resolution", "year", "episode_title", "episode_year"]
 movie_only_searches = [
-    "director", "director.not", "producer", "producer.not", "writer", "writer.not",
-    "decade", "duplicate", "unplayed", "progress",
-    "duration.gt", "duration.gte", "duration.lt", "duration.lte"
-    "edition", "edition.not", "edition.is", "edition.isnot", "edition.begins", "edition.ends"
+    "director",
+    "director.not",
+    "producer",
+    "producer.not",
+    "writer",
+    "writer.not",
+    "decade",
+    "duplicate",
+    "unplayed",
+    "progress",
+    "duration.gt",
+    "duration.gte",
+    "duration.lt",
+    "duration.lte" "edition",
+    "edition.not",
+    "edition.is",
+    "edition.isnot",
+    "edition.begins",
+    "edition.ends",
 ]
 show_only_searches = [
-    "network", "network.not",
-    "season_collection", "season_collection.not",
-    "episode_collection", "episode_collection.not",
-    "season_label", "season_label.not",
-    "episode_label", "episode_label.not",
-    "episode_title", "episode_title.not", "episode_title.is", "episode_title.isnot", "episode_title.begins", "episode_title.ends",
-    "episode_added", "episode_added.not", "episode_added.before", "episode_added.after",
-    "episode_air_date", "episode_air_date.not",
-    "episode_air_date.before", "episode_air_date.after",
-    "episode_last_played", "episode_last_played.not", "episode_last_played.before", "episode_last_played.after",
-    "episode_plays.gt", "episode_plays.gte", "episode_plays.lt", "episode_plays.lte",
-    "episode_user_rating.gt", "episode_user_rating.gte", "episode_user_rating.lt", "episode_user_rating.lte", "episode_user_rating.rated",
-    "episode_critic_rating.gt", "episode_critic_rating.gte", "episode_critic_rating.lt", "episode_critic_rating.lte", "episode_critic_rating.rated",
-    "episode_audience_rating.gt", "episode_audience_rating.gte", "episode_audience_rating.lt", "episode_audience_rating.lte", "episode_audience_rating.rated",
-    "episode_year", "episode_year.not", "episode_year.gt", "episode_year.gte", "episode_year.lt", "episode_year.lte",
-    "unplayed_episodes", "episode_unplayed", "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched",
+    "network",
+    "network.not",
+    "season_collection",
+    "season_collection.not",
+    "episode_collection",
+    "episode_collection.not",
+    "season_label",
+    "season_label.not",
+    "episode_label",
+    "episode_label.not",
+    "episode_title",
+    "episode_title.not",
+    "episode_title.is",
+    "episode_title.isnot",
+    "episode_title.begins",
+    "episode_title.ends",
+    "episode_added",
+    "episode_added.not",
+    "episode_added.before",
+    "episode_added.after",
+    "episode_air_date",
+    "episode_air_date.not",
+    "episode_air_date.before",
+    "episode_air_date.after",
+    "episode_last_played",
+    "episode_last_played.not",
+    "episode_last_played.before",
+    "episode_last_played.after",
+    "episode_plays.gt",
+    "episode_plays.gte",
+    "episode_plays.lt",
+    "episode_plays.lte",
+    "episode_user_rating.gt",
+    "episode_user_rating.gte",
+    "episode_user_rating.lt",
+    "episode_user_rating.lte",
+    "episode_user_rating.rated",
+    "episode_critic_rating.gt",
+    "episode_critic_rating.gte",
+    "episode_critic_rating.lt",
+    "episode_critic_rating.lte",
+    "episode_critic_rating.rated",
+    "episode_audience_rating.gt",
+    "episode_audience_rating.gte",
+    "episode_audience_rating.lt",
+    "episode_audience_rating.lte",
+    "episode_audience_rating.rated",
+    "episode_year",
+    "episode_year.not",
+    "episode_year.gt",
+    "episode_year.gte",
+    "episode_year.lt",
+    "episode_year.lte",
+    "unplayed_episodes",
+    "episode_unplayed",
+    "episode_duplicate",
+    "episode_progress",
+    "episode_unmatched",
+    "show_unmatched",
 ]
 string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
-    "dovi", "hdr", "unmatched", "duplicate", "unplayed", "progress", "trash", "unplayed_episodes", "episode_unplayed",
-    "episode_duplicate", "episode_progress", "episode_unmatched", "show_unmatched", "artist_unmatched", "album_unmatched", "track_trash"
+    "dovi",
+    "hdr",
+    "unmatched",
+    "duplicate",
+    "unplayed",
+    "progress",
+    "trash",
+    "unplayed_episodes",
+    "episode_unplayed",
+    "episode_duplicate",
+    "episode_progress",
+    "episode_unmatched",
+    "show_unmatched",
+    "artist_unmatched",
+    "album_unmatched",
+    "track_trash",
 ]
 tmdb_attributes = ["actor", "director", "producer", "writer"]
 date_attributes = [
-    "added", "episode_added", "release", "episode_air_date", "last_played", "episode_last_played",
-    "artist_added", "artist_last_played", "album_last_played",
-    "album_added", "album_released", "track_last_played", "track_last_skipped", "track_last_rated", "track_added"
+    "added",
+    "episode_added",
+    "release",
+    "episode_air_date",
+    "last_played",
+    "episode_last_played",
+    "artist_added",
+    "artist_last_played",
+    "album_last_played",
+    "album_added",
+    "album_released",
+    "track_last_played",
+    "track_last_skipped",
+    "track_last_rated",
+    "track_added",
 ]
 date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-float_attributes = [
-    "user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating",
-    "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"
-]
+float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
-    "actor", "episode_actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "season_label", "episode_label", "network",
-    "producer", "resolution", "studio", "subtitle_language", "writer", "season_collection", "episode_collection", "edition",
-    "artist_genre", "artist_collection", "artist_country", "artist_mood", "artist_label", "artist_style", "album_genre", "album_mood",
-    "album_style", "album_format", "album_type", "album_collection", "album_source", "album_label", "track_mood", "track_source", "track_label"
+    "actor",
+    "episode_actor",
+    "audio_language",
+    "collection",
+    "content_rating",
+    "country",
+    "director",
+    "genre",
+    "label",
+    "season_label",
+    "episode_label",
+    "network",
+    "producer",
+    "resolution",
+    "studio",
+    "subtitle_language",
+    "writer",
+    "season_collection",
+    "episode_collection",
+    "edition",
+    "artist_genre",
+    "artist_collection",
+    "artist_country",
+    "artist_mood",
+    "artist_label",
+    "artist_style",
+    "album_genre",
+    "album_mood",
+    "album_style",
+    "album_format",
+    "album_type",
+    "album_collection",
+    "album_source",
+    "album_label",
+    "track_mood",
+    "track_source",
+    "track_label",
 ]
 tag_modifiers = ["", ".not", ".regex"]
 no_not_mods = ["resolution", "decade", "album_decade"]
-searches = boolean_attributes + \
-               [f"{f}{m}" for f in string_attributes for m in string_modifiers] + \
-               [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"] + \
-               [f"{f}{m}" for f in date_attributes for m in date_modifiers] + \
-               [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods] + \
-               [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
+searches = (
+    boolean_attributes
+    + [f"{f}{m}" for f in string_attributes for m in string_modifiers]
+    + [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"]
+    + [f"{f}{m}" for f in date_attributes for m in date_modifiers]
+    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods]
+    + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
+)
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
 movie_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
-    "year.asc": "year", "year.desc": "year%3Adesc",
-    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
-    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
-    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
-    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
-    "progress.asc": "viewOffset", "progress.desc": "viewOffset%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
-    "resolution.asc": "mediaHeight", "resolution.desc": "mediaHeight%3Adesc",
-    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
-    "random": "random"
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
+    "year.asc": "year",
+    "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt",
+    "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt",
+    "release.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating",
+    "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating",
+    "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "content_rating.asc": "contentRating",
+    "content_rating.desc": "contentRating%3Adesc",
+    "duration.asc": "duration",
+    "duration.desc": "duration%3Adesc",
+    "progress.asc": "viewOffset",
+    "progress.desc": "viewOffset%3Adesc",
+    "plays.asc": "viewCount",
+    "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt",
+    "viewed.desc": "lastViewedAt%3Adesc",
+    "resolution.asc": "mediaHeight",
+    "resolution.desc": "mediaHeight%3Adesc",
+    "bitrate.asc": "mediaBitrate",
+    "bitrate.desc": "mediaBitrate%3Adesc",
+    "random": "random",
 }
 show_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
-    "year.asc": "year", "year.desc": "year%3Adesc",
-    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
-    "episode_originally_available.asc": "episode.originallyAvailableAt", "episode_originally_available.desc": "episode.originallyAvailableAt%3Adesc",
-    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
-    "episode_release.asc": "episode.originallyAvailableAt", "episode_release.desc": "episode.originallyAvailableAt%3Adesc",
-    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "content_rating.asc": "contentRating", "content_rating.desc": "contentRating%3Adesc",
-    "unplayed.asc": "unviewedLeafCount", "unplayed.desc": "unviewedLeafCount%3Adesc",
-    "episode_added.asc": "episode.addedAt", "episode_added.desc": "episode.addedAt%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
-    "random": "random"
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
+    "year.asc": "year",
+    "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt",
+    "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "episode_originally_available.asc": "episode.originallyAvailableAt",
+    "episode_originally_available.desc": "episode.originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt",
+    "release.desc": "originallyAvailableAt%3Adesc",
+    "episode_release.asc": "episode.originallyAvailableAt",
+    "episode_release.desc": "episode.originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating",
+    "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating",
+    "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "content_rating.asc": "contentRating",
+    "content_rating.desc": "contentRating%3Adesc",
+    "unplayed.asc": "unviewedLeafCount",
+    "unplayed.desc": "unviewedLeafCount%3Adesc",
+    "episode_added.asc": "episode.addedAt",
+    "episode_added.desc": "episode.addedAt%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt",
+    "viewed.desc": "lastViewedAt%3Adesc",
+    "random": "random",
 }
 season_sorts = {
-    "season.asc": "season.index%2Cseason.titleSort", "season.desc": "season.index%3Adesc%2Cseason.titleSort",
-    "show.asc": "show.titleSort%2Cindex", "show.desc": "show.titleSort%3Adesc%2Cindex",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "random": "random"
+    "season.asc": "season.index%2Cseason.titleSort",
+    "season.desc": "season.index%3Adesc%2Cseason.titleSort",
+    "show.asc": "show.titleSort%2Cindex",
+    "show.desc": "show.titleSort%3Adesc%2Cindex",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "random": "random",
 }
 episode_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
     "show.asc": "show.titleSort%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
     "show.desc": "show.titleSort%3Adesc%2Cseason.index%3AnullsLast%2Cepisode.index%3AnullsLast%2Cepisode.originallyAvailableAt%3AnullsLast%2Cepisode.titleSort%2Cepisode.id",
-    "year.asc": "year", "year.desc": "year%3Adesc",
-    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
-    "episode_originally_available.asc": "episode.originallyAvailableAt", "episode_originally_available.desc": "episode.originallyAvailableAt%3Adesc",
-    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
-    "episode_release.asc": "episode.originallyAvailableAt", "episode_release.desc": "episode.originallyAvailableAt%3Adesc",
-    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "audience_rating.asc": "audienceRating", "audience_rating.desc": "audienceRating%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
-    "progress.asc": "viewOffset", "progress.desc": "viewOffset%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "viewed.asc": "lastViewedAt", "viewed.desc": "lastViewedAt%3Adesc",
-    "resolution.asc": "mediaHeight", "resolution.desc": "mediaHeight%3Adesc",
-    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
-    "random": "random"
+    "year.asc": "year",
+    "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt",
+    "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "episode_originally_available.asc": "episode.originallyAvailableAt",
+    "episode_originally_available.desc": "episode.originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt",
+    "release.desc": "originallyAvailableAt%3Adesc",
+    "episode_release.asc": "episode.originallyAvailableAt",
+    "episode_release.desc": "episode.originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating",
+    "critic_rating.desc": "rating%3Adesc",
+    "audience_rating.asc": "audienceRating",
+    "audience_rating.desc": "audienceRating%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "duration.asc": "duration",
+    "duration.desc": "duration%3Adesc",
+    "progress.asc": "viewOffset",
+    "progress.desc": "viewOffset%3Adesc",
+    "plays.asc": "viewCount",
+    "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "viewed.asc": "lastViewedAt",
+    "viewed.desc": "lastViewedAt%3Adesc",
+    "resolution.asc": "mediaHeight",
+    "resolution.desc": "mediaHeight%3Adesc",
+    "bitrate.asc": "mediaBitrate",
+    "bitrate.desc": "mediaBitrate%3Adesc",
+    "random": "random",
 }
 artist_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "random": "random"
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt",
+    "played.desc": "lastViewedAt%3Adesc",
+    "plays.asc": "viewCount",
+    "plays.desc": "viewCount%3Adesc",
+    "random": "random",
 }
 album_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
     "album_artist.asc": "artist.titleSort%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
     "album_artist.desc": "artist.titleSort%3Adesc%2Calbum.titleSort%2Calbum.index%2Calbum.id%2Calbum.originallyAvailableAt",
-    "year.asc": "year", "year.desc": "year%3Adesc",
-    "originally_available.asc": "originallyAvailableAt", "originally_available.desc": "originallyAvailableAt%3Adesc",
-    "release.asc": "originallyAvailableAt", "release.desc": "originallyAvailableAt%3Adesc",
-    "critic_rating.asc": "rating", "critic_rating.desc": "rating%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "random": "random"
+    "year.asc": "year",
+    "year.desc": "year%3Adesc",
+    "originally_available.asc": "originallyAvailableAt",
+    "originally_available.desc": "originallyAvailableAt%3Adesc",
+    "release.asc": "originallyAvailableAt",
+    "release.desc": "originallyAvailableAt%3Adesc",
+    "critic_rating.asc": "rating",
+    "critic_rating.desc": "rating%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt",
+    "played.desc": "lastViewedAt%3Adesc",
+    "plays.asc": "viewCount",
+    "plays.desc": "viewCount%3Adesc",
+    "random": "random",
 }
 track_sorts = {
-    "title.asc": "titleSort", "title.desc": "titleSort%3Adesc",
+    "title.asc": "titleSort",
+    "title.desc": "titleSort%3Adesc",
     "album_artist.asc": "artist.titleSort%2Calbum.titleSort%2Calbum.year%2Ctrack.absoluteIndex%2Ctrack.index%2Ctrack.titleSort%2Ctrack.id",
     "album_artist.desc": "artist.titleSort%3Adesc%2Calbum.titleSort%2Calbum.year%2Ctrack.absoluteIndex%2Ctrack.index%2Ctrack.titleSort%2Ctrack.id",
-    "artist.asc": "originalTitle", "artist.desc": "originalTitle%3Adesc",
-    "album.asc": "album.titleSort", "album.desc": "album.titleSort%3Adesc",
-    "user_rating.asc": "userRating",  "user_rating.desc": "userRating%3Adesc",
-    "duration.asc": "duration", "duration.desc": "duration%3Adesc",
-    "plays.asc": "viewCount", "plays.desc": "viewCount%3Adesc",
-    "added.asc": "addedAt", "added.desc": "addedAt%3Adesc",
-    "played.asc": "lastViewedAt", "played.desc": "lastViewedAt%3Adesc",
-    "rated.asc": "lastRatedAt", "rated.desc": "lastRatedAt%3Adesc",
-    "popularity.asc": "ratingCount", "popularity.desc": "ratingCount%3Adesc",
-    "bitrate.asc": "mediaBitrate", "bitrate.desc": "mediaBitrate%3Adesc",
-    "random": "random"
+    "artist.asc": "originalTitle",
+    "artist.desc": "originalTitle%3Adesc",
+    "album.asc": "album.titleSort",
+    "album.desc": "album.titleSort%3Adesc",
+    "user_rating.asc": "userRating",
+    "user_rating.desc": "userRating%3Adesc",
+    "duration.asc": "duration",
+    "duration.desc": "duration%3Adesc",
+    "plays.asc": "viewCount",
+    "plays.desc": "viewCount%3Adesc",
+    "added.asc": "addedAt",
+    "added.desc": "addedAt%3Adesc",
+    "played.asc": "lastViewedAt",
+    "played.desc": "lastViewedAt%3Adesc",
+    "rated.asc": "lastRatedAt",
+    "rated.desc": "lastRatedAt%3Adesc",
+    "popularity.asc": "ratingCount",
+    "popularity.desc": "ratingCount%3Adesc",
+    "bitrate.asc": "mediaBitrate",
+    "bitrate.desc": "mediaBitrate%3Adesc",
+    "random": "random",
 }
 sort_types = {
     "movie": ("title.asc", 1, movie_sorts),
@@ -435,16 +689,21 @@ sort_types = {
     "episode": ("title.asc", 4, episode_sorts),
     "artist": ("title.asc", 8, artist_sorts),
     "album": ("title.asc", 9, album_sorts),
-    "track": ("title.asc", 10, track_sorts)
+    "track": ("title.asc", 10, track_sorts),
 }
 watchlist_sorts = {
-    "added.asc": "watchlistedAt:asc", "added.desc": "watchlistedAt:desc",
-    "title.asc": "titleSort:asc", "title.desc": "titleSort:desc",
-    "release.asc": "originallyAvailableAt:asc", "release.desc": "originallyAvailableAt:desc",
-    "critic_rating.asc": "rating:asc", "critic_rating.desc": "rating:desc",
+    "added.asc": "watchlistedAt:asc",
+    "added.desc": "watchlistedAt:desc",
+    "title.asc": "titleSort:asc",
+    "title.desc": "titleSort:desc",
+    "release.asc": "originallyAvailableAt:asc",
+    "release.desc": "originallyAvailableAt:desc",
+    "critic_rating.asc": "rating:asc",
+    "critic_rating.desc": "rating:desc",
 }
 
 MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
+
 
 class Plex(Library):
     def __init__(self, config, params):
@@ -480,33 +739,33 @@ class Plex(Library):
                     self.PlexServer.settings.save()
                     logger.info(f"Plex DB Cache updated to {self.plex['db_cache']} MB")
             except NotFound:
-                logger.info(f"Plex DB cache setting: Unknown")
+                logger.info("Plex DB cache setting: Unknown")
             try:
                 chl_num = srv_settings.get("butlerUpdateChannel").value
                 if chl_num == "16":
-                    uc_str = f"Public update channel."
+                    uc_str = "Public update channel."
                 elif chl_num == "8":
-                    uc_str = f"PlexPass update channel."
+                    uc_str = "PlexPass update channel."
                 else:
                     uc_str = f"Unknown update channel: {chl_num}."
             except NotFound:
-                uc_str = f"Unknown update channel."
+                uc_str = "Unknown update channel."
             logger.info(f"PlexPass: {self.PlexServer.myPlexSubscription} on {uc_str}")
             try:
                 logger.info(f"Scheduled maintenance running between {srv_settings.get('butlerStartHour').value}:00 and {srv_settings.get('butlerEndHour').value}:00")
             except NotFound:
                 logger.info("Scheduled maintenance times could not be found")
         except Unauthorized:
-            logger.info(f"Plex Error: Plex connection attempt returned 'Unauthorized'")
+            logger.info("Plex Error: Plex connection attempt returned 'Unauthorized'")
             raise Failed("Plex Error: Plex token is invalid")
         except ConnectTimeout:
             raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout.")
         except ValueError as e:
-            logger.info(f"Plex Error: Plex connection attempt returned 'ValueError'")
+            logger.info("Plex Error: Plex connection attempt returned 'ValueError'")
             logger.stacktrace()
             raise Failed(f"Plex Error: {e}")
         except (ConnectionError, ParseError):
-            logger.info(f"Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
+            logger.info("Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
             raise Failed("Plex Error: Plex URL is probably invalid")
         self.Plex = None
@@ -519,7 +778,7 @@ class Plex(Library):
         if not self.Plex:
             raise Failed(f"Plex Error: Plex Library '{params['name']}' not found. Options: {library_names}")
         if self.Plex.type not in library_types:
-            raise Failed(f"Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
+            raise Failed("Plex Error: Plex Library must be a Movies, TV Shows, or Music library")
         if not self.Plex.allowSync:
             raise Failed("Plex Error: Plex Token is read only. Please get a new token")
 
@@ -533,7 +792,7 @@ class Plex(Library):
         source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)
         try:
             self.ratings_source = source_setting.enumValues[source_setting.value] if source_setting else "N/A"
-        except:
+        except Exception:
             self.ratings_source = "N/A"
         self.is_movie = self.type == "Movie"
         self.is_show = self.type == "Show"
@@ -543,7 +802,7 @@ class Plex(Library):
             self.type = "Video"
         if not self.is_music and self.update_blank_track_titles:
             self.update_blank_track_titles = False
-            logger.error(f"update_blank_track_titles library operation only works with music libraries")
+            logger.error("update_blank_track_titles library operation only works with music libraries")
         logger.info(f"Connected to library {params['name']}")
         logger.info(f"Type: {self.type}")
         logger.info(f"Agent: {self.agent}")
@@ -557,13 +816,13 @@ class Plex(Library):
         self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
 
     def set_server_preroll(self, preroll):
-        self.PlexServer.settings.get('cinemaTrailersPrerollID').set(preroll)
+        self.PlexServer.settings.get("cinemaTrailersPrerollID").set(preroll)
         self.PlexServer.settings.save()
 
     def get_all_collections(self, label=None):
         args = "?type=18"
         if label:
-            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None) # noqa
+            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)  # noqa
             if label_id:
                 args = f"{args}&label={label_id}"
             else:
@@ -620,9 +879,9 @@ class Plex(Library):
         while total_size > len(results) and container_start <= total_size:
             data = self.Plex._server.query(key, headers={"X-Plex-Container-Start": str(container_start), "X-Plex-Container-Size": str(container_size)})
             subresults = self.Plex.findItems(data, initpath=key)
-            total_size = utils.cast(int, data.attrib.get('totalSize') or data.attrib.get('size')) or len(subresults)
+            total_size = utils.cast(int, data.attrib.get("totalSize") or data.attrib.get("size")) or len(subresults)
 
-            librarySectionID = utils.cast(int, data.attrib.get('librarySectionID'))
+            librarySectionID = utils.cast(int, data.attrib.get("librarySectionID"))
             if librarySectionID:
                 for item in subresults:
                     item.librarySectionID = librarySectionID
@@ -641,7 +900,7 @@ class Plex(Library):
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
         elif filepath:
-            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, 'rb').read())
+            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def create_playlist(self, name, items):
@@ -755,11 +1014,26 @@ class Plex(Library):
         return image_url
 
     def item_reload(self, item):
-        item.reload(checkFiles=False, includeAllConcerts=False, includeBandwidths=False, includeChapters=False,
-                    includeChildren=False, includeConcerts=False, includeExternalMedia=False, includeExtras=False,
-                    includeFields=False, includeGeolocation=False, includeLoudnessRamps=False, includeMarkers=False,
-                    includeOnDeck=False, includePopularLeaves=False, includeRelated=False, includeRelatedCount=0,
-                    includeReviews=False, includeStations=False)
+        item.reload(
+            checkFiles=False,
+            includeAllConcerts=False,
+            includeBandwidths=False,
+            includeChapters=False,
+            includeChildren=False,
+            includeConcerts=False,
+            includeExternalMedia=False,
+            includeExtras=False,
+            includeFields=False,
+            includeGeolocation=False,
+            includeLoudnessRamps=False,
+            includeMarkers=False,
+            includeOnDeck=False,
+            includePopularLeaves=False,
+            includeRelated=False,
+            includeRelatedCount=0,
+            includeReviews=False,
+            includeStations=False,
+        )
         item._autoReload = False
         return item
 
@@ -888,17 +1162,16 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def get_tags(self, tag):
         if isinstance(tag, str):
-            match = re.match(r'(?:([a-zA-Z]*)\.)?([a-zA-Z]+)', tag)
+            match = re.match(r"(?:([a-zA-Z]*)\.)?([a-zA-Z]+)", tag)
             if not match:
-                raise BadRequest(f'Invalid filter field: {tag}')
+                raise BadRequest(f"Invalid filter field: {tag}")
             _libtype, tag = match.groups()
             libtype = _libtype or self.Plex.TYPE
             try:
                 tag = next(f for f in self.Plex.listFilters(libtype) if f.filter == tag)
             except StopIteration:
                 available_filters = [f.filter for f in self.Plex.listFilters(libtype)]
-                raise NotFound(f'Unknown filter field "{tag}" for libtype "{libtype}". '
-                               f'Available filters: {available_filters}') from None
+                raise NotFound(f'Unknown filter field "{tag}" for libtype "{libtype}". ' f"Available filters: {available_filters}") from None
         items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
         if tag.key.endswith("/collection?type=4"):
             keys = [k.key for k in items]
@@ -908,9 +1181,12 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def _query(self, key, post=False, put=False):
-        if post:                method = self.Plex._server._session.post
-        elif put:               method = self.Plex._server._session.put
-        else:                   method = None
+        if post:
+            method = self.Plex._server._session.post
+        elif put:
+            method = self.Plex._server._session.put
+        else:
+            method = None
         return self.Plex._server.query(key, method=method)
 
     @property
@@ -937,6 +1213,7 @@ class Plex(Library):
 
     def playlist_report(self):
         playlists = {}
+
         def scan_user(server, username):
             try:
                 for playlist in server.playlists():
@@ -946,15 +1223,17 @@ class Plex(Library):
                         playlists[playlist.title].append(username)
             except ConnectionError:
                 pass
+
         scan_user(self.PlexServer, self.account.title)
         for user in self.users:
             scan_user(self.PlexServer.switchUser(user), user)
         return playlists
 
     def manage_recommendations(self):
-        return [(r.title, r._data.attrib.get('identifier'), r._data.attrib.get('promotedToRecommended'),
-                 r._data.attrib.get('promotedToOwnHome'), r._data.attrib.get('promotedToSharedHome'))
-                for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")]
+        return [
+            (r.title, r._data.attrib.get("identifier"), r._data.attrib.get("promotedToRecommended"), r._data.attrib.get("promotedToOwnHome"), r._data.attrib.get("promotedToSharedHome"))
+            for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")
+        ]
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
@@ -988,7 +1267,7 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_check(self, label):
-        labels = [la.title for la in self.get_tags("label")] # noqa
+        labels = [la.title for la in self.get_tags("label")]  # noqa
         if label in labels:
             return True
         logger.trace(f"Label not found in Plex. Options: {labels}")
@@ -1003,29 +1282,17 @@ class Plex(Library):
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
         if not ignore_blank_results:
             self.test_smart_filter(uri_args)
-        args = {
-            "type": smart_type,
-            "title": title,
-            "smart": 1,
-            "sectionId": self.Plex.key,
-            "uri": self.build_smart_filter(uri_args)
-        }
+        args = {"type": smart_type, "title": title, "smart": 1, "sectionId": self.Plex.key, "uri": self.build_smart_filter(uri_args)}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def create_blank_collection(self, title):
-        args = {
-            "type": 1 if self.is_movie else 2 if self.is_show else 8,
-            "title": title,
-            "smart": 0,
-            "sectionId": self.Plex.key,
-            "uri": f"{self.PlexServer._uriRoot()}/library/metadata"
-        }
+        args = {"type": 1 if self.is_movie else 2 if self.is_show else 8, "title": title, "smart": 0, "sectionId": self.Plex.key, "uri": f"{self.PlexServer._uriRoot()}/library/metadata"}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def get_smart_filter_from_uri(self, uri):
-        smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0] # noqa
-        args = smart_filter[smart_filter.index("?"):]
-        return self.build_smart_filter(args), int(args[args.index("type=") + 5:args.index("type=") + 6])
+        smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0]  # noqa
+        args = smart_filter[smart_filter.index("?") :]
+        return self.build_smart_filter(args), int(args[args.index("type=") + 5 : args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
@@ -1036,16 +1303,12 @@ class Plex(Library):
 
     def smart_filter(self, collection):
         smart_filter = self.get_collection(collection).content
-        return smart_filter[smart_filter.index("?"):]
+        return smart_filter[smart_filter.index("?") :]
 
     def collection_visibility(self, collection):
         try:
             attrs = self._query(f"/hubs/sections/{self.Plex.key}/manage?metadataItemId={collection.ratingKey}")[0].attrib
-            return {
-                "library": utils.cast(bool, attrs.get("promotedToRecommended", "0")),
-                "home": utils.cast(bool, attrs.get("promotedToOwnHome", "0")),
-                "shared": utils.cast(bool, attrs.get("promotedToSharedHome", "0"))
-            }
+            return {"library": utils.cast(bool, attrs.get("promotedToRecommended", "0")), "home": utils.cast(bool, attrs.get("promotedToOwnHome", "0")), "shared": utils.cast(bool, attrs.get("promotedToSharedHome", "0"))}
         except IndexError:
             return {"library": False, "home": False, "shared": False}
 
@@ -1103,21 +1366,18 @@ class Plex(Library):
         return valid_collections
 
     def _watchlist(self, filter=None, sort=None, libtype=None, maxresults=None, **kwargs):
-        params = {
-            'includeCollections': 1,
-            'includeExternalMedia': 1
-        }
+        params = {"includeCollections": 1, "includeExternalMedia": 1}
 
         if not filter:
-            filter = 'all'
+            filter = "all"
         if sort:
-            params['sort'] = sort
+            params["sort"] = sort
         if libtype:
-            params['type'] = plexapi.utils.searchType(libtype)
+            params["type"] = plexapi.utils.searchType(libtype)
 
         params.update(kwargs)
 
-        key = f'{self.account.DISCOVER}/library/sections/watchlist/{filter}{plexapi.utils.joinArgs(params)}'
+        key = f"{self.account.DISCOVER}/library/sections/watchlist/{filter}{plexapi.utils.joinArgs(params)}"
         return self.account._toOnlineMetadata(self.account.fetchItems(key, maxresults=maxresults), **kwargs)
 
     def get_watchlist(self, sort=None, is_playlist=False):
@@ -1181,7 +1441,7 @@ class Plex(Library):
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":
-            logger.info(f"Processing Plex Watchlist")
+            logger.info("Processing Plex Watchlist")
             return self.get_watchlist(sort=data, is_playlist=is_playlist)
         elif method == "plex_pilots":
             logger.info(f"Processing Plex Pilot {data.capitalize()}s")
@@ -1197,7 +1457,7 @@ class Plex(Library):
             items = self.fetchItems(data[2])
         elif method == "plex_collectionless":
             good_collections = []
-            logger.info(f"Processing Plex Collectionless")
+            logger.info("Processing Plex Collectionless")
             logger.info("")
             for col in self.get_all_collections():
                 keep_collection = True
@@ -1315,7 +1575,9 @@ class Plex(Library):
 
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
         text = f"{f'{title} ' if title else ''}{'Poster' if poster else 'Background'}"
-        attr = self.mass_poster_update["source"] if poster else self.mass_background_update["source"]
+        image_config = self.mass_poster_update if poster else self.mass_background_update
+        attr = image_config["source"]
+        lang = image_config.get("language")
         if attr == "lock":
             self.query(item.lockPoster if poster else item.lockArt)
             logger.info(f"{text} | Locked")
@@ -1329,7 +1591,7 @@ class Plex(Library):
             if not image:
                 if attr == "tmdb" and tmdb:
                     image = tmdb
-                    location = "TMDb"
+                    location = f"TMDb (language: {lang})" if lang else "TMDb"
                 if not image:
                     images = item.posters() if poster else item.arts()
                     temp_image = next((p for p in images), None)
@@ -1345,14 +1607,12 @@ class Plex(Library):
                     try:
                         self.upload_poster(item, image, url=image_url)
                     except BadRequest as e:
-                        logger.stacktrace()
-                        logger.error(f"Plex Error: {e}")
+                        logger.error(f"Plex Error: Failed to upload poster: {e}")
                 else:
                     try:
                         self.upload_background(item, image, url=image_url)
                     except BadRequest as e:
-                        logger.stacktrace()
-                        logger.error(f"Plex Error: {e}")
+                        logger.error(f"Plex Error: Failed to upload background: {e}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
             else:
@@ -1383,10 +1643,8 @@ class Plex(Library):
         except Failed as e:
             logger.warning(e)
         poster = self.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
-        background = self.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location,
-                                     image_type="background", image_name=f"{image_name}_background" if image_name else image_name)
-        logo = self.pick_image(title, logos, self.prioritize_assets, self.download_url_assets, asset_location,
-                               image_type="logo", image_name=f"{image_name}_logo" if image_name else image_name)
+        background = self.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location, image_type="background", image_name=f"{image_name}_background" if image_name else image_name)
+        logo = self.pick_image(title, logos, self.prioritize_assets, self.download_url_assets, asset_location, image_type="logo", image_name=f"{image_name}_logo" if image_name else image_name)
         updated = False
         if poster or background or logo:
             pu, bu, lu = self.upload_images(item, poster=poster, background=background, logo=logo, overlay=True)
@@ -1919,8 +2177,7 @@ class Plex(Library):
                                 attrs.extend([s.language, s.languageCode])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
-            elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer",
-                                 "collection", "network"]:
+            elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
                 attrs = [attr.tag for attr in getattr(item, filter_actual)]
             else:
                 raise Failed(f"Filter Error: filter: {filter_final} not supported")
@@ -1933,7 +2190,6 @@ class Plex(Library):
                                 has_match = True
                 if has_match is False:
                     return False
-            elif (not list(set(filter_data) & set(attrs)) and modifier == "") \
-                    or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
+            elif (not list(set(filter_data) & set(attrs)) and modifier == "") or (list(set(filter_data) & set(attrs)) and modifier == ".not"):
                 return False
         return True
