@@ -65,8 +65,6 @@ The specific steps you will be taking:
 5. Then, iteratively:
     - use `RUN_NAME` to run the image
     - use a text editor to modify a couple of text files until you have a working config file and a single working Collection File.
-
-Note that running a Python script is inherently a pretty technical process. If you are unable or unwilling to learn the rudiments of using
 <!--all-->
 
 <!--local-->
@@ -81,7 +79,8 @@ using Docker, this may not be the tool for you.
 <!-docker-unraid-->
 
 <!--all-->
-If the idea of editing YAML files by hand is daunting, this may not be the tool for you. 
+Note that running a Python script is inherently a pretty technical process.
+If you are unable or unwilling to learn the rudiments of using a scripting language or if the idea of editing YAML files by hand is daunting, this may not be the tool for you.
 All the configuration of Kometa is done via YAML text files, so if you are unable or unwilling to learn how those work, you should stop here.
 
 Finally, this walkthrough is intended to give you a basic grounding in how to get Kometa running. 
