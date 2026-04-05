@@ -1,40 +1,52 @@
-import time, webbrowser
+import time
+import webbrowser
+
+from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+
 from modules import util
 from modules.request import urlparse
 from modules.util import Failed, TimeoutExpired
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 
 logger = util.logger
 
 redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 base_url = "https://api.trakt.tv"
 builders = [
-    "trakt_list", "trakt_list_details", "trakt_chart", "trakt_userlist", "trakt_boxoffice", "trakt_recommendations",
-    "trakt_collected_daily", "trakt_collected_weekly", "trakt_collected_monthly", "trakt_collected_yearly", "trakt_collected_all",
-    "trakt_recommended_daily", "trakt_recommended_weekly", "trakt_recommended_monthly", "trakt_recommended_yearly", "trakt_recommended_all",
-    "trakt_watched_daily", "trakt_watched_weekly", "trakt_watched_monthly", "trakt_watched_yearly", "trakt_watched_all",
-    "trakt_collection", "trakt_anticipated", "trakt_popular", "trakt_trending", "trakt_watchlist"
+    "trakt_list",
+    "trakt_list_details",
+    "trakt_chart",
+    "trakt_userlist",
+    "trakt_boxoffice",
+    "trakt_recommendations",
+    "trakt_collected_daily",
+    "trakt_collected_weekly",
+    "trakt_collected_monthly",
+    "trakt_collected_yearly",
+    "trakt_collected_all",
+    "trakt_recommended_daily",
+    "trakt_recommended_weekly",
+    "trakt_recommended_monthly",
+    "trakt_recommended_yearly",
+    "trakt_recommended_all",
+    "trakt_watched_daily",
+    "trakt_watched_weekly",
+    "trakt_watched_monthly",
+    "trakt_watched_yearly",
+    "trakt_watched_all",
+    "trakt_collection",
+    "trakt_anticipated",
+    "trakt_popular",
+    "trakt_trending",
+    "trakt_watchlist",
 ]
-sorts = [
-    "rank", "added", "title", "released", "runtime", "popularity",
-    "percentage", "votes", "random", "my_rating", "watched", "collected"
-]
+sorts = ["rank", "added", "title", "released", "runtime", "popularity", "percentage", "votes", "random", "my_rating", "watched", "collected"]
 status = ["returning", "production", "planned", "canceled", "ended"]
-status_translation = {
-    "returning": "returning series", "production": "in production",
-    "planned": "planned", "canceled": "canceled", "ended": "ended"
-}
+status_translation = {"returning": "returning series", "production": "in production", "planned": "planned", "canceled": "canceled", "ended": "ended"}
 userlist_options = ["favorites", "watched", "collection", "watchlist"]
 periods = ["daily", "weekly", "monthly", "yearly", "all"]
 id_translation = {"movie": "movie", "show": "show", "season": "show", "episode": "show", "person": "person", "list": "list"}
-id_types = {
-    "movie": ("tmdb", "TMDb ID"),
-    "person": ("tmdb", "TMDb ID"),
-    "show": ("tvdb", "TVDb ID"),
-    "season": ("tvdb", "TVDb ID"),
-    "episode": ("tvdb", "TVDb ID"),
-    "list": ("slug", "Trakt Slug")
-}
+id_types = {"movie": ("tmdb", "TMDb ID"), "person": ("tmdb", "TMDb ID"), "show": ("tvdb", "TVDb ID"), "season": ("tvdb", "TVDb ID"), "episode": ("tvdb", "TVDb ID"), "list": ("slug", "Trakt Slug")}
+
 
 class Trakt:
     def __init__(self, requests, read_only, params):
@@ -65,7 +77,7 @@ class Trakt:
         if self._slugs is None:
             items = []
             try:
-                items = [i["ids"]["slug"] for i in self._request(f"/users/me/lists")]
+                items = [i["ids"]["slug"] for i in self._request("/users/me/lists")]
             except Failed:
                 pass
             self._slugs = items
@@ -133,13 +145,7 @@ class Trakt:
                 raise Failed("Input Timeout: Trakt pin required.")
         if not pin:
             raise Failed("Trakt Error: Trakt pin required.")
-        json_data = {
-            "code": pin,
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "redirect_uri": redirect_uri,
-            "grant_type": "authorization_code"
-        }
+        json_data = {"code": pin, "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "authorization_code"}
         response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
         if response.status_code != 200:
             raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
@@ -149,17 +155,14 @@ class Trakt:
             raise Failed("Trakt Error: New Authorization Failed")
 
     def _check(self, authorization=None):
-        token = self.authorization['access_token'] if authorization is None else authorization['access_token']
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {token}",
-            "trakt-api-version": "2",
-            "trakt-api-key": self.client_id
-        }
+        token = self.authorization["access_token"] if authorization is None else authorization["access_token"]
+        headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}", "trakt-api-version": "2", "trakt-api-key": self.client_id}
         logger.secret(token)
         response = self.requests.get(f"{base_url}/users/settings", headers=headers)
+        if response.status_code == 410:
+            raise Failed("Trakt Error: Account is deactivated; please contact Trakt Support")
         if response.status_code == 423:
-            raise Failed("Trakt Error: Account is Locked please Contact Trakt Support")
+            raise Failed("Trakt Error: Account is locked; please contact Trakt Support")
         if response.status_code != 200:
             logger.debug(f"Trakt Error: ({response.status_code}) {response.reason}")
         return response.status_code == 200
@@ -167,13 +170,7 @@ class Trakt:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            json_data = {
-                "refresh_token": self.authorization["refresh_token"],
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-                "redirect_uri": redirect_uri,
-                "grant_type": "refresh_token"
-              }
+            json_data = {"refresh_token": self.authorization["refresh_token"], "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "refresh_token"}
             response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
             if response.status_code != 200:
                 return False
@@ -191,7 +188,7 @@ class Trakt:
                     "expires_in": authorization["expires_in"],
                     "refresh_token": authorization["refresh_token"],
                     "scope": authorization["scope"],
-                    "created_at": authorization["created_at"]
+                    "created_at": authorization["created_at"],
                 }
                 logger.info(f"Saving authorization information to {self.config_path}")
                 yaml.save()
@@ -214,12 +211,7 @@ class Trakt:
         if json_data:
             logger.trace(f"JSON: {json_data}")
         while current <= pages:
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {self.authorization['access_token']}",
-                "trakt-api-version": "2",
-                "trakt-api-key": self.client_id
-            }
+            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.authorization['access_token']}", "trakt-api-version": "2", "trakt-api-key": self.client_id}
             if pages > 1:
                 params["page"] = current
             if json_data is not None:
@@ -232,11 +224,11 @@ class Trakt:
                 time.sleep(auth_delay)
                 auth_delay += 3
                 if not self._refresh():
-                    logger.debug(f"Trakt token refresh failure")
+                    logger.debug("Trakt token refresh failure")
                     raise Failed(f"({response.status_code}) {response.reason}")
                 reauth_count += 1
                 if reauth_count > 1:
-                    logger.debug(f"Trakt token has been refreshed twice on this request; this may be a private list")
+                    logger.debug("Trakt token has been refreshed twice on this request; this may be a private list")
                     raise Failed(f"({response.status_code}) {response.reason}")
             elif response.status_code >= 400:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
@@ -263,7 +255,7 @@ class Trakt:
         return response["rating"]
 
     def get_rating(self, show_id, is_movie):
-        item_type = 'movies' if is_movie else 'shows'
+        item_type = "movies" if is_movie else "shows"
         response = self._request(f"/{item_type}/{show_id}/ratings")
         return response["rating"]
 
@@ -404,10 +396,10 @@ class Trakt:
         return [(user, i["ids"]["slug"], i["name"]) for i in items]
 
     def all_liked_lists(self):
-        items = self._request(f"/users/likes/lists")
+        items = self._request("/users/likes/lists")
         if len(items) == 0:
-            raise Failed(f"Trakt Error: No Liked lists found")
-        return {self.build_user_url(i['list']['user']['ids']['slug'], i['list']['ids']['slug']): i["list"]["name"] for i in items}
+            raise Failed("Trakt Error: No Liked lists found")
+        return {self.build_user_url(i["list"]["user"]["ids"]["slug"], i["list"]["ids"]["slug"]): i["list"]["name"] for i in items}
 
     def build_user_url(self, user, name):
         return f"{base_url.replace('api.', '')}/users/{user}/lists/{name}"
@@ -453,7 +445,7 @@ class Trakt:
         return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show", ignore_other=ignore_other)
 
     def get_people(self, data):
-        return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"} # noqa
+        return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"}  # noqa
 
     def validate_list(self, trakt_lists):
         values = util.get_list(trakt_lists, split=False)
@@ -567,7 +559,27 @@ class Trakt:
             params = {"limit": data["limit"]}
             chart_limit = f"{data['limit']} {data['time_period'].capitalize()}" if data["time_period"] else data["limit"]
             logger.info(f"Processing {pretty}: {chart_limit} {data['chart'].capitalize()} {media_type}{'' if data == 1 else 's'}")
-            for attr in ["query", "years", "runtimes", "ratings", "genres", "languages", "countries", "certifications", "network_ids", "studio_ids", "status", "votes", "tmdb_ratings", "tmdb_votes", "imdb_ratings", "imdb_votes", "rt_meters", "rt_user_meters", "metascores"]:
+            for attr in [
+                "query",
+                "years",
+                "runtimes",
+                "ratings",
+                "genres",
+                "languages",
+                "countries",
+                "certifications",
+                "network_ids",
+                "studio_ids",
+                "status",
+                "votes",
+                "tmdb_ratings",
+                "tmdb_votes",
+                "imdb_ratings",
+                "imdb_votes",
+                "rt_meters",
+                "rt_user_meters",
+                "metascores",
+            ]:
                 if attr in data:
                     logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
                     values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
