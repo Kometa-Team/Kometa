@@ -102,6 +102,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
+square_art_details = ["url_square_art", "file_square_art"]
 boolean_details = [
     "show_filtered",
     "show_unfiltered",
@@ -178,7 +179,7 @@ details = (
     + string_details
 )
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + poster_details + background_details + summary_details + string_details + all_builders
-item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
+item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_square_art", "item_lock_title"]
 item_bool_details = [
     "item_tmdb_season_titles",
     "revert_overlay",
@@ -598,6 +599,7 @@ parts_collection_valid = (
         "changes_webhooks",
         "item_lock_background",
         "item_lock_poster",
+        "item_lock_square_art",
         "item_lock_title",
         "item_refresh",
         "item_refresh_delay",
@@ -616,6 +618,7 @@ parts_collection_valid = (
     + summary_details
     + poster_details
     + background_details
+    + square_art_details
     + string_details
 )
 playlist_attributes = (
@@ -652,6 +655,7 @@ music_attributes = (
         "collection_filtering",
         "item_lock_background",
         "item_lock_poster",
+        "item_lock_square_art",
         "item_lock_title",
         "item_assets",
         "item_refresh",
@@ -664,6 +668,7 @@ music_attributes = (
     + summary_details
     + poster_details
     + background_details
+    + square_art_details
 )
 
 
@@ -970,6 +975,7 @@ class CollectionBuilder:
 
         self.posters = {}
         self.backgrounds = {}
+        self.square_arts = {}
         if not self.overlay and "kometa_poster" in methods:
             logger.debug("")
             logger.debug("Validating Method: kometa_poster")
@@ -1550,6 +1556,8 @@ class CollectionBuilder:
                     self._poster(method_name, method_data)
                 elif method_name in background_details:
                     self._background(method_name, method_data)
+                elif method_name in square_art_details:
+                    self._square_art(method_name, method_data)
                 elif method_name in details:
                     self._details(method_name, method_data, method_final, methods)
                 elif method_name in item_details:
@@ -1762,6 +1770,19 @@ class CollectionBuilder:
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+
+    def _square_art(self, method_name, method_data):
+        if method_name == "url_square_art":
+            try:
+                self.config.Requests.get_image(method_data)
+                self.square_arts[method_name] = method_data
+            except Failed:
+                logger.warning(f"{self.Type} Warning: No Square Art Found at {method_data}")
+        elif method_name == "file_square_art":
+            if os.path.exists(os.path.abspath(method_data)):
+                self.square_arts[method_name] = os.path.abspath(method_data)
+            else:
+                logger.error(f"{self.Type} Error: Square Art Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
@@ -4566,6 +4587,8 @@ class CollectionBuilder:
                 self.library.query(item.lockArt if self.item_details["item_lock_background"] else item.unlockArt)
             if "item_lock_poster" in self.item_details:
                 self.library.query(item.lockPoster if self.item_details["item_lock_poster"] else item.unlockPoster)
+            if "item_lock_square_art" in self.item_details:
+                self.library.query(item.lockSquareArt if self.item_details["item_lock_square_art"] else item.unlockSquareArt)
             if "item_lock_title" in self.item_details:
                 self.library.edit_query(item, {"title.locked": 1 if self.item_details["item_lock_title"] else 0})
             if "item_refresh" in self.item_details:
@@ -4811,11 +4834,13 @@ class CollectionBuilder:
                 else:
                     logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                asset_poster, asset_background, _, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                asset_poster, asset_background, _, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
                     self.posters["asset_directory"] = asset_poster
                 if asset_background:
                     self.backgrounds["asset_directory"] = asset_background
+                if asset_square_art:
+                    self.square_arts["asset_directory"] = asset_square_art
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
@@ -4845,6 +4870,14 @@ class CollectionBuilder:
             asset_location,
             image_type="background",
         )
+        self.collection_square_art = self.library.pick_image(
+            self.obj.title,
+            self.square_arts,
+            self.library.prioritize_assets,
+            self.library.download_url_assets,
+            asset_location,
+            image_type="square_art",
+        )
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -4852,9 +4885,9 @@ class CollectionBuilder:
             item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}
             self.collection_poster = self.collection_poster.save(item_vars)
 
-        if self.collection_poster or self.collection_background:
-            pu, bu, lu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
-            if pu or bu:
+        if self.collection_poster or self.collection_background or self.collection_square_art:
+            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, square_art=self.collection_square_art)
+            if pu or bu or sau:
                 updated_details.append("Image")
 
         if clean_temp:

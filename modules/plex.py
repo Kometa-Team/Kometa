@@ -1102,6 +1102,12 @@ class Plex(Library):
                 upload_success = self.validate_image_size(image)
                 if upload_success:
                     item.uploadArt(filepath=image.location)
+            elif image.is_square_art and image.is_url:
+                item.uploadSquareArt(url=image.location)
+            elif image.is_square_art:
+                upload_success = self.validate_image_size(image)
+                if upload_success:
+                    item.uploadSquareArt(filepath=image.location)
             elif image.is_url:
                 item.uploadLogo(url=image.location)
             else:
@@ -1640,7 +1646,7 @@ class Plex(Library):
         if style_data and "url_logo" in style_data and style_data["url_logo"]:
             logos["style_data"] = style_data["url_logo"]
         try:
-            asset_poster, asset_background, asset_logo, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
+            asset_poster, asset_background, asset_logo, _, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:
@@ -1654,7 +1660,7 @@ class Plex(Library):
         logo = self.pick_image(title, logos, self.prioritize_assets, self.download_url_assets, asset_location, image_type="logo", image_name=f"{image_name}_logo" if image_name else image_name)
         updated = False
         if poster or background or logo:
-            pu, bu, lu = self.upload_images(item, poster=poster, background=background, logo=logo, overlay=True)
+            pu, bu, lu, _ = self.upload_images(item, poster=poster, background=background, logo=logo, overlay=True)
             if pu or bu or lu:
                 updated = True
         return asset_location, folder_name, updated
@@ -1663,10 +1669,10 @@ class Plex(Library):
         item_dir = None
         name = None
         try:
-            poster, background, logo, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
+            poster, background, logo, square_art, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             if "Overlay" not in current_labels:
-                if poster or background or logo:
-                    self.upload_images(item, poster=poster, background=background, logo=logo)
+                if poster or background or logo or square_art:
+                    self.upload_images(item, poster=poster, background=background, logo=logo, square_art=square_art)
                 elif self.show_missing_assets:
                     logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
             else:
@@ -1681,24 +1687,24 @@ class Plex(Library):
             found_episode = False
             for season in self.query(item.seasons):
                 try:
-                    season_poster, season_background, season_logo, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    season_poster, season_background, season_logo, season_square_art, _, _ = self.find_item_assets(season, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if season_poster:
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber and season.seasonNumber > 0:
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
-                    if season_poster or season_background or season_logo and "Overlay" not in [la.tag for la in self.item_labels(season)]:
-                        self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo)
+                    if season_poster or season_background or season_logo or season_square_art and "Overlay" not in [la.tag for la in self.item_labels(season)]:
+                        self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
                         logger.warning(e)
                 for episode in self.query(season.episodes):
                     try:
                         if episode.seasonEpisode:
-                            episode_poster, episode_background, episode_logo, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
-                            if episode_poster or episode_background or episode_logo:
+                            episode_poster, episode_background, episode_logo, episode_square_art, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                            if episode_poster or episode_background or episode_logo or episode_square_art:
                                 found_episode = True
                                 if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
-                                    self.upload_images(episode, poster=episode_poster, background=episode_background, logo=episode_logo)
+                                    self.upload_images(episode, poster=episode_poster, background=episode_background, logo=episode_logo, square_art=episode_square_art)
                             elif self.show_missing_episode_assets:
                                 missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
                     except Failed as e:
@@ -1711,7 +1717,7 @@ class Plex(Library):
             found_album = False
             for album in self.query(item.albums):
                 try:
-                    album_poster, album_background, _, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    album_poster, album_background, _, _, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
                     elif self.show_missing_season_assets:
@@ -1728,6 +1734,7 @@ class Plex(Library):
         poster = None
         background = None
         logo = None
+        square_art = None
 
         if asset_directory is None:
             asset_directory = self.asset_directory
@@ -1797,11 +1804,12 @@ class Plex(Library):
                         logger.warning(f"Asset Warning: Asset Directory Not Found and Created: {item_asset_directory}")
                     else:
                         raise Failed(f"Asset Warning: Unable to find asset folder: '{folder_name}'")
-                return None, None, None, item_asset_directory, folder_name
+                return None, None, None, None, item_asset_directory, folder_name
 
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
         logo_filter = os.path.join(item_asset_directory, "logo.*" if file_name == "poster" else f"{file_name}_logo.*")
+        square_art_filter = os.path.join(item_asset_directory, "square_art.*" if file_name == "poster" else f"{file_name}_square_art.*")
 
         poster_matches = util.glob_filter(poster_filter)
         if len(poster_matches) > 0:
@@ -1814,6 +1822,10 @@ class Plex(Library):
         logo_matches = util.glob_filter(logo_filter)
         if len(logo_matches) > 0:
             logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
+
+        square_art_matches = util.glob_filter(square_art_filter)
+        if len(square_art_matches) > 0:
+            square_art = ImageData("asset_directory", os.path.abspath(square_art_matches[0]), prefix=prefix, image_type="square_art", is_url=False)
 
         if is_top_level and self.asset_folders and self.dimensional_asset_rename and (not poster or not background):
             for file in util.glob_filter(os.path.join(item_asset_directory, "*.*")):
@@ -1834,7 +1846,7 @@ class Plex(Library):
                     except OSError:
                         logger.error(f"Asset Error: Failed to open image: {file}")
 
-        return poster, background, logo, item_asset_directory, folder_name
+        return poster, background, logo, square_art, item_asset_directory, folder_name
 
     def get_ids(self, item):
         tmdb_id = None
