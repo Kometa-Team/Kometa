@@ -146,3 +146,4 @@ dmypy.json
 # Mac OS files
 .DS_Store
 ._*
+.worktrees/
