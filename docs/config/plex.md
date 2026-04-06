@@ -60,6 +60,8 @@ Another tool [unrelated to Kometa] to do the same thing with a local executable 
 
 The below config.yml extract details how to set up multiple Plex servers within the one Kometa instance, in this example there are two plex servers which are receiving the same Collection File:
 
+If you are using multiple PLex servers that are owned by the same Plex account, you can use the same token for all.
+
 ```yaml title="config.yml multi-Plex instances"
 libraries:
   Movies:
