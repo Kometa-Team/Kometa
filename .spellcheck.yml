@@ -1,7 +1,7 @@
 matrix:
 - name: Markdown
   sources:
-  - '**/*.md'
+  - '**/*.md|!config/**|!test_venv/**|!.direnv/**|!.github/**|!.mypy_cache/**|!.pytest_cache/**|!.ruff_cache/**|!.vscode/**'
   - 'CHANGELOG'
   aspell:
     lang: en

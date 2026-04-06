@@ -5,15 +5,15 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/collection/header.md"
     replace='{
-        "COLLECTION": "Streaming", 
+        "COLLECTION": "Streaming",
         "CODE_NAME": "streaming",
-        "LIBRARY_TYPE": "Movie, Show", 
-        "SECTION_NUMBER": "030", 
+        "LIBRARY_TYPE": "Movie, Show",
+        "SECTION_NUMBER": "030",
         "DESCRIPTION": "dynamically create collections based on the streaming Services that your media is available on"
     }'
 %}
 {% include-markdown "./../../templates/snippets/separator_line.md" replace='{"SEPARATOR": "Streaming"}' %}
-| `Apple TV+ Movies/Shows`      | `appletv`     | Collection of Movies/Shows Streaming on Apple TV+.      |
+| `Apple TV Movies/Shows`       | `appletv`     | Collection of Movies/Shows Streaming on Apple TV.       |
 | `Atres Player Movies/Shows`   | `atresplayer` | Collection of Movies/Shows Streaming on Atres Player.   |
 | `AMC+ Movies/Shows`           | `amc`         | Collection of Movies/Shows Streaming on AMC+.           |
 | `BET+ Movies/Shows`           | `bet`         | Collection of Movies/Shows Streaming on BET+.           |
@@ -79,7 +79,7 @@ Some logic is applied for specific regions to prevent collections appearing whic
         include-markdown "./../../templates/variable_list.md"
         include-tags="streaming|limit|sort_by|white-style|sync_mode|format|exclude"
         replace='{
-            "DYNAMIC_NAME": "Streaming Services", 
+            "DYNAMIC_NAME": "Streaming Services",
             "DYNAMIC_VALUE": "Streaming Service Keys",
             "NAME_FORMAT": "<<key_name>> <<library_translationU>>s",
             "SUMMARY_FORMAT": "<<library_translationU>>s streaming on <<key_name>>."
@@ -93,9 +93,9 @@ Some logic is applied for specific regions to prevent collections appearing whic
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Streaming Collections"
-        
+
         The Streaming collections use two builders to create the collections:
-        
+
         If you are not using `originals_only`, the collections are created using [`tmdb_discover`](../../../files/builders/tmdb#discover).
-        
+
         If you are using `originals_only`, the collections are created using Kometa-maintained MDBLists.

@@ -5,7 +5,7 @@ hide:
 {%
     include-markdown "./../../templates/defaults/base/overlays/header.md"
     replace='{
-        "OVERLAY_NAME": "Resolution/Edition", 
+        "OVERLAY_NAME": "Resolution/Edition",
         "CODE_NAME": "resolution",
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the resolutions and editions available on each item within your library"
@@ -13,7 +13,7 @@ hide:
     end='<!--rec-sub-->'
 %}
 
-Recommendations: Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the 
+Recommendations: Editions overlay is designed to use the Editions field within Plex [which requires Plex Pass to use] or the
 [TRaSH Guides](https://trash-guides.info/) filename naming scheme.
 
 ## Supported Resolutions
@@ -24,18 +24,21 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | 4K DV/HDR       | `4k_dvhdr`        | `158`  |
 | 4K HDR10+       | `4k_plus`         | `155`  |
 | 4K DV           | `4k_dv`           | `150`  |
+| 4K HLG          | `4k_hlg`          | `141`  |
 | 4K HDR          | `4k_hdr`          | `140`  |
 | 4K              | `4k`              | `130`  |
 | 1080p DV/HDR10+ | `1080p_dvhdrplus` | `129`  |
 | 1080P DV/HDR    | `1080p_dvhdr`     | `128`  |
 | 1080P HDR10+    | `1080p_plus`      | `125`  |
 | 1080P DV        | `1080p_dv`        | `120`  |
+| 1080P HLG       | `1080p_hlg`       | `111`  |
 | 1080P HDR       | `1080p_hdr`       | `110`  |
 | 1080P           | `1080p`           | `100`  |
 | 720P DV/HDR10+  | `720p_dvhdrplus`  | `99`   |
 | 720P DV/HDR     | `720p_dvhdr`      | `98`   |
 | 720P HDR10+     | `720p_plus`       | `95`   |
 | 720P DV         | `720p_dv`         | `90`   |
+| 720P HLG        | `720p_hlg`        | `81`   |
 | 720P HDR        | `720p_hdr`        | `80`   |
 | 720P            | `720p`            | `70`   |
 | 576P DV/HDR10+  | `576p_dvhdrplus`  | `69`   |
@@ -54,6 +57,7 @@ Recommendations: Editions overlay is designed to use the Editions field within P
 | DV/HDR          | `dvhdr`           | `8`    |
 | HDR10+          | `plus`            | `7`    |
 | DV              | `dv`              | `5`    |
+| HLG             | `hlg`             | `2`    |
 | HDR             | `hdr`             | `1`    |
 
 ## Supported Editions
@@ -94,6 +98,7 @@ In the Kometa log, you may see references to versions of these overlays with `-D
 |                             4K-Plus-Dovetail Overlay in Movies                             |
 |                              4K-DV-Dovetail Overlay in Movies                              |
 |                             4K-HDR-Dovetail Overlay in Movies                              |
+|                             4K-HLG-Dovetail Overlay in Movies                              |
 |                               4K-Dovetail Overlay in Movies                                |
 ...
 |                        Extended-Edition-Dovetail Overlay in Movies                         |
@@ -105,10 +110,10 @@ In the Kometa log, you may see references to versions of these overlays with `-D
 These `-Dovetail` variations are used when resolution and edition are combined so that one "dovetails" into the other.
 This is not something you can enable or disable independently; it's an internal implementation detail.
 
-{% 
-    include-markdown "./../../templates/defaults/base/mid.md" 
-    replace='{"CODE_NAME": "resolution", "collection_files": "overlay_files", "collections:": "overlays:"}' 
-    include-tags='all|movie|show|episode|season' 
+{%
+    include-markdown "./../../templates/defaults/base/mid.md"
+    replace='{"CODE_NAME": "resolution", "collection_files": "overlay_files", "collections:": "overlays:"}'
+    include-tags='all|movie|show|episode|season'
 %}
     ```yaml
     libraries:
@@ -118,6 +123,7 @@ This is not something you can enable or disable independently; it's an internal 
             template_variables:
               use_dvhdrplus: false #(1)!
               use_dv: false #(2)!
+              use_hlg: false #(3)!
               use_hdr: false #(3)!
               use_1080p: false #(4)!
               use_720p: false #(4)!
@@ -127,7 +133,7 @@ This is not something you can enable or disable independently; it's an internal 
 
     1.  Stops the DV/HDR10+ overlay applying, regardless of resolution
     2.  Stops the DV overlay applying, regardless of resolution
-    3.  Stops the HDR overlay applying, regardless of resolution
+    3.  Stops the HLG/HDR overlay applying, regardless of resolution
     4.  Stops this resolution overlay applying
     5.  Assuming that this library only contains 4K Movies, we will want to disable all non-4K overlays from processing to increase performance
 
@@ -139,7 +145,7 @@ This is not something you can enable or disable independently; it's an internal 
               text_canceled: "C A N C E L L E D" #(1)!
     ```
 
-{% 
+{%
     include-markdown "./../../templates/defaults/base/overlays/variables_header.md"
     include-tags='all|back'
     exclude-tags='text-vars'
@@ -166,5 +172,5 @@ This is not something you can enable or disable independently; it's an internal 
 {% include-markdown "./../../templates/defaults/base/values.md" rewrite-relative-urls=false %}
 
     === "Resolution/Edition Overlays"
-    
+
         The Resolution/Edition overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on resolutions and editions as set on items in Plex.

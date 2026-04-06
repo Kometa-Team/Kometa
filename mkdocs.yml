@@ -394,6 +394,8 @@ nav:
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md
+        - User Films: files/builders/letterboxd/user_films.md
+        - User Reviews: files/builders/letterboxd/user_reviews.md
       - ICheckMovies:
         - Overview: files/builders/icheckmovies/overview.md
         - List: files/builders/icheckmovies/list.md
@@ -405,18 +407,18 @@ nav:
         - Never Hit: files/builders/boxofficemojo/never.md
         - Other Records: files/builders/boxofficemojo/record.md
         - Worldwide: files/builders/boxofficemojo/world.md
-      - Reciperr:
-        - Overview: files/builders/reciperr/overview.md
-        - List: files/builders/reciperr/list.md
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md
+      - Text File:
+        - Overview: files/builders/textfile/overview.md
+        - Text File: files/builders/textfile/text-file.md
       - AniDB:
         - Overview: files/builders/anidb/overview.md
         - ID: files/builders/anidb/id.md
-        - Popular: files/builders/anidb/popular.md
         - Relation: files/builders/anidb/relation.md
         - Tag: files/builders/anidb/tag.md
+        - Tag Name: files/builders/anidb/tag_name.md
       - AniList:
         - Overview: files/builders/anilist/overview.md
         - ID: files/builders/anilist/id.md

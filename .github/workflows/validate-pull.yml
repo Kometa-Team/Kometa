@@ -26,7 +26,7 @@ jobs:
           exit 1
 
       - name: Checkout Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
@@ -38,16 +38,21 @@ jobs:
             git remote add -f upstream https://github.com/Kometa-Team/${{ vars.REPO_NAME }}.git
             git remote update
             if [[ ${{ github.event.action }} == "labeled" ]]; then
-                echo "files=$(git diff --name-only upstream/nightly HEAD | xargs)" >> $GITHUB_OUTPUT
+                echo "files<<EOF" >> $GITHUB_OUTPUT
+                git diff --name-only upstream/nightly HEAD >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
             else
-                echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
+                echo "files<<EOF" >> $GITHUB_OUTPUT
+                git diff --name-only HEAD^ >> $GITHUB_OUTPUT
+                echo "EOF" >> $GITHUB_OUTPUT
             fi
 
       - name: List changed files
         id: list-changes
         run: |
-            for file in ${{ steps.get-changes.outputs.files }}; do
-                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
+            readarray -t files <<< "${{ steps.get-changes.outputs.files }}"
+            for file in "${files[@]}"; do
+                if [[ -n "$file" ]] && [[ "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]]; then
                     echo "$file will trigger docker build"
                     echo "build=true" >> $GITHUB_OUTPUT
                 else
@@ -65,7 +70,7 @@ jobs:
 
       - name: Run Spellcheck on changed files
         id: spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.52.0
+        uses: rojopolis/spellcheck-github-actions@0.58.0
         with:
           task_name: Markdown
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
@@ -83,14 +88,14 @@ jobs:
     steps:
 
       - name: Create App Token
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         id: app-token
         with:
           app-id: ${{ vars.APP_ID }}
           private-key: ${{ secrets.APP_TOKEN }}
 
       - name: Check Out Repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           token: ${{ secrets.PAT }}
           ref: ${{ github.event.pull_request.head.ref }}
@@ -137,7 +142,7 @@ jobs:
             git push
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -149,11 +154,11 @@ jobs:
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Build and Push
         id: docker_build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./
           file: ./Dockerfile

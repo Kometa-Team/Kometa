@@ -42,13 +42,19 @@ plex:
 
 If you set `optimize: true`, you may find that Plex becomes temporarily unresponsive after Kometa has finished running,  this is normal and expected behaviour which is reproducible if you run Optimize Database within the Plex UI.
 
-### Generating a Plex Token
+# Important token notes:
 
-You should use a single-purpose Plex token with Kometa.  This token should not be one you took from a web client or any other source.  It should be a token that you use ONLY with Kometa.
+The token you use with Kometa should ideally be a token you have generated expressly for Kometa's use.
 
-There are a variety of ways to generate such a token.
+It can be a web client token as described in this [support article](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/).
 
-Kometa provides the [Kometa Utilities](./authentication.md) for this purpose.
+It absolutely **should not** be a server token like you will find in your Plex `Preferences.xml` file.  Using a server token can cause problems like all your remote users losing their shares until you restart the server.
+
+If you need help generating such a token you can use [this webapp](https://utilities.kometa.wiki/plex-oauth).
+
+No information is logged.  However, if you want to run it locally, all the source is available [here](https://github.com/Kometa-Team/Plex-OAuth).
+
+Another tool [unrelated to Kometa] to do the same thing with a local executable is available [here](https://github.com/BrenekH/go-plexauth).
 
 # Multi-Plex Instance Setup:
 

@@ -1,13 +1,19 @@
 # Important Changes
-Python 3.9 is no longer supported as it is End-of-Life, please use Python 3.10+
 
 # Requirements Update (requirements will need to be reinstalled)
-Updated pillow requirement to 12.0.0
-Updated psutil requirement to 7.1.3
-Updated python-dotenv requirement to 1.2.1
-Updated ruamel.yaml requirement to 0.18.16
+Bump plexapi to 4.18.1
+Bump python-dotenv to 1.2.2
+Bump pillow to 12.1.1
+Bump requests to 2.33.1
+Bump setuptools to 82.0.1
 
 # New Features
+Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
+Adds new `text_file` builder.
+Reciperr site hasn't responded for a while, so the builder has been removed.
+Added spellcheck to precommit configuration
+Added `language` parameter to `mass_poster_update` and `mass_background_update` operations to override TMDb language for image fetching (e.g. `xx` for textless posters)
+Report deactivated Trakt accounts [Trakt returns a 410]
 
 # Docs
 Updates to Quickstart docs about limitations
@@ -16,5 +22,8 @@ Updates to Trakt and MAL flow pages
 # Defaults
 
 # Bug Fixes
-Fix a logic error that caused an infinite loop on reauthentication with private Trakt Lists
-
+Catch KeyError on Plex NFO build.
+Fixing "list index out of range" error when processing imdb charts #3006
+TMDB language now reflected in mass_poster_update; cache extension
+Reduce size of FILMIN logo
+Replace top-ten-pirated default list with an updated, kometa-controlled one.
