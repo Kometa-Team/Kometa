@@ -16,6 +16,8 @@ Added `language` parameter to `mass_poster_update` and `mass_background_update` 
 Report deactivated Trakt accounts [Trakt returns a 410]
 
 # Docs
+Updates to Quickstart docs about limitations
+Updates to Trakt and MAL flow pages
 
 # Defaults
 

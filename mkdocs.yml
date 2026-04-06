@@ -190,7 +190,7 @@ nav:
       - Sonarr: config/sonarr.md
       - Trakt: config/trakt.md
       - MyAnimeList: config/myanimelist.md
-      - Trakt and MyAnimeList Authentication: config/authentication.md
+      - Kometa Utilities Authentication: config/authentication.md
       - Webhooks: config/webhooks.md
   - OTHER:
     - Settings: config/settings.md

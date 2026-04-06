@@ -8,7 +8,16 @@ hide:
 
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
-A `trakt` mapping is in the root of the config file, sampled below.
+The `trakt` attribute is found at the root of the config file.  Some of these are filled in by you, others are filled in by Trakt:
+
+Kometa will keep these credentials up-to-date; they expire in 24 hours and will need to be renewed.
+
+???+ warning
+
+    Your config file needs to be writable by Kometa, since the `authentication` attribute gets updated when the credentials are renewed.
+
+    If the config file is not writable, the Trakt renewal will eventually fail.
+
 
 ```yaml title="config.yml Trakt sample"
 trakt:
@@ -32,8 +41,13 @@ trakt:
 | `pin`           | Trakt PIN.                        | PIN string or leave **blank**        |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `force_refresh` | Refresh credentials on every run. | 'true' or 'false'                    |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-
 *All other attributes will be filled in by Kometa as part of the authentication process*
+
+### Authenticating outside Kometa
+
+The simplest and preferred way to authenticate against Trakt is the [Kometa Utilities](./authentication.md).
+
+If you want to do this manually, read on.
 
 ### Important Note on "Authentication Process":
 
@@ -41,26 +55,44 @@ The Trakt authentication process is interactive; Kometa will display a URL in th
 
 ## Trakt Authentication
 
+You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `trakt` attribute.
+
+### Common activities:
+
 To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:
 
 1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
 2. Enter a `Name` for the application.
 3. Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
 4. Click the `SAVE APP` button.
-5. Record the `Client ID` and `Client Secret` as `client_id` and `client_secret` in your Configuration File.
+5. Record the `Client ID` and `Client Secret`; you will need them in a moment.
 6. Click the Green Authorize Button next to the Redirect URI.
 
     ![Trakt Authorize](../assets/images/config/trakt.png)
 
-7. Record the `PIN` as `pin` in your Configuration File.
+7. Record the `PIN`; you will need it in a moment.
 
 ???+ warning
 
     Run Kometa shortly after obtaining your PIN; the PIN may expire at some point.
 
-## Online Authorization
+### Authenticating during the Kometa run
 
-{%    
-  include-markdown "./authentication.md"
-  start="# Trakt and MyAnimeList Authentication"
-%}
+1. Add the `Client ID` and `Client Secret` as `client_id` and `client_secret` to your Configuration File.
+2. Add the `PIN` as `pin` in your Configuration File.
+
+    ```yaml title="config.yml Trakt sample"
+    trakt:
+      client_id: 1a2b3c4d5e6f7g8h9i     ## HERE
+      client_secret: 1a12b23c34d45e56f6 ## HERE
+      pin: 12345                        ## HERE
+      force_refresh: false
+      authorization:
+        access_token:
+        token_type:
+        expires_in:
+        refresh_token:
+        scope:
+        created_at:
+    ```
+3. Run Kometa within ten minutes of creating the PIN
