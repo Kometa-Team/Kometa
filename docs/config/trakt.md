@@ -55,7 +55,7 @@ The Trakt authentication process is interactive; Kometa will display a URL in th
 
 ## Trakt Authentication
 
-You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `traskt` attribute.
+You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `trakt` attribute.
 
 ### Common activities:
 
