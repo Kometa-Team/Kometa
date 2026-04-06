@@ -37,6 +37,12 @@ mal:
 
 *All other attributes will be filled in by Kometa as part of the authentication process*
 
+### Authenticating outside Kometa
+
+The simplest and preferred way to authenticate against MyAnimeList is the [Kometa Utilities](./authentication.md).
+
+If you want to do this manually, read on.
+
 ### Important Note on "Authentication Process":
 
 The MyAnimeList authentication process is interactive; Kometa will display a URL in the console output and then wait for you to visit that URL in order to grant access and then paste in some additional information.  In order for this to happen you need to run Kometa in an interactive mode, which can be fussy in some contexts (e.g., running Kometa in a Docker container on a NAS).  For this reason, it is far simpler to use the form down below to perform these steps; it does all the same steps, but takes them out of the Kometa script execution.  The form will produce a complete authentication block as shown above ready for you to copy-paste into your `config.yml`.

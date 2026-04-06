@@ -2,36 +2,78 @@
 hide:
   - toc
 ---
-# Trakt and MyAnimeList Authentication
+# Online Authentication
 
-When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details. 
-This is problematic on some setups [namely docker] where entering interactive mode is not always simple.
+When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code. 
 
-These scripts allow you to authorize Trakt and MyAnimeList here on the wiki. Once authorized, the script will 
-give you a YAML block that you will copy into the config.yml, replacing the existing `trakt` and/or `myanimelist` sections.
+This is problematic on some setups [primarily docker] where entering interactive mode is not always simple.
 
-## Usage
+For this reason, Kometa provides a utilities webapp which will take you through the authentication process and will provide the service's authentication block ready to paste into your config.
 
-1. Enter client ID and secret.
-2. For Trakt, if you didn't retrieve a PIN yourself less than ten minutes ago, click the button, and enter the PIN in the field.
-3. For MyAnimeList, click the button to authenticate and get the required "localhost URL".
-4. Click "Submit".
-5. Copy and paste the result into your Kometa config.
+This webapp is available at [https://utilities.kometa.wiki](https://utilities.kometa.wiki).
 
-<iframe src="https://kometa-auth-2cb6c5672416.herokuapp.com/" width="100%" height="700" style="border:0px solid black;"></iframe>
+There is no logging, but if you feel more comfortable running these things locally you can find the source code [here](https://github.com/Kometa-Team/Kometa-Utilities).
 
-## Running the Authentication Scripts Locally
+![alt text](../assets/images/utilities/kometa-utilities.png)
 
-For users who want full control over the scripts and would prefer the run them locally, you can run the script in docker or python 
-by following the instructions in the [Trakt-MAL-OAuth Repository](https://github.com/Kometa-Team/Trakt-MAL-OAuth).
+=== "Plex Authentication"
 
-??? abstract "Click for instructions on how to run the scripts locally"
+    1. Click the top-level button.
 
-    Ensure you have downloaded a copy of the [Trakt-MAL-OAuth Repository](https://github.com/Kometa-Team/Trakt-MAL-OAuth). 
-    If you have downloaded the ZIP file, extract it to your desired location.
+        ![Step 1](./../assets/images/utilities/plex-oauth-01.png)
 
-    {%    
-      include-markdown "https://raw.githubusercontent.com/Kometa-Team/Trakt-MAL-OAuth/master/README.md"
-      start="You can run it in Docker or Python."
-    %}
+    2. Click "Start Authentication".  This will display a PIN and a link to start authentication.  Click that link [which will open a new tab/window to Plex] and follow any instructions given by Plex:
+
+        ![Step 2](./../assets/images/utilities/plex-oauth-02.png)
+
+        Close that window when Plex indicates it is safe to do so.
+
+    3. The utilities app will now display a Plex token and user details:
+
+        ![Step 2](./../assets/images/utilities/plex-oauth-03.png)
+
+    4. Copy that token to your Kometa `config.yml`
+
+=== "Trakt Authentication"
+
+    1. Click the top-level button, enter your Trakt client ID and Secret.
+
+        ![Step 1](./../assets/images/utilities/trakt-oauth-01.png)
+
+    2. Click "Get Authentication URL".  This will fill in the auth URL:
+
+        ![Step 2](./../assets/images/utilities/trakt-oauth-02.png)
+
+        Click "Open URL" and follow any instructions given.  You will be given a PIN on the Trakt site.
+
+    3. Paste that PIN into the field and click "Submit":
+
+        ![Step 3](./../assets/images/utilities/trakt-oauth-03.png)
+
+    4. A Kometa Trakt authentication block will be displayed.
     
+        ![Step 4](./../assets/images/utilities/trakt-oauth-04.png)
+        
+        Copy that block to your Kometa `config.yml`
+
+=== "MyAnimeList Authentication"
+
+    1. Click the top-level button, enter your MyAnimeList client ID and Secret.
+
+        ![Step 1](./../assets/images/utilities/mal-oauth-01.png)
+
+    2. Click "Get Authentication URL".  This will fill in the auth URL:
+
+        ![Step 2](./../assets/images/utilities/mal-oauth-02.png)
+
+        Click "Open URL" and follow any instructions given.  This will take you to a localhost URL that will fail to load.
+
+    3. Paste that URL into the field and click "Submit":
+
+        ![Step 3](./../assets/images/utilities/mal-oauth-03.png)
+
+    4. A Kometa MyAnimeList authentication block will be displayed.
+    
+        ![Step 4](./../assets/images/utilities/mal-oauth-04.png)
+        
+        Copy that block to your Kometa `config.yml`
