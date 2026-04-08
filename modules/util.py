@@ -122,19 +122,22 @@ def get_image_dicts(group, alias):
     posters = {}
     backgrounds = {}
     logos = {}
+    squares = {}
 
-    for attr in ["url_poster", "file_poster", "url_background", "file_background", "file_logo", "url_logo"]:
+    for attr in ["url_poster", "file_poster", "url_background", "file_background", "file_logo", "url_logo", "file_square", "url_square"]:
         if attr in alias:
             if group[alias[attr]]:
                 if "poster" in attr:
                     posters[attr] = group[alias[attr]]
                 elif "background" in attr:
                     backgrounds[attr] = group[alias[attr]]
-                else:
+                elif "logo" in attr:
                     logos[attr] = group[alias[attr]]
+                else:
+                    squares[attr] = group[alias[attr]]
             else:
                 logger.error(f"Metadata Error: {attr} attribute is blank")
-    return posters, backgrounds, logos
+    return posters, backgrounds, logos, squares
 
 def add_dict_list(keys, value, dict_map):
     for key in keys:

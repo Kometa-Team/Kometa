@@ -1027,6 +1027,49 @@ class Cache:
 
     def get_image_table_name(self, library):
         table_name = None
+
+        def create_tables(cursor, table_name):
+            cursor.execute(
+                f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                key INTEGER PRIMARY KEY,
+                rating_key TEXT UNIQUE,
+                overlay TEXT,
+                compare TEXT,
+                location TEXT)"""
+            )
+            cursor.execute(
+                f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
+                key INTEGER PRIMARY KEY,
+                rating_key TEXT UNIQUE,
+                overlay TEXT,
+                compare TEXT,
+                location TEXT)"""
+            )
+            cursor.execute(
+                f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
+                key INTEGER PRIMARY KEY,
+                rating_key TEXT UNIQUE,
+                overlay TEXT,
+                compare TEXT,
+                location TEXT)"""
+            )
+            cursor.execute(
+                f"""CREATE TABLE IF NOT EXISTS {table_name}_squares (
+                key INTEGER PRIMARY KEY,
+                rating_key TEXT UNIQUE,
+                overlay TEXT,
+                compare TEXT,
+                location TEXT)"""
+            )
+            cursor.execute(
+                f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                key INTEGER PRIMARY KEY,
+                rating_key TEXT UNIQUE,
+                overlay TEXT,
+                compare TEXT,
+                location TEXT)"""
+            )
+
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
@@ -1034,52 +1077,14 @@ class Cache:
                 row = cursor.fetchone()
                 if row and row["key"]:
                     table_name = f"image_map_{row['key']}"
-                    cursor.execute(
-                        f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                        key INTEGER PRIMARY KEY,
-                        rating_key TEXT UNIQUE,
-                        overlay TEXT,
-                        compare TEXT,
-                        location TEXT)"""
-                    )
+                    create_tables(cursor, table_name)
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
                     row = cursor.fetchone()
                     if row and row["key"]:
                         table_name = f"image_map_{row['key']}"
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name} (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)"""
-                        )
+                        create_tables(cursor, table_name)
         return table_name
 
     def query_image_map(self, rating_key, table_name):

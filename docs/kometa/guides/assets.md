@@ -6,11 +6,11 @@ hide:
 ---
 # Image Asset Directory Guide
 
-The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes.
+The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes. They can also be used to update logos and square art for collections, playlists, movies, and shows.
 
 ## What is an Asset Directory?
 
-It is a folder containing artwork (posters and/or backgrounds) that is *typically* entirely separate to your media directories.
+It is a folder containing artwork (posters, backgrounds, logos, and/or square art) that is *typically* entirely separate to your media directories.
 
 The only connection an asset directory has with your media directories is that the name of the folder your movie or series is in is the "asset name".
 Kometa uses that "asset name" as the **key** to find the artwork in the asset directory.
@@ -151,9 +151,10 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
     | Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`    |
     |:---------------------------------|:------------------------------------------------------|
-    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`              |
-    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`          |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext`                |
+    | Collection/Playlist/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`              |
+    | Collection/Playlist/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`          |
+    | Collection/Playlist/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext`                |
+    | Collection/Playlist/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext`              |
     | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`            |
     | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext` |
     | Season logo                      | `<path_to_assets>/ASSET_NAME/Season##_logo.ext`       |
@@ -165,9 +166,10 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
     | Image Type                       | Flat Assets Image Paths<br>`asset_folders: false`     |
     |:---------------------------------|:------------------------------------------------------|
-    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                     |
-    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`          |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`                |
+    | Collection/Playlist/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                     |
+    | Collection/Playlist/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`          |
+    | Collection/Playlist/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`                |
+    | Collection/Playlist/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext`              |
     | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`            |
     | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext` |
     | Season logo                      | `<path_to_assets>/ASSET_NAME_Season##_logo.ext`       |

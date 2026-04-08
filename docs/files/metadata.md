@@ -24,7 +24,9 @@ tags:
   - episodes
   - f1_season
   - file_background
+  - file_logo
   - file_poster
+  - file_square
   - genre
   - keep_episodes
   - label
@@ -56,7 +58,9 @@ tags:
   - update_episodes
   - update_seasons
   - url_background
+  - url_logo
   - url_poster
+  - url_square
   - use_original_title
   - user_rating
   - writer
@@ -514,9 +518,11 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `file_background` | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `file_poster`     | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `file_logo`       | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`                      | 
+| `file_square`     | Path to image in the file system.                | `Movies`, `Shows`                                             |
 | `url_background`  | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_poster`      | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_logo`        | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`                      |
+| `url_square`      | URL of image publicly available on the internet. | `Movies`, `Shows`                                             |
 
 ### Advanced Attributes
 
@@ -534,4 +540,3 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `subtitle_language` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-metadata-5" }  | `default`, `en`, `ar-SA`, `ca-ES`, `cs-CZ`, `da-DK`, `de-DE`, `el-GR`, `en-AU`, `en-CA`, `en-GB`, `en-US`, `es-ES`, `es-MX`, `et-EE`, `fa-IR`, `fi-FI`, `fr-CA`, `fr-FR`, `he-IL`, `hi-IN`, `hu-HU`, `id-ID`, `it-IT`, `ja-JP`, `ko-KR`, `lt-LT`, `lv-LV`, `nb-NO`, `nl-NL`, `pl-PL`, `pt-BR`, `pt-PT`, `ro-RO`, `ru-RU`, `sk-SK`, `sv-SE`, `th-TH`, `tr-TR`, `uk-UA`, `vi-VN`, `zh-CN`, `zh-HK`, `zh-TW`                                                                 | `Shows`, `Seasons`                        |
 | `subtitle_mode` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-metadata-5" }      | <table class="clearTable"><tbody><tr><td>`default`</td><td>Account default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Shows`, `Seasons`                        |
 | `use_original_title` :material-numeric-5-circle:{ data-tooltip data-tooltip-id="tippy-metadata-5" } | <table class="clearTable"><tbody><tr><td>`default`</td><td>Library default</td></tr><tr><td>`no`</td><td>No</td></tr><tr><td>`yes`</td><td>Yes</td></tr></tbody></table>                                                                                                                                                                                                                                                                                                  | `Movies`, `Shows`                         |
-

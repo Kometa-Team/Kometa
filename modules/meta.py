@@ -1409,9 +1409,16 @@ class MetadataFile(DataFile):
             def from_repo(u):
                 return self.config.Requests.get(repo_url(u)).content.decode().strip()
 
-            def check_for_definition(check_key, check_tree, is_poster=True, git_name=None):
-                attr_name = "poster" if is_poster and (git_name is None or "background" not in git_name) else "background"
-                if (git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree):
+            def check_for_definition(check_key, check_tree, attr_name="poster", git_name=None):
+                if git_name:
+                    git_name_lower = git_name.lower()
+                    if "background" in git_name_lower:
+                        attr_name = "background"
+                    elif "logo" in git_name_lower:
+                        attr_name = "logo"
+                    elif "square" in git_name_lower:
+                        attr_name = "square"
+                if ((git_name and git_name.lower().endswith(".tpdb")) or (not git_name and f"{attr_name}.tpdb" in check_tree)) and attr_name in ["poster", "background"]:
                     return f"tpdb_{attr_name}", from_repo(f"{check_key}/{quote(git_name) if git_name else f'{attr_name}.tpdb'}")
                 elif (git_name and git_name.lower().endswith(".url")) or (not git_name and f"{attr_name}.url" in check_tree):
                     return f"url_{attr_name}", from_repo(f"{check_key}/{quote(git_name) if git_name else f'{attr_name}.url'}")
@@ -1424,14 +1431,12 @@ class MetadataFile(DataFile):
                             return f"url_{attr_name}", repo_url(f"{check_key}/{quote(ct)}")
                 return None, None
 
-            def init_set(check_key, check_tree):
+            def init_set(check_key, check_tree, attr_names=("poster", "background")):
                 _data = {}
-                attr, attr_data = check_for_definition(check_key, check_tree)
-                if attr:
-                    _data[attr] = attr_data
-                attr, attr_data = check_for_definition(check_key, check_tree, is_poster=False)
-                if attr:
-                    _data[attr] = attr_data
+                for attr_name in attr_names:
+                    attr, attr_data = check_for_definition(check_key, check_tree, attr_name=attr_name)
+                    if attr:
+                        _data[attr] = attr_data
                 return _data
 
             style_data = {}
@@ -1441,7 +1446,7 @@ class MetadataFile(DataFile):
                     continue
                 k_encoded = quote(k)
                 item_folder = self.config.GitHub.get_tree(top_tree[k]["url"])
-                item_data = init_set(k_encoded, item_folder)
+                item_data = init_set(k_encoded, item_folder, attr_names=("poster", "background", "logo", "square"))
                 seasons = {}
                 for ik in item_folder:
                     match = re.search(r"(\d+)", ik)
@@ -1473,7 +1478,7 @@ class MetadataFile(DataFile):
                 collections_folder = self.config.GitHub.get_tree(top_tree["collections"]["url"])
                 for k, alts in self.set_collections[section_key].items():
                     if k in collections_folder:
-                        collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]))
+                        collection_data = init_set(f"collections/{k}", self.config.GitHub.get_tree(collections_folder[k]["url"]), attr_names=("poster", "background", "logo", "square"))
                         self.library.collection_images[k] = collection_data
                         for alt in alts:
                             self.library.collection_images[alt] = collection_data

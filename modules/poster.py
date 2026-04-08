@@ -13,6 +13,7 @@ class ImageData:
         self.is_poster = image_type == "poster"
         self.is_background = image_type == "background"
         self.is_logo = image_type == "logo"
+        self.is_square = image_type == "square"
         self.is_url = is_url
         self.compare = compare if compare else location if is_url else os.stat(location).st_size
         self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
@@ -395,4 +396,3 @@ class KometaImage(ImageBase):
         pmm_image.save(image_path)
 
         return ImageData(self.image_attr, image_path, is_url=False, image_type="poster", compare=self.get_compare_string())
-

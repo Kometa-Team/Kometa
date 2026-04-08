@@ -784,9 +784,9 @@ class Operations:
 
                 if self.library.mass_poster_update or self.library.mass_background_update:
                     try:
-                        new_poster, new_background, _logo, item_dir, name = self.library.find_item_assets(item)  # noqa: F841
+                        new_poster, new_background, _logo, _square, item_dir, name = self.library.find_item_assets(item)  # noqa: F841
                     except Failed:
-                        new_poster, new_background, _logo, item_dir, name = None, None, None, None, None  # noqa: F841
+                        new_poster, new_background, _logo, _square, item_dir, name = None, None, None, None, None, None  # noqa: F841
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
@@ -879,7 +879,7 @@ class Operations:
                                         pass
                                 if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
                                     try:
-                                        season_poster, season_background, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
+                                        season_poster, season_background, _season_logo, _season_square, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                                     except Failed:
                                         season_poster = None
                                         season_background = None
@@ -907,7 +907,7 @@ class Operations:
                                             logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
                                             continue
                                         try:
-                                            episode_poster, episode_background, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
+                                            episode_poster, episode_background, _episode_logo, _episode_square, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                         except Failed:
                                             episode_poster = None
                                             episode_background = None
@@ -1170,11 +1170,11 @@ class Operations:
                 logger.info("")
                 for col in unconfigured_collections:
                     try:
-                        poster, background, _, item_dir, name = self.library.find_item_assets(col)
-                        if poster or background:
-                            self.library.upload_images(col, poster=poster, background=background)
+                        poster, background, logo, square, item_dir, name = self.library.find_item_assets(col)
+                        if poster or background or logo or square:
+                            self.library.upload_images(col, poster=poster, background=background, logo=logo, square=square)
                         elif self.library.show_missing_assets:
-                            logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
+                            logger.warning(f"Asset Warning: No supported artwork found in an assets folder for '{name}'")
                     except Failed as e:
                         logger.warning(e)
 
