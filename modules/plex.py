@@ -1249,9 +1249,13 @@ class Plex(Library):
         else:
             locked_items = items
 
+        batch_size = 100
+        total_sent = 0
         for _items, locked in [(locked_items, True), (unlocked_items, False)]:
-            if _items:
-                self.Plex.batchMultiEdits(_items)
+            for i in range(0, len(_items), batch_size) if _items else []:
+                chunk = _items[i : i + batch_size]
+                logger.ghost(f"{'Adding' if add else 'Removing'} {len(chunk)} items [{total_sent} so far] to{' smart label' if smart_label_collection else ''} collection: {collection.title()} (Locked: {locked})")
+                self.Plex.batchMultiEdits(chunk)
                 if smart_label_collection:
                     self.query_data(self.Plex.addLabel if add else self.Plex.removeLabel, collection)
                 elif add:
@@ -1259,6 +1263,8 @@ class Plex(Library):
                 else:
                     self.Plex.removeCollection(collection, locked=locked)
                 self.Plex.saveMultiEdits()
+                total_sent += len(chunk)
+            logger.exorcise()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
