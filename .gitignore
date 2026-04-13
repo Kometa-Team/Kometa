@@ -147,3 +147,4 @@ dmypy.json
 .DS_Store
 ._*
 .worktrees/
+dictionary.dic
