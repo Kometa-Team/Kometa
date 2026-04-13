@@ -14,6 +14,7 @@ Reciperr site hasn't responded for a while, so the builder has been removed.
 Added spellcheck to precommit configuration
 Added `language` parameter to `mass_poster_update` and `mass_background_update` operations to override TMDb language for image fetching (e.g. `xx` for textless posters)
 Report deactivated Trakt accounts [Trakt returns a 410]
+Process collection alterations [add/remove] in batches of 100 to avoid "400 Bad Request" on mile-long URLs.
 
 # Docs
 Updates to Quickstart docs about limitations
