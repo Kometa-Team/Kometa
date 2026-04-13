@@ -12,12 +12,7 @@ from datetime import datetime
 
 from packaging.version import parse
 
-from modules import util
-from modules.builder import CollectionBuilder
-from modules.config import ConfigFile
 from modules.logs import MyLogger
-from modules.request import Requests
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -242,7 +237,13 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
 
 logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"], run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
 
+from modules import util  # noqa: E402
+
 util.logger = logger
+from modules.builder import CollectionBuilder  # noqa: E402
+from modules.config import ConfigFile  # noqa: E402
+from modules.request import Requests  # noqa: E402
+from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled  # noqa: E402
 
 
 def my_except_hook(exctype, value, tb):
@@ -443,9 +444,9 @@ def start(attrs):
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
         try:
             log_data = {}
-            # no_overlays = []
-            # no_overlays_count = 0
-            # convert_errors = {}
+            no_overlays = []  # noqa: F841
+            no_overlays_count = 0  # noqa: F841
+            convert_errors = {}  # noqa: F841
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
