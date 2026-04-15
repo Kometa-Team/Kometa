@@ -10,6 +10,7 @@ __pycache__/
 .idea
 .vscode
 .Python
+.worktrees
 
 logs/
 config/*

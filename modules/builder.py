@@ -556,6 +556,8 @@ custom_sort_builders = [
     "mojo_never",
     "anidb_tag",
     "anidb_tag_name",
+    "simkl_trending",
+    "simkl_dvd",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
