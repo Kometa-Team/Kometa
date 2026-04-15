@@ -1,21 +1,40 @@
-import argparse, os, platform, re, sys, sysconfig, time, uuid
+import argparse
+import os
+import platform
+import re
+import sys
+import sysconfig
+import time
+import uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+
+from packaging.version import parse
+
 from modules.logs import MyLogger
-from packaging.version import Version, parse
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
-    import arrapi, lxml, pathvalidate, PIL, plexapi, psutil, dateutil, requests, ruamel.yaml, schedule, setuptools, tmdbapis
-    from dotenv import load_dotenv, version as dotenv_version
+    import arrapi
+    import dateutil
+    import lxml
+    import pathvalidate
+    import PIL
+    import plexapi
+    import psutil
+    import requests
+    import ruamel.yaml
+    import schedule
+    import setuptools
+    import tmdbapis
+    from dotenv import load_dotenv
+    from dotenv import version as dotenv_version
     from PIL import ImageFile
-    from plexapi import server
     from plexapi.exceptions import NotFound
-    from plexapi.video import Show, Season
 except (ModuleNotFoundError, ImportError) as ie:
     print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
@@ -30,14 +49,14 @@ system_versions = {
     "PlexAPI": plexapi.__version__,
     "psutil": psutil.__version__,
     "python-dotenv": dotenv_version.__version__,
-    "python-dateutil": dateutil.__version__, # noqa
+    "python-dateutil": dateutil.__version__,  # noqa
     "pywin32": None,
     "requests": requests.__version__,
     "ruamel.yaml": ruamel.yaml.__version__,
     "schedule": None,
     "setuptools": setuptools.__version__,
     "tenacity": None,
-    "tmdbapis": tmdbapis.__version__
+    "tmdbapis": tmdbapis.__version__,
 }
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
@@ -72,7 +91,7 @@ arguments = {
     "read-only-config": {"args": "ro", "type": "bool", "help": "Run without writing to the config"},
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
-    "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"}
+    "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"},
 }
 
 parser = argparse.ArgumentParser()
@@ -82,7 +101,7 @@ for arg_key, arg_data in arguments.items():
     kwargs = {"dest": arg_key.replace("-", "_"), "help": arg_data["help"]}
     if arg_data["type"] == "bool":
         kwargs["action"] = "store_true"
-        kwargs["default"] = False # noqa
+        kwargs["default"] = False  # noqa
     else:
         kwargs["type"] = int if arg_data["type"] == "int" else str
 
@@ -174,11 +193,13 @@ for _, sv in secret_args.items():
         run_arg = run_arg.replace(sv, "(redacted)")
 
 try:
-    import git # noqa
+    import git  # noqa
+
     system_versions["GitPython"] = git.__version__
-    from git import Repo, InvalidGitRepositoryError # noqa
+    from git import InvalidGitRepositoryError, Repo  # noqa
+
     try:
-        git_branch = Repo(path=".").head.ref.name # noqa
+        git_branch = Repo(path=".").head.ref.name  # noqa
     except InvalidGitRepositoryError:
         git_branch = None
 except ImportError:
@@ -203,26 +224,27 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
     try:
         response = requests.get(github_url, timeout=10)
         if response.status_code == 200:
-            with open(config_path, 'w') as config_file:
+            with open(config_path, "w") as config_file:
                 config_file.write(response.text)
             print(f"Configuration File ('config.yml') has been downloaded from GitHub (Branch: '{git_branch}') and saved as '{config_path}'. Please update this file with your API keys and other required settings.")
             sys.exit(1)
         else:
             raise requests.RequestException
-    except requests.RequestException as e:
+    except requests.RequestException:
         print(f"Config Error: Unable to download the configuration file from GitHub (URL: {github_url}'). Please save it as '{config_path}' before running Kometa again.")
         sys.exit(1)
 
 
-logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"],
-                  run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
+logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"], run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
 
-from modules import util
+from modules import util  # noqa: E402
+
 util.logger = logger
-from modules.builder import CollectionBuilder
-from modules.config import ConfigFile
-from modules.request import Requests
-from modules.util import Failed, FilterFailed, NonExisting, NotScheduled, Deleted
+from modules.builder import CollectionBuilder  # noqa: E402
+from modules.config import ConfigFile  # noqa: E402
+from modules.request import Requests  # noqa: E402
+from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled  # noqa: E402
+
 
 def my_except_hook(exctype, value, tb):
     if issubclass(exctype, KeyboardInterrupt):
@@ -230,14 +252,17 @@ def my_except_hook(exctype, value, tb):
     else:
         logger.critical("Uncaught Exception", exc_info=(exctype, value, tb))
 
+
 sys.excepthook = my_except_hook
 
 old_send = requests.Session.send
+
 
 def new_send(*send_args, **kwargs):
     if kwargs.get("timeout", None) is None:
         kwargs["timeout"] = run_args["timeout"]
     return old_send(*send_args, **kwargs)
+
 
 requests.Session.send = new_send
 
@@ -278,7 +303,9 @@ plexapi.BASE_HEADERS["X-Plex-Product"] = "Kometa"
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 if util.windows:
-    import win32api, win32process
+    import win32api
+    import win32process
+
     site_packages = sysconfig.get_paths()["platlib"]
     with open(os.path.join(site_packages, "pywin32.version.txt")) as v:
         system_versions["pywin32"] = v.read().strip()
@@ -293,9 +320,11 @@ if run_args["low-priority"]:
         logger.stacktrace()
         logger.critical(f"Failed to set priority: {e}")
 
+
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
         executor.submit(start, *[attrs])
+
 
 def start(attrs):
     try:
@@ -340,11 +369,16 @@ def start(attrs):
                             logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
-        if "time" in attrs and attrs["time"]:                   start_type = f"{attrs['time']} "
-        elif run_args["tests"]:                                 start_type = "Test "
-        elif "collections" in attrs and attrs["collections"]:   start_type = "Collections "
-        elif "libraries" in attrs and attrs["libraries"]:       start_type = "Libraries "
-        else:                                                   start_type = ""
+        if "time" in attrs and attrs["time"]:
+            start_type = f"{attrs['time']} "
+        elif run_args["tests"]:
+            start_type = "Test "
+        elif "collections" in attrs and attrs["collections"]:
+            start_type = "Collections "
+        elif "libraries" in attrs and attrs["libraries"]:
+            start_type = "Libraries "
+        else:
+            start_type = ""
         start_time = datetime.now()
         if "time" not in attrs:
             attrs["time"] = start_time.strftime("%H:%M")
@@ -361,7 +395,9 @@ def start(attrs):
         attrs["overlays_only"] = run_args["overlays-only"]
         attrs["plex_url"] = plex_url
         attrs["plex_token"] = plex_token
+
         logger.separator(debug=True)
+
         logger.debug(f"Run Command: {run_arg}")
         for akey, adata in arguments.items():
             if isinstance(adata["help"], str):
@@ -373,6 +409,9 @@ def start(attrs):
             for sec in secret_args:
                 logger.debug(f"--kometa-{sec} (KOMETA_{sec.upper().replace('-', '_')}): (redacted)")
             logger.debug("")
+
+        logger.separator(debug=True)
+
         logger.separator(f"Starting {start_type}Run")
         config = None
         stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
@@ -382,12 +421,15 @@ def start(attrs):
             logger.stacktrace()
             logger.critical(e)
         else:
-            try:
-                stats = run_config(config, stats)
-            except Exception as e:
-                config.notify(e)
-                logger.stacktrace()
-                logger.critical(e)
+            if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
+                logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
+            else:
+                try:
+                    stats = run_config(config, stats)
+                except Exception as e:
+                    config.notify(e)
+                    logger.stacktrace()
+                    logger.critical(e)
         logger.info("")
         end_time = datetime.now()
         run_time = str(end_time - start_time).split(".")[0]
@@ -402,9 +444,9 @@ def start(attrs):
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
         try:
             log_data = {}
-            no_overlays = []
-            no_overlays_count = 0
-            convert_errors = {}
+            no_overlays = []  # noqa: F841
+            no_overlays_count = 0  # noqa: F841
+            convert_errors = {}  # noqa: F841
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
@@ -443,7 +485,7 @@ def start(attrs):
                                 log_data[err_type].append(log_line)
 
             if "No Items found for" in other_message:
-                logger.separator(f"Overlay Errors Summary", space=False, border=False)
+                logger.separator("Overlay Errors Summary", space=False, border=False)
                 logger.info("")
                 logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
                 logger.info("")
@@ -475,13 +517,14 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
-        start_str = start_time.strftime('%H:%M:%S %Y-%m-%d')
-        end_str = end_time.strftime('%H:%M:%S %Y-%m-%d')
+        start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
+        end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
         logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
         logger.remove_main_handler()
     except Exception as e:
         logger.stacktrace()
         logger.critical(e)
+
 
 def run_config(config, stats):
     library_status = run_libraries(config)
@@ -489,7 +532,7 @@ def run_config(config, stats):
     playlist_status = {}
     playlist_stats = {}
     if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["metadata-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
-        #logger.add_playlists_handler()
+        # logger.add_playlists_handler()
         if config.playlist_files:
             playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
@@ -510,7 +553,7 @@ def run_config(config, stats):
                 logger.separator(f"{logger.separating_character * max_length}|", space=False, border=False, side_space=False, left=True)
                 for playlist_name, users in report.items():
                     logger.info(f"{playlist_name:<{max_length}} | {'all' if len(users) == len(library.users) + 1 else ', '.join(users)}")
-        #logger.remove_playlists_handler()
+        # logger.remove_playlists_handler()
 
     amount_added = 0
     if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
@@ -531,7 +574,7 @@ def run_config(config, stats):
             for library in config.libraries:
                 if library.run_again:
                     try:
-                        #logger.re_add_library_handler(library.mapping_name)
+                        # logger.re_add_library_handler(library.mapping_name)
                         os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
                         logger.info("")
                         logger.separator(f"{library.name} Library Run Again")
@@ -547,7 +590,7 @@ def run_config(config, stats):
                                 library.notify(e, collection=builder.name, critical=False)
                                 logger.stacktrace()
                                 logger.error(e)
-                        #logger.remove_library_handler(library.mapping_name)
+                        # logger.remove_library_handler(library.mapping_name)
                     except Exception as e:
                         library.notify(e)
                         logger.stacktrace()
@@ -601,7 +644,7 @@ def run_config(config, stats):
         print_status(library.status)
     if playlist_status:
         logger.info("")
-        logger.separator(f"Playlists Summary", space=False, border=False)
+        logger.separator("Playlists Summary", space=False, border=False)
         logger.info("")
         print_status(playlist_status)
 
@@ -628,6 +671,7 @@ def run_config(config, stats):
         stats["names"].extend([{"name": n, "library": "PLAYLIST"} for n in playlist_stats["names"]])
     return stats
 
+
 def run_libraries(config):
     library_status = {}
     for library in config.libraries:
@@ -637,7 +681,7 @@ def run_libraries(config):
             continue
         library_status[library.name] = {}
         try:
-            #logger.add_library_handler(library.mapping_name)
+            # logger.add_library_handler(library.mapping_name)
             plexapi.server.TIMEOUT = library.timeout
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
@@ -693,7 +737,7 @@ def run_libraries(config):
                         logger.info(f"Collection {collection.title} Deleted")
                     except Failed as e:
                         logger.error(e)
-                library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split('.')[0]
+                library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             if run_args["delete-labels"] and not run_args["playlists-only"]:
                 time_start = datetime.now()
@@ -713,7 +757,7 @@ def run_libraries(config):
                             library.edit_tags("label", item, sync_tags=sync)
                         except NotFound:
                             logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
-                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split('.')[0]
+                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             time_start = datetime.now()
             temp_items = None
@@ -730,7 +774,7 @@ def run_libraries(config):
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
                 logger.info("")
                 library.map_guids(temp_items)
-            library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split('.')[0]
+            library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
 
             runs = {
                 "metadata": all([not run_args[x] for x in ["tests", "operations-only", "overlays-only", "playlists-only", "collections-only"]]),
@@ -760,7 +804,7 @@ def run_libraries(config):
                             # logger.remove_library_handler(library.mapping_name)
                             run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
-                    library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split('.')[0]
+                    library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "metadata" and runs[run_type]:
                     time_start = datetime.now()
                     for images in library.images_files:
@@ -777,7 +821,7 @@ def run_libraries(config):
                             except Failed as e:
                                 library.notify(e)
                                 logger.error(e)
-                    library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split('.')[0]
+                    library_status[library.name]["Library Images Files"] = str(datetime.now() - time_start).split(".")[0]
 
                     time_start = datetime.now()
                     for metadata in library.metadata_files:
@@ -793,17 +837,18 @@ def run_libraries(config):
                         except Failed as e:
                             library.notify(e)
                             logger.error(e)
-                    library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split('.')[0]
+                    library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
                     library_status[library.name]["Library Operations"] = library.Operations.run_operations()
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
                     library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
-            #logger.remove_library_handler(library.mapping_name)
+            # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(e)
             logger.stacktrace()
             logger.critical(e)
     return library_status
+
 
 def run_collection(config, library, metadata, requested_collections):
     logger.info("")
@@ -813,13 +858,15 @@ def run_collection(config, library, metadata, requested_collections):
             no_template_test = True
             if "template" in collection_attrs and collection_attrs["template"]:
                 for data_template in util.get_list(collection_attrs["template"], split=False):
-                    if "name" in data_template \
-                            and data_template["name"] \
-                            and metadata.templates \
-                            and data_template["name"] in metadata.templates \
-                            and metadata.templates[data_template["name"]][0] \
-                            and "test" in metadata.templates[data_template["name"]][0] \
-                            and metadata.templates[data_template["name"]][0]["test"] is True:
+                    if (
+                        "name" in data_template
+                        and data_template["name"]
+                        and metadata.templates
+                        and data_template["name"] in metadata.templates
+                        and metadata.templates[data_template["name"]][0]
+                        and "test" in metadata.templates[data_template["name"]][0]
+                        and metadata.templates[data_template["name"]][0]["test"] is True
+                    ):
                         no_template_test = False
             if no_template_test:
                 continue
@@ -829,13 +876,13 @@ def run_collection(config, library, metadata, requested_collections):
         elif run_args["resume"] == mapping_name:
             run_args["resume"] = None
             logger.info("")
-            logger.separator(f"Resuming Collections")
+            logger.separator("Resuming Collections")
 
         if "name_mapping" in collection_attrs and collection_attrs["name_mapping"]:
             collection_log_name, output_str = util.validate_filename(collection_attrs["name_mapping"])
         else:
             collection_log_name, output_str = util.validate_filename(mapping_name)
-        #logger.add_collection_handler(library.mapping_name, collection_log_name)
+        # logger.add_collection_handler(library.mapping_name, collection_log_name)
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
@@ -987,11 +1034,12 @@ def run_collection(config, library, metadata, requested_collections):
             logger.error(f"Unknown Error: {e}")
             library.status[str(mapping_name)]["status"] = "Unknown Error"
             library.status[str(mapping_name)]["errors"].append(e)
-        collection_run_time = str(datetime.now() - collection_start).split('.')[0]
+        collection_run_time = str(datetime.now() - collection_start).split(".")[0]
         library.status[str(mapping_name)]["run_time"] = collection_run_time
         logger.info("")
         logger.separator(f"Finished {mapping_name} Collection\nCollection Run Time: {collection_run_time}")
-        #logger.remove_collection_handler(library.mapping_name, collection_log_name)
+        # logger.remove_collection_handler(library.mapping_name, collection_log_name)
+
 
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
@@ -1006,13 +1054,15 @@ def run_playlists(config):
                 no_template_test = True
                 if "template" in playlist_attrs and playlist_attrs["template"]:
                     for data_template in util.get_list(playlist_attrs["template"], split=False):
-                        if "name" in data_template \
-                                and data_template["name"] \
-                                and playlist_file.templates \
-                                and data_template["name"] in playlist_file.templates \
-                                and playlist_file.templates[data_template["name"]][0] \
-                                and "test" in playlist_file.templates[data_template["name"]][0] \
-                                and playlist_file.templates[data_template["name"]][0]["test"] is True:
+                        if (
+                            "name" in data_template
+                            and data_template["name"]
+                            and playlist_file.templates
+                            and data_template["name"] in playlist_file.templates
+                            and playlist_file.templates[data_template["name"]][0]
+                            and "test" in playlist_file.templates[data_template["name"]][0]
+                            and playlist_file.templates[data_template["name"]][0]["test"] is True
+                        ):
                             no_template_test = False
                 if no_template_test:
                     continue
@@ -1021,7 +1071,7 @@ def run_playlists(config):
                 playlist_log_name, output_str = util.validate_filename(playlist_attrs["name_mapping"])
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
-            #logger.add_playlist_handler(playlist_log_name)
+            # logger.add_playlist_handler(playlist_log_name)
             status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             try:
@@ -1170,12 +1220,13 @@ def run_playlists(config):
                 status[mapping_name]["status"] = "Unknown Error"
                 status[mapping_name]["errors"].append(e)
             logger.info("")
-            playlist_run_time = str(datetime.now() - playlist_start).split('.')[0]
+            playlist_run_time = str(datetime.now() - playlist_start).split(".")[0]
             status[mapping_name]["run_time"] = playlist_run_time
             logger.info("")
             logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
-            #logger.remove_playlist_handler(playlist_log_name)
+            # logger.remove_playlist_handler(playlist_log_name)
     return status, stats
+
 
 if __name__ == "__main__":
     try:
@@ -1193,7 +1244,7 @@ if __name__ == "__main__":
                     if time_to_run:
                         raise Failed(f"Argument Error: time argument invalid: {time_to_run} must be in the HH:MM format between 00:00-23:59")
                     else:
-                        raise Failed(f"Argument Error: blank time argument")
+                        raise Failed("Argument Error: blank time argument")
             for time_to_run in valid_times:
                 schedule.every().day.at(time_to_run).do(process, {"time": time_to_run})
             while True:

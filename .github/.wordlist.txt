@@ -383,6 +383,7 @@ tautulli's
 telesync
 templatizing
 TestAniDB
+textless
 th
 themoviedb
 theposterdb
@@ -445,7 +446,6 @@ walkthrough
 walkthroughs
 watchlist
 webapp
-webapps
 webhook
 webhooks
 webp

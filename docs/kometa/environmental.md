@@ -357,6 +357,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --collections-only
             ```
+    **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
 ??? blank "Metadata Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-mo`/`--metadata-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_METADATA_ONLY`<a class="headerlink" href="#metadata-only" title="Permanent link">¶</a>"
 
@@ -377,6 +378,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --metadata-only
             ```
+    **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
 ??? blank "Playlists Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-po`/`--playlists-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PLAYLISTS_ONLY`<a class="headerlink" href="#playlists-only" title="Permanent link">¶</a>"
 
@@ -397,6 +399,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --playlists-only
             ```
+    **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
 ??? blank "Operations Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-op`/`--operations-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OPERATIONS_ONLY`<a class="headerlink" href="#operations-only" title="Permanent link">¶</a>"
 
@@ -417,6 +420,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --operations-only
             ```
+    **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
 ??? blank "Overlays Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ov`/`--overlays-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OVERLAYS_ONLY`<a class="headerlink" href="#overlays-only" title="Permanent link">¶</a>"
 
@@ -437,6 +441,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --overlays-only
             ```
+    **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
 ??? blank "Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS`<a class="headerlink" href="#run-collections" title="Permanent link">¶</a>"
 
