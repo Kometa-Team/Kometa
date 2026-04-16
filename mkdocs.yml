@@ -182,6 +182,7 @@ nav:
       - Github: config/github.md
       - OMDb: config/omdb.md
       - MDBList: config/mdblist.md
+      - Simkl: config/simkl.md
       - Notifiarr: config/notifiarr.md
       - Gotify: config/gotify.md
       - ntfy: config/ntfy.md
