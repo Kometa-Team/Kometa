@@ -217,6 +217,17 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[Simkl](../simkl/overview)** builders grab items based on trending and DVD release lists on Simkl.com
+
+    [:octicons-home-16: View Builder](../simkl/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:material-trending-up: Simkl Trending](../simkl/trending) - Gets movies, TV shows, and anime from Simkl's trending lists.
+        - [:material-disc: Simkl DVD](../simkl/dvd) - Gets movies and TV shows from Simkl's DVD release lists.
+
+!!! builder
+
     ![StevenLu logo](../../assets/images/files/builders/stevenlu.png){ align=right }
 
     **[StevenLu](../stevenlu/overview)** builders grab items based on lists on StevenLu.com

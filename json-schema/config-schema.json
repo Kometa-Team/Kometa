@@ -338,6 +338,19 @@
             ],
             "title": "gotify"
         },
+        "simkl-api": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "user_token": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "user_token"
+            ],
+            "title": "simkl"
+        },
         "ntfy-api": {
             "type": "object",
             "additionalProperties": false,

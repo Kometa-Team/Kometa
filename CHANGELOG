@@ -18,6 +18,7 @@ Added `language` parameter to `mass_poster_update` and `mass_background_update` 
 Report deactivated Trakt accounts [Trakt returns a 410]
 Process collection alterations [add/remove] in batches of 100 to avoid "400 Bad Request" on mile-long URLs.
 Exit early if more than one of the '--SOMETHING-only' flags are set.
+Initial support for SIMKL.com; trending lists and dvd-releases list
 
 # Docs
 Updates to Quickstart docs about limitations

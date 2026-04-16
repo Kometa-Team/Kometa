@@ -353,6 +353,8 @@ semver
 setuptools
 shawshank
 shoutout
+Simkl
+Simkl's
 skywalker
 sohjiro
 sohjiro's

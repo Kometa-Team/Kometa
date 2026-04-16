@@ -10,7 +10,7 @@ from plexapi.exceptions import NotFound
 from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
 from modules.overlay import Overlay
 from modules.poster import KometaImage
 from modules.request import quote
@@ -42,6 +42,7 @@ all_builders = (
     + trakt.builders
     + tvdb.builders
     + mdblist.builders
+    + simkl.builders
     + radarr.builders
     + sonarr.builders
 )
@@ -555,6 +556,8 @@ custom_sort_builders = [
     "mojo_never",
     "anidb_tag",
     "anidb_tag_name",
+    "simkl_trending",
+    "simkl_dvd",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays"]
@@ -1588,6 +1591,8 @@ class CollectionBuilder:
                     self._tvdb(method_name, method_data)
                 elif method_name in mdblist.builders:
                     self._mdblist(method_name, method_data)
+                elif method_name in simkl.builders:
+                    self._simkl(method_name, method_data)
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
                 else:
@@ -3036,6 +3041,9 @@ class CollectionBuilder:
         for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
             self.builders.append((method_name, mdb_dict))
 
+    def _simkl(self, method_name, method_data):
+        self.builders.append((method_name, self.config.Simkl.validate_simkl_dict(self.Type, method_name, method_data)))
+
     def _tautulli(self, method_name, method_data):
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -3370,6 +3378,8 @@ class CollectionBuilder:
             ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "mdblist" in method:
             ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "simkl" in method:
+            ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
