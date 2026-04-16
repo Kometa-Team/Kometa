@@ -185,6 +185,7 @@ nav:
       - Notifiarr: config/notifiarr.md
       - Gotify: config/gotify.md
       - ntfy: config/ntfy.md
+      - Simkl: config/simkl.md
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
