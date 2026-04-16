@@ -23,5 +23,4 @@ simkl:
 
 ???+ tip
 
-    A Simkl user token can be obtained from the
-    [Kometa Simkl Service](https://utilities.kometa.wiki/simkl-service).
+    A Simkl user token can be obtained from the [Kometa Utilities](./authentication.md).
