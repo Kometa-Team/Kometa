@@ -118,7 +118,7 @@ mdblist:
   cache_expiration: 60
 simkl:
   user_token:                      # Enter SIMKL User Token (Optional)
-                                   # Get one at https://utilities.kometa.wiki/simkl-service
+                                   # Get one at https://utilities.kometa.wiki/simkl-oauth
 notifiarr:
   apikey:                          # Enter Notifiarr API Key (Optional)
 gotify:
