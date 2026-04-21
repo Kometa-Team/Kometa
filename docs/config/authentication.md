@@ -4,7 +4,7 @@ hide:
 ---
 # Online Authentication
 
-When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code. 
+When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code.
 
 This is problematic on some setups [primarily docker] where entering interactive mode is not always simple.
 
@@ -51,9 +51,9 @@ There is no logging, but if you feel more comfortable running these things local
         ![Step 3](./../assets/images/utilities/trakt-oauth-03.png)
 
     4. A Kometa Trakt authentication block will be displayed.
-    
+
         ![Step 4](./../assets/images/utilities/trakt-oauth-04.png)
-        
+
         Copy that block to your Kometa `config.yml`
 
 === "MyAnimeList Authentication"
@@ -73,7 +73,31 @@ There is no logging, but if you feel more comfortable running these things local
         ![Step 3](./../assets/images/utilities/mal-oauth-03.png)
 
     4. A Kometa MyAnimeList authentication block will be displayed.
-    
+
         ![Step 4](./../assets/images/utilities/mal-oauth-04.png)
-        
+
+        Copy that block to your Kometa `config.yml`
+
+=== "SIMKL Authentication"
+
+    1. Click the top-level button.
+
+        ![Step 1](./../assets/images/utilities/simkl-auth-01.png)
+
+    2. Click "Connect with SIMKL".  Log into your SIMKL account:
+
+        ![Step 2](./../assets/images/utilities/simkl-auth-02.png)
+
+    3. Click "Yes" to grant Kometa access:
+
+        ![Step 3](./../assets/images/utilities/simkl-auth-03.png)
+
+    4. Wait a moment:
+
+        ![Step 4](./../assets/images/utilities/simkl-auth-04.png)
+
+    5. A Kometa SIMKL config block will be displayed.
+
+        ![Step 5](./../assets/images/utilities/simkl-auth-05.png)
+
         Copy that block to your Kometa `config.yml`

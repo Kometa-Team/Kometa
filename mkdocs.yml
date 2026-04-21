@@ -185,6 +185,7 @@ nav:
       - Notifiarr: config/notifiarr.md
       - Gotify: config/gotify.md
       - ntfy: config/ntfy.md
+      - Simkl: config/simkl.md
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
@@ -227,6 +228,7 @@ nav:
       - IMDb Charts: defaults/chart/imdb.md
       - Letterboxd Charts: defaults/chart/letterboxd.md
       - MyAnimeList Charts: defaults/chart/myanimelist.md
+      - Simkl Charts: defaults/chart/simkl.md
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
       - Trakt Charts: defaults/chart/trakt.md
@@ -407,6 +409,10 @@ nav:
         - Never Hit: files/builders/boxofficemojo/never.md
         - Other Records: files/builders/boxofficemojo/record.md
         - Worldwide: files/builders/boxofficemojo/world.md
+      - SimKL:
+        - Overview: files/builders/simkl/overview.md
+        - Trending: files/builders/simkl/trending.md
+        - DVD: files/builders/simkl/dvd.md
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md

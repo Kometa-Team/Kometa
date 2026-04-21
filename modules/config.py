@@ -23,6 +23,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
@@ -993,6 +994,7 @@ class ConfigFile:
             self.Letterboxd = Letterboxd(self.Requests, self.Cache)
             self.BoxOfficeMojo = BoxOfficeMojo(self.Requests, self.Cache)
             self.StevenLu = StevenLu(self.Requests)
+            self.Simkl = Simkl(self.Requests, self.Cache)
             self.TextFile = TextFile(self.Requests)
             self.Ergast = Ergast(self.Requests, self.Cache)
 

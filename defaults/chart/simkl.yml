@@ -1,0 +1,77 @@
+##############################################################################
+#                         Simkl Charts Collections                           #
+#                 Created by Yozora, Bullmoose20, & Sohjiro                  #
+#          EDITING THIS FILE MAY CAUSE PULLING NEW UPDATES TO FAIL           #
+#            https://kometa.wiki/en/latest/defaults/chart/simkl              #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "020"
+    image: chart/<<style>>/<<mapping_name_encoded>>
+
+templates:
+  simkl:
+    default:
+      limit: 100
+      limit_<<key>>: <<limit>>
+      period: today
+    simkl_trending:
+      period: <<period>>
+      limit: <<limit_<<key>>>>
+
+  dvd:
+    default:
+      limit: 100
+      limit_<<key>>: <<limit>>
+    simkl_dvd:
+      limit: <<limit_<<key>>>>
+
+collections:
+  Simkl Trending Today:
+    variables:
+      style: color
+      key: trending_today
+    template:
+      - name: simkl
+        period: today
+      - name: shared
+        translation_key: simkl_trending_today
+      - name: arr
+      - name: custom
+
+  Simkl Trending This Week:
+    variables:
+      style: color
+      key: trending_week
+    template:
+      - name: simkl
+        period: week
+      - name: shared
+        translation_key: simkl_trending_week
+      - name: arr
+      - name: custom
+
+  Simkl Trending This Month:
+    variables:
+      style: color
+      key: trending_month
+    template:
+      - name: simkl
+        period: month
+      - name: shared
+        translation_key: simkl_trending_month
+      - name: arr
+      - name: custom
+
+  Simkl DVD:
+    variables:
+      style: color
+      key: dvd
+    template:
+      - name: dvd
+      - name: shared
+        translation_key: simkl_dvd
+      - name: arr
+      - name: custom
