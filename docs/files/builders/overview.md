@@ -217,6 +217,8 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    ![SIMKL logo](../../assets/images/files/builders/simkl.png){ align=right }
+
     **[Simkl](../simkl/overview)** builders grab items based on trending and DVD release lists on Simkl.com
 
     [:octicons-home-16: View Builder](../simkl/overview){ .md-button .md-button--primary }
