@@ -863,9 +863,10 @@ class Plex(Library):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
     def get_all(self, builder_level=None, load=False):
-        if load and builder_level in [None, "show", "artist", "movie"]:
+        cache_top_level = builder_level in [None, "show", "artist", "movie"]
+        if load and cache_top_level:
             self._all_items = []
-        if self._all_items and builder_level in [None, "show", "artist", "movie"]:
+        if self._all_items and cache_top_level:
             return self._all_items
         builder_type = builder_level if builder_level else self.Plex.TYPE
         if not builder_level:
@@ -891,7 +892,7 @@ class Plex(Library):
             logger.ghost(f"Loaded: {total_size if container_start > total_size else container_start}/{total_size}")
 
         logger.info(f"Loaded {total_size} {builder_level.capitalize()}s")
-        if builder_level in [None, "show", "artist", "movie"]:
+        if cache_top_level:
             self._all_items = results
         return results
 
