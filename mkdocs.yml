@@ -409,7 +409,7 @@ nav:
         - Never Hit: files/builders/boxofficemojo/never.md
         - Other Records: files/builders/boxofficemojo/record.md
         - Worldwide: files/builders/boxofficemojo/world.md
-      - SimKL:
+      - SIMKL:
         - Overview: files/builders/simkl/overview.md
         - Trending: files/builders/simkl/trending.md
         - DVD: files/builders/simkl/dvd.md
