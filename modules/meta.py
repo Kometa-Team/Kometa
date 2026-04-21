@@ -1,31 +1,36 @@
-import math, operator, os, re
+import math
+import operator
+import os
+import re
 from datetime import datetime
-from modules import plex, ergast, util, letterboxd
+
+from plexapi.exceptions import BadRequest, NotFound
+
+from modules import ergast, letterboxd, plex, util
 from modules.request import quote
 from modules.util import Failed, NotScheduled
-from plexapi.exceptions import NotFound, BadRequest
 
 logger = util.logger
 
 all_auto = ["genre", "number", "custom"]
-ms_auto = [
-    "actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio",
-    "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"
-]
+ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio", "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
     "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
-    "Video": ["country", "content_rating"] + all_auto
+    "Video": ["country", "content_rating"] + all_auto,
 }
-dynamic_attributes = [
-    "type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys",
-    "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"
-]
+dynamic_attributes = ["type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys", "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"]
 auto_type_translation = {
-    "content_rating": "contentRating", "subtitle_language": "subtitleLanguage", "audio_language": "audioLanguage",
-    "album_genre": "album.genre", "album_style": "album.style", "album_mood": "album.mood", "track_mood": "track.mood",
-    "edition": "editionTitle", "episode_year": "episode.year"
+    "content_rating": "contentRating",
+    "subtitle_language": "subtitleLanguage",
+    "audio_language": "audioLanguage",
+    "album_genre": "album.genre",
+    "album_style": "album.style",
+    "album_mood": "album.mood",
+    "track_mood": "track.mood",
+    "edition": "editionTitle",
+    "episode_year": "episode.year",
 }
 default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
@@ -35,8 +40,9 @@ default_templates = {
     "trakt_liked_lists": {"trakt_list_details": "<<value>>"},
     "letterboxd_user_lists": {"letterboxd_list_details": "<<value>>"},
     "tmdb_popular_people": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
-    "trakt_people_list": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}}
+    "trakt_people_list": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
 }
+
 
 def get_dict(attribute, attr_data, check_list=None, make_str=False):
     if check_list is None:
@@ -93,18 +99,18 @@ class DataFile:
         data = f"{self.config.GitHub.configs_url}{self.path}.yml" if self.type == "GIT" else self.path
         if "/" in data:
             if data.endswith(".yml"):
-                return data[data.rfind("/") + 1:-4]
+                return data[data.rfind("/") + 1 : -4]
             elif data.endswith(".yaml"):
-                return data[data.rfind("/") + 1:-5]
+                return data[data.rfind("/") + 1 : -5]
             else:
-                return data[data.rfind("/") + 1:]
+                return data[data.rfind("/") + 1 :]
         elif "\\" in data:
             if data.endswith(".yml"):
-                return data[data.rfind("\\") + 1:-4]
+                return data[data.rfind("\\") + 1 : -4]
             elif data.endswith(".yaml"):
-                return data[data.rfind("/") + 1:-5]
+                return data[data.rfind("/") + 1 : -5]
             else:
-                return data[data.rfind("\\") + 1:]
+                return data[data.rfind("\\") + 1 :]
         else:
             return data
 
@@ -291,12 +297,7 @@ class DataFile:
 
                     variables = {}
                     temp_conditionals = {}
-                    for input_dict, input_type, overwrite_call in [
-                        (original_variables, "Call", False),
-                        (temp_vars, "External", False),
-                        (extra_variables, "Definition", False),
-                        (self.temp_vars, "Config", True)
-                    ]:
+                    for input_dict, input_type, overwrite_call in [(original_variables, "Call", False), (temp_vars, "External", False), (extra_variables, "Definition", False), (self.temp_vars, "Config", True)]:
                         logger.trace("")
                         logger.trace(f"{input_type}: {input_dict}")
                         for input_key, input_value in input_dict.items():
@@ -346,7 +347,7 @@ class DataFile:
                             if final_key not in optional and final_key not in variables and final_key not in conditionals:
                                 default[final_key] = d_value
                                 if "<<" in str(d_value):
-                                    default[f"{final_key}_encoded"] = re.sub(r'<<(.+)>>', r'<<\1_encoded>>', d_value)
+                                    default[f"{final_key}_encoded"] = re.sub(r"<<(.+)>>", r"<<\1_encoded>>", d_value)
                                 else:
                                     default[f"{final_key}_encoded"] = quote(d_value)
 
@@ -408,7 +409,7 @@ class DataFile:
                                         con_var_value = variables[var_key[:-4]]
                                         if isinstance(var_value, list):
                                             if con_var_value in var_value:
-                                                error_text = f'in {var_value}'
+                                                error_text = f"in {var_value}"
                                         elif str(con_var_value) == str(var_value):
                                             error_text = f'is "{var_value}"'
                                 elif var_key.endswith(".notdefault"):
@@ -417,14 +418,14 @@ class DataFile:
                                         con_var_value = variables[var_name] if var_name in variables else default[var_name]
                                         if isinstance(var_value, list):
                                             if con_var_value in var_value:
-                                                error_text = f'in {var_value}'
+                                                error_text = f"in {var_value}"
                                         elif str(con_var_value) == str(var_value):
                                             error_text = f'is "{var_value}"'
                                 elif var_key in variables or var_key in default:
                                     con_var_value = variables[var_key] if var_key in variables else default[var_key]
                                     if isinstance(var_value, list):
                                         if con_var_value not in var_value:
-                                            error_text = f'not in {var_value}'
+                                            error_text = f"not in {var_value}"
                                     elif str(con_var_value) != str(var_value):
                                         error_text = f'is not "{var_value}"'
                                 else:
@@ -432,7 +433,7 @@ class DataFile:
                                 if error_text:
                                     if con_var_value:
                                         error_text = f': "{con_var_value}" {error_text}'
-                                    logger.trace(f'Condition {i} Failed: {var_key}{error_text}')
+                                    logger.trace(f"Condition {i} Failed: {var_key}{error_text}")
                                     condition_passed = False
                             if condition_passed:
                                 logger.trace(f'Conditional Variable: {final_key} is "{condition["value"]}"')
@@ -530,6 +531,7 @@ class DataFile:
                                 return final
                             else:
                                 return og_txt
+
                         if _debug:
                             logger.trace(f"Start {_method}: {_data}")
                         try:
@@ -595,7 +597,7 @@ class DataFile:
                                 continue
                     logger.trace(f"Current Final: {new_attributes}")
                     logger.trace("")
-            logger.separator(f"Final Template Attributes", space=False, border=False, debug=True)
+            logger.separator("Final Template Attributes", space=False, border=False, debug=True)
             logger.debug("")
             logger.debug(new_attributes)
             logger.debug("")
@@ -610,6 +612,7 @@ class DataFile:
                 temp_data = self.load_file(file_type, template_file, overlay=overlay)
                 if temp_data and isinstance(temp_data, dict) and "templates" in temp_data and temp_data["templates"] and isinstance(temp_data["templates"], dict):
                     self.templates.update({k: (v, temp_vars) for k, v in temp_data["templates"].items() if k not in self.templates})
+
 
 class MetadataFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style):
@@ -645,14 +648,14 @@ class MetadataFile(DataFile):
             exclude = []
             if "exclude" in methods:
                 if not use_all:
-                    raise Failed(f"Image Set Error: exclude only works when use_all is true")
+                    raise Failed("Image Set Error: exclude only works when use_all is true")
                 exclude = util.parse("Images", "exclude", self.temp_vars, datatype="list", methods=methods)
                 logger.info(f"Exclude: {exclude}")
 
             include = []
             if "include" in methods:
                 if use_all:
-                    raise Failed(f"Image Set Error: include only works when use_all is false")
+                    raise Failed("Image Set Error: include only works when use_all is false")
                 include = util.parse("Images", "include", self.temp_vars, datatype="list", methods=methods)
                 logger.info(f"Include: {include}")
 
@@ -853,15 +856,17 @@ class MetadataFile(DataFile):
                         all_keys = {}
                         extra_template_vars = {}
                         dynamic_data = None
+
                         def _check_dict(check_dict):
                             for ck, cv in check_dict.items():
                                 all_keys[str(ck)] = cv
                                 if str(ck) not in exclude and str(cv) not in exclude:
                                     auto_list[str(ck)] = cv
+
                         if auto_type == "decade" and library.is_show:
                             all_items = library.get_all()
                             if addons:
-                                raise Failed(f"Config Error: addons cannot be used with show decades")
+                                raise Failed("Config Error: addons cannot be used with show decades")
                             addons = {}
                             all_keys = {}
                             for i, item in enumerate(all_items, 1):
@@ -876,7 +881,26 @@ class MetadataFile(DataFile):
                             auto_list = {str(k): f"{k}s" for k in addons if str(k) not in exclude and f"{k}s" not in exclude}
                             default_template = {"smart_filter": {"limit": 50, "sort_by": "critic_rating.desc", "any": {"year": "<<value>>"}}}
                             default_title_format = "Best <<library_type>>s of the <<key_name>>"
-                        elif auto_type in ["genre", "mood", "style", "album_genre", "album_mood", "album_style", "track_mood", "country", "studio", "edition", "network", "year", "episode_year", "decade", "content_rating", "subtitle_language", "audio_language", "resolution"]:
+                        elif auto_type in [
+                            "genre",
+                            "mood",
+                            "style",
+                            "album_genre",
+                            "album_mood",
+                            "album_style",
+                            "track_mood",
+                            "country",
+                            "studio",
+                            "edition",
+                            "network",
+                            "year",
+                            "episode_year",
+                            "decade",
+                            "content_rating",
+                            "subtitle_language",
+                            "audio_language",
+                            "resolution",
+                        ]:
                             search_tag = auto_type_translation[auto_type] if auto_type in auto_type_translation else auto_type
                             if library.is_show and auto_type in ["resolution", "subtitle_language", "audio_language"]:
                                 tags = library.get_tags(f"episode.{search_tag}")
@@ -886,7 +910,7 @@ class MetadataFile(DataFile):
                                 all_keys = {}
                                 auto_list = {}
                                 for i in tags:
-                                    final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title) # noqa
+                                    final_title = self.config.TMDb.TMDb._iso_639_1[str(i.key)].english_name if str(i.key) in self.config.TMDb.TMDb._iso_639_1 else str(i.title)  # noqa
                                     all_keys[str(i.key)] = final_title
                                     if all([x not in exclude for x in [final_title, str(i.title), str(i.key)]]):
                                         auto_list[str(i.key)] = final_title
@@ -976,19 +1000,37 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(lib_all, 1):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
                                 try:
-                                    item = self.library.reload(item)
-                                    for person in getattr(item, f"{auto_type}s")[:person_depth]:
-                                        if person.tag in include:
-                                            if person.tag not in include_cols:
-                                                include_cols.append(person.tag)
+                                    people_list = None
+                                    item_id = None
+                                    if self.config.Cache:
+                                        tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                        if tmdb_id:
+                                            item_id = f"tmdb:{tmdb_id}"
+                                        elif tvdb_id:
+                                            item_id = f"tvdb:{tvdb_id}"
+                                        elif imdb_id:
+                                            item_id = f"imdb:{imdb_id}"
+                                        if item_id:
+                                            people_list, expired = self.config.Cache.query_plex_people(item_id, auto_type)
+                                            if expired:
+                                                people_list = None
+                                    if people_list is None:
+                                        item = self.library.reload(item)
+                                        people_list = [{"id": p.id, "name": p.tag} for p in getattr(item, f"{auto_type}s")]
+                                        if self.config.Cache and item_id:
+                                            self.config.Cache.update_plex_people(item_id, auto_type, people_list, False)
+                                    for person in people_list[:person_depth]:
+                                        if person["name"] in include:
+                                            if person["name"] not in include_cols:
+                                                include_cols.append(person["name"])
                                         else:
-                                            if person.id not in people:
-                                                people[person.id] = {"name": person.tag, "count": 0}
-                                            people[person.id]["count"] += 1
+                                            if person["id"] not in people:
+                                                people[person["id"]] = {"name": person["name"], "count": 0}
+                                            people[person["id"]]["count"] += 1
                                 except Failed as e:
                                     logger.error(f"Plex Error: {e}")
                             roles = [data for _, data in people.items()]
-                            roles.sort(key=operator.itemgetter('count'), reverse=True)
+                            roles.sort(key=operator.itemgetter("count"), reverse=True)
                             if not person_minimum:
                                 person_minimum = 1 if person_limit else 3
                             if not person_limit:
@@ -1040,7 +1082,7 @@ class MetadataFile(DataFile):
                                 else:
                                     raise Failed(f"Config Error: {map_name} data {attr} attribute invalid: {position_value}")
 
-                            found_options = year_options[get_position("starting") - 1:get_position("ending"):increment]
+                            found_options = year_options[get_position("starting") - 1 : get_position("ending") : increment]
 
                             if not found_options:
                                 raise Failed(f"Config Error: {map_name} data starting/ending range found no valid events")
@@ -1274,7 +1316,7 @@ class MetadataFile(DataFile):
                         logger.debug(f"All Keys: {all_keys.keys()}")
                         if not auto_list:
                             raise Failed("No Keys found to create a set of Dynamic Collections")
-                        logger.debug(f"Keys (Title):")
+                        logger.debug("Keys (Title):")
                         for key, value in auto_list.items():
                             logger.debug(f"  - {key}{'' if key == value else f' ({value})'}")
 
@@ -1290,10 +1332,10 @@ class MetadataFile(DataFile):
                                 key_name = value
                                 for prefix in remove_prefix:
                                     if key_name.startswith(prefix):
-                                        key_name = key_name[len(prefix):].strip()
+                                        key_name = key_name[len(prefix) :].strip()
                                 for suffix in remove_suffix:
                                     if key_name.endswith(suffix):
-                                        key_name = key_name[:-len(suffix)].strip()
+                                        key_name = key_name[: -len(suffix)].strip()
                             key_value = [key] if key in all_keys else []
                             if key in addons:
                                 key_value.extend([a for a in addons[key] if (a in all_keys or auto_type == "custom") and a != key])
@@ -1332,10 +1374,7 @@ class MetadataFile(DataFile):
                         if other_name and not other_keys:
                             logger.warning(f"Config Warning: Other Collection {other_name} not needed")
                         elif other_name:
-                            og_other = {
-                                "value": other_keys, "included_keys": include, "used_keys": used_keys,
-                                auto_type: other_keys, "key_name": other_name, "key": "other"
-                            }
+                            og_other = {"value": other_keys, "included_keys": include, "used_keys": used_keys, auto_type: other_keys, "key_name": other_name, "key": "other"}
                             for k, v in template_variables.items():
                                 if k in self.temp_vars and "other" in self.temp_vars[k]:
                                     og_other[k] = self.temp_vars[k]["other"]
@@ -1544,7 +1583,7 @@ class MetadataFile(DataFile):
 
                 if "template" in methods:
                     logger.debug("")
-                    logger.separator(f"Building Definition From Templates", space=False, border=False)
+                    logger.separator("Building Definition From Templates", space=False, border=False)
                     logger.debug("")
                     named_templates = []
                     for original_variables in util.get_list(meta[methods["template"]], split=False):
@@ -1582,7 +1621,7 @@ class MetadataFile(DataFile):
                         if library_type not in valid_options:
                             raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
                         elif library_type == "false":
-                            raise NotScheduled(f"Skipped because run_definition is false")
+                            raise NotScheduled("Skipped because run_definition is false")
                         elif library_type != "true" and self.library and library_type != self.library.Plex.type:
                             raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
@@ -1703,7 +1742,7 @@ class MetadataFile(DataFile):
                             values = [loc for loc in i.locations if loc]
                             if not values:
                                 raise Failed(f"Plex Error: No Filepaths found for {i.title}")
-                            res = re.search(r'(?i)[\[{]edition-([^}\]]*)', values[0])
+                            res = re.search(r"(?i)[\[{]edition-([^}\]]*)", values[0])
                             check = res.group(1) if res else ""
                         if blank_edition and not check:
                             logger.trace(f"  Found {i.title} with no Edition")
@@ -1747,8 +1786,10 @@ class MetadataFile(DataFile):
             nonlocal updated
             if value or name in alias:
                 if value or group[alias[name]]:
-                    if key is None:         key = name
-                    if value is None:       value = group[alias[name]]
+                    if key is None:
+                        key = name
+                    if value is None:
+                        value = group[alias[name]]
                     try:
                         current = str(getattr(current_item, key, ""))
                         final_value = None
@@ -1789,7 +1830,7 @@ class MetadataFile(DataFile):
                     logger.error(f"{self.type_str} Error: {name} attribute is blank")
 
         def finish_edit(current_item, description):
-            nonlocal updated
+            nonlocal updated  # noqa: F824
             if updated:
                 try:
                     logger.info(f"{description} Metadata Update Successful")
@@ -1954,10 +1995,16 @@ class MetadataFile(DataFile):
                         finish_edit(season, f"Season: {season_id}")
                         if style_data and "seasons" in style_data and style_data["seasons"] and season_id in style_data["seasons"]:
                             season_style_data = style_data["seasons"][season_id]
-                        _, _, ups = self.library.item_images(season, season_dict, season_methods, asset_location=asset_location,
-                                                             title=f"{item.title} Season {season.seasonNumber}",
-                                                             image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
-                                                             folder_name=folder_name, style_data=season_style_data)
+                        _, _, ups = self.library.item_images(
+                            season,
+                            season_dict,
+                            season_methods,
+                            asset_location=asset_location,
+                            title=f"{item.title} Season {season.seasonNumber}",
+                            image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}",
+                            folder_name=folder_name,
+                            style_data=season_style_data,
+                        )
 
                         advance_edits = {}
                         prefs = None
@@ -2028,10 +2075,16 @@ class MetadataFile(DataFile):
                                 episode_style_data = None
                                 if season_style_data and "episodes" in season_style_data and season_style_data["episodes"] and episode_id in season_style_data["episodes"]:
                                     episode_style_data = season_style_data["episodes"][episode_id]
-                                _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
-                                                                     title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                                                     image_name=episode.seasonEpisode.upper(), folder_name=folder_name,
-                                                                     style_data=episode_style_data)
+                                _, _, ups = self.library.item_images(
+                                    episode,
+                                    episode_dict,
+                                    episode_methods,
+                                    asset_location=asset_location,
+                                    title=f"{item.title} {episode.seasonEpisode.upper()}",
+                                    image_name=episode.seasonEpisode.upper(),
+                                    folder_name=folder_name,
+                                    style_data=episode_style_data,
+                                )
                                 if ups:
                                     updated = True
                                 logger.info(f"{title_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
@@ -2071,9 +2124,7 @@ class MetadataFile(DataFile):
                         if self.edit_tags(tag_edit, episode, episode_dict, episode_methods):
                             updated = True
                     finish_edit(episode, f"Episode: {episode_str} in Season: {season_id}")
-                    _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location,
-                                                         title=f"{item.title} {episode.seasonEpisode.upper()}",
-                                                         image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                    _, _, ups = self.library.item_images(episode, episode_dict, episode_methods, asset_location=asset_location, title=f"{item.title} {episode.seasonEpisode.upper()}", image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
                     if ups:
                         updated = True
                     logger.info(f"Episode S{season_id}E{episode_id} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
@@ -2112,8 +2163,7 @@ class MetadataFile(DataFile):
                     if not title:
                         title = album.title
                     finish_edit(album, f"Album: {title}")
-                    _, _, ups = self.library.item_images(album, album_dict, album_methods, asset_location=asset_location,
-                                                         title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
+                    _, _, ups = self.library.item_images(album, album_dict, album_methods, asset_location=asset_location, title=f"{item.title} Album {album.title}", image_name=album.title, folder_name=folder_name)
                     if ups:
                         updated = True
                     logger.info(f"Album: {title} of {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
@@ -2204,8 +2254,7 @@ class MetadataFile(DataFile):
                     updated = False
                     add_edit("title", season, value=race.title)
                     finish_edit(season, f"Season: {race.title}")
-                    _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=race.title,
-                                                         image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
+                    _, _, ups = self.library.item_images(season, {}, {}, asset_location=asset_location, title=race.title, image_name=f"Season{'0' if season.seasonNumber < 10 else ''}{season.seasonNumber}", folder_name=folder_name)
                     if ups:
                         updated = True
                     logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Metadata Update {'Complete' if updated else 'Not Needed'}")
@@ -2215,13 +2264,13 @@ class MetadataFile(DataFile):
                             add_edit("title", episode, value=ep_title)
                             add_edit("originally_available", episode, key="originallyAvailableAt", var_type="date", value=session_date)
                             finish_edit(episode, f"Season: {season.seasonNumber} Episode: {episode.episodeNumber}")
-                            _, _, ups = self.library.item_images(episode, {}, {}, asset_location=asset_location, title=ep_title,
-                                                                 image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
+                            _, _, ups = self.library.item_images(episode, {}, {}, asset_location=asset_location, title=ep_title, image_name=episode.seasonEpisode.upper(), folder_name=folder_name)
                             if ups:
                                 updated = True
                             logger.info(f"Session {episode.title}: Metadata Update {'Complete' if updated else 'Not Needed'}")
                 else:
                     logger.warning(f"Ergast Error: No Round: {season.seasonNumber} for Season {f1_season}")
+
 
 class PlaylistFile(DataFile):
     def __init__(self, config, file_type, path, temp_vars, asset_directory):
@@ -2234,6 +2283,7 @@ class PlaylistFile(DataFile):
         if not self.playlists:
             raise Failed("YAML Error: playlists attribute is required")
         logger.info("Playlist File Loaded Successfully")
+
 
 class OverlayFile(DataFile):
     def __init__(self, config, library, file_type, path, temp_vars, asset_directory, queue_current):
@@ -2264,9 +2314,9 @@ class OverlayFile(DataFile):
                             temp_vars[k] = v
                 if "conditionals" in queue["settings"]:
                     if not queue["settings"]["conditionals"]:
-                        raise Failed(f"Queue Error: conditionals is blank")
+                        raise Failed("Queue Error: conditionals is blank")
                     if not isinstance(queue["settings"]["conditionals"], dict):
-                        raise Failed(f"Queue Error: conditionals is not a dictionary")
+                        raise Failed("Queue Error: conditionals is not a dictionary")
                     for con_key, con_value in queue["settings"]["conditionals"].items():
                         if not isinstance(con_value, dict):
                             raise Failed(f"Queue Error: conditional {con_key} is not a dictionary")
@@ -2295,17 +2345,14 @@ class OverlayFile(DataFile):
                                         logger.debug(f"Condition {i} Failed: {var_key}: {'true does not exist' if var_value else 'false exists'}")
                                         condition_passed = False
                                 elif var_key.endswith(".not"):
-                                    if (isinstance(var_value, list) and temp_vars[var_key] in var_value) or \
-                                            (not isinstance(var_value, list) and str(temp_vars[var_key]) == str(var_value)):
+                                    if (isinstance(var_value, list) and temp_vars[var_key] in var_value) or (not isinstance(var_value, list) and str(temp_vars[var_key]) == str(var_value)):
                                         if isinstance(var_value, list):
                                             logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" in {var_value}')
                                         else:
                                             logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" is "{var_value}"')
                                         condition_passed = False
                                 elif var_key in temp_vars:
-                                    if (isinstance(var_value, list) and temp_vars[var_key] not in var_value) or \
-                                            (not isinstance(var_value, list) and str(temp_vars[var_key]) != str(
-                                                var_value)):
+                                    if (isinstance(var_value, list) and temp_vars[var_key] not in var_value) or (not isinstance(var_value, list) and str(temp_vars[var_key]) != str(var_value)):
                                         if isinstance(var_value, list):
                                             logger.debug(f'Condition {i} Failed: {var_key} "{temp_vars[var_key]}" not in {var_value}')
                                         else:
@@ -2323,10 +2370,7 @@ class OverlayFile(DataFile):
                         if not condition_found:
                             defaults[con_key] = con_value["default"]
                 if "dynamic_position" in queue["settings"] and queue["settings"]["dynamic_position"] and isinstance(queue["settings"]["dynamic_position"], dict) and not queue_position:
-                    dynamic_settings = {
-                        "initial_vertical_align": None, "initial_horizontal_align": None, "surround": False,
-                        "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0
-                    }
+                    dynamic_settings = {"initial_vertical_align": None, "initial_horizontal_align": None, "surround": False, "initial_vertical_offset": 0, "initial_horizontal_offset": 0, "vertical_spacing": 0, "horizontal_spacing": 0}
                     for attr in dynamic_settings:
                         if attr in queue["settings"]["dynamic_position"]:
                             attr_value = str(queue["settings"]["dynamic_position"][attr])
@@ -2343,20 +2387,24 @@ class OverlayFile(DataFile):
                         "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),
                         "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),
                         "horizontal_spacing": util.parse("Config", "horizontal_spacing", dynamic_settings["horizontal_spacing"], datatype="int", default=0, minimum=None),
-                        "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False)
+                        "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False),
                     }
-                    queue_position = [{
-                        "vertical_align": dynamic_settings["initial_vertical_align"],
-                        "horizontal_align": dynamic_settings["initial_horizontal_align"],
-                        "vertical_offset": dynamic_settings["initial_vertical_offset"],
-                        "horizontal_offset": dynamic_settings["initial_horizontal_offset"]
-                    }]
+                    queue_position = [
+                        {
+                            "vertical_align": dynamic_settings["initial_vertical_align"],
+                            "horizontal_align": dynamic_settings["initial_horizontal_align"],
+                            "vertical_offset": dynamic_settings["initial_vertical_offset"],
+                            "horizontal_offset": dynamic_settings["initial_horizontal_offset"],
+                        }
+                    ]
                     for x in range(20):
                         factor = ((int(x / 2) + 1) * (-1 if x % 2 == 1 else 1)) if dynamic_settings["surround"] else (x + 1)
-                        queue_position.append({
-                            "vertical_offset": dynamic_settings["initial_vertical_offset"] + (factor * dynamic_settings["vertical_spacing"]),
-                            "horizontal_offset": dynamic_settings["initial_horizontal_offset"] + (factor * dynamic_settings["horizontal_spacing"]),
-                        })
+                        queue_position.append(
+                            {
+                                "vertical_offset": dynamic_settings["initial_vertical_offset"] + (factor * dynamic_settings["vertical_spacing"]),
+                                "horizontal_offset": dynamic_settings["initial_horizontal_offset"] + (factor * dynamic_settings["horizontal_spacing"]),
+                            }
+                        )
             initial_queue = None
             if queue_position and isinstance(queue_position, list):
                 initial_queue = queue_position
@@ -2386,10 +2434,7 @@ class OverlayFile(DataFile):
                 defaults["vertical_align"] = pos["vertical_align"] if "vertical_align" in pos else defaults["vertical_align"]
                 defaults["horizontal_offset"] = pos["horizontal_offset"] if "horizontal_offset" in pos else defaults["horizontal_offset"]
                 defaults["vertical_offset"] = pos["vertical_offset"] if "vertical_offset" in pos else defaults["vertical_offset"]
-                new_pos = {
-                    "horizontal_align": defaults["horizontal_align"], "vertical_align": defaults["vertical_align"],
-                    "horizontal_offset": defaults["horizontal_offset"], "vertical_offset": defaults["vertical_offset"]
-                }
+                new_pos = {"horizontal_align": defaults["horizontal_align"], "vertical_align": defaults["vertical_align"], "horizontal_offset": defaults["horizontal_offset"], "vertical_offset": defaults["vertical_offset"]}
                 for pk, pv in new_pos.items():
                     if pv is None:
                         raise Failed(f"Config Error: queue missing {pk} attribute")
@@ -2402,4 +2447,4 @@ class OverlayFile(DataFile):
         self.external_templates(data, overlay=True)
         if not self.overlays:
             raise Failed("YAML Error: overlays attribute is required")
-        logger.info(f"Overlay File Loaded Successfully")
+        logger.info("Overlay File Loaded Successfully")
