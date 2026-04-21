@@ -1001,15 +1001,24 @@ class MetadataFile(DataFile):
                                 logger.ghost(f"Scanning: {i}/{len(lib_all)} {item.title}")
                                 try:
                                     people_list = None
+                                    item_id = None
                                     if self.config.Cache:
-                                        people_list, expired = self.config.Cache.query_plex_people(item.ratingKey, auto_type)
-                                        if expired:
-                                            people_list = None
+                                        tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+                                        if tmdb_id:
+                                            item_id = f"tmdb:{tmdb_id}"
+                                        elif tvdb_id:
+                                            item_id = f"tvdb:{tvdb_id}"
+                                        elif imdb_id:
+                                            item_id = f"imdb:{imdb_id}"
+                                        if item_id:
+                                            people_list, expired = self.config.Cache.query_plex_people(item_id, auto_type)
+                                            if expired:
+                                                people_list = None
                                     if people_list is None:
                                         item = self.library.reload(item)
                                         people_list = [{"id": p.id, "name": p.tag} for p in getattr(item, f"{auto_type}s")]
-                                        if self.config.Cache:
-                                            self.config.Cache.update_plex_people(item.ratingKey, auto_type, people_list, False)
+                                        if self.config.Cache and item_id:
+                                            self.config.Cache.update_plex_people(item_id, auto_type, people_list, False)
                                     for person in people_list[:person_depth]:
                                         if person["name"] in include:
                                             if person["name"] not in include_cols:

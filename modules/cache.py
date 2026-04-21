@@ -369,12 +369,25 @@ class Cache:
                 cursor.execute(
                     """CREATE TABLE IF NOT EXISTS plex_people_cache (
                     key INTEGER PRIMARY KEY,
-                    rating_key TEXT,
+                    item_id TEXT,
                     people_type TEXT,
                     people_data TEXT,
                     expiration_date TEXT,
-                    UNIQUE(rating_key, people_type))"""
+                    UNIQUE(item_id, people_type))"""
                 )
+                cursor.execute("PRAGMA table_info(plex_people_cache)")
+                plex_people_columns = [row[1] for row in cursor.fetchall()]
+                if "item_id" not in plex_people_columns:
+                    cursor.execute("DROP TABLE IF EXISTS plex_people_cache")
+                    cursor.execute(
+                        """CREATE TABLE IF NOT EXISTS plex_people_cache (
+                        key INTEGER PRIMARY KEY,
+                        item_id TEXT,
+                        people_type TEXT,
+                        people_data TEXT,
+                        expiration_date TEXT,
+                        UNIQUE(item_id, people_type))"""
+                    )
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute("SELECT DISTINCT library FROM image_map")
@@ -1338,13 +1351,13 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO letterboxd_incremental_state(username, page_type) VALUES(?, ?)", (username, page_type))
                 cursor.execute("UPDATE letterboxd_incremental_state SET last_timestamp = ?, last_item_ids = ?, last_updated = ? WHERE username = ? AND page_type = ?", (last_timestamp, item_ids_json, last_updated, username, page_type))
 
-    def query_plex_people(self, rating_key, people_type):
+    def query_plex_people(self, item_id, people_type):
         people_list = None
         expired = None
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM plex_people_cache WHERE rating_key = ? AND people_type = ?", (rating_key, people_type))
+                cursor.execute("SELECT * FROM plex_people_cache WHERE item_id = ? AND people_type = ?", (item_id, people_type))
                 row = cursor.fetchone()
                 if row:
                     time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
@@ -1352,10 +1365,10 @@ class Cache:
                     expired = time_between_insertion.days > self.expiration
         return people_list, expired
 
-    def update_plex_people(self, rating_key, people_type, people_list, expired):
+    def update_plex_people(self, item_id, people_type, people_list, expired):
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with sqlite3.connect(self.cache_path) as connection:
             connection.row_factory = sqlite3.Row
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO plex_people_cache(rating_key, people_type) VALUES(?, ?)", (rating_key, people_type))
-                cursor.execute("UPDATE plex_people_cache SET people_data = ?, expiration_date = ? WHERE rating_key = ? AND people_type = ?", (json.dumps(people_list), expiration_date.strftime("%Y-%m-%d"), rating_key, people_type))
+                cursor.execute("INSERT OR IGNORE INTO plex_people_cache(item_id, people_type) VALUES(?, ?)", (item_id, people_type))
+                cursor.execute("UPDATE plex_people_cache SET people_data = ?, expiration_date = ? WHERE item_id = ? AND people_type = ?", (json.dumps(people_list), expiration_date.strftime("%Y-%m-%d"), item_id, people_type))
