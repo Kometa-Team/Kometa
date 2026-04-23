@@ -4,7 +4,7 @@ hide:
 ---
 # Simkl DVD
 
-Finds movies and TV shows from [Simkl's DVD release lists](https://simkl.com/dvd/).
+Finds movies and TV shows from [Simkl's DVD release lists](https://simkl.com/movies/dvd-releases/).
 
 The list is filtered automatically to match your library type: movie libraries receive movies, show libraries receive TV shows, and playlists receive both.
 
