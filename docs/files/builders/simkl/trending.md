@@ -4,10 +4,11 @@ hide:
 ---
 # Simkl Trending
 
-Finds movies and TV shows from Simkl's trending lists.
+Finds movies, TV shows and anime from Simkl's trending lists.
 
 - [Movies](https://simkl.com/movies/best-movies/most-watched/)
 - [Shows](https://simkl.com/tv/best-shows/most-watched/)
+- [Anime](https://simkl.com/anime/best-anime/most-watched/)
 
 The list is filtered automatically to match your library type (movies, shows, or both for playlists).
 
