@@ -11,7 +11,7 @@ hide:
         "DESCRIPTION": "create collections based on other charts",
         "SECTION_NUMBER": "020"
     }'
-    replace-tags='{"rec-sub": "Recommendations: The `StevenLu\'s Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries."}'
+    replace-tags='{"rec-sub": "Recommendations: The `StevenLu\'s Popular Movies`, `Top 10 Pirated Movies of the Week` and `Metacritic Must See Movies` Collections only work with Movie Libraries."}'
 %}
 | `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
 | `Metacritic Must See Movies`        | `metacritic`  | Collection of Metacritic Must See Movies.            |
