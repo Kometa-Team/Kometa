@@ -28,7 +28,7 @@ Updates to Trakt and MAL flow pages
 # Defaults
 
 # Bug Fixes
-Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup that replaced `data-film-id`/`data-target-link` nodes, restoring collections built from `letterboxd_list` and `letterboxd_user_films`/`letterboxd_user_reviews` on watchlists and user lists.
+Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup, which replaced the `data-film-id` nodes the `letterboxd_list`, `letterboxd_user_films`, and `letterboxd_user_reviews` builders relied on.
 Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
 TMDB language now reflected in mass_poster_update; cache extension
