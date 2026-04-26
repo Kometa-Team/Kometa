@@ -26,8 +26,11 @@ class AppriseNotify:
 
     def notification(self, json):
         message, title, priority = webhooks.get_message(json)
-        self._apobj.notify(
+        result = self._apobj.notify(
             title=title,
             body=message,
             notify_type=_PRIORITY_MAP.get(priority, apprise_lib.NotifyType.INFO),
         )
+        if result is False:
+            if util.logger:
+                util.logger.warning("Apprise: One or more notification services failed to deliver")

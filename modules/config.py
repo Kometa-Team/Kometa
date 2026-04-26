@@ -2195,7 +2195,7 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
-                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, apprise=self.AppriseFactory)
+                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory, apprise=self.AppriseFactory)
                 library.Overlays = Overlays(self, library)
 
                 logger.info("")

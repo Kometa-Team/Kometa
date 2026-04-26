@@ -128,3 +128,23 @@ class TestAppriseNotifyNotification:
         _, kwargs = mock_apobj.notify.call_args
         assert kwargs["notify_type"] == "info"
         assert kwargs["title"] == "New Version Available"
+
+    def test_notify_failure_logs_warning(self):
+        """When notify() returns False, a warning is logged."""
+        instance, mock_apobj = self._make_instance()
+        mock_apobj.notify.return_value = False
+
+        with patch("modules.apprise_notify.util") as mock_util:
+            mock_logger = MagicMock()
+            mock_util.logger = mock_logger
+            instance.notification({
+                "event": "version",
+                "current": "2.3.1",
+                "latest": "2.4.0",
+                "notes": "Bug fixes",
+            })
+
+        mock_logger.warning.assert_called_once()
+        warning_msg = mock_logger.warning.call_args[0][0]
+        assert "Apprise" in warning_msg
+        assert "failed" in warning_msg.lower()
