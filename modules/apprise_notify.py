@@ -12,8 +12,9 @@ _PRIORITY_MAP = {
 
 
 class AppriseNotify:
-    def __init__(self, requests, params):
+    def __init__(self, requests, params):  # requests unused; Apprise manages its own connections
         config_path = params["config"]
+        # util.logger is None until Kometa initialises; guard allows tests to run without mocking
         if util.logger:
             util.logger.secret(config_path)
         self._apobj = apprise_lib.Apprise()
