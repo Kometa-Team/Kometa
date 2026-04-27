@@ -33,6 +33,45 @@ user_sort_options = {
 builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
 base_url = "https://letterboxd.com"
 
+# Letterboxd migrated list/watchlist pages to a React-based "LazyPoster"
+# component in April 2026. Films are now nodes like:
+#   <div class="react-component" data-component-class="LazyPoster"
+#        data-item-slug="interstellar" data-item-link="/film/interstellar/"
+#        data-item-name="Interstellar (2014)"
+#        data-postered-identifier='{"lid":"4VZ8","uid":"film:117621","type":"film",...}' ...>
+# The numeric film id is embedded in the data-postered-identifier JSON as
+# uid="film:<ID>"; extracting it here keeps existing letterboxd_map cache
+# rows (keyed by the same numeric id) compatible.
+_item_id_re = re.compile(r'"uid"\s*:\s*"film:(\d+)"')
+_item_year_re = re.compile(r"\((\d{4})\)\s*$")
+
+
+def _item_from_element(element):
+    """Extract (letterboxd_id, slug, year) from a new-style LazyPoster div.
+    Returns (None, None, None) if required fields are missing; callers skip those."""
+    slug = element.get("data-item-link")
+    if not slug:
+        # Fallback: some older pages use data-target-link on the same element.
+        target = element.xpath("@data-target-link")
+        slug = target[0] if target else None
+    if not slug:
+        return None, None, None
+    letterboxd_id = None
+    pid = element.get("data-postered-identifier") or ""
+    if pid:
+        m = _item_id_re.search(pid)
+        if m:
+            letterboxd_id = m.group(1)
+    if not letterboxd_id:
+        return None, None, None
+    year = None
+    name = element.get("data-item-name") or ""
+    if name:
+        m = _item_year_re.search(name)
+        if m:
+            year = int(m.group(1))
+    return letterboxd_id, slug, year
+
 class Letterboxd:
     def __init__(self, requests, cache=None):
         self.requests = requests
@@ -47,22 +86,16 @@ class Letterboxd:
         if "ajax" not in list_url:
             list_url = list_url.replace("https://letterboxd.com/films", "https://letterboxd.com/films/ajax")
         response = self._request(list_url, language)
-        letterboxd_elements = response.xpath("//div[@data-film-id]")
+        # New LazyPoster markup (post-April-2026 migration) — see module-level
+        # notes above. Ratings/notes are no longer nearby siblings on list and
+        # watchlist pages, so those fields are left as None.
+        letterboxd_elements = response.xpath("//div[@data-item-slug]")
         items = []
         for letterboxd_element in letterboxd_elements:
-            slug = letterboxd_element.xpath("@data-target-link")[0]
-            letterboxd_id = letterboxd_element.xpath("@data-film-id")[0]
-            comments = letterboxd_element.xpath("parent::article/div[@class='body']/div/p/text()")
-            ratings = letterboxd_element.xpath("parent::article/div[@class='body']/div/span/@class")
-            if not ratings:
-                ratings = letterboxd_element.xpath("parent::li/p/span[contains(@class, 'rating')]/@class")
-            years = letterboxd_element.xpath("parent::article/div[@class='body']/div/header/span/span/a/text()")
-            rating = None
-            if ratings:
-                match = re.search("rated-(\\d+)", ratings[0])
-                if match:
-                    rating = int(match.group(1))
-            items.append((letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating))
+            letterboxd_id, slug, year = _item_from_element(letterboxd_element)
+            if not letterboxd_id or not slug:
+                continue
+            items.append((letterboxd_id, slug, year, None, None))
         next_url = response.xpath("//a[@class='next']/@href")
         return items, next_url
 
@@ -79,36 +112,24 @@ class Letterboxd:
     def _parse_user_page(self, page_url, language):
         # User pages don't use /ajax/ endpoints, use regular URL
         response = self._request(page_url, language)
-        letterboxd_elements = response.xpath("//div[@data-film-id]")
+        # New LazyPoster markup — see module-level notes. Rating/note data is
+        # no longer carried on a sibling/parent of the item on list/watchlist
+        # pages; when_added is best-effort from a nearby <time datetime=...>.
+        letterboxd_elements = response.xpath("//div[@data-item-slug]")
         items = []
         for letterboxd_element in letterboxd_elements:
-            slug_list = letterboxd_element.xpath("@data-target-link")
-            letterboxd_id_list = letterboxd_element.xpath("@data-film-id")
-            if not slug_list or not letterboxd_id_list:
+            letterboxd_id, slug, year = _item_from_element(letterboxd_element)
+            if not letterboxd_id or not slug:
                 continue
-            slug = slug_list[0]
-            letterboxd_id = letterboxd_id_list[0]
-            comments = letterboxd_element.xpath(f"parent::article/div[@class='body']/div/p/text()")
-            ratings = letterboxd_element.xpath("parent::article/div[@class='body']/div/span/@class")
-            if not ratings:
-                ratings = letterboxd_element.xpath("parent::li/p/span[contains(@class, 'rating')]/@class")
-            years = letterboxd_element.xpath(f"parent::article/div[@class='body']/div/header/span/span/a/text()")
-            # Try to extract when_added date from data attributes or text
             when_added = None
             date_attrs = letterboxd_element.xpath("@data-added-date")
-            if not date_attrs:
-                # Try to find date in nearby elements
-                date_text = letterboxd_element.xpath("parent::article//time/@datetime")
+            if date_attrs:
+                when_added = date_attrs[0]
+            else:
+                date_text = letterboxd_element.xpath("ancestor::*[self::li or self::article][1]//time/@datetime")
                 if date_text:
                     when_added = date_text[0]
-            else:
-                when_added = date_attrs[0]
-            rating = None
-            if ratings:
-                match = re.search("rated-(\\d+)", ratings[0])
-                if match:
-                    rating = int(match.group(1))
-            items.append((letterboxd_id, slug, int(years[0]) if years else None, comments[0] if comments else None, rating, when_added))
+            items.append((letterboxd_id, slug, year, None, None, when_added))
         next_url = response.xpath("//a[@class='next']/@href")
         return items, next_url
 
