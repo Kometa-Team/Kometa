@@ -10,6 +10,7 @@ Bump requests to 2.33.1
 Bump setuptools to 82.0.1
 
 # New Features
+Added `plex_csm` and `plex_csm0` sources to `mass_content_rating_update` (reads CSM age rating from Plex's own cached `commonSenseMedia.ageRatings`, no external API key required).
 Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
 Adds new `text_file` builder.
 Reciperr site hasn't responded for a while, so the builder has been removed.

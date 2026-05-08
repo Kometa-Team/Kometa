@@ -1929,7 +1929,7 @@
                         "type": "string",
                         "anyOf": [
                         {
-                            "enum": ["mdb", "mdb_commonsense", "mdb_commonsense0", "omdb", "mal", "lock", "unlock", "remove", "reset"]},
+                            "enum": ["mdb", "mdb_commonsense", "mdb_commonsense0", "plex_csm", "plex_csm0", "omdb", "mal", "lock", "unlock", "remove", "reset"]},
                         {
                             "pattern": ".*"
                         }
