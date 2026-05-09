@@ -1,8 +1,9 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
-Bump lxml to 6.0.4
-Bump packaging to 26.1
+Bump gitpython to 3.1.50
+Bump lxml to 6.1.0
+Bump packaging to 26.2
 Bump plexapi to 4.18.1
 Bump python-dotenv to 1.2.2
 Bump pillow to 12.2.0
