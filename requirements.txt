@@ -1,9 +1,9 @@
 arrapi==1.4.14
 cloudscraper==1.2.71
-GitPython==3.1.46
-lxml==6.0.4
+GitPython==3.1.50
+lxml==6.1.0
 num2words==0.5.14
-packaging==26.1
+packaging==26.2
 pathvalidate==3.3.1
 pillow==12.2.0
 PlexAPI==4.18.1
