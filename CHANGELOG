@@ -26,6 +26,7 @@ Initial support for SIMKL.com; trending lists and dvd-releases list
 # Docs
 Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
+Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
 
 # Defaults
 
@@ -37,3 +38,4 @@ TMDB language now reflected in mass_poster_update; cache extension
 Reduce size of FILMIN logo
 Replace top-ten-pirated default list with an updated, kometa-controlled one.
 Resolve relative paths in `collection_files`, `metadata_files`, `overlay_files`, `playlist_files`, `image_files`, `external_templates`, `style_file`, `folder`, and `asset_directory` against the config file's directory rather than the current working directory. #3092
+Overlay backdrops with `back_line_color` set but no `back_line_width` no longer crash; `back_line_width` now defaults to 1 in that case. #2645
