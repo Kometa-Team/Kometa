@@ -76,6 +76,11 @@ class Letterboxd:
         if not all([self._films_cls, self._list_cls, self._movie_cls, self._scraper_cls, self._user_cls, self._watchlist_cls]):
             raise Failed("Letterboxd Error: letterboxdpy is required. Install the pinned project dependency and try again.")
 
+    def _info_once(self, key, message):
+        if key not in self._warned:
+            logger.info(message)
+            self._warned.add(key)
+
     def _warn_once(self, key, message):
         if key not in self._warned:
             logger.warning(message)
@@ -173,7 +178,7 @@ class Letterboxd:
     def _extract_slug(self, element):
         for attr in ["data-target-link", "data-film-link", "data-item-link"]:
             slug = self._first_xpath_value(element, f"@{attr}")
-            if slug:
+            if slug and slug != "/":
                 return self._slug_path(slug)
 
         slug = self._first_xpath_value(element, "@data-item-slug | @data-film-slug")
@@ -408,7 +413,22 @@ class Letterboxd:
         tmdb_id = util.check_num(getattr(movie, "tmdb_id", None))
         if tmdb_id:
             return tmdb_id
-        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)}")
+        else:
+            # tmdb_id = None
+            # tmdb_link = 'https://www.themoviedb.org/tv/318745/'
+            tmdb_link = getattr(movie, "tmdb_link", None)
+            if tmdb_link and "themoviedb.org" in tmdb_link:
+                logger.info(f"Letterboxd: TMDb Movie ID not found for {slug_path}; found TMDb link {tmdb_link} during fallback parsing.")
+                tmdb_id_match = re.search(r"themoviedb\.org/(movie|tv)/(\d+)", tmdb_link)
+                if tmdb_id_match:
+                    tmdb_type = tmdb_id_match.group(1)
+                    tmdb_id = int(tmdb_id_match.group(2))
+                    if tmdb_type == "movie":
+                        return tmdb_id
+                    else:
+                        logger.warning(f"Letterboxd Warning: TMDb link for {slug_path} is for a TV show, not a movie; ignoring TMDb ID {tmdb_id} from link.")
+
+        raise Failed(f"Letterboxd Error: TMDb Movie ID not found at {base_url}{self._slug_path(slug_path)} item is type {tmdb_type if 'tmdb_type' in locals() else 'unknown'} with tmdb_id {tmdb_id if 'tmdb_id' in locals() else 'unknown'}.")
 
     @staticmethod
     def _coerce_year(value):
@@ -489,7 +509,7 @@ class Letterboxd:
                     slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                     items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
             else:
-                self._warn_once(("watchlist_fallback_empty", list_url), f"Letterboxd Warning: letterboxdpy returned no films for watchlist {list_url}; using Kometa fallback parsing.")
+                self._info_once(("watchlist_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for watchlist {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_films_page)
         else:
             list_obj = self._get_list_object(list_url)
@@ -503,7 +523,7 @@ class Letterboxd:
                     slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                     items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
             else:
-                self._warn_once(("list_fallback_empty", list_url), f"Letterboxd Warning: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
+                self._info_once(("list_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language)
         return items[:limit] if limit else items
 
@@ -739,12 +759,12 @@ class Letterboxd:
                 if supports_note and not self._note_matches(note, data["note"]):
                     filtered_ids.append(slug)
                     continue
-                logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                 tmdb_id = None
                 expired = None
                 if self.cache:
                     tmdb_id, expired = self.cache.query_letterboxd_map(letterboxd_id)
                 if not tmdb_id or expired is not False:
+                    logger.ghost(f"Finding TMDb ID {i}/{total_items}")
                     try:
                         tmdb_id = self._tmdb(slug, language)
                     except Failed as e:
@@ -779,12 +799,12 @@ class Letterboxd:
 
         for i, item in enumerate(items, 1):
             letterboxd_id, slug, year, note, rating, when_added = item
-            logger.ghost(f"Finding TMDb ID {i}/{len(items)}")
             tmdb_id = None
             expired = None
             if self.cache:
                 tmdb_id, expired = self.cache.query_letterboxd_map(letterboxd_id)
             if not tmdb_id or expired is not False:
+                logger.ghost(f"Finding TMDb ID {i}/{len(items)}")
                 try:
                     tmdb_id = self._tmdb(slug, language)
                 except Failed as e:
