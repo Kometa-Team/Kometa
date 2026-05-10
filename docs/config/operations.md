@@ -199,6 +199,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`mdb`</td><td>Use MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
+      <tr><td>`plex_csm`</td><td>Use Common Sense Media age rating cached on the Plex item itself (`commonSenseMedia.ageRatings`). Requires the new Plex Movie/Series agent which fetches CSM data; no external API key.</td></tr>
+      <tr><td>`plex_csm0`</td><td>Use Common Sense Media age rating cached on the Plex item itself with Zero Padding. Requires the new Plex Movie/Series agent; no external API key.</td></tr>
       <tr><td>`mdb_age_rating`</td><td>Use MDBList Age Rating for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`mdb_age_rating0`</td><td>Use MDBList Age Rating with Zero Padding for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings. Requires [OMDB key](../config/omdb.md).</td></tr>

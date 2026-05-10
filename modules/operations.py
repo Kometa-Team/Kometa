@@ -558,6 +558,20 @@ class Operations:
                                         new_rating = str(_rating).rjust(2, "0")
                                     else:
                                         new_rating = _rating
+                                elif str(option).startswith("plex_csm"):
+                                    _rating = None
+                                    csm = getattr(item, "commonSenseMedia", None)
+                                    ratings = getattr(csm, "ageRatings", None) if csm else None
+                                    if ratings:
+                                        official = next((r for r in ratings if getattr(r, "type", None) == "official"), None)
+                                        if official is not None and getattr(official, "age", None) is not None:
+                                            _rating = str(int(round(float(official.age))))
+                                    if not _rating:
+                                        new_rating = None
+                                    elif option == "plex_csm0":
+                                        new_rating = str(_rating).rjust(2, "0")
+                                    else:
+                                        new_rating = _rating
                                 elif option == "mal":
                                     new_rating = mal_obj().rating  # noqa
                                 else:
