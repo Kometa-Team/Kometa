@@ -26,6 +26,7 @@ Initial support for SIMKL.com; trending lists and dvd-releases list
 # Docs
 Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
+Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
 
 # Defaults
 
