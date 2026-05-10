@@ -155,8 +155,9 @@ class DataFile:
                         if os.path.exists(os.path.join(defaults_path, default_folder, file_path)):
                             file_path = os.path.join(defaults_path, default_folder, file_path)
                             break
-            content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
-            dir_path = file_path
+            resolved_path = util.resolve_path(self.config.default_dir, file_path)
+            content_path = os.path.abspath(os.path.join(resolved_path, "default.yml") if translation else resolved_path)
+            dir_path = resolved_path
             if not os.path.exists(content_path):
                 if content_path.endswith(".yml") and os.path.exists(f"{content_path[:-4]}.yaml"):
                     content_path = f"{content_path[:-4]}.yaml"
@@ -605,7 +606,7 @@ class DataFile:
 
     def external_templates(self, data, overlay=False):
         if data and "external_templates" in data and data["external_templates"]:
-            files, _ = util.load_files(data["external_templates"], "external_templates")
+            files, _ = util.load_files(data["external_templates"], "external_templates", config_dir=self.config.default_dir)
             if not files:
                 logger.error("Config Error: No Paths Found for external_templates")
             for file_type, template_file, temp_vars, _ in files:
@@ -1517,7 +1518,7 @@ class MetadataFile(DataFile):
                         for alt in alts:
                             self.library.collection_images[alt] = collection_data
         else:
-            files, _ = util.load_files(style_file, "style_file", err_type=self.type_str, single=True)
+            files, _ = util.load_files(style_file, "style_file", err_type=self.type_str, single=True, config_dir=self.config.default_dir)
             if not files:
                 raise Failed(f"{self.type_str} Error: No Path Found for style_file")
             file_type, style_path, _, _ = files[0]

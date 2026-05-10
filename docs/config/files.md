@@ -52,6 +52,12 @@ directly from the [Kometa Community Configs](https://github.com/Kometa-Team/Comm
 
 The location types are outlined as follows:
 
+!!! note "Relative path resolution"
+    Local paths in `file`, `folder`, `asset_directory`, `external_templates`, and `style_file` entries
+    are resolved relative to the directory containing your config file. For example, when running
+    with `-c /opt/kometa/config.yml`, an entry like `file: path/to/collections.yml` is loaded from
+    `/opt/kometa/path/to/collections.yml`. Absolute paths are used as-is.
+
 ??? blank "`file` - Used to run a local file.<a class="headerlink" href="#file" title="Permanent link">¶</a>"
 
     <div id="file" />Used to run a file which is located within the system that Kometa is being run from.

@@ -337,7 +337,12 @@ def time_window(tw):
     else:
         return tw
 
-def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
+def resolve_path(config_dir, path):
+    if not path or not config_dir or os.path.isabs(path):
+        return path
+    return os.path.abspath(os.path.join(config_dir, path))
+
+def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False, config_dir=None):
     files = []
     had_scheduled = False
     if not lib_vars:
@@ -373,15 +378,17 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                 logger.info(f"Reading folder: {file['folder']}")
                 if file["folder"] is None:
                     logger.error(f"{err_type} Error: {method} folder is blank")
-                elif not os.path.isdir(file["folder"]):
-                    logger.error(f"{err_type} Error: Folder not found: {file['folder']}")
                 else:
-                    yml_files = glob_filter(os.path.join(file["folder"], "*.yml"))
-                    yml_files.extend(glob_filter(os.path.join(file["folder"], "*.yaml")))
-                    if yml_files:
-                        current.extend([("File", yml) for yml in yml_files])
+                    folder_path = resolve_path(config_dir, file["folder"])
+                    if not os.path.isdir(folder_path):
+                        logger.error(f"{err_type} Error: Folder not found: {file['folder']}")
                     else:
-                        logger.error(f"{err_type} Error: No YAML (.yml,.yaml) files found in {file['folder']}")
+                        yml_files = glob_filter(os.path.join(folder_path, "*.yml"))
+                        yml_files.extend(glob_filter(os.path.join(folder_path, "*.yaml")))
+                        if yml_files:
+                            current.extend([("File", yml) for yml in yml_files])
+                        else:
+                            logger.error(f"{err_type} Error: No YAML (.yml,.yaml) files found in {file['folder']}")
 
             temp_vars = {}
             if "template_variables" in file and file["template_variables"] and isinstance(file["template_variables"], dict):
@@ -396,8 +403,9 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
             if "asset_directory" in file and file["asset_directory"]:
                 logger.info(f"Asset Directory: {file['asset_directory']}")
                 for asset_path in get_list(file["asset_directory"], split=False):
-                    if os.path.exists(asset_path):
-                        asset_directory.append(asset_path)
+                    resolved_asset = resolve_path(config_dir, asset_path)
+                    if os.path.exists(resolved_asset):
+                        asset_directory.append(resolved_asset)
                     else:
                         logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
 
@@ -425,8 +433,9 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
             files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
         else:
             logger.info(f"Reading file: {file}")
-            if os.path.exists(file):
-                files.append(("File", file, {}, None))
+            resolved_file = resolve_path(config_dir, file)
+            if os.path.exists(resolved_file):
+                files.append(("File", resolved_file, {}, None))
             else:
                 logger.error(f"{err_type} Error: Path not found: {file}")
     return files, had_scheduled
