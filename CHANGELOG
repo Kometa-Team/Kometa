@@ -20,6 +20,7 @@ Process collection alterations [add/remove] in batches of 100 to avoid "400 Bad 
 Exit early if more than one of the '--SOMETHING-only' flags are set.
 Cache people data for media items since it's unlikely to change.
 Initial support for SIMKL.com; trending lists and dvd-releases list
+Add Apprise as a webhook notification provider.
 
 # Docs
 Updates to Quickstart docs about limitations

@@ -16,7 +16,7 @@ webhooks:
   version: notifiarr
   run_start: gotify
   run_end: ntfy
-  delete: notifiarr
+  delete: apprise
   changes: https://myspecialdomain/kometa
 ```
 
@@ -39,6 +39,7 @@ webhooks:
       - notifiarr
       - gotify
       - ntfy
+      - apprise
     run_end:
       - https://www.myspecialdomain.com/kometa
       - https://www.myotherdomain.com/kometa
@@ -47,6 +48,7 @@ webhooks:
 * To send notifications to [Notifiarr](notifiarr.md) just add `notifiarr` to a webhook instead of the webhook url.
 * To send notifications to [Gotify](gotify.md) just add `gotify` to a webhook instead of the webhook url.
 * To send notifications to [ntfy](ntfy.md) just add `ntfy` to a webhook instead of the webhook url.
+* To send notifications to [Apprise](apprise.md) just add `apprise` to a webhook instead of the webhook url.
 
 ## Error Notifications
 
