@@ -1,3 +1,4 @@
+apprise>=1.9.0
 arrapi==1.4.14
 cloudscraper==1.2.71
 GitPython==3.1.50
