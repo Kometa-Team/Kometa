@@ -447,7 +447,7 @@ dev = [
     { name = "pillow", specifier = "==12.1.1" },
     { name = "plexapi", specifier = "==4.18.1" },
     { name = "psutil", specifier = "==7.2.2" },
-    { name = "pytest", specifier = ">=9.0.3" },
+    { name = "pytest", specifier = "==9.0.3" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-dotenv", specifier = "==1.2.2" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = "==311" },
