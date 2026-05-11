@@ -77,7 +77,7 @@ def get_message(json):
 
 
 class Webhooks:
-    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None, ntfy=None):
+    def __init__(self, config, system_webhooks, library=None, notifiarr=None, gotify=None, ntfy=None, apprise=None):
         self.config = config
         self.requests = self.config.Requests
         self.error_webhooks = system_webhooks["error"] if "error" in system_webhooks else []
@@ -89,6 +89,7 @@ class Webhooks:
         self.notifiarr = notifiarr
         self.gotify = gotify
         self.ntfy = ntfy
+        self.apprise = apprise
 
     def _request(self, webhooks, json):
         logger.trace("")
@@ -111,6 +112,9 @@ class Webhooks:
             elif webhook == "ntfy":
                 if self.ntfy:
                     self.ntfy.notification(json)
+            elif webhook == "apprise":
+                if self.apprise:
+                    self.apprise.notification(json)
             else:
                 if webhook.startswith("https://discord.com/api/webhooks"):
                     json = self.discord(json)
