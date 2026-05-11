@@ -168,6 +168,7 @@ init
 integrations
 ints
 io
+isort
 iteratively
 itvx
 ja
@@ -310,6 +311,7 @@ preroll
 psutil
 puid
 py
+pyspelling
 pytest
 Pytest
 PYTHONPATH

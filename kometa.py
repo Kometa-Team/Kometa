@@ -10,6 +10,7 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 
+from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
 from modules.logs import MyLogger
@@ -354,7 +355,20 @@ def start(attrs):
         if not is_docker and not is_linuxserver:
             try:
                 with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
-                    required_versions = {ln.split("==")[0]: ln.split("==")[1].split(";")[0].strip() for ln in file.readlines()}
+                    required_specs = {}
+                    required_versions = {}
+                    for line in file:
+                        line = line.strip()
+                        if not line or line.startswith("#"):
+                            continue
+                        try:
+                            requirement = Requirement(line)
+                        except InvalidRequirement:
+                            continue
+                        required_specs[requirement.name] = requirement.specifier
+                        pinned_versions = [spec.version for spec in requirement.specifier if spec.operator == "=="]
+                        if pinned_versions:
+                            required_versions[requirement.name] = pinned_versions[0]
                 v1 = parse("0")
                 v2 = parse("0")
                 for req_name, sys_ver in system_versions.items():
@@ -367,6 +381,8 @@ def start(attrs):
                             logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
                         if v1 > v2:
                             logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
+                        if req_name not in required_versions and req_name in required_specs and v1 not in required_specs[req_name]:
+                            logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs[req_name]}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:
