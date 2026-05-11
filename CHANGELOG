@@ -23,6 +23,7 @@ Exit early if more than one of the '--SOMETHING-only' flags are set.
 Cache people data for media items since it's unlikely to change.
 Initial support for SIMKL.com; trending lists and dvd-releases list
 Add Apprise as a webhook notification provider.
+Extend default "Metacritic Must See" collection to work with TV
 
 # Docs
 Updates to Quickstart docs about limitations
