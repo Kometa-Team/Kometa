@@ -58,6 +58,7 @@ class Trakt:
         self.pin = params["pin"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
+        self.username = None
         logger.secret(self.client_secret)
         if self.force_refresh is True or not self._save(self.authorization):
             if not self._refresh():
@@ -290,7 +291,14 @@ class Trakt:
                 data = item
                 current_type = item_type
             elif item_type:
-                data = item[item_type]
+                try:
+                    data = item[item_type]
+                except KeyError:
+                    # some of these responses have a new structure
+                    if "ids" in item and item["ids"]:
+                        data = item
+                    else:
+                        continue
                 current_type = item_type
             elif "type" in item and item["type"] in id_translation:
                 data = item[id_translation[item["type"]]]
@@ -440,8 +448,17 @@ class Trakt:
         return self._parse(items, typeless=True, item_type="movie" if is_movie else "show")
 
     def _charts(self, chart_type, is_movie, params, time_period=None, ignore_other=False):
-        chart_url = f"{chart_type}/{time_period}" if time_period else chart_type
-        items = self._request(f"/{'movies' if is_movie else 'shows'}/{chart_url}", params=params)
+        chart_url = f"/{'movies' if is_movie else 'shows'}/{chart_type}"
+        chart_url = f"/{chart_url}/{time_period}" if time_period else chart_url
+        # https://api.trakt.tv/recommendations/movies?ignore_collected=false&ignore_watchlisted=false
+        # https://api.trakt.tv/recommendations/shows?ignore_collected=false&ignore_watchlisted=false
+        if chart_type == "recommended":
+            chart_url = f"/recommendations/{'movies' if is_movie else 'shows'}"
+
+        if chart_type == "watched":
+            chart_url = f"/users/me/watched/{'movies' if is_movie else 'shows'}"
+
+        items = self._request(f"{chart_url}", params=params)
         return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show", ignore_other=ignore_other)
 
     def get_people(self, data):
