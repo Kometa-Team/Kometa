@@ -14,6 +14,8 @@ external_templates:
 templates:
   commonsense:
     mdblist_list: https://mdblist.com/lists/k0meta/cssfamilies<<library_type>>s
+  metacritic:
+    mdblist_list: https://mdblist.com/lists/k0meta/metacriticmustsee<<library_type>>s
 
 collections:
   Common Sense Selection:
@@ -55,10 +57,9 @@ collections:
     variables:
       style: color
       key: metacritic
-    mdblist_list: https://mdblist.com/lists/k0meta/metacriticmustseemovies
     template:
+      - name: metacritic
       - name: shared
-        allowed_libraries: movie
         translation_key: metacritic_must_see
       - name: arr
       - name: custom
