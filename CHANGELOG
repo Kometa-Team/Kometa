@@ -1,6 +1,9 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
+Bump lxml to 6.0.4
+Add letterboxdpy 6.5.0
+Bump packaging to 26.1
 Bump gitpython to 3.1.50
 Bump lxml to 6.1.0
 Bump packaging to 26.2
@@ -22,11 +25,13 @@ Process collection alterations [add/remove] in batches of 100 to avoid "400 Bad 
 Exit early if more than one of the '--SOMETHING-only' flags are set.
 Cache people data for media items since it's unlikely to change.
 Initial support for SIMKL.com; trending lists and dvd-releases list
+Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter while preserving existing Letterboxd builder names.
 Add Apprise as a webhook notification provider.
 
 # Docs
 Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
+Update Letterboxd builder docs to reflect letterboxdpy-backed filtering, ordering, and incremental behavior.
 Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
 
 # Defaults
