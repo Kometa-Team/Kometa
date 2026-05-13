@@ -8,6 +8,8 @@ Finds every movie in the Letterboxd list or [Letterboxd Films Search](https://le
 
 The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
+Kometa now uses `letterboxdpy` for Letterboxd access. Standard list URLs continue to work, and `/films/...` URLs remain supported.
+
 You can add different filters directly to this Builder.
 
 | Filter Attribute                                                                                  | Description                                                                                                                                                                                                |
@@ -20,6 +22,12 @@ You can add different filters directly to this Builder.
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
 Using the `limit` filter attribute is recommended when using a Letterboxd Film Search as the number of results returned could be very large.
+
+???+ warning "Filter Support Depends on URL Type"
+
+    The `year` filter works for both standard list URLs and `/films/...` URLs.
+
+    The `rating` and `note` filters are only available for `/films/...` URLs exposed through `letterboxdpy`. Standard user list URLs do not expose per-item owner ratings or notes, so those filters are ignored for those URLs.
 
 ???+ tip "Details Builder"
 

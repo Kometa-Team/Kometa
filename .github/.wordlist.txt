@@ -197,6 +197,7 @@ kubernetes
 kuesel
 launchd
 letterboxd
+letterboxdpy
 lgbtq
 limburgish
 linas
