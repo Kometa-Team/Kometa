@@ -27,6 +27,7 @@ Cache people data for media items since it's unlikely to change.
 Initial support for SIMKL.com; trending lists and dvd-releases list
 Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter while preserving existing Letterboxd builder names.
 Add Apprise as a webhook notification provider.
+Extend default "Metacritic Must See" collection to work with TV
 
 # Docs
 Updates to Quickstart docs about limitations

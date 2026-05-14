@@ -14,7 +14,7 @@ hide:
     replace-tags='{"rec-sub": "Recommendations: The `StevenLu\'s Popular Movies` and `Top 10 Pirated Movies of the Week` Collections only work with Movie Libraries."}'
 %}
 | `Common Sense Selection`            | `commonsense` | Collection of Common Sense Selection Movies/Shows.   |
-| `Metacritic Must See Movies`        | `metacritic`  | Collection of Metacritic Must See Movies.            |
+| `Metacritic Must See`               | `metacritic`  | Collection of Metacritic Must See Movies/Shows.      |
 | `StevenLu's Popular Movies`         | `stevenlu`    | Collection of StevenLu's Popular Movies.             |
 | `Top 10 Pirated Movies of the Week` | `pirated`     | Collection of the Top 10 Pirated Movies of the Week. |
 
@@ -54,8 +54,9 @@ hide:
         
         The collections created here use a variety of sources.
         
-        | Collection                          | Source                                                                                                                                                                                                                                             |
-        |:------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | `Common Sense Selection`            | Sourced from mdblist:<br>[`https://mdblist.com/lists/k0meta/cssfamiliesmovies`](https://mdblist.com/lists/k0meta/cssfamiliesmovies) or<br>[`https://mdblist.com/lists/k0meta/cssfamiliesshows`](https://mdblist.com/lists/k0meta/cssfamiliesshows) |
-        | `StevenLu's Popular Movies`         | [`stevenlu_popular` Builder](../../../files/builders/stevenlu)                                                                                                                                                                                     |
-        | `Top 10 Pirated Movies of the Week` | Sourced from mdblist:<br>[`https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/`](https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/)                                      |
+        | Collection                          | Source                                                                                                                                                                                                                                                                        |
+        |:------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | `Common Sense Selection`            | Sourced from mdblist:<br>[`https://mdblist.com/lists/k0meta/cssfamiliesmovies`](https://mdblist.com/lists/k0meta/cssfamiliesmovies) or<br>[`https://mdblist.com/lists/k0meta/cssfamiliesshows`](https://mdblist.com/lists/k0meta/cssfamiliesshows)                            |
+        | `StevenLu's Popular Movies`         | [`stevenlu_popular` Builder](../../../files/builders/stevenlu)                                                                                                                                                                                                                |
+        | `Top 10 Pirated Movies of the Week` | Sourced from mdblist:<br>[`https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/`](https://mdblist.com/lists/hdlists/top-ten-pirated-movies-of-the-week-torrent-freak-com/)                                                                 |
+        | `Metacritic Must See`               | Sourced from mdblist:<br>[`https://mdblist.com/lists/k0meta/metacriticmustseemovies`](https://mdblist.com/lists/k0meta/metacriticmustseemovies/) or<br>[`https://mdblist.com/lists/k0meta/metacriticmustseeshows`](https://mdblist.com/lists/k0meta/metacriticmustseeshows/)  |
