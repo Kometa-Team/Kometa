@@ -65,7 +65,7 @@ class MDbObj:
                 self.trakt_rating = util.check_num(rating["value"])
             elif rating["source"] == "tomatoes":
                 self.tomatoes_rating = util.check_num(rating["value"])
-            elif rating["source"] == "tomatoesaudience":
+            elif rating["source"] in ("tomatoesaudience", "popcorn"):
                 self.tomatoesaudience_rating = util.check_num(rating["value"])
             elif rating["source"] == "tmdb":
                 self.tmdb_rating = util.check_num(rating["value"])
