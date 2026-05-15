@@ -601,6 +601,8 @@ class ConfigFile:
                     message = message + "\n" + options
                 raise Failed(f"Config Error: {message}")
             if do_print:
+                if default is not None:
+                    logger.secret(default)
                 logger.warning(f"Config Warning: {message}")
                 if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
