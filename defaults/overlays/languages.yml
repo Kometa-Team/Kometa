@@ -178,7 +178,7 @@ templates:
   flags:
     default:
       use_<<key>>: <<use>>
-      languages: ["en", "de", "fr", "es", "pt", "ja"]
+      languages: ["en", "de", "fr", "es", "pt", "ja", "ko", "zh", "da", "ru", "it", "hi", "nl", "sv", "tr", "pl", "cs", "uk", "hu", "ar", "bg", "el", "fi", "hr", "ro", "sk"]
     conditionals:
       use:
         default: false
