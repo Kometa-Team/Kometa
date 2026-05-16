@@ -14,7 +14,7 @@ Bump requests to 2.33.1
 Bump setuptools to 82.0.1
 
 # Performance
-Use the SQLite cache for TMDb lookups in `check_filters` and `check_missing_filters` instead of bypassing it with `ignore_cache=True`.
+Use the SQLite cache for TMDb queries in `check_filters` and `check_missing_filters` instead of bypassing it with `ignore_cache=True`.
 Only force-reload Plex items in the overlay loop when `reapply_overlays` is set; reuse the session cache on normal runs.
 
 # New Features
