@@ -4196,9 +4196,9 @@ class CollectionBuilder:
             try:
                 if tmdb_item is None:
                     if is_movie:
-                        tmdb_item = self.config.TMDb.get_movie(item_id, ignore_cache=True)
+                        tmdb_item = self.config.TMDb.get_movie(item_id)
                     else:
-                        tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True), ignore_cache=True)
+                        tmdb_item = self.config.TMDb.get_show(self.config.Convert.tvdb_to_tmdb(item_id, fail=True))
             except Failed:
                 return False
             if self.has_imdb_filters and tmdb_item and tmdb_item.imdb_id:
@@ -4265,11 +4265,10 @@ class CollectionBuilder:
                         else:
                             try:
                                 if item.ratingKey in self.library.movie_rating_key_map:
-                                    tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey], ignore_cache=True)
+                                    tmdb_item = self.config.TMDb.get_movie(self.library.movie_rating_key_map[item.ratingKey])
                                 else:
                                     tmdb_item = self.config.TMDb.get_show(
                                         self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True),
-                                        ignore_cache=True,
                                     )
                             except Failed as e:
                                 logger.error(e)

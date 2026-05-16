@@ -93,7 +93,7 @@ class Overlays:
                     poster = None
                     if self.cache:
                         image, image_compare, overlay_compare = self.cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
-                    self.library.reload(item, force=True)
+                    self.library.reload(item, force=self.library.reapply_overlays)
 
                     overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
