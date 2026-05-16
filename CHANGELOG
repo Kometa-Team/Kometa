@@ -13,6 +13,9 @@ Bump pillow to 12.2.0
 Bump requests to 2.33.1
 Bump setuptools to 82.0.1
 
+# Performance
+Use set lookup instead of list scan when checking collection membership in `add_to_collection` and `run_collections_again`, reducing complexity from O(n×m) to O(n).
+
 # New Features
 Added `plex_csm` and `plex_csm0` sources to `mass_content_rating_update` (reads CSM age rating from Plex's own cached `commonSenseMedia.ageRatings`, no external API key required).
 Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
