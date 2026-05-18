@@ -15,6 +15,7 @@ Bump setuptools to 82.0.1
 
 # Performance
 Use set lookup instead of list scan when checking collection membership in `add_to_collection` and `run_collections_again`, reducing complexity from O(n×m) to O(n).
+Pre-compute `frozenset`s for `all_builders + plex.searches` and `all_builders + smart_url_invalid` used in the method-validation hot path, eliminating per-call list allocation and reducing membership-test complexity from O(n) to O(1).
 
 # New Features
 Added `plex_csm` and `plex_csm0` sources to `mass_content_rating_update` (reads CSM age rating from Plex's own cached `commonSenseMedia.ageRatings`, no external API key required).

@@ -476,6 +476,8 @@ smart_url_invalid = (
     + radarr_details
     + sonarr_details
 )
+all_builders_and_searches = frozenset(all_builders + plex.searches)
+all_builders_and_smart_url_invalid = frozenset(all_builders + smart_url_invalid)
 custom_sort_builders = [
     "plex_search",
     "plex_watchlist",
@@ -1498,7 +1500,7 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
-                if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
+                if method_data is None and method_name in all_builders_and_searches and method_final not in none_builders:
                     raise Failed(f"{self.Type} Error: {method_final} attribute is blank")
                 elif method_data is None and method_final not in none_details:
                     logger.warning(f"Collection Warning: {method_final} attribute is blank")
@@ -1538,7 +1540,7 @@ class CollectionBuilder:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed with smart collections")
                 elif self.collectionless and method_name not in collectionless_details:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
-                elif self.smart_url and method_name in all_builders + smart_url_invalid:
+                elif self.smart_url and method_name in all_builders_and_smart_url_invalid:
                     raise Failed(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
                 elif not self.overlay and method_name in overlay_only:
                     raise Failed(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
