@@ -321,6 +321,8 @@ Kometa will load those environment variables when it starts up, and you don't ha
     ???+ note
 
         set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
+        
+        IMPORTANT: This will disable TLS checks for all outbound services (TMDb, Trakt, MAL, etc.). Only flip this switch if you are comfortable with this.
 
     <hr style="margin: 0px;">
 
