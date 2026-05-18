@@ -6,6 +6,7 @@ from modules import operations, radarr, sonarr, util
 from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.cache import Cache
+from modules.apprise_notify import AppriseNotify
 from modules.convert import Convert
 from modules.ergast import Ergast
 from modules.github import GitHub
@@ -437,6 +438,8 @@ class ConfigFile:
             self.data["gotify"] = self.data.pop("gotify")
         if "ntfy" in self.data:
             self.data["ntfy"] = self.data.pop("ntfy")
+        if "apprise" in self.data:
+            self.data["apprise"] = self.data.pop("apprise")
         if "anidb" in self.data:
             self.data["anidb"] = self.data.pop("anidb")
         if "radarr" in self.data:
@@ -602,6 +605,8 @@ class ConfigFile:
                     message = message + "\n" + options
                 raise Failed(f"Config Error: {message}")
             if do_print:
+                if default is not None:
+                    logger.secret(default)
                 logger.warning(f"Config Warning: {message}")
                 if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
@@ -797,6 +802,24 @@ class ConfigFile:
         else:
             logger.info("ntfy attribute not found")
 
+        self.AppriseFactory = None
+        if "apprise" in self.data:
+            logger.info("Connecting to Apprise...")
+            try:
+                self.AppriseFactory = AppriseNotify(
+                    self.Requests,
+                    {"config": check_for_attribute(self.data, "config", parent="apprise", throw=True)},
+                )
+            except Failed as e:
+                if str(e).endswith("is blank"):
+                    logger.warning(e)
+                else:
+                    logger.stacktrace()
+                    logger.error(e)
+            logger.info(f"Apprise Connection {'Failed' if self.AppriseFactory is None else 'Successful'}")
+        else:
+            logger.info("apprise attribute not found")
+
         self.webhooks = {
             "error": check_for_attribute(self.data, "error", parent="webhooks", var_type="list", default_is_none=True),
             "version": check_for_attribute(self.data, "version", parent="webhooks", var_type="list", default_is_none=True),
@@ -805,7 +828,7 @@ class ConfigFile:
             "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True),
             "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True),
         }
-        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory)
+        self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory, apprise=self.AppriseFactory)
         try:
             self.Webhooks.start_time_hooks(self.start_time)
             if self.Requests.has_new_version():
@@ -2177,7 +2200,7 @@ class ConfigFile:
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
 
-                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory)
+                library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory, apprise=self.AppriseFactory)
                 library.Overlays = Overlays(self, library)
 
                 logger.info("")

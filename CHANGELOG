@@ -1,14 +1,21 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
+Bump lxml to 6.0.4
+Add letterboxdpy 6.5.0
+Bump packaging to 26.1
 Bump gitpython to 3.1.50
+Bump letterboxdpy to 6.5.5
 Bump lxml to 6.1.0
 Bump packaging to 26.2
 Bump plexapi to 4.18.1
 Bump python-dotenv to 1.2.2
 Bump pillow to 12.2.0
-Bump requests to 2.33.1
+Bump requests to 2.34.1
 Bump setuptools to 82.0.1
+
+# Performance
+Use set lookup instead of list scan when checking collection membership in `add_to_collection` and `run_collections_again`, reducing complexity from O(n×m) to O(n).
 
 # New Features
 Added `plex_csm` and `plex_csm0` sources to `mass_content_rating_update` (reads CSM age rating from Plex's own cached `commonSenseMedia.ageRatings`, no external API key required).
@@ -22,13 +29,18 @@ Process collection alterations [add/remove] in batches of 100 to avoid "400 Bad 
 Exit early if more than one of the '--SOMETHING-only' flags are set.
 Cache people data for media items since it's unlikely to change.
 Initial support for SIMKL.com; trending lists and dvd-releases list
+Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter while preserving existing Letterboxd builder names.
+Add Apprise as a webhook notification provider.
+Extend default "Metacritic Must See" collection to work with TV
 
 # Docs
 Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
+Update Letterboxd builder docs to reflect letterboxdpy-backed filtering, ordering, and incremental behavior.
 Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
 
 # Defaults
+Add E4 to network overlay and show network collection. #2975
 
 # Bug Fixes
 Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup, which replaced the `data-film-id` nodes the `letterboxd_list`, `letterboxd_user_films`, and `letterboxd_user_reviews` builders relied on.
@@ -38,4 +50,6 @@ TMDB language now reflected in mass_poster_update; cache extension
 Reduce size of FILMIN logo
 Replace top-ten-pirated default list with an updated, kometa-controlled one.
 Resolve relative paths in `collection_files`, `metadata_files`, `overlay_files`, `playlist_files`, `image_files`, `external_templates`, `style_file`, `folder`, and `asset_directory` against the config file's directory rather than the current working directory. #3092
+Streaming default's `run_definition` now honors `use_all: false`; previously dynamic keys without an explicit `use_<key>` ran regardless. #2922
 Overlay backdrops with `back_line_color` set but no `back_line_width` no longer crash; `back_line_width` now defaults to 1 in that case. #2645
+Fix trakt_chart watched/collected URLs to use /movies(shows)/watched(collected)/{period} and default period to "weekly"; fix recommended to use /recommendations/movies(shows). #3057

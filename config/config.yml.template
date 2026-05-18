@@ -128,6 +128,8 @@ ntfy:
   url: http://192.168.1.12:80      # Enter ntfy server URL (Optional)
   token:                           # Enter ntfy Access Token (Optional)
   topic:                           # Enter ntfy Topic (Optional)
+apprise:
+  config:                          # Enter path or URL to Apprise config file (Optional)
 anidb:
   cache_expiration: 60
   language: en

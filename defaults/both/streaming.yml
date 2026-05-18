@@ -68,6 +68,12 @@ templates:
           - region: CA
             tmdb_key: [1899, 37]
             value: False
+      final_use:
+        conditions:
+          - use_<<key>>.exists: true
+            value: <<use_<<key>>>>
+          - use_all: false
+            value: false
     default:
       region: "US"
       limit: "500"
@@ -78,7 +84,7 @@ templates:
       sort_by_<<key>>: <<sort_by>>
       delete_collections_named_<<key>>: <<delete_collections_named>>
     run_definition:
-      - <<use_<<key>>>>
+      - <<final_use>>
       - <<use_<<tmdb_key>>>>
       - <<allowed_libraries>>
       - <<allowed_streaming>>

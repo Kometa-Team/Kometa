@@ -4096,6 +4096,7 @@ class CollectionBuilder:
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
         name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        collection_item_keys = {ci.ratingKey for ci in collection_items}
         total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
         amount_added = 0
@@ -4106,10 +4107,10 @@ class CollectionBuilder:
                 logger.info(f"{self.Type} Limit reached")
                 self.found_items = self.found_items[: i - 1]
                 break
-            current_operation = "=" if item in collection_items else "+"
+            current_operation = "=" if item.ratingKey in collection_item_keys else "+"
             number_text = f"{i}/{total}"
             logger.info(f"{number_text:>{spacing}} | {name} {self.Type} | {current_operation} | {util.item_title(item)}")
-            if item in collection_items:
+            if item.ratingKey in collection_item_keys:
                 self.remove_item_map[item.ratingKey] = None
                 amount_unchanged += 1
             else:
@@ -5009,6 +5010,7 @@ class CollectionBuilder:
     def run_collections_again(self):
         self.obj = self.library.get_collection(self.name, force_search=True)
         name, collection_items = self.library.get_collection_name_and_items(self.obj, self.smart_label_collection)
+        collection_item_keys = {ci.ratingKey for ci in collection_items}
         self.created = False
         rating_keys = []
         amount_added = 0
@@ -5029,7 +5031,7 @@ class CollectionBuilder:
                 except Failed as e:
                     logger.error(e)
                     continue
-                if current in collection_items:
+                if current.ratingKey in collection_item_keys:
                     logger.info(f"{name} {self.Type} | = | {util.item_title(current)}")
                 else:
                     self.library.alter_collection(current, name, smart_label_collection=self.smart_label_collection)
