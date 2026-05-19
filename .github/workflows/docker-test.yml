@@ -1,0 +1,66 @@
+name: Docker Test Build
+
+on:
+  pull_request:
+    branches: [ nightly ]
+    paths:
+      - Dockerfile
+      - requirements.txt
+      - .github/workflows/docker-test.yml
+      - .github/workflows/docker-nightly.yml
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Docker platform to build
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
+
+jobs:
+
+  docker-test-build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: linux/amd64
+            cache-scope: docker-test-amd64
+          - platform: linux/arm64
+            cache-scope: docker-test-arm64
+          - platform: linux/arm/v7
+            cache-scope: docker-test-armv7
+    steps:
+
+      - name: Check Out Repo
+        uses: actions/checkout@v6
+
+      - name: Set up QEMU
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: all
+
+      - name: Set up Docker Buildx
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        id: buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build Docker Image
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        id: docker_build
+        uses: docker/build-push-action@v7
+        with:
+          context: ./
+          file: ./Dockerfile
+          build-args: |
+            "BRANCH_NAME=${{ github.ref_name }}"
+          platforms: ${{ matrix.platform }}
+          push: false
+          cache-from: type=gha,scope=${{ matrix.cache-scope }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.cache-scope }}
