@@ -9,6 +9,15 @@ from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_excepti
 
 logger = util.logger
 
+
+class NotFound(Failed):
+    """Raised when a TVDb resource (series/movie) is gone from TVDb (HTTP 4xx).
+
+    Distinct from Failed so callers can downgrade noisy log lines for IDs the
+    user did not control (e.g. stale TVDb IDs returned by TMDb external_ids).
+    """
+
+
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
 alt_url = "https://thetvdb.com"
@@ -55,6 +64,8 @@ class TVDbObj:
             item_url = f"{urls['movie_id' if is_movie else 'series_id']}{tvdb_id}"
             try:
                 data = self._tvdb.get_request(item_url)
+            except NotFound:
+                raise NotFound(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
             except Failed:
                 raise Failed(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
 
@@ -119,6 +130,11 @@ class TVDb:
     def get_request(self, tvdb_url):
         response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:
+            # 4xx — resource is gone from TVDb (e.g. series removed/merged). Raise
+            # NotFound so callers can decide to handle it quietly. 5xx remains
+            # a generic Failed (a transient TVDb outage, etc.).
+            if 400 <= response.status_code < 500:
+                raise NotFound(f"({response.status_code}) {response.reason}")
             raise Failed(f"({response.status_code}) {response.reason}")
         return html.fromstring(response.content)
 

@@ -4284,6 +4284,9 @@ class CollectionBuilder:
                         else:
                             try:
                                 tvdb_item = self.config.TVDb.get_tvdb_obj(self.library.show_rating_key_map[item.ratingKey])
+                            except tvdb.NotFound as e:
+                                logger.debug(e)
+                                or_result = False
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
@@ -4394,6 +4397,12 @@ class CollectionBuilder:
                 i += 1
                 try:
                     title = self.config.TVDb.get_tvdb_obj(missing_id).title
+                except tvdb.NotFound as e:
+                    # TVDb ID is stale (e.g. TMDb still references a series that no
+                    # longer exists on TVDb). Not user-actionable; log at debug to
+                    # avoid spamming logs / triggering webhook error notifications.
+                    logger.debug(e)
+                    continue
                 except Failed as e:
                     logger.error(e)
                     continue
@@ -5067,6 +5076,9 @@ class CollectionBuilder:
                 if missing_id not in self.library.show_map:
                     try:
                         title = self.config.TVDb.get_tvdb_obj(missing_id).title
+                    except tvdb.NotFound as e:
+                        logger.debug(e)
+                        continue
                     except Failed as e:
                         logger.error(e)
                         continue
