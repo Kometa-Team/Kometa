@@ -3,4 +3,4 @@ isort==8.0.1
 flake8==7.3.0
 mypy==2.1.0
 bandit==1.9.4
-prek==0.3.13
+prek==0.4.2
