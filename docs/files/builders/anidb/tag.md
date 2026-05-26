@@ -8,7 +8,7 @@ Finds anime with a specific AniDB tag ID.
 
 The expected input is an AniDB tag ID with an optional `limit` parameter.
 
-You can find tag IDs by browsing tags at [https://utilities.kometa.wiki/tags](https://utilities.kometa.wiki/tags).
+You can find tag IDs by browsing tags at [https://utilities.kometa.wiki/anidb-service/tags](https://utilities.kometa.wiki/anidb-service/tags).
 
 ### Example AniDB Tag Builder(s)
 
