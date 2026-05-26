@@ -10,8 +10,6 @@ The expected input is an AniDB tag ID with an optional `limit` parameter.
 
 You can find tag IDs by browsing tags at [http://utilities.kometa.wiki/anidb-service/tags](http://utilities.kometa.wiki/anidb-service/tags).
 
-You can serach tags
-
 ### Example AniDB Tag Builder(s)
 
 ```yaml
