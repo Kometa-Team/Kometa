@@ -393,7 +393,7 @@ class Cache:
                     cursor.execute("SELECT DISTINCT library FROM image_map")
                     for library in cursor.fetchall():
                         table_name = self.get_image_table_name(library["library"])
-                        cursor.execute("SELECT DISTINCT * FROM image_map WHERE library=?", (library["library"],)).
+                        cursor.execute(f"SELECT DISTINCT * FROM image_map WHERE library='{library['library']}'")
                         for row in cursor.fetchall():
                             if row["type"] == "poster":
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
