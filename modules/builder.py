@@ -1597,6 +1597,19 @@ class CollectionBuilder:
                     self._filters(method_name, method_data)
                 else:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
+            except tmdb.NotFound as e:
+                # A TMDb resource referenced here (e.g. a collection) has been
+                # deleted upstream. When the ID came from one of Kometa's own
+                # defaults (e.g. the franchise default auto-discovers tmdb_collection
+                # IDs from the library), this is not user-actionable: skip the
+                # collection quietly instead of failing it and firing a webhook
+                # error notification. IDs in user-authored files still raise.
+                if self.metadata.type == "Default":
+                    raise NonExisting(e)
+                if self.validate_builders:
+                    raise
+                else:
+                    logger.error(e)
             except Failed as e:
                 if self.validate_builders:
                     raise
