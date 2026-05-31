@@ -31,6 +31,9 @@
         "ntfy": {
             "$ref": "#/definitions/ntfy-api"
         },
+        "apprise": {
+            "$ref": "#/definitions/apprise-config"
+        },
         "anidb": {
             "$ref": "#/definitions/anidb-api"
         },
@@ -371,6 +374,19 @@
                 "topic"
             ],
             "title": "ntfy"
+        },
+        "apprise-config": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "config": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "config"
+            ],
+            "title": "apprise"
         },
         "anidb-api": {
             "type": "object",
@@ -1587,7 +1603,7 @@
             "type": "object",
             "additionalProperties": false,
             "patternProperties": {
-                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|mal).+$": {
+                "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|apprise|anidb|radarr|sonarr|trakt|mal).+$": {
                     "additionalProperties": false,
                     "properties": {
                         "metadata_files": {
@@ -1642,6 +1658,10 @@
                         },
                         "schedule": {
                             "description": "Used to schedule when a library is run using the schedule options.",
+                            "type": "string"
+                        },
+                        "schedule_overlays": {
+                            "description": "Used to schedule when overlays are run for this library using the schedule options. Overlay Files cannot be scheduled individually.",
                             "type": "string"
                         },
                         "remove_overlays": {
