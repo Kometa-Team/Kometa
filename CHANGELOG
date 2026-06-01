@@ -56,3 +56,4 @@ Streaming default's `run_definition` now honors `use_all: false`; previously dyn
 Overlay backdrops with `back_line_color` set but no `back_line_width` no longer crash; `back_line_width` now defaults to 1 in that case. #2645
 Fix trakt_chart watched/collected URLs to use /movies(shows)/watched(collected)/{period} and default period to "weekly"; fix recommended to use /recommendations/movies(shows). #3057
 TVDb 4xx responses (series/movie removed or merged on TVDb) now raise a dedicated `tvdb.NotFound` so the missing-show iteration and TVDb-filter paths log them at debug instead of error. Stale TVDb IDs returned by TMDb `external_ids` no longer spam logs or trigger webhook failure notifications. #3047
+Align Kometa's AniList season translation from `current` to match Anilist.
