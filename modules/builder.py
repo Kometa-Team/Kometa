@@ -1992,15 +1992,15 @@ class CollectionBuilder:
                 new_dictionary["score"] = score_dict
                 self.builders.append((method_name, self.config.AniList.validate_userlist(new_dictionary)))
         elif method_name == "anilist_search":
-            if self.current_time.month in [12, 1, 2]:
+            if self.current_time.month in [1, 2, 3]:
                 current_season = "winter"
-            elif self.current_time.month in [3, 4, 5]:
+            elif self.current_time.month in [4, 5, 6]:
                 current_season = "spring"
-            elif self.current_time.month in [6, 7, 8]:
+            elif self.current_time.month in [7, 8, 9]:
                 current_season = "summer"
             else:
                 current_season = "fall"
-            default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
+            default_year = self.current_year
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {}
