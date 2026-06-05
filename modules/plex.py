@@ -1809,7 +1809,7 @@ class Plex(Library):
         poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
         background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
         logo_filter = os.path.join(item_asset_directory, "logo.*" if file_name == "poster" else f"{file_name}_logo.*")
-        square_art_filter = os.path.join(item_asset_directory, "square_art.*" if file_name == "poster" else f"{file_name}_square_art.*")
+        square_art_filter = os.path.join(item_asset_directory, "square.*" if file_name == "poster" else f"{file_name}_square.*")
 
         poster_matches = util.glob_filter(poster_filter)
         if len(poster_matches) > 0:

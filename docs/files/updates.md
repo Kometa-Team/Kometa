@@ -154,7 +154,7 @@ All the following attributes update the square art (used by some Plex clients) o
 **All of these details work with Playlists.**
 
 If no square art is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
-folder named either the collection/playlist name or the `name_mapping` if specified and look for a `square_art.ext` file in
+folder named either the collection/playlist name or the `name_mapping` if specified and look for a `square.ext` file in
 that folder (replacing .ext with the image extension).
 
 | Attribute         | Description & Values                                                                                                   |
