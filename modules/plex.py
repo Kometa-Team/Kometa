@@ -1634,7 +1634,7 @@ class Plex(Library):
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, style_data=None):
         if title is None:
             title = item.title
-        posters, backgrounds, logos = util.get_image_dicts(group, alias)
+        posters, backgrounds, logos, square_arts = util.get_image_dicts(group, alias)
         if style_data and "url_poster" in style_data and style_data["url_poster"]:
             posters["style_data"] = style_data["url_poster"]
         elif style_data and "tpdb_poster" in style_data and style_data["tpdb_poster"]:
@@ -1645,12 +1645,16 @@ class Plex(Library):
             backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
         if style_data and "url_logo" in style_data and style_data["url_logo"]:
             logos["style_data"] = style_data["url_logo"]
+        if style_data and "url_square_art" in style_data and style_data["url_square_art"]:
+            square_arts["style_data"] = style_data["url_square_art"]
         try:
-            asset_poster, asset_background, asset_logo, _, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
+            asset_poster, asset_background, asset_logo, asset_square_art, item_dir, folder_name = self.find_item_assets(item, item_asset_directory=asset_location, asset_directory=asset_directory)
             if asset_poster:
                 posters["asset_directory"] = asset_poster
             if asset_background:
                 backgrounds["asset_directory"] = asset_background
+            if asset_square_art:
+                square_arts["asset_directory"] = asset_square_art
             if asset_location is None or initial:
                 asset_location = item_dir
         except Failed as e:
@@ -1658,10 +1662,11 @@ class Plex(Library):
         poster = self.pick_image(title, posters, self.prioritize_assets, self.download_url_assets, asset_location, image_name=image_name)
         background = self.pick_image(title, backgrounds, self.prioritize_assets, self.download_url_assets, asset_location, image_type="background", image_name=f"{image_name}_background" if image_name else image_name)
         logo = self.pick_image(title, logos, self.prioritize_assets, self.download_url_assets, asset_location, image_type="logo", image_name=f"{image_name}_logo" if image_name else image_name)
+        square_art = self.pick_image(title, square_arts, self.prioritize_assets, self.download_url_assets, asset_location, image_type="square_art", image_name=f"{image_name}_square" if image_name else image_name)
         updated = False
-        if poster or background or logo:
-            pu, bu, lu, _ = self.upload_images(item, poster=poster, background=background, logo=logo, overlay=True)
-            if pu or bu or lu:
+        if poster or background or logo or square_art:
+            pu, bu, lu, sau = self.upload_images(item, poster=poster, background=background, logo=logo, square_art=square_art, overlay=True)
+            if pu or bu or lu or sau:
                 updated = True
         return asset_location, folder_name, updated
 
