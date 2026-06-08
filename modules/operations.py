@@ -1184,9 +1184,9 @@ class Operations:
                 logger.info("")
                 for col in unconfigured_collections:
                     try:
-                        poster, background, _, _, item_dir, name = self.library.find_item_assets(col)
-                        if poster or background:
-                            self.library.upload_images(col, poster=poster, background=background)
+                        poster, background, logo, square_art, item_dir, name = self.library.find_item_assets(col)
+                        if poster or background or logo or square_art:
+                            self.library.upload_images(col, poster=poster, background=background, logo=logo, square_art=square_art)
                         elif self.library.show_missing_assets:
                             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}'")
                     except Failed as e:
