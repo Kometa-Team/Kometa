@@ -154,7 +154,7 @@ class Overlays:
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster, background, logo, _, item_dir, name = self.library.find_item_assets(item)
+                        poster, background, logo, square_art, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
                             if (
                                 (isinstance(item, Episode) and self.library.show_missing_episode_assets)
@@ -169,6 +169,8 @@ class Overlays:
                             self.library.upload_images(item, background=background)
                         if logo:
                             self.library.upload_images(item, logo=logo)
+                        if square_art:
+                            self.library.upload_images(item, square_art=square_art)
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)

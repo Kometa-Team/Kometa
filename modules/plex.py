@@ -1675,13 +1675,14 @@ class Plex(Library):
         name = None
         try:
             poster, background, logo, square_art, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
-            if "Overlay" not in current_labels:
-                if poster or background or logo or square_art:
-                    self.upload_images(item, poster=poster, background=background, logo=logo, square_art=square_art)
-                elif self.show_missing_assets:
-                    logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
-            else:
+            has_overlay = "Overlay" in current_labels
+            upload_poster = None if has_overlay else poster
+            if upload_poster or background or logo or square_art:
+                self.upload_images(item, poster=upload_poster, background=background, logo=logo, square_art=square_art)
+            if has_overlay:
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
+            elif not poster and not background and not logo and not square_art and self.show_missing_assets:
+                logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
@@ -1698,8 +1699,8 @@ class Plex(Library):
                     elif self.show_missing_season_assets and season.seasonNumber and season.seasonNumber > 0:
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
                     if season_poster or season_background or season_logo or season_square_art:
-                        if "Overlay" not in [la.tag for la in self.item_labels(season)]:
-                            self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
+                        has_season_overlay = "Overlay" in [la.tag for la in self.item_labels(season)]
+                        self.upload_images(season, poster=None if has_season_overlay else season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
                         logger.warning(e)
@@ -1709,8 +1710,8 @@ class Plex(Library):
                             episode_poster, episode_background, episode_logo, episode_square_art, _, _ = self.find_item_assets(episode, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                             if episode_poster or episode_background or episode_logo or episode_square_art:
                                 found_episode = True
-                                if "Overlay" not in [la.tag for la in self.item_labels(episode)]:
-                                    self.upload_images(episode, poster=episode_poster, background=episode_background, logo=episode_logo, square_art=episode_square_art)
+                                has_episode_overlay = "Overlay" in [la.tag for la in self.item_labels(episode)]
+                                self.upload_images(episode, poster=None if has_episode_overlay else episode_poster, background=episode_background, logo=episode_logo, square_art=episode_square_art)
                             elif self.show_missing_episode_assets:
                                 missing_episodes += f"\nMissing {episode.seasonEpisode.upper()} Title Card"
                     except Failed as e:
