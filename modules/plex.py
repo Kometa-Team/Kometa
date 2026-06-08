@@ -1697,8 +1697,9 @@ class Plex(Library):
                         found_season = True
                     elif self.show_missing_season_assets and season.seasonNumber and season.seasonNumber > 0:
                         missing_seasons += f"\nMissing Season {season.seasonNumber} Poster"
-                    if season_poster or season_background or season_logo or season_square_art and "Overlay" not in [la.tag for la in self.item_labels(season)]:
-                        self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
+                    if season_poster or season_background or season_logo or season_square_art:
+                        if "Overlay" not in [la.tag for la in self.item_labels(season)]:
+                            self.upload_images(season, poster=season_poster, background=season_background, logo=season_logo, square_art=season_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
                         logger.warning(e)
@@ -1722,13 +1723,13 @@ class Plex(Library):
             found_album = False
             for album in self.query(item.albums):
                 try:
-                    album_poster, album_background, _, _, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
+                    album_poster, album_background, _, album_square_art, _, _ = self.find_item_assets(album, item_asset_directory=item_dir, asset_directory=asset_directory, folder_name=name)
                     if album_poster or album_background:
                         found_album = True
                     elif self.show_missing_season_assets:
                         missing_assets += f"\nMissing Album {album.title} Poster"
-                    if album_poster or album_background:
-                        self.upload_images(album, poster=album_poster, background=album_background)
+                    if album_poster or album_background or album_square_art:
+                        self.upload_images(album, poster=album_poster, background=album_background, square_art=album_square_art)
                 except Failed as e:
                     if self.show_missing_assets:
                         logger.warning(e)
