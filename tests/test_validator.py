@@ -173,3 +173,40 @@ def test_structure_yaml_error_in_config_is_error(tmp_path, monkeypatch):
     passed, errors, warnings = v.validate()
     assert not passed
     assert any("YAML Error" in e for e in errors)
+
+
+# ── Full-level tests ──────────────────────────────────────────────────────────
+
+
+def test_full_passes_when_config_file_init_succeeds(tmp_path, monkeypatch):
+    import modules.validator as vm
+
+    monkeypatch.setattr(vm, "logger", FakeLogger())
+
+    class FakeConfigFile:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    monkeypatch.setattr(vm, "_ConfigFile", FakeConfigFile)
+
+    v = make_validator(tmp_path, "libraries: {}\n", level="full")
+    passed, errors, warnings = v.validate()
+    assert passed
+    assert errors == []
+
+
+def test_full_reports_error_when_config_file_init_raises(tmp_path, monkeypatch):
+    import modules.validator as vm
+
+    monkeypatch.setattr(vm, "logger", FakeLogger())
+
+    class BadConfigFile:
+        def __init__(self, *args, **kwargs):
+            raise RuntimeError("Plex connection refused")
+
+    monkeypatch.setattr(vm, "_ConfigFile", BadConfigFile)
+
+    v = make_validator(tmp_path, "libraries: {}\n", level="full")
+    passed, errors, warnings = v.validate()
+    assert not passed
+    assert any("Plex connection refused" in e for e in errors)

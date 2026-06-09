@@ -23,6 +23,15 @@ DEPRECATED_KEYS = {
     "overlay_path": "overlay_files",
 }
 
+# Overridable in tests via monkeypatch
+_ConfigFile = None
+
+
+def _get_config_file_class():
+    from modules.config import ConfigFile
+
+    return ConfigFile
+
 
 class ConfigValidator:
     def __init__(self, requests, default_dir, attrs, secret_args, level="structure", validate_schema=False, schema_path=None):
@@ -172,7 +181,16 @@ class ConfigValidator:
                 self._errors.append(f"playlist_files: path not found: {path}")
 
     def _validate_full(self):
-        raise NotImplementedError
+        """Run full ConfigFile initialisation (connects to Plex/APIs). Does not call run_config()."""
+        if self.validate_schema:
+            self._config_data = self._load_yaml(self.config_path, "config.yml")
+            if self._config_data is not None:
+                self._files_for_schema.append((self._config_data, "config", "config.yml"))
+        try:
+            cls = _ConfigFile if _ConfigFile is not None else _get_config_file_class()
+            cls(self.requests, self.default_dir, self.attrs, self.secret_args)
+        except Exception as e:
+            self._errors.append(f"Full validation error: {e}")
 
     def _run_schema_validation(self):
         raise NotImplementedError
