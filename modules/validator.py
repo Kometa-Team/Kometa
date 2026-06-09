@@ -36,6 +36,40 @@ def _get_config_file_class():
     return ConfigFile
 
 
+def detect_schema_type(data: dict) -> str | None:
+    """Infer the SCHEMA_MAP key from a YAML file's root keys."""
+    if "collections" in data or "dynamic_collections" in data:
+        return "collection_files"
+    if "overlays" in data:
+        return "overlay_files"
+    if "playlists" in data:
+        return "playlist_files"
+    if "metadata" in data:
+        return "metadata_files"
+    if any(k in data for k in ("libraries", "plex", "tmdb", "settings")):
+        return "config"
+    return None
+
+
+def collect_yaml_files(path: str) -> list[str]:
+    """Return sorted list of .yml/.yaml files at path (file) or recursively under path (directory)."""
+    if os.path.isfile(path):
+        return [path]
+    result = []
+    for root, _dirs, files in os.walk(path):
+        for fname in files:
+            if fname.endswith(".yml") or fname.endswith(".yaml"):
+                result.append(os.path.join(root, fname))
+    return sorted(result)
+
+
+class FileSetValidator:
+    """Stub — implemented in Task 2."""
+
+    def __init__(self, paths, schema_path):
+        raise NotImplementedError
+
+
 class ConfigValidator:
     def __init__(self, requests, default_dir, attrs, secret_args, level="structure", validate_schema=False, schema_path=None):
         self.requests = requests

@@ -2,7 +2,7 @@ import os
 from collections import Counter
 
 import modules.validator as validator_module
-from modules.validator import ConfigValidator
+from modules.validator import ConfigValidator, FileSetValidator, collect_yaml_files, detect_schema_type  # noqa: F401
 
 
 class FakeLogger:
@@ -310,3 +310,63 @@ def test_schema_gap_report_deduplicates_across_files(tmp_path, monkeypatch):
     # seen in both files → count is 2
     gap_key = next(k for k in gaps if "unknown_key_xyz" in k)
     assert gaps[gap_key] == 2
+
+
+# ── detect_schema_type tests ──────────────────────────────────────────────────
+
+
+def test_detect_schema_type_collection():
+    assert detect_schema_type({"collections": {}}) == "collection_files"
+
+
+def test_detect_schema_type_dynamic_collections():
+    assert detect_schema_type({"dynamic_collections": {}}) == "collection_files"
+
+
+def test_detect_schema_type_overlay():
+    assert detect_schema_type({"overlays": {}}) == "overlay_files"
+
+
+def test_detect_schema_type_playlist():
+    assert detect_schema_type({"playlists": {}}) == "playlist_files"
+
+
+def test_detect_schema_type_metadata():
+    assert detect_schema_type({"metadata": {}}) == "metadata_files"
+
+
+def test_detect_schema_type_config():
+    assert detect_schema_type({"libraries": {}, "plex": {}}) == "config"
+
+
+def test_detect_schema_type_templates_only():
+    assert detect_schema_type({"templates": {}}) is None
+
+
+def test_detect_schema_type_templates_with_collections():
+    assert detect_schema_type({"templates": {}, "collections": {}}) == "collection_files"
+
+
+# ── collect_yaml_files tests ──────────────────────────────────────────────────
+
+
+def test_collect_yaml_files_single_file(tmp_path):
+    f = tmp_path / "test.yml"
+    f.write_text("key: value", encoding="utf-8")
+    assert collect_yaml_files(str(f)) == [str(f)]
+
+
+def test_collect_yaml_files_directory(tmp_path):
+    (tmp_path / "a.yml").write_text("key: a", encoding="utf-8")
+    (tmp_path / "b.yaml").write_text("key: b", encoding="utf-8")
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "c.yml").write_text("key: c", encoding="utf-8")
+    (tmp_path / "not_yaml.txt").write_text("ignore me", encoding="utf-8")
+    result = collect_yaml_files(str(tmp_path))
+    assert sorted(result) == sorted(
+        [
+            str(tmp_path / "a.yml"),
+            str(tmp_path / "b.yaml"),
+            str(tmp_path / "sub" / "c.yml"),
+        ]
+    )
