@@ -110,10 +110,16 @@ class ConfigValidator:
                         yield yml, f"folder: {yml}"
 
     def _resolve_path(self, path):
-        """Resolve a possibly-relative path against default_dir."""
+        """Resolve a relative path the same way Kometa does: CWD-relative first, then config-dir-relative."""
         if os.path.isabs(path):
             return path
-        return os.path.join(self.default_dir, path)
+        cwd_path = os.path.abspath(path)
+        if os.path.exists(cwd_path):
+            return cwd_path
+        default_path = os.path.join(self.default_dir, path)
+        if os.path.exists(default_path):
+            return default_path
+        return cwd_path
 
     def _collect_linked_files(self, config_data):
         """Load all local YAML files referenced in libraries and playlist_files."""
