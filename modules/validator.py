@@ -36,6 +36,44 @@ def _get_config_file_class():
     return ConfigFile
 
 
+def _resolve_ref(node, root):
+    """Follow a single $ref within the same document."""
+    if not isinstance(node, dict) or "$ref" not in node:
+        return node
+    ref = node["$ref"]
+    if not ref.startswith("#/"):
+        return node
+    result = root
+    for part in ref[2:].split("/"):
+        result = result.get(part, {}) if isinstance(result, dict) else {}
+    return result
+
+
+def _normalize_gap_path(absolute_path, schema) -> str:
+    """Build a gap key, replacing keys reached via additionalProperties with *."""
+    parts = []
+    current = schema
+    for p in absolute_path:
+        current = _resolve_ref(current, schema)
+        if isinstance(p, int):
+            if parts:
+                parts[-1] += "[*]"
+            current = _resolve_ref(current.get("items", {}), schema)
+        else:
+            props = current.get("properties", {}) if isinstance(current, dict) else {}
+            add_props = current.get("additionalProperties", False) if isinstance(current, dict) else False
+            if p in props:
+                parts.append(str(p))
+                current = _resolve_ref(props[p], schema)
+            elif isinstance(add_props, dict):
+                parts.append("*")
+                current = _resolve_ref(add_props, schema)
+            else:
+                parts.append(str(p))
+                current = {}
+    return ".".join(parts)
+
+
 def detect_schema_type(data: dict) -> str | None:
     """Infer the SCHEMA_MAP key from a YAML file's root keys."""
     if "collections" in data or "dynamic_collections" in data:
@@ -145,14 +183,7 @@ class FileSetValidator:
         for error in schema_validator.iter_errors(data):
             if error.validator == "additionalProperties":
                 props = re.findall(r"'([^']+)'", error.message)
-                normalized = []
-                for p in error.absolute_path:
-                    if isinstance(p, int):
-                        if normalized:
-                            normalized[-1] += "[*]"
-                    else:
-                        normalized.append(str(p))
-                base = ".".join(normalized)
+                base = _normalize_gap_path(error.absolute_path, schema)
                 for prop in props:
                     key = f"{base}.{prop}" if base else prop
                     result["gaps"][key] += 1
@@ -401,14 +432,7 @@ class ConfigValidator:
             for error in schema_validator.iter_errors(data):
                 if error.validator == "additionalProperties":
                     props = re.findall(r"'([^']+)'", error.message)
-                    normalized = []
-                    for p in error.absolute_path:
-                        if isinstance(p, int):
-                            if normalized:
-                                normalized[-1] += "[*]"
-                        else:
-                            normalized.append(str(p))
-                    base = ".".join(normalized)
+                    base = _normalize_gap_path(error.absolute_path, schema)
                     counter = self._schema_gaps.setdefault(schema_filename, Counter())
                     for prop in props:
                         key = f"{base}.{prop}" if base else prop
