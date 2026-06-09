@@ -335,6 +335,10 @@ def process(attrs):
 
 def start(attrs):
     try:
+        if run_args["validate-file"] or run_args["validate-dir"]:
+            from modules.logs import VALIDATE_LOG
+
+            logger.main_log = os.path.join(logger.log_dir, VALIDATE_LOG)
         logger.add_main_handler()
         logger.separator()
         logger.info("")
