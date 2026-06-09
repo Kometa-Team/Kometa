@@ -1,3 +1,6 @@
+import os
+from collections import Counter
+
 import modules.validator as validator_module
 from modules.validator import ConfigValidator
 
@@ -210,3 +213,100 @@ def test_full_reports_error_when_config_file_init_raises(tmp_path, monkeypatch):
     passed, errors, warnings = v.validate()
     assert not passed
     assert any("Plex connection refused" in e for e in errors)
+
+
+# ── Schema validation tests ───────────────────────────────────────────────────
+
+REPO_ROOT = os.path.join(os.path.dirname(__file__), "..")
+SCHEMA_DIR = os.path.join(REPO_ROOT, "json-schema")
+
+# Minimal valid config.yml stub that satisfies config-schema.json required fields
+_VALID_CONFIG_STUB = "plex:\n" "  url: http://localhost:32400\n" "  token: fake-token\n" "tmdb:\n" "  apikey: fake-apikey\n"
+
+
+def test_schema_valid_collection_file_passes(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/good.yml\n"
+    collection_content = "collections:\n  My Collection:\n    tmdb_popular: 5\n"
+    v = make_validator(
+        tmp_path,
+        config,
+        level="syntax",
+        validate_schema=True,
+        schema_path=SCHEMA_DIR,
+        extra_files={"collections/good.yml": collection_content},
+    )
+    passed, errors, warnings = v.validate()
+    assert errors == [], f"Unexpected errors: {errors}"
+
+
+def test_schema_missing_schema_dir_warns_and_does_not_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    v = make_validator(
+        tmp_path,
+        "libraries: {}\n",
+        level="syntax",
+        validate_schema=True,
+        schema_path="/nonexistent/schema/dir",
+    )
+    passed, errors, warnings = v.validate()
+    assert passed
+    assert any("not found" in w or "Schema" in w for w in warnings)
+
+
+def test_schema_additionalproperties_violation_goes_to_gap_not_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/extra.yml\n"
+    # unknown_key_xyz is not in collection-schema.json
+    collection_content = "collections:\n  Test:\n    tmdb_popular: 5\nunknown_key_xyz: true\n"
+    v = make_validator(
+        tmp_path,
+        config,
+        level="syntax",
+        validate_schema=True,
+        schema_path=SCHEMA_DIR,
+        extra_files={"collections/extra.yml": collection_content},
+    )
+    passed, errors, warnings = v.validate()
+    # additionalProperties violations are warnings/gaps, not errors
+    assert errors == [], f"additionalProperties should not be in errors: {errors}"
+    assert "collection-schema.json" in v._schema_gaps
+    assert any("unknown_key_xyz" in k for k in v._schema_gaps["collection-schema.json"])
+
+
+def test_schema_type_error_is_an_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/typed.yml\n"
+    # visible_home is a bool/string in the schema; passing a list makes it a type error
+    collection_content = "collections:\n  Test:\n    tmdb_popular: 5\n    visible_home: [not, a, bool]\n"
+    v = make_validator(
+        tmp_path,
+        config,
+        level="syntax",
+        validate_schema=True,
+        schema_path=SCHEMA_DIR,
+        extra_files={"collections/typed.yml": collection_content},
+    )
+    passed, errors, warnings = v.validate()
+    assert not passed
+    assert any("visible_home" in e or "typed.yml" in e for e in errors)
+
+
+def test_schema_gap_report_deduplicates_across_files(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/a.yml\n" "      - file: collections/b.yml\n"
+    content = "collections:\n  Test:\n    tmdb_popular: 5\nunknown_key_xyz: true\n"
+    v = make_validator(
+        tmp_path,
+        config,
+        level="syntax",
+        validate_schema=True,
+        schema_path=SCHEMA_DIR,
+        extra_files={"collections/a.yml": content, "collections/b.yml": content},
+    )
+    v.validate()
+    gaps = v._schema_gaps.get("collection-schema.json", Counter())
+    assert any("unknown_key_xyz" in k for k in gaps)
+    # seen in both files → count is 2
+    gap_key = next(k for k in gaps if "unknown_key_xyz" in k)
+    assert gaps[gap_key] == 2

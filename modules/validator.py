@@ -1,5 +1,8 @@
 import glob
+import json
 import os
+import re
+from collections import Counter
 
 import ruamel.yaml as ryaml
 
@@ -193,7 +196,48 @@ class ConfigValidator:
             self._errors.append(f"Full validation error: {e}")
 
     def _run_schema_validation(self):
-        raise NotImplementedError
+        """Validate collected files against JSON schemas; populate _schema_gaps."""
+        import jsonschema
+
+        if not self.schema_path or not os.path.isdir(self.schema_path):
+            self._warnings.append(f"Schema directory not found, skipping schema validation: {self.schema_path}")
+            return
+
+        for data, schema_key, label in self._files_for_schema:
+            schema_filename = SCHEMA_MAP.get(schema_key)
+            if not schema_filename:
+                continue
+            schema_file = os.path.join(self.schema_path, schema_filename)
+            if not os.path.exists(schema_file):
+                self._warnings.append(f"Schema file not found, skipping: {schema_file}")
+                continue
+            self._schemas_checked.add(schema_filename)
+            try:
+                with open(schema_file, encoding="utf-8") as f:
+                    schema = json.load(f)
+            except Exception as e:
+                self._warnings.append(f"Could not load {schema_filename}: {e}")
+                continue
+
+            validator_cls = jsonschema.Draft6Validator(schema)
+            for error in validator_cls.iter_errors(data):
+                if error.validator == "additionalProperties":
+                    props = re.findall(r"'([^']+)'", error.message)
+                    normalized = []
+                    for p in error.absolute_path:
+                        if isinstance(p, int):
+                            if normalized:
+                                normalized[-1] += "[*]"
+                        else:
+                            normalized.append(str(p))
+                    base = ".".join(normalized)
+                    counter = self._schema_gaps.setdefault(schema_filename, Counter())
+                    for prop in props:
+                        key = f"{base}.{prop}" if base else prop
+                        counter[key] += 1
+                else:
+                    path_str = " -> ".join(str(p) for p in error.absolute_path) or "(root)"
+                    self._errors.append(f"{label} [{schema_filename}] at {path_str}: {error.message}")
 
     def _print_report(self):
         sep = "=" * 62
@@ -213,9 +257,26 @@ class ConfigValidator:
             logger.info(f" Errors ({len(self._errors)}):")
             for e in self._errors:
                 logger.error(f"   {e}")
+        if self.validate_schema and self._schema_gaps:
+            logger.info("")
+            logger.info(sep)
+            logger.info(" Schema Gap Report")
+            logger.info(sep)
+            logger.info(" Keys found in your files that are not in the schema:")
+            for schema_filename, counter in self._schema_gaps.items():
+                logger.info("")
+                logger.info(f" {schema_filename}:")
+                for gap_key, count in counter.most_common():
+                    noun = "files" if count > 1 else "file"
+                    logger.info(f"   - {gap_key}  (seen in {count} {noun})")
+            clean = [s for s in self._schemas_checked if s not in self._schema_gaps]
+            if clean:
+                logger.info("")
+                logger.info(f" No gaps in: {', '.join(s.replace('-schema.json', '') for s in clean)}")
         logger.info("")
         logger.info(sep)
-        result = "FAILED" if self._errors else ("PASSED" + (f" with {len(self._warnings)} warning(s)" if self._warnings else ""))
+        suffix = f" with {len(self._warnings)} warning(s)" if self._warnings else ""
+        result = "FAILED" if self._errors else f"PASSED{suffix}"
         logger.info(f" Result: {result}")
         logger.info(sep)
         logger.info("")
