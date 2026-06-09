@@ -97,6 +97,8 @@ arguments = {
     "validate-level": {"args": "vl", "type": "str", "default": "structure", "help": "Validation depth: syntax | structure | full (Default: structure)"},
     "validate-schema": {"args": ["vs", "validate-schemas"], "type": "bool", "help": "Also validate each YAML file against its corresponding JSON schema"},
     "schema-path": {"args": "sp", "type": "str", "default": None, "help": "Path to the json-schema/ directory (default: ./json-schema/ next to kometa.py)"},
+    "validate-file": {"args": ["vf", "validate-files"], "type": "str", "default": None, "help": "Validate a single YAML file against its auto-detected schema"},
+    "validate-dir": {"args": ["vd", "validate-directory"], "type": "str", "default": None, "help": "Validate all YAML files in a directory against their auto-detected schemas"},
 }
 
 parser = argparse.ArgumentParser()
@@ -450,6 +452,19 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
+            sys.exit(0 if passed else 1)
+
+        if run_args["validate-file"] or run_args["validate-dir"]:
+            from modules.validator import FileSetValidator, collect_yaml_files
+
+            source = run_args["validate-file"] or run_args["validate-dir"]
+            schema_dir = run_args["schema-path"] or os.path.join(os.path.dirname(os.path.abspath(__file__)), "json-schema")
+            paths = collect_yaml_files(source)
+            if not paths:
+                logger.error(f"No YAML files found at: {source}")
+                sys.exit(1)
+            validator = FileSetValidator(paths, schema_dir)
+            passed, *_ = validator.validate()
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
@@ -1270,7 +1285,7 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"]:
+        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
             process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"])
