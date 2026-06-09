@@ -93,6 +93,10 @@ arguments = {
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
     "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"},
+    "validate": {"args": ["va", "validate-config"], "type": "bool", "help": "Validate config.yml and all linked YAML files without running"},
+    "validate-level": {"args": "vl", "type": "str", "default": "structure", "help": "Validation depth: syntax | structure | full (Default: structure)"},
+    "validate-schema": {"args": ["vs", "validate-schemas"], "type": "bool", "help": "Also validate each YAML file against its corresponding JSON schema"},
+    "schema-path": {"args": "sp", "type": "str", "default": None, "help": "Path to the json-schema/ directory (default: ./json-schema/ next to kometa.py)"},
 }
 
 parser = argparse.ArgumentParser()
