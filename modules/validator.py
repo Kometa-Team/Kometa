@@ -137,7 +137,39 @@ class ConfigValidator:
         self._collect_linked_files(self._config_data)
 
     def _validate_structure(self):
-        raise NotImplementedError
+        """Syntax checks + structural validation."""
+        self._validate_syntax()
+        if self._config_data is None:
+            return
+
+        data = self._config_data
+
+        if not data.get("libraries"):
+            self._warnings.append("config.yml: 'libraries' key is missing or empty")
+        if "tmdb" not in data:
+            self._warnings.append("config.yml: 'tmdb' key not found — TMDb features will be unavailable")
+
+        for lib_name, lib_data in (data.get("libraries") or {}).items():
+            if not isinstance(lib_data, dict):
+                continue
+
+            for old_key, replacement in DEPRECATED_KEYS.items():
+                if old_key in lib_data:
+                    self._warnings.append(f"library '{lib_name}': '{old_key}' is deprecated, use '{replacement}'")
+
+            if not any(lib_data.get(k) for k in FILE_KEYS + ["operations"]):
+                self._warnings.append(f"library '{lib_name}': no collection_files, metadata_files, overlay_files, image_files, or operations defined")
+
+            for key in FILE_KEYS:
+                for raw_path, _ in self._iter_local_paths(lib_data.get(key)):
+                    path = self._resolve_path(raw_path)
+                    if not os.path.exists(path):
+                        self._errors.append(f"library '{lib_name}' {key}: path not found: {path}")
+
+        for raw_path, _ in self._iter_local_paths(data.get("playlist_files")):
+            path = self._resolve_path(raw_path)
+            if not os.path.exists(path):
+                self._errors.append(f"playlist_files: path not found: {path}")
 
     def _validate_full(self):
         raise NotImplementedError

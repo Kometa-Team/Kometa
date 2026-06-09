@@ -105,3 +105,71 @@ def test_syntax_playlist_files_are_checked(tmp_path, monkeypatch):
     passed, errors, warnings = v.validate()
     assert not passed
     assert any("bad.yml" in e for e in errors)
+
+
+# ── Structure tests ───────────────────────────────────────────────────────────
+
+
+def test_structure_missing_libraries_warns(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    v = make_validator(tmp_path, "tmdb:\n  apikey: abc\n", level="structure")
+    passed, errors, warnings = v.validate()
+    assert passed
+    assert any("libraries" in w for w in warnings)
+
+
+def test_structure_missing_tmdb_warns(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    v = make_validator(tmp_path, "libraries:\n  Movies:\n    collection_files: []\n", level="structure")
+    passed, errors, warnings = v.validate()
+    assert passed
+    assert any("tmdb" in w for w in warnings)
+
+
+def test_structure_deprecated_metadata_path_warns(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = "libraries:\n" "  Movies:\n" "    metadata_path:\n" "      - file: collections/test.yml\n"
+    v = make_validator(tmp_path, config, level="structure")
+    passed, errors, warnings = v.validate()
+    assert any("metadata_path" in w and "deprecated" in w for w in warnings)
+
+
+def test_structure_deprecated_overlay_path_warns(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = "libraries:\n" "  Movies:\n" "    overlay_path:\n" "      - file: overlays/test.yml\n"
+    v = make_validator(tmp_path, config, level="structure")
+    passed, errors, warnings = v.validate()
+    assert any("overlay_path" in w and "deprecated" in w for w in warnings)
+
+
+def test_structure_missing_file_path_is_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/missing.yml\n" "tmdb:\n" "  apikey: abc\n"
+    v = make_validator(tmp_path, config, level="structure")
+    passed, errors, warnings = v.validate()
+    assert not passed
+    assert any("missing.yml" in e and "not found" in e for e in errors)
+
+
+def test_structure_existing_file_path_passes(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/good.yml\n" "tmdb:\n" "  apikey: abc\n"
+    v = make_validator(tmp_path, config, level="structure", extra_files={"collections/good.yml": "collections:\n  My Collection:\n    tmdb_popular: true\n"})
+    passed, errors, warnings = v.validate()
+    assert errors == []
+
+
+def test_structure_library_with_no_content_warns(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = "libraries:\n  Movies:\n    plex:\n      url: http://localhost\n"
+    v = make_validator(tmp_path, config, level="structure")
+    passed, errors, warnings = v.validate()
+    assert any("Movies" in w and "no" in w.lower() for w in warnings)
+
+
+def test_structure_yaml_error_in_config_is_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    v = make_validator(tmp_path, "bad:\n\ttabs: not allowed\n", level="structure")
+    passed, errors, warnings = v.validate()
+    assert not passed
+    assert any("YAML Error" in e for e in errors)
