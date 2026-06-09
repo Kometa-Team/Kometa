@@ -64,10 +64,147 @@ def collect_yaml_files(path: str) -> list[str]:
 
 
 class FileSetValidator:
-    """Stub — implemented in Task 2."""
+    """Validate a list of YAML files against auto-detected JSON schemas."""
 
-    def __init__(self, paths, schema_path):
-        raise NotImplementedError
+    def __init__(self, paths: list[str], schema_path: str):
+        self.paths = paths
+        self.schema_path = schema_path
+        self._results: list[dict] = []
+        self._aggregate_gaps: dict[str, Counter] = {}
+        self._schemas_checked: set[str] = set()
+
+    def validate(self) -> tuple[bool, dict[str, list[str]], dict[str, Counter]]:
+        for path in self.paths:
+            result = self._process_file(path)
+            self._results.append(result)
+            if not result["errors"] and not result["skipped"] and result["schema_validated"]:
+                self._schemas_checked.add(result["schema_filename"])
+                for k, v in result["gaps"].items():
+                    self._aggregate_gaps.setdefault(result["schema_filename"], Counter())[k] += v
+        self._print_report()
+        per_file_errors = {r["path"]: r["errors"] for r in self._results if r["errors"]}
+        return len(per_file_errors) == 0, per_file_errors, self._aggregate_gaps
+
+    def _process_file(self, path: str) -> dict:
+        result = {
+            "path": path,
+            "schema_filename": None,
+            "errors": [],
+            "gaps": Counter(),
+            "skipped": False,
+            "schema_validated": False,
+        }
+
+        try:
+            y = ryaml.YAML()
+            with open(path, encoding="utf-8") as fp:
+                data = y.load(fp)
+            data = data if isinstance(data, dict) else {}
+        except ryaml.error.YAMLError as e:
+            msg = str(e)
+            if "found character '\\t'" in msg:
+                result["errors"].append("YAML Error: tabs are not allowed, only spaces")
+            else:
+                result["errors"].append(f"YAML Error: {msg.splitlines()[0]}")
+            return result
+        except Exception as e:
+            result["errors"].append(f"Error loading file: {e}")
+            return result
+
+        schema_key = detect_schema_type(data)
+        if schema_key is None:
+            result["skipped"] = True
+            return result
+
+        schema_filename = SCHEMA_MAP.get(schema_key)
+        if not schema_filename:
+            result["skipped"] = True
+            return result
+
+        result["schema_filename"] = schema_filename
+
+        if not self.schema_path or not os.path.isdir(self.schema_path):
+            return result
+
+        schema_file = os.path.join(self.schema_path, schema_filename)
+        if not os.path.exists(schema_file):
+            return result
+
+        try:
+            with open(schema_file, encoding="utf-8") as f:
+                schema = json.load(f)
+        except Exception as e:
+            result["errors"].append(f"Could not load {schema_filename}: {e}")
+            return result
+
+        import jsonschema
+
+        result["schema_validated"] = True
+        schema_validator = jsonschema.Draft6Validator(schema)
+
+        for error in schema_validator.iter_errors(data):
+            if error.validator == "additionalProperties":
+                props = re.findall(r"'([^']+)'", error.message)
+                normalized = []
+                for p in error.absolute_path:
+                    if isinstance(p, int):
+                        if normalized:
+                            normalized[-1] += "[*]"
+                    else:
+                        normalized.append(str(p))
+                base = ".".join(normalized)
+                for prop in props:
+                    key = f"{base}.{prop}" if base else prop
+                    result["gaps"][key] += 1
+            else:
+                path_str = " -> ".join(str(p) for p in error.absolute_path) or "(root)"
+                result["errors"].append(f"[{schema_filename}] at {path_str}: {error.message}")
+
+        return result
+
+    def _print_report(self) -> None:
+        sep = "=" * 62
+        total = len(self.paths)
+        skipped = sum(1 for r in self._results if r["skipped"])
+        error_files = sum(1 for r in self._results if r["errors"])
+        passing_files = total - skipped - error_files
+        total_gap_keys = sum(len(c) for c in self._aggregate_gaps.values())
+
+        for result in self._results:
+            if not result["errors"]:
+                continue
+            logger.info("")
+            logger.info(sep)
+            logger.info(f" File: {result['path']}")
+            if result["schema_filename"]:
+                logger.info(f" Schema: {result['schema_filename']}")
+            logger.info(f" Errors ({len(result['errors'])}):")
+            for e in result["errors"]:
+                logger.error(f"   {e}")
+
+        if self._aggregate_gaps:
+            logger.info("")
+            logger.info(sep)
+            logger.info(f" Schema Gap Report (across {passing_files} passing file(s))")
+            logger.info(sep)
+            logger.info(" Keys found in your files that are not in the schema:")
+            for schema_filename, counter in self._aggregate_gaps.items():
+                logger.info("")
+                logger.info(f" {schema_filename}:")
+                for gap_key, count in counter.most_common():
+                    noun = "files" if count > 1 else "file"
+                    logger.info(f"   - {gap_key}  (seen in {count} {noun})")
+            clean = [s for s in self._schemas_checked if s not in self._aggregate_gaps]
+            if clean:
+                logger.info("")
+                logger.info(f" No gaps in: {', '.join(s.replace('-schema.json', '') for s in clean)}")
+
+        logger.info("")
+        logger.info(sep)
+        logger.info(f" Summary: {total} files checked, {skipped} skipped (unknown type), {error_files} with errors, {total_gap_keys} schema gap(s) found")
+        logger.info(f" Result: {'FAILED' if error_files else 'PASSED'}")
+        logger.info(sep)
+        logger.info("")
 
 
 class ConfigValidator:

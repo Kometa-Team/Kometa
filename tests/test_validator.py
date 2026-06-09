@@ -370,3 +370,53 @@ def test_collect_yaml_files_directory(tmp_path):
             str(tmp_path / "sub" / "c.yml"),
         ]
     )
+
+
+# ── FileSetValidator tests ────────────────────────────────────────────────────
+
+
+def test_fileset_validator_clean_file_passes(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    f = tmp_path / "collections.yml"
+    f.write_text("collections:\n  My Collection:\n    tmdb_popular: 5\n", encoding="utf-8")
+    v = FileSetValidator([str(f)], SCHEMA_DIR)
+    passed, per_file_errors, aggregate_gaps = v.validate()
+    assert passed
+    assert per_file_errors == {}
+
+
+def test_fileset_validator_parse_error(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    f = tmp_path / "bad.yml"
+    f.write_text("key: [\n  unclosed\n", encoding="utf-8")
+    v = FileSetValidator([str(f)], SCHEMA_DIR)
+    passed, per_file_errors, aggregate_gaps = v.validate()
+    assert not passed
+    assert str(f) in per_file_errors
+    assert any("YAML" in e for e in per_file_errors[str(f)])
+    assert aggregate_gaps == {}
+
+
+def test_fileset_validator_unknown_type(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    f = tmp_path / "templates_only.yml"
+    f.write_text("templates:\n  MyTemplate:\n    test: true\n", encoding="utf-8")
+    v = FileSetValidator([str(f)], SCHEMA_DIR)
+    passed, per_file_errors, aggregate_gaps = v.validate()
+    assert passed
+    assert per_file_errors == {}
+
+
+def test_fileset_validator_aggregate_gaps(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    content = "collections:\n  Test:\n    tmdb_popular: 5\nunknown_key_xyz: true\n"
+    f1 = tmp_path / "a.yml"
+    f2 = tmp_path / "b.yml"
+    f1.write_text(content, encoding="utf-8")
+    f2.write_text(content, encoding="utf-8")
+    v = FileSetValidator([str(f1), str(f2)], SCHEMA_DIR)
+    passed, per_file_errors, aggregate_gaps = v.validate()
+    assert passed
+    assert "collection-schema.json" in aggregate_gaps
+    gap_key = next(k for k in aggregate_gaps["collection-schema.json"] if "unknown_key_xyz" in k)
+    assert aggregate_gaps["collection-schema.json"][gap_key] == 2
