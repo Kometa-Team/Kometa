@@ -189,6 +189,7 @@ class ConfigValidator:
             self._config_data = self._load_yaml(self.config_path, "config.yml")
             if self._config_data is not None:
                 self._files_for_schema.append((self._config_data, "config", "config.yml"))
+                self._collect_linked_files(self._config_data)
         try:
             cls = _ConfigFile if _ConfigFile is not None else _get_config_file_class()
             cls(self.requests, self.default_dir, self.attrs, self.secret_args)
@@ -211,7 +212,6 @@ class ConfigValidator:
             if not os.path.exists(schema_file):
                 self._warnings.append(f"Schema file not found, skipping: {schema_file}")
                 continue
-            self._schemas_checked.add(schema_filename)
             try:
                 with open(schema_file, encoding="utf-8") as f:
                     schema = json.load(f)
@@ -219,8 +219,9 @@ class ConfigValidator:
                 self._warnings.append(f"Could not load {schema_filename}: {e}")
                 continue
 
-            validator_cls = jsonschema.Draft6Validator(schema)
-            for error in validator_cls.iter_errors(data):
+            self._schemas_checked.add(schema_filename)
+            schema_validator = jsonschema.Draft6Validator(schema)
+            for error in schema_validator.iter_errors(data):
                 if error.validator == "additionalProperties":
                     props = re.findall(r"'([^']+)'", error.message)
                     normalized = []
