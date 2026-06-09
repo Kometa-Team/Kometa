@@ -778,6 +778,105 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --low-priority
             ```
 
+??? blank "Validate Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-va`/`--validate-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE`<a class="headerlink" href="#validate" title="Permanent link">¶</a>"
+
+    <div id="validate" />Parse and validate `config.yml` and all YAML files linked from it, print a structured report, then exit — without performing a normal run.
+
+    Exits with code `0` if validation passes, `1` if there are any errors. Warnings do not affect the exit code.
+
+    Use [`--validate-level`](#validate-level) to control how deep the validation goes. Combine with [`--validate-schema`](#validate-schema) to also check files against their JSON schemas.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `-va`, `--validate-config`, or `--validate` (ex. `--validate`)
+
+    **Environment Variable:** `KOMETA_VALIDATE` (ex. `KOMETA_VALIDATE=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --validate
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate
+            ```
+
+??? blank "Validate Level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vl`/`--validate-level`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_LEVEL`<a class="headerlink" href="#validate-level" title="Permanent link">¶</a>"
+
+    <div id="validate-level" />Controls how deep the validation goes when [`--validate`](#validate) is set. Default is `structure`.
+
+    | Level | What it checks |
+    |-------|----------------|
+    | `syntax` | Parses `config.yml` and all linked local YAML files; reports any YAML syntax errors. Remote references (`url:`, `git:`, `default:`, `repo:`) are skipped. |
+    | `structure` | Everything in `syntax`, plus: checks for required keys (`libraries`, `tmdb`), warns on deprecated keys (`metadata_path`, `overlay_path`), and errors on local `file:` paths that don't exist on disk. |
+    | `full` | Calls the full Kometa config initialisation (connects to Plex and all configured APIs) without actually running any collections, overlays, or operations. |
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** `syntax`, `structure`, or `full`
+
+    **Shell Flags:** `-vl` or `--validate-level` (ex. `--validate-level syntax`)
+
+    **Environment Variable:** `KOMETA_VALIDATE_LEVEL` (ex. `KOMETA_VALIDATE_LEVEL=syntax`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --validate --validate-level syntax
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-level syntax
+            ```
+
+??? blank "Validate Schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vs`/`--validate-schemas`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_SCHEMA`<a class="headerlink" href="#validate-schema" title="Permanent link">¶</a>"
+
+    <div id="validate-schema" />When set alongside [`--validate`](#validate), each YAML file is also checked against its corresponding JSON schema in the `json-schema/` directory.
+
+    Schema violations are split into two categories:
+
+    - **Errors** — type mismatches, failed `required` checks, and other constraint violations. These cause exit code `1`.
+    - **Schema gaps** — keys found in your files that are not defined in the schema (`additionalProperties` violations). These are reported separately as a gap report and do **not** affect the exit code. They are useful for identifying where the JSON schemas need to be extended.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `-vs`, `--validate-schemas`, or `--validate-schema` (ex. `--validate-schema`)
+
+    **Environment Variable:** `KOMETA_VALIDATE_SCHEMA` (ex. `KOMETA_VALIDATE_SCHEMA=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --validate --validate-schema
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-schema
+            ```
+
+??? blank "Schema Path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-sp`/`--schema-path`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_SCHEMA_PATH`<a class="headerlink" href="#schema-path" title="Permanent link">¶</a>"
+
+    <div id="schema-path" />Override the path to the `json-schema/` directory used by [`--validate-schema`](#validate-schema). Defaults to the `json-schema/` folder next to `kometa.py`.
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** Path to a directory containing JSON schema files
+
+    **Shell Flags:** `-sp` or `--schema-path` (ex. `--schema-path /some/path/to/json-schema`)
+
+    **Environment Variable:** `KOMETA_SCHEMA_PATH` (ex. `KOMETA_SCHEMA_PATH=/some/path/to/json-schema`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --validate --validate-schema --schema-path /some/path/to/json-schema
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-schema --schema-path /some/path/to/json-schema
+            ```
+
 ??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`<a class="headerlink" href="#kometa-vars" title="Permanent link">¶</a>"
 
     <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the
