@@ -1270,7 +1270,7 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"]:
+        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"]:
             process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"])
