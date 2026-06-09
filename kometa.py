@@ -432,6 +432,26 @@ def start(attrs):
 
         logger.separator(debug=True)
 
+        if run_args["validate"]:
+            level = run_args["validate-level"]
+            if level not in ("syntax", "structure", "full"):
+                logger.error(f"--validate-level must be syntax, structure, or full. Got: {level!r}")
+                sys.exit(1)
+            from modules.validator import ConfigValidator
+
+            schema_dir = run_args["schema-path"] or os.path.join(os.path.dirname(os.path.abspath(__file__)), "json-schema")
+            validator = ConfigValidator(
+                my_requests,
+                default_dir,
+                attrs,
+                secret_args,
+                level=level,
+                validate_schema=run_args["validate-schema"],
+                schema_path=schema_dir,
+            )
+            passed, _errors, _warnings = validator.validate()
+            sys.exit(0 if passed else 1)
+
         logger.separator(f"Starting {start_type}Run")
         config = None
         stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
