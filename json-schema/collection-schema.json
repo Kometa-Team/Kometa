@@ -1044,6 +1044,128 @@
                         ]
                     },
                     "then": { "required": ["watch_region"] }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_cast"] },
+                            { "required": ["with_crew"] },
+                            { "required": ["with_people"] },
+                            { "required": ["year"] },
+                            { "required": ["primary_release_year"] },
+                            { "required": ["primary_release_date.gte"] },
+                            { "required": ["primary_release_date.lte"] },
+                            { "required": ["release_date.gte"] },
+                            { "required": ["release_date.lte"] },
+                            { "required": ["with_release_type"] },
+                            { "required": ["with_title_translation"] },
+                            { "required": ["with_origin_country"] },
+                            { "required": ["certification_country"] },
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] },
+                            { "required": ["region"] },
+                            { "required": ["include_video"] }
+                        ]
+                    },
+                    "then": {
+                        "allOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        { "required": ["with_networks"] },
+                                        { "required": ["with_type"] },
+                                        { "required": ["with_status"] },
+                                        { "required": ["with_name_translation"] },
+                                        { "required": ["first_air_date_year"] },
+                                        { "required": ["first_air_date.gte"] },
+                                        { "required": ["first_air_date.lte"] },
+                                        { "required": ["air_date.gte"] },
+                                        { "required": ["air_date.lte"] },
+                                        { "required": ["timezone"] },
+                                        { "required": ["screened_theatrically"] },
+                                        { "required": ["include_null_first_air_dates"] }
+                                    ]
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "sort_by": {
+                                        "enum": [
+                                            "original_title.asc", "original_title.desc",
+                                            "popularity.asc", "popularity.desc",
+                                            "primary_release_date.asc", "primary_release_date.desc",
+                                            "release_date.asc", "release_date.desc",
+                                            "revenue.asc", "revenue.desc",
+                                            "title.asc", "title.desc",
+                                            "vote_average.asc", "vote_average.desc",
+                                            "vote_count.asc", "vote_count.desc"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_networks"] },
+                            { "required": ["with_type"] },
+                            { "required": ["with_status"] },
+                            { "required": ["with_name_translation"] },
+                            { "required": ["first_air_date_year"] },
+                            { "required": ["first_air_date.gte"] },
+                            { "required": ["first_air_date.lte"] },
+                            { "required": ["air_date.gte"] },
+                            { "required": ["air_date.lte"] },
+                            { "required": ["timezone"] },
+                            { "required": ["screened_theatrically"] },
+                            { "required": ["include_null_first_air_dates"] }
+                        ]
+                    },
+                    "then": {
+                        "allOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        { "required": ["with_cast"] },
+                                        { "required": ["with_crew"] },
+                                        { "required": ["with_people"] },
+                                        { "required": ["year"] },
+                                        { "required": ["primary_release_year"] },
+                                        { "required": ["primary_release_date.gte"] },
+                                        { "required": ["primary_release_date.lte"] },
+                                        { "required": ["release_date.gte"] },
+                                        { "required": ["release_date.lte"] },
+                                        { "required": ["with_release_type"] },
+                                        { "required": ["with_title_translation"] },
+                                        { "required": ["with_origin_country"] },
+                                        { "required": ["certification_country"] },
+                                        { "required": ["certification"] },
+                                        { "required": ["certification.lte"] },
+                                        { "required": ["certification.gte"] },
+                                        { "required": ["region"] },
+                                        { "required": ["include_video"] }
+                                    ]
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "sort_by": {
+                                        "enum": [
+                                            "first_air_date.asc", "first_air_date.desc",
+                                            "name.asc", "name.desc",
+                                            "original_name.asc", "original_name.desc",
+                                            "popularity.asc", "popularity.desc",
+                                            "vote_average.asc", "vote_average.desc",
+                                            "vote_count.asc", "vote_count.desc"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
                 }
             ]
         }
