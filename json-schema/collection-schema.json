@@ -296,8 +296,10 @@
                 "tmdb_trending_weekly": { "type": "integer", "minimum": 1, "description": "Number of weekly trending TMDb items to get." },
                 "tmdb_discover": {
                     "description": "TMDb Discover search. Uses TMDb's Discover API with movie or show search attributes.",
-                    "type": "object",
-                    "additionalProperties": true
+                    "oneOf": [
+                        { "$ref": "#/definitions/tmdb-discover-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/tmdb-discover-block" } }
+                    ]
                 },
 
                 "tvdb_list": {
@@ -944,6 +946,64 @@
                 { "type": "string" },
                 { "type": "array", "items": { "type": "string" } }
             ]
+        },
+
+        "tmdb-discover-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "limit":                      { "type": "integer", "minimum": 0 },
+                "sort_by":                    { "type": "string" },
+                "with_companies":             { "type": "string" },
+                "without_companies":          { "type": "string" },
+                "with_genres":                { "type": "string" },
+                "without_genres":             { "type": "string" },
+                "with_keywords":              { "type": "string" },
+                "without_keywords":           { "type": "string" },
+                "with_watch_providers":       { "type": "string" },
+                "without_watch_providers":    { "type": "string" },
+                "with_original_language":     { "type": "string" },
+                "with_overview_translation":  { "type": "string" },
+                "watch_region":               { "type": "string" },
+                "with_watch_monetization_types": { "type": "string" },
+                "vote_count.gte":             { "type": "integer" },
+                "vote_count.lte":             { "type": "integer" },
+                "with_runtime.gte":           { "type": "integer" },
+                "with_runtime.lte":           { "type": "integer" },
+                "vote_average.gte":           { "type": "number" },
+                "vote_average.lte":           { "type": "number" },
+                "include_adult":              { "type": "boolean" },
+                "with_cast":                  { "type": "string" },
+                "with_crew":                  { "type": "string" },
+                "with_people":                { "type": "string" },
+                "with_release_type":          { "type": "string" },
+                "with_title_translation":     { "type": "string" },
+                "with_origin_country":        { "type": "string" },
+                "region":                     { "type": "string" },
+                "certification_country":      { "type": "string" },
+                "certification":              { "type": "string" },
+                "certification.lte":          { "type": "string" },
+                "certification.gte":          { "type": "string" },
+                "year":                       { "type": "integer", "minimum": 1800 },
+                "primary_release_year":       { "type": "integer", "minimum": 1800 },
+                "primary_release_date.gte":   { "type": "string" },
+                "primary_release_date.lte":   { "type": "string" },
+                "release_date.gte":           { "type": "string" },
+                "release_date.lte":           { "type": "string" },
+                "include_video":              { "type": "boolean" },
+                "with_networks":              { "type": "string" },
+                "with_name_translation":      { "type": "string" },
+                "timezone":                   { "type": "string" },
+                "first_air_date_year":        { "type": "integer", "minimum": 1800 },
+                "air_date.gte":               { "type": "string" },
+                "air_date.lte":               { "type": "string" },
+                "first_air_date.gte":         { "type": "string" },
+                "first_air_date.lte":         { "type": "string" },
+                "with_status":                { "type": "integer", "minimum": 0, "maximum": 5 },
+                "with_type":                  { "type": "integer", "minimum": 0, "maximum": 6 },
+                "screened_theatrically":      { "type": "boolean" },
+                "include_null_first_air_dates": { "type": "boolean" }
+            }
         }
     }
 }
