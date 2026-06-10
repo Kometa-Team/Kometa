@@ -1064,6 +1064,14 @@ class Cache:
                         compare TEXT,
                         location TEXT)"""
                     )
+                    cursor.execute(
+                        f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        overlay TEXT,
+                        compare TEXT,
+                        location TEXT)"""
+                    )
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
@@ -1096,6 +1104,14 @@ class Cache:
                         )
                         cursor.execute(
                             f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                            key INTEGER PRIMARY KEY,
+                            rating_key TEXT UNIQUE,
+                            overlay TEXT,
+                            compare TEXT,
+                            location TEXT)"""
+                        )
+                        cursor.execute(
+                            f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
