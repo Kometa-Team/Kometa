@@ -233,3 +233,129 @@ def test_watch_region_with_monetization_valid(collection_schema):
         }
     )
     validate(doc, collection_schema)  # must not raise
+
+
+# ── Mutual exclusion ──────────────────────────────────────────────────────────
+
+
+def test_movie_only_keys_pass(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "limit": 100,
+            "with_cast": "500",
+            "primary_release_year": 2023,
+            "sort_by": "popularity.desc",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_tv_only_keys_pass(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "limit": 100,
+            "with_networks": "213",
+            "first_air_date_year": 2023,
+            "sort_by": "popularity.desc",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_mixed_movie_and_tv_keys_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "primary_release_year": 2023,  # movie-only
+            "with_networks": "213",  # TV-only
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_tv_signal_disallows_movie_key(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "first_air_date_year": 2022,  # TV signal
+            "with_cast": "500",  # movie-only — must be rejected
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_movie_signal_disallows_tv_key(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_cast": "500",  # movie signal
+            "include_null_first_air_dates": True,  # TV-only — must be rejected
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_shared_only_allows_all_sort_options(collection_schema):
+    """No movie/TV signal — sort_by is unconstrained."""
+    doc = _collection_with_discover({"sort_by": "name.asc"})  # TV-only sort option
+    validate(doc, collection_schema)  # must not raise (no signal present)
+
+
+def test_movie_signal_restricts_sort_by(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_cast": "500",  # movie signal
+            "sort_by": "name.asc",  # TV-only sort option — must be rejected
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_movie_signal_allows_movie_sort(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_cast": "500",
+            "sort_by": "revenue.desc",  # movie sort option
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_movie_signal_without_sort_by_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_cast": "500",  # movie signal, no sort_by specified
+        }
+    )
+    validate(doc, collection_schema)  # must not raise — sort_by constraint only applies when present
+
+
+def test_tv_signal_without_sort_by_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_networks": "213",  # TV signal, no sort_by specified
+        }
+    )
+    validate(doc, collection_schema)  # must not raise — sort_by constraint only applies when present
+
+
+def test_tv_signal_restricts_sort_by(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_networks": "213",  # TV signal
+            "sort_by": "revenue.desc",  # movie-only sort option — must be rejected
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_tv_signal_allows_tv_sort(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_networks": "213",
+            "sort_by": "name.asc",  # TV sort option
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
