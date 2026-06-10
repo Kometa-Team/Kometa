@@ -95,3 +95,131 @@ def test_array_of_blocks_valid(collection_schema):
         ]
     )
     validate(doc, collection_schema)  # must not raise
+
+
+def test_primary_release_year_below_minimum(collection_schema):
+    doc = _collection_with_discover({"primary_release_year": 1799})
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_first_air_date_year_below_minimum(collection_schema):
+    doc = _collection_with_discover({"first_air_date_year": 1799})
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+# ── Cross-dependency rules ─────────────────────────────────────────────────────
+
+
+def test_certification_country_without_certification_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification_country": "US",
+            # missing: certification / certification.lte / certification.gte
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_certification_without_certification_country_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification": "PG-13",
+            # missing: certification_country
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_certification_lte_without_certification_country_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification.lte": "PG-13",
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_certification_gte_without_certification_country_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification.gte": "PG-13",
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_certification_pair_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification_country": "US",
+            "certification": "PG-13",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_certification_country_with_lte_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "certification_country": "US",
+            "certification.lte": "R",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_watch_region_without_providers_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "watch_region": "US",
+            # missing: with_watch_providers / without_watch_providers / with_watch_monetization_types
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_monetization_types_without_watch_region_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_watch_monetization_types": "flatrate",
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_without_watch_providers_without_watch_region_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "without_watch_providers": "8",
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
+def test_watch_region_with_providers_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "watch_region": "US",
+            "with_watch_providers": "8",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
+def test_watch_region_with_monetization_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "watch_region": "GB",
+            "with_watch_monetization_types": "flatrate",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise

@@ -1,5 +1,5 @@
 {
-    "$schema": "http://json-schema.org/draft-06/schema#",
+    "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kometa Collection File",
     "description": "Schema for Kometa collection files. These files define Plex collections using builders, filters, and metadata updates.",
     "type": "object",
@@ -1003,7 +1003,48 @@
                 "with_type":                  { "type": "integer", "minimum": 0, "maximum": 6 },
                 "screened_theatrically":      { "type": "boolean" },
                 "include_null_first_air_dates": { "type": "boolean" }
-            }
+            },
+            "allOf": [
+                {
+                    "if": { "required": ["certification_country"] },
+                    "then": {
+                        "anyOf": [
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] }
+                        ]
+                    },
+                    "then": { "required": ["certification_country"] }
+                },
+                {
+                    "if": { "required": ["watch_region"] },
+                    "then": {
+                        "anyOf": [
+                            { "required": ["with_watch_providers"] },
+                            { "required": ["without_watch_providers"] },
+                            { "required": ["with_watch_monetization_types"] }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_watch_monetization_types"] },
+                            { "required": ["without_watch_providers"] }
+                        ]
+                    },
+                    "then": { "required": ["watch_region"] }
+                }
+            ]
         }
     }
 }
