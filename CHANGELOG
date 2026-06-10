@@ -23,6 +23,7 @@ Expand `json-schema/config-schema.json` with full coverage and add per-type sche
 `--validate` now implies immediate run (like `--run-libraries`).
 Add Plex square art support: upload `square.ext` assets for movies, shows, seasons, albums, and playlists via `find_and_upload_assets`. Extends metadata file items and library operations.
 Add `apprise` and `schedule_overlays` to the config JSON schema.
+The `tmdb_discover` YAML validator now enforces: unknown keys are rejected, value types are checked, `certification_country`/`certification` must co-occur, `watch_region` must accompany any watch-provider or monetization key, and movie-only and TV-only parameters are mutually exclusive. Note: `with_watch_providers` and `without_watch_providers` now require `watch_region` at validation time (the TMDb Discover API requires this), which is stricter than the runtime check in `builder.py`.
 
 # Performance
 Use the SQLite cache for TMDb queries in `check_filters` and `check_missing_filters` instead of bypassing it with `ignore_cache=True`.

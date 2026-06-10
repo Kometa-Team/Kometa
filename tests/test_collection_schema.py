@@ -235,6 +235,16 @@ def test_watch_region_with_monetization_valid(collection_schema):
     validate(doc, collection_schema)  # must not raise
 
 
+def test_watch_region_with_without_providers_valid(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "watch_region": "US",
+            "without_watch_providers": "9",
+        }
+    )
+    validate(doc, collection_schema)  # must not raise
+
+
 # ── Mutual exclusion ──────────────────────────────────────────────────────────
 
 
