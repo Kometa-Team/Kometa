@@ -1038,6 +1038,7 @@
                 {
                     "if": {
                         "anyOf": [
+                            { "required": ["with_watch_providers"] },
                             { "required": ["with_watch_monetization_types"] },
                             { "required": ["without_watch_providers"] }
                         ]

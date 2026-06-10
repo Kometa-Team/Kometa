@@ -205,6 +205,16 @@ def test_without_watch_providers_without_watch_region_rejected(collection_schema
         validate(doc, collection_schema)
 
 
+def test_with_watch_providers_without_watch_region_rejected(collection_schema):
+    doc = _collection_with_discover(
+        {
+            "with_watch_providers": "8",
+        }
+    )
+    with pytest.raises(ValidationError):
+        validate(doc, collection_schema)
+
+
 def test_watch_region_with_providers_valid(collection_schema):
     doc = _collection_with_discover(
         {
