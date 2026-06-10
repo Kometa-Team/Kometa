@@ -173,3 +173,51 @@ def test_text_file_keeps_numeric_entries_generic_without_library_type():
         assert text_builder.get_ids(path, is_movie=None) == [(12345, "number")]
     finally:
         os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_returns_tmdb_for_movie_library():
+    path = _write_temp_file("tmdb:12345\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=True) == [(12345, "tmdb")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_returns_tmdb_show_for_show_library():
+    path = _write_temp_file("tmdb:12345\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=False) == [(12345, "tmdb_show")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_returns_tmdb_when_library_type_unknown():
+    path = _write_temp_file("tmdb:12345\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=None) == [(12345, "tmdb")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_json_tmdb_id_returns_tmdb_show_for_show_library():
+    path = _write_temp_file("url:https://example.com/shows.json\n")
+    try:
+        text_builder = TextFile(
+            FakeRequests(
+                {
+                    "https://example.com/shows.json": [
+                        {"tmdb_id": 12345},
+                        {"type": "tmdb", "id": 67890},
+                    ]
+                }
+            )
+        )
+        assert text_builder.get_ids(path, is_movie=False) == [
+            (12345, "tmdb_show"),
+            (67890, "tmdb_show"),
+        ]
+    finally:
+        os.unlink(path)

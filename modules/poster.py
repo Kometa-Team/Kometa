@@ -1,9 +1,13 @@
-import os, time
+import os
+import time
+
+from PIL import Image, ImageColor, ImageDraw, ImageFont
+
 from modules import util
 from modules.util import Failed
-from PIL import Image, ImageFont, ImageDraw, ImageColor
 
 logger = util.logger
+
 
 class ImageData:
     def __init__(self, attribute, location, prefix="", image_type="poster", is_url=True, compare=None):
@@ -13,6 +17,7 @@ class ImageData:
         self.is_poster = image_type == "poster"
         self.is_background = image_type == "background"
         self.is_logo = image_type == "logo"
+        self.is_square_art = image_type == "square_art"
         self.is_url = is_url
         self.compare = compare if compare else location if is_url else os.stat(location).st_size
         self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
@@ -93,6 +98,7 @@ class ImageBase:
             return ImageColor.getcolor(self.data[self.methods[attr]], "RGBA")
         except ValueError:
             raise Failed(f"Poster Error: {attr}: {self.data[self.methods[attr]]} invalid")
+
 
 class Component(ImageBase):
     def __init__(self, config, data):
@@ -220,8 +226,7 @@ class Component(ImageBase):
 
         output += f"({self.horizontal_offset},{self.horizontal_align},{self.vertical_offset},{self.vertical_align})"
         if self.has_back:
-            for value in [self.back_color, self.back_radius, self.back_padding, self.back_align,
-                          self.back_width, self.back_height, self.back_line_color, self.back_line_width]:
+            for value in [self.back_color, self.back_radius, self.back_padding, self.back_align, self.back_width, self.back_height, self.back_line_color, self.back_line_width]:
                 if value is not None:
                     output += f"{value}"
         return output
@@ -241,6 +246,7 @@ class Component(ImageBase):
                 return int(image_value / 2) - int(over_value / 2) + value
             else:
                 return value
+
         if new_cords:
             ho, ha, vo, va = new_cords
         else:
@@ -258,14 +264,14 @@ class Component(ImageBase):
             if self.image_width:
                 image_height = int(float(image_height) * float(self.image_width / float(image_width)))
                 image_width = self.image_width
-                image = image.resize((image_width, image_height), Image.Resampling.LANCZOS) # noqa
+                image = image.resize((image_width, image_height), Image.Resampling.LANCZOS)  # noqa
             if self.image_color:
                 r, g, b = self.image_color
                 pixels = image.load()
                 for x in range(image_width):
                     for y in range(image_height):
-                        if pixels[x, y][3] > 0: # noqa
-                            pixels[x, y] = (r, g, b, pixels[x, y][3]) # noqa
+                        if pixels[x, y][3] > 0:  # noqa
+                            pixels[x, y] = (r, g, b, pixels[x, y][3])  # noqa
         else:
             image, image_width, image_height = None, 0, 0
         if self.text is not None:
@@ -288,12 +294,7 @@ class Component(ImageBase):
             generated_layer = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(generated_layer)
             if self.has_back:
-                cords = (
-                    start_x - self.back_padding,
-                    start_y - self.back_padding,
-                    start_x + back_width + self.back_padding,
-                    start_y + back_height + self.back_padding
-                )
+                cords = (start_x - self.back_padding, start_y - self.back_padding, start_x + back_width + self.back_padding, start_y + back_height + self.back_padding)
                 if self.back_radius:
                     drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
                 else:
@@ -330,12 +331,12 @@ class Component(ImageBase):
             main_point = (int(main_x), int(main_y))
 
             if self.text is not None:
-                drawing.multiline_text(main_point, self.text, font=self.font, fill=self.font_color, align=self.text_align,
-                                       stroke_fill=self.stroke_color, stroke_width=self.stroke_width)
+                drawing.multiline_text(main_point, self.text, font=self.font, fill=self.font_color, align=self.text_align, stroke_fill=self.stroke_color, stroke_width=self.stroke_width)
             if addon_x is not None:
                 main_point = (addon_x, addon_y)
 
         return generated_layer, main_point, image
+
 
 class KometaImage(ImageBase):
     def __init__(self, config, data, image_attr, playlist=False):
@@ -373,7 +374,7 @@ class KometaImage(ImageBase):
         pmm_image = Image.new(mode="RGB", size=canvas_box, color=self.background_color)
         if self.background_image:
             bkg_image = Image.open(self.background_image)
-            bkg_image = bkg_image.resize(canvas_box, Image.Resampling.LANCZOS) # noqa
+            bkg_image = bkg_image.resize(canvas_box, Image.Resampling.LANCZOS)  # noqa
             pmm_image.paste(bkg_image, (0, 0), bkg_image)
 
         if self.border_width:
@@ -395,4 +396,3 @@ class KometaImage(ImageBase):
         pmm_image.save(image_path)
 
         return ImageData(self.image_attr, image_path, is_url=False, image_type="poster", compare=self.get_compare_string())
-
