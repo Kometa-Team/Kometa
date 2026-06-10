@@ -40,6 +40,7 @@ Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
 Update Letterboxd builder docs to reflect letterboxdpy-backed filtering, ordering, and incremental behavior.
 Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
+Call out the schema file as supporting only config.yml. explicitly.
 
 # Defaults
 Add E4 to network overlay and show network collection. #2975
