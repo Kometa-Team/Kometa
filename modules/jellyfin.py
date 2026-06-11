@@ -373,14 +373,130 @@ class Jellyfin(Library):
         return None
         
     def fetchItems(self, uri_args: dict | None = None) -> list[ItemMovieWrapper]:
-        if uri_args is not None:
-            warn_msg = "Jellyfin fetchItems method not implemented yet"
-            logger.warning(warn_msg)
-            return []
+        """Return items matching a Plex-style smart-filter URL.
 
-        results = []
-        for item in self.api.items.search.recursive().all:
-            results.append(ItemMovieWrapper(item))
+        Kometa converts smart_filter definitions into Plex-style query args such as:
+        ?type=1&sort=originallyAvailableAt:desc&push=1&genre=Action&pop=1
+
+        Jellyfin does not consume that Plex URL directly, so we load the Jellyfin
+        library items and apply the small subset of filters needed by the default
+        dynamic genre collections locally.
+        """
+        if uri_args is None:
+            return self.get_all()
+
+        def _values(key):
+            raw = uri_args.get(key)
+            if raw is None:
+                return []
+
+            if not isinstance(raw, (list, tuple, set)):
+                raw = [raw]
+
+            values = []
+            for value in raw:
+                if value is None:
+                    continue
+                value = str(value).strip()
+                if value:
+                    values.append(value)
+            return values
+
+        def _item_values(item, attr):
+            raw_values = getattr(item.item, attr, None)
+            if raw_values is None:
+                return []
+
+            if not isinstance(raw_values, list):
+                raw_values = [raw_values]
+
+            values = []
+            for value in raw_values:
+                name = (
+                    getattr(value, "name", None)
+                    or getattr(value, "Name", None)
+                    or getattr(value, "tag", None)
+                    or str(value)
+                )
+                name = str(name).strip()
+                if name and name.lower() != "none":
+                    values.append(name)
+            return values
+
+        def _matches_any(item, attr, expected_values):
+            actual_values = {value.casefold() for value in _item_values(item, attr)}
+            return any(str(expected).casefold() in actual_values for expected in expected_values)
+
+        search = self.api.items.search.recursive()
+        search.parent_id = self.Jellyfin.id
+
+        if self.is_movie:
+            search.include_item_types = [BaseItemKind.MOVIE]
+        elif self.is_show and hasattr(BaseItemKind, "SERIES"):
+            search.include_item_types = [BaseItemKind.SERIES]
+
+        field_names = ["PROVIDERIDS", "PATH", "GENRES", "TAGS", "STUDIOS"]
+        fields = [getattr(ItemFields, name) for name in field_names if hasattr(ItemFields, name)]
+        if fields:
+            search.fields = fields
+
+        results = [ItemMovieWrapper(item) for item in search.all]
+
+        filter_map = {
+            "genre": "genres",
+            "genres": "genres",
+            "label": "tags",
+            "labels": "tags",
+            "tag": "tags",
+            "tags": "tags",
+            "studio": "studios",
+            "studios": "studios",
+            "network": "studios",
+            "networks": "studios",
+            "contentRating": "official_rating",
+            "content_rating": "official_rating",
+            "contentrating": "official_rating",
+            "year": "production_year",
+        }
+
+        for query_key, attr in filter_map.items():
+            expected_values = _values(query_key)
+            if not expected_values:
+                continue
+
+            if attr in ["official_rating", "production_year"]:
+                expected_set = {str(value).casefold() for value in expected_values}
+                results = [
+                    item for item in results
+                    if str(getattr(item.item, attr, "")).casefold() in expected_set
+                ]
+            else:
+                results = [
+                    item for item in results
+                    if _matches_any(item, attr, expected_values)
+                ]
+
+        sort_values = _values("sort")
+        if sort_values:
+            sort_value = sort_values[0]
+            sort_attr, _, sort_direction = sort_value.partition(":")
+            reverse = sort_direction.casefold() == "desc"
+
+            if sort_attr in ["originallyAvailableAt", "originally_available_at", "release"]:
+                results.sort(
+                    key=lambda item: (
+                        getattr(item.item, "premiere_date", None)
+                        or getattr(item.item, "production_year", None)
+                        or 0,
+                        item.title.casefold()
+                    ),
+                    reverse=reverse
+                )
+            elif sort_attr in ["titleSort", "title", "title_sort"]:
+                results.sort(key=lambda item: item.title.casefold(), reverse=reverse)
+            elif sort_attr in ["year"]:
+                results.sort(key=lambda item: item.year, reverse=reverse)
+
         return results
 
     def get_tags(self, tag):
