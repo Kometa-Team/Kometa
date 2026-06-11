@@ -541,6 +541,16 @@ class Jellyfin(Library):
             logger.stacktrace()
             return str(item)
 
+    def listFilterChoices(self, search_name, *args, **kwargs):
+        """Return Plex-compatible filter choices for overlay label lookups.
+
+        Kometa overlay cleanup calls self.library.Plex.listFilterChoices("label").
+        PlexWrapper delegates that call back to this Jellyfin library object, so
+        Jellyfin needs to expose the same method shape.
+        """
+        return self.get_tags(search_name)
+
+
     def edit_tags(
             self, 
             attr: str,
