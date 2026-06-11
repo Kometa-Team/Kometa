@@ -52,7 +52,12 @@ user_sort_options = {
 builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
 base_url = "https://letterboxd.com"
 
-list_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)/?$")
+list_url_pattern = re.compile(
+    r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)"
+    r"(?:/share/(?P<share>[^/]+))?"
+    r"(?:/by/(?P<sort>[^/]+))?"
+    r"/?$"
+)
 watchlist_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/watchlist/?$")
 film_path_pattern = re.compile(r"^/film/(?P<slug>[^/]+)/?$")
 film_identifier_pattern = re.compile(r"film:(?P<id>\d+)")
@@ -512,19 +517,24 @@ class Letterboxd:
                 self._info_once(("watchlist_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for watchlist {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_films_page)
         else:
-            list_obj = self._get_list_object(list_url)
-            try:
-                movies = list_obj.movies
-            except Exception as e:
-                self._warn_once(("list_fallback_error", list_url), f"Letterboxd Warning: letterboxdpy failed to extract films for {list_url}; using Kometa fallback parsing. Error: {e}")
-                movies = {}
-            if movies:
-                for item_id, item in movies.items():
-                    slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
-                    items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
-            else:
-                self._info_once(("list_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
+            # letterboxdpy doesn't support parameters in urls (for shuffling the list before fetching it) or unlisted lists.
+            parsed_path = urlparse(list_url).path
+            if "/share/" in parsed_path or "/by/" in parsed_path:
                 items = self._get_list_items_fallback(list_url, limit, language)
+            else:
+                list_obj = self._get_list_object(list_url)
+                try:
+                    movies = list_obj.movies
+                except Exception as e:
+                    self._warn_once(("list_fallback_error", list_url), f"Letterboxd Warning: letterboxdpy failed to extract films for {list_url}; using Kometa fallback parsing. Error: {e}")
+                    movies = {}
+                if movies:
+                    for item_id, item in movies.items():
+                        slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
+                        items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
+                else:
+                    self._info_once(("list_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
+                    items = self._get_list_items_fallback(list_url, limit, language)
         return items[:limit] if limit else items
 
     def _get_user_entries(self, username, page_type, language="en"):
