@@ -240,7 +240,7 @@ Change the art on the item in Plex, and remove the "Overlay" label from the item
         builder_level: season
         item_label.remove: Overlay
         plex_search:
-        all:
+          all:
             season_label: Overlay
             title:  NAME OF SHOW HERE
     ```
@@ -254,7 +254,7 @@ Change the art on the item in Plex, and remove the "Overlay" label from the item
         builder_level: episode
         item_label.remove: Overlay
         plex_search:
-        all:
+          all:
             episode_label: Overlay
             title:  NAME OF SHOW HERE
     ```

@@ -78,6 +78,11 @@ overlays:
       event_id: ev0000292
       event_year: all
       category_filter:
+        - best animated feature film
+        - best animated film
+        - best foreign film
+        - best foreign language film
+        - best foreign-language foreign film
         - best motion picture - animated
         - best motion picture - comedy
         - best motion picture - comedy or musical
@@ -86,10 +91,8 @@ overlays:
         - best motion picture - musical
         - best motion picture - musical or comedy
         - best motion picture - non-english language
-        - best motion picture, animated
-        - best motion picture, drama
         - best motion picture, musical or comedy
-        - best motion picture, non-english language
+        - best picture
       winning: true
 
   Golden Globe Best Director:
@@ -101,7 +104,6 @@ overlays:
       category_filter:
         - best director
         - best director - motion picture
-        - best director, motion picture
       winning: true
 
   BAFTA Winners:
@@ -213,10 +215,10 @@ overlays:
     variables: {key: imdb, weight: 60, imdb_key: top}
     template: [name: standard, name: ribbon]
 
-  Letterboxd Top 250:
+  Letterboxd Top 500:
     variables: {key: letterboxd, weight: 50}
     template: {name: standard, allowed_libraries: movie}
-    letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
+    letterboxd_list: https://letterboxd.com/official/list/letterboxds-top-500-films/
 
   Rotten Tomatoes Verified Hot:
     variables: {key: rottenverified, weight: 45, mdb_key: verifiedhot}

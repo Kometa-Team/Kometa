@@ -134,7 +134,18 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
 ???+ important
 
-    The below table assumes that your assets are stored within the directory mapped to `config` in your Kometa environment.
+    In this table, `<path_to_assets>` is an asset directory OR some directory below an asset directory, depending on your setting for `asset_depth`.
+
+    For example, if your `asset_directory` is `/config/assets` and your `asset_depth` is 2, then `<path_to_assets>` might be:
+
+    ```
+    /config/assets
+    /config/assets/this
+    /config/assets/this/that
+    ```
+    WHATEVER `this` and `that` are.
+
+    The important detail in this table is what `ASSET_NAME` is and how enabling asset folders affects the thing that Kometa is looking for, not *where* it's looking aside from "in an asset directory".
 
 === "ASSET_FOLDERS=True"
 

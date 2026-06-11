@@ -1,39 +1,26 @@
-# Requirements Update (requirements will need to be reinstalled)
-Updated arrapi requirement to 1.4.14
-Updated lxml requirement to 6.0.2
-Updated plexapi requirement to 4.17.1
-Updated psutil requirement to 7.1.0
-Updated ruamel-yaml requirement to 0.18.15
-Updated requests requirement to 2.32.5
-Updated tmdbapis requirement to 1.2.30
-
 # Important Changes
-Sponsor's Images are now listed on the ReadMe, Wiki Homepage, and acknowledgements page.
-Updated the Sponsorship Tier Rewards (credit to @mrbuckwheet for sponsoring and driving the updates)
+
+# Requirements Update (requirements will need to be reinstalled)
+Bump plexapi to 4.18.1
+Bump python-dotenv to 1.2.2
+Bump pillow to 12.1.1
+Bump requests to 2.33.1
+Bump setuptools to 82.0.1
 
 # New Features
-Adds `|` as a preferred delimiter for run times.
-Adds an optional setting `plex_bulk_edit_batch_size` in operations to control how many items are processed in a single batch.
-Adds new filters `show_title` and `season_title`
-Adds Producer's Cut to resolution/edition default overlay
+Switching to using GraphQL for IMDB charts retrieval, with a fallback to the old method if the GraphQL request fails. #3006
+Adds new `text_file` builder.
+Reciperr site hasn't responded for a while, so the builder has been removed.
+Added spellcheck to precommit configuration
+Added `language` parameter to `mass_poster_update` and `mass_background_update` operations to override TMDb language for image fetching (e.g. `xx` for textless posters)
 
 # Docs
-Fixed an issue where the home page logo and shield images appeared as raw text
-Fixed an issue where the builder overview page had multiple dead links
-Added some clarification on Library types to defaults pages
 
 # Defaults
-Add Movistar Plus + as streaming service
-Add Atres Player as streaming service
-Add AMC+ as streaming service
-Add Filmin as streaming service
-Update BAFTA Best Films to include BAFTA Award for Best Film From Any Source
-Fixes #2806 separators placeholder now work with minimum items.
 
 # Bug Fixes
-Don't assume details of the IMDb API response structure, offer "private list" as a possible cause of no IDs found
-Fix `overlay_special_text` cache table schema to use TEXT for `rating_key` to be consistent with other tables
-Fixes #2802 the list now acts as a list
-Fixes logic issue with reauthenticating trakt
-Fixes an issue with the `dovi` attribute of `plex_search` where shows and seasons never returned anything
-Fixes `.regex` tag filters
+Catch KeyError on Plex NFO build.
+Fixing "list index out of range" error when processing imdb charts #3006
+TMDB language now reflected in mass_poster_update; cache extension
+Reduce size of FILMIN logo
+Replace top-ten-pirated default list with an updated, kometa-controlled one.

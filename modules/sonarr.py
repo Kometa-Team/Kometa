@@ -71,9 +71,9 @@ class Sonarr:
             else:
                 _ids.append(tvdb_id)
         logger.info("")
-        logger.separator(f"Adding {'Missing' if _ids else 'Existing'} to Sonarr", space=False, border=False)
+        logger.separator(f"{'Adding Missing' if _ids else 'Adding/Updating Existing'} to Sonarr", space=False, border=False)
         logger.debug("")
-        logger.debug(f"Sonarr Adds: {_ids if _ids else ''}")
+        logger.debug(f"Sonarr Adds/Updates: {_ids if _ids else ''}")
         for tvdb_id in _paths:
             logger.debug(tvdb_id)
         upgrade_existing = options["upgrade_existing"] if "upgrade_existing" in options else self.upgrade_existing
@@ -197,11 +197,11 @@ class Sonarr:
                     if self.cache:
                         self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
                 if upgrade_qp:
-                    self.api.edit_multiple_series(upgrade_qp, quality_profile=qp)
+                    self.api.edit_multiple_series([s.tvdbId for s in upgrade_qp], quality_profile=qp.id)
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
                 if remonitor:
-                    self.api.edit_multiple_series(remonitor, monitor=monitor)
+                    self.api.edit_multiple_series([s.tvdbId for s in remonitor], monitor=monitor)
                     for series in remonitor:
                         logger.info(f"Monitored: {monitor} in Sonarr | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:

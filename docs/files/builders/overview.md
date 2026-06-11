@@ -217,19 +217,6 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Reciperr logo](../../assets/images/files/builders/reciperr.png){ align=right }
-
-    **[Reciperr](../reciperr/overview)** builders grab items based on lists on Reciperr.com
-
-    [:octicons-home-16: View Builder](../reciperr/overview){ .md-button .md-button--primary }
-    [:octicons-alert-24:](""){ .card-link title="Only works with Movie libraries" }
-
-    ??? quicklink "Popular Builders"
-
-        - [:material-chef-hat: Reciperr List](../reciperr.md/list) - Gets every movie returned by the Reciperr JSON data URL.
-
-!!! builder
-
     ![StevenLu logo](../../assets/images/files/builders/stevenlu.png){ align=right }
 
     **[StevenLu](../stevenlu/overview)** builders grab items based on lists on StevenLu.com
@@ -240,3 +227,15 @@ Builders use third-party services to source items to be added to the collection.
     ??? quicklink "Popular Builders"
 
         - [:material-pirate: StevenLu Popular](../stevenlu/popular) - Gets every movie on StevenLu's Popular Movies List.
+
+!!! builder
+
+    ![Text File logo](../../assets/images/files/builders/text.png){ align=right }
+
+    **[Text File](textfile/overview.md)** builders read items from a manually maintained local text file.
+
+    [:octicons-home-16: View Builder](textfile/overview.md){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:material-file-document-outline: Text File](textfile/text-file.md) - Reads supported IDs and URLs from a local text file while preserving file order.

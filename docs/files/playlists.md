@@ -107,12 +107,13 @@ playlists:
 
 There are multiple types of attributes that can be utilized within a playlist:
 
+NOTE: these lists are references for collections and playlists, not everything applies to both:
+
 * [Builders](builders/overview.md)
 * [Filters](filters.md)
 * [Settings](settings.md)
 * [Radarr/Sonarr Settings](settings.md)
 * [Collection/Playlist Metadata Updates](updates.md)
-* [Item Metadata Updates](item_updates.md)
 
 ### Special Playlist Attributes
 

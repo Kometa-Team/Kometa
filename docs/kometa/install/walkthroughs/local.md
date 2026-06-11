@@ -28,7 +28,7 @@ Let's check if Python is already installed [type this into your terminal]
 python3 --version
 ```
 
-If this doesn't return a version between `3.9` and `3.13`, you'll need to installed a supported version of Python.
+If this doesn't return a version between `3.10` and `3.13`, you'll need to installed a supported version of Python.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -205,12 +205,12 @@ think of it as a "sandbox" for this script. It also provides a clean way to reco
     Error: Command '['/home/mroche/Kometa/kometa-venv/bin/python3', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1.
     ```
     
-    You probably need to make sure the Python 3.9-specific virtualenv support library is installed:
+    You probably need to make sure the Python 3.10-specific virtualenv support library is installed:
 
     [type this into your terminal]
 
     ```shell
-    sudo apt-get install python3.9-venv
+    sudo apt-get install python3.10-venv
     ```
 
     Then try the original venv command above again.

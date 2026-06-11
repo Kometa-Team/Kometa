@@ -107,7 +107,7 @@ dynamic_collections:
     type: custom
     data:
       channel4: Channel 4
-      appletv: Apple TV+
+      appletv: Apple TV
       bet: BET+
       crave: Crave
       crunchyroll: Crunchyroll
@@ -185,3 +185,6 @@ dynamic_collections:
         hbomax:
           - Max Movies
           - Max Shows
+        appletv:
+          - Apple TV+ Movies
+          - Apple TV+ Shows
