@@ -132,39 +132,63 @@ class Jellyfin(Library):
 
     @staticmethod
     def _should_suppress_smart_collection_log(message) -> bool:
-        """Return True for Plex-only smart collection messages that are misleading on Jellyfin."""
-        text = " ".join(str(message).split())
-        return (
-            text.startswith("Collection Error: Converting ")
-            and text.endswith(" to a smart collection")
-        ) or text.startswith("Smart Collection Created:")
+        """Return True for Plex-only log lines that are misleading during Jellyfin runs."""
+        text = " ".join(str(message).replace("|", " ").split())
+        lower_text = text.casefold()
+
+        if not text:
+            return False
+
+        exact_prefixes = (
+            "Collection Error: Converting ",
+            "Smart Collection Created:",
+            "Connecting to Plex Libraries",
+            "Plex Disabled for ",
+            "Plex Bulk Edit Batch Size:",
+        )
+        if any(text.startswith(prefix) for prefix in exact_prefixes):
+            return True
+
+        contains_patterns = (
+            "Plex Configuration",
+            "Plex Library Connection Successful",
+            "Config Warning: plex sub-attribute",
+            "No match in Plex for",
+        )
+        if any(pattern.casefold() in lower_text for pattern in contains_patterns):
+            return True
+
+        return False
 
     def _install_jellyfin_log_suppressions(self) -> None:
-        """Suppress noisy Plex smart-collection log lines for Jellyfin runs.
+        """Suppress Plex-centric log lines that are misleading for Jellyfin libraries.
 
-        Kometa's core smart_filter path still emits Plex-centric messages while
-        Jellyfin materializes those filters as normal box set collections. Those
-        lines are misleading because Jellyfin cannot create native Plex smart
-        collections, but the regular Jellyfin collections still get created and
-        populated correctly.
+        Kometa still initializes several Plex compatibility paths even when the
+        active library is Jellyfin. Those messages are not actionable in a
+        Jellyfin run, so hide the Plex-specific noise while leaving real Jellyfin
+        warnings and errors visible.
         """
         if getattr(logger, "_jellyfin_smart_collection_log_suppression", False):
             return
 
         def _wrap(method_name):
             original = getattr(logger, method_name, None)
-            if original is None:
+            if original is None or not callable(original):
                 return
 
-            def _jellyfin_logger_wrapper(message="", *args, **kwargs):
+            def _jellyfin_logger_wrapper(*args, **kwargs):
+                message = args[0] if args else kwargs.get("message", "")
                 if Jellyfin._should_suppress_smart_collection_log(message):
                     return None
-                return original(message, *args, **kwargs)
+                return original(*args, **kwargs)
 
             setattr(logger, f"_jellyfin_original_{method_name}", original)
             setattr(logger, method_name, _jellyfin_logger_wrapper)
 
-        for method_name in ("error", "warning", "info"):
+        for method_name in (
+            "debug", "info", "warning", "error", "critical",
+            "separator", "separator2", "ghost", "exorcise"
+        ):
             _wrap(method_name)
 
         setattr(logger, "_jellyfin_smart_collection_log_suppression", True)
@@ -463,8 +487,8 @@ class Jellyfin(Library):
             raise Failed(message)
 
         logger.info(
-            f"Jellyfin: Smart collections are unsupported; updating regular "
-            f"collection '{title}' with {len(items)} resolved items"
+            f"Jellyfin: Updating regular collection '{title}' "
+            f"with {len(items)} resolved filter items"
         )
         self.alter_collection(items, title, add=True)
         return self.get_collection(title)
@@ -1050,6 +1074,13 @@ class Jellyfin(Library):
     def moveItem(self, obj, item, after):
         warn_msg = "Jellyfin moveItem method not implemented yet"
         logger.warning(warn_msg)
+
+# Install suppressions at import time so early Kometa Plex compatibility
+# messages are hidden before the Jellyfin library object is constructed.
+try:
+    Jellyfin._install_jellyfin_log_suppressions(Jellyfin)
+except Exception:
+    pass
 
 class PlexWrapper:
     def __init__(self, library: Library):
