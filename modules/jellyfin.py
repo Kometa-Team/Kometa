@@ -22,6 +22,12 @@ from jellyfin.generated import (
 
 logger = util.logger
 
+class JellyfinFilterChoice:
+    def __init__(self, title, key=None):
+        self.title = str(title)
+        self.key = str(key if key is not None else title)
+
+
 class Jellyfin(Library):
     def __init__(self, config, params):
         """ Initializes Jellyfin Object
@@ -97,16 +103,29 @@ class Jellyfin(Library):
             logger.stacktrace()
             raise Failed(f"Jellyfin Error: {e}")
 
-        libraries = self.api.items.search.only_library().add('name_starts_with', self.name).all
+        libraries = list(self.api.items.search.only_library().add('name_starts_with', self.name).all)
+        exact_libraries = [library for library in libraries if library.name == self.name]
 
-        if len(libraries) > 1:
-            names = [f"'{item.id.hex}'" for item in libraries.items]
+        if len(exact_libraries) > 1:
+            names = [
+                f"'{library.name}' ({library.id.hex if hasattr(library.id, 'hex') else library.id})"
+                for library in exact_libraries
+            ]
             raise Failed(f"Jellyfin Library '{params['name']}' is not unique. Options: {names}")
 
-        if len(libraries) < 1:
+        if len(exact_libraries) < 1:
+            if libraries:
+                names = [
+                    f"'{library.name}' ({library.id.hex if hasattr(library.id, 'hex') else library.id})"
+                    for library in libraries
+                ]
+                raise Failed(
+                    f"Jellyfin Library '{params['name']}' not found as an exact match. "
+                    f"Prefix matches: {names}"
+                )
             raise Failed(f"Jellyfin Library '{params['name']}' not found.")
 
-        item = libraries.first
+        item = exact_libraries[0]
         self.Jellyfin = item
         self.type = item.collection_type.value
 
@@ -131,55 +150,163 @@ class Jellyfin(Library):
         """
         self.config.notify(text, server=self._server_name, library=self.name, collection=collection, critical=critical)
 
+    def _paged_items(
+            self,
+            include_item_types,
+            fields=None,
+            parent_id=None,
+            page_size: int = 100
+        ) -> list[ItemMovieWrapper]:
+        """Return Jellyfin items in pages to avoid large /Items requests timing out."""
+        result = []
+        seen_ids = set()
+        start_index = 0
+
+        def _safe_id(value):
+            if value is None:
+                return None
+            try:
+                return self._jellyfin_id(value)
+            except AttributeError:
+                return getattr(value, "hex", None) or str(value).replace("-", "")
+
+        parent_id = _safe_id(parent_id) if parent_id is not None else None
+
+        while True:
+            search = self.api.items.search
+
+            try:
+                search.include_item_types = include_item_types
+            except Exception:
+                pass
+
+            if fields:
+                try:
+                    search.fields = fields
+                except Exception:
+                    pass
+
+            if parent_id:
+                try:
+                    search.parent_id = parent_id
+                except Exception:
+                    pass
+
+            try:
+                search.recursive()
+            except Exception:
+                pass
+
+            # The SDK ultimately calls get_items(**search._params). Set both the
+            # public attributes and _params directly for compatibility across
+            # jellyfin-sdk versions.
+            page_params = {
+                "start_index": start_index,
+                "limit": page_size,
+                "enable_total_record_count": False,
+                "enable_images": False,
+                "enable_user_data": False,
+                "image_type_limit": 0,
+            }
+
+            if parent_id:
+                page_params["parent_id"] = parent_id
+
+            for key, value in page_params.items():
+                try:
+                    setattr(search, key, value)
+                except Exception:
+                    pass
+
+            if hasattr(search, "_params") and isinstance(search._params, dict):
+                search._params.update(page_params)
+
+            try:
+                page_items = list(search.all)
+            except Exception:
+                if page_size > 25:
+                    page_size = max(25, page_size // 2)
+                    logger.warning(f"Jellyfin item page request failed; retrying with page size {page_size}")
+                    continue
+                raise
+
+            if not page_items:
+                break
+
+            new_items = 0
+            for item in page_items:
+                item_id = _safe_id(getattr(item, "id", None))
+                if item_id and item_id in seen_ids:
+                    continue
+                if item_id:
+                    seen_ids.add(item_id)
+                result.append(ItemMovieWrapper(item))
+                new_items += 1
+
+            # Stop when the SDK/API returns a short final page, or when a server
+            # ignores StartIndex/Limit and returns the same page again.
+            if len(page_items) < page_size or new_items == 0:
+                break
+
+            start_index += page_size
+
+        return result
+
     def get_all(self, builder_level: str | None = None, load: bool = False) -> list[ItemMovieWrapper]:
-        """ Returns all items in the library.
+        """Returns all items in the library."""
+        requested_level = builder_level
 
-        Args:
-            builder_level (str | None): The type of items to return. Defaults to None.
-            load (bool): Whether to force a reload of all items. Defaults to False.
-
-        Returns:
-            list[ItemMovieWrapper]: A list of all items in the library.
-        """
-         # cache all items for movie libraries
-        if load and builder_level in [None, "movie"]:
+        if load and requested_level in [None, "movie", "Movie"]:
             self._all_items = []
-        if self._all_items and builder_level in [None, "movie"]:
+
+        if self._all_items and requested_level in [None, "movie", "Movie"]:
             return self._all_items
-        builder_level = self.type
+
+        builder_level = builder_level or self.type
 
         logger.info(f"Loading All {builder_level.capitalize()} from Library: {self.name}")
 
-        search = self.api.items.search
-        search.include_item_types = [BaseItemKind.MOVIE]
-        search.fields = [ItemFields.PROVIDERIDS, ItemFields.PATH]
-        search.recursive()
-        result = []
+        field_names = ["PROVIDERIDS", "PATH", "GENRES", "TAGS", "STUDIOS"]
+        fields = [getattr(ItemFields, name) for name in field_names if hasattr(ItemFields, name)]
 
-        for item in search.all:
-            result.append(ItemMovieWrapper(item))
+        if str(builder_level).lower() in ["movie", "movies"]:
+            include_item_types = [BaseItemKind.MOVIE]
+        else:
+            include_item_types = [BaseItemKind.MOVIE]
+
+        result = self._paged_items(
+            include_item_types,
+            fields=fields,
+            parent_id=getattr(self.Jellyfin, "id", None),
+            page_size=100
+        )
 
         logger.info(f"Loaded {len(result)} {builder_level.capitalize()}")
 
-        if builder_level in [None, "movie"]:
+        if requested_level in [None, "movie", "Movie"] or str(builder_level).lower() == "movie":
             self._all_items = result
+
         return result
 
     def get_all_collections(self, label: str | None = None) -> list[ItemMovieWrapper]:
-        """ Returns all collections in the library.
+        """Returns all collections in the library."""
+        result = self._paged_items(
+            [BaseItemKind.BOXSET],
+            fields=[ItemFields.PROVIDERIDS, ItemFields.PATH],
+            parent_id=None,
+            page_size=100
+        )
 
-        Args:
-            label (str | None): The label to filter collections by. Defaults to None.
+        if label:
+            wanted_label = str(label).casefold()
+            result = [
+                item for item in result
+                if wanted_label in [
+                    str(tag).casefold()
+                    for tag in getattr(getattr(item, "item", None), "tags", []) or []
+                ]
+            ]
 
-        Returns:
-            list[ItemMovieWrapper]: A list of all collections in the library.
-        """
-        search = self.api.items.search
-        search.include_item_types = [BaseItemKind.BOXSET]
-
-        result = []
-        for item in search.all:
-            result.append(ItemMovieWrapper(item))
         return result
 
     def get_collection(
@@ -213,6 +340,74 @@ class Jellyfin(Library):
         attribute, modifier = os.path.splitext(str(text).lower())
         final = f"{attribute}{modifier}"
         return attribute, modifier, final
+
+    def get_tags(self, tag):
+        """Return Plex-like filter choices for Jellyfin metadata fields.
+
+        Kometa's dynamic collection code expects every library adapter to
+        expose get_tags(), returning objects with .title and .key attributes.
+        Jellyfin does not have Plex's filter-choice endpoint, so build the
+        choices from the items in the current Jellyfin library.
+        """
+        tag = str(tag).split(".")[-1]
+        tag = {
+            "contentRating": "official_rating",
+            "content_rating": "official_rating",
+            "label": "tags",
+            "tag": "tags",
+            "genre": "genres",
+            "year": "production_year",
+            "studio": "studios",
+        }.get(tag, tag)
+
+        search = self.api.items.search.recursive()
+        search.parent_id = self.Jellyfin.id
+        if self.is_movie:
+            search.include_item_types = [BaseItemKind.MOVIE]
+        search.fields = [ItemFields.GENRES]
+
+        choices = {}
+        for item in search.all:
+            if tag == "genres":
+                values = getattr(item, "genres", None) or []
+            elif tag == "tags":
+                values = getattr(item, "tags", None) or []
+            elif tag == "official_rating":
+                values = [getattr(item, "official_rating", None)]
+            elif tag == "production_year":
+                values = [getattr(item, "production_year", None)]
+            elif tag == "studios":
+                values = []
+                for studio in getattr(item, "studios", None) or []:
+                    values.append(getattr(studio, "name", studio))
+            else:
+                values = getattr(item, tag, None)
+                if values is None:
+                    values = []
+                elif not isinstance(values, list):
+                    values = [values]
+
+            for value in values:
+                if value is None or value == "":
+                    continue
+                value = str(value)
+                choices[value.lower()] = JellyfinFilterChoice(value, value)
+
+        return sorted(choices.values(), key=lambda c: c.title.lower())
+
+    def get_search_choices(self, search_name, title=True, name_pairs=False):
+        choices = {}
+        names = []
+        use_title = title and search_name not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
+        for choice in self.get_tags(search_name):
+            if choice.title not in names:
+                names.append((choice.title, choice.key) if name_pairs else choice.title)
+            value = choice.title if use_title else choice.key
+            choices[choice.title] = value
+            choices[choice.key] = value
+            choices[choice.title.lower()] = value
+            choices[choice.key.lower()] = value
+        return choices, names
 
     def fetch_item(self, item):
         key = item
