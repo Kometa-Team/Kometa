@@ -639,16 +639,57 @@ class ItemMovieWrapper(Movie):
         """ Edits the sort title of the movie """
         self.item.sort_name = new_sort_title
 
+    @staticmethod
+    def _provider_id(provider_ids: dict | None, *keys: str) -> str | None:
+        """Return a Jellyfin ProviderIds value using a case-insensitive key match."""
+        if not provider_ids:
+            return None
+
+        wanted = {key.lower() for key in keys}
+        for provider, value in provider_ids.items():
+            if provider.lower() in wanted and value:
+                return str(value)
+        return None
+
     @property
     def guid(self) -> str:
-        """ Returns the GUID of the movie """
-         # Jellyfin does not have a GUID, we construct one from provider IDs if available
-         # Otherwise return None
-        if self.item.provider_ids and "Tmdb" in self.item.provider_ids:
-            return f"themoviedb://{self.item.provider_ids['Tmdb']}"
-        elif self.item.provider_ids and "Imdb" in self.item.provider_ids:
-            return f"imdb://{self.item.provider_ids['Imdb']}"
-        return None
+        """Return a Plex-compatible primary GUID for Kometa ID mapping."""
+        provider_ids = getattr(self.item, "provider_ids", None) or {}
+
+        tmdb_id = self._provider_id(provider_ids, "Tmdb", "TMDb", "TheMovieDb", "TheMovieDB")
+        if tmdb_id:
+            return f"themoviedb://{tmdb_id}"
+
+        imdb_id = self._provider_id(provider_ids, "Imdb", "IMDb")
+        if imdb_id:
+            return f"imdb://{imdb_id}"
+
+        tvdb_id = self._provider_id(provider_ids, "Tvdb", "TVDb", "TheTVDb", "TheTVDB")
+        if tvdb_id:
+            return f"thetvdb://{tvdb_id}"
+
+        item_id = getattr(self.item, "id", None)
+        return f"local://jellyfin/{item_id}" if item_id else "local://jellyfin"
+
+    @property
+    def guids(self) -> list:
+        """Return Plex-like external GUID objects for code paths that inspect item.guids."""
+        provider_ids = getattr(self.item, "provider_ids", None) or {}
+        guids = []
+
+        tmdb_id = self._provider_id(provider_ids, "Tmdb", "TMDb", "TheMovieDb", "TheMovieDB")
+        if tmdb_id:
+            guids.append(f"themoviedb://{tmdb_id}")
+
+        imdb_id = self._provider_id(provider_ids, "Imdb", "IMDb")
+        if imdb_id:
+            guids.append(f"imdb://{imdb_id}")
+
+        tvdb_id = self._provider_id(provider_ids, "Tvdb", "TVDb", "TheTVDb", "TheTVDB")
+        if tvdb_id:
+            guids.append(f"thetvdb://{tvdb_id}")
+
+        return [types.SimpleNamespace(id=guid) for guid in guids]
 
     @property
     def childCount(self) -> int:
@@ -659,6 +700,10 @@ class ItemMovieWrapper(Movie):
         return self.item.child_count if self.item.child_count else 0
     
     def __getattr__(self, name: str) -> Any:
+        if name == "guid":
+            return self.guid
+        if name == "guids":
+            return self.guids
         return getattr(self.item, name)
 
     def __eq__(self, other: Any) -> bool:
