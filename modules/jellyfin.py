@@ -454,6 +454,93 @@ class Jellyfin(Library):
             for value in sorted(values.values(), key=lambda item: item.casefold())
         ]
 
+    def get_search_choices(self, attribute, title: bool = True):
+        """Return Plex-like search choices for Kometa filter validation.
+
+        Kometa's builder validates smart_filter values by asking the library
+        for the valid values for a metadata attribute. Plex returns those
+        choices through the Plex API. For Jellyfin we derive the same shape
+        from get_tags(), which already normalizes Jellyfin metadata values.
+        """
+        normalized_attribute = str(attribute).split(".", 1)[-1].lower()
+        attribute_aliases = {
+            "genre": "genre",
+            "genres": "genre",
+            "label": "label",
+            "labels": "label",
+            "tag": "tag",
+            "tags": "tag",
+            "studio": "studio",
+            "studios": "studio",
+            "network": "network",
+            "networks": "network",
+            "content_rating": "content_rating",
+            "contentrating": "content_rating",
+            "year": "year",
+            "years": "year",
+        }
+
+        if normalized_attribute not in attribute_aliases:
+            logger.warning(f"Jellyfin get_search_choices does not support '{attribute}', returning no values")
+            return {}, {}
+
+        choices = self.get_tags(attribute_aliases[normalized_attribute])
+        search_choices = {}
+        names = {}
+
+        for choice in choices:
+            choice_key = str(getattr(choice, "key", "")).strip()
+            choice_title = str(getattr(choice, "title", choice_key)).strip()
+
+            if not choice_key and not choice_title:
+                continue
+
+            lookup_value = choice_title if title else choice_key
+            if not lookup_value:
+                lookup_value = choice_key or choice_title
+
+            search_choices[lookup_value] = choice_key or choice_title
+            names[lookup_value] = choice_title or choice_key
+
+            # Keep case-insensitive lookups available without losing display titles.
+            search_choices[lookup_value.casefold()] = choice_key or choice_title
+            names[lookup_value.casefold()] = choice_title or choice_key
+
+        return search_choices, names
+
+    def get_item_display_title(self, item) -> str:
+        """Return a readable item title for overlay logging paths.
+
+        Overlay compilation passes rating keys in some paths and wrapped items
+        in others. Plex libraries expose get_item_display_title(); Jellyfin
+        needs the same compatibility method so debug/trace logging does not
+        abort overlay processing.
+        """
+        try:
+            if isinstance(item, ItemMovieWrapper):
+                return item.title
+
+            if isinstance(item, Item):
+                return item.name if item.name else str(item.id)
+
+            if item in self.cached_items:
+                cached_item = self.cached_items[item][0]
+                return util.item_title(cached_item)
+
+            try:
+                int_item = int(item)
+            except (TypeError, ValueError):
+                int_item = None
+
+            if int_item is not None and int_item in self.cached_items:
+                cached_item = self.cached_items[int_item][0]
+                return util.item_title(cached_item)
+
+            return str(item)
+        except Exception:
+            logger.stacktrace()
+            return str(item)
+
     def edit_tags(
             self, 
             attr: str,
