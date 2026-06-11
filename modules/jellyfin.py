@@ -97,16 +97,23 @@ class Jellyfin(Library):
             logger.stacktrace()
             raise Failed(f"Jellyfin Error: {e}")
         
-        libraries = self.api.items.search.only_library().add('name_starts_with', self.name).all
+        library_name = params["name"]
+        libraries = list(self.api.items.search.only_library().add('name_starts_with', library_name).all)
+        exact_libraries = [
+            library for library in libraries
+            if library.name and library.name.casefold() == library_name.casefold()
+        ]
+        if exact_libraries:
+            libraries = exact_libraries
         
         if len(libraries) > 1:
-            names = [f"'{item.id.hex}'" for item in libraries.items]
-            raise Failed(f"Jellyfin Library '{params['name']}' is not unique. Options: {names}")
+            names = [f"'{item.name}' ({item.id.hex})" for item in libraries]
+            raise Failed(f"Jellyfin Library '{library_name}' is not unique. Options: {names}")
 
         if len(libraries) < 1:
-            raise Failed(f"Jellyfin Library '{params['name']}' not found.")
+            raise Failed(f"Jellyfin Library '{library_name}' not found.")
 
-        item = libraries.first
+        item = libraries[0]
         self.Jellyfin = item
         self.type = item.collection_type.value
         
@@ -375,6 +382,77 @@ class Jellyfin(Library):
         for item in self.api.items.search.recursive().all:
             results.append(ItemMovieWrapper(item))
         return results
+
+    def get_tags(self, tag):
+        """Return Jellyfin metadata values in a Plex FilterChoice-compatible shape.
+
+        Kometa's dynamic collection loader calls library.get_tags("genre") and
+        expects objects with title/key/tag attributes. Jellyfin does not expose
+        Plex FilterChoice objects, so we derive the choices from the items in
+        the active Jellyfin library and wrap each value with SimpleNamespace.
+        """
+        normalized_tag = str(tag).split(".", 1)[-1].lower()
+
+        supported_tags = {
+            "genre": ("genres", ["GENRES"]),
+            "genres": ("genres", ["GENRES"]),
+            "label": ("tags", ["TAGS"]),
+            "labels": ("tags", ["TAGS"]),
+            "tag": ("tags", ["TAGS"]),
+            "tags": ("tags", ["TAGS"]),
+            "studio": ("studios", ["STUDIOS"]),
+            "studios": ("studios", ["STUDIOS"]),
+            "network": ("studios", ["STUDIOS"]),
+            "networks": ("studios", ["STUDIOS"]),
+            "content_rating": ("official_rating", []),
+            "contentrating": ("official_rating", []),
+            "year": ("production_year", []),
+            "years": ("production_year", []),
+        }
+
+        if normalized_tag not in supported_tags:
+            logger.warning(f"Jellyfin get_tags does not support '{tag}', returning no values")
+            return []
+
+        attr, field_names = supported_tags[normalized_tag]
+
+        search = self.api.items.search.recursive()
+        search.parent_id = self.Jellyfin.id
+
+        if self.is_movie:
+            search.include_item_types = [BaseItemKind.MOVIE]
+        elif self.is_show and hasattr(BaseItemKind, "SERIES"):
+            search.include_item_types = [BaseItemKind.SERIES]
+
+        fields = [getattr(ItemFields, name) for name in field_names if hasattr(ItemFields, name)]
+        if fields:
+            search.fields = fields
+
+        values = {}
+        for item in search.all:
+            raw_values = getattr(item, attr, None)
+            if raw_values is None:
+                continue
+
+            if not isinstance(raw_values, list):
+                raw_values = [raw_values]
+
+            for value in raw_values:
+                name = (
+                    getattr(value, "name", None)
+                    or getattr(value, "Name", None)
+                    or getattr(value, "tag", None)
+                    or str(value)
+                )
+                name = str(name).strip()
+                if not name or name.lower() == "none":
+                    continue
+                values[name.casefold()] = name
+
+        return [
+            types.SimpleNamespace(key=value, title=value, tag=value)
+            for value in sorted(values.values(), key=lambda item: item.casefold())
+        ]
 
     def edit_tags(
             self, 
