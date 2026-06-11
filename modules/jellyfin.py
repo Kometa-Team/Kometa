@@ -64,6 +64,8 @@ class Jellyfin(Library):
         # jellyfin does not have a language setting per library
         self.language = "en"
 
+        self._install_jellyfin_log_suppressions()
+
         if self.jellyfin["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Jellyfin connection")
             self.session = self.config.Requests.create_session(verify_ssl=False)
@@ -127,6 +129,45 @@ class Jellyfin(Library):
         self.is_other = self.type == "Boxset"
 
         self._all_items = []
+
+    @staticmethod
+    def _should_suppress_smart_collection_log(message) -> bool:
+        """Return True for Plex-only smart collection messages that are misleading on Jellyfin."""
+        text = " ".join(str(message).split())
+        return (
+            text.startswith("Collection Error: Converting ")
+            and text.endswith(" to a smart collection")
+        ) or text.startswith("Smart Collection Created:")
+
+    def _install_jellyfin_log_suppressions(self) -> None:
+        """Suppress noisy Plex smart-collection log lines for Jellyfin runs.
+
+        Kometa's core smart_filter path still emits Plex-centric messages while
+        Jellyfin materializes those filters as normal box set collections. Those
+        lines are misleading because Jellyfin cannot create native Plex smart
+        collections, but the regular Jellyfin collections still get created and
+        populated correctly.
+        """
+        if getattr(logger, "_jellyfin_smart_collection_log_suppression", False):
+            return
+
+        def _wrap(method_name):
+            original = getattr(logger, method_name, None)
+            if original is None:
+                return
+
+            def _jellyfin_logger_wrapper(message="", *args, **kwargs):
+                if Jellyfin._should_suppress_smart_collection_log(message):
+                    return None
+                return original(message, *args, **kwargs)
+
+            setattr(logger, f"_jellyfin_original_{method_name}", original)
+            setattr(logger, method_name, _jellyfin_logger_wrapper)
+
+        for method_name in ("error", "warning", "info"):
+            _wrap(method_name)
+
+        setattr(logger, "_jellyfin_smart_collection_log_suppression", True)
 
     def notify(self, text: str, collection: str | None = None, critical: bool = True) -> None:
         """ Sends a notification to the server.
@@ -406,23 +447,25 @@ class Jellyfin(Library):
             smart_url: str | dict | None = None,
             ignore_blank_results: bool = False
         ) -> ItemMovieWrapper | None:
-        """Materialize a Kometa smart collection as a normal Jellyfin collection.
+        """Skip native smart collection creation and materialize a normal Jellyfin collection.
 
-        Jellyfin does not support Plex smart collections, but Kometa's default
-        dynamic genre files still call create_smart_collection after resolving
-        the smart filter. We resolve the Plex-style smart URL with fetchItems()
-        and then create/update a regular Jellyfin box set with those items.
+        Jellyfin does not support Plex smart collections. Kometa still calls this
+        method for smart_filter-driven defaults, so resolve the filter into
+        concrete items and update a regular Jellyfin box set instead.
         """
         items = self.fetchItems(smart_url)
 
         if not items:
-            message = f"Jellyfin Error: Smart collection '{title}' returned no items"
+            message = f"Jellyfin Error: Smart filter for '{title}' returned no Jellyfin items"
             if ignore_blank_results:
                 logger.warning(message)
                 return None
             raise Failed(message)
 
-        logger.info(f"Jellyfin: Creating static collection '{title}' from {len(items)} smart filter items")
+        logger.info(
+            f"Jellyfin: Smart collections are unsupported; updating regular "
+            f"collection '{title}' with {len(items)} resolved items"
+        )
         self.alter_collection(items, title, add=True)
         return self.get_collection(title)
 
