@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-import os, types, requests, mimetypes, base64, tempfile
+import os, types, requests, mimetypes, base64, tempfile, io
 from urllib.parse import urlparse
 from modules import util
 from modules.library import Library
@@ -845,8 +845,6 @@ class Jellyfin(Library):
         logger.warning(warn_msg)
         
     def find_item_assets(self, item, item_asset_directory=None, asset_directory=None, folder_name=None):
-        warn_msg = "Jellyfin find_item_assets method not implemented yet"
-        logger.warning(warn_msg)
         return None, None, None, item_asset_directory, folder_name
 
     def _upload_image(self, item: ItemMovieWrapper, image: ImageBase) -> bool:
@@ -859,16 +857,42 @@ class Jellyfin(Library):
         else:
             return False
 
-        item_id = self._jellyfin_id(getattr(item, "id", None))
-        if not item_id:
-            raise Failed("Jellyfin Error: Cannot upload image because item has no id")
+        item_id_source = getattr(item, "id", None)
+        item_ids = []
+
+        raw_item_id = getattr(item_id_source, "hex", None) or str(item_id_source or "").strip()
+        if raw_item_id:
+            compact_id = raw_item_id.replace("-", "")
+            item_ids.append(compact_id)
+
+            # Jellyfin accepts compact GUIDs in most routes, but image routes can
+            # differ between server/proxy versions. Try both compact and dashed.
+            if len(compact_id) == 32:
+                dashed_id = (
+                    f"{compact_id[0:8]}-{compact_id[8:12]}-{compact_id[12:16]}-"
+                    f"{compact_id[16:20]}-{compact_id[20:32]}"
+                )
+                item_ids.append(dashed_id)
+
+            if raw_item_id not in item_ids:
+                item_ids.append(raw_item_id)
+
+        # Preserve order while removing duplicates.
+        item_ids = list(dict.fromkeys([value for value in item_ids if value]))
+
+        if not item_ids:
+            logger.warning("Jellyfin image upload skipped because item has no id")
+            return False
 
         image_location = getattr(image, "location", None)
         if not image_location:
-            raise Failed("Jellyfin Error: Cannot upload image because image has no location")
+            logger.warning("Jellyfin image upload skipped because image has no location")
+            return False
 
         image_location = str(image_location)
-        if image_location.startswith(("http://", "https://")):
+        is_remote_url = image_location.startswith(("http://", "https://"))
+
+        if is_remote_url:
             response = self.session.get(image_location, timeout=self.timeout)
             response.raise_for_status()
             image_data = response.content
@@ -879,34 +903,101 @@ class Jellyfin(Library):
             content_type = mimetypes.guess_type(image_location)[0]
 
         content_type = (content_type or mimetypes.guess_type(image_location)[0] or "image/jpeg").split(";", 1)[0]
-        upload_url = f"{self.url.rstrip('/')}/Items/{item_id}/Images/{image_type}"
-        headers = {
-            "Content-Type": content_type,
+        if content_type == "image/jpg":
+            content_type = "image/jpeg"
+
+        auth_headers = {
             "Accept": "application/json",
             "X-Emby-Token": self.token,
             "X-MediaBrowser-Token": self.token,
             "Authorization": f'MediaBrowser Token="{self.token}"',
         }
 
-        params = {"api_key": self.token}
         errors = []
 
-        for method in [self.session.post, self.session.put]:
-            response = method(upload_url, headers=headers, params=params, data=image_data, timeout=self.timeout)
-            if response.status_code in [200, 204]:
-                return True
-            errors.append(f"{method.__name__.upper()} raw returned {response.status_code}: {response.text}")
+        # If Kometa has a remote image URL, ask Jellyfin to download it directly
+        # before falling back to byte uploads. This avoids several server-side
+        # image upload content-type bugs seen with custom collection posters.
+        if is_remote_url:
+            for item_id in item_ids:
+                remote_url = f"{self.url.rstrip('/')}/Items/{item_id}/RemoteImages/Download"
+                remote_params = {
+                    "Type": image_type,
+                    "ImageUrl": image_location,
+                    "ProviderName": "Kometa",
+                    "api_key": self.token,
+                }
+                response = self.session.post(
+                    remote_url,
+                    headers=auth_headers,
+                    params=remote_params,
+                    timeout=self.timeout
+                )
+                if response.status_code in [200, 204]:
+                    return True
+                errors.append(f"POST remote download {item_id} returned {response.status_code}: {response.text}")
 
-        encoded_headers = dict(headers)
-        encoded_headers["Content-Type"] = "text/plain"
-        encoded_data = base64.b64encode(image_data)
-        for method in [self.session.post, self.session.put]:
-            response = method(upload_url, headers=encoded_headers, params=params, data=encoded_data, timeout=self.timeout)
-            if response.status_code in [200, 204]:
-                return True
-            errors.append(f"{method.__name__.upper()} base64 returned {response.status_code}: {response.text}")
+        def payload_variants():
+            variants = [(content_type, image_data)]
 
-        raise Failed(f"Jellyfin Error: Failed to upload {image_type} image to item {item_id}: {'; '.join(errors)}")
+            # Jellyfin has historically been picky with image/jpeg handling on
+            # some server versions. Re-encode through Pillow when available so we
+            # can retry with a clean PNG and baseline JPEG payload.
+            try:
+                from PIL import Image as PILImage
+                with PILImage.open(io.BytesIO(image_data)) as source_image:
+                    converted = source_image.convert("RGB")
+
+                    png_buffer = io.BytesIO()
+                    converted.save(png_buffer, format="PNG")
+                    variants.append(("image/png", png_buffer.getvalue()))
+
+                    jpeg_buffer = io.BytesIO()
+                    converted.save(jpeg_buffer, format="JPEG", quality=95)
+                    variants.append(("image/jpeg", jpeg_buffer.getvalue()))
+            except Exception as e:
+                logger.debug(f"Jellyfin image re-encode skipped: {e}")
+
+            unique = []
+            seen = set()
+            for variant_content_type, variant_data in variants:
+                key = (variant_content_type, variant_data[:32], len(variant_data))
+                if key not in seen:
+                    seen.add(key)
+                    unique.append((variant_content_type, variant_data))
+            return unique
+
+        upload_paths = []
+        for item_id in item_ids:
+            upload_paths.append(f"{self.url.rstrip('/')}/Items/{item_id}/Images/{image_type}")
+            upload_paths.append(f"{self.url.rstrip('/')}/Items/{item_id}/Images/{image_type}/0")
+
+        payloads = payload_variants()
+
+        for upload_url in upload_paths:
+            for variant_content_type, variant_data in payloads:
+                headers = dict(auth_headers)
+                headers["Content-Type"] = variant_content_type
+
+                for params in [None, {"api_key": self.token}]:
+                    response = self.session.post(
+                        upload_url,
+                        headers=headers,
+                        params=params,
+                        data=variant_data,
+                        timeout=self.timeout
+                    )
+                    if response.status_code in [200, 204]:
+                        return True
+
+                    params_label = "with api_key" if params else "without api_key"
+                    errors.append(
+                        f"POST {upload_url} {variant_content_type} {params_label} "
+                        f"returned {response.status_code}: {response.text}"
+                    )
+
+        logger.warning(f"Jellyfin image upload failed for {image_type}: {'; '.join(errors[:8])}")
+        return False
 
     def playlist_report(self):
         warn_msg = "Jellyfin playlist_report method not implemented yet"
