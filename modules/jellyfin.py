@@ -220,12 +220,99 @@ class Jellyfin(Library):
         attribute, modifier = os.path.splitext(str(text).lower())
         final = f"{attribute}{modifier}"
         return attribute, modifier, final
+
+    @staticmethod
+    def _jellyfin_id(value):
+        """Return a Jellyfin-safe item id string."""
+        if value is None:
+            return None
+        return getattr(value, "hex", None) or str(value).replace("-", "")
+
+    @staticmethod
+    def _chunks(values, size=50):
+        """Yield small batches so collection item URLs do not exceed proxy/server limits."""
+        for index in range(0, len(values), size):
+            yield values[index:index + size]
+
+    @staticmethod
+    def _metadata_names(raw_values):
+        """Normalize Jellyfin metadata values such as tags, genres, and studios."""
+        if raw_values is None:
+            return []
+        if not isinstance(raw_values, list):
+            raw_values = [raw_values]
+
+        names = []
+        for value in raw_values:
+            name = (
+                getattr(value, "name", None)
+                or getattr(value, "Name", None)
+                or getattr(value, "tag", None)
+                or str(value)
+            )
+            name = str(name).strip()
+            if name and name.lower() != "none":
+                names.append(name)
+        return names
     
     def fetch_item(self, item):
         key = item
         if key in self.cached_items:
             return self.cached_items[key][0]
         raise Failed(f"Jellyfin Error: Item {item} not found")
+
+    def search(self, title=None, libtype=None, label=None, sort=None, maxresults=None, **kwargs):
+        """Return Jellyfin items for Plex-style library.search calls.
+
+        Kometa overlay cleanup calls library.search(label=..., libtype=...). Plex
+        handles that server-side. For Jellyfin we query the current library and
+        apply the label/title filters locally.
+        """
+        search = self.api.items.search.recursive()
+        search.parent_id = self.Jellyfin.id
+
+        final_libtype = str(libtype or "").lower()
+        if final_libtype in ["collection", "collections", "boxset", "boxsets"]:
+            search.include_item_types = [BaseItemKind.BOXSET]
+        elif final_libtype in ["show", "series", "tvshow", "tv"] and hasattr(BaseItemKind, "SERIES"):
+            search.include_item_types = [BaseItemKind.SERIES]
+        elif final_libtype in ["movie", "movies", ""] or self.is_movie:
+            search.include_item_types = [BaseItemKind.MOVIE]
+
+        field_names = ["PROVIDERIDS", "PATH", "GENRES", "TAGS", "STUDIOS"]
+        fields = [getattr(ItemFields, name) for name in field_names if hasattr(ItemFields, name)]
+        if fields:
+            search.fields = fields
+
+        results = [ItemMovieWrapper(item) for item in search.all]
+
+        if title:
+            wanted_title = str(title).casefold()
+            results = [item for item in results if wanted_title in item.title.casefold()]
+
+        if label:
+            labels = label if isinstance(label, (list, tuple, set)) else [label]
+            wanted_labels = {str(value).casefold() for value in labels if value is not None}
+            results = [
+                item for item in results
+                if wanted_labels.intersection({tag.casefold() for tag in self._metadata_names(getattr(item.item, "tags", None))})
+            ]
+
+        if sort:
+            sort_value = str(sort)
+            reverse = sort_value.endswith(".desc") or sort_value.endswith(":desc")
+            if "title" in sort_value.lower():
+                results.sort(key=lambda item: item.title.casefold(), reverse=reverse)
+            elif "year" in sort_value.lower() or "release" in sort_value.lower() or "available" in sort_value.lower():
+                results.sort(key=lambda item: (item.year, item.title.casefold()), reverse=reverse)
+
+        if maxresults:
+            try:
+                results = results[:int(maxresults)]
+            except (TypeError, ValueError):
+                pass
+
+        return results
 
     def get_collection_items(
             self, 
@@ -312,6 +399,34 @@ class Jellyfin(Library):
         else:
             self.remove_from_collection(items, item)
             
+    def create_smart_collection(
+            self,
+            title: str,
+            smart_type_key: str | int | None = None,
+            smart_url: str | dict | None = None,
+            ignore_blank_results: bool = False
+        ) -> ItemMovieWrapper | None:
+        """Materialize a Kometa smart collection as a normal Jellyfin collection.
+
+        Jellyfin does not support Plex smart collections, but Kometa's default
+        dynamic genre files still call create_smart_collection after resolving
+        the smart filter. We resolve the Plex-style smart URL with fetchItems()
+        and then create/update a regular Jellyfin box set with those items.
+        """
+        items = self.fetchItems(smart_url)
+
+        if not items:
+            message = f"Jellyfin Error: Smart collection '{title}' returned no items"
+            if ignore_blank_results:
+                logger.warning(message)
+                return None
+            raise Failed(message)
+
+        logger.info(f"Jellyfin: Creating static collection '{title}' from {len(items)} smart filter items")
+        self.alter_collection(items, title, add=True)
+        return self.get_collection(title)
+
+
     def create_collection(self, item: ItemMovieWrapper) -> ItemMovieWrapper:
         """ Creates a new collection.
         
@@ -336,10 +451,12 @@ class Jellyfin(Library):
             items (list[ItemMovieWrapper]): The items to add.
             collection (ItemMovieWrapper): The collection to add the items to.
         """
-        CollectionApi().add_to_collection(
-            collection.id, 
-            [item.id for item in items]
-        )
+        collection_id = self._jellyfin_id(collection.id)
+        item_ids = [self._jellyfin_id(item.id) for item in items if getattr(item, "id", None)]
+
+        for item_id_batch in self._chunks(item_ids):
+            if item_id_batch:
+                CollectionApi().add_to_collection(collection_id, item_id_batch)
         
     def remove_from_collection(self, items: list[ItemMovieWrapper], collection: ItemMovieWrapper) -> None:
         """ Removes items from a collection.
@@ -348,10 +465,12 @@ class Jellyfin(Library):
             items (list[ItemMovieWrapper]): The items to remove.
             collection (ItemMovieWrapper): The collection to remove the items from.
         """
-        CollectionApi().remove_from_collection(
-            collection.id, 
-            [item.id for item in items]
-        )
+        collection_id = self._jellyfin_id(collection.id)
+        item_ids = [self._jellyfin_id(item.id) for item in items if getattr(item, "id", None)]
+
+        for item_id_batch in self._chunks(item_ids):
+            if item_id_batch:
+                CollectionApi().remove_from_collection(collection_id, item_id_batch)
 
     def item_reload(self, item):
         if item.type == BaseItemKind.BOXSET:
@@ -372,7 +491,7 @@ class Jellyfin(Library):
         logger.warning(warn_msg)
         return None
         
-    def fetchItems(self, uri_args: dict | None = None) -> list[ItemMovieWrapper]:
+    def fetchItems(self, uri_args: dict | str | None = None) -> list[ItemMovieWrapper]:
         """Return items matching a Plex-style smart-filter URL.
 
         Kometa converts smart_filter definitions into Plex-style query args such as:
@@ -384,6 +503,14 @@ class Jellyfin(Library):
         """
         if uri_args is None:
             return self.get_all()
+
+        if isinstance(uri_args, str):
+            from urllib.parse import parse_qs
+            query_string = uri_args[1:] if uri_args.startswith("?") else uri_args
+            uri_args = parse_qs(query_string)
+        elif not hasattr(uri_args, "get"):
+            logger.warning(f"Jellyfin fetchItems received unsupported filter args: {type(uri_args).__name__}")
+            return []
 
         def _values(key):
             raw = uri_args.get(key)
@@ -403,25 +530,7 @@ class Jellyfin(Library):
             return values
 
         def _item_values(item, attr):
-            raw_values = getattr(item.item, attr, None)
-            if raw_values is None:
-                return []
-
-            if not isinstance(raw_values, list):
-                raw_values = [raw_values]
-
-            values = []
-            for value in raw_values:
-                name = (
-                    getattr(value, "name", None)
-                    or getattr(value, "Name", None)
-                    or getattr(value, "tag", None)
-                    or str(value)
-                )
-                name = str(name).strip()
-                if name and name.lower() != "none":
-                    values.append(name)
-            return values
+            return self._metadata_names(getattr(item.item, attr, None))
 
         def _matches_any(item, attr, expected_values):
             actual_values = {value.casefold() for value in _item_values(item, attr)}
@@ -710,8 +819,7 @@ class Jellyfin(Library):
         logger.warning(warn_msg)
 
     def image_update(self, item, image, tmdb=None, title=None, poster=True):
-        warn_msg = "Jellyfin image_update method not implemented yet"
-        logger.warning(warn_msg)
+        return self._upload_image(item, image)
 
     def item_labels(self, item):
         pass
@@ -730,8 +838,7 @@ class Jellyfin(Library):
         return self.item_reload(item)
     
     def upload_poster(self, item, image, tmdb=None, title=None):
-        warn_msg = "Jellyfin upload_poster method not implemented yet"
-        logger.warning(warn_msg)
+        return self._upload_image(item, image)
         
     def collection_order_query(self, collection, data):
         warn_msg = "Jellyfin dont support collection order"
@@ -744,15 +851,62 @@ class Jellyfin(Library):
 
     def _upload_image(self, item: ItemMovieWrapper, image: ImageBase) -> bool:
         if image.is_poster:
-            image_type = ImageType.PRIMARY
+            image_type = "Primary"
         elif image.is_background:
-            image_type = ImageType.BACKDROP
+            image_type = "Backdrop"
         elif image.is_logo:
-            image_type = ImageType.LOGO
+            image_type = "Logo"
         else:
             return False
 
-        return self.api.image.upload_from_url(item.id, image_type, image.location)
+        item_id = self._jellyfin_id(getattr(item, "id", None))
+        if not item_id:
+            raise Failed("Jellyfin Error: Cannot upload image because item has no id")
+
+        image_location = getattr(image, "location", None)
+        if not image_location:
+            raise Failed("Jellyfin Error: Cannot upload image because image has no location")
+
+        image_location = str(image_location)
+        if image_location.startswith(("http://", "https://")):
+            response = self.session.get(image_location, timeout=self.timeout)
+            response.raise_for_status()
+            image_data = response.content
+            content_type = response.headers.get("Content-Type")
+        else:
+            with open(image_location, "rb") as image_file:
+                image_data = image_file.read()
+            content_type = mimetypes.guess_type(image_location)[0]
+
+        content_type = (content_type or mimetypes.guess_type(image_location)[0] or "image/jpeg").split(";", 1)[0]
+        upload_url = f"{self.url.rstrip('/')}/Items/{item_id}/Images/{image_type}"
+        headers = {
+            "Content-Type": content_type,
+            "Accept": "application/json",
+            "X-Emby-Token": self.token,
+            "X-MediaBrowser-Token": self.token,
+            "Authorization": f'MediaBrowser Token="{self.token}"',
+        }
+
+        params = {"api_key": self.token}
+        errors = []
+
+        for method in [self.session.post, self.session.put]:
+            response = method(upload_url, headers=headers, params=params, data=image_data, timeout=self.timeout)
+            if response.status_code in [200, 204]:
+                return True
+            errors.append(f"{method.__name__.upper()} raw returned {response.status_code}: {response.text}")
+
+        encoded_headers = dict(headers)
+        encoded_headers["Content-Type"] = "text/plain"
+        encoded_data = base64.b64encode(image_data)
+        for method in [self.session.post, self.session.put]:
+            response = method(upload_url, headers=encoded_headers, params=params, data=encoded_data, timeout=self.timeout)
+            if response.status_code in [200, 204]:
+                return True
+            errors.append(f"{method.__name__.upper()} base64 returned {response.status_code}: {response.text}")
+
+        raise Failed(f"Jellyfin Error: Failed to upload {image_type} image to item {item_id}: {'; '.join(errors)}")
 
     def playlist_report(self):
         warn_msg = "Jellyfin playlist_report method not implemented yet"
