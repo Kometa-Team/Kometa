@@ -45,6 +45,8 @@ Document the valid `font_style` values for the default Inter font and note that 
 Add E4 to network overlay and show network collection. #2975
 
 # Bug Fixes
+TMDb collection, movie, and show 404 responses now raise a dedicated `tmdb.NotFound` (mirroring the existing `tvdb.NotFound` pattern); `validate_tmdb_ids` logs an actionable hint for stale collection IDs pointing franchise-default users to the `exclude` template variable.
+TVDb 5xx server errors now raise `TVDbServerError` (not a `Failed` subclass) so tenacity retries them up to 6 times; previously a single flaky 5xx response aborted the item without any retry.
 Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup, which replaced the `data-film-id` nodes the `letterboxd_list`, `letterboxd_user_films`, and `letterboxd_user_reviews` builders relied on.
 Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
