@@ -1360,6 +1360,9 @@ class MetadataFile(DataFile):
                                 collection_title = title_override[key]
                             else:
                                 collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                                for _var_key, _var_val in og_call.items():
+                                    if f"<<{_var_key}>>" in collection_title:
+                                        collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
                             if collection_title in col_names:
                                 logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                             else:
