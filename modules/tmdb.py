@@ -371,6 +371,10 @@ class TMDb:
                 tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
             except Failed as e:
                 logger.error(e)
+                if type_map[tmdb_method] == "Collection" and "404" in str(e):
+                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. "
+                                 f"If this is auto-built by the franchise default, add '{tmdb_id}' to "
+                                 f"your exclude list in template_variables to suppress this error.")
         if len(tmdb_values) == 0:
             raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
