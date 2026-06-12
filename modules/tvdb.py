@@ -18,6 +18,14 @@ class NotFound(Failed):
     """
 
 
+class TVDbServerError(Exception):
+    """Raised for 5xx responses from TVDb — transient server errors that should be retried.
+
+    Not a subclass of Failed so tenacity's retry_if_not_exception_type(Failed) will retry it.
+    Callers should convert to Failed after the retry budget is exhausted.
+    """
+
+
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
 alt_url = "https://thetvdb.com"
@@ -66,7 +74,7 @@ class TVDbObj:
                 data = self._tvdb.get_request(item_url)
             except NotFound:
                 raise NotFound(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
-            except Failed:
+            except (Failed, TVDbServerError):
                 raise Failed(f"TVDb Error: No {'Movie' if is_movie else 'Series'} found for TVDb ID: {tvdb_id} at {item_url}")
 
         def parse_page(xpath, is_list=False):
@@ -131,11 +139,11 @@ class TVDb:
         response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:
             # 4xx — resource is gone from TVDb (e.g. series removed/merged). Raise
-            # NotFound so callers can decide to handle it quietly. 5xx remains
-            # a generic Failed (a transient TVDb outage, etc.).
+            # NotFound so callers can handle it quietly. 5xx is a transient server
+            # error — raise TVDbServerError (not a Failed subclass) so tenacity retries it.
             if 400 <= response.status_code < 500:
                 raise NotFound(f"({response.status_code}) {response.reason}")
-            raise Failed(f"({response.status_code}) {response.reason}")
+            raise TVDbServerError(f"({response.status_code}) {response.reason}")
         return html.fromstring(response.content)
 
     def get_id_from_url(self, tvdb_url, is_movie=False, ignore_cache=False):
@@ -161,7 +169,7 @@ class TVDb:
         logger.trace(f"URL: {tvdb_url}")
         try:
             response = self.get_request(tvdb_url)
-        except (ParserError, Failed):
+        except (ParserError, Failed, TVDbServerError):
             raise Failed(f"TVDb Error: Failed not parse {tvdb_url}")
         results = response.xpath(f"//*[text()='TheTVDB.com {media_type} ID']/parent::node()/span/text()")
         if len(results) > 0:

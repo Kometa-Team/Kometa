@@ -162,7 +162,7 @@ class TMDbMovie(TMDBObj):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
         except TMDbAPINotFound:
-            raise Failed(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
+            raise NotFound(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
@@ -199,7 +199,7 @@ class TMDbShow(TMDBObj):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
         except TMDbAPINotFound:
-            raise Failed(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
+            raise NotFound(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
@@ -379,9 +379,13 @@ class TMDb:
                 tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
             except NotFound as e:
                 logger.error(e)
-                logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. "
-                             f"If this is auto-built by the franchise default, add '{tmdb_id}' to "
-                             f"your exclude list in template_variables to suppress this error.")
+                if type_map[tmdb_method] == "Collection":
+                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. "
+                                 f"If this is auto-built by the franchise default, add '{tmdb_id}' to "
+                                 f"your exclude list in template_variables to suppress this error.")
+                else:
+                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed "
+                                 f"from TMDb. Verify it still exists and update your config.")
             except Failed as e:
                 logger.error(e)
         if len(tmdb_values) == 0:
