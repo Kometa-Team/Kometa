@@ -40,6 +40,7 @@ Updates to Quickstart docs about limitations
 Updates to Trakt and MAL flow pages
 Update Letterboxd builder docs to reflect letterboxdpy-backed filtering, ordering, and incremental behavior.
 Document the valid `font_style` values for the default Inter font and note that valid styles are font-specific. #2925
+Call out the schema file as supporting only config.yml. explicitly.
 
 # Defaults
 Add E4 to network overlay and show network collection. #2975
@@ -58,3 +59,5 @@ Streaming default's `run_definition` now honors `use_all: false`; previously dyn
 Overlay backdrops with `back_line_color` set but no `back_line_width` no longer crash; `back_line_width` now defaults to 1 in that case. #2645
 Fix trakt_chart watched/collected URLs to use /movies(shows)/watched(collected)/{period} and default period to "weekly"; fix recommended to use /recommendations/movies(shows). #3057
 TVDb 4xx responses (series/movie removed or merged on TVDb) now raise a dedicated `tvdb.NotFound` so the missing-show iteration and TVDb-filter paths log them at debug instead of error. Stale TVDb IDs returned by TMDb `external_ids` no longer spam logs or trigger webhook failure notifications. #3047
+TMDb collection requests that 404 (collection deleted upstream — TMDb now only permits collections for true movie sequels) now raise a dedicated `tmdb.NotFound`. When the ID was auto-discovered by a default (e.g. the `franchise` default scanning `tmdb_collection` IDs from the library), the collection is skipped as "Ignored" instead of failing with a critical error and webhook notification. IDs in user-authored config files still raise as before.
+Align Kometa's AniList season translation from `current` to match Anilist.

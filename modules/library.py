@@ -243,7 +243,7 @@ class Library(ABC):
                     logger.info("")
                     logger.separator(f"Skipping {e} Image File")
 
-    def upload_images(self, item, poster=None, background=None, logo=None, overlay=False):
+    def upload_images(self, item, poster=None, background=None, logo=None, square_art=None, overlay=False):
         poster_uploaded = False
         if poster is not None:
             try:
@@ -293,6 +293,21 @@ class Library(ABC):
                 logger.stacktrace()
                 logger.error(f"Metadata: {logo.attribute} failed to update {logo.message}")
 
+        square_art_uploaded = False
+        if square_art is not None:
+            try:
+                image_compare = None
+                if self.config.Cache:
+                    _, image_compare, _ = self.config.Cache.query_image_map(item.ratingKey, f"{self.image_table_name}_square_arts")
+                if not image_compare or str(square_art.compare) != str(image_compare):
+                    square_art_uploaded = self._upload_image(item, square_art)
+                    logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
+                elif self.show_asset_not_needed:
+                    logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except Failed:
+                logger.stacktrace()
+                logger.error(f"Metadata: {square_art.attribute} failed to update {square_art.message}")
+
         if self.config.Cache:
             if poster_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
@@ -300,8 +315,10 @@ class Library(ABC):
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_backgrounds", "", background.compare)
             if logo_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_logos", "", logo.compare)
+            if square_art_uploaded:
+                self.config.Cache.update_image_map(item.ratingKey, f"{self.image_table_name}_square_arts", "", square_art.compare)
 
-        return poster_uploaded, background_uploaded, logo_uploaded
+        return poster_uploaded, background_uploaded, logo_uploaded, square_art_uploaded
 
     def get_id_from_maps(self, key):
         key = int(key)

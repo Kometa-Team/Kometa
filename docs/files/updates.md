@@ -29,6 +29,8 @@ tags:
   - tmdb_background
   - tvdb_background
   - file_background
+  - url_square_art
+  - file_square_art
 ---
 
 # Collection/Playlist Metadata Updates
@@ -142,5 +144,30 @@ Standard priority is as follows [lower numbers take precedence]:
 4. tvdb_background
 
 5. asset_directory
+
+You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+
+## Square Art Collection/Playlist Metadata Updates
+
+All the following attributes update the square art (used by some Plex clients) of the collection/playlist from various sources.
+
+**All of these details work with Playlists.**
+
+If no square art is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
+folder named either the collection/playlist name or the `name_mapping` if specified and look for a `square.ext` file in
+that folder (replacing .ext with the image extension).
+
+| Attribute         | Description & Values                                                                                                   |
+|:------------------|:-----------------------------------------------------------------------------------------------------------------------|
+| `file_square_art` | **Description:** Changes square art to the image in the file system<br>**Values:** Path to image in the file system   |
+| `url_square_art`  | **Description:** Changes square art to the URL<br>**Values:** URL of image publicly available on the internet         |
+
+Standard priority is as follows [lower numbers take precedence]:
+
+1. url_square_art
+
+2. file_square_art
+
+3. asset_directory
 
 You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.

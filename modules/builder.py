@@ -102,6 +102,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
+square_art_details = ["url_square_art", "file_square_art"]
 boolean_details = [
     "show_filtered",
     "show_unfiltered",
@@ -178,7 +179,7 @@ details = (
     + string_details
 )
 collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + poster_details + background_details + summary_details + string_details + all_builders
-item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_title"]
+item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_square_art", "item_lock_title"]
 item_bool_details = [
     "item_tmdb_season_titles",
     "revert_overlay",
@@ -598,6 +599,7 @@ parts_collection_valid = (
         "changes_webhooks",
         "item_lock_background",
         "item_lock_poster",
+        "item_lock_square_art",
         "item_lock_title",
         "item_refresh",
         "item_refresh_delay",
@@ -616,6 +618,7 @@ parts_collection_valid = (
     + summary_details
     + poster_details
     + background_details
+    + square_art_details
     + string_details
 )
 playlist_attributes = (
@@ -652,6 +655,7 @@ music_attributes = (
         "collection_filtering",
         "item_lock_background",
         "item_lock_poster",
+        "item_lock_square_art",
         "item_lock_title",
         "item_assets",
         "item_refresh",
@@ -664,6 +668,7 @@ music_attributes = (
     + summary_details
     + poster_details
     + background_details
+    + square_art_details
 )
 
 
@@ -970,6 +975,7 @@ class CollectionBuilder:
 
         self.posters = {}
         self.backgrounds = {}
+        self.square_arts = {}
         if not self.overlay and "kometa_poster" in methods:
             logger.debug("")
             logger.debug("Validating Method: kometa_poster")
@@ -1550,6 +1556,8 @@ class CollectionBuilder:
                     self._poster(method_name, method_data)
                 elif method_name in background_details:
                     self._background(method_name, method_data)
+                elif method_name in square_art_details:
+                    self._square_art(method_name, method_data)
                 elif method_name in details:
                     self._details(method_name, method_data, method_final, methods)
                 elif method_name in item_details:
@@ -1597,6 +1605,19 @@ class CollectionBuilder:
                     self._filters(method_name, method_data)
                 else:
                     raise Failed(f"{self.Type} Error: {method_final} attribute not supported")
+            except tmdb.NotFound as e:
+                # A TMDb resource referenced here (e.g. a collection) has been
+                # deleted upstream. When the ID came from one of Kometa's own
+                # defaults (e.g. the franchise default auto-discovers tmdb_collection
+                # IDs from the library), this is not user-actionable: skip the
+                # collection quietly instead of failing it and firing a webhook
+                # error notification. IDs in user-authored files still raise.
+                if self.metadata.type == "Default":
+                    raise NonExisting(e)
+                if self.validate_builders:
+                    raise
+                else:
+                    logger.error(e)
             except Failed as e:
                 if self.validate_builders:
                     raise
@@ -1762,6 +1783,19 @@ class CollectionBuilder:
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+
+    def _square_art(self, method_name, method_data):
+        if method_name == "url_square_art":
+            try:
+                self.config.Requests.get_image(method_data)
+                self.square_arts[method_name] = method_data
+            except Failed:
+                logger.warning(f"{self.Type} Warning: No Square Art Found at {method_data}")
+        elif method_name == "file_square_art":
+            if os.path.exists(os.path.abspath(method_data)):
+                self.square_arts[method_name] = os.path.abspath(method_data)
+            else:
+                logger.error(f"{self.Type} Error: Square Art Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
@@ -1992,15 +2026,15 @@ class CollectionBuilder:
                 new_dictionary["score"] = score_dict
                 self.builders.append((method_name, self.config.AniList.validate_userlist(new_dictionary)))
         elif method_name == "anilist_search":
-            if self.current_time.month in [12, 1, 2]:
+            if self.current_time.month in [1, 2, 3]:
                 current_season = "winter"
-            elif self.current_time.month in [3, 4, 5]:
+            elif self.current_time.month in [4, 5, 6]:
                 current_season = "spring"
-            elif self.current_time.month in [6, 7, 8]:
+            elif self.current_time.month in [7, 8, 9]:
                 current_season = "summer"
             else:
                 current_season = "fall"
-            default_year = self.current_year + 1 if self.current_time.month == 12 else self.current_year
+            default_year = self.current_year
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 new_dictionary = {}
@@ -4049,21 +4083,49 @@ class CollectionBuilder:
             return util.parse(self.Type, attribute, data, datatype="bool")
         elif attribute in ["seasons", "episodes", "albums", "tracks"]:
             if isinstance(data, dict) and data:
-                percentage = self.default_percent
-                if "percentage" in data:
+                has_percentage = "percentage" in data
+                has_count = "count" in data
+                
+                if has_percentage and has_count:
+                    raise Failed(f"{self.Type} Error: Cannot use both percentage and count in {attribute} filter. Please use one or the other.")
+                
+                percentage = None
+                count = None
+                
+                if has_count:
+                    if data["count"] is None:
+                        logger.warning(f"{self.Type} Warning: count filter attribute is blank")
+                    else:
+                        maybe = util.check_num(data["count"])
+                        if maybe < 1:
+                            logger.warning(f"{self.Type} Warning: count filter attribute must be a number 1 or greater")
+                        else:
+                            count = maybe
+                elif has_percentage:
                     if data["percentage"] is None:
                         logger.warning(f"{self.Type} Warning: percentage filter attribute is blank using {self.default_percent} as default")
+                        percentage = self.default_percent
                     else:
                         maybe = util.check_num(data["percentage"])
                         if maybe < 0 or maybe > 100:
                             logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using {self.default_percent} as default")
+                            percentage = self.default_percent
                         else:
                             percentage = maybe
-                final_filters = {"percentage": percentage}
+                else:
+                    # Default to percentage if neither is specified
+                    percentage = self.default_percent
+                
+                final_filters = {}
+                if count is not None:
+                    final_filters["count"] = count
+                else:
+                    final_filters["percentage"] = percentage
+                    
                 for filter_method, filter_data in data.items():
                     filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
                     message = None
-                    if filter_final == "percentage":
+                    if filter_final in ["percentage", "count"]:
                         continue
                     if filter_final not in all_filters:
                         message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
@@ -4566,6 +4628,8 @@ class CollectionBuilder:
                 self.library.query(item.lockArt if self.item_details["item_lock_background"] else item.unlockArt)
             if "item_lock_poster" in self.item_details:
                 self.library.query(item.lockPoster if self.item_details["item_lock_poster"] else item.unlockPoster)
+            if "item_lock_square_art" in self.item_details:
+                self.library.query(item.lockSquareArt if self.item_details["item_lock_square_art"] else item.unlockSquareArt)
             if "item_lock_title" in self.item_details:
                 self.library.edit_query(item, {"title.locked": 1 if self.item_details["item_lock_title"] else 0})
             if "item_refresh" in self.item_details:
@@ -4811,11 +4875,13 @@ class CollectionBuilder:
                 else:
                     logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                asset_poster, asset_background, _, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                asset_poster, asset_background, _, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
                     self.posters["asset_directory"] = asset_poster
                 if asset_background:
                     self.backgrounds["asset_directory"] = asset_background
+                if asset_square_art:
+                    self.square_arts["asset_directory"] = asset_square_art
             except Failed as e:
                 if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
                     logger.warning(e)
@@ -4845,6 +4911,14 @@ class CollectionBuilder:
             asset_location,
             image_type="background",
         )
+        self.collection_square_art = self.library.pick_image(
+            self.obj.title,
+            self.square_arts,
+            self.library.prioritize_assets,
+            self.library.download_url_assets,
+            asset_location,
+            image_type="square_art",
+        )
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -4852,9 +4926,9 @@ class CollectionBuilder:
             item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}
             self.collection_poster = self.collection_poster.save(item_vars)
 
-        if self.collection_poster or self.collection_background:
-            pu, bu, lu = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background)
-            if pu or bu:
+        if self.collection_poster or self.collection_background or self.collection_square_art:
+            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, square_art=self.collection_square_art)
+            if pu or bu or sau:
                 updated_details.append("Image")
 
         if clean_temp:

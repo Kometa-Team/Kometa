@@ -1,46 +1,63 @@
-import glob, os, re, signal, sys, time
+import glob
+import os
+import re
+import signal
+import sys
+import time
 from datetime import datetime, timedelta
-from modules.logs import MyLogger
+
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
-from plexapi.video import Season, Episode, Movie
+from plexapi.video import Episode, Movie, Season
 from requests.exceptions import HTTPError
 from tenacity import retry_if_exception
 from tenacity.wait import wait_base
 
+from modules.logs import MyLogger
+
 try:
     import msvcrt
+
     windows = True
 except ModuleNotFoundError:
     windows = False
 
 
-logger: MyLogger = None # noqa
+logger: MyLogger = None  # noqa
+
 
 class TimeoutExpired(Exception):
     pass
 
+
 class LimitReached(Exception):
     pass
+
 
 class Failed(Exception):
     pass
 
+
 class FilterFailed(Failed):
     pass
+
 
 class Continue(Exception):
     pass
 
+
 class Deleted(Exception):
     pass
+
 
 class NonExisting(Exception):
     pass
 
+
 class NotScheduled(Exception):
     pass
+
 
 class NotScheduledRange(NotScheduled):
     pass
@@ -73,43 +90,67 @@ class wait_for_retry_after_header(wait_base):
 
 
 days_alias = {
-    "monday": 0, "mon": 0, "m": 0,
-    "tuesday": 1, "tues": 1, "tue": 1, "tu": 1, "t": 1,
-    "wednesday": 2, "wed": 2, "w": 2,
-    "thursday": 3, "thurs": 3, "thur": 3, "thu": 3, "th": 3, "r": 3,
-    "friday": 4, "fri": 4, "f": 4,
-    "saturday": 5, "sat": 5, "s": 5,
-    "sunday": 6, "sun": 6, "su": 6, "u": 6
+    "monday": 0,
+    "mon": 0,
+    "m": 0,
+    "tuesday": 1,
+    "tues": 1,
+    "tue": 1,
+    "tu": 1,
+    "t": 1,
+    "wednesday": 2,
+    "wed": 2,
+    "w": 2,
+    "thursday": 3,
+    "thurs": 3,
+    "thur": 3,
+    "thu": 3,
+    "th": 3,
+    "r": 3,
+    "friday": 4,
+    "fri": 4,
+    "f": 4,
+    "saturday": 5,
+    "sat": 5,
+    "s": 5,
+    "sunday": 6,
+    "sun": 6,
+    "su": 6,
+    "u": 6,
 }
 mod_displays = {
-    "": "is", ".not": "is not", ".is": "is", ".isnot": "is not", ".begins": "begins with", ".ends": "ends with", ".before": "is before", ".after": "is after",
-    ".gt": "is greater than", ".gte": "is greater than or equal", ".lt": "is less than", ".lte": "is less than or equal", ".regex": "is"
+    "": "is",
+    ".not": "is not",
+    ".is": "is",
+    ".isnot": "is not",
+    ".begins": "begins with",
+    ".ends": "ends with",
+    ".before": "is before",
+    ".after": "is after",
+    ".gt": "is greater than",
+    ".gte": "is greater than or equal",
+    ".lt": "is less than",
+    ".lte": "is less than or equal",
+    ".regex": "is",
 }
 pretty_days = {0: "Monday", 1: "Tuesday", 2: "Wednesday", 3: "Thursday", 4: "Friday", 5: "Saturday", 6: "Sunday"}
 lower_days = {v.lower(): k for k, v in pretty_days.items()}
-pretty_months = {
-    1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June",
-    7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"
-}
+pretty_months = {1: "January", 2: "February", 3: "March", 4: "April", 5: "May", 6: "June", 7: "July", 8: "August", 9: "September", 10: "October", 11: "November", 12: "December"}
 lower_months = {v.lower(): k for k, v in pretty_months.items()}
 seasons = ["current", "winter", "spring", "summer", "fall"]
 advance_tags_to_edit = {
     "Movie": ["metadata_language", "use_original_title", "credits_detection"],
     "Show": ["episode_sorting", "keep_episodes", "delete_episodes", "season_display", "episode_ordering", "metadata_language", "use_original_title", "credits_detection", "audio_language", "subtitle_language", "subtitle_mode"],
     "Season": ["audio_language", "subtitle_language", "subtitle_mode"],
-    "Artist": ["album_sorting"]
+    "Artist": ["album_sorting"],
 }
 tags_to_edit = {
     "Movie": ["genre", "label", "collection", "country", "director", "producer", "writer"],
     "Video": ["genre", "label", "collection", "country", "director", "producer", "writer"],
     "Show": ["genre", "label", "collection"],
-    "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"]
+    "Artist": ["genre", "label", "style", "mood", "country", "collection", "similar_artist"],
 }
-collection_mode_options = {
-    "default": "default", "hide": "hide",
-    "hide_items": "hideItems", "hideitems": "hideItems",
-    "show_items": "showItems", "showitems": "showItems"
-}
+collection_mode_options = {"default": "default", "hide": "hide", "hide_items": "hideItems", "hideitems": "hideItems", "show_items": "showItems", "showitems": "showItems"}
 image_content_types = ["image/png", "image/jpeg", "image/webp"]
 parental_types = {"Sex & Nudity": "Nudity", "Violence & Gore": "Violence", "Profanity": "Profanity", "Alcohol, Drugs & Smoking": "Alcohol", "Frightening & Intense Scenes": "Frightening"}
 parental_values = ["None", "Mild", "Moderate", "Severe"]
@@ -118,23 +159,28 @@ parental_labels = [f"{t}:{v}" for t in parental_types.values() for v in parental
 previous_time = None
 start_time = None
 
+
 def get_image_dicts(group, alias):
     posters = {}
     backgrounds = {}
     logos = {}
+    square_arts = {}
 
-    for attr in ["url_poster", "file_poster", "url_background", "file_background", "file_logo", "url_logo"]:
+    for attr in ["url_poster", "file_poster", "url_background", "file_background", "file_logo", "url_logo", "url_square_art", "file_square_art"]:
         if attr in alias:
             if group[alias[attr]]:
                 if "poster" in attr:
                     posters[attr] = group[alias[attr]]
                 elif "background" in attr:
                     backgrounds[attr] = group[alias[attr]]
+                elif "square_art" in attr:
+                    square_arts[attr] = group[alias[attr]]
                 else:
                     logos[attr] = group[alias[attr]]
             else:
                 logger.error(f"Metadata Error: {attr} attribute is blank")
-    return posters, backgrounds, logos
+    return posters, backgrounds, logos, square_arts
+
 
 def add_dict_list(keys, value, dict_map):
     for key in keys:
@@ -143,12 +189,18 @@ def add_dict_list(keys, value, dict_map):
         else:
             dict_map[key] = [int(value)]
 
+
 def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
-    if split is True:               split = "|"
-    if data is None:                return None if return_none else []
-    elif isinstance(data, list):    list_data = data
-    elif isinstance(data, dict):    return [data]
-    elif split is False:            list_data = [str(data)]
+    if split is True:
+        split = "|"
+    if data is None:
+        return None if return_none else []
+    elif isinstance(data, list):
+        list_data = data
+    elif isinstance(data, dict):
+        return [data]
+    elif split is False:
+        list_data = [str(data)]
     else:
         list_data = [s.strip() for s in str(data).split(split)]
         if len(list_data) == 1:
@@ -158,37 +210,58 @@ def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list
     def get_str(input_data):
         return str(input_data).strip() if trim else str(input_data)
 
-    if lower is True:               return [get_str(d).lower() for d in list_data]
-    elif upper is True:             return [get_str(d).upper() for d in list_data]
+    if lower is True:
+        return [get_str(d).lower() for d in list_data]
+    elif upper is True:
+        return [get_str(d).upper() for d in list_data]
     elif int_list is True:
-        try:                            return [int(get_str(d)) for d in list_data]
-        except ValueError:              return []
-    else:                           return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+        try:
+            return [int(get_str(d)) for d in list_data]
+        except ValueError:
+            return []
+    else:
+        return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+
 
 def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
-    if split is True:               split = ","
-    if data is None:                return None if return_none else []
-    elif isinstance(data, list):    list_data = data
-    elif isinstance(data, dict):    return [data]
-    elif split is False:            list_data = [str(data)]
-    else:                           list_data = [s.strip() for s in str(data).split(split)]
+    if split is True:
+        split = ","
+    if data is None:
+        return None if return_none else []
+    elif isinstance(data, list):
+        list_data = data
+    elif isinstance(data, dict):
+        return [data]
+    elif split is False:
+        list_data = [str(data)]
+    else:
+        list_data = [s.strip() for s in str(data).split(split)]
 
     def get_str(input_data):
         return str(input_data).strip() if trim else str(input_data)
 
-    if lower is True:               return [get_str(d).lower() for d in list_data]
-    elif upper is True:             return [get_str(d).upper() for d in list_data]
+    if lower is True:
+        return [get_str(d).lower() for d in list_data]
+    elif upper is True:
+        return [get_str(d).upper() for d in list_data]
     elif int_list is True:
-        try:                            return [int(get_str(d)) for d in list_data]
-        except ValueError:              return []
-    else:                           return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+        try:
+            return [int(get_str(d)) for d in list_data]
+        except ValueError:
+            return []
+    else:
+        return [d if isinstance(d, dict) else get_str(d) for d in list_data]
+
 
 def get_int_list(data, id_type):
     int_values = []
     for value in get_list(data):
-        try:                        int_values.append(regex_first_int(value, id_type))
-        except Failed as e:         logger.error(e)
+        try:
+            int_values.append(regex_first_int(value, id_type))
+        except Failed as e:
+            logger.error(e)
     return int_values
+
 
 def validate_date(date_text, return_as=None):
     if isinstance(date_text, datetime):
@@ -199,6 +272,7 @@ def validate_date(date_text, return_as=None):
         except ValueError:
             raise Failed(f"{date_text} must match pattern YYYY-MM-DD (e.g. 2020-12-25) or MM/DD/YYYY (e.g. 12/25/2020)")
     return datetime.strftime(date_obg, return_as) if return_as else date_obg
+
 
 def validate_regex(data, col_type, validate=True):
     regex_list = get_list(data, split=False)
@@ -215,24 +289,35 @@ def validate_regex(data, col_type, validate=True):
                 logger.error(err)
     return valid_regex
 
+
 def logger_input(prompt, timeout=60):
-    if windows:                             return windows_input(prompt, timeout)
-    elif hasattr(signal, "SIGALRM"):        return unix_input(prompt, timeout)
-    else:                                   raise SystemError("Input Timeout not supported on this system")
+    if windows:
+        return windows_input(prompt, timeout)
+    elif hasattr(signal, "SIGALRM"):
+        return unix_input(prompt, timeout)
+    else:
+        raise SystemError("Input Timeout not supported on this system")
+
 
 def header(language="en-US,en;q=0.5"):
     return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/113.0"}
 
+
 def alarm_handler(signum, frame):
     raise TimeoutExpired
+
 
 def unix_input(prompt, timeout=60):
     prompt = f"| {prompt}: "
     signal.signal(signal.SIGALRM, alarm_handler)
     signal.alarm(timeout)
-    try:                return input(prompt)
-    except EOFError:    raise Failed("Input Failed")
-    finally:            signal.alarm(0)
+    try:
+        return input(prompt)
+    except EOFError:
+        raise Failed("Input Failed")
+    finally:
+        signal.alarm(0)
+
 
 def windows_input(prompt, timeout=5):
     sys.stdout.write(f"| {prompt}: ")
@@ -242,21 +327,25 @@ def windows_input(prompt, timeout=5):
     while True:
         if msvcrt.kbhit():
             char = msvcrt.getwche()
-            if ord(char) == 13: # enter_key
+            if ord(char) == 13:  # enter_key
                 out = "".join(result)
                 print("")
                 logger.debug(f"{prompt}: {out}")
                 return out
-            elif ord(char) >= 32: #space_char
+            elif ord(char) >= 32:  # space_char
                 result.append(char)
         if (time.time() - s_time) > timeout:
             print("")
             raise TimeoutExpired
 
+
 def get_id_from_imdb_url(imdb_url):
     match = re.search("(tt\\d+)", str(imdb_url))
-    if match:           return match.group(1)
-    else:               raise Failed(f"Regex Error: Failed to parse IMDb ID from IMDb URL: {imdb_url}")
+    if match:
+        return match.group(1)
+    else:
+        raise Failed(f"Regex Error: Failed to parse IMDb ID from IMDb URL: {imdb_url}")
+
 
 def regex_first_int(data, id_type, default=None):
     match = re.search("(\\d+)", str(data))
@@ -268,12 +357,14 @@ def regex_first_int(data, id_type, default=None):
     else:
         raise Failed(f"Regex Error: Failed to parse {id_type} from {data}")
 
+
 def validate_filename(filename):
     if is_valid_filename(str(filename)):
         return filename, None
     else:
         mapping_name = sanitize_filename(str(filename))
         return mapping_name, f"Log Folder Name: {filename} is invalid using {mapping_name}"
+
 
 def item_title(item):
     if isinstance(item, Season):
@@ -296,15 +387,17 @@ def item_title(item):
     else:
         return item.title
 
+
 def item_set(item, item_id):
     return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
+
 
 def is_locked(filepath):
     locked = None
     file_object = None
     if os.path.exists(filepath):
         try:
-            file_object = open(filepath, 'a', 8)
+            file_object = open(filepath, "a", 8)
             if file_object:
                 locked = False
         except IOError:
@@ -313,6 +406,7 @@ def is_locked(filepath):
             if file_object:
                 file_object.close()
     return locked
+
 
 def time_window(tw):
     today = datetime.now()
@@ -337,6 +431,7 @@ def time_window(tw):
     else:
         return tw
 
+
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
     files = []
     had_scheduled = False
@@ -349,6 +444,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
         logger.info("")
         if isinstance(file, dict):
             current = []
+
             def check_dict(attr, name):
                 if attr in file and (method != "metadata_files" or attr not in ["pmm", "default"]):
                     logger.info(f"Reading {attr}: {file[attr]}")
@@ -431,11 +527,13 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                 logger.error(f"{err_type} Error: Path not found: {file}")
     return files, had_scheduled
 
+
 def check_num(num, is_int=True):
     try:
         return int(str(num)) if is_int else float(str(num))
     except (ValueError, TypeError):
         return None
+
 
 def check_collection_mode(collection_mode):
     if collection_mode and str(collection_mode).lower() in collection_mode_options:
@@ -443,17 +541,18 @@ def check_collection_mode(collection_mode):
     else:
         raise Failed(f"Config Error: {collection_mode} collection_mode invalid\n    default (Library default)\n    hide (Hide Collection)\n    hide_items (Hide Items in this Collection)\n    show_items (Show this Collection and its Items)")
 
+
 def glob_filter(filter_in):
     filter_in = filter_in.translate({ord("["): "[[]", ord("]"): "[]]"}) if "[" in filter_in else filter_in
     return glob.glob(filter_in)
+
 
 def is_date_filter(value, modifier, data, final, current_time):
     if value is None:
         return True
     if modifier in ["", ".not"]:
         threshold_date = current_time - timedelta(days=data)
-        if (modifier == "" and (value is None or value < threshold_date)) \
-                or (modifier == ".not" and value and value >= threshold_date):
+        if (modifier == "" and (value is None or value < threshold_date)) or (modifier == ".not" and value and value >= threshold_date):
             return True
     elif modifier in [".before", ".after"]:
         try:
@@ -472,16 +571,22 @@ def is_date_filter(value, modifier, data, final, current_time):
             return True
     return False
 
+
 def is_number_filter(value, modifier, data):
-    return value is None or (modifier == "" and value != data) \
-            or (modifier == ".not" and value == data) \
-            or (modifier == ".gt" and value <= data) \
-            or (modifier == ".gte" and value < data) \
-            or (modifier == ".lt" and value >= data) \
-            or (modifier == ".lte" and value > data)
+    return (
+        value is None
+        or (modifier == "" and value != data)
+        or (modifier == ".not" and value == data)
+        or (modifier == ".gt" and value <= data)
+        or (modifier == ".gte" and value < data)
+        or (modifier == ".lt" and value >= data)
+        or (modifier == ".lte" and value > data)
+    )
+
 
 def is_boolean_filter(value, data):
     return (data and not value) or (not data and value)
+
 
 def is_string_filter(values, modifier, data):
     jailbreak = False
@@ -489,15 +594,19 @@ def is_string_filter(values, modifier, data):
         logger.trace(f"Regex Values: {values}")
     for value in values:
         for check_value in data:
-            if (modifier in ["", ".not"] and check_value.lower() in value.lower()) \
-                    or (modifier in [".is", ".isnot"] and value.lower() == check_value.lower()) \
-                    or (modifier == ".begins" and value.lower().startswith(check_value.lower())) \
-                    or (modifier == ".ends" and value.lower().endswith(check_value.lower())) \
-                    or (modifier == ".regex" and re.compile(check_value).search(value)):
+            if (
+                (modifier in ["", ".not"] and check_value.lower() in value.lower())
+                or (modifier in [".is", ".isnot"] and value.lower() == check_value.lower())
+                or (modifier == ".begins" and value.lower().startswith(check_value.lower()))
+                or (modifier == ".ends" and value.lower().endswith(check_value.lower()))
+                or (modifier == ".regex" and re.compile(check_value).search(value))
+            ):
                 jailbreak = True
                 break
-        if jailbreak: break
+        if jailbreak:
+            break
     return (jailbreak and modifier in [".not", ".isnot"]) or (not jailbreak and modifier in ["", ".is", ".begins", ".ends", ".regex"])
+
 
 def check_day(_m, _d):
     if _m in [1, 3, 5, 7, 8, 10, 12] and _d > 31:
@@ -508,6 +617,7 @@ def check_day(_m, _d):
         return _m, 28
     else:
         return _m, _d
+
 
 def schedule_check(attribute, data, current_time, run_hour, is_all=False):
     range_collection = False
@@ -531,7 +641,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 logger.error(f"Schedule Error: failed to parse {attribute}: {schedule}")
                 continue
             try:
-                schedule_str += f"\nScheduled to meet all of these:\n    "
+                schedule_str += "\nScheduled to meet all of these:\n    "
                 schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
                 all_check += 1
             except NotScheduled as e:
@@ -543,7 +653,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             all_check += 1
             non_existing = True
         elif run_time == "never":
-            schedule_str += f"\nNever scheduled to run"
+            schedule_str += "\nNever scheduled to run"
         elif run_time.startswith(("hour", "week", "month", "year", "date", "range")):
             match = re.search("\\(([^)]+)\\)", run_time)
             if not match:
@@ -665,10 +775,16 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
             raise NotScheduled(schedule_str)
     return schedule_str
 
+
 def check_int(value, datatype="int", minimum=1, maximum=None, throw=False):
     try:
         value = int(str(value)) if datatype == "int" else float(str(value))
-        if (maximum is None and minimum is None) or (maximum is not None and minimum is None and maximum >= value) or (maximum is None and minimum is not None and minimum <= value) or (maximum is not None and minimum is not None and minimum <= value <= maximum):
+        if (
+            (maximum is None and minimum is None)
+            or (maximum is not None and minimum is None and maximum >= value)
+            or (maximum is None and minimum is not None and minimum <= value)
+            or (maximum is not None and minimum is not None and minimum <= value <= maximum)
+        ):
             return value
     except ValueError:
         if throw:
@@ -681,6 +797,7 @@ def check_int(value, datatype="int", minimum=1, maximum=None, throw=False):
                 message = f"{message} between {minimum} and {maximum}"
             raise Failed(message)
         return None
+
 
 def parse_and_or(error, attribute, data, test_list):
     out = ""
@@ -699,16 +816,17 @@ def parse_and_or(error, attribute, data, test_list):
             final += ","
         final += "|".join(or_num)
         if out:
-            out += f" and "
+            out += " and "
         if len(ands) > 1 and len(ors) > 1:
             out += "("
         if len(ors) > 1:
-            out += ' or '.join([test_list[test_list[str(o)]] if test_list else o for o in ors])
+            out += " or ".join([test_list[test_list[str(o)]] if test_list else o for o in ors])
         else:
             out += test_list[test_list[str(ors[0])]] if test_list else ors[0]
         if len(ands) > 1 and len(ors) > 1:
             out += ")"
     return out, final
+
 
 def parse(error, attribute, data, datatype=None, methods=None, parent=None, default=None, options=None, translation=None, minimum=1, maximum=None, regex=None, range_split=None, date_return=None):
     display = f"{parent + ' ' if parent else ''}{attribute} attribute"
@@ -823,8 +941,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
             return validate_date(datetime.now() if data in ["today", "current"] else data, return_as=date_return)
         except Failed as e:
             message = f"{e}"
-    elif (translation is not None and str(value).lower() not in translation) or \
-            (options is not None and translation is None and str(value).lower() not in options):
+    elif (translation is not None and str(value).lower() not in translation) or (options is not None and translation is None and str(value).lower() not in options):
         message = f"{display} {value} must be in [{', '.join([str(o) for o in options])}]"
     else:
         return translation[str(value).lower()] if translation is not None else value
@@ -835,17 +952,16 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         logger.warning(f"{error} Warning: {message} using {default} as default")
         return translation[default] if translation is not None else default
 
+
 def parse_cords(data, parent, required=False, err_type="Overlay", default=None):
     dho, dha, dvo, dva = default if default else (None, None, None, None)
-    horizontal_align = parse(err_type, "horizontal_align", data["horizontal_align"], parent=parent,
-                             options=["left", "center", "right"]) if "horizontal_align" in data else None
+    horizontal_align = parse(err_type, "horizontal_align", data["horizontal_align"], parent=parent, options=["left", "center", "right"]) if "horizontal_align" in data else None
     if horizontal_align is None:
         if required:
             raise Failed(f"{err_type} Error: {parent} horizontal_align is required")
         horizontal_align = dha
 
-    vertical_align = parse(err_type, "vertical_align", data["vertical_align"], parent=parent,
-                           options=["top", "center", "bottom"]) if "vertical_align" in data else None
+    vertical_align = parse(err_type, "vertical_align", data["vertical_align"], parent=parent, options=["top", "center", "bottom"]) if "vertical_align" in data else None
     if vertical_align is None:
         if required:
             raise Failed(f"{err_type} Error: {parent} vertical_align is required")
@@ -899,6 +1015,7 @@ def parse_cords(data, parent, required=False, err_type="Overlay", default=None):
 
     return horizontal_offset, horizontal_align, vertical_offset, vertical_align
 
+
 def parse_scale(data, parent, err_type="Overlay"):
     width = None
     if "scale_width" in data and data["scale_width"] is not None:
@@ -932,6 +1049,7 @@ def parse_scale(data, parent, err_type="Overlay"):
 
     return width, height
 
+
 def replace_label(_label, _data):
     replaced = False
     if isinstance(_data, dict):
@@ -962,6 +1080,7 @@ def replace_label(_label, _data):
 
     return final_data, replaced
 
+
 def check_time(message, end=False):
     global previous_time
     global start_time
@@ -975,7 +1094,10 @@ def check_time(message, end=False):
         logger.debug(f"{message}: {current_time - previous_time}")
     previous_time = None if end else current_time
 
+
 system_fonts = []
+
+
 def get_system_fonts():
     global system_fonts
     if not system_fonts:

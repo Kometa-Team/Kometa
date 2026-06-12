@@ -1,7 +1,9 @@
 import re
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
-from tmdbapis import Movie, NotFound as TMDbAPINotFound, TMDbAPIs, TMDbException
+from tmdbapis import Movie
+from tmdbapis import NotFound as TMDbNotFound
+from tmdbapis import TMDbAPIs, TMDbException
 
 from modules import util
 from modules.util import Failed
@@ -15,6 +17,17 @@ class NotFound(Failed):
     """
 
 logger = util.logger
+
+
+class NotFound(Failed):
+    """Raised when a TMDb resource (e.g. a collection) is gone from TMDb (HTTP 4xx).
+
+    Distinct from Failed so callers can downgrade noisy log lines / webhook
+    failures for IDs the user did not control (e.g. collection IDs auto-discovered
+    from the library by the franchise default that have since been deleted upstream
+    — TMDb now only permits collections for true movie sequels).
+    """
+
 
 int_builders = ["tmdb_airing_today", "tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_on_the_air", "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_upcoming"]
 info_builders = ["tmdb_actor", "tmdb_collection", "tmdb_crew", "tmdb_director", "tmdb_list", "tmdb_movie", "tmdb_producer", "tmdb_show", "tmdb_writer"]
@@ -161,7 +174,7 @@ class TMDbMovie(TMDBObj):
     def load_movie(self):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
-        except TMDbAPINotFound:
+        except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
@@ -198,7 +211,7 @@ class TMDbShow(TMDBObj):
     def load_show(self):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
-        except TMDbAPINotFound:
+        except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
@@ -235,7 +248,7 @@ class TMDbEpisode:
     def load_episode(self):
         try:
             return self._tmdb.TMDb.tv_episode(self.tmdb_id, self.season_number, self.episode_number)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Episode found for TMDb ID {self.tmdb_id} Season {self.season_number} Episode {self.episode_number}: {e}")
         except TMDbException as e:
             logger.stacktrace()
@@ -271,7 +284,7 @@ class TMDb:
             results = self.TMDb.find_by_id(tvdb_id=tvdb_id)
             if results.tv_results:
                 return results.tv_results[0].id
-        except TMDbAPINotFound:
+        except TMDbNotFound:
             pass
         raise Failed(f"TMDb Error: No TMDb ID found for TVDb ID {tvdb_id}")
 
@@ -286,7 +299,7 @@ class TMDb:
             elif results.tv_episode_results:
                 item = results.tv_episode_results[0]
                 return f"{item.tv_id}_{item.season_number}_{item.episode_number}", "episode"
-        except TMDbAPINotFound:
+        except TMDbNotFound:
             pass
         raise Failed(f"TMDb Error: No TMDb ID found for IMDb ID {imdb_id}")
 
@@ -312,7 +325,7 @@ class TMDb:
     def get_season(self, tmdb_id, season_number, partial=None):
         try:
             return self.TMDb.tv_season(tmdb_id, season_number, partial=partial)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Season found for TMDb ID {tmdb_id} Season {season_number}: {e}")
 
     def get_episode(self, tmdb_id, season_number, episode_number, ignore_cache=False):
@@ -322,42 +335,42 @@ class TMDb:
     def get_collection(self, tmdb_id, partial=None):
         try:
             return self.TMDb.collection(tmdb_id, partial=partial)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise NotFound(f"TMDb Error: No Collection found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_person(self, tmdb_id, partial=None):
         try:
             return self.TMDb.person(tmdb_id, partial=partial)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Person found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _company(self, tmdb_id, partial=None):
         try:
             return self.TMDb.company(tmdb_id, partial=partial)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Company found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _network(self, tmdb_id, partial=None):
         try:
             return self.TMDb.network(tmdb_id, partial=partial)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Network found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _keyword(self, tmdb_id):
         try:
             return self.TMDb.keyword(tmdb_id)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Keyword found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_list(self, tmdb_id):
         try:
             return self.TMDb.list(tmdb_id)
-        except TMDbAPINotFound as e:
+        except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No List found for TMDb ID {tmdb_id}: {e}")
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
@@ -368,12 +381,13 @@ class TMDb:
     def search_people(self, name):
         try:
             return self.TMDb.people_search(name)
-        except TMDbAPINotFound:
+        except TMDbNotFound:
             raise Failed(f"TMDb Error: Actor {name} Not Found")
 
     def validate_tmdb_ids(self, tmdb_ids, tmdb_method):
         tmdb_list = util.get_int_list(tmdb_ids, f"TMDb {type_map[tmdb_method]} ID")
         tmdb_values = []
+        all_not_found = True
         for tmdb_id in tmdb_list:
             try:
                 tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
@@ -387,8 +401,11 @@ class TMDb:
                     logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed "
                                  f"from TMDb. Verify it still exists and update your config.")
             except Failed as e:
+                all_not_found = False
                 logger.error(e)
         if len(tmdb_values) == 0:
+            if all_not_found:
+                raise NotFound(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
             raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
 
