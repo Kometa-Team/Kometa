@@ -1066,6 +1066,9 @@ class Operations:
                         else:
                             self.library.Plex.editField(display_attr, update_value)
                         self.library.Plex.saveMultiEdits()
+                        logger.debug(f"  Evicted {len(batch_items)} stale items from cache after batch save") # For nightly testing, can be removed for deve release
+                        for batch_item in batch_items:
+                            self.library.cached_items.pop(batch_item.ratingKey, None)
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
