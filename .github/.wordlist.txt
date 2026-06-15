@@ -71,6 +71,7 @@ cron
 cronjob
 crontab
 crunchyroll
+CLI
 CSM
 customizable
 customizations
@@ -182,6 +183,7 @@ joost
 jpeg
 jpg
 json
+jsonschema
 Kenobi
 kesleyalfa
 keyerror
@@ -437,6 +439,7 @@ uses
 util
 utills
 ValueError
+validator
 vecteezy
 venv
 visualstudio

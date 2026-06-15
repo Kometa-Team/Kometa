@@ -212,9 +212,8 @@ class MDBList:
 
         external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
 
-        total_items = 0
-
         items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+        meta_url  = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
 
         sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
@@ -231,6 +230,18 @@ class MDBList:
         else:
             params["unified"] = True
 
+        # Fetch list total so progress percentage is accurate for lists over 1000 items.
+        # X-Total-Items / X-Matched-Items headers return the per-page count, not the global total.
+        total_count = 0
+        try:
+            meta_data, _ = self._request(meta_url)
+            if isinstance(meta_data, list) and meta_data:
+                meta_data = meta_data[0]
+            if isinstance(meta_data, dict):
+                total_count = int(meta_data.get("items", 0) or 0)
+        except Exception:
+            pass
+
         items = []
 
         while has_more:
@@ -245,13 +256,8 @@ class MDBList:
             try:
                 page_data, headers = self._request(items_url, params=params)
                 has_more = headers.get("X-Has-More", "false").lower() == "true"
-                total_items = int(headers.get("X-Total-Items", 0))
-                total_matched_items = int(headers.get("X-Matched-Items", total_items))
-                
-                if total_matched_items == 0:
-                    total_matched_items = total_items
 
-                items = [] 
+                items = []
                 if isinstance(page_data, dict):
                     if is_movie:
                         items = page_data.get("movies")
@@ -277,12 +283,14 @@ class MDBList:
                     results.append((tmdb_id, type_key))
 
             offset += len(items) # type: ignore
-            
-            if total_items > 0:
-                percent = int((len(results) / total_matched_items) * 100)
-                logger.info(f"MDBList Sync Progress: {len(results)}/{total_matched_items} ({percent}%)")
+
+            if total_count:
+                percent = min(int((len(results) / total_count) * 100), 100)
+                suffix = "..." if has_more else " - Complete"
+                logger.info(f"MDBList Sync Progress: {len(results)}/{total_count} ({percent}%){suffix}")
             else:
-                logger.info(f"MDBList Sync Progress: {len(results)} items processed...")
+                suffix = "..." if has_more else ""
+                logger.info(f"MDBList Sync Progress: {len(results)} items fetched{suffix}")
 
             if len(items) == 0: # type: ignore
                 break

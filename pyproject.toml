@@ -11,6 +11,7 @@ dependencies = [
     "cloudscraper==1.2.71",
     "colorama>=0.4.6",
     "gitpython==3.1.46",
+    "jsonschema==4.26.0",
     "jinja2>=3.1.6",
     "lxml==6.0.2",
     "markdown>=3.10.2",
@@ -43,6 +44,9 @@ dependencies = [
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
 
 [tool.black]
 line-length = 256

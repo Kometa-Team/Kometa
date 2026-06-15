@@ -755,9 +755,18 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                     start = datetime.strptime(f"{month_start}/{day_start}", "%m/%d")
                     end = datetime.strptime(f"{month_end}/{day_end}", "%m/%d")
                     range_collection = True
-                    ranges.append(f"{pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}")
-                    if start <= check <= end if start < end else (check <= end or check >= start):
-                        range_pass = True
+                    if start == end:
+                        ranges.append(f"{pretty_months[month_start]} {num2words(day_start, to='ordinal_num')}")
+                        if check == start:
+                            range_pass = True
+                    elif start < end:
+                        ranges.append(f"{pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}")
+                        if start <= check <= end:
+                            range_pass = True
+                    else:
+                        ranges.append(f"{pretty_months[month_start]} {num2words(day_start, to='ordinal_num')} and {pretty_months[month_end]} {num2words(day_end, to='ordinal_num')}")
+                        if check <= end or check >= start:
+                            range_pass = True
                 if ranges:
                     schedule_str += f"\nScheduled {' or '.join(ranges)}"
                 if range_pass:

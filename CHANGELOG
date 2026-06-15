@@ -1,6 +1,7 @@
 # Important Changes
 
 # Requirements Update (requirements will need to be reinstalled)
+Add jsonschema 4.23.0
 Bump lxml to 6.0.4
 Add letterboxdpy 6.5.0
 Bump packaging to 26.1
@@ -13,6 +14,16 @@ Bump python-dotenv to 1.2.2
 Bump pillow to 12.2.0
 Bump requests to 2.34.2
 Bump setuptools to 82.0.1
+
+# New Features
+Add comprehensive config validation with `--validate`, `--validate-level`, `--validate-schema`, and `--schema-path` CLI flags. Supports syntax, structure, full, and schema-level validation with a gap report showing missing/extra fields.
+Add `--validate-file` and `--validate-dir` CLI flags for standalone and batch YAML validation against auto-detected schema types (config, collection, metadata, overlay, playlist). Output written to `validate.log`.
+Add `modules/validator.py` with `ConfigValidator` (multi-level config validation) and `FileSetValidator` (standalone/batch YAML validation with schema type detection).
+Expand `json-schema/config-schema.json` with full coverage and add per-type schemas: `collection-schema.json`, `metadata-schema.json`, `overlay-schema.json`, `playlist-schema.json`.
+`--validate` now implies immediate run (like `--run-libraries`).
+Add Plex square art support: upload `square.ext` assets for movies, shows, seasons, albums, and playlists via `find_and_upload_assets`. Extends metadata file items and library operations.
+Add `apprise` and `schedule_overlays` to the config JSON schema.
+The `tmdb_discover` YAML validator now enforces: unknown keys are rejected, value types are checked, `certification_country`/`certification` must co-occur, `watch_region` must accompany any watch-provider or monetization key, and movie-only and TV-only parameters are mutually exclusive. Note: `with_watch_providers` and `without_watch_providers` now require `watch_region` at validation time (the TMDb Discover API requires this), which is stricter than the runtime check in `builder.py`.
 
 # Performance
 Use the SQLite cache for TMDb queries in `check_filters` and `check_missing_filters` instead of bypassing it with `ignore_cache=True`.
@@ -59,6 +70,7 @@ Fix trakt_chart watched/collected URLs to use /movies(shows)/watched(collected)/
 TVDb 4xx responses (series/movie removed or merged on TVDb) now raise a dedicated `tvdb.NotFound` so the missing-show iteration and TVDb-filter paths log them at debug instead of error. Stale TVDb IDs returned by TMDb `external_ids` no longer spam logs or trigger webhook failure notifications. #3047
 Align Kometa's AniList season translation from `current` to match Anilist.
 Invalidate cached Plex items after each batch edit in operations so that the overlay phase reads post-operations values (e.g. updated ratings) rather than stale pre-operations values. Fixes rating overlays not updating when `mass_critic_rating_update` (or audience/user equivalents) runs before overlays in the same Kometa pass. #2357
+Fix MDBList Sync Progress percentage overflowing for lists over 1000 items (e.g. `6378/378 (1687%)`). Fetch list metadata upfront to get the true total item count. #3157
 Fix "Movies Removed" report entries missing release year; titles now match the "Movies Missing" format e.g. `The Grapes of Wrath (1939)`. Fixes #2028
 When `run_order` places `operations` before `collections`, configured collections are no longer incorrectly reported as unconfigured by `show_unconfigured` or targeted by `delete_collections: configured: true`. #1968
 Update Letterboxd Top 100 Western to use Official list

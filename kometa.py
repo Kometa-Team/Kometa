@@ -93,6 +93,12 @@ arguments = {
     "divider": {"args": "d", "type": "str", "default": "=", "help": "Character that divides the sections (Default: '=')"},
     "width": {"args": "w", "type": "int", "default": 100, "help": "Screen Width (Default: 100)"},
     "low-priority": {"args": "lp", "type": "bool", "help": "Run Kometa with lower priority"},
+    "validate": {"args": ["va", "validate-config"], "type": "bool", "help": "Validate config.yml and all linked YAML files without running"},
+    "validate-level": {"args": "vl", "type": "str", "default": "structure", "help": "Validation depth: syntax | structure | full (Default: structure)"},
+    "validate-schema": {"args": ["vs", "validate-schemas"], "type": "bool", "help": "Also validate each YAML file against its corresponding JSON schema"},
+    "schema-path": {"args": "sp", "type": "str", "default": None, "help": "Path to the json-schema/ directory (default: ./json-schema/ next to kometa.py)"},
+    "validate-file": {"args": ["vf", "validate-files"], "type": "str", "default": None, "help": "Validate a single YAML file against its auto-detected schema"},
+    "validate-dir": {"args": ["vd", "validate-directory"], "type": "str", "default": None, "help": "Validate all YAML files in a directory against their auto-detected schemas"},
 }
 
 parser = argparse.ArgumentParser()
@@ -329,6 +335,10 @@ def process(attrs):
 
 def start(attrs):
     try:
+        if run_args["validate-file"] or run_args["validate-dir"]:
+            from modules.logs import VALIDATE_LOG
+
+            logger.main_log = os.path.join(logger.log_dir, VALIDATE_LOG)
         logger.add_main_handler()
         logger.separator()
         logger.info("")
@@ -427,6 +437,39 @@ def start(attrs):
             logger.debug("")
 
         logger.separator(debug=True)
+
+        if run_args["validate"]:
+            level = run_args["validate-level"]
+            if level not in ("syntax", "structure", "full"):
+                logger.error(f"--validate-level must be syntax, structure, or full. Got: {level!r}")
+                sys.exit(1)
+            from modules.validator import ConfigValidator
+
+            schema_dir = run_args["schema-path"] or os.path.join(os.path.dirname(os.path.abspath(__file__)), "json-schema")
+            validator = ConfigValidator(
+                my_requests,
+                default_dir,
+                attrs,
+                secret_args,
+                level=level,
+                validate_schema=run_args["validate-schema"],
+                schema_path=schema_dir,
+            )
+            passed, _errors, _warnings = validator.validate()
+            sys.exit(0 if passed else 1)
+
+        if run_args["validate-file"] or run_args["validate-dir"]:
+            from modules.validator import FileSetValidator, collect_yaml_files
+
+            source = run_args["validate-file"] or run_args["validate-dir"]
+            schema_dir = run_args["schema-path"] or os.path.join(os.path.dirname(os.path.abspath(__file__)), "json-schema")
+            paths = collect_yaml_files(source)
+            if not paths:
+                logger.error(f"No YAML files found at: {source}")
+                sys.exit(1)
+            validator = FileSetValidator(paths, schema_dir)
+            passed, *_ = validator.validate()
+            sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
         config = None
@@ -1256,7 +1299,7 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"]:
+        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
             process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"])
