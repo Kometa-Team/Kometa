@@ -1,0 +1,240 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Kometa Overlay File",
+    "description": "Schema for Kometa overlay files. These files define graphic overlays applied to Plex posters.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "overlays": { "$ref": "#/definitions/overlays-map" },
+        "templates": { "$ref": "#/definitions/templates-map" },
+        "external_templates": { "$ref": "#/definitions/external-templates-list" }
+    },
+    "definitions": {
+
+        "overlays-map": {
+            "title": "overlays",
+            "type": "object",
+            "additionalProperties": { "$ref": "#/definitions/overlay-definition" }
+        },
+
+        "overlay-definition": {
+            "description": "Defines a single overlay to be applied to Plex posters.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+
+                "template": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/template-call" },
+                        { "type": "array", "items": { "$ref": "#/definitions/template-call" } }
+                    ]
+                },
+
+                "overlay": { "$ref": "#/definitions/overlay-spec" },
+
+                "suppress_overlays": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+
+                "builder_level": { "type": "string", "enum": ["season", "episode", "show"] },
+                "schedule": { "type": "string" },
+                "run_definition": {
+                    "oneOf": [
+                        { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] },
+                        { "type": "boolean" },
+                        { "type": "array", "items": { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] } }
+                    ]
+                },
+                "ignore_ids": {
+                    "anyOf": [
+                        { "type": "null" }, { "type": "integer" },
+                        { "type": "string", "pattern": "^\\d{1,8}(\\s*,\\s*\\d{1,8})*$" },
+                        { "type": "array", "items": { "type": "integer" }, "minItems": 1 }
+                    ]
+                },
+                "ignore_imdb_ids": {
+                    "anyOf": [
+                        { "type": "null" },
+                        { "type": "string", "pattern": "^(tt\\d{7,8})(,(tt\\d{7,8}))*$" },
+                        { "type": "array", "items": { "type": "string", "pattern": "^tt\\d{7,8}$" }, "minItems": 1 }
+                    ]
+                },
+                "limit": { "type": "integer", "minimum": 1 },
+
+                "plex_all": { "type": "boolean" },
+                "plex_search": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/plex-filter-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/plex-filter-block" } }
+                    ]
+                },
+                "smart_filter": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/plex-filter-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/plex-filter-block" } }
+                    ]
+                },
+
+                "tmdb_popular": { "type": "integer", "minimum": 1 },
+                "tmdb_top_rated": { "type": "integer", "minimum": 1 },
+                "tmdb_now_playing": { "type": "integer", "minimum": 1 },
+                "tmdb_upcoming": { "type": "integer", "minimum": 1 },
+                "tmdb_trending_daily": { "type": "integer", "minimum": 1 },
+                "tmdb_trending_weekly": { "type": "integer", "minimum": 1 },
+                "tmdb_movie": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_show": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_collection": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_list": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_actor": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_director": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tmdb_discover": { "type": "object", "additionalProperties": true },
+
+                "tvdb_list": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "tvdb_show": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "tvdb_movie": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+
+                "imdb_id": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "imdb_chart": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "imdb_list": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
+                "imdb_search": { "type": "object", "additionalProperties": true },
+
+                "trakt_list": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "trakt_chart": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
+                "trakt_userlist": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
+                "trakt_recommendations": { "type": "integer", "minimum": 1 },
+
+                "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+
+                "radarr_all": { "type": "boolean" },
+                "radarr_taglist": { "oneOf": [{ "type": "string" }, { "type": "null" }, { "type": "array", "items": { "type": "string" } }] },
+                "sonarr_all": { "type": "boolean" },
+                "sonarr_taglist": { "oneOf": [{ "type": "string" }, { "type": "null" }, { "type": "array", "items": { "type": "string" } }] },
+
+                "mdblist_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
+                "letterboxd_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
+
+                "anilist_top_rated": { "type": "integer", "minimum": 1 },
+                "anilist_popular": { "type": "integer", "minimum": 1 },
+                "anilist_trending": { "type": "integer", "minimum": 1 },
+                "anilist_id": { "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }] },
+                "anilist_genre": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "anilist_tag": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "anilist_season": { "type": "object", "additionalProperties": true },
+                "anilist_userlist": { "type": "object", "additionalProperties": true },
+                "anilist_search": { "type": "object", "additionalProperties": true },
+
+                "mal_all": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_airing": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_upcoming": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_tv": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_movie": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_popular": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_favorite": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_id": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
+                "mal_userlist": { "type": "object", "additionalProperties": true },
+                "mal_season": { "type": "object", "additionalProperties": true },
+                "mal_search": { "type": "object", "additionalProperties": true },
+
+                "filters": { "type": "object", "additionalProperties": true }
+            }
+        },
+
+        "overlay-spec": {
+            "description": "Visual appearance and position of the overlay.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "name": { "type": "string" },
+                "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
+                "git": { "type": "string" },
+                "repo": { "type": "string" },
+                "file": { "type": "string" },
+                "group": { "type": "string", "description": "Only one overlay per group will be applied per item." },
+                "weight": { "type": "integer", "description": "Priority within the group (higher wins)." },
+                "queue": { "type": "string", "description": "Queue name for stacking overlays." },
+                "horizontal_align": { "type": "string", "enum": ["left", "center", "right"] },
+                "horizontal_offset": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "string" }] },
+                "vertical_align": { "type": "string", "enum": ["top", "center", "bottom"] },
+                "vertical_offset": { "oneOf": [{ "type": "integer", "minimum": 0 }, { "type": "string" }] },
+                "back_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "back_width": { "type": "integer", "minimum": 1 },
+                "back_height": { "type": "integer", "minimum": 1 },
+                "back_align": { "type": "string", "enum": ["left", "right", "center", "top", "bottom"] },
+                "back_padding": { "type": "integer", "minimum": 0 },
+                "back_radius": { "type": "integer", "minimum": 0 },
+                "back_line_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "back_line_width": { "type": "integer", "minimum": 1 },
+                "text": { "type": "string" },
+                "font": { "type": "string" },
+                "font_style": { "type": "string", "enum": ["Any", "Italic", "Normal", "Oblique"] },
+                "font_size": { "type": "integer", "minimum": 1 },
+                "font_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "stroke_color": { "type": "string", "pattern": "^\\#([A-Fa-f0-9]{3}|[A-Fa-f0-9]{4}|[A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$" },
+                "stroke_width": { "type": "integer", "minimum": 1 },
+                "scale": { "type": "number", "exclusiveMinimum": 0 },
+                "rotate": { "type": "integer" },
+                "addon_offset": { "type": "integer" },
+                "addon_position": { "type": "string", "enum": ["top", "bottom", "left", "right"] }
+            }
+        },
+
+        "plex-filter-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "all": { "type": "object", "additionalProperties": true },
+                "any": { "type": "object", "additionalProperties": true },
+                "sort_by": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "limit": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "enum": ["all"] }] },
+                "validate": { "type": "boolean" },
+                "type": { "type": "string" }
+            }
+        },
+
+        "tautulli-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "template-call": {
+            "type": "object", "additionalProperties": true,
+            "properties": { "name": { "type": "string" } },
+            "required": ["name"]
+        },
+
+        "templates-map": {
+            "title": "templates",
+            "type": "object",
+            "additionalProperties": { "type": "object", "additionalProperties": true }
+        },
+
+        "external-templates-list": {
+            "title": "external_templates",
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
+                        ]
+                    }
+                },
+                {
+                    "oneOf": [
+                        { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
+                    ]
+                }
+            ]
+        }
+    }
+}
