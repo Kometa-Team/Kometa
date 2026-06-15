@@ -251,8 +251,8 @@ collections:
       key: western
     template:
       - name: letterboxd_list
-        user: clintarantino
-        list: letterboxds-top-100-western-films
+        user: official
+        list: top-100-western-films
       - name: shared
         translation_key: top_100_western_films
         summary: <<summary_<<key>>>>

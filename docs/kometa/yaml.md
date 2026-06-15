@@ -323,12 +323,23 @@ plex:
 
 The above issues may not be super noticeable if you aren't using a code-aware editor, this makes it much more obvious that something may be wrong with the config.yml
 
-You should add this line **at the very top** of your config.yml, eligible editors will use it to check your config.yml is valid against the Kometa validation schema:
+## Kometa JSON Schemas
+
+There is a JSON schema available in the Kometa repo that you can use with supporting editors to provide Kometa-specific guidance.
+
+Presently, there is only a schema available for `config.yml`.
+
+This schema is a work in progress and is known to be incomplete, primarily around the template variables for the default YAML files.
+
+To use it, add this line **at the very top** of your `config.yml`, eligible editors will use it to check your `config.yml` is valid against the Kometa validation schema:
 
 ```
 # yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
 
 ```
+
+Again, this file is valid for **ONLY THE `config.yml`**; do not use it with any other Kometa YAML files.
+
 ### Visual Studio Code (VSCode)
 
 Visual Studio Code is a free, open-source editor renowned for its extensive language support and powerful extension ecosystem. Its built-in support for YAML is enhanced by extensions—such as the YAML Language Support by Red Hat—that provide features like syntax highlighting, auto-completion, and error detection. This makes it especially effective for managing configuration files in modern development workflows including containerization and infrastructure as code.
