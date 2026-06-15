@@ -798,6 +798,16 @@ def run_libraries(config):
                 "operations": all([not run_args[x] for x in ["tests", "collections-only", "overlays-only", "playlists-only", "metadata-only"]]),
                 "overlays": all([not run_args[x] for x in ["tests", "collections-only", "operations-only", "playlists-only", "metadata-only"]]),
             }
+            # Pre-populate collection_names before the run_order loop so that operations can correctly identify unconfigured collections regardless of run_order.
+            # Without this, if operations runs before collections, collection_names is empty and every Plex collection is incorrectly flagged as unconfigured. #1968
+            if runs["collections"]:
+                for metadata in library.collection_files:
+                    if config.requested_files and metadata.get_file_name() not in config.requested_files:
+                        continue
+                    for mapping_name in metadata.get_collections(config.requested_collections):
+                        if mapping_name not in library.collection_names:
+                            library.collection_names.append(mapping_name)
+
             for run_type in library.run_order:
                 if run_type == "collections" and runs[run_type]:
                     time_start = datetime.now()
