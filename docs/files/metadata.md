@@ -25,6 +25,7 @@ tags:
   - f1_season
   - file_background
   - file_poster
+  - file_square_art
   - genre
   - keep_episodes
   - label
@@ -57,6 +58,7 @@ tags:
   - update_seasons
   - url_background
   - url_poster
+  - url_square_art
   - use_original_title
   - user_rating
   - writer
@@ -511,12 +513,14 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 
 | Attribute         | <div style="width:365px">Allowed Values</div>    | Item Types                                                    |
 |:------------------|:-------------------------------------------------|:--------------------------------------------------------------|
-| `file_background` | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
-| `file_poster`     | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
-| `file_logo`       | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`                      | 
-| `url_background`  | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
-| `url_poster`      | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
-| `url_logo`        | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`                      |
+| `file_background`  | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `file_poster`      | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `file_logo`        | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`                      |
+| `file_square_art`  | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `url_background`   | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `url_poster`       | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
+| `url_logo`         | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`                      |
+| `url_square_art`   | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 
 ### Advanced Attributes
 

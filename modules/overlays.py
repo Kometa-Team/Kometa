@@ -1,14 +1,18 @@
-import os, re
+import os
+import re
 from datetime import datetime
-from modules import plex, util, overlay
-from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, NotScheduled, LimitReached
+
 from num2words import num2words
-from plexapi.exceptions import BadRequest
-from plexapi.video import Season, Episode
 from PIL import Image, ImageFilter
+from plexapi.exceptions import BadRequest
+from plexapi.video import Episode, Season
+
+from modules import overlay, plex, util
+from modules.builder import CollectionBuilder
+from modules.util import Failed, FilterFailed, LimitReached, NotScheduled
 
 logger = util.logger
+
 
 class Overlays:
     def __init__(self, config, library):
@@ -43,9 +47,7 @@ class Overlays:
                     for i, item in enumerate(label_items, 1):
                         item_title = self.library.get_item_display_title(item)
                         logger.ghost(f"Restoring {old_overlay.title}: {i}/{len(label_items)} {item_title}")
-                        self.remove_overlay(item, item_title, old_overlay.title, [
-                            os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")
-                        ])
+                        self.remove_overlay(item, item_title, old_overlay.title, [os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")])
             logger.info("")
 
         remove_overlays = self.get_overlay_items(ignore=ignore_list)
@@ -60,11 +62,9 @@ class Overlays:
             for i, item in enumerate(remove_overlays, 1):
                 item_title = self.library.get_item_display_title(item)
                 logger.ghost(f"Restoring: {i}/{len(remove_overlays)} {item_title}")
-                self.remove_overlay(item, item_title, "Overlay", [
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"),
-                    os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
-                ])
+                self.remove_overlay(
+                    item, item_title, "Overlay", [os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"), os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")]
+                )
             logger.exorcise()
         else:
             logger.separator(f"No Overlays to Remove for the {self.library.name} Library")
@@ -74,6 +74,7 @@ class Overlays:
             logger.info("")
 
             _trakt_ratings = None
+
             def trakt_ratings():
                 nonlocal _trakt_ratings
                 if _trakt_ratings is None:
@@ -149,15 +150,17 @@ class Overlays:
                                     if cache_key in overlay.int_vars:
                                         cache_value = int(cache_value)
                                     if cache_key in overlay.date_vars:
-                                        real_value = real_value.strftime("%Y-%m-%d") # noqa
+                                        real_value = real_value.strftime("%Y-%m-%d")  # noqa
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
-                        poster, background, logo, item_dir, name = self.library.find_item_assets(item)
+                        poster, background, logo, square_art, item_dir, name = self.library.find_item_assets(item)
                         if not poster and self.library.assets_for_all:
-                            if (isinstance(item, Episode) and self.library.show_missing_episode_assets) or \
-                                    (isinstance(item, Season) and self.library.show_missing_season_assets) or \
-                                    (not isinstance(item, (Episode, Season)) and self.library.show_missing_assets):
+                            if (
+                                (isinstance(item, Episode) and self.library.show_missing_episode_assets)
+                                or (isinstance(item, Season) and self.library.show_missing_season_assets)
+                                or (not isinstance(item, (Episode, Season)) and self.library.show_missing_assets)
+                            ):
                                 if self.library.asset_folders:
                                     logger.warning(f"Asset Warning: No poster found for '{item_title}' in the assets folder '{item_dir}'")
                                 else:
@@ -166,6 +169,8 @@ class Overlays:
                             self.library.upload_images(item, background=background)
                         if logo:
                             self.library.upload_images(item, logo=logo)
+                        if square_art:
+                            self.library.upload_images(item, square_art=square_art)
                     except Failed as e:
                         if self.library.assets_for_all and self.library.show_missing_assets:
                             logger.warning(e)
@@ -211,7 +216,7 @@ class Overlays:
                             raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
                     if poster is None and has_original is None:
-                        logger.error(f"  Overlay Error: No poster found")
+                        logger.error("  Overlay Error: No poster found")
                     elif self.library.reapply_overlays or new_backup or overlay_change or changed_image:
                         try:
                             if not self.library.reapply_overlays and new_backup:
@@ -221,7 +226,7 @@ class Overlays:
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
                             with Image.open(poster.location if poster else has_original) as new_poster:
                                 exif_tags = new_poster.getexif()
-                                exif_tags[0x04bc] = "overlay"
+                                exif_tags[0x04BC] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
 
                                 if blur_num > 0:
@@ -401,7 +406,7 @@ class Overlays:
                                                     ratings = self.library.get_ratings(item)
                                                     rating_key = format_var.replace("_rating", "")
                                                     try:
-                                                        found_rating = ratings[rating_key] # noqa
+                                                        found_rating = ratings[rating_key]  # noqa
                                                     except KeyError:
                                                         found_rating = None
                                             except Failed as err:
@@ -552,7 +557,7 @@ class Overlays:
                         logger.info(f"  Overlay Update Not Needed (Current Overlays: {', '.join(over_names)})")
 
                     if self.cache and poster_compare:
-                        self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay='|'.join(compare_names))
+                        self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay="|".join(compare_names))
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:
@@ -565,7 +570,7 @@ class Overlays:
         for _, over in properties.items():
             if over.image:
                 over.image.close()
-        overlay_run_time = str(datetime.now() - overlay_start).split('.')[0]
+        overlay_run_time = str(datetime.now() - overlay_start).split(".")[0]
         logger.info("")
         logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
         return overlay_run_time
@@ -636,7 +641,7 @@ class Overlays:
         logger.debug(f"Reapply Overlays: {self.library.reapply_overlays}")
         logger.debug(f"Reset Overlays: {self.library.reset_overlays}")
         logger.debug("")
-        logger.separator(f"Number of Items Per Overlay", space=False, border=False)
+        logger.separator("Number of Items Per Overlay", space=False, border=False)
         logger.debug("")
 
         longest = 7
@@ -691,7 +696,7 @@ class Overlays:
 
     def remove_overlay(self, item, item_title, label, locations):
         try:
-            poster, _, _, _, _ = self.library.find_item_assets(item)
+            poster, _, _, _, _, _ = self.library.find_item_assets(item)
         except Failed:
             poster = None
         is_url = False

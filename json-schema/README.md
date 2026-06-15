@@ -1,5 +1,9 @@
 JSON schemas for Kometa YAML files
 
+CURRENTLY THERE IS ONLY A SCHEMA AVAILABLE FOR `config.yml`.
+
+Do not use this schema file with collection, overlay, metadata, or any other type of Kometa YAML file.
+
 How to:
 
 Add this as the first line in your `config.yml`:
