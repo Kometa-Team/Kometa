@@ -1,10 +1,16 @@
-import io, logging, os, re, sys, traceback
+import io
+import logging
+import os
+import re
+import sys
+import traceback
 from logging.handlers import RotatingFileHandler
 
 LOG_DIR = "logs"
 COLLECTION_DIR = "collections"
 PLAYLIST_DIR = "playlists"
 MAIN_LOG = "meta.log"
+VALIDATE_LOG = "validate.log"
 LIBRARY_LOG = "library.log"
 COLLECTION_LOG = "collection.log"
 PLAYLIST_LOG = "playlist.log"
@@ -25,7 +31,9 @@ def fmt_filter(record):
     record.filename = f"[{record.filename}:{record.lineno}]"
     return True
 
+
 _srcfile = os.path.normcase(fmt_filter.__code__.co_filename)
+
 
 def log_namer(default_name):
     log_path = os.path.dirname(default_name)
@@ -296,10 +304,10 @@ class MyLogger:
             sinfo = None
             if stack_info:
                 sio = io.StringIO()
-                sio.write('Stack (most recent call last):\n')
+                sio.write("Stack (most recent call last):\n")
                 traceback.print_stack(f, file=sio)
                 sinfo = sio.getvalue()
-                if sinfo[-1] == '\n':
+                if sinfo[-1] == "\n":
                     sinfo = sinfo[:-1]
                 sio.close()
             rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)

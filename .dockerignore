@@ -14,6 +14,7 @@ config
 config/**/*
 docs
 json-schema
+json-schema/MODULE.md
 venv
 .dockerignore
 .gitignore
@@ -26,3 +27,6 @@ LICENSE
 mkdocs.yml
 README.md
 test.py
+.agents
+.claude
+**/MODULE.md

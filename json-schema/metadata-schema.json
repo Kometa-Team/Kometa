@@ -1,0 +1,402 @@
+{
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Kometa Metadata File",
+    "description": "Schema for Kometa metadata files. These files apply metadata edits to individual items in Plex libraries.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "metadata": {
+            "$ref": "#/definitions/metadata-map"
+        }
+    },
+    "required": [],
+    "definitions": {
+
+        "metadata-map": {
+            "title": "metadata",
+            "description": "A mapping of item identifiers (title, TMDb ID, IMDb ID, etc.) to their metadata edits.",
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/definitions/metadata-item"
+            }
+        },
+
+        "metadata-item": {
+            "description": "Metadata edits to apply to a matched Plex item.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+
+                "match": {
+                    "description": "Criteria used to find the item(s) in Plex.",
+                    "$ref": "#/definitions/match-spec"
+                },
+
+                "run_definition": {
+                    "description": "Specify which library types this definition runs against.",
+                    "oneOf": [
+                        { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] },
+                        { "type": "boolean" },
+                        {
+                            "type": "array",
+                            "items": { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] }
+                        }
+                    ]
+                },
+
+                "tmdb_show": {
+                    "description": "TMDb Show ID to use for metadata. Used when a Movie is a miniseries on TMDb.",
+                    "oneOf": [{ "type": "integer" }, { "type": "string" }]
+                },
+                "f1_season": {
+                    "description": "F1 Season Year — makes the Show represent a season of F1 races.",
+                    "type": "integer"
+                },
+                "round_prefix": {
+                    "description": "Used with f1_season to add the round as a prefix to race titles.",
+                    "type": "boolean"
+                },
+                "shorten_gp": {
+                    "description": "Used with f1_season to shorten 'Grand Prix' to 'GP' in race titles.",
+                    "type": "boolean"
+                },
+                "update_seasons": {
+                    "description": "Whether to update seasons metadata for this show definition.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string", "enum": ["true", "false"] },
+                        { "type": "array", "items": { "type": "string", "enum": ["true", "false"] } }
+                    ]
+                },
+                "update_episodes": {
+                    "description": "Whether to update episode metadata for this show definition.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string", "enum": ["true", "false"] },
+                        { "type": "array", "items": { "type": "string", "enum": ["true", "false"] } }
+                    ]
+                },
+
+                "seasons": {
+                    "description": "Season-level metadata edits. Key is the season number (0 for specials) or season name.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/season-item"
+                    }
+                },
+                "albums": {
+                    "description": "Album-level metadata edits. Key is the album name.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/album-item"
+                    }
+                },
+
+                "title": { "type": "string", "description": "Text to change Title." },
+                "sort_title": { "type": "string", "description": "Text to change Sort Title." },
+                "original_title": { "type": "string", "description": "Text to change Original Title." },
+                "originally_available": {
+                    "type": "string",
+                    "description": "Date to change Originally Available. Format: YYYY-MM-DD",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "content_rating": { "type": "string", "description": "Text to change Content Rating." },
+                "tagline": { "type": "string", "description": "Text to change Tagline." },
+                "summary": { "type": "string", "description": "Text to change Summary." },
+                "studio": { "type": "string", "description": "Text to change Studio." },
+                "audience_rating": { "type": "number", "description": "Number to change Audience Rating." },
+                "critic_rating": { "type": "number", "description": "Number to change Critic Rating." },
+                "user_rating": { "type": "number", "description": "Number to change User Rating." },
+                "edition": { "type": "string", "description": "Text to change Edition (requires Plex Pass)." },
+
+                "genre": { "$ref": "#/definitions/tag-value", "description": "Append genre tags." },
+                "genre.sync": { "$ref": "#/definitions/tag-value", "description": "Sync genre tags." },
+                "genre.remove": { "$ref": "#/definitions/tag-value", "description": "Remove genre tags." },
+                "label": { "$ref": "#/definitions/tag-value", "description": "Append label tags." },
+                "label.sync": { "$ref": "#/definitions/tag-value", "description": "Sync label tags." },
+                "label.remove": { "$ref": "#/definitions/tag-value", "description": "Remove label tags." },
+                "collection": { "$ref": "#/definitions/tag-value", "description": "Append collection tags." },
+                "collection.sync": { "$ref": "#/definitions/tag-value", "description": "Sync collection tags." },
+                "collection.remove": { "$ref": "#/definitions/tag-value", "description": "Remove collection tags." },
+                "country": { "$ref": "#/definitions/tag-value", "description": "Append country tags (Movies/Artists)." },
+                "country.sync": { "$ref": "#/definitions/tag-value", "description": "Sync country tags." },
+                "country.remove": { "$ref": "#/definitions/tag-value", "description": "Remove country tags." },
+                "director": { "$ref": "#/definitions/tag-value", "description": "Append director tags." },
+                "director.sync": { "$ref": "#/definitions/tag-value", "description": "Sync director tags." },
+                "director.remove": { "$ref": "#/definitions/tag-value", "description": "Remove director tags." },
+                "producer": { "$ref": "#/definitions/tag-value", "description": "Append producer tags." },
+                "producer.sync": { "$ref": "#/definitions/tag-value", "description": "Sync producer tags." },
+                "producer.remove": { "$ref": "#/definitions/tag-value", "description": "Remove producer tags." },
+                "writer": { "$ref": "#/definitions/tag-value", "description": "Append writer tags." },
+                "writer.sync": { "$ref": "#/definitions/tag-value", "description": "Sync writer tags." },
+                "writer.remove": { "$ref": "#/definitions/tag-value", "description": "Remove writer tags." },
+                "mood": { "$ref": "#/definitions/tag-value", "description": "Append mood tags (Artists/Albums/Tracks)." },
+                "mood.sync": { "$ref": "#/definitions/tag-value" },
+                "mood.remove": { "$ref": "#/definitions/tag-value" },
+                "style": { "$ref": "#/definitions/tag-value", "description": "Append style tags (Artists/Albums)." },
+                "style.sync": { "$ref": "#/definitions/tag-value" },
+                "style.remove": { "$ref": "#/definitions/tag-value" },
+                "similar_artist": { "$ref": "#/definitions/tag-value", "description": "Append similar artist tags." },
+                "similar_artist.sync": { "$ref": "#/definitions/tag-value" },
+                "similar_artist.remove": { "$ref": "#/definitions/tag-value" },
+
+                "file_poster": { "anyOf": [{ "type": "string" }, { "type": "null" }], "description": "Path to poster image in the file system." },
+                "url_poster": { "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }], "description": "URL of poster image." },
+                "file_background": { "type": "string", "description": "Path to background image in the file system." },
+                "url_background": { "type": "string", "format": "uri", "description": "URL of background image." },
+
+                "metadata_language": {
+                    "description": "Metadata language (requires New Plex Agent).",
+                    "type": "string",
+                    "enum": [
+                        "default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR",
+                        "en-AU", "en-CA", "en-GB", "en-US", "es-ES", "es-MX", "et-EE",
+                        "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU",
+                        "id-ID", "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO",
+                        "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK",
+                        "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"
+                    ]
+                },
+                "use_original_title": {
+                    "description": "Use original title setting (requires New Plex Agent).",
+                    "type": "string",
+                    "enum": ["default", "no", "yes"]
+                },
+                "episode_ordering": {
+                    "description": "Episode ordering for shows.",
+                    "type": "string",
+                    "enum": ["default", "tmdb_aired", "tvdb_aired", "tvdb_dvd", "tvdb_absolute"]
+                },
+                "episode_sorting": {
+                    "description": "Episode sorting for shows.",
+                    "type": "string",
+                    "enum": ["default", "oldest", "newest"]
+                },
+                "season_display": {
+                    "description": "Season display setting.",
+                    "type": "string",
+                    "enum": ["default", "show", "hide"]
+                },
+                "keep_episodes": {
+                    "description": "Which episodes to keep.",
+                    "type": "string",
+                    "enum": ["all", "5_latest", "3_latest", "latest", "past_3", "past_7", "past_30"]
+                },
+                "delete_episodes": {
+                    "description": "When to delete episodes.",
+                    "type": "string",
+                    "enum": ["never", "day", "week", "refresh"]
+                },
+                "audio_language": {
+                    "description": "Audio language setting for shows/seasons (requires New Plex Agent).",
+                    "type": "string"
+                },
+                "subtitle_language": {
+                    "description": "Subtitle language setting for shows/seasons (requires New Plex Agent).",
+                    "type": "string"
+                },
+                "subtitle_mode": {
+                    "description": "Subtitle mode for shows/seasons (requires New Plex Agent).",
+                    "type": "string",
+                    "enum": ["default", "no", "yes"]
+                },
+                "credits_detection": {
+                    "description": "Credits detection setting (requires New Plex Agent).",
+                    "type": "string",
+                    "enum": ["default", "disabled"]
+                },
+                "album_sorting": {
+                    "description": "Album sorting for artists.",
+                    "type": "string",
+                    "enum": ["default", "manual", "foreign", "always"]
+                }
+            }
+        },
+
+        "match-spec": {
+            "description": "Criteria to match items in Plex.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": {
+                    "description": "Match by title. Can be a list (any one match succeeds).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "year": {
+                    "description": "Match by release year.",
+                    "type": "integer"
+                },
+                "mapping_id": {
+                    "description": "Match by TMDb/IMDb/TVDb ID.",
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" }
+                    ]
+                },
+                "edition": {
+                    "description": "Match by exact edition string (Movies only, requires Plex Pass).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "edition_contains": {
+                    "description": "Match where edition contains the given string (Movies only, requires Plex Pass).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "blank_edition": {
+                    "description": "Match movies that have no edition (requires Plex Pass).",
+                    "type": "boolean"
+                }
+            }
+        },
+
+        "season-item": {
+            "description": "Metadata edits for a specific season.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": { "type": "string" },
+                "summary": { "type": "string" },
+                "sort_title": { "type": "string" },
+                "user_rating": { "type": "number" },
+                "audience_rating": { "type": "number" },
+                "critic_rating": { "type": "number" },
+                "originally_available": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "file_poster": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+                "url_poster": { "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }] },
+                "file_background": { "type": "string" },
+                "url_background": { "type": "string", "format": "uri" },
+                "label": { "$ref": "#/definitions/tag-value" },
+                "label.sync": { "$ref": "#/definitions/tag-value" },
+                "label.remove": { "$ref": "#/definitions/tag-value" },
+                "collection": { "$ref": "#/definitions/tag-value" },
+                "collection.sync": { "$ref": "#/definitions/tag-value" },
+                "collection.remove": { "$ref": "#/definitions/tag-value" },
+                "audio_language": { "type": "string" },
+                "subtitle_language": { "type": "string" },
+                "subtitle_mode": { "type": "string", "enum": ["default", "no", "yes"] },
+                "episodes": {
+                    "description": "Episode-level metadata edits. Key is episode number, episode title, or MM/DD date.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/episode-item"
+                    }
+                }
+            }
+        },
+
+        "episode-item": {
+            "description": "Metadata edits for a specific episode.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": { "type": "string" },
+                "summary": { "type": "string" },
+                "sort_title": { "type": "string" },
+                "originally_available": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "content_rating": { "type": "string" },
+                "user_rating": { "type": "number" },
+                "audience_rating": { "type": "number" },
+                "critic_rating": { "type": "number" },
+                "file_poster": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+                "url_poster": { "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }] },
+                "file_background": { "type": "string" },
+                "url_background": { "type": "string", "format": "uri" },
+                "label": { "$ref": "#/definitions/tag-value" },
+                "label.sync": { "$ref": "#/definitions/tag-value" },
+                "label.remove": { "$ref": "#/definitions/tag-value" },
+                "collection": { "$ref": "#/definitions/tag-value" },
+                "collection.sync": { "$ref": "#/definitions/tag-value" },
+                "collection.remove": { "$ref": "#/definitions/tag-value" },
+                "director": { "$ref": "#/definitions/tag-value" },
+                "director.sync": { "$ref": "#/definitions/tag-value" },
+                "director.remove": { "$ref": "#/definitions/tag-value" },
+                "writer": { "$ref": "#/definitions/tag-value" },
+                "writer.sync": { "$ref": "#/definitions/tag-value" },
+                "writer.remove": { "$ref": "#/definitions/tag-value" }
+            }
+        },
+
+        "album-item": {
+            "description": "Metadata edits for a specific album.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": { "type": "string" },
+                "sort_title": { "type": "string" },
+                "summary": { "type": "string" },
+                "originally_available": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+                "record_label": { "type": "string" },
+                "critic_rating": { "type": "number" },
+                "user_rating": { "type": "number" },
+                "album_sorting": { "type": "string", "enum": ["default", "manual", "foreign", "always"] },
+                "genre": { "$ref": "#/definitions/tag-value" },
+                "genre.sync": { "$ref": "#/definitions/tag-value" },
+                "genre.remove": { "$ref": "#/definitions/tag-value" },
+                "mood": { "$ref": "#/definitions/tag-value" },
+                "mood.sync": { "$ref": "#/definitions/tag-value" },
+                "mood.remove": { "$ref": "#/definitions/tag-value" },
+                "style": { "$ref": "#/definitions/tag-value" },
+                "style.sync": { "$ref": "#/definitions/tag-value" },
+                "style.remove": { "$ref": "#/definitions/tag-value" },
+                "label": { "$ref": "#/definitions/tag-value" },
+                "label.sync": { "$ref": "#/definitions/tag-value" },
+                "label.remove": { "$ref": "#/definitions/tag-value" },
+                "collection": { "$ref": "#/definitions/tag-value" },
+                "collection.sync": { "$ref": "#/definitions/tag-value" },
+                "collection.remove": { "$ref": "#/definitions/tag-value" },
+                "file_poster": { "anyOf": [{ "type": "string" }, { "type": "null" }] },
+                "url_poster": { "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }] },
+                "file_background": { "type": "string" },
+                "url_background": { "type": "string", "format": "uri" },
+                "tracks": {
+                    "description": "Track-level metadata edits. Key is the track number or title.",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/track-item"
+                    }
+                }
+            }
+        },
+
+        "track-item": {
+            "description": "Metadata edits for a specific track.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "title": { "type": "string" },
+                "sort_title": { "type": "string" },
+                "summary": { "type": "string" },
+                "user_rating": { "type": "number" },
+                "critic_rating": { "type": "number" },
+                "track": { "type": "string", "description": "Track number string." },
+                "disc": { "type": "string", "description": "Disc number string." },
+                "original_artist": { "type": "string" },
+                "label": { "$ref": "#/definitions/tag-value" },
+                "label.sync": { "$ref": "#/definitions/tag-value" },
+                "label.remove": { "$ref": "#/definitions/tag-value" },
+                "collection": { "$ref": "#/definitions/tag-value" },
+                "collection.sync": { "$ref": "#/definitions/tag-value" },
+                "collection.remove": { "$ref": "#/definitions/tag-value" },
+                "mood": { "$ref": "#/definitions/tag-value" },
+                "mood.sync": { "$ref": "#/definitions/tag-value" },
+                "mood.remove": { "$ref": "#/definitions/tag-value" }
+            }
+        },
+
+        "tag-value": {
+            "description": "A tag attribute — a comma-separated string or list of strings.",
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+            ]
+        }
+    }
+}

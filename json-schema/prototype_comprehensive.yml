@@ -1,0 +1,263 @@
+# yaml-language-server: $schema=../json-schema/config-schema.json
+#
+# Kometa Comprehensive Prototype Configuration
+# Exercises most schema features while remaining practical and lean (~200 lines)
+#
+# This config demonstrates:
+# - Multiple Plex libraries with different configurations
+# - All major API integrations
+# - Collection/overlay/metadata file sources
+# - Settings, operations, and scheduling
+# - Webhook notifications
+# - Per-library overrides
+
+# ============================================================================
+# REQUIRED SETTINGS
+# ============================================================================
+
+plex:
+  url: http://192.168.1.12:32400
+  token: YOUR_PLEX_TOKEN_HERE
+  timeout: 60
+  db_cache: 40
+  verify_ssl: true
+
+tmdb:
+  apikey: YOUR_TMDB_API_KEY_HERE
+  language: en
+  cache_expiration: 60
+
+# ============================================================================
+# OPTIONAL API INTEGRATIONS
+# ============================================================================
+
+trakt:
+  client_id: YOUR_TRAKT_CLIENT_ID
+  client_secret: YOUR_TRAKT_CLIENT_SECRET
+  pin: YOUR_TRAKT_PIN
+
+mal:
+  client_id: YOUR_MAL_CLIENT_ID
+  client_secret: YOUR_MAL_CLIENT_SECRET
+
+tautulli:
+  url: http://192.168.1.12:8181
+  apikey: YOUR_TAUTULLI_API_KEY
+
+radarr:
+  url: http://192.168.1.12:7878
+  token: YOUR_RADARR_API_KEY
+  add_missing: true
+  root_folder_path: /data/movies
+  monitor: true
+  quality_profile: HD-1080p
+
+sonarr:
+  url: http://192.168.1.12:8989
+  token: YOUR_SONARR_API_KEY
+  add_missing: true
+  root_folder_path: /data/tv
+  monitor: all
+  quality_profile: HD-1080p
+
+mdblist:
+  apikey: YOUR_MDBLIST_API_KEY
+
+omdb:
+  apikey: YOUR_OMDB_API_KEY
+
+anidb:
+  language: en
+  cache_expiration: 60
+  enable_mature: true
+
+github:
+  token: YOUR_GITHUB_PAT
+
+notifiarr:
+  apikey: YOUR_NOTIFIARR_API_KEY
+
+gotify:
+  url: http://192.168.1.12:80
+  token: YOUR_GOTIFY_TOKEN
+
+ntfy:
+  url: http://192.168.1.12
+  topic: kometa-notifications
+
+# ============================================================================
+# GLOBAL WEBHOOKS
+# ============================================================================
+
+webhooks:
+  version: https://webhook.example.com/version
+  error: https://webhook.example.com/error
+  run_start: https://webhook.example.com/start
+  run_end: https://webhook.example.com/end
+  changes: https://webhook.example.com/changes
+
+# ============================================================================
+# GLOBAL SETTINGS (can be overridden per library)
+# ============================================================================
+
+settings:
+  cache: true
+  cache_expiration: 60
+  asset_directory: config/assets
+  asset_folders: true
+  asset_depth: 0
+  create_asset_folders: false
+  prioritize_assets: false
+  dimensional_asset_rename: false
+  download_url_assets: false
+  sync_mode: append
+  minimum_items: 1
+  default_collection_order: release
+  delete_below_minimum: true
+  delete_not_scheduled: false
+  run_again_delay: 2
+  show_unmanaged: true
+  show_unconfigured: false
+  show_filtered: false
+  show_missing: true
+  show_missing_assets: true
+  save_report: false
+  tvdb_language: eng
+  verify_ssl: true
+  overlay_artwork_filetype: webp_lossy
+  overlay_artwork_quality: 90
+  run_order:
+    - collections
+    - metadata
+    - overlays
+    - operations
+
+# ============================================================================
+# PLAYLISTS (cross-library, global scope)
+# ============================================================================
+
+playlist_files:
+  - default: playlist
+    template_variables:
+      libraries: "Movies, TV Shows"
+
+# ============================================================================
+# LIBRARIES
+# ============================================================================
+
+libraries:
+  Movies:
+    # Override default Plex connection for this library
+    # plex:
+    #   url: http://192.168.1.12:32400
+    #   token: OVERRIDE_PLEX_TOKEN
+
+    report_path: config/reports/movies_missing.yml
+    remove_overlays: false
+    reapply_overlays: false
+    reset_overlays: tmdb
+
+    # Per-library template variables (passed to collection/overlay files)
+    template_variables:
+      sep_style: purple
+      collection_mode: hide
+      placeholder_imdb_id: tt8579674  # 1917 (2019)
+      ignore_ids:
+        - 1234
+        - 5678
+      ignore_imdb_ids: "tt0133093, tt0234215"
+
+    # Collection sources (yaml files, folders, URLs, git, PMM defaults)
+    collection_files:
+      - file: config/collections/movies.yml
+      - folder: config/collections/movie_defaults/
+      - url: https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/defaults/chart/tmdb.yml
+      - default: tmdb
+      - default: basic
+      - default: imdb
+      - default: trakt
+      - default: oscars
+        template_variables:
+          data:
+            starting: current_year-5
+            ending: current_year
+      - default: genre
+      - default: streaming
+
+    # Metadata file sources
+    metadata_files:
+      - file: config/metadata/movies.yml
+      - default: imdb
+
+    # Overlay sources
+    overlay_files:
+      - default: ratings
+      - default: resolution
+      - default: audio_codec
+      - default: studio
+
+    # Per-library settings override
+    settings:
+      asset_directory: config/assets/movies
+
+    # Library-level operations
+    operations:
+      split_duplicates: false
+      assets_for_all: true
+      genre_mapper:
+        Anime: Animation
+        Kids: Family
+      mass_audience_rating_update:
+        - mdb_average
+        - imdb
+        - 2.0
+      delete_collections:
+        managed: false
+        configured: true
+
+  TV Shows:
+    report_path: config/reports/tv_missing.yml
+    remove_overlays: false
+
+    template_variables:
+      sep_style: teal
+      collection_mode: hide
+      placeholder_imdb_id: tt1190634  # The Boys
+
+    collection_files:
+      - default: tmdb
+      - default: imdb
+      - default: trakt
+      - default: anilist
+      - default: myanimelist
+      - default: genre
+      - default: network
+      - default: streaming
+      - default: bafta
+        template_variables:
+          data:
+            starting: current_year-3
+            ending: current_year
+
+    metadata_files:
+      - file: config/metadata/tv.yml
+
+    overlay_files:
+      - default: ratings
+      - default: resolution
+      - default: status
+      - default: network
+
+    operations:
+      split_duplicates: false
+      assets_for_all: true
+
+  Anime:
+    collection_files:
+      - default: basic
+      - default: anilist
+      - default: myanimelist
+
+  Music:
+    collection_files:
+      - file: config/collections/music.yml

@@ -1,0 +1,1173 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Kometa Collection File",
+    "description": "Schema for Kometa collection files. These files define Plex collections using builders, filters, and metadata updates.",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "collections": { "$ref": "#/definitions/collections-map" },
+        "templates": { "$ref": "#/definitions/templates-map" },
+        "dynamic_collections": { "$ref": "#/definitions/dynamic-collections-map" },
+        "external_templates": { "$ref": "#/definitions/external-templates-list" }
+    },
+    "definitions": {
+
+        "collections-map": {
+            "title": "collections",
+            "description": "A mapping of collection names to their definitions.",
+            "type": "object",
+            "additionalProperties": { "$ref": "#/definitions/collection-definition" }
+        },
+
+        "collection-definition": {
+            "description": "Defines a single Plex collection.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+
+                "template": {
+                    "description": "Template(s) to use for this definition.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/template-call" },
+                        { "type": "array", "items": { "$ref": "#/definitions/template-call" } }
+                    ]
+                },
+
+                "blank_collection": { "type": "boolean", "description": "Create the collection with no builders and no items." },
+                "build_collection": { "type": "boolean", "description": "When false, collection won't be created but items can still go to Radarr/Sonarr." },
+                "builder_level": { "type": "string", "enum": ["season", "episode", "album", "track"], "description": "Make collections at season/episode/album/track level." },
+                "cache_builders": { "type": "integer", "minimum": 0, "description": "Number of days to cache builder results. 0 = no cache." },
+                "changes_webhooks": {
+                    "description": "Override the changes webhook for just this definition.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "default_percent": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Default percent for episode/season/track/album special filters." },
+                "delete_below_minimum": { "type": "boolean" },
+                "delete_collections_named": {
+                    "description": "Delete Plex collections with these names.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "delete_not_scheduled": { "type": "boolean" },
+                "ignore_blank_results": { "type": "boolean" },
+                "ignore_ids": {
+                    "anyOf": [
+                        { "type": "null" }, { "type": "integer" },
+                        { "type": "string", "pattern": "^\\d{1,8}(\\s*,\\s*\\d{1,8})*$" },
+                        { "type": "array", "items": { "type": "integer" }, "minItems": 1 }
+                    ]
+                },
+                "ignore_imdb_ids": {
+                    "anyOf": [
+                        { "type": "null" },
+                        { "type": "string", "pattern": "^(tt\\d{7,8})(,(tt\\d{7,8}))*$" },
+                        { "type": "array", "items": { "type": "string", "pattern": "^tt\\d{7,8}$" }, "minItems": 1 }
+                    ]
+                },
+                "limit": { "type": "integer", "minimum": 1 },
+                "minimum_items": { "type": "integer", "minimum": 1 },
+                "missing_only_released": { "type": "boolean" },
+                "name": { "type": "string", "description": "Override the collection name in Plex." },
+                "name_mapping": { "type": "string", "description": "Folder name in the Image Assets Directory." },
+                "only_filter_missing": { "type": "boolean" },
+                "only_run_on_create": { "type": "boolean" },
+                "run_again": { "type": "boolean" },
+                "run_definition": {
+                    "oneOf": [
+                        { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] },
+                        { "type": "boolean" },
+                        { "type": "array", "items": { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] } }
+                    ]
+                },
+                "save_report": { "type": "boolean" },
+                "schedule": { "type": "string" },
+                "server_preroll": {
+                    "description": "Sets Plex's Movie pre-roll video.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } }
+                    ]
+                },
+                "show_filtered": { "type": "boolean" },
+                "show_missing": { "type": "boolean" },
+                "show_unfiltered": { "type": "boolean" },
+                "sync_missing_to_trakt_list": { "type": "boolean" },
+                "sync_mode": { "type": "string", "enum": ["sync", "append"] },
+                "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
+                "test": { "type": "boolean" },
+                "tmdb_birthday": {
+                    "type": "object", "additionalProperties": false,
+                    "properties": {
+                        "this_month": { "type": "boolean" },
+                        "before": { "type": "integer", "minimum": 0 },
+                        "after": { "type": "integer", "minimum": 0 }
+                    }
+                },
+                "tmdb_region": { "type": "string" },
+                "validate_builders": { "type": "boolean" },
+
+                "collection_filtering": { "type": "string", "enum": ["admin", "user"] },
+                "collection_mode": { "type": "string", "enum": ["default", "hide", "hide_items", "show_items"] },
+                "collection_order": { "type": "string" },
+                "content_rating": { "type": "string" },
+                "file_theme": { "type": "string" },
+                "label": { "$ref": "#/definitions/tag-value" },
+                "label.remove": { "$ref": "#/definitions/tag-value" },
+                "label.sync": { "$ref": "#/definitions/tag-value" },
+                "sort_title": { "type": "string" },
+                "tmdb_person": {
+                    "oneOf": [
+                        { "type": "string" }, { "type": "integer" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }
+                    ]
+                },
+                "tmdb_person_offset": { "type": "integer", "minimum": 0 },
+                "url_theme": { "type": "string", "format": "uri" },
+                "visible_home": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
+                "visible_library": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
+                "visible_shared": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
+
+                "summary": { "type": "string" },
+                "letterboxd_description": { "type": "string" },
+                "tmdb_biography": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tmdb_description": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tmdb_summary": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "trakt_description": { "type": "string" },
+                "tvdb_description": { "type": "string" },
+                "tvdb_summary": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+
+                "file_poster": { "type": "string" },
+                "url_poster": { "type": "string", "format": "uri" },
+                "tmdb_poster": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tmdb_list_poster": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tmdb_profile": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tvdb_poster": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tvdb_list_poster": { "type": "string" },
+
+                "file_background": { "type": "string" },
+                "url_background": { "type": "string", "format": "uri" },
+                "tmdb_background": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+                "tvdb_background": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
+
+                "smart_label": {
+                    "description": "Make this a Smart Label Collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "object", "additionalProperties": false,
+                          "properties": {
+                            "sort_by": { "type": "string" },
+                            "all": { "type": "object", "additionalProperties": true },
+                            "any": { "type": "object", "additionalProperties": true }
+                          }
+                        }
+                    ]
+                },
+
+                "smart_filter": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/plex-filter-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/plex-filter-block" } }
+                    ]
+                },
+                "plex_all": { "type": "boolean", "description": "Get every item in the library." },
+                "plex_search": {
+                    "oneOf": [
+                        { "$ref": "#/definitions/plex-filter-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/plex-filter-block" } }
+                    ]
+                },
+                "plex_watchlist": {
+                    "type": "string",
+                    "enum": ["title.asc", "title.desc", "release.asc", "release.desc", "critic_rating.asc", "critic_rating.desc", "added.asc", "added.desc"],
+                    "description": "Get every item in your Watchlist, sorted by the given option."
+                },
+                "plex_pilots": { "type": "boolean", "description": "Get the first episode of every show. Requires builder_level: episode." },
+                "plex_collectionless": { "$ref": "#/definitions/plex-collectionless-block" },
+
+                "tmdb_collection": {
+                    "description": "TMDb Collection ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_collection_details": {
+                    "description": "TMDb Collection ID(s) or URL(s). Also fetches summary/poster/background.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_movie": {
+                    "description": "TMDb Movie ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_movie_details": {
+                    "description": "TMDb Movie ID(s) or URL(s). Also fetches summary/poster/background.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_show": {
+                    "description": "TMDb Show ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_show_details": {
+                    "description": "TMDb Show ID(s) or URL(s). Also fetches summary/poster/background.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_list": {
+                    "description": "TMDb List ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_list_details": {
+                    "description": "TMDb List ID(s) or URL(s). Also fetches description.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_actor": {
+                    "description": "TMDb Person ID(s) to build from their acting credits.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_director": {
+                    "description": "TMDb Person ID(s) to build from their directing credits.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_producer": {
+                    "description": "TMDb Person ID(s) to build from their producing credits.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_writer": {
+                    "description": "TMDb Person ID(s) to build from their writing credits.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_network": {
+                    "description": "TMDb Network ID(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_company": {
+                    "description": "TMDb Company ID(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_keyword": {
+                    "description": "TMDb Keyword ID(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_popular": { "type": "integer", "minimum": 1, "description": "Number of popular TMDb movies/shows to get." },
+                "tmdb_top_rated": { "type": "integer", "minimum": 1, "description": "Number of top-rated TMDb movies/shows to get." },
+                "tmdb_now_playing": { "type": "integer", "minimum": 1, "description": "Number of now-playing TMDb movies to get." },
+                "tmdb_upcoming": { "type": "integer", "minimum": 1, "description": "Number of upcoming TMDb movies to get." },
+                "tmdb_trending_daily": { "type": "integer", "minimum": 1, "description": "Number of daily trending TMDb items to get." },
+                "tmdb_trending_weekly": { "type": "integer", "minimum": 1, "description": "Number of weekly trending TMDb items to get." },
+                "tmdb_discover": {
+                    "description": "TMDb Discover search. Uses TMDb's Discover API with movie or show search attributes.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/tmdb-discover-block" },
+                        { "type": "array", "items": { "$ref": "#/definitions/tmdb-discover-block" } }
+                    ]
+                },
+
+                "tvdb_list": {
+                    "description": "TVDb List URL(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "tvdb_list_details": {
+                    "description": "TVDb List URL(s). Also fetches description.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "tvdb_show": {
+                    "description": "TVDb Series ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tvdb_show_details": {
+                    "description": "TVDb Series ID(s) or URL(s). Also fetches summary/poster/background.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tvdb_movie": {
+                    "description": "TVDb Movie ID(s) or URL(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tvdb_movie_details": {
+                    "description": "TVDb Movie ID(s) or URL(s). Also fetches summary/poster/background.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+
+                "imdb_id": {
+                    "description": "IMDb ID(s) (tt-prefixed).",
+                    "oneOf": [
+                        { "type": "string", "pattern": "^tt\\d{7,8}(,\\s*tt\\d{7,8})*$" },
+                        { "type": "array", "items": { "type": "string", "pattern": "^tt\\d{7,8}$" } }
+                    ]
+                },
+                "imdb_chart": {
+                    "description": "IMDb chart name(s).",
+                    "oneOf": [
+                        { "type": "string", "enum": ["box_office","popular_movies","top_movies","top_english","popular_shows","top_shows","lowest_rated","top_indian","top_tamil","top_telugu","top_malayalam","trending_india","trending_tamil","trending_telugu"] },
+                        { "type": "array", "items": { "type": "string", "enum": ["box_office","popular_movies","top_movies","top_english","popular_shows","top_shows","lowest_rated","top_indian","top_tamil","top_telugu","top_malayalam","trending_india","trending_tamil","trending_telugu"] } }
+                    ]
+                },
+                "imdb_list": {
+                    "description": "IMDb List(s) by list_id.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/imdb-list-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/imdb-list-entry" } }
+                    ]
+                },
+                "imdb_watchlist": {
+                    "description": "IMDb User Watchlist(s) by user_id.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/imdb-watchlist-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/imdb-watchlist-entry" } }
+                    ]
+                },
+                "imdb_award": {
+                    "description": "IMDb Award Event results.",
+                    "$ref": "#/definitions/imdb-award-entry"
+                },
+                "imdb_search": {
+                    "description": "IMDb Advanced Title Search.",
+                    "$ref": "#/definitions/imdb-search-block"
+                },
+
+                "trakt_list": {
+                    "description": "Trakt List URL(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "trakt_list_details": {
+                    "description": "Trakt List URL(s). Also fetches description.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "trakt_chart": {
+                    "description": "Trakt chart query.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/trakt-chart-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/trakt-chart-entry" } }
+                    ]
+                },
+                "trakt_userlist": {
+                    "description": "Trakt User list(s).",
+                    "oneOf": [
+                        { "$ref": "#/definitions/trakt-userlist-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/trakt-userlist-entry" } }
+                    ]
+                },
+                "trakt_recommendations": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Number of Trakt personal recommendations." },
+                "trakt_boxoffice": { "type": "boolean", "description": "Get Trakt's Top Box Office movies (always 10)." },
+                "trakt_trending": { "type": "integer", "minimum": 1 },
+                "trakt_popular": { "type": "integer", "minimum": 1 },
+
+                "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+
+                "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
+                "radarr_taglist": {
+                    "description": "Get Radarr movies by tag(s). Leave blank for untagged movies.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "null" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
+                "sonarr_all": { "type": "boolean", "description": "Get all shows in Sonarr." },
+                "sonarr_taglist": {
+                    "description": "Get Sonarr shows by tag(s). Leave blank for untagged shows.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "null" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
+                "mdblist_list": {
+                    "description": "MDBList List URL(s) or object with url and limit.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/mdblist-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/mdblist-list-entry" }] } }
+                    ]
+                },
+
+                "letterboxd_list": {
+                    "description": "Letterboxd List URL(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
+                    ]
+                },
+                "letterboxd_list_details": {
+                    "description": "Letterboxd List URL(s). Also fetches description.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
+                    ]
+                },
+
+                "icheckmovies_list": {
+                    "description": "ICheckMovies List URL(s).",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "icheckmovies_list_details": {
+                    "description": "ICheckMovies List URL(s). Also fetches description.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+
+                "boxofficemojo_list": {
+                    "description": "BoxOfficeMojo list(s) by ID.",
+                    "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }]
+                },
+
+                "reciperr_list": {
+                    "description": "Reciperr list URL(s).",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+
+                "stevenlu_popular": { "type": "boolean", "description": "Get StevenLu's Popular Movies list." },
+                "stevenlu2_popular": { "type": "integer", "minimum": 1 },
+
+                "anidb_id": {
+                    "description": "AniDB ID(s).",
+                    "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }]
+                },
+                "anidb_relation": {
+                    "description": "AniDB ID to get all relations of.",
+                    "type": "integer"
+                },
+                "anidb_popular": { "type": "integer", "minimum": 1, "maximum": 30, "description": "Number of items from AniDB's popular anime list (max 30)." },
+                "anidb_tag": {
+                    "description": "AniDB Tag(s) to build from.",
+                    "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }]
+                },
+
+                "anilist_top_rated": { "type": "integer", "minimum": 1, "description": "Number of AniList top-rated anime." },
+                "anilist_popular": { "type": "integer", "minimum": 1, "description": "Number of AniList popular anime." },
+                "anilist_trending": { "type": "integer", "minimum": 1, "description": "Number of AniList trending anime." },
+                "anilist_id": {
+                    "description": "AniList ID(s).",
+                    "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }]
+                },
+                "anilist_relations": {
+                    "description": "AniList ID to get all relations of.",
+                    "type": "integer"
+                },
+                "anilist_studio": {
+                    "description": "AniList Studio ID(s).",
+                    "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }]
+                },
+                "anilist_genre": {
+                    "description": "AniList Genre(s) to build from.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "anilist_tag": {
+                    "description": "AniList Tag(s) to build from.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "anilist_season": { "$ref": "#/definitions/anilist-season-block" },
+                "anilist_userlist": { "$ref": "#/definitions/anilist-userlist-block" },
+                "anilist_search": { "$ref": "#/definitions/anilist-search-block" },
+
+                "mal_all": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_airing": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_upcoming": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_tv": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_movie": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_ova": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_special": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_popular": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_favorite": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "mal_suggested": { "type": "integer", "minimum": 1, "maximum": 100 },
+                "mal_id": {
+                    "description": "MyAnimeList ID(s).",
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "mal_userlist": { "$ref": "#/definitions/mal-userlist-block" },
+                "mal_season": { "$ref": "#/definitions/mal-season-block" },
+                "mal_search": { "$ref": "#/definitions/mal-search-block" },
+
+                "item_label": { "$ref": "#/definitions/tag-value", "description": "Apply label(s) to all items found by builders." },
+                "item_label.remove": { "$ref": "#/definitions/tag-value" },
+                "item_label.sync": { "$ref": "#/definitions/tag-value" },
+                "item_assets": { "type": "boolean" },
+                "item_refresh": { "type": "boolean" },
+                "item_refresh_delay": { "type": "integer", "minimum": 0 },
+                "radarr_add_missing": { "type": "boolean" },
+                "radarr_add_existing": { "type": "boolean" },
+                "radarr_folder": { "type": "string" },
+                "radarr_monitor": { "type": "boolean" },
+                "radarr_search": { "type": "boolean" },
+                "radarr_availability": { "type": "string", "enum": ["announced", "cinemas", "released", "db"] },
+                "radarr_quality": { "type": "string" },
+                "radarr_tag": { "$ref": "#/definitions/tag-value" },
+                "sonarr_add_missing": { "type": "boolean" },
+                "sonarr_add_existing": { "type": "boolean" },
+                "sonarr_folder": { "type": "string" },
+                "sonarr_monitor": { "type": "string", "enum": ["all", "future", "missing", "existing", "pilot", "first", "latest", "none"] },
+                "sonarr_search": { "type": "boolean" },
+                "sonarr_cutoff_search": { "type": "boolean" },
+                "sonarr_quality": { "type": "string" },
+                "sonarr_language": { "type": "string" },
+                "sonarr_series_type": { "type": "string", "enum": ["standard", "daily", "anime"] },
+                "sonarr_tag": { "$ref": "#/definitions/tag-value" },
+                "sonarr_season_folder": { "type": "boolean" },
+
+                "filters": {
+                    "description": "Filters applied to items found by builders.",
+                    "oneOf": [
+                        { "type": "object", "additionalProperties": true },
+                        { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+                    ]
+                }
+            }
+        },
+
+        "plex-filter-block": {
+            "description": "Plex smart_filter or plex_search block.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "all": { "type": "object", "additionalProperties": true },
+                "any": { "type": "object", "additionalProperties": true },
+                "sort_by": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "limit": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "enum": ["all"] }] },
+                "validate": { "type": "boolean" },
+                "type": { "type": "string", "enum": ["movie", "show", "season", "episode", "artist", "album", "track"] }
+            }
+        },
+
+        "plex-collectionless-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "exclude": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "exclude_prefix": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                }
+            }
+        },
+
+        "imdb-list-entry": {
+            "oneOf": [
+                {
+                    "type": "object", "additionalProperties": false,
+                    "required": ["list_id"],
+                    "properties": {
+                        "list_id": { "type": "string", "pattern": "^ls\\d+$" },
+                        "limit": { "type": "integer", "minimum": 0 },
+                        "sort_by": { "type": "string", "enum": ["custom.asc","custom.desc","title.asc","title.desc","rating.asc","rating.desc","popularity.asc","popularity.desc","votes.asc","votes.desc","release.asc","release.desc","runtime.asc","runtime.desc","added.asc","added.desc"] }
+                    }
+                },
+                {
+                    "type": "object", "additionalProperties": false,
+                    "properties": {
+                        "url": { "type": "string" },
+                        "limit": { "type": "integer", "minimum": 0 }
+                    },
+                    "required": ["url"]
+                },
+                {
+                    "type": "string"
+                }
+            ]
+        },
+
+        "imdb-watchlist-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["user_id"],
+            "properties": {
+                "user_id": { "type": "string", "pattern": "^ur\\d+$" },
+                "limit": { "type": "integer", "minimum": 0 },
+                "sort_by": { "type": "string", "enum": ["custom.asc","custom.desc","title.asc","title.desc","rating.asc","rating.desc","popularity.asc","popularity.desc","votes.asc","votes.desc","release.asc","release.desc","runtime.asc","runtime.desc","added.asc","added.desc"] }
+            }
+        },
+
+        "imdb-award-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["event_id", "event_year"],
+            "properties": {
+                "event_id": { "type": "string" },
+                "event_year": {
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "award_filter": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "category_filter": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "winning": { "type": "boolean" }
+            }
+        },
+
+        "imdb-search-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "limit": { "type": "integer", "minimum": 0 },
+                "sort_by": { "type": "string", "enum": ["popularity.asc","popularity.desc","title.asc","title.desc","rating.asc","rating.desc","votes.asc","votes.desc","box_office.asc","box_office.desc","runtime.asc","runtime.desc","year.asc","year.desc","release.asc","release.desc"] },
+                "title": { "type": "string" },
+                "type": { "type": "string" },
+                "type.not": { "type": "string" },
+                "release.after": { "type": "string" },
+                "release.before": { "type": "string" },
+                "rating.gte": { "type": "number", "minimum": 0.1, "maximum": 10.0 },
+                "rating.lte": { "type": "number", "minimum": 0.1, "maximum": 10.0 },
+                "votes.gte": { "type": "integer", "minimum": 0 },
+                "votes.lte": { "type": "integer", "minimum": 0 },
+                "genre": { "type": "string" },
+                "genre.any": { "type": "string" },
+                "genre.not": { "type": "string" },
+                "interests": { "type": "string" },
+                "interests.any": { "type": "string" },
+                "interests.not": { "type": "string" },
+                "event": { "type": "string" },
+                "event.winning": { "type": "string" },
+                "imdb_top": { "type": "integer", "minimum": 1 },
+                "imdb_bottom": { "type": "integer", "minimum": 1 },
+                "topic": { "type": "string" },
+                "topic.not": { "type": "string" },
+                "company": { "type": "string" },
+                "content_rating": { "type": "array", "items": { "type": "object", "properties": { "rating": { "type": "string" }, "region": { "type": "string" } } } },
+                "country": { "type": "string" },
+                "country.any": { "type": "string" },
+                "country.not": { "type": "string" },
+                "country.origin": { "type": "string" },
+                "keyword": { "type": "string" },
+                "keyword.any": { "type": "string" },
+                "keyword.not": { "type": "string" },
+                "series": { "type": "string" },
+                "series.not": { "type": "string" },
+                "list": { "type": "string" },
+                "list.any": { "type": "string" },
+                "list.not": { "type": "string" },
+                "language": { "type": "string" },
+                "language.any": { "type": "string" },
+                "language.not": { "type": "string" },
+                "language.primary": { "type": "string" },
+                "popularity.gte": { "type": "integer", "minimum": 0 },
+                "popularity.lte": { "type": "integer", "minimum": 0 },
+                "cast": { "type": "string" },
+                "cast.any": { "type": "string" },
+                "cast.not": { "type": "string" },
+                "character": { "type": "string" },
+                "runtime.gte": { "type": "integer", "minimum": 0 },
+                "runtime.lte": { "type": "integer", "minimum": 0 },
+                "adult": { "type": "boolean" },
+                "alternate_version": { "type": "string" },
+                "alternate_version.any": { "type": "string" },
+                "alternate_version.not": { "type": "string" },
+                "crazy_credit": { "type": "string" }, "crazy_credit.any": { "type": "string" }, "crazy_credit.not": { "type": "string" },
+                "goof": { "type": "string" }, "goof.any": { "type": "string" }, "goof.not": { "type": "string" },
+                "location": { "type": "string" }, "location.any": { "type": "string" }, "location.not": { "type": "string" },
+                "plot": { "type": "string" }, "plot.any": { "type": "string" }, "plot.not": { "type": "string" },
+                "quote": { "type": "string" }, "quote.any": { "type": "string" }, "quote.not": { "type": "string" },
+                "soundtrack": { "type": "string" }, "soundtrack.any": { "type": "string" }, "soundtrack.not": { "type": "string" },
+                "trivia": { "type": "string" }, "trivia.any": { "type": "string" }, "trivia.not": { "type": "string" }
+            }
+        },
+
+        "trakt-chart-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["chart"],
+            "properties": {
+                "chart": { "type": "string", "enum": ["trending", "popular", "recommended", "watched", "collected"] },
+                "time_period": { "type": "string", "enum": ["daily", "weekly", "monthly", "yearly", "all"] },
+                "limit": { "type": "integer", "minimum": 1 },
+                "query": { "type": "string" },
+                "years": { "type": "string" },
+                "genres": { "type": "string" },
+                "languages": { "type": "string" },
+                "countries": { "type": "string" },
+                "certifications": { "type": "string" },
+                "runtimes": { "type": "string" },
+                "ratings": { "type": "string" },
+                "votes": { "type": "string" },
+                "tmdb_ratings": { "type": "string" },
+                "tmdb_votes": { "type": "string" },
+                "imdb_ratings": { "type": "string" },
+                "imdb_votes": { "type": "string" },
+                "rt_meters": { "type": "string" },
+                "rt_user_meters": { "type": "string" },
+                "metascores": { "type": "string" },
+                "studio_ids": { "type": "string" },
+                "network_ids": { "type": "string" },
+                "status": { "type": "string" }
+            }
+        },
+
+        "trakt-userlist-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["userlist"],
+            "properties": {
+                "userlist": { "type": "string", "enum": ["watchlist", "favorites", "watched", "collection"] },
+                "user": { "type": "string" },
+                "sort_by": { "type": "string", "enum": ["rank", "added", "released", "title"] }
+            }
+        },
+
+        "tautulli-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mdblist-list-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["url"],
+            "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "letterboxd-list-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["url"],
+            "properties": {
+                "url": { "type": "string", "format": "uri" },
+                "limit": { "type": "integer", "minimum": 1 },
+                "sort_by": { "type": "string" }
+            }
+        },
+
+        "mal-userlist-block": {
+            "type": "object", "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string" },
+                "status": { "type": "string", "enum": ["all", "watching", "completed", "on_hold", "dropped", "plan_to_watch"] },
+                "sort_by": { "type": "string", "enum": ["score", "last_updated", "title", "start_date"] },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "mal-season-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "season": { "type": "string", "enum": ["winter", "spring", "summer", "fall", "current"] },
+                "year": { "type": "integer", "minimum": 1917 },
+                "sort_by": { "type": "string", "enum": ["members", "score"] },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 500 },
+                "starting_only": { "type": "boolean" }
+            }
+        },
+
+        "mal-search-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "sort_by": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 },
+                "query": { "type": "string" },
+                "prefix": { "type": "string" },
+                "type": { "type": "string", "enum": ["tv", "movie", "ova", "special", "ona", "music"] },
+                "status": { "type": "string", "enum": ["airing", "complete", "upcoming"] },
+                "genre": { "type": "string" },
+                "genre.not": { "type": "string" },
+                "studio": { "type": "string" },
+                "content_rating": { "type": "string", "enum": ["g", "pg", "pg13", "r17", "r", "rx"] },
+                "score.gt": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.gte": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.lt": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.lte": { "type": "number", "minimum": 0, "maximum": 10 },
+                "sfw": { "type": "boolean" }
+            }
+        },
+
+        "anilist-season-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "season": { "type": "string", "enum": ["winter", "spring", "summer", "fall"] },
+                "year": { "type": "integer" },
+                "sort_by": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "anilist-userlist-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "username": { "type": "string" },
+                "list": { "type": "string" },
+                "sort_by": { "type": "string" }
+            }
+        },
+
+        "anilist-search-block": {
+            "type": "object", "additionalProperties": true,
+            "properties": {
+                "limit": { "type": "integer", "minimum": 1 },
+                "sort_by": { "type": "string" }
+            }
+        },
+
+        "template-call": {
+            "type": "object", "additionalProperties": true,
+            "properties": {
+                "name": { "type": "string" }
+            },
+            "required": ["name"]
+        },
+
+        "templates-map": {
+            "title": "templates",
+            "type": "object",
+            "additionalProperties": { "type": "object", "additionalProperties": true }
+        },
+
+        "dynamic-collections-map": {
+            "title": "dynamic_collections",
+            "type": "object",
+            "additionalProperties": { "$ref": "#/definitions/dynamic-collection-definition" }
+        },
+
+        "dynamic-collection-definition": {
+            "type": "object", "additionalProperties": true,
+            "properties": {
+                "type": { "type": "string" },
+                "data": { "additionalProperties": true },
+                "exclude": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "addons": { "type": "object", "additionalProperties": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } },
+                "template": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/template-call" }, { "type": "array", "items": { "$ref": "#/definitions/template-call" } }] },
+                "template_variables": { "type": "object", "additionalProperties": true },
+                "other_template": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/template-call" }] },
+                "other_name": { "type": "string" },
+                "title_format": { "type": "string" },
+                "key_name_override": { "type": "object", "additionalProperties": { "type": "string" } },
+                "include": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "limit": { "type": "integer", "minimum": 1 }
+            },
+            "required": ["type"]
+        },
+
+        "external-templates-list": {
+            "title": "external_templates",
+            "oneOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
+                            { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
+                        ]
+                    }
+                },
+                {
+                    "oneOf": [
+                        { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
+                        { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
+                    ]
+                }
+            ]
+        },
+
+        "tag-value": {
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" } }
+            ]
+        },
+
+        "tmdb-discover-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "limit":                      { "type": "integer", "minimum": 0 },
+                "sort_by":                    { "type": "string" },
+                "with_companies":             { "type": "string" },
+                "without_companies":          { "type": "string" },
+                "with_genres":                { "type": "string" },
+                "without_genres":             { "type": "string" },
+                "with_keywords":              { "type": "string" },
+                "without_keywords":           { "type": "string" },
+                "with_watch_providers":       { "type": "string" },
+                "without_watch_providers":    { "type": "string" },
+                "with_original_language":     { "type": "string" },
+                "with_overview_translation":  { "type": "string" },
+                "watch_region":               { "type": "string" },
+                "with_watch_monetization_types": { "type": "string" },
+                "vote_count.gte":             { "type": "integer" },
+                "vote_count.lte":             { "type": "integer" },
+                "with_runtime.gte":           { "type": "integer" },
+                "with_runtime.lte":           { "type": "integer" },
+                "vote_average.gte":           { "type": "number" },
+                "vote_average.lte":           { "type": "number" },
+                "include_adult":              { "type": "boolean" },
+                "with_cast":                  { "type": "string" },
+                "with_crew":                  { "type": "string" },
+                "with_people":                { "type": "string" },
+                "with_release_type":          { "type": "string" },
+                "with_title_translation":     { "type": "string" },
+                "with_origin_country":        { "type": "string" },
+                "region":                     { "type": "string" },
+                "certification_country":      { "type": "string" },
+                "certification":              { "type": "string" },
+                "certification.lte":          { "type": "string" },
+                "certification.gte":          { "type": "string" },
+                "year":                       { "type": "integer", "minimum": 1800 },
+                "primary_release_year":       { "type": "integer", "minimum": 1800 },
+                "primary_release_date.gte":   { "type": "string" },
+                "primary_release_date.lte":   { "type": "string" },
+                "release_date.gte":           { "type": "string" },
+                "release_date.lte":           { "type": "string" },
+                "include_video":              { "type": "boolean" },
+                "with_networks":              { "type": "string" },
+                "with_name_translation":      { "type": "string" },
+                "timezone":                   { "type": "string" },
+                "first_air_date_year":        { "type": "integer", "minimum": 1800 },
+                "air_date.gte":               { "type": "string" },
+                "air_date.lte":               { "type": "string" },
+                "first_air_date.gte":         { "type": "string" },
+                "first_air_date.lte":         { "type": "string" },
+                "with_status":                { "type": "integer", "minimum": 0, "maximum": 5 },
+                "with_type":                  { "type": "integer", "minimum": 0, "maximum": 6 },
+                "screened_theatrically":      { "type": "boolean" },
+                "include_null_first_air_dates": { "type": "boolean" }
+            },
+            "allOf": [
+                {
+                    "if": { "required": ["certification_country"] },
+                    "then": {
+                        "anyOf": [
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] }
+                        ]
+                    },
+                    "then": { "required": ["certification_country"] }
+                },
+                {
+                    "if": { "required": ["watch_region"] },
+                    "then": {
+                        "anyOf": [
+                            { "required": ["with_watch_providers"] },
+                            { "required": ["without_watch_providers"] },
+                            { "required": ["with_watch_monetization_types"] }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_watch_providers"] },
+                            { "required": ["with_watch_monetization_types"] },
+                            { "required": ["without_watch_providers"] }
+                        ]
+                    },
+                    "then": { "required": ["watch_region"] }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_cast"] },
+                            { "required": ["with_crew"] },
+                            { "required": ["with_people"] },
+                            { "required": ["year"] },
+                            { "required": ["primary_release_year"] },
+                            { "required": ["primary_release_date.gte"] },
+                            { "required": ["primary_release_date.lte"] },
+                            { "required": ["release_date.gte"] },
+                            { "required": ["release_date.lte"] },
+                            { "required": ["with_release_type"] },
+                            { "required": ["with_title_translation"] },
+                            { "required": ["with_origin_country"] },
+                            { "required": ["certification_country"] },
+                            { "required": ["certification"] },
+                            { "required": ["certification.lte"] },
+                            { "required": ["certification.gte"] },
+                            { "required": ["region"] },
+                            { "required": ["include_video"] }
+                        ]
+                    },
+                    "then": {
+                        "allOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        { "required": ["with_networks"] },
+                                        { "required": ["with_type"] },
+                                        { "required": ["with_status"] },
+                                        { "required": ["with_name_translation"] },
+                                        { "required": ["first_air_date_year"] },
+                                        { "required": ["first_air_date.gte"] },
+                                        { "required": ["first_air_date.lte"] },
+                                        { "required": ["air_date.gte"] },
+                                        { "required": ["air_date.lte"] },
+                                        { "required": ["timezone"] },
+                                        { "required": ["screened_theatrically"] },
+                                        { "required": ["include_null_first_air_dates"] }
+                                    ]
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "sort_by": {
+                                        "enum": [
+                                            "original_title.asc", "original_title.desc",
+                                            "popularity.asc", "popularity.desc",
+                                            "primary_release_date.asc", "primary_release_date.desc",
+                                            "release_date.asc", "release_date.desc",
+                                            "revenue.asc", "revenue.desc",
+                                            "title.asc", "title.desc",
+                                            "vote_average.asc", "vote_average.desc",
+                                            "vote_count.asc", "vote_count.desc"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "if": {
+                        "anyOf": [
+                            { "required": ["with_networks"] },
+                            { "required": ["with_type"] },
+                            { "required": ["with_status"] },
+                            { "required": ["with_name_translation"] },
+                            { "required": ["first_air_date_year"] },
+                            { "required": ["first_air_date.gte"] },
+                            { "required": ["first_air_date.lte"] },
+                            { "required": ["air_date.gte"] },
+                            { "required": ["air_date.lte"] },
+                            { "required": ["timezone"] },
+                            { "required": ["screened_theatrically"] },
+                            { "required": ["include_null_first_air_dates"] }
+                        ]
+                    },
+                    "then": {
+                        "allOf": [
+                            {
+                                "not": {
+                                    "anyOf": [
+                                        { "required": ["with_cast"] },
+                                        { "required": ["with_crew"] },
+                                        { "required": ["with_people"] },
+                                        { "required": ["year"] },
+                                        { "required": ["primary_release_year"] },
+                                        { "required": ["primary_release_date.gte"] },
+                                        { "required": ["primary_release_date.lte"] },
+                                        { "required": ["release_date.gte"] },
+                                        { "required": ["release_date.lte"] },
+                                        { "required": ["with_release_type"] },
+                                        { "required": ["with_title_translation"] },
+                                        { "required": ["with_origin_country"] },
+                                        { "required": ["certification_country"] },
+                                        { "required": ["certification"] },
+                                        { "required": ["certification.lte"] },
+                                        { "required": ["certification.gte"] },
+                                        { "required": ["region"] },
+                                        { "required": ["include_video"] }
+                                    ]
+                                }
+                            },
+                            {
+                                "properties": {
+                                    "sort_by": {
+                                        "enum": [
+                                            "first_air_date.asc", "first_air_date.desc",
+                                            "name.asc", "name.desc",
+                                            "original_name.asc", "original_name.desc",
+                                            "popularity.asc", "popularity.desc",
+                                            "vote_average.asc", "vote_average.desc",
+                                            "vote_count.asc", "vote_count.desc"
+                                        ]
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+}
