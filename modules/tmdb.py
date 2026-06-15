@@ -8,6 +8,14 @@ from tmdbapis import TMDbAPIs, TMDbException
 from modules import util
 from modules.util import Failed
 
+
+class NotFound(Failed):
+    """Raised when a TMDb Collection returns 404 — the collection may have been removed or renumbered on TMDb.
+
+    Distinct from Failed so callers can log actionable guidance for stale IDs that the user
+    did not directly configure (e.g. collection IDs auto-built from Plex metadata).
+    """
+
 logger = util.logger
 
 
@@ -167,7 +175,7 @@ class TMDbMovie(TMDBObj):
         try:
             return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
         except TMDbNotFound:
-            raise Failed(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
+            raise NotFound(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
@@ -204,7 +212,7 @@ class TMDbShow(TMDBObj):
         try:
             return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
         except TMDbNotFound:
-            raise Failed(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
+            raise NotFound(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
             logger.stacktrace()
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
@@ -384,10 +392,14 @@ class TMDb:
             try:
                 tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
             except NotFound as e:
-                # ID points at a TMDb resource that has been deleted upstream.
-                # Log quietly; if every ID in the list is like this the caller
-                # gets a NotFound (not a Failed) so it can avoid a hard error.
-                logger.debug(e)
+                logger.error(e)
+                if type_map[tmdb_method] == "Collection":
+                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. "
+                                 f"If this is auto-built by the franchise default, add '{tmdb_id}' to "
+                                 f"your exclude list in template_variables to suppress this error.")
+                else:
+                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed "
+                                 f"from TMDb. Verify it still exists and update your config.")
             except Failed as e:
                 all_not_found = False
                 logger.error(e)
