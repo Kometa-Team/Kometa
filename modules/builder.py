@@ -4225,7 +4225,7 @@ class CollectionBuilder:
             if self.do_report and items_removed:
                 self.library.add_removed(
                     self.name,
-                    [(i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed],
+                    [(f"{i.title} ({i.year})" if i.year else i.title, self.library.get_id_from_maps(i.ratingKey)) for i in items_removed],
                     self.library.is_movie,
                 )
             logger.info("")
