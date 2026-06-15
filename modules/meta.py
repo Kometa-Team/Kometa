@@ -1360,6 +1360,15 @@ class MetadataFile(DataFile):
                                 collection_title = title_override[key]
                             else:
                                 collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                                for _var_key, _var_val in og_call.items():
+                                    if f"<<{_var_key}>>" in collection_title:
+                                        collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
+                                if "<<" in collection_title:
+                                    for _template_name in template_names:
+                                        if _template_name in self.templates and isinstance(self.templates[_template_name][0], dict):
+                                            for _var_key, _var_val in self.templates[_template_name][0].get("default", {}).items():
+                                                if f"<<{_var_key}>>" in collection_title and not isinstance(_var_val, (dict, list)):
+                                                    collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
                             if collection_title in col_names:
                                 logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                             else:
