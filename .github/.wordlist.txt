@@ -139,6 +139,7 @@ gp
 GraphQL
 grenvilles
 guid
+GUIDs
 Gzip
 hama
 hardcoded
