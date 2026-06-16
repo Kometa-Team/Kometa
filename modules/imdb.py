@@ -697,8 +697,13 @@ class IMDb:
             parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        for e in self._request(f"{base_url}/title/{imdb_id}/parentalguide", xpath="//li[contains(@class, 'ipc-metadata-list-item--link')]"):
-            parental_dict[util.parental_types[e.xpath("a/text()")[0][:-1]]] = e.xpath("div/div/div/text()")[0]
+        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
+        categories = (self._graph_request({"query": gql}).get("data") or {}).get("title", {}).get("parentsGuide", {}).get("categories") or []
+        for cat in categories:
+            cat_text = (cat.get("category") or {}).get("text", "")
+            sev_text = (cat.get("severity") or {}).get("text", "")
+            if cat_text in util.parental_types and sev_text:
+                parental_dict[util.parental_types[cat_text]] = sev_text
         if parental_dict:
             for _, v in util.parental_types.items():
                 if v not in parental_dict:
