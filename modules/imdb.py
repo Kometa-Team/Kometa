@@ -698,7 +698,7 @@ class IMDb:
             if parental_dict and expired is False:
                 return parental_dict
         gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
-        categories = (self._graph_request({"query": gql}).get("data") or {}).get("title", {}).get("parentsGuide", {}).get("categories") or []
+        categories = ((self._graph_request({"query": gql}) or {}).get("data") or {}).get("title", {}).get("parentsGuide", {}).get("categories") or []
         for cat in categories:
             cat_text = (cat.get("category") or {}).get("text", "")
             sev_text = (cat.get("severity") or {}).get("text", "")
