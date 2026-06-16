@@ -1027,10 +1027,12 @@ class Operations:
 
             epoch = datetime(1970, 1, 1)
 
-            def plex_update_in_batches(_edits, display_attr=None, out_type=None, tag_type=None, is_episode=None):
+            def plex_update_in_batches(_edits, display_attr=None, out_type=None, tag_type=None, is_episode=None, evict_cache=False):
                 _size = len(_edits.items())
                 for j, (update_value, rating_keys) in enumerate(sorted(_edits.items()), 1):
                     update_items = rating_keys if is_episode else self.library.load_list_from_cache(rating_keys)
+                    if not update_items:
+                        continue
                     total_update_items = len(update_items)
                     batch_size = self.library.plex_bulk_edit_batch_size if self.library.plex_bulk_edit_batch_size else total_update_items
                     num_batches = math.ceil(total_update_items / batch_size)
@@ -1066,15 +1068,15 @@ class Operations:
                         else:
                             self.library.Plex.editField(display_attr, update_value)
                         self.library.Plex.saveMultiEdits()
-                        logger.debug(f"  Evicted {len(batch_items)} stale items from cache after batch save") # For nightly testing, can be removed for deve release
-                        for batch_item in batch_items:
-                            self.library.cached_items.pop(batch_item.ratingKey, None)
+                        if evict_cache:
+                            for batch_item in batch_items:
+                                self.library.cached_items.pop(batch_item.ratingKey, None)
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
                     plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
             for item_attr, rt_edits in rating_edits.items():
-                plex_update_in_batches(rt_edits, display_attr=item_attr)
+                plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
             plex_update_in_batches(content_edits, display_attr="contentRating")
             plex_update_in_batches(studio_edits, display_attr="studio")
             plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt")
