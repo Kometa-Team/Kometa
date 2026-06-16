@@ -12,8 +12,13 @@ __pycache__/
 .Python
 .worktrees
 
+# AI support
+.agents
+.claude
+
 logs/
 config/*
+random_configs/*
 !config/overlays/
 config/overlays/*/
 config/overlays/temp.jpeg
