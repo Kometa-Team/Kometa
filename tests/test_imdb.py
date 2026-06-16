@@ -14,40 +14,95 @@ def make_imdb(graph_response):
 
 
 # ---------------------------------------------------------------------------
-# Regression test: the original bug
+# Regression: demonstrate the bugs that existed before the fix
 # ---------------------------------------------------------------------------
 
 def test_parental_guide_none_response_pre_fix_raises_attribute_error():
-    """Demonstrate the original bug: calling .get() on None raises AttributeError.
+    """Phase 1 regression: .get() on None raised AttributeError before the fix.
 
-    This documents the regression -- the line BEFORE the fix looked like:
+    The original broken line was:
         (self._graph_request(...).get("data") or {})...
     which explodes when _graph_request returns None.
     """
-    result = None  # simulate _graph_request returning None
+    result = None
     with pytest.raises(AttributeError):
         (result.get("data") or {}).get("title", {})
 
 
+def test_parental_guide_null_title_pre_fix_raises_attribute_error():
+    """Phase 2 regression: .get("title", {}) returns None when title key exists
+    but its value is null -- causing AttributeError on the next .get() call.
+
+    IMDb returns {"data": {"title": null}} for IDs that do not exist in their DB
+    (e.g. an item whose only Plex GUIDs are tmdb:// or tvdb://).
+    """
+    response = {"data": {"title": None}}
+    with pytest.raises(AttributeError):
+        (response.get("data") or {}).get("title", {}).get("parentsGuide", {})
+
+
 # ---------------------------------------------------------------------------
-# Fix tests: _graph_request returns None (item has no IMDb record)
+# Fix: _graph_request returns None (network/auth failure or empty response)
 # ---------------------------------------------------------------------------
 
 def test_parental_guide_none_response_raises_failed():
-    """When _graph_request returns None (no IMDb record), parental_guide should
-    raise Failed -- not AttributeError -- so operations.py can catch it cleanly."""
+    """When _graph_request returns None, parental_guide raises Failed (not AttributeError)
+    so operations.py can catch it and skip the item gracefully."""
     imdb = make_imdb(graph_response=None)
     with pytest.raises(Failed, match="No Parental Guide Found"):
         imdb.parental_guide("tt9999999")
 
 
 def test_parental_guide_none_response_does_not_raise_attribute_error():
-    """The fix must not let AttributeError escape."""
+    """The fix must not let AttributeError escape when _graph_request returns None."""
     imdb = make_imdb(graph_response=None)
     with pytest.raises(Exception) as exc_info:
         imdb.parental_guide("tt9999999")
     assert not isinstance(exc_info.value, AttributeError), (
         "AttributeError escaped -- the None guard is missing"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Fix: IMDb returns {"data": {"title": null}} for unknown IDs
+# ---------------------------------------------------------------------------
+
+def test_parental_guide_null_title_raises_failed():
+    """When IMDb returns null for the title (ID not in their DB), parental_guide
+    raises Failed so operations.py skips the item gracefully."""
+    imdb = make_imdb(graph_response={"data": {"title": None}})
+    with pytest.raises(Failed, match="No Parental Guide Found"):
+        imdb.parental_guide("tt9999999")
+
+
+def test_parental_guide_null_title_does_not_raise_attribute_error():
+    """The fix must not let AttributeError escape for a null title response."""
+    imdb = make_imdb(graph_response={"data": {"title": None}})
+    with pytest.raises(Exception) as exc_info:
+        imdb.parental_guide("tt9999999")
+    assert not isinstance(exc_info.value, AttributeError), (
+        "AttributeError escaped -- the null title guard is missing"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Fix: IMDb returns {"data": {"title": {"parentsGuide": null}}}
+# ---------------------------------------------------------------------------
+
+def test_parental_guide_null_parents_guide_raises_failed():
+    """When the title exists but parentsGuide is null, parental_guide raises Failed."""
+    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": None}}})
+    with pytest.raises(Failed, match="No Parental Guide Found"):
+        imdb.parental_guide("tt9999999")
+
+
+def test_parental_guide_null_parents_guide_does_not_raise_attribute_error():
+    """The fix must not let AttributeError escape for a null parentsGuide response."""
+    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": None}}})
+    with pytest.raises(Exception) as exc_info:
+        imdb.parental_guide("tt9999999")
+    assert not isinstance(exc_info.value, AttributeError), (
+        "AttributeError escaped -- the null parentsGuide guard is missing"
     )
 
 
