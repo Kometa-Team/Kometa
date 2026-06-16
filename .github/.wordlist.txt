@@ -72,6 +72,7 @@ cronjob
 crontab
 crunchyroll
 CLI
+CloudFront
 CSM
 customizable
 customizations
@@ -446,6 +447,7 @@ visualstudio
 vladimir
 vn
 vscode
+WAF
 vscodium
 vv
 wachowski
