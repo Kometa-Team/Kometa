@@ -2203,11 +2203,13 @@ class CollectionBuilder:
                     if not dict_data[dict_methods["award_filter"]]:
                         raise Failed(f"{self.Type} Error: imdb_award award_filter attribute is blank")
                     award_filters = util.parse(self.Type, "award_filter", dict_data[dict_methods["award_filter"]], datatype="lowerlist")
+
                 category_filters = []
                 if "category_filter" in dict_methods:
                     if not dict_data[dict_methods["category_filter"]]:
                         raise Failed(f"{self.Type} Error: imdb_award category_filter attribute is blank")
                     category_filters = util.parse(self.Type, "category_filter", dict_data[dict_methods["category_filter"]], datatype="lowerlist")
+
                 final_category = []
                 final_awards = []
                 if award_filters or category_filters:
@@ -2215,16 +2217,48 @@ class CollectionBuilder:
                         event_id,
                         (year_options[:1] if event_year == "latest" else year_options if event_year == "all" else event_year),
                     )
+
+                    invalid_awards = []
+                    invalid_categories = []
+
                     for award_filter in award_filters:
                         if award_filter in award_names:
                             final_awards.append(award_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award award_filter attribute invalid: {award_filter} must be in in [{', '.join(award_names)}]")
+                            invalid_awards.append(award_filter)
+
                     for category_filter in category_filters:
                         if category_filter in category_names:
                             final_category.append(category_filter)
                         else:
-                            raise Failed(f"{self.Type} Error: imdb_award category_filter attribute invalid: {category_filter} must be in in [{', '.join(category_names)}]")
+                            invalid_categories.append(category_filter)
+
+                    if award_filters and not final_awards:
+                        raise Failed(
+                            f"{self.Type} Error: imdb_award award_filter attribute invalid: "
+                            f"none of the provided award_filter values exist: [{', '.join(award_filters)}]. "
+                            f"Valid Award Options: [{', '.join(award_names)}]"
+                        )
+
+                    if category_filters and not final_category:
+                        raise Failed(
+                            f"{self.Type} Error: imdb_award category_filter attribute invalid: "
+                            f"none of the provided category_filter values exist: [{', '.join(category_filters)}]. "
+                            f"Valid Category Options: [{', '.join(category_names)}]"
+                        )
+
+                    for invalid_award in invalid_awards:
+                        logger.warning(
+                            f"{self.Type} Warning: imdb_award award_filter attribute invalid: "
+                            f"{invalid_award} not found and will be ignored"
+                        )
+
+                    for invalid_category in invalid_categories:
+                        logger.warning(
+                            f"{self.Type} Warning: imdb_award category_filter attribute invalid: "
+                            f"{invalid_category} not found and will be ignored"
+                        )
+
                 self.builders.append(
                     (
                         method_name,
