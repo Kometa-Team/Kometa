@@ -1,6 +1,7 @@
 import re
 from datetime import datetime, timezone
 from urllib.parse import urlparse, urlunparse
+from urllib.request import Request, urlopen
 
 from lxml import html as lxml_html
 
@@ -51,6 +52,7 @@ user_sort_options = {
 
 builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
 base_url = "https://letterboxd.com"
+boxd_short_url = "https://boxd.it"
 
 list_url_pattern = re.compile(
     r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)"
@@ -105,7 +107,34 @@ class Letterboxd:
         return parsed.path.startswith("/films/")
 
     @staticmethod
+    def _resolve_boxd_url(url):
+        url = url.strip()
+        parsed = urlparse(url)
+
+        if parsed.netloc.lower() not in ["boxd.it", "www.boxd.it"]:
+            return url
+
+        try:
+            request = Request(
+                url,
+                headers={
+                    "User-Agent": "Mozilla/5.0",
+                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                },
+            )
+            with urlopen(request, timeout=15) as response:
+                resolved_url = response.geturl()
+        except Exception as e:
+            raise Failed(f"Letterboxd Error: Failed to resolve short Letterboxd URL {url}: {e}") from e
+
+        if not resolved_url.startswith(base_url):
+            raise Failed(f"Letterboxd Error: Short Letterboxd URL {url} resolved to unsupported URL: {resolved_url}")
+
+        return resolved_url
+
+    @staticmethod
     def _normalize_url(url):
+        url = Letterboxd._resolve_boxd_url(url.strip())
         parsed = urlparse(url)
         path = parsed.path if parsed.path.endswith("/") else f"{parsed.path}/"
         return urlunparse((parsed.scheme, parsed.netloc, path, parsed.params, parsed.query, parsed.fragment))
@@ -667,8 +696,11 @@ class Letterboxd:
                 "rating": util.parse(err_type, "rating", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", maximum=10, range_split="-") if "rating" in dict_methods else None,
                 "year": util.parse(err_type, "year", letterboxd_dict, methods=dict_methods, datatype="int", parent="letterboxd_list", minimum=1000, maximum=3000, range_split="-") if "year" in dict_methods else None,
             }
-            if not final["url"].startswith(base_url):
-                raise Failed(f"{err_type} Error: {final['url']} must begin with: {base_url}")
+            if not final["url"].startswith(base_url) and not final["url"].startswith(boxd_short_url):
+                raise Failed(f"{err_type} Error: {final['url']} must begin with: {base_url} or {boxd_short_url}")
+
+            final["url"] = self._normalize_url(final["url"])
+
             try:
                 validation_limit = 1 if self._url_type(final["url"]) == "films" else final["limit"]
                 if not self._get_list_items(final["url"], validation_limit, language)[0:1]:
