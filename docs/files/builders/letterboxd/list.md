@@ -8,6 +8,8 @@ Finds every movie in the Letterboxd list or [Letterboxd Films Search](https://le
 
 The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
+Private links (which start with the URL `https://boxd.it/`) are also supported.
+
 Kometa now uses `letterboxdpy` for Letterboxd access. Standard list URLs continue to work, and `/films/...` URLs remain supported.
 
 You can add different filters directly to this Builder.

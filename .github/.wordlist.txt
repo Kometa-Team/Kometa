@@ -42,6 +42,7 @@ bitratel
 boing
 boolean
 bosch
+boxd
 boxofficemojo
 bpjm
 britbox
