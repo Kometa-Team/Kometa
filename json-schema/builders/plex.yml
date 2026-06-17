@@ -1,0 +1,239 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # plex_all — every item in the library; useful with filters
+  # ---------------------------------------------------------------------------
+  All Movies (High-Rated):
+    plex_all: true
+    filters:
+      audience_rating.gte: 7.5
+      genre: Action
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # plex_search — filter-block builder (all/any + sort_by + limit)
+  # ---------------------------------------------------------------------------
+  Recent Action Hits:
+    collection_order: custom
+    sync_mode: sync
+    plex_search:
+      all:
+        genre: Action
+        year.gte: 2018
+        audience_rating.gte: 7.0
+        unplayed: true
+      sort_by: audience_rating.desc
+      limit: 50
+
+  Action or Comedy - Last 5 Years:
+    collection_order: custom
+    sync_mode: sync
+    plex_search:
+      any:
+        genre:
+          - Action
+          - Comedy
+      all:
+        year.gte: 2019
+        audience_rating.gte: 6.5
+      sort_by:
+        - year.desc
+        - audience_rating.desc
+      limit: 100
+
+  4K HDR Library:
+    collection_order: alpha
+    sync_mode: sync
+    plex_search:
+      all:
+        hdr: true
+        resolution: 4K
+        duplicate: false
+      sort_by: title.asc
+
+  Unwatched Dramas:
+    collection_order: custom
+    sync_mode: sync
+    plex_search:
+      all:
+        genre: Drama
+        unplayed: true
+        added.gte: 30
+      sort_by: added.desc
+      limit: 75
+
+  Recently Added (This Year):
+    collection_order: custom
+    sync_mode: sync
+    plex_search:
+      all:
+        release.after: 01/01/2024
+        critic_rating.gte: 6.0
+      sort_by: release.desc
+      limit: 200
+
+  # ---------------------------------------------------------------------------
+  # smart_filter — Plex smart collection (filter-block with all/any)
+  # ---------------------------------------------------------------------------
+  Top Rated Documentaries (Smart):
+    smart_filter:
+      all:
+        genre: Documentary
+        audience_rating.gte: 7.5
+        year.gte: 2010
+      sort_by: audience_rating.desc
+      limit: 30
+
+  Classic Sci-Fi (Smart):
+    smart_filter:
+      all:
+        genre: Science Fiction
+        year.lte: 1985
+        critic_rating.gte: 6.0
+      sort_by: year.desc
+      limit: 50
+
+  Mixed Genre Picks (Smart - any):
+    smart_filter:
+      any:
+        genre:
+          - Thriller
+          - Mystery
+          - Crime
+      all:
+        audience_rating.gte: 7.0
+        duration.gte: 90
+        unplayed: true
+      sort_by:
+        - audience_rating.desc
+        - release.desc
+      limit: 40
+
+  # ---------------------------------------------------------------------------
+  # plex_collectionless — items that belong to no collection
+  # ---------------------------------------------------------------------------
+  Collectionless:
+    plex_collectionless:
+      exclude_prefix:
+        - "!"
+        - "+"
+        - "~"
+        - "DC"
+        - "Marvel"
+      exclude:
+        - Marvel Cinematic Universe
+        - DC Extended Universe
+        - Star Wars Saga
+    sort_title: ~_Collectionless
+    collection_order: alpha
+    collection_mode: hide
+
+  # ---------------------------------------------------------------------------
+  # plex_pilots — first episode of every show (requires builder_level: episode)
+  # ---------------------------------------------------------------------------
+  Pilots:
+    builder_level: episode
+    plex_pilots: true
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # plex_watchlist — items from the Plex watchlist
+  # ---------------------------------------------------------------------------
+  My Watchlist:
+    plex_watchlist: added.desc
+    collection_order: custom
+    sync_mode: sync
+
+  Watchlist by Rating:
+    plex_watchlist: critic_rating.desc
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # item_* operation keys — applied to every item found by the builder
+  # ---------------------------------------------------------------------------
+  Item Operations Demo:
+    plex_all: true
+    sync_mode: sync
+
+    # item rating writes
+    item_critic_rating: 7.5
+    item_audience_rating: 8.0
+    item_user_rating: 9.0
+
+    # item tag operations
+    item_label: Reviewed
+    item_label.sync:
+      - Reviewed
+      - Featured
+    item_genre: Drama
+    item_genre.sync:
+      - Drama
+      - Thriller
+    item_genre.remove: Romance
+
+    # item lock/unlock art and title fields (false = unlock)
+    item_lock_poster: true
+    item_lock_background: false
+    item_lock_square_art: false
+    item_lock_title: false
+
+    # misc item operations
+    item_assets: true
+    item_refresh: false
+    item_refresh_delay: 5
+    item_analyze: false
+    item_tmdb_season_titles: false
+    revert_overlay: false
+    item_edition: "Director's Cut"
+
+    # overlay suppression
+    suppress_overlays:
+      - Ratings Overlay
+      - Resolution Overlay
+
+    # Radarr/Sonarr per-item tag sync
+    item_radarr_tag: kometa-reviewed
+    item_radarr_tag.sync:
+      - kometa-reviewed
+    item_sonarr_tag: kometa-reviewed
+    item_sonarr_tag.sync:
+      - kometa-reviewed
+
+    # non-member label removal
+    non_item_remove_label: Stale
+
+    # square art
+    url_square_art: https://example.com/square.png
+    file_square_art: config/assets/square.png
+
+    # asset folder creation
+    asset_folders: true
+    create_asset_folders: false
+
+    # Plex advanced per-item settings (item_advance_keys)
+    item_episode_sorting: oldest
+    item_keep_episodes: all
+    item_delete_episodes: never
+    item_season_display: default
+    item_episode_ordering: tvdb_aired
+    item_metadata_language: en-US
+    item_use_original_title: "no"
+    item_credits_detection: default
+    item_audio_language: en-US
+    item_subtitle_language: en-US
+    item_subtitle_mode: default
+
+    # runtime / template keys
+    append_label: Verified
+    variables:
+      extra_var: custom_value
+    allowed_library_types:
+      - movie
+      - show
+    collection_name: My Override Name
+    tmdb_deathday: "1993-08-31"
+    smart_url: plex://collection/abc123

@@ -1,0 +1,140 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # sonarr_all — boolean true
+  # Gets every series currently in Sonarr regardless of tag or status.
+  # Sonarr must be configured in config.yml for this builder to work.
+  # ---------------------------------------------------------------------------
+  All Sonarr Series:
+    sonarr_all: true
+    sync_mode: sync
+    collection_order: custom
+    summary: Every series currently tracked in Sonarr.
+
+  # ---------------------------------------------------------------------------
+  # sonarr_taglist — string (comma-separated tags)
+  # Gets series in Sonarr that have all specified tags assigned.
+  # Multiple tags are supported as a comma-separated string or a YAML list.
+  # ---------------------------------------------------------------------------
+  Sonarr 4K Series:
+    sonarr_taglist: 4k
+    sync_mode: sync
+    collection_order: custom
+    summary: Series tagged with "4k" in Sonarr.
+
+  Sonarr Animated Series:
+    sonarr_taglist: animation, family
+    sync_mode: sync
+    collection_order: custom
+    summary: Series in Sonarr tagged with both "animation" and "family".
+
+  # ---------------------------------------------------------------------------
+  # sonarr_taglist — YAML list form
+  # ---------------------------------------------------------------------------
+  Sonarr Favorites:
+    sonarr_taglist:
+      - favorites
+      - keep-forever
+    sync_mode: sync
+    collection_order: custom
+    summary: Series tagged as favorites to keep forever.
+
+  # ---------------------------------------------------------------------------
+  # sonarr_taglist — empty value: returns every series WITHOUT any tags
+  # ---------------------------------------------------------------------------
+  Sonarr Untagged Series:
+    sonarr_taglist:
+    sync_mode: sync
+    summary: Series in Sonarr that have no tags assigned.
+
+  # ---------------------------------------------------------------------------
+  # sonarr_all with Sonarr operation settings
+  # These keys configure how Kometa interacts with Sonarr for matched items:
+  #   sonarr_add_missing      (bool)   — add collection members missing from Sonarr
+  #   sonarr_add_existing     (bool)   — add already-in-Plex items to Sonarr
+  #   sonarr_upgrade_existing (bool)   — upgrade existing monitored series
+  #   sonarr_monitor_existing (bool)   — set existing Sonarr items to monitored
+  #   sonarr_search           (bool)   — trigger a search after adding
+  #   sonarr_cutoff_search    (bool)   — search for cutoff-unmet episodes
+  #   sonarr_ignore_cache     (bool)   — bypass Kometa's add cache
+  #   sonarr_season           (bool)   — monitor seasons when adding
+  #   sonarr_folder           (str)    — override the root folder path
+  #   sonarr_monitor          (str)    — all | future | missing | existing |
+  #                                      pilot | first | latest | none
+  #   sonarr_quality          (str)    — quality profile name to apply
+  #   sonarr_language         (str)    — language profile name to apply
+  #   sonarr_series           (str)    — standard | daily | anime
+  #   sonarr_tag              (str/list) — tags to assign in Sonarr
+  # ---------------------------------------------------------------------------
+  All Sonarr Series With Operations:
+    sonarr_all: true
+    sync_mode: sync
+    collection_order: custom
+
+    # Sonarr operation overrides (per-collection, override config.yml defaults)
+    sonarr_add_missing: true
+    sonarr_add_existing: false
+    sonarr_upgrade_existing: false
+    sonarr_monitor_existing: false
+    sonarr_search: false
+    sonarr_cutoff_search: false
+    sonarr_ignore_cache: false
+    sonarr_season: true
+    sonarr_folder: /data/tv
+    sonarr_monitor: all
+    sonarr_quality: HD-1080p
+    sonarr_language: English
+    sonarr_series: standard
+    sonarr_tag: kometa, auto-added
+    summary: All Sonarr series with full per-collection Sonarr operation settings.
+
+  # ---------------------------------------------------------------------------
+  # sonarr_taglist with monitor variants
+  # sonarr_monitor valid values:
+  #   all      — monitor all episodes except specials
+  #   future   — only episodes not yet aired
+  #   missing  — episodes without files or not yet aired
+  #   existing — episodes with files or not yet aired
+  #   pilot    — first episode only
+  #   first    — all episodes of the first season
+  #   latest   — all episodes of the latest and future seasons
+  #   none     — no episodes monitored
+  # ---------------------------------------------------------------------------
+  Sonarr Anime Series:
+    sonarr_taglist: anime
+    sync_mode: sync
+    sonarr_add_missing: true
+    sonarr_search: true
+    sonarr_monitor: all
+    sonarr_series: anime
+    sonarr_quality: Any
+    sonarr_folder: /data/anime
+    summary: Anime series from Sonarr with anime-specific settings.
+
+  Sonarr New Season Tracking:
+    sonarr_taglist: new-seasons
+    sync_mode: sync
+    sonarr_add_missing: true
+    sonarr_monitor: latest
+    sonarr_cutoff_search: true
+    sonarr_quality: HD-1080p
+    summary: Series tagged for new-season tracking — monitors only latest season.
+
+  Sonarr Daily Shows:
+    sonarr_taglist: daily
+    sync_mode: sync
+    sonarr_series: daily
+    sonarr_monitor: future
+    sonarr_quality: SD
+    summary: Daily-release format series (talk shows, news, etc.) from Sonarr.
+
+  Sonarr Wishlist:
+    sonarr_taglist: wishlist
+    sync_mode: sync
+    sonarr_add_missing: true
+    sonarr_search: true
+    sonarr_monitor: pilot
+
+    sonarr_folder: /data/tv/wishlist
+    summary: Series on the Sonarr wishlist — pilot episode monitored and searched.

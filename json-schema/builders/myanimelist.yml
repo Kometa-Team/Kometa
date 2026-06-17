@@ -1,0 +1,166 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # mal_airing — top N anime from MAL's Top Airing list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top Airing:
+    mal_airing: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_all — top N anime from MAL's All-Time Top list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top All Time:
+    mal_all: 50
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_favorite — top N anime from MAL's Most Favorited list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Most Favorited:
+    mal_favorite: 25
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_id — anime specified by MAL ID(s)
+  # Accepts a single ID, comma-separated string, or list.
+  # 1:   Cowboy Bebop
+  # 21:  One Piece
+  # 5114: Fullmetal Alchemist: Brotherhood
+  # ---------------------------------------------------------------------------
+  Classic Anime:
+    mal_id: 1, 5114
+
+  # ---------------------------------------------------------------------------
+  # mal_movie — top N anime from MAL's Top Movies list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top Anime Movies:
+    mal_movie: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_ova — top N anime from MAL's Top OVA Series list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top OVAs:
+    mal_ova: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_popular — top N anime from MAL's Most Popular list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Most Popular:
+    mal_popular: 50
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_search — search MAL with detailed filters
+  #
+  # Parameters:
+  #   sort_by:       mal_id.desc|asc, title.desc|asc, type.desc|asc,
+  #                  rating.desc|asc, start_date.desc|asc, end_date.desc|asc,
+  #                  episodes.desc|asc, score.desc|asc, scored_by.desc|asc,
+  #                  rank.desc|asc, popularity.desc|asc, members.desc|asc,
+  #                  favorites.desc|asc
+  #   limit:         integer
+  #   query:         free-text search string
+  #   prefix:        results starting with this text
+  #   type:          tv | movie | ova | special | ona | music
+  #   status:        airing | complete | upcoming
+  #   genre:         genre name or ID  (use , for AND, | for OR)
+  #   genre.not:     excluded genres  (use , for AND, | for OR)
+  #   studio:        studio name or ID  (use , for AND, | for OR)
+  #   content_rating: g | pg | pg13 | r17 | r | rx
+  #   score.gt/.gte/.lt/.lte: 0.00–10.00
+  #   sfw:           true  (safe-for-work only)
+  # ---------------------------------------------------------------------------
+  MAL Search - Top Action TV:
+    mal_search:
+      sort_by: score.desc
+      limit: 30
+      type: tv
+      status: complete
+      genre: Action
+      genre.not: Hentai
+      content_rating: pg13
+      score.gte: 7.50
+      sfw: true
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_season — anime from a specific MAL seasonal chart
+  #
+  # Parameters:
+  #   season:        winter | spring | summer | fall | current
+  #   year:          1917–current year
+  #   sort_by:       members | score
+  #   limit:         1–500  (default 100)
+  #   starting_only: true | false  — only include titles that started this season
+  # ---------------------------------------------------------------------------
+  Winter 2024 Anime:
+    mal_season:
+      season: winter
+      year: 2024
+      sort_by: members
+      limit: 50
+      starting_only: true
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_special — top N anime from MAL's Top Specials list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top Specials:
+    mal_special: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_suggested — suggested anime for the authorized MAL user (max 100)
+  # Requires a configured and authorized MAL account.
+  # ---------------------------------------------------------------------------
+  MAL Suggested For Me:
+    mal_suggested: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_tv — top N anime from MAL's Top TV Series list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top TV Series:
+    mal_tv: 30
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_upcoming — top N anime from MAL's Top Upcoming list (max 500)
+  # ---------------------------------------------------------------------------
+  MAL Top Upcoming:
+    mal_upcoming: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # mal_userlist — anime from a MAL user's personal list
+  #
+  # Parameters:
+  #   username:  MAL username or "@me" for the authorized user
+  #   status:    all | watching | completed | on_hold | dropped | plan_to_watch
+  #   sort_by:   score | last_updated | title | start_date
+  #   limit:     1–1000  (default 100)
+  # ---------------------------------------------------------------------------
+  My MAL Completed:
+    mal_userlist:
+      username: "@me"
+      status: completed
+      sort_by: score
+      limit: 200
+    collection_order: custom
+    sync_mode: sync

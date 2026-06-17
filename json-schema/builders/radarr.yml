@@ -1,0 +1,96 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # radarr_all — boolean true
+  # Gets every movie currently in Radarr regardless of tag or status.
+  # Radarr must be configured in config.yml for this builder to work.
+  # ---------------------------------------------------------------------------
+  All Radarr Movies:
+    radarr_all: true
+    sync_mode: sync
+    collection_order: custom
+    summary: Every movie currently tracked in Radarr.
+
+  # ---------------------------------------------------------------------------
+  # radarr_taglist — string (comma-separated tags)
+  # Gets movies in Radarr that have all specified tags assigned.
+  # Multiple tags are supported as a comma-separated string or a YAML list.
+  # ---------------------------------------------------------------------------
+  Radarr 4K Movies:
+    radarr_taglist: 4k
+    sync_mode: sync
+    collection_order: custom
+    summary: Movies tagged with "4k" in Radarr.
+
+  Radarr Action Movies:
+    radarr_taglist: action, must-watch
+    sync_mode: sync
+    collection_order: custom
+    summary: Movies in Radarr tagged with both "action" and "must-watch".
+
+  # ---------------------------------------------------------------------------
+  # radarr_taglist — YAML list form
+  # ---------------------------------------------------------------------------
+  Radarr Favorites:
+    radarr_taglist:
+      - favorites
+      - keep-forever
+    sync_mode: sync
+    collection_order: custom
+    summary: Movies tagged as favorites to keep forever.
+
+  # ---------------------------------------------------------------------------
+  # radarr_taglist — empty value: returns every movie WITHOUT any tags
+  # ---------------------------------------------------------------------------
+  Radarr Untagged Movies:
+    radarr_taglist:
+    sync_mode: sync
+    summary: Movies in Radarr that have no tags assigned.
+
+  # ---------------------------------------------------------------------------
+  # radarr_all with Radarr operation settings
+  # These keys configure how Kometa interacts with Radarr for the matched items:
+  #   radarr_add_missing    (bool)   — add collection members missing from Radarr
+  #   radarr_add_existing   (bool)   — add already-in-Plex items to Radarr
+  #   radarr_upgrade_existing (bool) — upgrade existing monitored movies
+  #   radarr_monitor_existing (bool) — set existing Radarr items to monitored
+  #   radarr_search         (bool)   — trigger a search after adding
+  #   radarr_monitor        (str)    — movie | collection | none
+  #   radarr_ignore_cache   (bool)   — bypass Kometa's add cache
+  #   radarr_folder         (str)    — override the root folder path
+  #   radarr_availability   (str)    — announced | cinemas | released | db
+  #   radarr_quality        (str)    — quality profile name to apply
+  #   radarr_tag            (str/list) — tags to assign in Radarr
+  # ---------------------------------------------------------------------------
+  Popular Radarr Movies With Operations:
+    radarr_all: true
+    sync_mode: sync
+    collection_order: custom
+
+    # Radarr operation overrides (per-collection, override config.yml defaults)
+    radarr_add_missing: true
+    radarr_add_existing: false
+    radarr_upgrade_existing: false
+    radarr_monitor_existing: false
+    radarr_search: false
+    radarr_monitor: movie
+    radarr_ignore_cache: false
+    radarr_folder: /data/movies
+    radarr_availability: released
+    radarr_quality: HD-1080p
+    radarr_tag: kometa, auto-added
+    summary: All Radarr movies with full per-collection Radarr operation settings.
+
+  # ---------------------------------------------------------------------------
+  # radarr_taglist with operation overrides — minimal example
+  # ---------------------------------------------------------------------------
+  Radarr Wishlist:
+    radarr_taglist: wishlist
+    sync_mode: sync
+    radarr_add_missing: true
+    radarr_search: true
+    radarr_availability: announced
+    radarr_quality: Any
+    radarr_folder: /data/movies/wishlist
+    summary: Movies on the Radarr wishlist — auto-searched when added.

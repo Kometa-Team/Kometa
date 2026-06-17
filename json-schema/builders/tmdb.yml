@@ -1,0 +1,441 @@
+# yaml-language-server: $schema=../collection-schema.json
+#
+# TMDb Builder Prototype
+# Exercises every TMDb builder in collection-schema.json with all
+# wiki-documented parameters set to representative values.
+#
+# Real IDs used throughout:
+#   Brad Pitt       person  287
+#   Steven Spielberg person 488
+#   Quentin Tarantino person 138
+#   Robin Williams  person  2157
+#   Woody Allen     person  1243
+#   Adam Sandler    person  19292
+#   The Lord of the Rings collection  119
+#   The Hobbit collection   121938
+#   Marvel Cinematic Universe keyword 180547
+#   Studio Ghibli company   10342
+#   Netflix network 213
+#   CBS network     16
+#   The Shawshank Redemption movie 278
+#   The Wizard of Oz movie   630
+#   Inception movie          27205
+#   Game of Thrones show     1399
+#   Breaking Bad show        1396
+#   Star Wars: Clone Wars show 4194
+#   TMDb list "Top 250 Movies" 10
+#   TMDb list "Best of 2023"   8315756
+
+collections:
+
+  # ---------------------------------------------------------------------------
+  # CHART BUILDERS
+  # ---------------------------------------------------------------------------
+
+  TMDb Popular:
+    # Returns TMDb's Popular Movies (or Shows) list.
+    # tmdb_region narrows results to a specific country.
+    tmdb_popular: 100
+    tmdb_region: US
+    schedule: daily
+    sync_mode: sync
+    collection_order: custom
+    limit: 100
+    minimum_items: 1
+    cache_builders: 1
+    delete_below_minimum: true
+
+  TMDb Top Rated:
+    # Returns TMDb's Top Rated Movies (or Shows) list.
+    tmdb_top_rated: 50
+    tmdb_region: US
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    limit: 50
+    minimum_items: 1
+    cache_builders: 1
+
+  TMDb Trending Daily:
+    # Returns items from TMDb's Trending Daily list (movies + shows).
+    tmdb_trending_daily: 30
+    schedule: daily
+    sync_mode: sync
+    collection_order: custom
+    limit: 30
+    minimum_items: 1
+    cache_builders: 0
+
+  TMDb Trending Weekly:
+    # Returns items from TMDb's Trending Weekly list (movies + shows).
+    tmdb_trending_weekly: 50
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    limit: 50
+    minimum_items: 1
+
+  TMDb Now Playing:
+    # Returns TMDb's Now Playing Movies list (movies only).
+    tmdb_now_playing: 30
+    tmdb_region: US
+    schedule: daily
+    sync_mode: sync
+    collection_order: custom
+    limit: 30
+    minimum_items: 1
+    cache_builders: 1
+
+  TMDb Upcoming:
+    # Returns TMDb's Upcoming Movies list (movies only).
+    tmdb_upcoming: 30
+    tmdb_region: US
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    limit: 30
+    minimum_items: 1
+
+  TMDb Airing Today:
+    # Returns TMDb's Airing Today Shows list (shows only).
+    tmdb_airing_today: 20
+    schedule: daily
+    sync_mode: sync
+    collection_order: custom
+    limit: 20
+    minimum_items: 1
+    cache_builders: 0
+
+  TMDb On the Air:
+    # Returns TMDb's On TV Shows list (shows currently on air).
+    tmdb_on_the_air: 30
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    limit: 30
+    minimum_items: 1
+
+  # ---------------------------------------------------------------------------
+  # STANDARD BUILDERS
+  # ---------------------------------------------------------------------------
+
+  TMDb List:
+    # Builds from one or more TMDb lists by ID or URL.
+    # Accepts a single ID, a URL, or a list of either.
+    tmdb_list:
+      - 10
+      - 8315756
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    limit: 200
+    minimum_items: 1
+
+  TMDb List Details:
+    # Like tmdb_list but also pulls the list's description/poster/background
+    # for use as collection artwork. Only the first list entry provides details.
+    tmdb_list_details:
+      - 10
+      - 8315756
+    sync_mode: sync
+    collection_order: custom
+
+  TMDb List Poster:
+    # Uses a TMDb list's poster image as the collection artwork.
+    # Value is a TMDb list ID or URL.
+    tmdb_list: 10
+    tmdb_list_poster: 10
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Movie:
+    # Adds specific movies by TMDb ID or URL.
+    # Accepts a single value, a comma-separated string, or a list.
+    tmdb_movie:
+      - 278
+      - 630
+      - 27205
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Movie Details:
+    # Like tmdb_movie but also pulls the first movie's summary/poster/background.
+    tmdb_movie_details:
+      - 278
+      - 27205
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Movie Poster and Background:
+    # Demonstrates tmdb_poster and tmdb_background metadata-only keys.
+    # These override any local asset directory images with TMDb artwork.
+    tmdb_movie: 278
+    tmdb_poster: 278
+    tmdb_background: 278
+    tmdb_summary: 278
+    tmdb_description: 278
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Show:
+    # Adds specific TV shows by TMDb ID or URL.
+    tmdb_show:
+      - 1399
+      - 1396
+      - 4194
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Show Details:
+    # Like tmdb_show but also pulls the first show's summary/poster/background.
+    tmdb_show_details:
+      - 1399
+      - 1396
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Collection:
+    # Adds all movies belonging to one or more TMDb franchise collections.
+    # Accepts a TMDb collection ID, a full URL, or a list of either.
+    tmdb_collection:
+      - 119
+      - 121938
+    sync_mode: append
+    collection_order: release.asc
+
+  TMDb Collection Details:
+    # Like tmdb_collection but also pulls the first collection's summary/poster/background.
+    tmdb_collection_details:
+      - 119
+    sync_mode: append
+    collection_order: release.asc
+
+  TMDb Company:
+    # Adds every movie produced by one or more TMDb companies.
+    # 10342 = Studio Ghibli
+    tmdb_company: 10342
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Network:
+    # Adds every show from one or more TMDb TV networks.
+    # 213 = Netflix, 16 = CBS
+    tmdb_network:
+      - 213
+      - 16
+    sync_mode: sync
+    collection_order: alpha
+    minimum_items: 1
+
+  TMDb Keyword:
+    # Adds every item tagged with one or more TMDb keywords.
+    # 180547 = Marvel Cinematic Universe
+    tmdb_keyword: 180547
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  # ---------------------------------------------------------------------------
+  # PEOPLE BUILDERS
+  # ---------------------------------------------------------------------------
+
+  TMDb Actor Brad Pitt:
+    # Adds every item in the person's acting credits.
+    # 287 = Brad Pitt
+    tmdb_actor: 287
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Actor Details Robin Williams:
+    # Like tmdb_actor but also pulls the person's biography and profile image.
+    # Only the first person in the list provides the collection details.
+    tmdb_actor_details:
+      - 2157
+      - 74568
+    sync_mode: sync
+    collection_order: release.asc
+
+  TMDb Director Spielberg:
+    # Adds every item in the person's directing credits.
+    # 488 = Steven Spielberg
+    tmdb_director: 488
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Director Details:
+    # Like tmdb_director but also pulls biography and profile image.
+    tmdb_director_details:
+      - 19271
+      - 19272
+    sync_mode: sync
+    collection_order: release.asc
+
+  TMDb Producer Adam Sandler:
+    # Adds every item in the person's producing credits.
+    # 19292 = Adam Sandler
+    tmdb_producer: 19292
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Producer Details:
+    # Like tmdb_producer but also pulls biography and profile image.
+    tmdb_producer_details:
+      - 9339
+      - 9340
+    sync_mode: sync
+    collection_order: release.asc
+
+  TMDb Writer Woody Allen:
+    # Adds every item in the person's writing credits.
+    # 1243 = Woody Allen
+    tmdb_writer: 1243
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Writer Details:
+    # Like tmdb_writer but also pulls biography and profile image.
+    tmdb_writer_details:
+      - 1383612
+      - 1317730
+    sync_mode: sync
+    collection_order: release.asc
+
+  TMDb Crew Tarantino:
+    # Adds every item in the person's crew credits (any crew role).
+    # 138 = Quentin Tarantino
+    tmdb_crew: 138
+    sync_mode: sync
+    collection_order: release.asc
+    minimum_items: 1
+
+  TMDb Crew Details:
+    # Like tmdb_crew but also pulls biography and profile image.
+    tmdb_crew_details:
+      - 28846
+      - 137905
+      - 63764
+    sync_mode: sync
+    collection_order: release.asc
+
+  TMDb Person:
+    # Metadata-only: sets the collection person to pull biography/profile from.
+    # Used alongside tmdb_person_offset to select a specific person when
+    # multiple people share the collection.
+    tmdb_movie: 287
+    tmdb_person: 287
+    tmdb_person_offset: 0
+    tmdb_profile: 287
+    tmdb_biography: 287
+    sync_mode: append
+    collection_order: custom
+
+  TMDb Birthday:
+    # Matches people whose birthday falls within the specified window
+    # (relative to today).  Used as a metadata builder alongside actor/crew
+    # builders to highlight birthdays.
+    tmdb_actor: 287
+    tmdb_birthday:
+      this_month: true
+      before: 3
+      after: 3
+    sync_mode: append
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # DISCOVER BUILDERS
+  # ---------------------------------------------------------------------------
+
+  TMDb Discover Movies:
+    # Full movie discover query exercising every movie-specific parameter.
+    # Genre 28 = Action, 12 = Adventure; company 420 = Marvel Studios.
+    # watch_region + with_watch_providers (337 = Disney+) must appear together.
+    # certification_country + certification must appear together.
+    tmdb_discover:
+      limit: 100
+      sort_by: vote_average.desc
+      region: US
+      certification_country: US
+      certification.gte: PG
+      certification.lte: R
+      include_adult: false
+      include_video: false
+      primary_release_year: 2023
+      primary_release_date.gte: 01/01/2023
+      primary_release_date.lte: 12/31/2023
+      release_date.gte: 01/01/2023
+      release_date.lte: 12/31/2023
+      with_release_type: "3|4"
+      year: 2023
+      vote_count.gte: 100
+      vote_count.lte: 100000
+      vote_average.gte: 6.0
+      vote_average.lte: 10.0
+      with_cast: "287,488"
+      with_crew: "138"
+      with_people: "287|488"
+      with_companies: "420"
+      without_companies: "7505"
+      with_genres: "28|12"
+      without_genres: "27"
+      with_keywords: "180547"
+      without_keywords: "9663"
+      with_runtime.gte: 80
+      with_runtime.lte: 240
+      with_origin_country: US
+      with_original_language: en
+      watch_region: US
+      with_watch_providers: "337|8"
+      without_watch_providers: "283"
+      with_watch_monetization_types: flatrate
+      with_title_translation: en-US
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    minimum_items: 1
+
+  TMDb Discover Shows:
+    # Full TV show discover query exercising every show-specific parameter.
+    # Network 213 = Netflix; genre 18 = Drama; status 0 = Returning Series;
+    # type 4 = Scripted.
+    tmdb_discover:
+      limit: 50
+      sort_by: vote_average.desc
+      first_air_date_year: 2022
+      first_air_date.gte: 01/01/2020
+      first_air_date.lte: 12/31/2023
+      air_date.gte: 01/01/2022
+      air_date.lte: 12/31/2023
+      include_adult: false
+      include_null_first_air_dates: false
+      timezone: America/New_York
+      vote_count.gte: 50
+      vote_count.lte: 50000
+      vote_average.gte: 7.0
+      vote_average.lte: 10.0
+      with_networks: "213"
+      with_companies: "1081"
+      without_companies: "7505"
+      with_genres: "18"
+      without_genres: "10767"
+      with_keywords: "6075"
+      without_keywords: "159851"
+      with_runtime.gte: 20
+      with_runtime.lte: 90
+      with_original_language: en
+      with_name_translation: en-US
+      screened_theatrically: false
+      watch_region: US
+      with_watch_providers: "337"
+      without_watch_providers: "8"
+      with_watch_monetization_types: flatrate
+      with_status: 0
+      with_type: 4
+    schedule: weekly
+    sync_mode: sync
+    collection_order: custom
+    minimum_items: 1

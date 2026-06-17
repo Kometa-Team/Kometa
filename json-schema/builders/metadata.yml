@@ -1,0 +1,446 @@
+# yaml-language-server: $schema=../metadata-schema.json
+#
+# Prototype exercises every metadata-item, season-item, episode-item,
+# album-item, and track-item property defined in metadata-schema.json.
+#
+# Sections:
+#   MOVIE ENTRIES         — match variations, scalar fields, tag fields,
+#                           image fields, advanced settings
+#   TV SHOW ENTRIES       — show-level fields, seasons, episodes
+#   ARTIST/ALBUM/TRACK    — artist-level fields, albums, tracks
+#   F1 SPECIAL            — f1_season / round_prefix / shorten_gp
+
+metadata:
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — minimum viable entry (title match, one scalar field)
+  # ---------------------------------------------------------------------------
+  The Shawshank Redemption:
+    summary: Two imprisoned men bond over years, finding solace and eventual redemption.
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match by title + year (disambiguates duplicates)
+  # ---------------------------------------------------------------------------
+  The Batman:
+    match:
+      title: The Batman
+      year: 2022
+    content_rating: PG-13
+    tagline: "Unmask the truth."
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match with alternate title list (first match wins)
+  # ---------------------------------------------------------------------------
+  It's a Wonderful Life:
+    match:
+      title:
+        - "It's a Wonderful Life"
+        - "It Is a Wonderful Life"
+      year: 1946
+    summary: An angel helps a despairing businessman see what life would have been like without him.
+    originally_available: "1946-12-20"
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match by TMDb mapping_id (integer)
+  # Overrides title-based lookup entirely.
+  # ---------------------------------------------------------------------------
+  Inception:
+    match:
+      mapping_id: 27205
+    title: Inception
+    sort_title: Inception
+    original_title: Inception
+    studio: Warner Bros. Pictures
+    content_rating: PG-13
+    tagline: "Your mind is the scene of the crime."
+    summary: >
+      A thief who steals corporate secrets through dream-sharing technology is
+      given the inverse task of planting an idea into a target's mind.
+    originally_available: "2010-07-16"
+    audience_rating: 8.8
+    critic_rating: 8.7
+    user_rating: 9.0
+    edition: "IMAX Edition"
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match by IMDb mapping_id (string)
+  # ---------------------------------------------------------------------------
+  Parasite:
+    match:
+      mapping_id: tt6751668
+    title: Parasite
+    original_title: "기생충"
+    content_rating: R
+    originally_available: "2019-05-30"
+    metadata_language: ko-KR
+    use_original_title: "yes"
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match by edition (exact)
+  # Useful when the same movie has multiple editions in the library.
+  # ---------------------------------------------------------------------------
+  Blade Runner:
+    match:
+      title: Blade Runner
+      edition: "Final Cut"
+    edition: "Final Cut"
+    summary: In 2019 Los Angeles, a Blade Runner tracks down rogue replicants.
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match by edition_contains (substring)
+  # ---------------------------------------------------------------------------
+  Apocalypse Now:
+    match:
+      title: Apocalypse Now
+      edition_contains: Redux
+    sort_title: Apocalypse Now Redux
+    summary: Extended Redux cut — 49 minutes longer than the original theatrical release.
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — match blank_edition (movies without any edition tag)
+  # ---------------------------------------------------------------------------
+  The Godfather:
+    match:
+      title: The Godfather
+      blank_edition: true
+    sort_title: Godfather, The
+    content_rating: R
+    tagline: "An offer you can't refuse."
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — all TAG fields: append / .sync / .remove variants
+  # ---------------------------------------------------------------------------
+  Fight Club:
+    match:
+      mapping_id: 550
+    genre: Drama
+    genre.sync:
+      - Drama
+      - Thriller
+      - Mystery
+    genre.remove: Romance
+    label: Criterion
+    label.sync:
+      - Criterion
+      - Arthouse
+    label.remove: Old
+    collection: David Fincher Collection
+    collection.sync:
+      - David Fincher Collection
+      - 1990s Films
+    collection.remove: Temp Collection
+    country: United States of America
+    country.sync:
+      - United States of America
+    country.remove: Unknown
+    director: David Fincher
+    director.sync:
+      - David Fincher
+    director.remove: Uncredited
+    producer.sync:
+      - Art Linson
+      - Cean Chaffin
+    writer.sync:
+      - Jim Uhls
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — IMAGE fields: file and URL for poster and background
+  # file_poster: null clears an existing custom poster
+  # ---------------------------------------------------------------------------
+  Schindler's List:
+    match:
+      mapping_id: 424
+    url_poster: https://image.tmdb.org/t/p/original/sF1U4EUQS8YHUYjNl3pMGNIQyr0.jpg
+    url_background: https://image.tmdb.org/t/p/original/loRmRzQXZeqG78TqZuyvSlEQfZb.jpg
+    file_poster: config/assets/schlindlers_list/poster.jpg
+    file_background: config/assets/schlindlers_list/background.jpg
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — file_poster: null (clears custom poster, reverts to Plex default)
+  # ---------------------------------------------------------------------------
+  Jurassic Park:
+    match:
+      mapping_id: 329
+    file_poster: ~
+
+  # ---------------------------------------------------------------------------
+  # MOVIE — ADVANCED SETTINGS fields
+  # ---------------------------------------------------------------------------
+  The Dark Knight:
+    match:
+      mapping_id: 155
+    metadata_language: en-US
+    use_original_title: "no"
+    run_definition: movie
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — basic show with title + year match
+  # ---------------------------------------------------------------------------
+  Breaking Bad:
+    match:
+      title: Breaking Bad
+      year: 2008
+    summary: >
+      A high school chemistry teacher diagnosed with inoperable lung cancer
+      teams with a former student to secure his family's future.
+    content_rating: TV-MA
+    studio: AMC
+    originally_available: "2008-01-20"
+    genre.sync:
+      - Drama
+      - Crime
+      - Thriller
+    label: Must Watch
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — all show-level advanced settings
+  # ---------------------------------------------------------------------------
+  Game of Thrones:
+    match:
+      mapping_id: 1399
+    title: Game of Thrones
+    sort_title: Game of Thrones
+    episode_ordering: tvdb_aired
+    episode_sorting: oldest
+    season_display: show
+    keep_episodes: all
+    delete_episodes: never
+    audio_language: en
+    subtitle_language: en
+    subtitle_mode: "no"
+    credits_detection: default
+    metadata_language: en-US
+    use_original_title: "no"
+    update_seasons: true
+    update_episodes: true
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — tmdb_show: uses a TMDb show ID as a fallback when the Plex
+  # item is not directly linked (e.g. a miniseries catalogued as a movie).
+  # ---------------------------------------------------------------------------
+  Chernobyl:
+    match:
+      title: Chernobyl
+      year: 2019
+    tmdb_show: 87108
+    summary: In April 1986, an explosion at Chernobyl nuclear power plant shook the world.
+    content_rating: TV-MA
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — seasons (keys = season number; 0 = Specials)
+  # Exercises all season-item properties.
+  # ---------------------------------------------------------------------------
+  The Mandalorian:
+    match:
+      mapping_id: 82856
+    summary: After the fall of the Empire, a lone gunfighter makes his way through the outer reaches.
+    update_seasons: true
+    seasons:
+      0:
+        title: Specials
+        summary: Behind-the-scenes featurettes and Disney Gallery episodes.
+        file_poster: config/assets/mandalorian/season0.jpg
+        label: Bonus Content
+        audio_language: en
+        subtitle_language: en
+        subtitle_mode: default
+      1:
+        title: Season 1
+        summary: The Mandalorian hunts bounties across the galaxy to bring in a valuable quarry.
+        url_poster: https://image.tmdb.org/t/p/original/season1poster.jpg
+        url_background: https://image.tmdb.org/t/p/original/season1bg.jpg
+        user_rating: 8.5
+        audience_rating: 8.7
+        critic_rating: 8.6
+        originally_available: "2019-11-12"
+        label.sync:
+          - Featured
+          - Disney+
+        collection: The Mandalorian Seasons
+      2:
+        title: Season 2
+        summary: The Mandalorian is drawn further into the galaxy's underworld.
+        url_poster: https://image.tmdb.org/t/p/original/season2poster.jpg
+        originally_available: "2020-10-30"
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — seasons with episodes
+  # Episode keys: integer (episode number), string title, or MM/DD date.
+  # Exercises all episode-item properties.
+  # ---------------------------------------------------------------------------
+  Succession:
+    match:
+      mapping_id: 76331
+    summary: The Roy family battles for control of their global media empire.
+    update_seasons: true
+    update_episodes: true
+    seasons:
+      1:
+        title: Season 1
+        summary: Logan Roy reasserts control as his children jockey for position.
+        originally_available: "2018-06-03"
+        episodes:
+          1:
+            title: Celebration
+            summary: Logan Roy celebrates his 80th birthday as his children scheme.
+            originally_available: "2018-06-03"
+            content_rating: TV-MA
+            user_rating: 8.2
+            audience_rating: 8.5
+            critic_rating: 8.3
+            director: Adam McKay
+            director.sync:
+              - Adam McKay
+            writer.sync:
+              - Jesse Armstrong
+            label: Pilot
+            collection: Succession Episodes
+            file_poster: config/assets/succession/s1e1.jpg
+          2:
+            title: Shit Show at the Fuck Factory
+            summary: The Roy children scramble after their father collapses.
+            originally_available: "2018-06-10"
+            writer: Jesse Armstrong
+          "Season Finale":
+            title: Nobody Is Ever Missing
+            summary: A company crisis leaves the Roys at each other's throats.
+            originally_available: "2018-08-05"
+            label.sync:
+              - Season Finale
+              - Must Watch
+
+  # ---------------------------------------------------------------------------
+  # TV SHOW — episodes keyed by MM/DD air-date (alternative to episode number)
+  # ---------------------------------------------------------------------------
+  The Daily Show:
+    match:
+      title: The Daily Show
+    seasons:
+      2024:
+        episodes:
+          "01/15":
+            title: Episode from January 15
+            summary: Coverage of the primary season.
+          "06/03":
+            title: Episode from June 3
+            summary: Mid-year political recap.
+
+  # ---------------------------------------------------------------------------
+  # ARTIST — artist-level metadata with mood, style, similar_artist tags
+  # ---------------------------------------------------------------------------
+  Radiohead:
+    match:
+      title: Radiohead
+    sort_title: Radiohead
+    summary: >
+      English rock band from Abingdon, Oxfordshire. Known for their
+      eclectic musical style spanning art rock, electronic, and experimental music.
+    country.sync:
+      - United Kingdom
+    genre.sync:
+      - Alternative Rock
+      - Art Rock
+      - Electronic
+    mood.sync:
+      - Melancholic
+      - Atmospheric
+      - Introspective
+    style.sync:
+      - Post-Britpop
+      - Experimental
+    similar_artist.sync:
+      - Thom Yorke
+      - Portishead
+      - Björk
+    url_poster: https://image.tmdb.org/t/p/original/radiohead.jpg
+    album_sorting: manual
+
+  # ---------------------------------------------------------------------------
+  # ARTIST — albums with all album-item properties
+  # ---------------------------------------------------------------------------
+  Pink Floyd:
+    match:
+      title: Pink Floyd
+    albums:
+      The Dark Side of the Moon:
+        title: The Dark Side of the Moon
+        sort_title: Dark Side of the Moon, The
+        summary: >
+          The eighth studio album, released in 1973. One of the best-selling
+          albums of all time.
+        originally_available: "1973-03-01"
+        record_label: Harvest Records
+        critic_rating: 9.5
+        user_rating: 9.8
+        album_sorting: manual
+        genre.sync:
+          - Progressive Rock
+          - Psychedelic Rock
+        mood.sync:
+          - Trippy
+          - Philosophical
+          - Atmospheric
+        style.sync:
+          - Progressive
+          - Art Rock
+        label.sync:
+          - Essential
+          - Classic Albums
+        collection: Pink Floyd Discography
+        url_poster: https://example.com/dsotm.jpg
+        file_background: config/assets/pinkfloyd/dsotm_bg.jpg
+
+      The Wall:
+        title: The Wall
+        sort_title: Wall, The
+        summary: A rock opera about isolation and abandonment.
+        originally_available: "1979-11-30"
+        record_label: Harvest Records
+        critic_rating: 9.2
+        genre.sync:
+          - Progressive Rock
+          - Art Rock
+
+  # ---------------------------------------------------------------------------
+  # ARTIST — album with tracks (all track-item properties)
+  # ---------------------------------------------------------------------------
+  The Beatles:
+    match:
+      title: The Beatles
+    albums:
+      Abbey Road:
+        title: Abbey Road
+        sort_title: Abbey Road
+        originally_available: "1969-09-26"
+        record_label: Apple Records
+        critic_rating: 9.8
+        genre.sync:
+          - Rock
+          - Art Rock
+        tracks:
+          1:
+            title: Come Together
+            sort_title: Come Together
+            summary: Written by John Lennon, the opening track of Abbey Road.
+            user_rating: 9.5
+            critic_rating: 9.2
+            track: "1"
+            disc: "1"
+            original_artist: The Beatles
+            mood.sync:
+              - Groovy
+              - Classic
+            label: Essential
+            collection: Beatles Classics
+          2:
+            title: Something
+            summary: Written by George Harrison. One of the most covered songs ever recorded.
+            user_rating: 9.8
+            track: "2"
+            disc: "1"
+            original_artist: George Harrison
+          "Golden Slumbers":
+            title: Golden Slumbers
+            summary: Paul McCartney's lullaby-inspired piece opening the final medley.
+            track: "15"
+            disc: "1"
