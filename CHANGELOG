@@ -58,8 +58,7 @@ Call out the schema file as supporting only config.yml. explicitly.
 Add E4 to network overlay and show network collection. #2975
 
 # Bug Fixes
-TMDb collection, movie, and show 404 responses now raise a dedicated `tmdb.NotFound` (mirroring the existing `tvdb.NotFound` pattern); `validate_tmdb_ids` logs an actionable hint for stale collection IDs pointing franchise-default users to the `exclude` template variable.
-TVDb 5xx server errors now raise `TVDbServerError` (not a `Failed` subclass) so tenacity retries them up to 6 times; previously a single flaky 5xx response aborted the item without any retry.
+Update Letterbox URL parsing to handle unlisted lists and shuffle argument in the url
 Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup, which replaced the `data-film-id` nodes the `letterboxd_list`, `letterboxd_user_films`, and `letterboxd_user_reviews` builders relied on.
 Catch KeyError on Plex NFO build.
 Fixing "list index out of range" error when processing imdb charts #3006
@@ -84,3 +83,4 @@ Guard against `_graph_request` returning `None` for items with no IMDb record (e
 Fix `ZeroDivisionError` crash in `plex_update_in_batches` when running `mass_genre_update` or `mass_imdb_parental_labels` (and any operation producing multiple label/genre groups per item). Cache eviction introduced by #3156 is now scoped to rating updates only via an `evict_cache` parameter; a defensive guard prevents any future empty-list crash. #3163
 Fix `mass_imdb_parental_labels` crash when IMDb GraphQL returns `null` for the title node (e.g. items whose only Plex GUIDs are `tmdb://` or `tvdb://`, such as `Looney Tunes`); `.get("title", {})` returns `None` when the key exists with a null value, causing `AttributeError` on the next `.get()` call. Replaced the chained one-liner with explicit variable extraction using `or {}` at each level. Added a pre-call guard in `operations.py` to skip items with no IMDb ID entirely. #3165
 Addresses edge case where missing `settings:minimum_items` would make Kometa redact `1` in the log.
+Update Letterbox URL parsing to handle unlisted lists and shuffle argument in the url
