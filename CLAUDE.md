@@ -13,6 +13,7 @@ python kometa.py [options]
 ```
 
 Key flags:
+
 - `--config/-c <path>` — specify config file (default: `config/config.yml`)
 - `--run/-r` — run immediately without the scheduler
 - `--tests/-ts` — run only collections with `test: true`
@@ -29,7 +30,7 @@ pytest tests/test_builder.py          # single file
 pytest tests/test_builder.py::TestName  # single test
 ```
 
-Tests live in `tests/test_builder.py` and `tests/test_textfile.py`.
+Tests live in `tests/` — current files: `test_builder.py`, `test_textfile.py`, `test_apprise_notify.py`, `test_collection_schema.py`, `test_letterboxd.py`, `test_simkl.py`, `test_tmdb.py`, `test_tvdb.py`, `test_validator.py`.
 
 ## Linting & Formatting
 
@@ -45,11 +46,18 @@ bandit -r modules/
 
 Pre-commit hooks (black, isort, flake8, pyspelling) are configured in `.pre-commit-config.yaml`.
 
+## Changelog & Versioning
+
+- `CHANGELOG.md` follows [keepachangelog](https://keepachangelog.com/en/1.1.0/) format. All changes go under `## [Unreleased]` until a release is tagged.
+- `VERSION` is managed by GitHub workflows. The `release-master.yml` workflow controls version bumps (major/minor/patch). The nightly merge workflow auto-increments the `-buildXX` suffix on each merged PR.
+- Kometa follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). New features → minor bump; bug fixes only → patch; breaking changes → major.
+- See `CONTRIBUTING.md` for the full contributor guide (branching model, PR checklist, CHANGELOG.md section conventions).
+
 ## Architecture
 
 ### Data Flow
 
-```
+```text
 kometa.py (CLI + scheduler)
   → config.py (parse config.yml)
     → plex.py (connect to Plex library)
@@ -64,7 +72,7 @@ kometa.py (CLI + scheduler)
 ### Key Modules (`modules/`)
 
 | File | Role |
-|------|------|
+| ---- | ---- |
 | `builder.py` (273 KB) | `CollectionBuilder` — the central class that processes every collection/overlay definition, queries all data sources, and applies results to Plex |
 | `config.py` (121 KB) | Parses and validates `config.yml`; instantiates library and API objects |
 | `plex.py` (102 KB) | `PlexAPI` wrapper; all reads/writes to the Plex server |

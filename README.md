@@ -63,16 +63,16 @@ It is also easy to move your customizations between servers if you need to.
 
 To get started with Kometa, follow these simple steps:
 
-1.  Install Kometa on your device. You can find the installation instructions for a variety of platforms [here](https://kometa.wiki/en/latest/kometa/install/overview/).
+1. Install Kometa on your device. You can find the installation instructions for a variety of platforms on the[Kometa Wiki](https://kometa.wiki/en/latest/kometa/install/overview/).
 
-2.  Once you have installed Kometa, create your [Configuration File](https://kometa.wiki/en/latest/config/overview/). 
+2. Once you have installed Kometa, create your [Configuration File](https://kometa.wiki/en/latest/config/overview/). 
      file contains important information such as URLs and credentials needed to connect to services like Plex and TMDb.
 
-3.  After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a 
+3. After creating the Configuration File, you can start updating Metadata and building automatic Collections by creating a 
     [Collection File](https://kometa.wiki/en/latest/files/collections/) for each Library you want to work with. 
     If you'd rather use some of our pre-made Collection Files, take a look at the [Kometa Defaults](https://kometa.wiki/en/latest/defaults/guide/).
 
-4.  Finally, check out the [Wiki](https://kometa.wiki), you'll find new and exciting ways to truly unlock the potential of your libraries.
+4. Finally, check out the [Wiki](https://kometa.wiki), you'll find new and exciting ways to truly unlock the potential of your libraries.
 
 ## Step-by-Step Guides
 
@@ -81,19 +81,18 @@ started. These guides will take you through the process of installing Kometa, cr
 
 For those who need full installation walkthroughs, please refer to the following walkthrough guides:
 
-  * [Local Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/local/) - follow this if you are running the script directly on Windows, OS X, or Linux.
-  * [Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/docker/) - this discusses using Docker at the command line.
+* [Local Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/local/) - follow this if you are running the script directly on Windows, OS X, or Linux.
+* [Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/docker/) - this discusses using Docker at the command line.
 
 If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following basic guide to Docker container setup for each system:
 
 **This doesn't cover the Kometa setup specifics found in the guides above with regard to creating the config file and collection file, so you may want to go through the 
 [Docker Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/docker/) first on your computer to gain that understanding.**
 
-  * [unRAID Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/unraid/)
-  * [Kubernetes Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/kubernetes/)
-  * [QNAP Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/qnap/)
-  * [Synology Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/synology/)
-
+* [unRAID Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/unraid/)
+* [Kubernetes Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/kubernetes/)
+* [QNAP Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/qnap/)
+* [Synology Walkthrough](https://kometa.wiki/en/latest/kometa/install/walkthroughs/synology/)
 
 ## Example Usage
 
@@ -102,13 +101,13 @@ With powerful search and filtering options, you can build Collections based on p
 
 Imagine having Collections like these at your fingertips:
 
-  * Trending and Popular (based on TMDb, IMDb, Trakt, etc.)
-  * Streaming Services (like Netflix, Disney+, and more)
-  * Networks
-  * Studios
-  * Genres
-  * Actors
-  * Decades
+* Trending and Popular (based on TMDb, IMDb, Trakt, etc.)
+* Streaming Services (like Netflix, Disney+, and more)
+* Networks
+* Studios
+* Genres
+* Actors
+* Decades
 
 Kometa gives you endless possibilities to curate and organize your media library any way you want. Create custom 
 Collections and Overlays that fit your unique preferences and make discovering your content effortless.
@@ -141,7 +140,8 @@ Switching to `develop`:
 
 <!--develop-docker-start-->
 Add ":develop" to the image name in your run command or configuration:
-```
+
+```text
 kometateam/kometa:develop
 ```
 <!--develop-docker-end-->
@@ -153,10 +153,13 @@ kometateam/kometa:develop
 
 <!--develop-host-start-->
 In the directory where you cloned Kometa:
+
 ```bash
 git checkout develop
 ```
+
 To switch back:
+
 ```bash
 git checkout master
 ```
@@ -182,13 +185,13 @@ there is no guarantee that it even works, and any new features will not be docum
 Switching to `nightly`:
 <!--nightly-end-->
 
-
 <details>
   <summary>Running in Docker (click to expand)</summary>
 
 <!--nightly-docker-start-->
 Add ":nightly" to the image name in your run command or configuration:
-```
+
+```text
 kometateam/kometa:nightly
 ```
 <!--nightly-docker-end-->
@@ -200,10 +203,13 @@ kometateam/kometa:nightly
 
 <!--nightly-host-start-->
 In the directory where you cloned Kometa:
+
 ```bash
 git checkout nightly
 ```
+
 To switch back:
+
 ```bash
 git checkout master
 ```
@@ -243,8 +249,10 @@ and seeking support there. If that isn't possible for you, here's what you can d
 
 For support on any of the above, visit the [Discord server](https://kometa.wiki/en/latest/discord/).
 <!--outro-end-->
+
 ## Contributing
-* Pull Requests are greatly encouraged, please submit all Pull Requests to the nightly branch.
+
+Pull Requests are greatly encouraged. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR — it covers branching, versioning, code style, and the changelog process.
 
 <!--sponsor-start-->
 ## GitHub Sponsors

@@ -478,11 +478,6 @@
                     "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }]
                 },
 
-                "reciperr_list": {
-                    "description": "Reciperr list URL(s).",
-                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
-                },
-
                 "stevenlu_popular": { "type": "boolean", "description": "Get StevenLu's Popular Movies list." },
                 "stevenlu2_popular": { "type": "integer", "minimum": 1 },
 

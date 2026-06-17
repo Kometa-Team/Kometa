@@ -20,45 +20,102 @@ Kometa connects to dozens of third-party services (TMDb, IMDb, Trakt, AniDB, MyA
 
 ## Technology Stack
 
-- **Language**: Python 3.10+
-- **Plex API**: PlexAPI (python-plexapi)
-- **Image processing**: Pillow
-- **YAML parsing**: ruamel.yaml
-- **HTTP**: requests + cloudscraper (Cloudflare bypass)
-- **Caching**: SQLite via `modules/cache.py`
-- **Scheduling**: schedule library
-- **Docs**: MkDocs (Material theme)
-- **Container**: Docker (`python:3.13-slim` base)
-- **Dev tools**: black, isort, flake8, mypy, bandit (see `dev-requirements.txt`)
+| Layer | Technology |
+| ----- | ---------- |
+| Language | Python 3.12+ (strict minimum) |
+| Main entry | `kometa.py` (CLI script, ~1,290 lines) |
+| Plex API | `PlexAPI` (python-plexapi) |
+| Image processing | `Pillow` |
+| YAML parsing | `ruamel.yaml` |
+| HTTP requests | `requests` + `cloudscraper` |
+| Scheduling | `schedule` |
+| Caching / DB | Custom SQLite cache in `modules/cache.py` |
+| Docs site | MkDocs (Material theme) |
+| Container runtime | Docker (`python:3.13-slim` base) |
 
-Full dependency list: `requirements.txt` (runtime) and `dev-requirements.txt` (development).
+### Key Runtime Dependencies
+
+See `requirements.txt` for the full pinned list. Notable ones:
+
+- `arrapi==1.4.14` — Sonarr/Radarr API wrapper
+- `PlexAPI==4.18.1` — Plex server interaction
+- `tmdbapis==1.2.30` — TMDb API wrapper
+- `pillow==12.2.0` — image manipulation for overlays
+- `lxml==6.1.1` — HTML/XML scraping (IMDb, etc.)
+- `ruamel.yaml==0.19.1` — round-trip YAML editing
+- `requests==2.34.2` + `cloudscraper==1.2.71` — HTTP with Cloudflare bypass
+- `pathvalidate==3.3.1` — safe filename generation
+- `python-dotenv==1.2.2` — `.env` file support
+
+### Development Dependencies
+
+See `dev-requirements.txt`:
+
+- `black==26.5.1`
+- `isort==8.0.1`
+- `flake8==7.3.0`
+- `mypy==2.1.0`
+- `bandit==1.9.4`
+- `prek==0.4.5` (wrapper around the above)
 
 ---
 
 ## Project Structure
 
-```
+```text
 .
 ├── kometa.py                 # Main entry point: argument parsing, scheduler, run loop
-├── VERSION                   # SemVer string (e.g., "2.3.1-build7")
+├── VERSION                   # SemVer string (e.g., "2.4.0-build1") — drives nightly build numbering
 ├── PART                      # Build-part counter used by CI
-├── CHANGELOG                 # Human-readable release notes
+├── CHANGELOG.md              # Release notes in keepachangelog format
+├── CONTRIBUTING.md           # Contributor guide (branching, versioning, code style, PR checklist)
 ├── requirements.txt          # Runtime dependencies (pinned)
 ├── dev-requirements.txt      # Lint / format / type-check dependencies
 ├── pyproject.toml            # Tool configuration (black, isort, bandit)
 ├── Dockerfile                # Multi-stage-ish Docker build
 ├── mkdocs.yml                # Documentation site configuration
 │
-├── modules/                  # Core application code (~26k lines)
-│   ├── config.py             # YAML parsing & validation
-│   ├── builder.py            # CollectionBuilder: core collection logic
-│   ├── plex.py               # Plex library interaction
-│   ├── overlays.py           # Overlay rendering & application
-│   ├── cache.py              # SQLite caching layer
-│   ├── meta.py               # Metadata & playlist parsing
-│   ├── util.py               # Shared utilities & exceptions
-│   ├── logs.py               # MyLogger singleton
-│   └── ... (37 more: API integrations, notifications, scrapers)
+├── modules/                  # Core application code (~26k total lines)
+│   ├── config.py             # ConfigFile class: parses kometa config YAML
+│   ├── builder.py            # CollectionBuilder: the heart of collection creation
+│   ├── plex.py               # Plex class: library scanning, item lookups, edits
+│   ├── operations.py         # Library-level operations (mass update, delete, etc.)
+│   ├── cache.py              # SQLite-based caching for API responses
+│   ├── overlay.py            # Single overlay rendering logic
+│   ├── overlays.py           # Overlay application engine
+│   ├── meta.py               # PlaylistFile and metadata file parsing
+│   ├── util.py               # Shared utilities, exceptions, constants
+│   ├── logs.py               # MyLogger: custom formatting, dividers, file handlers
+│   ├── request.py            # Requests wrapper: versioning, headers, retries
+│   ├── library.py            # Library abstraction helpers
+│   ├── tmdb.py               # TMDb API integration
+│   ├── trakt.py              # Trakt API integration
+│   ├── imdb.py               # IMDb scraping + GraphQL
+│   ├── anidb.py              # AniDB integration
+│   ├── anilist.py            # AniList integration
+│   ├── mal.py                # MyAnimeList integration
+│   ├── tvdb.py               # TVDb API integration
+│   ├── mdblist.py            # MDBList integration
+│   ├── letterboxd.py         # Letterboxd scraping
+│   ├── simkl.py              # SIMKL integration
+│   ├── radarr.py             # Radarr add/remove/upgrade
+│   ├── sonarr.py             # Sonarr add/remove/upgrade
+│   ├── textfile.py           # text_file builder
+│   ├── github.py             # GitHub raw-file fetcher
+│   ├── webhooks.py           # Discord/Slack/generic webhook notifications
+│   ├── gotify.py             # Gotify notifications
+│   ├── notifiarr.py          # Notifiarr notifications
+│   ├── ntfy.py               # ntfy notifications
+│   ├── tautulli.py           # Tautulli integration
+│   ├── stevenlu.py           # StevenLu lists
+│   ├── icheckmovies.py       # ICheckMovies integration
+│   ├── mojo.py               # Box Office Mojo integration
+│   ├── ergast.py             # Ergast F1 data
+│   ├── poster.py             # KometaImage / poster manipulation
+│   ├── convert.py            # Unit/data conversion helpers
+│   ├── omdb.py               # OMDb integration
+│   ├── apprise_notify.py     # Apprise multi-platform notifications
+│   └── ... (39 modules total)
 │
 ├── defaults/                 # Pre-built YAML templates shipped with Kometa
 │   ├── award/                # Award-season defaults (Oscars, etc.)
@@ -72,9 +129,15 @@ Full dependency list: `requirements.txt` (runtime) and `dev-requirements.txt` (d
 │   └── templates.yml         # Shared Jinja2/YAML macros
 │
 ├── tests/                    # pytest test suite (currently small)
+│   ├── test_apprise_notify.py
 │   ├── test_builder.py
+│   ├── test_collection_schema.py
+│   ├── test_letterboxd.py
 │   ├── test_simkl.py
-│   └── test_textfile.py
+│   ├── test_textfile.py
+│   ├── test_tmdb.py
+│   ├── test_tvdb.py
+│   └── test_validator.py
 │
 ├── docs/                     # MkDocs source
 │   ├── requirements.txt      # Docs build dependencies
@@ -86,6 +149,10 @@ Full dependency list: `requirements.txt` (runtime) and `dev-requirements.txt` (d
 │
 ├── json-schema/              # JSON Schema for config validation
 │   ├── config-schema.json
+│   ├── collection-schema.json
+│   ├── metadata-schema.json
+│   ├── overlay-schema.json
+│   ├── playlist-schema.json
 │   ├── kitchen_sink_config.yml
 │   └── prototype_config.yml
 │
@@ -179,11 +246,13 @@ pip install -r docs/requirements.txt && mkdocs serve
 
 ## Contributing
 
-1. Target `nightly` branch.
-2. Update `CHANGELOG` and docs if needed.
+See `CONTRIBUTING.md` for the full guide. Key points for agents:
+
+1. All PRs target `nightly`.
+2. Update `CHANGELOG.md` under `## [Unreleased]` and docs where needed.
 3. Add tests in `tests/` where feasible.
-4. Run `prek run --all-files --show-diff-on-failure` locally.
-5. Keep PRs focused.
+4. Run `prek run --all-files --show-diff-on-failure` locally before committing.
+5. Keep PRs focused — one logical change per PR.
 
 ---
 
@@ -196,5 +265,3 @@ pip install -r docs/requirements.txt && mkdocs serve
 - Default templates: `defaults/` directory
 
 ---
-
-

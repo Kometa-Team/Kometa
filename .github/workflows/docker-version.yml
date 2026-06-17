@@ -88,10 +88,17 @@ jobs:
           git tag ${{ steps.get_version.outputs.VERSION }}
           git push origin ${{ steps.get_version.outputs.VERSION }}
 
+      - name: Get Changelog Entry
+        id: changelog_reader
+        uses: mindsers/changelog-reader-action@v2
+        with:
+          version: ${{ steps.get_version.outputs.VERSION }}
+          path: ./CHANGELOG.md
+
       - name: Create release
         id: create_release
         uses: softprops/action-gh-release@v3
         with:
-          body_path: CHANGELOG
+          body: ${{ steps.changelog_reader.outputs.changes }}
           token: ${{ secrets.PAT }}
           tag_name: ${{ steps.get_version.outputs.VERSION }}
