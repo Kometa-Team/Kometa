@@ -60,7 +60,6 @@ libraries:
     - default: separator_award                          # An "index card"
     - default: bafta                                    # BAFTA Awards
       template_variables:                           # Show collections from current_year-10 onwards.
-        horizontal_offset: 99
         data:
           starting: current_year-10
           ending: current_year
@@ -208,7 +207,6 @@ libraries:
     - default: separator_award                          # An "index card"
     - default: bafta                                    # BAFTA Awards
       template_variables:                           # Show collections from current_year-10 onwards.
-        horizontal_offset: 99
         data:
           starting: current_year-10
           ending: current_year

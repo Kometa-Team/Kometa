@@ -543,7 +543,7 @@ class Letterboxd:
                     slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                     items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
             else:
-                self._info_once(("watchlist_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for watchlist {list_url}; using Kometa fallback parsing.")
+                self._warn_once(("watchlist_fallback_empty", list_url), f"Letterboxd Warning: letterboxdpy returned no films for watchlist {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_films_page)
         else:
             # letterboxdpy doesn't support parameters in urls (for shuffling the list before fetching it) or unlisted lists.
@@ -562,7 +562,7 @@ class Letterboxd:
                         slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                         items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, None))
                 else:
-                    self._info_once(("list_fallback_empty", list_url), f"Letterboxd Info: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
+                    self._warn_once(("list_fallback_empty", list_url), f"Letterboxd Warning: letterboxdpy returned no films for {list_url}; using Kometa fallback parsing.")
                     items = self._get_list_items_fallback(list_url, limit, language)
         return items[:limit] if limit else items
 
