@@ -85,3 +85,4 @@ Fix `ZeroDivisionError` crash in `plex_update_in_batches` when running `mass_gen
 Fix `mass_imdb_parental_labels` crash when IMDb GraphQL returns `null` for the title node (e.g. items whose only Plex GUIDs are `tmdb://` or `tvdb://`, such as `Looney Tunes`); `.get("title", {})` returns `None` when the key exists with a null value, causing `AttributeError` on the next `.get()` call. Replaced the chained one-liner with explicit variable extraction using `or {}` at each level. Added a pre-call guard in `operations.py` to skip items with no IMDb ID entirely. #3165
 Addresses edge case where missing `settings:minimum_items` would make Kometa redact `1` in the log.
 Update Letterbox URL parsing to handle unlisted lists and shuffle argument in the url
+Fix an issue where tvdb_to_imdb writes wrong IMDb ID when TVDb movie ID collides with a TVDb series ID

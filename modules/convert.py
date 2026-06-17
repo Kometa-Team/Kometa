@@ -296,7 +296,7 @@ class Convert:
                     for guid_tag in item.guids:
                         try:
                             url_parsed = urlparse(guid_tag.id)
-                            if url_parsed.scheme == "tvdb":                 tvdb_id.append(int(url_parsed.netloc))
+                            if url_parsed.scheme == "tvdb" and library.is_show:                 tvdb_id.append(int(url_parsed.netloc))
                             elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
                             elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
                         except ValueError:
