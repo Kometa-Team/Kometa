@@ -28,10 +28,20 @@
                 "template": {
                     "description": "Template(s) to use for this definition.",
                     "oneOf": [
+                        { "type": "string" },
                         { "$ref": "#/definitions/template-call" },
-                        { "type": "array", "items": { "$ref": "#/definitions/template-call" } }
+                        {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string" },
+                                    { "$ref": "#/definitions/template-call" }
+                                ]
+                            }
+                        }
                     ]
                 },
+                "variables": { "type": "object", "additionalProperties": true },
 
                 "blank_collection": { "type": "boolean", "description": "Create the collection with no builders and no items." },
                 "build_collection": { "type": "boolean", "description": "When false, collection won't be created but items can still go to Radarr/Sonarr." },
@@ -903,17 +913,86 @@
                 "type": { "type": "string" },
                 "data": { "additionalProperties": true },
                 "exclude": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
-                "addons": { "type": "object", "additionalProperties": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] } },
-                "template": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/template-call" }, { "type": "array", "items": { "$ref": "#/definitions/template-call" } }] },
+                "addons": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "oneOf": [
+                            { "type": "string" },
+                            { "type": "integer" },
+                            {
+                                "type": "array",
+                                "items": {
+                                    "oneOf": [
+                                        { "type": "string" },
+                                        { "type": "integer" }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                "template": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/template-call" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string" },
+                                    { "$ref": "#/definitions/template-call" }
+                                ]
+                            }
+                        }
+                    ]
+                },
                 "template_variables": { "type": "object", "additionalProperties": true },
-                "other_template": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/template-call" }] },
+                "other_template": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/template-call" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string" },
+                                    { "$ref": "#/definitions/template-call" }
+                                ]
+                            }
+                        }
+                    ]
+                },
                 "other_name": { "type": "string" },
                 "title_format": { "type": "string" },
                 "key_name_override": { "type": "object", "additionalProperties": { "type": "string" } },
-                "include": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "include": {
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        {
+                            "type": "array",
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string" },
+                                    { "type": "integer" }
+                                ]
+                            }
+                        }
+                    ]
+                },
                 "limit": { "type": "integer", "minimum": 1 }
             },
             "required": ["type"]
+        },
+
+        "external-template-default-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "default": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["default"]
         },
 
         "external-templates-list": {
@@ -923,6 +1002,7 @@
                     "type": "array",
                     "items": {
                         "oneOf": [
+                            { "$ref": "#/definitions/external-template-default-block" },
                             { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
                             { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
                             { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
@@ -932,6 +1012,7 @@
                 },
                 {
                     "oneOf": [
+                        { "$ref": "#/definitions/external-template-default-block" },
                         { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
                         { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
                         { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
