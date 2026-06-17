@@ -25,6 +25,12 @@ INFO = 20
 DEBUG = 10
 TRACE = 0
 
+SUPPRESS_STACKTRACE_PATTERNS = [
+    r"Plex Error: .* not found",
+    r"No matches found with regex pattern",
+    r"No Items found in Plex",
+]
+
 
 def fmt_filter(record):
     record.levelname = f"[{record.levelname}]"
@@ -218,7 +224,17 @@ class MyLogger:
             self._log(CRITICAL, str(msg), args, **kwargs)
 
     def stacktrace(self, trace=False):
-        self.print(traceback.format_exc(), debug=not trace, trace=trace)
+        stack = traceback.format_exc()
+
+        suppress_stacktrace_patterns = [
+            r"Plex Error: .* not found",
+            r"No matches found with regex pattern",
+        ]
+
+        if any(re.search(pattern, stack) for pattern in suppress_stacktrace_patterns):
+            return
+
+        self.print(stack, debug=not trace, trace=trace)
 
     def _space(self, display_title):
         display_title = str(display_title)
