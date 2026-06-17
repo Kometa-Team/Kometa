@@ -86,4 +86,5 @@ Fix `mass_imdb_parental_labels` crash when IMDb GraphQL returns `null` for the t
 Addresses edge case where missing `settings:minimum_items` would make Kometa redact `1` in the log.
 Update Letterbox URL parsing to handle unlisted lists and shuffle argument in the url
 Fix an issue where tvdb_to_imdb writes wrong IMDb ID when TVDb movie ID collides with a TVDb series ID
+Hide some traceback errors for "known good" errors that don't really need a trace
 Fix `imdb_awards` failing when any one of the `award_filters` or `category_filters` do not exist, this will now produce a warning and the builder will only fail if all of the `award_filters` or all of the `category_filters` does not exist.
