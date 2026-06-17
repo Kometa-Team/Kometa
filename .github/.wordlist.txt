@@ -71,6 +71,8 @@ cron
 cronjob
 crontab
 crunchyroll
+CLI
+CloudFront
 CSM
 customizable
 customizations
@@ -137,6 +139,7 @@ gp
 GraphQL
 grenvilles
 guid
+GUIDs
 Gzip
 hama
 hardcoded
@@ -182,6 +185,7 @@ joost
 jpeg
 jpg
 json
+jsonschema
 Kenobi
 kesleyalfa
 keyerror
@@ -437,12 +441,14 @@ uses
 util
 utills
 ValueError
+validator
 vecteezy
 venv
 visualstudio
 vladimir
 vn
 vscode
+WAF
 vscodium
 vv
 wachowski

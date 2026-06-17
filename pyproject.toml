@@ -11,6 +11,7 @@ dependencies = [
     "cloudscraper==1.2.71",
     "colorama>=0.4.6",
     "gitpython==3.1.46",
+    "jsonschema==4.26.0",
     "jinja2>=3.1.6",
     "lxml==6.0.2",
     "markdown>=3.10.2",
@@ -44,6 +45,9 @@ dependencies = [
     "tmdbapis==1.2.30",
 ]
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [tool.black]
 line-length = 256
 target-version = ["py310", "py311", "py312"]
@@ -71,7 +75,7 @@ dev = [
     "pillow==12.1.1",
     "plexapi==4.18.1",
     "psutil==7.2.2",
-    "pytest==9.0.3",
+    "pytest==9.1.0",
     "python-dateutil==2.9.0.post0",
     "python-dotenv==1.2.2",
     "pywin32==311 ; sys_platform == 'win32'",
