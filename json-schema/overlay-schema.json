@@ -7,7 +7,8 @@
     "properties": {
         "overlays": { "$ref": "#/definitions/overlays-map" },
         "templates": { "$ref": "#/definitions/templates-map" },
-        "external_templates": { "$ref": "#/definitions/external-templates-list" }
+        "external_templates": { "$ref": "#/definitions/external-templates-list" },
+        "queues": { "$ref": "#/definitions/queues-map" }
     },
     "definitions": {
 
@@ -29,6 +30,7 @@
                         { "type": "array", "items": { "$ref": "#/definitions/template-call" } }
                     ]
                 },
+                "variables": { "type": "object", "additionalProperties": true },
 
                 "overlay": { "$ref": "#/definitions/overlay-spec" },
 
@@ -95,6 +97,7 @@
 
                 "imdb_id": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
                 "imdb_chart": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
+                "imdb_award": { "$ref": "#/definitions/imdb-award-entry" },
                 "imdb_list": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
                 "imdb_search": { "type": "object", "additionalProperties": true },
 
@@ -212,9 +215,48 @@
             "additionalProperties": { "type": "object", "additionalProperties": true }
         },
 
+        "queues-map": {
+            "title": "queues",
+            "type": "object",
+            "additionalProperties": { "type": "object", "additionalProperties": true }
+        },
+
+        "imdb-award-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["event_id", "event_year"],
+            "properties": {
+                "event_id": { "type": "string" },
+                "event_year": {
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "award_filter": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "category_filter": {
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "winning": { "type": "boolean" }
+            }
+        },
+
+        "external-template-default-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "default": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["default", "template_variables"]
+        },
+
         "external-templates-list": {
             "title": "external_templates",
             "oneOf": [
+                { "$ref": "#/definitions/external-template-default-block" },
                 {
                     "type": "array",
                     "items": {
