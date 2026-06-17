@@ -173,6 +173,8 @@ class Operations:
                     try:
                         if self.library.mass_imdb_parental_labels == "remove":
                             parental_labels = []
+                        elif not imdb_id:
+                            raise Failed(f"IMDb Error: No IMDb ID for {item.title}")
                         else:
                             parental_guide = self.config.IMDb.parental_guide(imdb_id)
                             parental_labels = [f"{k}:{v}" for k, v in parental_guide.items() if v and v not in util.parental_levels[self.library.mass_imdb_parental_labels]]

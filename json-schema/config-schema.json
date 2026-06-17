@@ -2774,6 +2774,10 @@
                             "description": "Used to schedule when a library is run using the schedule options.",
                             "type": "string"
                         },
+                        "schedule_overlays": {
+                            "description": "Used to schedule when overlays are run for this library.",
+                            "type": "string"
+                        },
                         "remove_overlays": {
                             "description": "Used to remove overlays from this library only. \nWhen set to true, this will remove all overlays from your library every run, but will not delete the overlaid images from your system, resulting in image bloat.",
                             "type": "boolean"
@@ -4112,6 +4116,26 @@
                     }
                 ]
             },
+            "exclude": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
             "image": {
                 "type": "string"
             },
@@ -4380,6 +4404,71 @@
                     "bg",
                     "hu"
                 ]
+            },
+            "sort_by": {
+                "type": "string"
+            },
+            "exclude": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "starting": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "ending": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "increment": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "depth": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }
             },
             "search_term": {
                 "type": "string"
@@ -5173,6 +5262,26 @@
                     "hu"
                 ]
             },
+            "exclude": {
+                "oneOf": [
+                    {
+                        "type": "string"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
             "search_term": {
                 "type": "string"
             },
@@ -5699,6 +5808,48 @@
                     "standards"
                 ]
             },
+            "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "starting": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "ending": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "increment": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "depth": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }
+            },
             "search_term": {
                 "type": "string"
             },
@@ -6208,6 +6359,51 @@
                     "standards"
                 ]
             },
+            "sort_by": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "starting": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 0
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "ending": {
+                        "oneOf": [
+                            {
+                                "type": "integer",
+                                "minimum": 1
+                            },
+                            {
+                                "type": "string",
+                                "pattern": "^(current_year(\\s*-\\s*\\d+)?)$|^(first(\\s*\\+\\s*\\d+)?)$|^(latest(\\s*-\\s*\\d+)?)$"
+                            }
+                        ]
+                    },
+                    "increment": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "depth": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                }
+            },
             "image": {
                 "type": "string"
             },
@@ -6712,6 +6908,12 @@
                     "sync",
                     "append"
                 ]
+            }
+        },
+        "patternProperties": {
+            "^schedule_.+$": {
+                "description": "Set the schedule for a specific seasonal collection by key.",
+                "type": "string"
             }
         },
         "required": [],
