@@ -1321,10 +1321,6 @@ def run_playlists(config):
                     config.notify_delete(e)
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
-            except ServiceError as e:
-                logger.error(e)
-                status[mapping_name]["status"] = "Service Not Configured"
-                status[mapping_name]["errors"].append(e)
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
                 logger.stacktrace()
