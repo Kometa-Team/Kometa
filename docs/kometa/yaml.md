@@ -333,9 +333,10 @@ json-schema/collection-schema.json - schema for collection files
 json-schema/metadata-schema.json   - schema for metadata files
 json-schema/overlay-schema.json    - schema for overlay files
 json-schema/playlist-schema.json   - schema for playlist files
+json-schema/template-schema.json   - schema for template files (**very permissive**)
 ```
 
-json-schema/prototype_comprehensive.yml
+NOTE: since templates can contain all the other types; the template schema is very permissive.  To validate the template contents, build them in the primary file before moving them to the template-only file.
 
 These schemas are a work in progress and may be incomplete, primarily around the template variables for the default YAML files.
 

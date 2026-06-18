@@ -17,6 +17,7 @@ SCHEMA_MAP = {
     "metadata_files": "metadata-schema.json",
     "overlay_files": "overlay-schema.json",
     "playlist_files": "playlist-schema.json",
+    "templates": "template-schema.json",
 }
 
 FILE_KEYS = ["collection_files", "metadata_files", "overlay_files", "image_files"]
@@ -86,6 +87,8 @@ def detect_schema_type(data: dict) -> str | None:
         return "metadata_files"
     if any(k in data for k in ("libraries", "plex", "tmdb", "settings")):
         return "config"
+    if "templates" in data:
+        return "templates"
     return None
 
 
