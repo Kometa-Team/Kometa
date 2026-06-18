@@ -1,0 +1,220 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # trakt_trending  — simple integer builder
+  # ---------------------------------------------------------------------------
+  Trakt Trending Movies:
+    trakt_trending: 20
+    sync_mode: sync
+    collection_order: custom
+    summary: The 20 most-watched movies on Trakt right now.
+
+  # ---------------------------------------------------------------------------
+  # trakt_popular  — simple integer builder
+  # ---------------------------------------------------------------------------
+  Trakt Popular Movies:
+    trakt_popular: 30
+    sync_mode: sync
+    collection_order: custom
+    summary: The 30 most popular movies on Trakt.
+
+  # ---------------------------------------------------------------------------
+  # trakt_recommendations  — simple integer builder (max 100)
+  # ---------------------------------------------------------------------------
+  Trakt Recommendations:
+    trakt_recommendations: 25
+    sync_mode: sync
+    collection_order: custom
+    summary: Trakt's personalised movie recommendations for the authenticated user.
+
+  # ---------------------------------------------------------------------------
+  # trakt_boxoffice  — boolean builder (always returns 10 items)
+  # ---------------------------------------------------------------------------
+  Trakt Box Office:
+    trakt_boxoffice: true
+    sync_mode: sync
+    collection_order: custom
+    summary: The current Top 10 Box Office movies according to Trakt.
+
+  # ---------------------------------------------------------------------------
+  # trakt_list  — one or more Trakt list URLs
+  # ---------------------------------------------------------------------------
+  Trakt List Single URL:
+    trakt_list: https://trakt.tv/users/movistapp/lists/best-of-2024
+    sync_mode: sync
+    collection_order: custom
+
+  Trakt List Multiple URLs:
+    trakt_list:
+      - https://trakt.tv/users/movistapp/lists/best-of-2024
+      - https://trakt.tv/users/cinephile/lists/criterion-essentials
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # trakt_list_details  — same as trakt_list but also pulls the list description
+  # ---------------------------------------------------------------------------
+  Trakt List Details:
+    trakt_list_details: https://trakt.tv/users/movistapp/lists/directors-cut-classics
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_description  — set the collection summary from a Trakt list description
+  # ---------------------------------------------------------------------------
+  Trakt Description Example:
+    trakt_list: https://trakt.tv/users/cinephile/lists/new-wave-cinema
+    trakt_description: https://trakt.tv/users/cinephile/lists/new-wave-cinema
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — trending, all filter params exercised
+  # ---------------------------------------------------------------------------
+  Trakt Chart Trending Full:
+    trakt_chart:
+      chart: trending
+      limit: 40
+      time_period: weekly
+      query: action
+      years: 2015-2024
+      genres: action,thriller
+      languages: en,fr
+      countries: us,gb
+      certifications: pg-13,r
+      runtimes: 80-180
+      ratings: 60-100
+      votes: 500-500000
+      tmdb_ratings: 6.0-10.0
+      tmdb_votes: 1000-500000
+      imdb_ratings: 6.5-10.0
+      imdb_votes: 5000-3000000
+      rt_meters: 60-100
+      rt_user_meters: 65-100
+      metascores: 55-100
+      studio_ids: 33,1632
+    sync_mode: sync
+    collection_order: custom
+    summary: Trending Trakt movies with every available filter applied.
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — popular chart type
+  # ---------------------------------------------------------------------------
+  Trakt Chart Popular:
+    trakt_chart:
+      chart: popular
+      limit: 50
+      time_period: monthly
+      genres: drama,comedy
+      countries: us
+      certifications: r,pg-13
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — recommended chart type
+  # ---------------------------------------------------------------------------
+  Trakt Chart Recommended:
+    trakt_chart:
+      chart: recommended
+      limit: 20
+      time_period: daily
+      ratings: 70-100
+      imdb_ratings: 7.0-10.0
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — watched chart type
+  # ---------------------------------------------------------------------------
+  Trakt Chart Most Watched:
+    trakt_chart:
+      chart: watched
+      limit: 25
+      time_period: yearly
+      genres: sci-fi,adventure
+      runtimes: 90-240
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — collected chart type
+  # ---------------------------------------------------------------------------
+  Trakt Chart Most Collected:
+    trakt_chart:
+      chart: collected
+      limit: 30
+      time_period: all
+      years: 2000-2023
+      languages: en
+      tmdb_ratings: 7.0-10.0
+      votes: 1000-1000000
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_chart  — show status filter (shows only)
+  # ---------------------------------------------------------------------------
+  Trakt Chart Shows Returning:
+    trakt_chart:
+      chart: popular
+      limit: 20
+      status: returning,production
+      network_ids: 1,2,49
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_userlist  — watchlist
+  # ---------------------------------------------------------------------------
+  Trakt Watchlist Mine:
+    trakt_userlist:
+      userlist: watchlist
+      user: me
+      sort_by: added
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_userlist  — favorites with sort_by: rank
+  # ---------------------------------------------------------------------------
+  Trakt Favorites Ranked:
+    trakt_userlist:
+      userlist: favorites
+      user: movistapp
+      sort_by: rank
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_userlist  — watched list
+  # ---------------------------------------------------------------------------
+  Trakt Watched History:
+    trakt_userlist:
+      userlist: watched
+      user: cinephile
+      sort_by: released
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # trakt_userlist  — collection
+  # ---------------------------------------------------------------------------
+  Trakt User Collection:
+    trakt_userlist:
+      userlist: collection
+      user: filmfanatic42
+      sort_by: title
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # trakt_userlist  — array of multiple userlists
+  # ---------------------------------------------------------------------------
+  Trakt Multi Userlist:
+    trakt_userlist:
+      - userlist: watchlist
+        user: cinephile
+        sort_by: added
+      - userlist: favorites
+        user: movistapp
+        sort_by: rank
+    sync_mode: append

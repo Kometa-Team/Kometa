@@ -1,0 +1,463 @@
+# yaml-language-server: $schema=../collection-schema.json
+#
+# Prototype exercises every dynamic_collections auto_type and every
+# dynamic-collection-definition attribute recognised by Kometa.
+#
+# Types grouped by how they discover keys:
+#   Plex-tag types        — genre, year, decade, content_rating, resolution,
+#                           audio_language, subtitle_language, studio, country,
+#                           network, edition, episode_year
+#   Person types          — actor, director, writer, producer
+#   TMDb-scan types       — tmdb_collection, original_language, origin_country
+#   IMDb award type       — imdb_awards
+#   Numeric range type    — number
+#   Custom mapping type   — custom
+#   External list types   — trakt_liked_lists, trakt_user_lists,
+#                           trakt_people_list, letterboxd_user_lists,
+#                           tmdb_popular_people
+
+templates:
+  # Reusable template referenced by several dynamic definitions below
+  GenreTemplate:
+    smart_filter:
+      sort_by: critic_rating.desc
+      limit: 50
+      any:
+        genre: <<value>>
+
+dynamic_collections:
+
+  # ---------------------------------------------------------------------------
+  # genre — one collection per Plex genre tag found in the library.
+  # Demonstrates: type, title_format, exclude (list), addons, template (name),
+  # template_variables, sync.
+  # ---------------------------------------------------------------------------
+  Genre Collections:
+    type: genre
+    title_format: Top <<key_name>> <<library_typeU>>s
+    exclude:
+      - Reality
+      - Documentary
+      - Western
+    addons:
+      Science Fiction:
+        - Sci-Fi
+        - Science-Fiction
+      Action & Adventure:
+        - Action
+        - Adventure
+    template:
+      name: GenreTemplate
+    template_variables:
+      collection_mode:
+        default: hide
+      sort_title:
+        default: "!021_<<collection_name>>"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # year — one collection per release year found in the library.
+  # Demonstrates: type, title_format, include (limit to specific years),
+  # key_name_override, remove_prefix.
+  # ---------------------------------------------------------------------------
+  Year Collections:
+    type: year
+    title_format: Best <<library_typeU>>s of <<key_name>>
+    include:
+      - "2020"
+      - "2021"
+      - "2022"
+      - "2023"
+      - "2024"
+    key_name_override:
+      "2024": This Year
+    remove_prefix: "19"
+
+  # ---------------------------------------------------------------------------
+  # decade — one collection per decade; auto-generates addons from years.
+  # Demonstrates: type, title_format, other_name, other_template.
+  # ---------------------------------------------------------------------------
+  Decade Collections:
+    type: decade
+    title_format: Best <<library_typeU>>s of the <<key_name>>
+    other_name: Other Decades
+    other_template:
+      name: GenreTemplate
+    exclude: "1900"
+
+  # ---------------------------------------------------------------------------
+  # content_rating — one collection per content rating tag (PG, R, TV-MA …).
+  # Demonstrates: type, title_format, exclude (string), title_override.
+  # ---------------------------------------------------------------------------
+  Content Rating Collections:
+    type: content_rating
+    title_format: "<<key_name>> Rated <<library_typeU>>s"
+    exclude: NR
+    title_override:
+      R: R-Rated
+
+  # ---------------------------------------------------------------------------
+  # resolution — one collection per video resolution found in the library.
+  # Demonstrates: type, other_name.
+  # ---------------------------------------------------------------------------
+  Resolution Collections:
+    type: resolution
+    title_format: "<<key_name>> <<library_typeU>>s"
+    other_name: Other Resolutions
+
+  # ---------------------------------------------------------------------------
+  # audio_language — one collection per audio language track.
+  # Demonstrates: type, remove_suffix, custom_keys.
+  # ---------------------------------------------------------------------------
+  Audio Language Collections:
+    type: audio_language
+    title_format: "<<key_name>> Audio <<library_typeU>>s"
+    remove_suffix: " Audio"
+    custom_keys: true
+
+  # ---------------------------------------------------------------------------
+  # subtitle_language — one collection per subtitle language.
+  # ---------------------------------------------------------------------------
+  Subtitle Language Collections:
+    type: subtitle_language
+    title_format: "<<key_name>> Subtitles"
+    exclude:
+      - English
+
+  # ---------------------------------------------------------------------------
+  # studio — one collection per studio/production company.
+  # Demonstrates: addons to group subsidiary studios under a parent.
+  # ---------------------------------------------------------------------------
+  Studio Collections:
+    type: studio
+    title_format: "<<key_name>>"
+    addons:
+      Disney:
+        - Walt Disney Pictures
+        - Walt Disney Animation Studios
+        - Pixar Animation Studios
+      Warner Bros.:
+        - Warner Bros. Pictures
+        - New Line Cinema
+    exclude:
+      - Unknown
+
+  # ---------------------------------------------------------------------------
+  # country — one collection per country of origin tag.
+  # ---------------------------------------------------------------------------
+  Country Collections:
+    type: country
+    title_format: "<<key_name>> <<library_typeU>>s"
+    include:
+      - United States of America
+      - United Kingdom
+      - France
+      - Japan
+      - South Korea
+      - Germany
+      - Italy
+      - Spain
+
+  # ---------------------------------------------------------------------------
+  # network — one collection per TV network (show libraries only).
+  # Demonstrates: addons to merge streaming sub-brands.
+  # ---------------------------------------------------------------------------
+  Network Collections:
+    type: network
+    title_format: "<<key_name>>"
+    addons:
+      Netflix:
+        - Netflix Kids
+      Disney+:
+        - Disney Junior
+        - Disney XD
+      HBO:
+        - HBO Max
+        - Cinemax
+
+  # ---------------------------------------------------------------------------
+  # edition — one collection per movie edition tag (movie libraries only).
+  # Demonstrates: type, title_format.
+  # ---------------------------------------------------------------------------
+  Edition Collections:
+    type: edition
+    title_format: "<<key_name>> Edition"
+    exclude:
+      - Unknown
+
+  # ---------------------------------------------------------------------------
+  # episode_year — one collection per year episodes aired (show libraries).
+  # builder_level is implied by this auto_type.
+  # ---------------------------------------------------------------------------
+  Episode Year Collections:
+    type: episode_year
+    title_format: Best Episodes of <<key_name>>
+
+  # ---------------------------------------------------------------------------
+  # actor — top actors by credit frequency in the library.
+  # data.depth    = how many credits per item to scan
+  # data.limit    = maximum number of actors to create collections for
+  # data.minimum  = minimum number of credits required
+  # Demonstrates: type, data (dict), title_format, template (list).
+  # ---------------------------------------------------------------------------
+  Top Actors:
+    type: actor
+    data:
+      depth: 5
+      limit: 25
+      minimum: 3
+    title_format: "<<key_name>>"
+    template:
+      - name: GenreTemplate
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # director — top directors by credit frequency (movie libraries only).
+  # ---------------------------------------------------------------------------
+  Top Directors:
+    type: director
+    data:
+      depth: 3
+      limit: 20
+      minimum: 2
+    title_format: "<<key_name>>"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # writer — top writers (movie libraries only).
+  # ---------------------------------------------------------------------------
+  Top Writers:
+    type: writer
+    data:
+      depth: 3
+      limit: 15
+      minimum: 2
+    title_format: "<<key_name>>"
+
+  # ---------------------------------------------------------------------------
+  # producer — top producers (movie libraries only).
+  # ---------------------------------------------------------------------------
+  Top Producers:
+    type: producer
+    data:
+      depth: 3
+      limit: 10
+      minimum: 3
+    title_format: "<<key_name>>"
+
+  # ---------------------------------------------------------------------------
+  # tmdb_collection — one collection per TMDb franchise/collection that
+  # contains movies in the library (movie libraries only).
+  # Demonstrates: type, exclude, minimum_items via template_variables.
+  # ---------------------------------------------------------------------------
+  TMDb Franchise Collections:
+    type: tmdb_collection
+    title_format: "<<key_name>>"
+    exclude:
+      - James Bond Collection
+    template_variables:
+      minimum_items:
+        default: 2
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # original_language — one collection per TMDb original language.
+  # Demonstrates: type, include to limit to specific languages.
+  # ---------------------------------------------------------------------------
+  Original Language Collections:
+    type: original_language
+    title_format: "<<key_name>> Language <<library_typeU>>s"
+    include:
+      - en
+      - fr
+      - ja
+      - ko
+      - de
+      - es
+
+  # ---------------------------------------------------------------------------
+  # origin_country — one collection per TMDb country of origin (show libraries).
+  # Demonstrates: type, addons to merge related country codes.
+  # ---------------------------------------------------------------------------
+  Origin Country Collections:
+    type: origin_country
+    title_format: "<<key_name>> <<library_typeU>>s"
+    include:
+      - us
+      - gb
+      - jp
+      - kr
+      - fr
+
+  # ---------------------------------------------------------------------------
+  # imdb_awards — one collection per year of an IMDb award event.
+  # data.event_id  = IMDb event ID (e.g. ev0000003 = Oscars)
+  # data.starting  = first year or "first", "latest-N", "current_year-N"
+  # data.ending    = last year or "latest", "current_year"
+  # data.increment = step between years (default 1)
+  # Demonstrates: type, data (event_id + year range), title_format.
+  # ---------------------------------------------------------------------------
+  Oscars By Year:
+    type: imdb_awards
+    data:
+      event_id: ev0000003
+      starting: latest-5
+      ending: latest
+      increment: 1
+    title_format: "<<key_name>> Oscars Winners"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # number — generates collections for an integer range.
+  # Requires a user-supplied template (no default exists for this type).
+  # data.starting / data.ending / data.increment define the range.
+  # "current_year" and "current_year-N" are valid for starting/ending.
+  # Demonstrates: type, data (number range), template.
+  # ---------------------------------------------------------------------------
+  Year Range:
+    type: number
+    data:
+      starting: 2000
+      ending: current_year
+      increment: 1
+    title_format: "<<key_name>>"
+    template:
+      name: GenreTemplate
+
+  # ---------------------------------------------------------------------------
+  # custom — fully manual key→display-name mapping.
+  # Requires a user-supplied template (no default for this type either).
+  # data is a string-to-string dict; keys are passed as <<value>> in templates.
+  # Demonstrates: type, data (strdict), title_format, key_name_override,
+  # title_override, remove_prefix, template.
+  # ---------------------------------------------------------------------------
+  Era Collections:
+    type: custom
+    data:
+      golden_age: Golden Age (1920–1960)
+      new_hollywood: New Hollywood (1960–1980)
+      blockbuster_era: Blockbuster Era (1980–2000)
+      streaming_era: Streaming Era (2000–present)
+    title_format: "<<key_name>>"
+    key_name_override:
+      golden_age: Golden Age
+      new_hollywood: New Hollywood
+      blockbuster_era: Blockbuster Era
+      streaming_era: Streaming Era
+    title_override:
+      golden_age: "Golden Age Films (1920–1960)"
+    remove_prefix: "Era: "
+    template:
+      name: GenreTemplate
+
+  # ---------------------------------------------------------------------------
+  # trakt_liked_lists — one collection per list the authenticated Trakt user
+  # has liked. No data needed. Requires Trakt to be configured.
+  # Demonstrates: type, title_format.
+  # ---------------------------------------------------------------------------
+  Trakt Liked Lists:
+    type: trakt_liked_lists
+    title_format: "<<key_name>>"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # trakt_user_lists — one collection per public list belonging to specific
+  # Trakt users.
+  # data = list of Trakt usernames.
+  # Demonstrates: type, data (strlist), title_format.
+  # ---------------------------------------------------------------------------
+  Trakt User Collections:
+    type: trakt_user_lists
+    data:
+      - garycrawfordgc
+      - movistapp
+    title_format: "<<key_name>>"
+    limit: 10
+
+  # ---------------------------------------------------------------------------
+  # trakt_people_list — one collection per person found in Trakt people lists.
+  # data = list of Trakt people list URLs.
+  # Demonstrates: type, data (list of URLs).
+  # ---------------------------------------------------------------------------
+  Trakt People:
+    type: trakt_people_list
+    data:
+      - https://trakt.tv/users/movistapp/lists/best-directors
+    title_format: "<<key_name>>"
+
+  # ---------------------------------------------------------------------------
+  # letterboxd_user_lists — one collection per public Letterboxd list from
+  # one or more users.
+  # data.username = Letterboxd username(s)
+  # data.sort_by  = how to order: updated | created | published | title | …
+  # data.limit    = max number of lists per user (0 = all)
+  # Demonstrates: type, data (dict), title_format, sync.
+  # ---------------------------------------------------------------------------
+  Letterboxd User Lists:
+    type: letterboxd_user_lists
+    data:
+      username:
+        - dave
+        - filmfan99
+      sort_by: updated
+      limit: 20
+    title_format: "<<key_name>>"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # tmdb_popular_people — one collection per person from TMDb's popular people
+  # list.
+  # data = integer: how many popular people to fetch (e.g. 10).
+  # Demonstrates: type, data (integer), title_format.
+  # ---------------------------------------------------------------------------
+  TMDb Popular People:
+    type: tmdb_popular_people
+    data: 20
+    title_format: "<<key_name>>"
+    sync: true
+
+  # ---------------------------------------------------------------------------
+  # Full-feature example — genre with ALL schema-known attributes plus
+  # the extra runtime attributes (sync, test, custom_keys, remove_prefix,
+  # remove_suffix, title_override) that pass because additionalProperties:true.
+  # ---------------------------------------------------------------------------
+  Genre Full Featured:
+    type: genre
+    # filtering
+    include:
+      - Action
+      - Comedy
+      - Drama
+      - Horror
+      - Thriller
+    exclude:
+      - Reality
+      - Game Show
+    addons:
+      Sci-Fi:
+        - Science Fiction
+        - Science-Fiction
+    # collection naming
+    title_format: "Top <<key_name>> <<library_typeU>>s"
+    key_name_override:
+      Sci-Fi: Science Fiction
+    title_override:
+      Action: "Action <<library_typeU>>s"
+    remove_prefix: "The "
+    remove_suffix: " Films"
+    other_name: Other Genres
+    # templates
+    template:
+      - name: GenreTemplate
+    other_template:
+      name: GenreTemplate
+    template_variables:
+      collection_mode:
+        default: hide_items
+      sort_title:
+        default: "!030_<<collection_name>>"
+    # behaviour flags
+    sync: true
+    test: false
+    custom_keys: true
+    limit: 50

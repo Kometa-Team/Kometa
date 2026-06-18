@@ -325,20 +325,33 @@ The above issues may not be super noticeable if you aren't using a code-aware ed
 
 ## Kometa JSON Schemas
 
-There is a JSON schema available in the Kometa repo that you can use with supporting editors to provide Kometa-specific guidance.
+There are JSON schemas available in the Kometa repo that you can use with supporting editors to provide Kometa-specific guidance.
 
-Presently, there is only a schema available for `config.yml`.
+```
+json-schema/config-schema.json     - schema for config.yml
+json-schema/collection-schema.json - schema for collection files
+json-schema/metadata-schema.json   - schema for metadata files
+json-schema/overlay-schema.json    - schema for overlay files
+json-schema/playlist-schema.json   - schema for playlist files
+json-schema/template-schema.json   - schema for template files (**very permissive**)
+```
 
-This schema is a work in progress and is known to be incomplete, primarily around the template variables for the default YAML files.
+NOTE: since templates can contain all the other types; the template schema is very permissive.  To validate the template contents, build them in the primary file before moving them to the template-only file.
 
-To use it, add this line **at the very top** of your `config.yml`, eligible editors will use it to check your `config.yml` is valid against the Kometa validation schema:
+These schemas are a work in progress and may be incomplete, primarily around the template variables for the default YAML files.
+
+To use them, add a line like this **at the very top** of your YAML, eligible editors will use it to check your file is valid against the Kometa validation schema, and some editors will provide auto-complete hints.
 
 ```
 # yaml-language-server: $schema=https://raw.githubusercontent.com/kometa-team/kometa/nightly/json-schema/config-schema.json
 
 ```
 
-Again, this file is valid for **ONLY THE `config.yml`**; do not use it with any other Kometa YAML files.
+Of course, change `config-schema.json` in that line to the relevant filename for the type of file.
+
+There are example YAML files in that same directory to exercise the schemas.
+
+If you find errors in these schemas, please open a github issue, including the YAML file that shows the issue.
 
 ### Visual Studio Code (VSCode)
 

@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # anidb_id — anime specified by AniDB ID(s) or AniDB anime URLs
+  # Accepts a single ID, comma-separated string, or list.
+  # Also accepts full URLs: https://anidb.net/anime/{ID}
+  # 8692: Sword Art Online
+  # 8691: Sword Art Online (companion entry)
+  # 13494: Sword Art Online: Alicization
+  # ---------------------------------------------------------------------------
+  Sword Art Online:
+    anidb_id: 8692, 8691, 13494
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anidb_relation — all anime in the relation graph of the given AniDB ID
+  # Accepts AniDB ID, anime URL, or relation graph URL:
+  #   https://anidb.net/anime/{ID}/relation/graph
+  # 8692: Sword Art Online
+  # ---------------------------------------------------------------------------
+  Sword Art Online Universe:
+    anidb_relation: 8692
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anidb_tag — anime matching an AniDB tag ID
+  #
+  # Parameters:
+  #   tag_id:  integer — AniDB Tag ID (required)
+  #   limit:   integer — max results (default 1000)
+  #
+  # Results respect the "mature" setting in your AniDB config.
+  # Tag ID examples:
+  #   36:   action
+  #   2626: science fiction
+  #   2853: romance
+  # ---------------------------------------------------------------------------
+  AniDB Action Tag:
+    anidb_tag:
+      tag_id: 36
+      limit: 100
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anidb_tag_name — anime matching AniDB tag(s) by name (case-insensitive)
+  # When multiple tags are supplied, anime must match ALL tags.
+  #
+  # Parameters:
+  #   tags:       string or list of tag names (required)
+  #   min_weight: 0–1000 — minimum tag weight for a match (default 0)
+  #
+  # Tag weight guide:
+  #   600+:    core theme/element
+  #   400–599: significant element
+  #   200–399: notable element
+  #   0–199:   minor element
+  #
+  # Results respect the "mature" setting in your AniDB config.
+  # ---------------------------------------------------------------------------
+  AniDB Sci-Fi Romance:
+    anidb_tag_name:
+      tags:
+        - science fiction
+        - romance
+      min_weight: 400
+    collection_order: alpha
+    sync_mode: sync

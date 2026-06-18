@@ -30,6 +30,7 @@
                         { "type": "array", "items": { "$ref": "#/definitions/template-call" } }
                     ]
                 },
+                "variables": { "type": "object", "additionalProperties": true },
 
                 "libraries": {
                     "description": "Which Plex libraries to pull items from. Defaults to 'Movies' and 'TV Shows'.",
@@ -189,28 +190,90 @@
             "additionalProperties": { "type": "object", "additionalProperties": true }
         },
 
+        "external-template-default-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "default": { "type": "string" },
+                "pmm": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "oneOf": [
+                { "required": ["default"] },
+                { "required": ["pmm"] }
+            ]
+        },
+
+        "external-template-file-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "file": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["file"]
+        },
+
+        "external-template-folder-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "folder": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["folder"]
+        },
+
+        "external-template-url-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["url"]
+        },
+
+        "external-template-git-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "git": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["git"]
+        },
+
+        "external-template-repo-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "repo": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["repo"]
+        },
+
+        "external-template-path": {
+            "oneOf": [
+                { "type": "string" },
+                { "$ref": "#/definitions/external-template-default-block" },
+                { "$ref": "#/definitions/external-template-file-block" },
+                { "$ref": "#/definitions/external-template-folder-block" },
+                { "$ref": "#/definitions/external-template-url-block" },
+                { "$ref": "#/definitions/external-template-git-block" },
+                { "$ref": "#/definitions/external-template-repo-block" }
+            ]
+        },
+
         "external-templates-list": {
             "title": "external_templates",
             "oneOf": [
                 {
                     "type": "array",
-                    "items": {
-                        "oneOf": [
-                            { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
-                        ]
-                    }
+                    "items": { "$ref": "#/definitions/external-template-path" }
                 },
-                {
-                    "oneOf": [
-                        { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
-                    ]
-                }
+                { "$ref": "#/definitions/external-template-path" }
             ]
         }
     }

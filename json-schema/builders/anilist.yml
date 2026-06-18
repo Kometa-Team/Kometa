@@ -1,0 +1,126 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # anilist_popular — top N anime from AniList's Popular Anime list
+  # ---------------------------------------------------------------------------
+  AniList Popular Anime:
+    anilist_popular: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_top_rated — top N anime from AniList's Top Rated list
+  # ---------------------------------------------------------------------------
+  AniList Top Rated Anime:
+    anilist_top_rated: 20
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_trending — top N anime from AniList's Trending list
+  # ---------------------------------------------------------------------------
+  AniList Trending Anime:
+    anilist_trending: 10
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_id — anime specified by AniList ID(s)
+  # Accepts a single ID, comma-separated string, or list.
+  # 1:  Cowboy Bebop
+  # 21: One Piece
+  # ---------------------------------------------------------------------------
+  Classic Anime:
+    anilist_id: 1, 21
+
+  # ---------------------------------------------------------------------------
+  # anilist_relations — anime specified by AniList ID plus every entry
+  # in its relation tree (excluding Character and Other relations)
+  # 21: One Piece
+  # ---------------------------------------------------------------------------
+  One Piece Universe:
+    anilist_relations: 21
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_studio — all anime from the given AniList Studio ID(s)
+  # 21: Studio Ghibli
+  # ---------------------------------------------------------------------------
+  Studio Ghibli:
+    anilist_studio: 21
+    collection_order: alpha
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_userlist — anime from a specific AniList user's list
+  # Supported sort_by values: score, popularity, status, progress,
+  #   last_updated, last_added, start_date, completed_date
+  # Score filter modifiers: .gt, .gte, .lt, .lte  (range: 0.0–10.0)
+  # ---------------------------------------------------------------------------
+  My Completed Anime:
+    anilist_userlist:
+      username: myanilistuser
+      list_name: Completed
+      sort_by: score
+      score.gte: 7.0
+    collection_order: custom
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # anilist_search — search AniList with detailed filters
+  #
+  # Simple attributes (no modifier):
+  #   sort_by:        score | popular | trending
+  #   limit:          integer >= 0  (0 = all results)
+  #   search:         free-text string
+  #   season:         winter | spring | summer | fall | current
+  #   year:           1917–next year
+  #   min_tag_percent: 0–100
+  #   adult:          true | false
+  #   country:        ISO 3166-1 alpha-2 code (e.g. JP, KR, CN)
+  #   source:         original | manga | light_novel | visual_novel |
+  #                   video_game | other | novel | doujinshi | anime
+  #
+  # Date attributes (.before / .after), format MM/DD/YYYY:
+  #   start, end
+  #
+  # Number attributes (.gt / .gte / .lt / .lte):
+  #   duration (minutes, min 1), episodes (min 1),
+  #   score (min 1), popularity (min 1)
+  #
+  # Tag-style attributes (plain = include, .not = exclude):
+  #   format:  tv | short | movie | special | ova | ona | music
+  #   status:  finished | airing | not_yet_aired | cancelled | hiatus
+  #   genre:   any AniList genre name
+  #   tag:     any AniList tag name
+  #   tag_category: any AniList tag category
+  # ---------------------------------------------------------------------------
+  Popular Shonen TV (Finished):
+    anilist_search:
+      sort_by: popular
+      limit: 30
+      season: fall
+      year: 2023
+      format: tv
+      status: finished
+      genre: Action
+      tag: Shounen
+      min_tag_percent: 60
+      country: JP
+      source: manga
+      episodes.gte: 12
+      score.gte: 70
+    collection_order: custom
+    sync_mode: sync
+
+  # anilist_tag — deprecated alias for anilist_search; kept for reference
+  # (Maps internally to anilist_search)
+  Action Tag Alias:
+    anilist_tag: Action
+
+  # anilist_genre — deprecated alias for anilist_search; kept for reference
+  # (Maps internally to anilist_search)
+  Action Genre Alias:
+    anilist_genre: Action

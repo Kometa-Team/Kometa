@@ -1,0 +1,76 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # mdblist_list — collection from a MDBList list URL
+  #
+  # Simple form: mdblist_list: <url>
+  # Dict form:
+  #   url      (string, required) — MDBList list URL
+  #   limit    (int, optional)    — max items to include
+  #   sort_by  (string, optional) — sort order; format: <option>.asc|desc
+  #     Valid sort options:
+  #       rank, score, score_average, released, releasedigital,
+  #       imdbrating, imdbvotes, imdbpopular, tmdbpopular, rogerebert,
+  #       rtomatoes, rtaudience, metacritic, myanimelist,
+  #       letterrating, lettervotes, last_air_date, budget, revenue,
+  #       runtime, title, sort_title, random, usort, added
+  # ---------------------------------------------------------------------------
+
+  # --- Simple string form ---
+  Top Watched Movies of the Week:
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+
+  # --- Dictionary form with limit ---
+  Top 10 Watched This Week:
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      limit: 10
+
+  # --- Dictionary form with sort_by: IMDb rating descending ---
+  Top Watched Movies (by IMDb Rating):
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      sort_by: imdbrating.desc
+
+  # --- Dictionary form with limit + sort_by ---
+  Top 20 Watched Movies (RT Score):
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      limit: 20
+      sort_by: rtomatoes.desc
+
+  # --- Sort by Letterboxd rating ---
+  Letterboxd Favorites:
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      sort_by: letterrating.desc
+      limit: 50
+
+  # --- Sort by release date ---
+  Newest Watched Movies:
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      sort_by: released.desc
+      limit: 30
+
+  # --- Random order ---
+  Random Watched Pick:
+    collection_order: custom
+    sync_mode: sync
+    mdblist_list:
+      url: https://mdblist.com/lists/linaspurinis/top-watched-movies-of-the-week
+      sort_by: random
+      limit: 15
