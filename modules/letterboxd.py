@@ -245,6 +245,16 @@ class Letterboxd:
         return None
 
     @staticmethod
+    def _extract_rating_from_stars(star_values):
+        for star_value in star_values:
+            if not star_value or "★" not in star_value:
+                continue
+            full_stars = star_value.count("★")
+            half_star = 1 if "½" in star_value else 0
+            return full_stars * 2 + half_star
+        return None
+
+    @staticmethod
     def _extract_like_from_classes(class_values):
         return any("like" in class_name for class_value in class_values for class_name in class_value.split())
 
@@ -300,6 +310,24 @@ class Letterboxd:
             item = self._extract_fallback_react_component(element)
             if item:
                 items.append(item)
+        next_url = response.xpath("//a[contains(@class, 'next')]/@href")
+        return items, next_url[0] if next_url else None
+
+    def _extract_fallback_list_detail_page(self, page_url, language):
+        response = self._request_html(page_url, language)
+        items = []
+        for article in response.xpath("//article[contains(@class,'list-detailed-entry')]"):
+            react = self._first_xpath_value(article, ".//div[contains(@class,'react-component')]")
+            if react is None:
+                continue
+            film_id = self._extract_film_id(react)
+            slug = self._extract_slug(react)
+            if not film_id or not slug:
+                continue
+            star_values = article.xpath(".//span[contains(@class,'inline-rating')]//title/text()")
+            rating = self._extract_rating_from_stars(star_values)
+            note = self._extract_review_text(article)
+            items.append((str(film_id), slug, self._extract_year(react), note, rating))
         next_url = response.xpath("//a[contains(@class, 'next')]/@href")
         return items, next_url[0] if next_url else None
 
@@ -543,7 +571,9 @@ class Letterboxd:
         else:
             # letterboxdpy doesn't support parameters in urls (for shuffling the list before fetching it) or unlisted lists.
             parsed_path = urlparse(list_url).path
-            if "/share/" in parsed_path or "/by/" in parsed_path or "/detail/" in parsed_path:
+            if "/detail/" in parsed_path:
+                items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_list_detail_page)
+            elif "/share/" in parsed_path or "/by/" in parsed_path:
                 items = self._get_list_items_fallback(list_url, limit, language)
             else:
                 list_obj = self._get_list_object(list_url)
@@ -778,8 +808,8 @@ class Letterboxd:
 
             ids = []
             filtered_ids = []
-            supports_note = self._url_type(data["url"]) == "films"
-            supports_rating = self._url_type(data["url"]) == "films"
+            supports_note = self._url_type(data["url"]) == "films" or "/detail/" in urlparse(data["url"]).path
+            supports_rating = self._url_type(data["url"]) == "films" or "/detail/" in urlparse(data["url"]).path
             if data["note"] and not supports_note:
                 self._warn_once(("list_note", data["url"]), "Letterboxd Warning: letterboxdpy does not expose per-item list notes for standard Letterboxd lists; ignoring note filter.")
             if data["rating"] and not supports_rating:
