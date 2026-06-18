@@ -148,3 +148,62 @@ def test_parental_guide_empty_categories_raises_failed():
     imdb = make_imdb(graph_response=graph_response)
     with pytest.raises(Failed, match="No Parental Guide Found"):
         imdb.parental_guide("tt0000000")
+
+
+# ---------------------------------------------------------------------------
+# validate_imdb: imdb_watchlist user ID format support (#3091)
+#
+# IMDb stopped showing ur######## IDs in their UI. Users now see p.xxxxxxx
+# in watchlist URLs. These tests cover both formats as bare IDs and full URLs.
+# ---------------------------------------------------------------------------
+
+class TestValidateImdbWatchlist:
+
+    def _imdb(self):
+        return make_imdb(graph_response={})
+
+    # --- ur######## (classic numeric format) ---
+
+    def test_ur_bare_id_accepted(self):
+        """Classic ur######## bare ID is still valid."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "ur64054558")
+        assert result[0]["user_id"] == "ur64054558"
+
+    def test_ur_full_url_extracted(self):
+        """Full watchlist URL containing a ur######## ID is parsed correctly."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "https://www.imdb.com/user/ur64054558/watchlist")
+        assert result[0]["user_id"] == "ur64054558"
+
+    # --- p.xxxxxxx (new format) ---
+
+    def test_p_hashed_bare_id_accepted(self):
+        """Hashed p.xxxxxxx ID (most accounts) is accepted."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "p.fl6ssgsolkgcctcuxapgh6chsa")
+        assert result[0]["user_id"] == "p.fl6ssgsolkgcctcuxapgh6chsa"
+
+    def test_p_readable_bare_id_accepted(self):
+        """Human-readable p.<name> ID (older accounts) is accepted."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "p.colneedham")
+        assert result[0]["user_id"] == "p.colneedham"
+
+    def test_p_hashed_full_url_extracted(self):
+        """Full watchlist URL with hashed p.xxxxxxx ID is parsed correctly."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "https://www.imdb.com/user/p.fl6ssgsolkgcctcuxapgh6chsa/watchlist")
+        assert result[0]["user_id"] == "p.fl6ssgsolkgcctcuxapgh6chsa"
+
+    def test_p_readable_full_url_extracted(self):
+        """Full watchlist URL with readable p.<name> ID is parsed correctly."""
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", "https://www.imdb.com/user/p.colneedham/watchlist")
+        assert result[0]["user_id"] == "p.colneedham"
+
+    # --- invalid input ---
+
+    def test_invalid_format_raises_failed(self):
+        """Unrecognised format raises Failed mentioning both valid formats."""
+        with pytest.raises(Failed, match="ur########"):
+            self._imdb().validate_imdb("Test", "imdb_watchlist", "abc12345")
+
+    def test_ur_non_numeric_suffix_raises_failed(self):
+        """ur prefix without a numeric suffix is rejected."""
+        with pytest.raises(Failed, match="ur########"):
+            self._imdb().validate_imdb("Test", "imdb_watchlist", "urnothex")
