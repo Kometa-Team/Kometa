@@ -35,10 +35,55 @@ def _item_batches(items_iterable, batch_size):
         yield items_iterable[batch_num * batch_size : (batch_num + 1) * batch_size]
 
 
+def _find_collection_trans_key(col_data):
+    # Return the translation_key string from collection YAML data, or None if absent.
+    if isinstance(col_data, dict):
+        if "translation_key" in col_data:
+            val = col_data["translation_key"]
+            if isinstance(val, str) and "<<" not in val:
+                return val
+        for v in col_data.values():
+            result = _find_collection_trans_key(v)
+            if result:
+                return result
+    elif isinstance(col_data, list):
+        for item in col_data:
+            result = _find_collection_trans_key(item)
+            if result:
+                return result
+    return None
+
+
 class Operations:
     def __init__(self, config, library):
         self.config = config
         self.library = library
+
+    def _should_be_deleted(self, col_in, labels_in, configured_in, managed_in, less_in, configured_names=None):
+        # Return True if the collection matches the delete_collections criteria.
+        if all((x is None for x in [configured_in, managed_in, less_in])):
+            return False
+
+        less_check = True
+        if less_in is not None:
+            col_count = col_in.childCount if col_in.childCount is not None else 0
+            less_check = col_count < less_in
+            logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
+
+        managed_check = True
+        if managed_in is not None:
+            is_managed = "PMM" in labels_in or "Kometa" in labels_in
+            managed_check = managed_in == is_managed
+            logger.trace(f"{col_in.title} - collection managed: {is_managed} vs managed: {managed_in}, DELETE: {managed_check}")
+
+        configured_check = True
+        if configured_in is not None:
+            names = configured_names if configured_names is not None else self.library.collection_names
+            is_configured = col_in.title in names
+            configured_check = configured_in == is_configured
+            logger.trace(f"{col_in.title} - collection configured: {is_configured} vs configured: {configured_in}, DELETE: {configured_check}")
+
+        return all((less_check, managed_check, configured_check))
 
     def run_operations(self):
         operation_start = datetime.now()
@@ -78,30 +123,11 @@ class Operations:
         logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
         logger.debug("")
 
+        # Populated before the delete loop; closure captures by reference.
+        configured_names = None
+
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
-            if all((x is None for x in [configured_in, managed_in, less_in])):
-                return False
-
-            less_check = True
-            if less_in is not None:
-                col_count = col_in.childCount if col_in.childCount is not None else 0
-                less_check = col_count < less_in
-                logger.trace(f"{col_in.title} - collection size: {col_count} < less: {less_in}, DELETE: {less_check}")
-
-            managed_check = True
-            if managed_in is not None:
-                is_managed = "PMM" in labels_in or "Kometa" in labels_in
-                managed_check = managed_in == is_managed
-                logger.trace(f"{col_in.title} - collection managed: {is_managed} vs managed: {managed_in}, DELETE: {managed_check}")
-
-            configured_check = True
-            if configured_in is not None:
-                is_configured = col_in.title in self.library.collections
-                configured_check = configured_in == is_configured
-                logger.trace(f"{col_in.title} - collection configured: {is_configured} vs configured: {configured_in}, DELETE: {configured_check}")
-
-            return all((less_check, managed_check, configured_check))
-
+            return self._should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, configured_names=configured_names)
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
             for item in items:
@@ -809,7 +835,7 @@ class Operations:
                         tmdb_item = None
 
                     def _get_tmdb_image_url(image_config, is_poster=True):
-                        """Get the TMDb image URL, using language override if configured."""
+                        # Get the TMDb image URL, using language override if configured.
                         lang = image_config.get("language") if image_config else None
                         source = image_config.get("source") if image_config else None
                         if lang and source != "tmdb":
@@ -1139,6 +1165,22 @@ class Operations:
             managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
             configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
             ignore_smart = self.library.delete_collections["ignore_empty_smart_collections"] if self.library.delete_collections else True
+            # Build configured_names: YAML keys + English-translated titles for default collections (#3168)
+            configured_names = set(self.library.collection_names)
+            if configured is not None:
+                try:
+                    en_colls = self.config.GitHub.translation_yaml("en").get("collections", {})
+                    for mf in self.library.collection_files:
+                        if mf.collections:
+                            for col_data in mf.collections.values():
+                                trans_key = _find_collection_trans_key(col_data)
+                                if trans_key and trans_key in en_colls:
+                                    en_name = en_colls[trans_key].get("name")
+                                    if en_name:
+                                        configured_names.add(en_name)
+                except Exception as e:
+                    logger.debug(f"Translation name resolution for configured check failed: {e}")
+
             unmanaged_collections = []
             unconfigured_collections = []
             all_collections = self.library.get_all_collections()
@@ -1156,7 +1198,7 @@ class Operations:
                 else:
                     if "PMM" not in labels and "Kometa" not in labels:
                         unmanaged_collections.append(col)
-                    if col.title not in self.library.collection_names:
+                    if col.title not in configured_names:
                         unconfigured_collections.append(col)
 
             if self.library.show_unmanaged and len(unmanaged_collections) > 0:
