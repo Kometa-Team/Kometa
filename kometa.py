@@ -533,17 +533,24 @@ def start(attrs):
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
-                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
-                ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
-                ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
-                ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
-                ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
-                ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
-                ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
-                ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
-                ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
-                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
+                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
+                ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
+                ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
+                ("Convert Warning: No IMDb ID found for TMDb ID", r"Convert Warning: No IMDb ID found for TMDb ID '(.*)'"),
+                ("Convert Warning: No TMDb ID found for IMDb ID", r"Convert Warning: No TMDb ID found for IMDb ID '(.*)'"),
+                ("Convert Warning: No TVDb ID found for TMDb ID", r"Convert Warning: No TVDb ID found for TMDb ID '(.*)'"),
+                ("Convert Warning: No TMDb ID found for TVDb ID", r"Convert Warning: No TMDb ID found for TVDb ID '(.*)'"),
+                ("Convert Warning: No IMDb ID found for TVDb ID", r"Convert Warning: No IMDb ID found for TVDb ID '(.*)'"),
+                ("Convert Warning: No TVDb ID found for IMDb ID", r"Convert Warning: No TVDb ID found for IMDb ID '(.*)'"),
+                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '(.*)'"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+                ("Convert Error: No AniDB ID found for IMDb ID", r"Convert Error: No AniDB ID found for IMDb ID '(.*)'"),
+                ("Convert Error: No AniDB ID found for TVDb ID", r"Convert Error: No AniDB ID found for TVDb ID '(.*)'"),
+                ("Convert Error: No MyAnimeList ID found for AniDB ID", r"Convert Error: No MyAnimeList ID found for AniDB ID '(.*)'"),
+                ("Convert Error: No AniDB Anime found for AniDB ID", r"Convert Error: No AniDB Anime found for AniDB ID '(.*)'"),
+                ("Convert Error: No AniDB ID found for MyAnimeList ID", r"Convert Error: No AniDB ID found for MyAnimeList ID '(.*)'"),
+                ("Convert Error: No mapping found for AniDB ID", r"Convert Error: No mapping found for AniDB ID '(.*)'"),
+                ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
             ]
             other_message = {}
 
@@ -555,12 +562,15 @@ def start(attrs):
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
+                                    match = re.match(reg, log_line)
+                                    if not match:
+                                        continue
                                     other = True
-                                    _name = re.match(reg, log_line).group(1)
+                                    _name = match.group(1)
                                     if key not in other_message:
                                         other_message[key] = {"list": [], "count": 0}
                                     other_message[key]["count"] += 1
-                                    if _name not in other_message[key]:
+                                    if _name not in other_message[key]["list"]:
                                         other_message[key]["list"].append(_name)
                             if other is False:
                                 if err_type not in log_data:
@@ -574,14 +584,22 @@ def start(attrs):
                 logger.info("")
 
             convert_title = False
+            def convert_summary_title(key):
+                summary = key.split(": ", 1)[1].rstrip(":")
+                if " for " not in summary:
+                    return f"{summary}:"
+                message, source = summary.rsplit(" for ", 1)
+                source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
+                return f"{message} for the following {source}:"
+
             for key, _ in other_log_groups:
-                if key.startswith("Convert Warning") and key in other_message:
+                if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
                     if convert_title is False:
                         logger.separator("Convert Summary", space=False, border=False)
                         logger.info("")
                         convert_title = True
-                    logger.info(f"{key[17:]}")
-                    logger.info(", ".join(other_message[key]["list"]))
+                    logger.info(convert_summary_title(key))
+                    logger.info(f"    {', '.join(other_message[key]['list'])}")
             if convert_title:
                 logger.info("")
 
