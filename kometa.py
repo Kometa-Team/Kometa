@@ -253,7 +253,7 @@ from modules.request import Requests  # noqa: E402
 from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, ServiceError, BuilderValidationError, OverlayError, MappingConvertError  # noqa: E402
 
 
-PLEX_MAINTENANCE_CRITICAL_ERROR = "Plex Critical Error: Response 503 (service_unavailable) received. Plex is currently running maintenance tasks. Kometa cannot proceed until this is complete"
+plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex is currently running maintenance tasks. Kometa cannot proceed until this is complete"
 
 
 def is_plex_maintenance_error(error):
@@ -266,12 +266,12 @@ def is_plex_maintenance_error(error):
 
 
 def get_critical_error_message(error):
-    return PLEX_MAINTENANCE_CRITICAL_ERROR if is_plex_maintenance_error(error) else error
+    return plex_maintenance_error if is_plex_maintenance_error(error) else error
 
 
 def log_critical_exception(error):
     if is_plex_maintenance_error(error):
-        logger.critical(PLEX_MAINTENANCE_CRITICAL_ERROR)
+        logger.critical(plex_maintenance_error)
     else:
         logger.stacktrace()
         logger.critical(error)
@@ -281,7 +281,7 @@ def my_except_hook(exctype, value, tb):
     if issubclass(exctype, KeyboardInterrupt):
         sys.__excepthook__(exctype, value, tb)
     elif is_plex_maintenance_error(value):
-        logger.critical(PLEX_MAINTENANCE_CRITICAL_ERROR)
+        logger.critical(plex_maintenance_error)
     else:
         logger.critical("Uncaught Exception", exc_info=(exctype, value, tb))
 
