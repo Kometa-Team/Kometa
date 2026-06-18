@@ -253,7 +253,7 @@ from modules.request import Requests  # noqa: E402
 from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, ServiceError, BuilderValidationError, OverlayError, MappingConvertError  # noqa: E402
 
 
-plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex is currently running maintenance tasks. Kometa cannot proceed until this is complete"
+plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
 
 
 def is_plex_maintenance_error(error):
