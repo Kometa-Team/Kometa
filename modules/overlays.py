@@ -415,7 +415,7 @@ class Overlays:
                                                 actual_value = found_rating
                                                 logger.trace(f"{format_var}: {actual_value}")
                                             else:
-                                                raise OverlayError(f"Overlay Error: No {format_var} found for {item_title}")
+                                                raise OverlayError(f"Overlay Error: No '{format_var}' found for {item_title}")
                                         elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration

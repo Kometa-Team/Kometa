@@ -710,11 +710,11 @@ class CollectionBuilder:
             named_templates = []
             for original_variables in util.get_list(self.data[methods["template"]], split=False):
                 if not isinstance(original_variables, dict):
-                    raise BuilderValidationError(f"{self.Type} Error: template attribute is not a dictionary")
+                    raise BuilderValidationError(f"{self.Type} Error: 'template' attribute is not a dictionary")
                 elif "name" not in original_variables:
-                    raise BuilderValidationError(f"{self.Type} Error: template sub-attribute name is required")
+                    raise BuilderValidationError(f"{self.Type} Error: template sub-attribute 'name' is required")
                 elif not original_variables["name"]:
-                    raise BuilderValidationError(f"{self.Type} Error: template sub-attribute name cannot be blank")
+                    raise BuilderValidationError(f"{self.Type} Error: template sub-attribute 'name' cannot be blank")
                 named_templates.append(original_variables["name"])
             logger.debug(f"Templates Called: {', '.join(named_templates)}")
             logger.debug("")
@@ -740,7 +740,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: language")
             if not self.data[methods["language"]]:
-                raise BuilderValidationError(f"{self.Type} Error: language attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'language' attribute is blank")
             logger.debug(f"Value: {self.data[methods['language']]}")
             if str(self.data[methods["language"]]).lower() not in self.config.GitHub.translation_keys:
                 logger.warning(f"Config Error: Language: {str(self.data[methods['language']]).lower()} Not Found using {self.builder_language}. Options: {', '.join(self.config.GitHub.translation_keys)}")
@@ -752,7 +752,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: name")
             if not self.data[methods["name"]]:
-                raise BuilderValidationError(f"{self.Type} Error: name attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'name' attribute is blank")
             logger.debug(f"Value: {self.data[methods['name']]}")
             self.name = str(self.data[methods["name"]])
 
@@ -764,7 +764,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: limit")
             if not self.data[methods["limit"]]:
-                raise BuilderValidationError(f"{self.Type} Error: limit attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'limit' attribute is blank")
             self.limit = util.parse(self.Type, "limit", self.data[methods["limit"]], datatype="int", minimum=1)
 
         en_key = None
@@ -775,7 +775,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: key_name")
             if not self.data[methods["key_name"]]:
-                raise BuilderValidationError(f"{self.Type} Error: key_name attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'key_name' attribute is blank")
             en_key = str(self.data[methods["key_name"]])
             trans_key = en_key
             if self.builder_language != "en":
@@ -801,11 +801,11 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: translation_key")
             if not self.data[methods["translation_key"]]:
-                raise BuilderValidationError(f"{self.Type} Error: translation_key attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'translation_key' attribute is blank")
             logger.debug(f"Value: {self.data[methods['translation_key']]}")
             translation_key = str(self.data[methods["translation_key"]])
             if translation_key not in english["collections"]:
-                raise BuilderValidationError(f"{self.Type} Error: translation_key: {translation_key} is invalid")
+                raise BuilderValidationError(f"{self.Type} Error: translation_key '{translation_key}' is invalid")
 
             en_name = english["collections"][translation_key]["name"]
             en_summary = english["collections"][translation_key]["summary"]
@@ -894,15 +894,15 @@ class CollectionBuilder:
 
         if self.playlist:
             if "libraries" not in methods:
-                raise BuilderValidationError("Playlist Error: libraries attribute is required")
+                raise BuilderValidationError("Playlist Error: 'libraries' attribute is required")
             logger.debug("")
             logger.debug("Validating Method: libraries")
             if not self.data[methods["libraries"]]:
-                raise BuilderValidationError(f"{self.Type} Error: libraries attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'libraries' attribute is blank")
             logger.debug(f"Value: {self.data[methods['libraries']]}")
             for pl_library in util.get_list(self.data[methods["libraries"]]):
                 if str(pl_library) not in config.library_map:
-                    raise BuilderValidationError(f"Playlist Error: Library: {pl_library} not defined")
+                    raise BuilderValidationError(f"Playlist Error: Library '{pl_library}' not defined. Libraries must be defined within `libraries` section of Configuration File to be usable with playlists")
                 self.libraries.append(config.library_map[pl_library])
             self.library = self.libraries[0]
 
@@ -933,7 +933,7 @@ class CollectionBuilder:
             valid_options = ["true", "false"] + plex.library_types
             for library_type in util.get_list(self.data[methods["run_definition"]], lower=True):
                 if library_type not in valid_options:
-                    raise BuilderValidationError(f"{self.Type} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
+                    raise BuilderValidationError(f"{self.Type} Error: '{library_type}' is invalid. Options: true, false, {', '.join(plex.library_types)}")
                 elif library_type == "false":
                     raise NotScheduled("Skipped because run_definition is false")
                 elif library_type != "true" and self.library and library_type != self.library.Plex.type:
@@ -970,7 +970,7 @@ class CollectionBuilder:
                         options = "\n    season (Collection at the Season Level)\n    episode (Collection at the Episode Level)"
                     else:
                         options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
-                    raise BuilderValidationError(f"{self.Type} Error: {self.data[methods['builder_level']]} builder_level invalid{options}")
+                    raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
         self.parts_collection = self.builder_level in plex.builder_level_options
 
         self.posters = {}
@@ -1159,7 +1159,7 @@ class CollectionBuilder:
                 elif (self.library.is_movie and str(self.data[methods["smart_label"]]).lower() in plex.movie_sorts) or (self.library.is_show and str(self.data[methods["smart_label"]]).lower() in plex.show_sorts):
                     self.smart_label["sort_by"] = str(self.data[methods["smart_label"]]).lower()
                 else:
-                    logger.warning(f"{self.Type} Error: smart_label attribute: {self.data[methods['smart_label']]} is invalid defaulting to random")
+                    logger.warning(f"{self.Type} Error: smart_label attribute '{self.data[methods['smart_label']]}' is invalid, defaulting to random")
         if self.smart_label_collection and self.library.smart_label_check(self.name):
             try:
                 _, self.smart_filter_details, self.smart_label_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
@@ -1273,7 +1273,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: tmdb_birthday")
             logger.debug(f"Value: {data[methods['tmdb_birthday']]}")
             if not self.data[methods["tmdb_birthday"]]:
-                raise BuilderValidationError(f"{self.Type} Error: tmdb_birthday attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'tmdb_birthday' attribute is blank")
             parsed_birthday = util.parse(self.Type, "tmdb_birthday", self.data, datatype="dict", methods=methods)
             parsed_methods = {m.lower(): m for m in parsed_birthday}
             self.tmdb_birthday = {
@@ -1288,7 +1288,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: tmdb_deathday")
             logger.debug(f"Value: {data[methods['tmdb_deathday']]}")
             if not self.data[methods["tmdb_deathday"]]:
-                raise BuilderValidationError(f"{self.Type} Error: tmdb_deathday attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'tmdb_deathday' attribute is blank")
             parsed_deathday = util.parse(self.Type, "tmdb_deathday", self.data, datatype="dict", methods=methods)
             parsed_methods = {m.lower(): m for m in parsed_deathday}
             self.tmdb_deathday = {
@@ -1304,7 +1304,7 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: tmdb_person")
             if not self.data[methods["tmdb_person"]]:
-                raise BuilderValidationError(f"{self.Type} Error: tmdb_person attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'tmdb_person' attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['tmdb_person']]}")
                 valid_names = []
@@ -1354,7 +1354,7 @@ class CollectionBuilder:
                 else:
                     tmdb_people = util.get_list(self.data[methods["tmdb_person"]])
                     tmdb_people_text = ", ".join(tmdb_people)
-                    raise BuilderValidationError(f"{self.Type} Error: Could not find person {tmdb_people_text} in TMDb")
+                    raise BuilderValidationError(f"{self.Type} Error: Could not find person '{tmdb_people_text}' in TMDb")
 
         for attr in ["tmdb_birthday", "tmdb_deathday"]:
             tmdb_day = getattr(self, attr)
@@ -1409,13 +1409,13 @@ class CollectionBuilder:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
-                raise BuilderValidationError(f"{self.Type} Error: smart_url attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Error: 'smart_url' attribute is blank")
             else:
                 logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
                     self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                 except ValueError:
-                    raise BuilderValidationError(f"{self.Type} Error: smart_url is incorrectly formatted")
+                    raise BuilderValidationError(f"{self.Type} Error: 'smart_url' attribute is incorrectly formatted")
 
         if "smart_filter" in methods and not self.playlist and not self.overlay:
             try:
@@ -1436,20 +1436,20 @@ class CollectionBuilder:
         if self.run_again and self.smart_url:
             self.run_again = False
             logger.info("")
-            logger.warning(f"{self.Type} Error: smart_filter is not compatible with run_again removing run_again")
+            logger.warning(f"{self.Type} Error: 'smart_filter' is not compatible with 'run_again', ignoring run_again")
 
         if self.smart_url and self.smart_label_collection:
-            raise BuilderValidationError(f"{self.Type} Error: smart_filter is not compatible with smart_label")
+            raise BuilderValidationError(f"{self.Type} Error: 'smart_filter' is not compatible with 'smart_label'")
 
         if self.parts_collection and "smart_url" in methods:
-            raise BuilderValidationError(f"{self.Type} Error: smart_url is not compatible with builder_level: {self.builder_level}")
+            raise BuilderValidationError(f"{self.Type} Error: 'smart_url' is not compatible with builder_level '{self.builder_level}'")
 
         self.smart = self.smart_url or self.smart_label_collection
 
         test_sort = None
         if "collection_order" in methods and not self.playlist and self.build_collection:
             if self.data[methods["collection_order"]] is None:
-                raise BuilderValidationError(f"{self.Type} Warning: collection_order attribute is blank")
+                raise BuilderValidationError(f"{self.Type} Warning: 'collection_order' attribute is blank")
             else:
                 test_sort = self.data[methods["collection_order"]]
         elif "collection_order" not in methods and not self.playlist and not self.blank_collection and self.build_collection and self.library.default_collection_order and not self.smart:
@@ -1459,7 +1459,7 @@ class CollectionBuilder:
         self.custom_sort = "custom" if self.playlist else None
         if test_sort:
             if self.smart:
-                raise BuilderValidationError(f"{self.Type} Error: collection_order does not work with Smart Collections")
+                raise BuilderValidationError(f"{self.Type} Error: 'collection_order' does not work with Smart Collections")
             logger.debug("")
             logger.debug("Validating Method: collection_order")
             logger.debug(f"Value: {test_sort}")
@@ -1482,7 +1482,7 @@ class CollectionBuilder:
                 self.custom_sort = []
                 for ts in test_sort:
                     if ts not in sorts:
-                        raise BuilderValidationError(f"{self.Type} Error: collection_order: {ts} is invalid. Options: {', '.join(sorts)}")
+                        raise BuilderValidationError(f"{self.Type} Error: collection_order '{ts}' is invalid. Options: {', '.join(sorts)}")
                     self.custom_sort.append(ts)
             if test_sort not in plex.collection_order_options + ["custom.asc", "custom.desc"] and not self.custom_sort:
                 ex_str = f"{self.Type} Error: {test_sort} collection_order invalid\n"
@@ -1507,51 +1507,51 @@ class CollectionBuilder:
             logger.debug(f"Value: {method_data}")
             try:
                 if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute is blank")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute is blank")
                 elif method_data is None and method_final not in none_details:
-                    logger.warning(f"Collection Warning: {method_final} attribute is blank")
+                    logger.warning(f"Collection Warning: '{method_final}' attribute is blank")
                 elif self.playlist and method_name not in playlist_attributes:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed when using playlists")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
                 elif not self.config.Trakt and "trakt" in method_name:
-                    raise ServiceError(f"{self.Type} Error: {method_final} requires Trakt to be configured")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
-                    raise ServiceError(f"{self.Type} Error: {method_final} requires Radarr to be configured")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
-                    raise ServiceError(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
-                    raise ServiceError(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
-                    raise ServiceError(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}'requires MyAnimeList to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed for show libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries")
                 elif self.library.is_show and method_name in movie_only_builders:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed for movie libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} plex search only allowed for movie libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' plex search only allowed for Movie libraries")
                 elif self.library.is_movie and method_name in plex.show_only_searches:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} plex search only allowed for show libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' plex search only allowed for Show libraries")
                 elif self.library.is_music and method_name not in music_attributes:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed for music libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not allowed for Music libraries")
                 elif self.library.is_music and method_name in album_details and self.builder_level != "album":
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed for album collections")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Album collections")
                 elif not self.library.is_music and method_name in music_only_builders:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed for music libraries")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Music libraries")
                 elif not self.playlist and self.builder_level != "episode" and method_name in episode_parts_only:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed with Collection Level: episode")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed with collection level 'episode'")
                 elif self.parts_collection and method_name not in parts_collection_valid:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed with Collection Level: {self.builder_level.capitalize()}")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not allowed with collection level '{self.builder_level.capitalize()}'")
                 elif self.smart and method_name in smart_invalid:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed with normal collections")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed with non-smart collections")
                 elif not self.smart and method_name in smart_only:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed with smart collections")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed with smart collections")
                 elif self.collectionless and method_name not in collectionless_details:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed for Collectionless collection")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not allowed for 'collectionless' collection")
                 elif self.smart_url and method_name in all_builders + smart_url_invalid:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} builder not allowed when using smart_filter")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' builder not allowed when using 'smart_filter'")
                 elif not self.overlay and method_name in overlay_only:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed in an overlay file")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed in an Overlay File")
                 elif self.overlay and method_name not in overlay_attributes:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed in an overlay file")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not allowed in an Overlay File")
                 elif method_name in summary_details:
                     self._summary(method_name, method_data)
                 elif method_name in poster_details:
@@ -1606,7 +1606,7 @@ class CollectionBuilder:
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
                 else:
-                    raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not supported")
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute is invalid")
             except tmdb.NotFound as e:
                 # A TMDb resource referenced here (e.g. a collection) has been
                 # deleted upstream. When the ID came from one of Kometa's own
@@ -2141,7 +2141,7 @@ class CollectionBuilder:
             for value in util.get_list(method_data):
                 _chart = imdb.movie_charts if self.library.is_movie else imdb.show_charts
                 if value not in _chart:
-                    raise BuilderValidationError(f"{self.Type} Error: chart: {value} is invalid options are {', '.join(_chart)}")
+                    raise BuilderValidationError(f"{self.Type} Error: Chart '{value}' is invalid. Options:  {', '.join(_chart)}")
                 self.builders.append((method_name, value))
         elif method_name == "imdb_award":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
@@ -3780,7 +3780,7 @@ class CollectionBuilder:
                 if plex_filter[filter_alias["type"]] is None:
                     raise BuilderValidationError(f"{self.Type} Error: type attribute is blank")
                 if plex_filter[filter_alias["type"]] not in plex.sort_types:
-                    raise BuilderValidationError(f"{self.Type} Error: type: {plex_filter[filter_alias['type']]} is invalid. Options: {', '.join(plex.sort_types)}")
+                    raise BuilderValidationError(f"{self.Type} Error: type '{plex_filter[filter_alias['type']]}' is invalid. Options: {', '.join(plex.sort_types)}")
                 sort_type = plex_filter[filter_alias["type"]]
             elif self.library.is_show:
                 sort_type = "show"
@@ -3804,7 +3804,7 @@ class CollectionBuilder:
                 test_sorts = [test_sorts]
             for test_sort in test_sorts:
                 if test_sort not in sorts:
-                    raise BuilderValidationError(f"{self.Type} Error: sort_by: {test_sort} is invalid. Options: {', '.join(sorts)}")
+                    raise BuilderValidationError(f"{self.Type} Error: sort_by '{test_sort}' is invalid. Options: {', '.join(sorts)}")
                 sort.append(test_sort)
         if not sort:
             sort.append(default_sort if default_sort else type_default_sort)
