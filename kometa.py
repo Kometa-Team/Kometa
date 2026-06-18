@@ -250,7 +250,7 @@ util.logger = logger
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled  # noqa: E402
+from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, ServiceNotConfigured, BuilderValidationError  # noqa: E402
 
 
 def my_except_hook(exctype, value, tb):
@@ -984,6 +984,10 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info("")
                     try:
                         builder.filter_and_save_items(builder.gather_ids(method, value))
+                    except ServiceNotConfigured:
+                        raise
+                    except BuilderValidationError:
+                        raise
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
@@ -1091,6 +1095,14 @@ def run_collection(config, library, metadata, requested_collections):
                 library.status[str(mapping_name)]["status"] = "Not Scheduled"
         except FilterFailed:
             pass
+        except ServiceNotConfigured as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Service Not Configured"
+            library.status[str(mapping_name)]["errors"].append(e)
+        except BuilderValidationError as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Builder Validation Error"
+            library.status[str(mapping_name)]["errors"].append(e)
         except Failed as e:
             library.notify(e, collection=mapping_name)
             logger.stacktrace()
@@ -1276,6 +1288,10 @@ def run_playlists(config):
                     config.notify_delete(e)
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
+            except ServiceNotConfigured as e:
+                logger.error(e)
+                status[mapping_name]["status"] = "Service Not Configured"
+                status[mapping_name]["errors"].append(e)
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
                 logger.stacktrace()
