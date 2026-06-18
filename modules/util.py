@@ -65,7 +65,15 @@ class NotScheduledRange(NotScheduled):
 class BuilderValidationError(Failed):
     pass
 
-class ServiceNotConfigured(Failed):
+class OverlayError(Failed):
+    pass
+
+class NoValueFound(Failed):
+    pass
+class MappingConvertError(Failed):
+    pass
+
+class ServiceError(Failed):
     pass
 
 class retry_if_http_429_error(retry_if_exception):

@@ -14,7 +14,7 @@ from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist
 from modules.overlay import Overlay
 from modules.poster import KometaImage
 from modules.request import quote
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceNotConfigured, BuilderValidationError
+from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError, BuilderValidationError
 
 logger = util.logger
 
@@ -1513,15 +1513,15 @@ class CollectionBuilder:
                 elif self.playlist and method_name not in playlist_attributes:
                     raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute not allowed when using playlists")
                 elif not self.config.Trakt and "trakt" in method_name:
-                    raise ServiceNotConfigured(f"{self.Type} Error: {method_final} requires Trakt to be configured")
+                    raise ServiceError(f"{self.Type} Error: {method_final} requires Trakt to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
-                    raise ServiceNotConfigured(f"{self.Type} Error: {method_final} requires Radarr to be configured")
+                    raise ServiceError(f"{self.Type} Error: {method_final} requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
-                    raise ServiceNotConfigured(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
+                    raise ServiceError(f"{self.Type} Error: {method_final} requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
-                    raise ServiceNotConfigured(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
+                    raise ServiceError(f"{self.Type} Error: {method_final} requires Tautulli to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
-                    raise ServiceNotConfigured(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
+                    raise ServiceError(f"{self.Type} Error: {method_final} requires MyAnimeList to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: {method_final} attribute only allowed for show libraries")
                 elif self.library.is_show and method_name in movie_only_builders:
@@ -3861,17 +3861,17 @@ class CollectionBuilder:
 
                 error = None
                 if final_attr not in plex.searches and not final_attr.startswith(("any", "all")):
-                    error = f"{self.Type} Error: {final_attr} is not a valid {method} attribute"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' is not valid"
                 elif self.library.is_show and final_attr in plex.movie_only_searches:
-                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for movie libraries"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
-                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for show libraries"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for show libraries"
                 elif self.library.is_music and final_attr not in plex.music_searches + ["all", "any"]:
-                    error = f"{self.Type} Error: {final_attr} {method} attribute does not work for music libraries"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
-                    error = f"{self.Type} Error: {final_attr} {method} attribute only works for music libraries"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for music libraries"
                 elif _data is not False and _data != 0 and not _data:
-                    error = f"{self.Type} Error: {final_attr} {method} attribute is blank"
+                    error = f"{self.Type} Error: {method} attribute '{final_attr}' is blank"
                 else:
                     if final_attr.startswith(("any", "all")):
                         dicts = util.get_list(_data)
