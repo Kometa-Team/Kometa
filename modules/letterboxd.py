@@ -54,12 +54,7 @@ builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films
 base_url = "https://letterboxd.com"
 boxd_short_url = "https://boxd.it"
 
-list_url_pattern = re.compile(
-    r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)"
-    r"(?:/share/(?P<share>[^/]+))?"
-    r"(?:/by/(?P<sort>[^/]+))?"
-    r"/?$"
-)
+list_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)" r"(?:/share/(?P<share>[^/]+))?" r"(?:/detail)?" r"(?:/by/(?P<sort>[^/]+))?" r"/?$")
 watchlist_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/watchlist/?$")
 film_path_pattern = re.compile(r"^/film/(?P<slug>[^/]+)/?$")
 film_identifier_pattern = re.compile(r"film:(?P<id>\d+)")
@@ -548,7 +543,7 @@ class Letterboxd:
         else:
             # letterboxdpy doesn't support parameters in urls (for shuffling the list before fetching it) or unlisted lists.
             parsed_path = urlparse(list_url).path
-            if "/share/" in parsed_path or "/by/" in parsed_path:
+            if "/share/" in parsed_path or "/by/" in parsed_path or "/detail/" in parsed_path:
                 items = self._get_list_items_fallback(list_url, limit, language)
             else:
                 list_obj = self._get_list_object(list_url)
