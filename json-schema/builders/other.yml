@@ -1,0 +1,315 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # stevenlu_popular — boolean true
+  # Finds every movie on StevenLu's Popular Movies list (movies.stevenlu.com).
+  # The list is continuously updated and ordered by popularity — sync and
+  # custom ordering are strongly recommended.
+  # ---------------------------------------------------------------------------
+  StevenLu Popular Movies:
+    stevenlu_popular: true
+    sync_mode: sync
+    collection_order: custom
+    summary: Currently popular movies according to StevenLu's curated list.
+
+  # ---------------------------------------------------------------------------
+  # icheckmovies_list — ICheckMovies list URL (string or list of strings)
+  # Fetches every movie from the specified ICheckMovies list.
+  # Base URL: https://www.icheckmovies.com/lists/
+  # ---------------------------------------------------------------------------
+  ICheckMovies 1001 Movies:
+    icheckmovies_list: https://www.icheckmovies.com/lists/1001+movies+you+must+see+before+you+die/
+    sync_mode: sync
+    collection_order: custom
+    summary: Every film from the iconic "1001 Movies You Must See Before You Die" list.
+
+  # ---------------------------------------------------------------------------
+  # icheckmovies_list — multiple URLs as a YAML list
+  # ---------------------------------------------------------------------------
+  ICheckMovies Classic Horror:
+    icheckmovies_list:
+      - https://www.icheckmovies.com/lists/top+25+horror+films/
+      - https://www.icheckmovies.com/lists/essential+horror/
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # icheckmovies_list_details — same as icheckmovies_list but also applies
+  # the list's description to the collection summary.
+  # Only the first URL's description is used when multiple URLs are provided.
+  # ---------------------------------------------------------------------------
+  ICheckMovies Criterion Collection:
+    icheckmovies_list_details: https://www.icheckmovies.com/lists/criterion+collection/
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # mojo_world — Top Worldwide Box Office for a given year
+  # Parameters:
+  #   year  (required) — 1977–current year, "current", or "current-N"
+  #   limit (optional) — maximum results to return
+  # ---------------------------------------------------------------------------
+  Box Office Mojo Worldwide 2024:
+    mojo_world:
+      year: 2024
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 50 highest-grossing movies worldwide in 2024.
+
+  Box Office Mojo Worldwide Current Year:
+    mojo_world:
+      year: current
+      limit: 25
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 25 highest-grossing movies worldwide in the current year.
+
+  Box Office Mojo Worldwide Prior Year:
+    mojo_world:
+      year: current-1
+    sync_mode: sync
+    collection_order: custom
+    summary: Top worldwide box office grossers from the prior year.
+
+  # ---------------------------------------------------------------------------
+  # mojo_all_time — All-Time Box Office chart
+  # Parameters:
+  #   chart               (required) — domestic | worldwide
+  #   content_rating_filter (optional) — g | g/pg | pg | pg-13 | r | nc-17
+  #   limit               (optional) — maximum results to return
+  # ---------------------------------------------------------------------------
+  All-Time Domestic Box Office:
+    mojo_all_time:
+      chart: domestic
+      limit: 100
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 100 all-time domestic box office earners.
+
+  All-Time Worldwide Box Office:
+    mojo_all_time:
+      chart: worldwide
+      limit: 100
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 100 all-time worldwide box office earners.
+
+  All-Time PG-13 Domestic Box Office:
+    mojo_all_time:
+      chart: domestic
+      content_rating_filter: pg-13
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 50 all-time domestic earners rated PG-13.
+
+  All-Time R-Rated Worldwide Box Office:
+    mojo_all_time:
+      chart: worldwide
+      content_rating_filter: r
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 50 all-time worldwide earners rated R.
+
+  # ---------------------------------------------------------------------------
+  # mojo_domestic — Domestic Box Office for specific time ranges
+  # Parameters:
+  #   range      (required) — daily | weekend | weekly | monthly | quarterly |
+  #                           yearly | season | holiday
+  #   year       (optional) — 1977–current, "current", "current-N"
+  #                           (ignored for "yearly" range; use "range_data" instead)
+  #   range_data (required for non-yearly) — value depends on "range":
+  #     daily:     MM-DD-YYYY date string, "current", or "current-N"
+  #     weekend/weekly: week number 1–53, "current", or "current-N"
+  #     monthly:   month name (january…december), "current", or "current-N"
+  #     quarterly: q1–q4, "current", or "current-N"
+  #     season:    winter | spring | summer | fall | holiday | current
+  #     holiday:   new_years_day | mlk_day | easter | independence_day |
+  #                halloween | thanksgiving | thanksgiving_3 | thanksgiving_5 |
+  #                christmas_day | christmas_weekend | new_years_eve | …
+  #   limit      (optional) — maximum results to return
+  # ---------------------------------------------------------------------------
+  Domestic Box Office This Weekend:
+    mojo_domestic:
+      range: weekend
+      year: current
+      range_data: current
+      limit: 10
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 10 domestic box office performers this past weekend.
+
+  Domestic Box Office This Month:
+    mojo_domestic:
+      range: monthly
+      year: current
+      range_data: current
+      limit: 20
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 20 domestic box office performers this month.
+
+  Domestic Box Office Summer 2023:
+    mojo_domestic:
+      range: season
+      year: 2023
+      range_data: summer
+      limit: 25
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 25 domestic box office performers in Summer 2023.
+
+  Domestic Box Office Thanksgiving 2023:
+    mojo_domestic:
+      range: holiday
+      year: 2023
+      range_data: thanksgiving_5
+      limit: 10
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 10 domestic earners over the 2023 Thanksgiving 5-day weekend.
+
+  Domestic Box Office Yearly 2022:
+    mojo_domestic:
+      range: yearly
+      range_data: 2022
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 50 domestic box office earners for the full year 2022.
+
+  Domestic Box Office Q3 2024:
+    mojo_domestic:
+      range: quarterly
+      year: 2024
+      range_data: q3
+      limit: 20
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 20 domestic earners in Q3 (July–September) 2024.
+
+  # ---------------------------------------------------------------------------
+  # mojo_international — international box office (weekend/monthly/quarterly/yearly)
+  # ---------------------------------------------------------------------------
+  International Weekend Box Office:
+    mojo_international:
+      range: weekend
+      year: 2024
+      range_data: 15
+      limit: 25
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 25 internationally for weekend 15 of 2024.
+
+  International Quarterly Box Office:
+    mojo_international:
+      range: quarterly
+      year: 2023
+      range_data: q4
+      limit: 30
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 30 international earners Q4 2023.
+
+  # ---------------------------------------------------------------------------
+  # mojo_record — named record charts (opening weekends, per-theater averages, etc.)
+  # ---------------------------------------------------------------------------
+  Top Opening Weekends:
+    mojo_record:
+      chart: top_opening_weekend
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: All-time top 50 opening weekends at the domestic box office.
+
+  Top Opening Weekend Theater Averages:
+    mojo_record:
+      chart: top_opening_weekend_theater_avg_wide
+      limit: 25
+    sync_mode: sync
+    collection_order: custom
+
+  Top Summer Opening Weekends:
+    mojo_record:
+      chart: summer
+      limit: 30
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 30 opening weekends during the summer season.
+
+  # ---------------------------------------------------------------------------
+  # mojo_never — top-grossing films that never cracked Top 1/5/10
+  # ---------------------------------------------------------------------------
+  Never Hit Number 1 Domestic:
+    mojo_never:
+      never: "1"
+      chart: domestic
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top-grossing domestic films that never reached number 1.
+
+  Never In Top 10 Worldwide:
+    mojo_never:
+      never: "10"
+      chart: worldwide
+      limit: 25
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # simkl_trending — trending titles from Simkl (integer or object)
+  # ---------------------------------------------------------------------------
+  Simkl Trending Today:
+    simkl_trending: 20
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 20 trending titles on Simkl today.
+
+  Simkl Trending This Week:
+    simkl_trending:
+      period: week
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+    summary: Top 50 trending on Simkl this week.
+
+  Simkl Trending This Month:
+    simkl_trending:
+      period: month
+      limit: 100
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # simkl_dvd — recent DVD releases from Simkl (integer or object)
+  # ---------------------------------------------------------------------------
+  Simkl DVD Releases:
+    simkl_dvd: 30
+    sync_mode: sync
+    collection_order: custom
+    summary: 30 most recent DVD releases tracked by Simkl.
+
+  Simkl DVD Object Form:
+    simkl_dvd:
+      limit: 50
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # text_file — plain-text file with one ID per line (string or list)
+  # ---------------------------------------------------------------------------
+  My Custom List:
+    text_file: config/lists/my_movies.txt
+    sync_mode: sync
+    collection_order: custom
+    summary: A hand-curated list of must-see films loaded from a local text file.
+
+  Combined Text Files:
+    text_file:
+      - config/lists/sci_fi.txt
+      - config/lists/classics.txt
+    sync_mode: sync
+    collection_order: custom

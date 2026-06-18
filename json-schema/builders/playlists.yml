@@ -1,0 +1,502 @@
+# yaml-language-server: $schema=../playlist-schema.json
+#
+# Prototype exercises every playlist-definition property and every builder
+# available in playlist-schema.json.
+#
+# Key playlist constraints vs. collections:
+#   - One builder per playlist (by convention; not schema-enforced)
+#   - Span multiple libraries via `libraries:`
+#   - User-sharing via `sync_to_users:` / `exclude_users:`
+#   - No collection_mode / smart_filter / plex_pilots / plex_collectionless
+
+templates:
+  PlaylistBase:
+    sync_mode: sync
+    libraries:
+      - Movies
+      - TV Shows
+
+external_templates:
+  - file: config/templates/playlist_shared.yml
+  - git: Kometa-Team/Playlists/templates
+
+playlists:
+
+  # ---------------------------------------------------------------------------
+  # CONTROL FIELDS — exercises every non-builder playlist-definition property
+  # ---------------------------------------------------------------------------
+  Control Fields Demo:
+    # Behaviour
+    sync_mode: sync
+    schedule: daily
+    limit: 100
+    minimum_items: 5
+    delete_below_minimum: true
+    delete_not_scheduled: false
+    run_again: false
+    missing_only_released: true
+    delete_playlist: false
+    # Targeting
+    libraries:
+      - Movies
+      - TV Shows
+      - Anime
+    sync_to_users: all
+    exclude_users:
+      - child_account
+      - guest
+    # Diagnostics
+    save_report: true
+    show_filtered: true
+    show_missing: false
+    # Naming
+    name: Plex Watchlist Playlist
+    name_mapping: Watchlist
+    # ID exclusions
+    ignore_ids: 1234, 5678
+    ignore_imdb_ids: tt0111161,tt0068646
+    # Builder
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # ignore_ids as integer (single) and ignore_imdb_ids as array
+  # ---------------------------------------------------------------------------
+  Ignore IDs Variants:
+    ignore_ids: 42
+    ignore_imdb_ids:
+      - tt0068646
+      - tt0071562
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # sync_to_users as null (owner only) and exclude_users as null
+  # ---------------------------------------------------------------------------
+  Owner Only Playlist:
+    sync_to_users: ~
+    exclude_users: ~
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # SUMMARY FIELDS — every description/summary source
+  # ---------------------------------------------------------------------------
+  Summary Variants:
+    summary: A handpicked selection of must-see films.
+    tmdb_description: 527774
+    tmdb_biography: 287
+    tmdb_summary: 603
+    trakt_description: https://trakt.tv/users/movistapp/lists/best-of-2024
+    tvdb_description: https://thetvdb.com/lists/top-series
+    tvdb_summary: 81189
+    letterboxd_description: https://letterboxd.com/dave/list/official-top-250/
+    libraries: Movies
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # POSTER / BACKGROUND FIELDS — all image source types
+  # ---------------------------------------------------------------------------
+  Image Fields:
+    url_poster: https://image.tmdb.org/t/p/original/poster.jpg
+    url_background: https://image.tmdb.org/t/p/original/bg.jpg
+    file_poster: config/assets/my_playlist/poster.jpg
+    file_background: config/assets/my_playlist/background.jpg
+    tmdb_poster: 527774
+    tmdb_profile: 287
+    tmdb_list_poster: 8411768
+    tvdb_poster: 81189
+    tmdb_background: 603
+    tvdb_background: 81189
+    tmdb_person: 287
+    tmdb_person_offset: 0
+    libraries:
+      - Movies
+      - TV Shows
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEMPLATE call (single and array)
+  # ---------------------------------------------------------------------------
+  Templated Playlist:
+    template:
+      name: PlaylistBase
+    plex_watchlist: added.desc
+
+  Templated Array:
+    template:
+      - name: PlaylistBase
+    plex_watchlist: title.asc
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — Plex
+  # ---------------------------------------------------------------------------
+  Plex All Library:
+    libraries:
+      - Movies
+      - TV Shows
+    plex_all: true
+    sync_mode: sync
+
+  Plex Search Playlist:
+    libraries: Movies
+    plex_search:
+      all:
+        genre: Action
+        year.gte: 2010
+      sort_by: critic_rating.desc
+      limit: 50
+    sync_mode: sync
+
+  Plex Watchlist Title Asc:
+    plex_watchlist: title.asc
+    sync_mode: sync
+
+  Plex Watchlist Added Desc:
+    plex_watchlist: added.desc
+    libraries:
+      - Movies
+      - TV Shows
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — TMDb
+  # ---------------------------------------------------------------------------
+  TMDb Collection Playlist:
+    libraries: Movies
+    tmdb_collection:
+      - 131295
+      - 87359
+    sync_mode: sync
+    summary: All films from the Lord of the Rings and Hobbit franchises.
+
+  TMDb Movie IDs:
+    libraries: Movies
+    tmdb_movie:
+      - 27205
+      - 550
+      - 680
+    sync_mode: sync
+
+  TMDb Show IDs:
+    libraries: TV Shows
+    tmdb_show:
+      - 1396
+      - 60735
+    sync_mode: sync
+
+  TMDb List:
+    libraries: Movies
+    tmdb_list: 8411768
+    sync_mode: sync
+
+  TMDb Popular Playlist:
+    libraries: Movies
+    tmdb_popular: 50
+    sync_mode: sync
+    limit: 50
+
+  TMDb Top Rated Playlist:
+    libraries: Movies
+    tmdb_top_rated: 100
+    sync_mode: sync
+
+  TMDb Now Playing:
+    libraries: Movies
+    tmdb_now_playing: 20
+    sync_mode: sync
+    schedule: daily
+
+  TMDb Upcoming:
+    libraries: Movies
+    tmdb_upcoming: 20
+    sync_mode: sync
+
+  TMDb Trending Daily:
+    libraries:
+      - Movies
+      - TV Shows
+    tmdb_trending_daily: 30
+    sync_mode: sync
+
+  TMDb Trending Weekly:
+    libraries:
+      - Movies
+      - TV Shows
+    tmdb_trending_weekly: 50
+    sync_mode: sync
+
+  TMDb Discover Playlist:
+    libraries: Movies
+    tmdb_discover:
+      with_genres: 28
+      sort_by: popularity.desc
+      vote_average.gte: 7.0
+      with_original_language: en
+    sync_mode: sync
+    limit: 50
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — TVDb
+  # ---------------------------------------------------------------------------
+  TVDb List Playlist:
+    libraries: TV Shows
+    tvdb_list: https://www.thetvdb.com/lists/top-series
+    sync_mode: sync
+
+  TVDb Show Playlist:
+    libraries: TV Shows
+    tvdb_show:
+      - 81189
+      - 121361
+    sync_mode: sync
+
+  TVDb Movie Playlist:
+    libraries: Movies
+    tvdb_movie: 15991
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — IMDb
+  # ---------------------------------------------------------------------------
+  IMDb IDs:
+    libraries:
+      - Movies
+      - TV Shows
+    imdb_id:
+      - tt0111161
+      - tt0068646
+      - tt0071562
+    sync_mode: sync
+
+  IMDb Chart Top 250:
+    libraries: Movies
+    imdb_chart: top_250
+    sync_mode: sync
+    limit: 250
+
+  IMDb List:
+    libraries: Movies
+    imdb_list:
+      url: https://www.imdb.com/list/ls000024390/
+      limit: 100
+    sync_mode: sync
+
+  IMDb Watchlist:
+    libraries:
+      - Movies
+      - TV Shows
+    imdb_watchlist:
+      userlist: user_watchlist
+      user: urXXXXXXXX
+    sync_mode: sync
+
+  IMDb Award Winners:
+    libraries: Movies
+    imdb_award:
+      event_id: ev0000003
+      event_year: 2024
+      winning: true
+    sync_mode: sync
+    summary: 2024 Academy Award winners.
+
+  IMDb Search:
+    libraries: Movies
+    imdb_search:
+      type: movie
+      rating.gte: 7.5
+      votes.gte: 50000
+      genre: drama
+      release.after: "2015-01-01"
+      sort_by: rating.desc
+      limit: 100
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — Trakt
+  # ---------------------------------------------------------------------------
+  Trakt List:
+    libraries:
+      - Movies
+      - TV Shows
+    trakt_list: https://trakt.tv/users/garycrawfordgc/lists/letterboxd-top-250
+    sync_mode: sync
+
+  Trakt Userlist Watchlist:
+    libraries:
+      - Movies
+      - TV Shows
+    trakt_userlist:
+      userlist: watchlist
+      user: me
+      sort_by: rank
+    sync_mode: sync
+
+  Trakt Userlist Favorites:
+    libraries:
+      - Movies
+      - TV Shows
+    trakt_userlist:
+      userlist: favorites
+      sort_by: added
+    sync_mode: sync
+
+  Trakt Recommendations:
+    libraries:
+      - Movies
+      - TV Shows
+    trakt_recommendations: 40
+    sync_mode: sync
+
+  Trakt Boxoffice:
+    libraries: Movies
+    trakt_boxoffice: true
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — Tautulli
+  # ---------------------------------------------------------------------------
+  Tautulli Popular Playlist:
+    libraries:
+      - Movies
+      - TV Shows
+    tautulli_popular:
+      list_days: 7
+      list_size: 25
+      list_minimum: 1
+    sync_mode: sync
+    schedule: weekly(monday)
+
+  Tautulli Watched Playlist:
+    libraries:
+      - Movies
+      - TV Shows
+    tautulli_watched:
+      list_days: 30
+      list_size: 20
+      list_minimum: 5
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — MDBList
+  # ---------------------------------------------------------------------------
+  MDBList URL:
+    libraries: Movies
+    mdblist_list: https://mdblist.com/lists/k0meta/imdb-top-250
+    sync_mode: sync
+
+  MDBList Object:
+    libraries: Movies
+    mdblist_list:
+      url: https://mdblist.com/lists/k0meta/imdb-top-250
+      limit: 100
+      sort_by: score
+    sync_mode: sync
+
+  MDBList Array:
+    libraries: Movies
+    mdblist_list:
+      - https://mdblist.com/lists/k0meta/imdb-top-250
+      - url: https://mdblist.com/lists/k0meta/trending
+        limit: 50
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — Letterboxd
+  # ---------------------------------------------------------------------------
+  Letterboxd List:
+    libraries: Movies
+    letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
+    sync_mode: sync
+
+  Letterboxd List Object:
+    libraries: Movies
+    letterboxd_list:
+      url: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
+      limit: 100
+      sort_by: rating
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — AniList
+  # ---------------------------------------------------------------------------
+  AniList Top Rated:
+    libraries: Anime
+    anilist_top_rated: 50
+    sync_mode: sync
+
+  AniList Popular:
+    libraries: Anime
+    anilist_popular: 50
+    sync_mode: sync
+
+  AniList Trending:
+    libraries: Anime
+    anilist_trending: 25
+    sync_mode: sync
+
+  AniList IDs:
+    libraries: Anime
+    anilist_id:
+      - 1
+      - 5114
+      - 11061
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # BUILDERS — MyAnimeList
+  # ---------------------------------------------------------------------------
+  MAL All Time:
+    libraries: Anime
+    mal_all: 100
+    sync_mode: sync
+
+  MAL Airing:
+    libraries: Anime
+    mal_airing: 25
+    sync_mode: sync
+
+  MAL Popular:
+    libraries: Anime
+    mal_popular: 50
+    sync_mode: sync
+
+  MAL IDs:
+    libraries: Anime
+    mal_id:
+      - 1
+      - 5114
+    sync_mode: sync
+
+  MAL Userlist:
+    libraries: Anime
+    mal_userlist:
+      username: kometa
+      status: completed
+      sort_by: score
+      limit: 100
+    sync_mode: sync
+
+  MAL Search:
+    libraries: Anime
+    mal_search:
+      sort_by: score
+      limit: 50
+      type: tv
+      status: complete
+      genre: Action
+      score.gt: 7
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # FILTERS — narrow items selected by a builder
+  # ---------------------------------------------------------------------------
+  Filtered Playlist:
+    libraries:
+      - Movies
+      - TV Shows
+    tmdb_trending_weekly: 100
+    filters:
+      audience_rating.gte: 7.0
+      genre:
+        - Action
+        - Thriller
+    sync_mode: sync
+    limit: 25

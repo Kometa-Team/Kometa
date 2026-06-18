@@ -277,6 +277,48 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
                     ]
                 },
+                "tmdb_crew": {
+                    "description": "TMDb Person ID(s) to build from their crew credits.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_actor_details": {
+                    "description": "TMDb Person ID(s) for acting credits. Also fetches person info.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_crew_details": {
+                    "description": "TMDb Person ID(s) for crew credits. Also fetches person info.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_director_details": {
+                    "description": "TMDb Person ID(s) for directing credits. Also fetches person info.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_producer_details": {
+                    "description": "TMDb Person ID(s) for producing credits. Also fetches person info.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
+                "tmdb_writer_details": {
+                    "description": "TMDb Person ID(s) for writing credits. Also fetches person info.",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
                 "tmdb_network": {
                     "description": "TMDb Network ID(s).",
                     "oneOf": [
@@ -302,6 +344,8 @@
                 "tmdb_top_rated": { "type": "integer", "minimum": 1, "description": "Number of top-rated TMDb movies/shows to get." },
                 "tmdb_now_playing": { "type": "integer", "minimum": 1, "description": "Number of now-playing TMDb movies to get." },
                 "tmdb_upcoming": { "type": "integer", "minimum": 1, "description": "Number of upcoming TMDb movies to get." },
+                "tmdb_airing_today": { "type": "integer", "minimum": 1, "description": "Number of airing-today TMDb shows to get." },
+                "tmdb_on_the_air": { "type": "integer", "minimum": 1, "description": "Number of on-the-air TMDb shows to get." },
                 "tmdb_trending_daily": { "type": "integer", "minimum": 1, "description": "Number of daily trending TMDb items to get." },
                 "tmdb_trending_weekly": { "type": "integer", "minimum": 1, "description": "Number of weekly trending TMDb items to get." },
                 "tmdb_discover": {
@@ -473,6 +517,38 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
                     ]
                 },
+                "letterboxd_user_films": {
+                    "description": "Letterboxd user films page(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-user-page-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-user-page-entry" }] } }
+                    ]
+                },
+                "letterboxd_user_films_details": {
+                    "description": "Letterboxd user films page(s). Also fetches details.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-user-page-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-user-page-entry" }] } }
+                    ]
+                },
+                "letterboxd_user_reviews": {
+                    "description": "Letterboxd user reviews page(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-user-page-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-user-page-entry" }] } }
+                    ]
+                },
+                "letterboxd_user_reviews_details": {
+                    "description": "Letterboxd user reviews page(s). Also fetches details.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/letterboxd-user-page-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-user-page-entry" }] } }
+                    ]
+                },
 
                 "icheckmovies_list": {
                     "description": "ICheckMovies List URL(s).",
@@ -487,6 +563,48 @@
                     "description": "BoxOfficeMojo list(s) by ID.",
                     "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }]
                 },
+                "mojo_world": {
+                    "description": "BoxOfficeMojo worldwide chart for a given year.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-world-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-world-entry" } }
+                    ]
+                },
+                "mojo_domestic": {
+                    "description": "BoxOfficeMojo domestic chart.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-range-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-range-entry" } }
+                    ]
+                },
+                "mojo_all_time": {
+                    "description": "BoxOfficeMojo all-time chart.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-all-time-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-all-time-entry" } }
+                    ]
+                },
+                "mojo_international": {
+                    "description": "BoxOfficeMojo international chart (weekend/monthly/quarterly/yearly).",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-intl-range-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-intl-range-entry" } }
+                    ]
+                },
+                "mojo_record": {
+                    "description": "BoxOfficeMojo record chart (opening weekend, per-theater averages, etc.).",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-record-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-record-entry" } }
+                    ]
+                },
+                "mojo_never": {
+                    "description": "BoxOfficeMojo 'Never in the Top N' chart.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/mojo-never-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/mojo-never-entry" } }
+                    ]
+                },
 
                 "reciperr_list": {
                     "description": "Reciperr list URL(s).",
@@ -496,9 +614,36 @@
                 "stevenlu_popular": { "type": "boolean", "description": "Get StevenLu's Popular Movies list." },
                 "stevenlu2_popular": { "type": "integer", "minimum": 1 },
 
+                "simkl_trending": {
+                    "description": "Simkl trending titles. Integer limit or object with period and limit.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 500 },
+                        { "$ref": "#/definitions/simkl-trending-entry" }
+                    ]
+                },
+                "simkl_dvd": {
+                    "description": "Simkl DVD releases. Integer limit or object with limit.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 500 },
+                        { "$ref": "#/definitions/simkl-dvd-entry" }
+                    ]
+                },
+
+                "text_file": {
+                    "description": "Path(s) to a plain-text file containing one IMDb/TMDb/TVDb ID per line.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
                 "anidb_id": {
-                    "description": "AniDB ID(s).",
-                    "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }]
+                    "description": "AniDB ID(s). Accepts integer, comma-separated string, or array.",
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
                 },
                 "anidb_relation": {
                     "description": "AniDB ID to get all relations of.",
@@ -506,16 +651,33 @@
                 },
                 "anidb_popular": { "type": "integer", "minimum": 1, "maximum": 30, "description": "Number of items from AniDB's popular anime list (max 30)." },
                 "anidb_tag": {
-                    "description": "AniDB Tag(s) to build from.",
-                    "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }]
+                    "description": "AniDB Tag(s) to build from. Accepts tag ID, string name, dict with tag_id/limit, or array.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        { "type": "object" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }, { "type": "object" }] } }
+                    ]
+                },
+                "anidb_tag_name": {
+                    "description": "AniDB Tag(s) by name. Accepts string, dict with tags/min_weight, or array.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "object" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object" }] } }
+                    ]
                 },
 
                 "anilist_top_rated": { "type": "integer", "minimum": 1, "description": "Number of AniList top-rated anime." },
                 "anilist_popular": { "type": "integer", "minimum": 1, "description": "Number of AniList popular anime." },
                 "anilist_trending": { "type": "integer", "minimum": 1, "description": "Number of AniList trending anime." },
                 "anilist_id": {
-                    "description": "AniList ID(s).",
-                    "oneOf": [{ "type": "integer" }, { "type": "array", "items": { "type": "integer" } }]
+                    "description": "AniList ID(s). Accepts integer, comma-separated string, or array.",
+                    "oneOf": [
+                        { "type": "integer" },
+                        { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
                 },
                 "anilist_relations": {
                     "description": "AniList ID to get all relations of.",
@@ -565,25 +727,101 @@
                 "item_assets": { "type": "boolean" },
                 "item_refresh": { "type": "boolean" },
                 "item_refresh_delay": { "type": "integer", "minimum": 0 },
+                "item_tmdb_season_titles": { "type": "boolean", "description": "Update season titles from TMDb for matched shows." },
+                "revert_overlay": { "type": "boolean", "description": "Revert overlays on items in this collection." },
+                "item_analyze": { "type": "boolean", "description": "Trigger Plex analysis (chapter images, etc.) on matched items." },
+                "item_lock_background": { "type": "boolean", "description": "Lock/unlock background art on matched items." },
+                "item_lock_poster": { "type": "boolean", "description": "Lock/unlock poster art on matched items." },
+                "item_lock_square_art": { "type": "boolean", "description": "Lock/unlock square art on matched items." },
+                "item_lock_title": { "type": "boolean", "description": "Lock/unlock title field on matched items." },
+                "item_critic_rating": {
+                    "description": "Set critic rating on matched items (0.0–10.0, null to clear).",
+                    "oneOf": [{ "type": "number", "minimum": 0, "maximum": 10 }, { "type": "null" }]
+                },
+                "item_audience_rating": {
+                    "description": "Set audience rating on matched items (0.0–10.0, null to clear).",
+                    "oneOf": [{ "type": "number", "minimum": 0, "maximum": 10 }, { "type": "null" }]
+                },
+                "item_user_rating": {
+                    "description": "Set user rating on matched items (0.0–10.0, null to clear).",
+                    "oneOf": [{ "type": "number", "minimum": 0, "maximum": 10 }, { "type": "null" }]
+                },
+                "non_item_remove_label": { "$ref": "#/definitions/tag-value", "description": "Remove label(s) from items NOT in this collection." },
+                "item_genre": { "$ref": "#/definitions/tag-value", "description": "Append genre(s) to matched items." },
+                "item_genre.remove": { "$ref": "#/definitions/tag-value" },
+                "item_genre.sync": { "$ref": "#/definitions/tag-value" },
+                "item_edition": {
+                    "description": "Set edition field on matched items (null to clear).",
+                    "oneOf": [{ "type": "string" }, { "type": "null" }]
+                },
+                "item_radarr_tag": { "$ref": "#/definitions/tag-value", "description": "Append Radarr tag(s) to matched items." },
+                "item_radarr_tag.remove": { "$ref": "#/definitions/tag-value" },
+                "item_radarr_tag.sync": { "$ref": "#/definitions/tag-value" },
+                "item_sonarr_tag": { "$ref": "#/definitions/tag-value", "description": "Append Sonarr tag(s) to matched items." },
+                "item_sonarr_tag.remove": { "$ref": "#/definitions/tag-value" },
+                "item_sonarr_tag.sync": { "$ref": "#/definitions/tag-value" },
+                "item_album_sorting": { "type": "string", "description": "Set album sort order for matched artist items (music libraries)." },
+                "url_square_art": { "type": "string", "description": "URL of a square-art image to apply to the collection." },
+                "file_square_art": { "type": "string", "description": "Local path to a square-art image." },
+                "icheckmovies_description": { "type": "string", "description": "ICheckMovies list URL to pull a collection description from." },
+                "suppress_overlays": {
+                    "description": "Overlay name(s) to suppress on items in this collection.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "album_sorting": { "type": "string", "description": "Default album sort order for this library (music libraries)." },
+                "asset_folders": { "type": "boolean", "description": "Use per-item asset sub-folders instead of a flat asset directory." },
+                "create_asset_folders": { "type": "boolean", "description": "Create missing asset sub-folders automatically." },
+
+                "item_episode_sorting": { "type": "string", "enum": ["default", "oldest", "newest"] },
+                "item_keep_episodes": { "type": "string", "enum": ["all", "5_latest", "3_latest", "latest", "past_3", "past_7", "past_30"] },
+                "item_delete_episodes": { "type": "string", "enum": ["never", "day", "week", "month", "refresh"] },
+                "item_season_display": { "type": "string", "enum": ["default", "show", "hide"] },
+                "item_episode_ordering": { "type": "string", "enum": ["default", "tmdb_aired", "tvdb_aired", "tvdb_dvd", "tvdb_absolute"] },
+                "item_metadata_language": { "type": "string", "enum": ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US", "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID", "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"] },
+                "item_use_original_title": { "type": "string", "enum": ["default", "no", "yes"] },
+                "item_credits_detection": { "type": "string", "enum": ["default", "disabled"] },
+                "item_audio_language": { "type": "string", "enum": ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US", "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID", "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"] },
+                "item_subtitle_language": { "type": "string", "enum": ["default", "ar-SA", "ca-ES", "cs-CZ", "da-DK", "de-DE", "el-GR", "en-AU", "en-CA", "en-GB", "en-US", "es-ES", "es-MX", "et-EE", "fa-IR", "fi-FI", "fr-CA", "fr-FR", "he-IL", "hi-IN", "hu-HU", "id-ID", "it-IT", "ja-JP", "ko-KR", "lt-LT", "lv-LV", "nb-NO", "nl-NL", "pl-PL", "pt-BR", "pt-PT", "ro-RO", "ru-RU", "sk-SK", "sv-SE", "th-TH", "tr-TR", "uk-UA", "vi-VN", "zh-CN", "zh-HK", "zh-TW"] },
+                "item_subtitle_mode": { "type": "string", "enum": ["default", "manual", "foreign", "always"] },
+
+                "append_label": { "$ref": "#/definitions/tag-value", "description": "Append label(s) to matched items without replacing existing labels." },
+                "variables": { "type": "object", "additionalProperties": true, "description": "Template variable overrides for this collection block." },
+                "allowed_library_types": {
+                    "description": "Library type(s) this collection is restricted to.",
+                    "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "playlist_name": { "type": "string", "description": "Override the playlist display name." },
+                "collection_name": { "type": "string", "description": "Override the collection display name." },
+                "tmdb_deathday": { "type": "string", "description": "TMDb person death-date used in template conditionals." },
+                "smart_url": { "type": "string", "description": "Raw Plex smart-collection URL (advanced/legacy use)." },
+
                 "radarr_add_missing": { "type": "boolean" },
                 "radarr_add_existing": { "type": "boolean" },
+                "radarr_upgrade_existing": { "type": "boolean" },
+                "radarr_monitor_existing": { "type": "boolean" },
                 "radarr_folder": { "type": "string" },
-                "radarr_monitor": { "type": "boolean" },
+                "radarr_monitor": { "type": "string", "enum": ["movie", "collection", "none"] },
                 "radarr_search": { "type": "boolean" },
                 "radarr_availability": { "type": "string", "enum": ["announced", "cinemas", "released", "db"] },
                 "radarr_quality": { "type": "string" },
                 "radarr_tag": { "$ref": "#/definitions/tag-value" },
+                "radarr_ignore_cache": { "type": "boolean" },
                 "sonarr_add_missing": { "type": "boolean" },
                 "sonarr_add_existing": { "type": "boolean" },
+                "sonarr_upgrade_existing": { "type": "boolean" },
+                "sonarr_monitor_existing": { "type": "boolean" },
                 "sonarr_folder": { "type": "string" },
                 "sonarr_monitor": { "type": "string", "enum": ["all", "future", "missing", "existing", "pilot", "first", "latest", "none"] },
                 "sonarr_search": { "type": "boolean" },
                 "sonarr_cutoff_search": { "type": "boolean" },
                 "sonarr_quality": { "type": "string" },
                 "sonarr_language": { "type": "string" },
+                "sonarr_series": { "type": "string", "enum": ["standard", "daily", "anime"] },
                 "sonarr_series_type": { "type": "string", "enum": ["standard", "daily", "anime"] },
+                "sonarr_season": { "type": "boolean" },
                 "sonarr_tag": { "$ref": "#/definitions/tag-value" },
                 "sonarr_season_folder": { "type": "boolean" },
+                "sonarr_ignore_cache": { "type": "boolean" },
 
                 "filters": {
                     "description": "Filters applied to items found by builders.",
@@ -803,7 +1041,8 @@
             "required": ["url"],
             "properties": {
                 "url": { "type": "string", "format": "uri" },
-                "limit": { "type": "integer", "minimum": 1 }
+                "limit": { "type": "integer", "minimum": 1 },
+                "sort_by": { "type": "string" }
             }
         },
 
@@ -813,7 +1052,23 @@
             "properties": {
                 "url": { "type": "string", "format": "uri" },
                 "limit": { "type": "integer", "minimum": 1 },
-                "sort_by": { "type": "string" }
+                "sort_by": { "type": "string" },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "rating": {}
+            }
+        },
+
+        "letterboxd-user-page-entry": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "username": { "type": "string" },
+                "usernames": { "type": "array", "items": { "type": "string" } },
+                "min_rating": { "type": "number" },
+                "limit": { "type": "integer", "minimum": 1 },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "sort_by": { "type": "string" },
+                "incremental": { "type": "boolean" },
+                "note": { "type": "string" }
             }
         },
 
@@ -875,7 +1130,12 @@
             "properties": {
                 "username": { "type": "string" },
                 "list": { "type": "string" },
-                "sort_by": { "type": "string" }
+                "list_name": { "type": "string" },
+                "sort_by": { "type": "string" },
+                "score.gt": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.gte": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.lt": { "type": "number", "minimum": 0, "maximum": 10 },
+                "score.lte": { "type": "number", "minimum": 0, "maximum": 10 }
             }
         },
 
@@ -884,6 +1144,110 @@
             "properties": {
                 "limit": { "type": "integer", "minimum": 1 },
                 "sort_by": { "type": "string" }
+            }
+        },
+
+        "mojo-world-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["year"],
+            "properties": {
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mojo-range-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["range"],
+            "properties": {
+                "range": { "type": "string", "enum": ["daily", "weekend", "weekly", "monthly", "quarterly", "yearly", "season", "holiday"] },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "range_data": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mojo-all-time-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["chart"],
+            "properties": {
+                "chart": { "type": "string" },
+                "content_rating_filter": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mojo-intl-range-entry": {
+            "description": "mojo_international — international box-office chart for a specific time range.",
+            "type": "object", "additionalProperties": false,
+            "required": ["range"],
+            "properties": {
+                "range": {
+                    "type": "string",
+                    "enum": ["weekend", "monthly", "quarterly", "yearly"]
+                },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "range_data": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mojo-record-entry": {
+            "description": "mojo_record — one of BoxOfficeMojo's named record charts (opening weekend, per-theater averages, etc.).",
+            "type": "object", "additionalProperties": false,
+            "required": ["chart"],
+            "properties": {
+                "chart": {
+                    "type": "string",
+                    "enum": [
+                        "second_weekend_drop", "post_thanksgiving_weekend_drop",
+                        "top_opening_weekend", "worst_opening_weekend_theater_avg",
+                        "top_opening_weekend_theater_avg_all", "top_opening_weekend_theater_avg_wide",
+                        "january", "february", "march", "april", "may", "june",
+                        "july", "august", "september", "october", "november", "december",
+                        "spring", "summer", "fall", "holiday_season", "winter",
+                        "g", "g/pg", "pg", "pg-13", "r", "nc-17",
+                        "mlk", "easter", "4th", "memorial", "labor", "president",
+                        "thanksgiving_3", "thanksgiving_5",
+                        "mlk_opening", "easter_opening", "memorial_opening",
+                        "labor_opening", "president_opening",
+                        "thanksgiving_3_opening", "thanksgiving_5_opening",
+                        "opening_week", "biggest_theater_drop", "opening_day",
+                        "single_day_grosses", "christmas_day_gross", "new_years_day_gross",
+                        "friday", "saturday", "sunday", "monday", "tuesday", "wednesday", "thursday",
+                        "friday_non_opening", "saturday_non_opening", "sunday_non_opening",
+                        "monday_non_opening", "tuesday_non_opening", "wednesday_non_opening", "thursday_non_opening"
+                    ]
+                },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "mojo-never-entry": {
+            "description": "mojo_never — top-grossing films that never cracked the Top 1/5/10.",
+            "type": "object", "additionalProperties": false,
+            "required": ["never", "chart"],
+            "properties": {
+                "never": { "type": "string", "enum": ["1", "5", "10"] },
+                "chart": { "type": "string", "enum": ["domestic", "worldwide"] },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "simkl-trending-entry": {
+            "description": "simkl_trending object form — period + optional limit.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "period": { "type": "string", "enum": ["today", "week", "month"] },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 500 }
+            }
+        },
+
+        "simkl-dvd-entry": {
+            "description": "simkl_dvd object form — optional limit.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "limit": { "type": "integer", "minimum": 1, "maximum": 500 }
             }
         },
 
@@ -990,9 +1354,75 @@
             "additionalProperties": false,
             "properties": {
                 "default": { "type": "string" },
+                "pmm": { "type": "string" },
                 "template_variables": { "type": "object", "additionalProperties": true }
             },
-            "required": ["default"]
+            "oneOf": [
+                { "required": ["default"] },
+                { "required": ["pmm"] }
+            ]
+        },
+
+        "external-template-file-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "file": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["file"]
+        },
+
+        "external-template-folder-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "folder": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["folder"]
+        },
+
+        "external-template-url-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": { "type": "string", "format": "uri", "pattern": "^(https?)://" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["url"]
+        },
+
+        "external-template-git-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "git": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["git"]
+        },
+
+        "external-template-repo-block": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "repo": { "type": "string" },
+                "template_variables": { "type": "object", "additionalProperties": true }
+            },
+            "required": ["repo"]
+        },
+
+        "external-template-path": {
+            "oneOf": [
+                { "type": "string" },
+                { "$ref": "#/definitions/external-template-default-block" },
+                { "$ref": "#/definitions/external-template-file-block" },
+                { "$ref": "#/definitions/external-template-folder-block" },
+                { "$ref": "#/definitions/external-template-url-block" },
+                { "$ref": "#/definitions/external-template-git-block" },
+                { "$ref": "#/definitions/external-template-repo-block" }
+            ]
         },
 
         "external-templates-list": {
@@ -1000,25 +1430,9 @@
             "oneOf": [
                 {
                     "type": "array",
-                    "items": {
-                        "oneOf": [
-                            { "$ref": "#/definitions/external-template-default-block" },
-                            { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
-                            { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
-                        ]
-                    }
+                    "items": { "$ref": "#/definitions/external-template-path" }
                 },
-                {
-                    "oneOf": [
-                        { "$ref": "#/definitions/external-template-default-block" },
-                        { "type": "object", "additionalProperties": false, "properties": { "file": { "type": "string" } }, "required": ["file"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "url": { "type": "string", "format": "uri" } }, "required": ["url"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "git": { "type": "string" } }, "required": ["git"] },
-                        { "type": "object", "additionalProperties": false, "properties": { "repo": { "type": "string" } }, "required": ["repo"] }
-                    ]
-                }
+                { "$ref": "#/definitions/external-template-path" }
             ]
         },
 

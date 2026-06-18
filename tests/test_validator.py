@@ -340,7 +340,7 @@ def test_detect_schema_type_config():
 
 
 def test_detect_schema_type_templates_only():
-    assert detect_schema_type({"templates": {}}) is None
+    assert detect_schema_type({"templates": {}}) == "templates"
 
 
 def test_detect_schema_type_templates_with_collections():
@@ -399,12 +399,23 @@ def test_fileset_validator_parse_error(tmp_path, monkeypatch):
 
 def test_fileset_validator_unknown_type(tmp_path, monkeypatch):
     monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    f = tmp_path / "unknown.yml"
+    f.write_text("unknown:\n  key: true\n", encoding="utf-8")
+    v = FileSetValidator([str(f)], SCHEMA_DIR)
+    passed, per_file_errors, aggregate_gaps = v.validate()
+    assert passed
+    assert per_file_errors == {}
+
+
+def test_fileset_validator_templates_only(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
     f = tmp_path / "templates_only.yml"
     f.write_text("templates:\n  MyTemplate:\n    test: true\n", encoding="utf-8")
     v = FileSetValidator([str(f)], SCHEMA_DIR)
     passed, per_file_errors, aggregate_gaps = v.validate()
     assert passed
     assert per_file_errors == {}
+    assert aggregate_gaps == {}
 
 
 def test_fileset_validator_aggregate_gaps(tmp_path, monkeypatch):

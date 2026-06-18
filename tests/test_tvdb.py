@@ -28,7 +28,9 @@ def test_get_request_raises_notfound_on_4xx():
         t.get_request("https://www.thetvdb.com/dereferrer/series/463160")
 
 
-def test_get_request_raises_failed_on_5xx():
+def test_get_request_raises_failed_on_5xx(monkeypatch):
+    # Suppress tenacity's wait so the 6-retry loop finishes instantly.
+    monkeypatch.setattr("time.sleep", lambda _: None)
     t = _make_tvdb(503)
     with pytest.raises(Failed) as excinfo:
         t.get_request("https://www.thetvdb.com/dereferrer/series/81189")

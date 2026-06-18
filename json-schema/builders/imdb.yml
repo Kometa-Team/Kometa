@@ -1,0 +1,328 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # imdb_chart  — single chart string
+  # ---------------------------------------------------------------------------
+  IMDb Top 250 Movies:
+    imdb_chart: top_movies
+    sync_mode: sync
+    collection_order: custom
+    summary: IMDb's official Top 250 rated movies of all time.
+
+  IMDb Box Office:
+    imdb_chart: box_office
+    sync_mode: sync
+    collection_order: custom
+    summary: Current top movies at the box office according to IMDb.
+
+  IMDb Popular Movies:
+    imdb_chart: popular_movies
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top English Movies:
+    imdb_chart: top_english
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Popular Shows:
+    imdb_chart: popular_shows
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top 250 Shows:
+    imdb_chart: top_shows
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Lowest Rated Movies:
+    imdb_chart: lowest_rated
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top Indian Movies:
+    imdb_chart: top_indian
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top Tamil Movies:
+    imdb_chart: top_tamil
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top Telugu Movies:
+    imdb_chart: top_telugu
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Top Malayalam Movies:
+    imdb_chart: top_malayalam
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Trending India:
+    imdb_chart: trending_india
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Trending Tamil:
+    imdb_chart: trending_tamil
+    sync_mode: sync
+    collection_order: custom
+
+  IMDb Trending Telugu:
+    imdb_chart: trending_telugu
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # imdb_chart  — array of multiple chart types
+  # ---------------------------------------------------------------------------
+  IMDb Top English And Popular:
+    imdb_chart:
+      - top_english
+      - popular_movies
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # imdb_id  — comma-separated string
+  # ---------------------------------------------------------------------------
+  IMDb ID Comma Separated:
+    imdb_id: tt0120737, tt0167261, tt0167260
+    summary: The Lord of the Rings trilogy identified by IMDb IDs.
+
+  # ---------------------------------------------------------------------------
+  # imdb_id  — YAML list
+  # ---------------------------------------------------------------------------
+  IMDb ID List:
+    imdb_id:
+      - tt0816692
+      - tt0110912
+      - tt0137523
+      - tt0245429
+    summary: Sci-fi classics and cult films selected by IMDb ID.
+
+  # ---------------------------------------------------------------------------
+  # imdb_list  — simple string URL form
+  # ---------------------------------------------------------------------------
+  IMDb List URL String:
+    imdb_list: https://www.imdb.com/list/ls005526372/
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # imdb_list  — object form with list_id, limit, sort_by
+  # ---------------------------------------------------------------------------
+  IMDb List Object Form:
+    imdb_list:
+      list_id: ls005526372
+      limit: 100
+      sort_by: rating.desc
+    sync_mode: sync
+    collection_order: custom
+    summary: Top-rated items from an IMDb list, capped at 100 and sorted by rating.
+
+  # ---------------------------------------------------------------------------
+  # imdb_list  — array of list objects mixing URL and object forms
+  # ---------------------------------------------------------------------------
+  IMDb List Multiple:
+    imdb_list:
+      - list_id: ls005526372
+        limit: 50
+        sort_by: popularity.asc
+      - list_id: ls062411875
+        limit: 75
+        sort_by: votes.desc
+      - url: https://www.imdb.com/list/ls095173850/
+        limit: 40
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # imdb_watchlist  — object form with user_id, limit, sort_by
+  # ---------------------------------------------------------------------------
+  IMDb Watchlist Single:
+    imdb_watchlist:
+      user_id: ur12345678
+      limit: 50
+      sort_by: added.desc
+    sync_mode: sync
+    collection_order: custom
+    summary: Movies from a specific IMDb user's watchlist.
+
+  # ---------------------------------------------------------------------------
+  # imdb_watchlist  — array of watchlists
+  # ---------------------------------------------------------------------------
+  IMDb Watchlist Multiple:
+    imdb_watchlist:
+      - user_id: ur12345678
+        limit: 100
+        sort_by: rating.desc
+      - user_id: ur98765432
+        limit: 50
+        sort_by: title.asc
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # imdb_award  — Academy Awards winners
+  # ---------------------------------------------------------------------------
+  Oscar Best Picture Winners:
+    imdb_award:
+      event_id: ev0000003
+      event_year:
+        - 2020
+        - 2021
+        - 2022
+        - 2023
+        - 2024
+      award_filter: Best Motion Picture of the Year
+      winning: true
+    sync_mode: sync
+    summary: Academy Award Best Picture winners from 2020 to 2024.
+
+  # ---------------------------------------------------------------------------
+  # imdb_award  — Golden Globes nominations (not filtered to winners)
+  # ---------------------------------------------------------------------------
+  Golden Globe Nominees Drama 2023:
+    imdb_award:
+      event_id: ev0000292
+      event_year: 2023
+      category_filter: Best Motion Picture - Drama
+      winning: false
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # imdb_award  — multi-year range string, multiple award & category filters
+  # ---------------------------------------------------------------------------
+  Cannes Palme d Or Range:
+    imdb_award:
+      event_id: ev0000147
+      event_year: 2010-2024
+      award_filter:
+        - Palme d'Or
+        - Grand Prix
+      category_filter:
+        - Competition
+      winning: true
+    sync_mode: sync
+    collection_order: custom
+    summary: Cannes Film Festival Palme d'Or and Grand Prix winners 2010-2024.
+
+  # ---------------------------------------------------------------------------
+  # imdb_award  — Razzie Awards
+  # ---------------------------------------------------------------------------
+  Razzie Worst Picture:
+    imdb_award:
+      event_id: ev0000558
+      event_year: 2015-2024
+      award_filter: Worst Picture
+      winning: true
+    sync_mode: sync
+    summary: Razzie Award Worst Picture winners from 2015 to 2024.
+
+  # ---------------------------------------------------------------------------
+  # imdb_search  — minimal example (type + rating filter)
+  # ---------------------------------------------------------------------------
+  IMDb Search Action Movies 7 Plus:
+    imdb_search:
+      type: movie
+      genre: action
+      rating.gte: 7.0
+      votes.gte: 50000
+      limit: 100
+      sort_by: rating.desc
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # imdb_search  — rich block exercising as many parameters as possible
+  # ---------------------------------------------------------------------------
+  IMDb Search Rich Block:
+    imdb_search:
+      # Output control
+      limit: 200
+      sort_by: votes.desc
+
+      # Title and type
+      title: the
+      type: movie
+      type.not: tv_episode,video_game
+
+      # Release window
+      release.after: "2000-01-01"
+      release.before: "2024-12-31"
+
+      # Ratings and votes
+      rating.gte: 6.5
+      rating.lte: 10.0
+      votes.gte: 10000
+      votes.lte: 3000000
+
+      # Genre
+      genre: drama,thriller
+      genre.any: crime,mystery
+      genre.not: horror,animation
+
+      # Interests (IMDb topic tags)
+      interests.any: based on novel or book,revenge
+
+      # Awards / rankings
+      event: oscar,bafta
+      event.winning: oscar
+      imdb_top: 1000
+
+      # Topics
+      topic: plot,trivia
+
+      # Company / studio
+      company: warner,universal
+
+      # Content rating
+      content_rating:
+        - rating: R
+          region: US
+        - rating: "15"
+          region: GB
+
+      # Country / origin
+      country.any: us,gb,fr
+      country.not: in
+      country.origin: us
+
+      # Keywords
+      keyword.any: spy,heist,time-travel
+      keyword.not: mockumentary
+
+      # IMDb lists membership
+      list.any: ls005526372,ls062411875
+
+      # Language
+      language.primary: en
+      language.not: zh,ko
+
+      # Popularity window
+      popularity.gte: 1
+      popularity.lte: 5000
+
+      # Cast & character
+      cast.any: nm0000093,nm0000190
+      character: detective
+
+      # Runtime
+      runtime.gte: 80
+      runtime.lte: 210
+
+      # Adult content
+      adult: false
+
+      # Text search fields
+      plot.any: murder,conspiracy
+      trivia.any: cameo,director
+      quote.any: you can't handle the truth
+      soundtrack.any: original score
+      location.any: new york,paris
+      alternate_version.not: director's cut
+      crazy_credit.any: dedicated to,in memory of
+      goof.not: continuity
+    sync_mode: sync
+    collection_order: custom
+    summary: IMDb advanced search exercising the full breadth of available parameters.

@@ -1,0 +1,169 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # letterboxd_list — movies from a Letterboxd list or film-search URL
+  # letterboxd_list_details — same, but also pulls list description for metadata
+  #
+  # Input: URL string or dict with:
+  #   url      (string)  — Letterboxd list URL or film-search URL
+  #   limit    (int)     — max items to return
+  #   rating   (range)   — filter by list-owner rating, e.g. 8-10 (10-pt scale)
+  #   year     (range)   — filter by release year, e.g. 1990-1999
+  #   note     (string)  — search within list-owner's entry notes
+  #
+  # Note: rating/year/note only work with List Detail URLs (/detail/) or
+  #       review pages (/USERNAME/films/reviews/)
+  # ---------------------------------------------------------------------------
+
+  # --- Simple string form ---
+  Vultures 101 Best Movie Endings:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+
+  # --- letterboxd_list_details pulls in the list description ---
+  Vultures 101 Best Endings (with Description):
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list_details: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+
+  # --- Dict form with year range filter ---
+  90s Favorites from Vultures List:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list_details:
+      url: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+      year: 1990-1999
+
+  # --- Dict form with rating filter (8-10 on 10-pt scale) ---
+  Highly Rated List Picks:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list_details:
+      url: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+      rating: 8-10
+
+  # --- Dict form with limit ---
+  Top 25 from List:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list:
+      url: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+      limit: 25
+
+  # --- Dict form combining year + rating + limit ---
+  80s Classics (Well Rated, Top 20):
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_list_details:
+      url: https://letterboxd.com/brianformo/list/vultures-101-best-movie-endings/
+      year: 1980-1989
+      rating: 7-10
+      limit: 20
+
+  # ---------------------------------------------------------------------------
+  # letterboxd_user_films — every film a Letterboxd user has watched
+  #
+  # Simple form: letterboxd_user_films: <username>
+  # Dict form:
+  #   username    (string, required)
+  #   sort_by     (string)  — one of:
+  #                 release_date_newest, release_date_earliest, name,
+  #                 popularity, when_added_newest, when_added_earliest,
+  #                 when_rated_newest, when_rated_earliest,
+  #                 average_rating_highest, average_rating_lowest,
+  #                 user_rating_highest, user_rating_lowest,
+  #                 length_shortest, length_longest
+  #               Default: release_date_newest
+  #   min_rating  (number 0-10) — minimum user rating to include
+  #   limit       (int)     — max items to return
+  #   year        (range)   — e.g. 1990-1999
+  #   note        (string)  — search within the user's diary notes
+  #   incremental (bool, default true) — only parse new items since last run
+  # ---------------------------------------------------------------------------
+
+  # --- Simple string form ---
+  Dave Watched Films:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_films: dave
+
+  # --- Dict form: user's top-rated films ---
+  Dave Top Rated:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_films:
+      username: dave
+      sort_by: user_rating_highest
+      min_rating: 8
+      limit: 100
+
+  # --- Dict form: recently added, specific year range ---
+  Dave 90s Watches:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_films:
+      username: dave
+      sort_by: when_added_newest
+      year: 1990-1999
+
+  # --- Multiple users ---
+  Friends Watched Films:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_films:
+      - dave
+      - murrayfilm
+
+  # --- Incremental disabled (full re-parse every run) ---
+  Dave Complete Library (Full Sync):
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_films:
+      username: dave
+      sort_by: popularity
+      incremental: false
+      limit: 500
+
+  # ---------------------------------------------------------------------------
+  # letterboxd_user_reviews — films a Letterboxd user has reviewed
+  # letterboxd_user_reviews_details — same, pulls review text as description
+  #
+  # Same parameters as letterboxd_user_films
+  # ---------------------------------------------------------------------------
+
+  # --- Simple string form ---
+  Dave Reviewed Films:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_reviews: dave
+
+  # --- Dict form: highly rated reviews ---
+  Dave Best Reviewed Films:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_reviews:
+      username: dave
+      sort_by: user_rating_highest
+      min_rating: 9
+      limit: 50
+
+  # --- letterboxd_user_reviews_details with note search ---
+  Dave Reviews Mentioning Cinematography:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_reviews_details:
+      username: dave
+      note: cinematography
+      sort_by: when_rated_newest
+
+  # --- Multiple users with per-entry min_rating ---
+  Friends Top Reviews:
+    collection_order: custom
+    sync_mode: sync
+    letterboxd_user_reviews:
+      - username: dave
+        min_rating: 9
+      - username: murrayfilm
+        min_rating: 8

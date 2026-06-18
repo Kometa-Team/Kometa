@@ -1,0 +1,145 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+
+  # ---------------------------------------------------------------------------
+  # tvdb_list — TVDb list URL (string or list of strings)
+  # Accepts: https://www.thetvdb.com/lists/<slug> URL
+  # Works for both movies and series libraries.
+  # ---------------------------------------------------------------------------
+  TVDb Sci-Fi List:
+    tvdb_list: https://www.thetvdb.com/lists/top-science-fiction
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # tvdb_list — multiple URLs as a YAML list
+  # ---------------------------------------------------------------------------
+  TVDb Action And Adventure:
+    tvdb_list:
+      - https://www.thetvdb.com/lists/top-action-series
+      - https://www.thetvdb.com/lists/top-adventure-series
+    sync_mode: append
+
+  # ---------------------------------------------------------------------------
+  # tvdb_list_details — same as tvdb_list but also pulls the list's
+  # description (summary) and poster image and applies them to the collection.
+  # Only the first URL's metadata is used when multiple URLs are provided.
+  # ---------------------------------------------------------------------------
+  TVDb Fantasy List With Details:
+    tvdb_list_details: https://www.thetvdb.com/lists/epic-fantasy-series
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # tvdb_list_poster — fetch only the poster from a TVDb list URL
+  # (does not build a collection — used as a metadata source alongside
+  # another builder)
+  # ---------------------------------------------------------------------------
+  TVDb List Poster Example:
+    tvdb_list: https://www.thetvdb.com/lists/top-science-fiction
+    tvdb_list_poster: https://www.thetvdb.com/lists/top-science-fiction
+    sync_mode: sync
+    collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # tvdb_show — TVDb series ID (integer) or series slug URL
+  # Adds all episodes of the specified show to the collection (TV libraries).
+  # Accepts integer IDs directly or full URL strings.
+  # ---------------------------------------------------------------------------
+  Breaking Bad:
+    tvdb_show: 81189
+    summary: The complete run of Breaking Bad as identified by TVDb series ID.
+
+  The Mandalorian:
+    tvdb_show: https://www.thetvdb.com/series/the-mandalorian
+    summary: All episodes of The Mandalorian pulled via TVDb series URL.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_show — list of series IDs
+  # ---------------------------------------------------------------------------
+  Acclaimed Crime Dramas:
+    tvdb_show:
+      - 81189
+      - 153021
+      - 273181
+    summary: Breaking Bad, Better Call Saul, and Ozark together.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_show_details — same as tvdb_show but also sets summary, poster,
+  # and background from TVDb metadata.
+  # Only the first ID's metadata is applied when multiple IDs are provided.
+  # ---------------------------------------------------------------------------
+  Stranger Things With Details:
+    tvdb_show_details: 305074
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # tvdb_movie — TVDb movie ID (integer) or movie slug URL
+  # Adds the specified movie to the collection (movie libraries).
+  # Integer IDs are accepted directly; URLs use /movies/<slug> form.
+  # ---------------------------------------------------------------------------
+  Star Wars A New Hope:
+    tvdb_movie: https://www.thetvdb.com/movies/star-wars-episode-iv-a-new-hope
+    summary: The original Star Wars film identified via TVDb movie URL.
+
+  Blade Runner 2049:
+    tvdb_movie: 7473
+    summary: Blade Runner 2049 identified by its TVDb movie ID.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_movie — list of movie IDs
+  # ---------------------------------------------------------------------------
+  Classic Sci-Fi Films:
+    tvdb_movie:
+      - 7473
+      - 12394
+      - 3023
+    summary: Blade Runner 2049, Arrival, and Interstellar via TVDb movie IDs.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_movie_details — same as tvdb_movie but also sets summary, poster,
+  # and background from TVDb metadata.
+  # ---------------------------------------------------------------------------
+  Dune Part Two With Details:
+    tvdb_movie_details: https://www.thetvdb.com/movies/dune-part-two
+    sync_mode: sync
+
+  # ---------------------------------------------------------------------------
+  # tvdb_poster — use a TVDb show or movie URL as the source for the
+  # collection's poster image.  Value is a series/movie URL or integer ID.
+  # Must be paired with a builder key.
+  # ---------------------------------------------------------------------------
+  Sci-Fi Block With TVDb Poster:
+    tvdb_show:
+      - 81189
+      - 305074
+    tvdb_poster: 81189
+    summary: A curated block of sci-fi shows using Breaking Bad's TVDb poster.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_background — use a TVDb show or movie URL as the source for the
+  # collection's background image.
+  # ---------------------------------------------------------------------------
+  Drama Block With TVDb Background:
+    tvdb_show:
+      - 153021
+      - 273181
+    tvdb_background: 153021
+    summary: Better Call Saul and Ozark with a backdrop pulled from TVDb.
+
+  # ---------------------------------------------------------------------------
+  # tvdb_summary — set the collection description from a TVDb show/movie.
+  # Value is a series/movie URL or integer ID.
+  # ---------------------------------------------------------------------------
+  Game of Thrones Collection:
+    tvdb_show: 121361
+    tvdb_summary: 121361
+
+  # ---------------------------------------------------------------------------
+  # tvdb_description — set the collection description from a TVDb list URL.
+  # ---------------------------------------------------------------------------
+  Fantasy Series With Description:
+    tvdb_list: https://www.thetvdb.com/lists/epic-fantasy-series
+    tvdb_description: https://www.thetvdb.com/lists/epic-fantasy-series
+    sync_mode: sync
+    collection_order: custom

@@ -1,0 +1,703 @@
+# yaml-language-server: $schema=../overlay-schema.json
+overlays:
+
+  # ---------------------------------------------------------------------------
+  # IMAGE OVERLAY — file source
+  # Applies a static image from a local file path.
+  # Positioned bottom-left with explicit pixel offsets.
+  # ---------------------------------------------------------------------------
+  Streaming Badge File:
+    overlay:
+      file: config/overlays/images/netflix.png
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # IMAGE OVERLAY — url source
+  # Fetches the overlay image from a remote URL.
+  # ---------------------------------------------------------------------------
+  Streaming Badge URL:
+    overlay:
+      url: https://example.com/overlays/amazon.png
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # IMAGE OVERLAY — git source
+  # Loads image from the Kometa community repository on GitHub.
+  # ---------------------------------------------------------------------------
+  Resolution Badge Git:
+    overlay:
+      git: Kometa-Team/People/4K
+      horizontal_align: right
+      horizontal_offset: 0
+      vertical_align: top
+      vertical_offset: 0
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # IMAGE OVERLAY — repo source
+  # Loads image from a self-hosted asset server.
+  # ---------------------------------------------------------------------------
+  Resolution Badge Repo:
+    overlay:
+      repo: overlays/resolution/4K
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — audience rating variable
+  # Displays <<audience_rating>> dynamically via name: "text(<<var>>)".
+  # Minimal styling: white text with background pill.
+  # ---------------------------------------------------------------------------
+  Audience Rating Text:
+    overlay:
+      name: "text(<<audience_rating>>)"
+      horizontal_align: center
+      horizontal_offset: 0
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 55
+      font_color: "#FFFFFF"
+      back_color: "#00000099"
+      back_padding: 15
+      back_radius: 30
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — critic rating with percent modifier
+  # <<critic_rating%>> appends a % sign to the value.
+  # ---------------------------------------------------------------------------
+  Critic Rating Percent:
+    overlay:
+      name: "text(<<critic_rating%>>)"
+      horizontal_align: right
+      horizontal_offset: 20
+      vertical_align: top
+      vertical_offset: 20
+      font_size: 50
+      font_color: "#FFD700"
+      back_color: "#000000AA"
+      back_padding: 12
+      back_radius: 20
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — user rating with zero-pad modifier
+  # <<user_rating#>> shows two decimal places.
+  # ---------------------------------------------------------------------------
+  User Rating Decimals:
+    overlay:
+      name: "text(<<user_rating#>>)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 45
+      font_color: "#FFFFFF"
+      stroke_color: "#000000"
+      stroke_width: 2
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — IMDb rating from external source
+  # Uses <<imdb_rating>> which pulls the IMDb score stored by Plex.
+  # ---------------------------------------------------------------------------
+  IMDb Rating Badge:
+    overlay:
+      name: "text(<<imdb_rating>>)"
+      horizontal_align: left
+      horizontal_offset: 20
+      vertical_align: bottom
+      vertical_offset: 50
+      font: fonts/Inter-Bold.ttf
+      font_size: 63
+      font_color: "#F5C518"
+      back_color: "#00000099"
+      back_padding: 15
+      back_radius: 30
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — content rating
+  # <<content_rating>> shows the rating label (e.g. PG-13, TV-MA).
+  # Uppercase modifier: <<content_ratingU>>
+  # ---------------------------------------------------------------------------
+  Content Rating Badge:
+    overlay:
+      name: "text(<<content_ratingU>>)"
+      horizontal_align: center
+      horizontal_offset: 0
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 40
+      font_color: "#FFFFFF"
+      back_color: "#CC0000CC"
+      back_padding: 10
+      back_radius: 8
+      back_width: 120
+      back_height: 50
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — episode info (season + episode number)
+  # builder_level: episode applies overlay to episode posters/thumbs.
+  # <<season_number0>>x<<episode_number00>> gives zero-padded numbers.
+  # ---------------------------------------------------------------------------
+  Episode Number Badge:
+    overlay:
+      name: "text(S<<season_number0>>E<<episode_number00>>)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 45
+      font_color: "#FFFFFF"
+      back_color: "#1F1F1FCC"
+      back_padding: 12
+      back_radius: 5
+    builder_level: episode
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # TEXT OVERLAY — runtime with hours modifier
+  # <<runtimeH>> shows hours and minutes (e.g. "2h 15m").
+  # ---------------------------------------------------------------------------
+  Runtime Badge:
+    overlay:
+      name: "text(<<runtimeH>>)"
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 42
+      font_color: "#CCCCCC"
+      back_color: "#000000AA"
+      back_padding: 10
+      back_radius: 5
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # FULL FONT+STYLE OVERLAY — exercises all font/stroke/background properties
+  # Demonstrates every text-styling field in overlay-spec.
+  # ---------------------------------------------------------------------------
+  Styled Rating:
+    overlay:
+      name: "text(<<tmdb_rating>>)"
+      horizontal_align: left
+      horizontal_offset: 20
+      vertical_align: bottom
+      vertical_offset: 20
+      font: fonts/Roboto-Bold.ttf
+      font_style: Normal
+      font_size: 60
+      font_color: "#FFFFFF"
+      stroke_color: "#000000"
+      stroke_width: 3
+      back_color: "#003049CC"
+      back_width: 150
+      back_height: 70
+      back_align: left
+      back_padding: 8
+      back_radius: 15
+      back_line_color: "#FFFFFFAA"
+      back_line_width: 2
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # GROUP OVERLAY — mutually exclusive: only the highest-weight overlay
+  # in a group is applied per item.
+  # All three share group: resolution so only one fires.
+  # ---------------------------------------------------------------------------
+  Resolution 4K:
+    overlay:
+      name: 4K
+      group: resolution
+      weight: 30
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+    filters:
+      resolution: 4K
+
+  Resolution 1080p:
+    overlay:
+      name: 1080p
+      group: resolution
+      weight: 20
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+    filters:
+      resolution: 1080p
+
+  Resolution 720p:
+    overlay:
+      name: 720p
+      group: resolution
+      weight: 10
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+    filters:
+      resolution: 720p
+
+  # ---------------------------------------------------------------------------
+  # QUEUE OVERLAY — stacks multiple overlays in a named queue.
+  # Each item in the queue is placed sequentially (addon_offset apart).
+  # ---------------------------------------------------------------------------
+  Queue Streaming Icon:
+    overlay:
+      url: https://example.com/overlays/streaming/netflix-icon.png
+      queue: streaming_stack
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 15
+    plex_all: true
+
+  Queue Rating Icon:
+    overlay:
+      url: https://example.com/overlays/ratings/imdb-icon.png
+      queue: streaming_stack
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 15
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # COMPOSITE OVERLAY — image (repo) + text sidebar via addon_offset/position
+  # The image is placed at the anchor; the text label is placed relative to it.
+  # ---------------------------------------------------------------------------
+  IMDb Logo With Rating:
+    overlay:
+      repo: overlays/ratings/imdb
+      addon_offset: 25
+      addon_position: right
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font: fonts/Inter-Bold.ttf
+      font_size: 55
+      font_color: "#F5C518"
+      back_color: "#00000099"
+      back_padding: 15
+      back_radius: 30
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # SCALE + ROTATE — transformation properties
+  # ---------------------------------------------------------------------------
+  Rotated Badge:
+    overlay:
+      file: config/overlays/images/new.png
+      scale: 0.75
+      rotate: 45
+      horizontal_align: right
+      horizontal_offset: 0
+      vertical_align: top
+      vertical_offset: 0
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # SUPPRESS OVERLAYS — prevents other named overlays from applying
+  # If this overlay fires, the listed overlays are skipped for that item.
+  # ---------------------------------------------------------------------------
+  Returning Series Status:
+    overlay:
+      name: "text(Returning)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 40
+      font_color: "#00FF00"
+      back_color: "#000000AA"
+      back_padding: 10
+      back_radius: 5
+    suppress_overlays:
+      - Ended Series Status
+      - Cancelled Series Status
+    plex_all: true
+    filters:
+      tmdb_status: Returning Series
+
+  # ---------------------------------------------------------------------------
+  # run_definition — limits overlay to specific library types
+  # Only applies when running against a movie or show library.
+  # ---------------------------------------------------------------------------
+  Movie Only Badge:
+    overlay:
+      file: config/overlays/images/movie-badge.png
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    run_definition: movie
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # schedule — only applies the overlay on a specific schedule
+  # ---------------------------------------------------------------------------
+  Seasonal Holiday Overlay:
+    overlay:
+      file: config/overlays/images/holiday.png
+      horizontal_align: center
+      horizontal_offset: 0
+      vertical_align: bottom
+      vertical_offset: 0
+    schedule: range(12/01-12/31)
+    plex_all: true
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — plex_search: select items matching Plex criteria
+  # Applies overlay only to 4K HDR items regardless of other filters.
+  # ---------------------------------------------------------------------------
+  HDR Indicator:
+    overlay:
+      name: HDR
+      group: hdr
+      weight: 20
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 50
+      font_size: 35
+      font_color: "#FFD700"
+      back_color: "#000000AA"
+      back_padding: 8
+      back_radius: 5
+    plex_search:
+      all:
+        hdr: true
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tmdb_popular: overlay on currently-popular TMDb movies/shows
+  # ---------------------------------------------------------------------------
+  Currently Popular:
+    overlay:
+      name: "text(Popular)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 40
+      font_color: "#FFFFFF"
+      back_color: "#E50914CC"
+      back_padding: 10
+      back_radius: 5
+    tmdb_popular: 100
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tmdb_trending_weekly: overlay on trending items this week
+  # ---------------------------------------------------------------------------
+  Trending This Week:
+    overlay:
+      name: "text(Trending)"
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 38
+      font_color: "#FFFFFF"
+      back_color: "#1DB954CC"
+      back_padding: 10
+      back_radius: 5
+    tmdb_trending_weekly: 50
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — trakt_list: overlay on movies from a specific Trakt list
+  # ---------------------------------------------------------------------------
+  Trakt List Overlay:
+    overlay:
+      file: config/overlays/images/trakt-badge.png
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    trakt_list: https://trakt.tv/users/garycrawfordgc/lists/letterboxd-top-250
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tautulli_popular: overlay on most-played items in the past week
+  # ---------------------------------------------------------------------------
+  Tautulli Popular:
+    overlay:
+      name: "text(Popular)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 35
+      font_color: "#FFFFFF"
+      back_color: "#E87C0BCC"
+      back_padding: 8
+      back_radius: 5
+    tautulli_popular:
+      list_days: 7
+      list_size: 25
+      list_minimum: 1
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tautulli_watched: overlay on most-watched items in the past month
+  # ---------------------------------------------------------------------------
+  Tautulli Watched:
+    overlay:
+      name: "text(Binge-watched)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 65
+      font_size: 35
+      font_color: "#FFFFFF"
+      back_color: "#5E35B1CC"
+      back_padding: 8
+      back_radius: 5
+    tautulli_watched:
+      list_days: 30
+      list_size: 20
+      list_minimum: 3
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tmdb_collection: overlay on all movies in a specific franchise
+  # Demonstrates $ref overlay with git source + collection builder.
+  # ---------------------------------------------------------------------------
+  MCU Badge:
+    overlay:
+      git: Kometa-Team/Overlays/MCU
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+    tmdb_collection: 131295
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tmdb_discover: overlay on results of a TMDb discover query
+  # ---------------------------------------------------------------------------
+  Documentary Feature:
+    overlay:
+      name: "text(Documentary)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 36
+      font_color: "#FFFFFF"
+      back_color: "#1565C0CC"
+      back_padding: 8
+      back_radius: 5
+    tmdb_discover:
+      with_genres: 99
+      sort_by: popularity.desc
+      limit: 200
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — radarr_all: overlay on every movie tracked in Radarr
+  # ---------------------------------------------------------------------------
+  In Radarr:
+    overlay:
+      file: config/overlays/images/radarr-badge.png
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    radarr_all: true
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — sonarr_all: overlay on every show tracked in Sonarr
+  # ---------------------------------------------------------------------------
+  In Sonarr:
+    overlay:
+      file: config/overlays/images/sonarr-badge.png
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    sonarr_all: true
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — mdblist_list + imdb_chart: overlay on top-rated lists
+  # Also exercises ignore_ids and ignore_imdb_ids.
+  # ---------------------------------------------------------------------------
+  MDBList Top 250:
+    overlay:
+      name: "text(Top 250)"
+      horizontal_align: right
+      horizontal_offset: 20
+      vertical_align: bottom
+      vertical_offset: 40
+      font_size: 38
+      font_color: "#FFFFFF"
+      back_color: "#37474FCC"
+      back_padding: 10
+      back_radius: 5
+    mdblist_list: https://mdblist.com/lists/k0meta/imdb-top-250
+    ignore_ids: 1234, 5678
+    ignore_imdb_ids: tt0111161,tt0068646
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — imdb_chart: overlay on IMDb Top 250
+  # ---------------------------------------------------------------------------
+  IMDb Top 250 Overlay:
+    overlay:
+      git: Kometa-Team/Overlays/IMDb
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    imdb_chart: top_250
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — letterboxd_list: overlay on a Letterboxd list
+  # ---------------------------------------------------------------------------
+  Letterboxd Top 250:
+    overlay:
+      file: config/overlays/images/letterboxd-badge.png
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+    letterboxd_list: https://letterboxd.com/dave/list/official-top-250-narrative-feature-films/
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — imdb_list: overlay on an IMDb user list
+  # ---------------------------------------------------------------------------
+  IMDb Watchlist Overlay:
+    overlay:
+      name: "text(Watchlist)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 36
+      font_color: "#FFFFFF"
+      back_color: "#F5C518CC"
+      back_padding: 8
+      back_radius: 5
+    imdb_list:
+      url: https://www.imdb.com/list/ls000024390/
+      limit: 500
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — tvdb_show: overlay on a specific TVDb show and all its episodes
+  # builder_level: episode applies to episode thumbs
+  # ---------------------------------------------------------------------------
+  Breaking Bad Episode Overlay:
+    overlay:
+      name: "text(BB)"
+      horizontal_align: left
+      horizontal_offset: 10
+      vertical_align: top
+      vertical_offset: 10
+      font_size: 30
+      font_color: "#FFFFFF"
+      back_color: "#000000CC"
+      back_padding: 5
+      back_radius: 3
+    builder_level: episode
+    tvdb_show: 81189
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — trakt_chart: overlay on items from Trakt's trending/popular charts
+  # ---------------------------------------------------------------------------
+  Trakt Trending Overlay:
+    overlay:
+      file: config/overlays/images/trakt-trending.png
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+    trakt_chart:
+      chart: trending
+      limit: 50
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — mal_popular: overlay on popular anime from MyAnimeList
+  # ---------------------------------------------------------------------------
+  MAL Popular Anime:
+    overlay:
+      file: config/overlays/images/mal-badge.png
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    mal_popular: 100
+
+  # ---------------------------------------------------------------------------
+  # BUILDER — anilist_trending: overlay on trending AniList titles
+  # ---------------------------------------------------------------------------
+  AniList Trending:
+    overlay:
+      name: "text(Trending)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 36
+      font_color: "#FFFFFF"
+      back_color: "#2979FFCC"
+      back_padding: 8
+      back_radius: 5
+    anilist_trending: 50
+
+  # ---------------------------------------------------------------------------
+  # LIMIT — cap how many items receive the overlay
+  # ---------------------------------------------------------------------------
+  Top 50 Popular:
+    overlay:
+      name: "text(Top 50)"
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+      font_size: 36
+      font_color: "#FFFFFF"
+      back_color: "#880E4FCC"
+      back_padding: 8
+      back_radius: 5
+    tmdb_popular: 500
+    limit: 50
+
+  # ---------------------------------------------------------------------------
+  # SMART FILTER — overlay matching an existing Plex smart filter
+  # ---------------------------------------------------------------------------
+  Unwatched Overlay:
+    overlay:
+      name: "text(Unwatched)"
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 36
+      font_color: "#AAAAAA"
+      back_color: "#000000AA"
+      back_padding: 8
+      back_radius: 5
+    smart_filter:
+      all:
+        unplayed: true
+
+  # ---------------------------------------------------------------------------
+  # EXTERNAL TEMPLATES reference
+  # ---------------------------------------------------------------------------
+  Templated Badge:
+    template:
+      name: StreamingTemplate
+      key: netflix
+      style: color
