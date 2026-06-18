@@ -8,7 +8,7 @@ Finds every item in an IMDb User's Watchlist.
 
 | List Parameter | Description                                                                                                                                                                                                                                                                                                                                   |
 |:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `user_id`      | Specify the User ID for the IMDb Watchlist. **This attribute is required.**<br>**Options:** The ID that starts with `ur` found in the URL of the watchlist. (ex. `ur12345678`)                                                                                                                                                                |
+| `user_id`      | Specify the User ID for the IMDb Watchlist. **This attribute is required.**<br>**Options:** The `ur########` ID (legacy format) or the `p.xxxxxxx` ID (new format) found in the URL of the watchlist, or a full watchlist URL. (ex. `ur12345678`, `p.fl6ssgsolkgcctcuxapgh6chsa`, or `https://www.imdb.com/user/p.fl6ssgsolkgcctcuxapgh6chsa/watchlist`) |
 | `limit`        | Specify how items you want returned by the query.<br>**Options:** Any Integer `0` or greater where `0` get all items.<br>**Default:** `0`                                                                                                                                                                                                     |
 | `sort_by`      | Choose from one of the many available sort options.<br>**Options:** `custom.asc`, `custom.desc`, `title.asc`, `title.desc`, `rating.asc`, `rating.desc`, `popularity.asc`, `popularity.desc`, `votes.asc`, `votes.desc`, `release.asc`, `release.desc`, `runtime.asc`, `runtime.desc`, `added.asc`, `added.desc`<br>**Default:** `custom.asc` |
 
@@ -35,7 +35,7 @@ collections:
       - user_id: ur64054558
         sort_by: rating.asc
         limit: 100
-      - user_id: ur12345678
+      - user_id: p.fl6ssgsolkgcctcuxapgh6chsa
         sort_by: rating.asc
         limit: 100
     sync_mode: sync

@@ -462,14 +462,20 @@ class IMDb:
                         raise Failed(f"IMDb Error: {method} {main} must begin with ls (ex. ls005526372)")
                     new_dict = {main: search.group(1)}
                 else:
+                    # Extract user ID from a full watchlist URL (handles both ur### and p. formats)
+                    url_match = re.search(r"imdb\.com/user/([^/?#]+)", main_data)
+                    if url_match:
+                        main_data = url_match.group(1)
                     user_id = None
                     if main_data.startswith("ur"):
                         try:
                             user_id = int(main_data[2:])
                         except ValueError:
                             pass
+                    elif re.match(r"^p\.[A-Za-z0-9_-]+$", main_data):
+                        user_id = main_data  # p. format: pass through as-is to the GraphQL API
                     if not user_id:
-                        raise Failed(f"{err_type} Error: {method} {main}: {main_data} not in the format of 'ur########'")
+                        raise Failed(f"{err_type} Error: {method} {main}: {main_data} must be in the format 'ur########' or 'p.xxxxxxx' (or a full watchlist URL)")
                     new_dict = {main: main_data}
 
             if "limit" in dict_methods:
@@ -618,7 +624,21 @@ class IMDb:
         op, sha = self._json_operation(list_type)
         return {"operationName": op, "variables": out, "extensions": {"persistedQuery": {"version": 1, "sha256Hash": sha}}}
 
+    def _resolve_profile_id(self, profile_id):
+        """Resolve an IMDb p.xxxxxxx profileId to its internal ur### userId via the GraphQL userProfile query."""
+        logger.debug(f"IMDb: Resolving p. profileId '{profile_id}' to ur userId")
+        response = self._graph_request({"query": f'{{ userProfile(input: {{profileId: "{profile_id}"}}) {{ userId }} }}'})
+        if "errors" in response:
+            raise Failed(f"IMDb Error: Could not resolve watchlist profileId '{profile_id}': {response['errors'][0]['message']}")
+        user_id = response.get("data", {}).get("userProfile", {}).get("userId")
+        if not user_id:
+            raise Failed(f"IMDb Error: No IMDb account found for profileId '{profile_id}'")
+        logger.debug(f"IMDb: Resolved profileId '{profile_id}' -> userId '{user_id}'")
+        return user_id
+
     def _pagination(self, data, list_type):
+        if list_type == "watchlist" and re.match(r"^p\.", data["user_id"]):
+            data = {**data, "user_id": self._resolve_profile_id(data["user_id"])}
         is_list = list_type != "search"
         json_obj = self._graphql_json(data, list_type)
         item_count = 100 if is_list else 250
@@ -640,6 +660,13 @@ class IMDb:
                 logger.trace(response_json["errors"])
                 raise Failed(f"IMDb Error: {response_json['errors'][0]['message']}")
         step = "list" if list_type == "list" else "predefinedList"
+        if list_type == "watchlist" and response_json["data"].get("predefinedList") is None:
+            user_id = data["user_id"]
+            raise Failed(
+                f"IMDb Error: No public watchlist found for user '{user_id}'. "
+                f"Ensure the watchlist exists and is set to public. "
+                f"If your config uses a ur### ID, update it to the p.xxxxxxx format shown in your watchlist URL at imdb.com."
+            )
         search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
         total = search_data["total"]
         limit = data["limit"]

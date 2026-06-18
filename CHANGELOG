@@ -88,3 +88,4 @@ Update Letterbox URL parsing to handle unlisted lists and shuffle argument in th
 Fix an issue where tvdb_to_imdb writes wrong IMDb ID when TVDb movie ID collides with a TVDb series ID
 Hide some traceback errors for "known good" errors that don't really need a trace
 Fix `imdb_awards` failing when any one of the `award_filters` or `category_filters` do not exist, this will now produce a warning and the builder will only fail if all of the `award_filters` or all of the `category_filters` does not exist.
+Fix imdb_watchlist rejecting new IMDb user ID format (p.xxxxxxx). Now accepts both ur######## (legacy) and p.xxxxxxx formats, as a bare ID or full watchlist URL.
