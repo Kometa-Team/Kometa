@@ -95,3 +95,5 @@ Fix dynamic collection sync loop when `translation_key` and `title_format`/`name
 Fix `title_format` fallback value in `award/sag.yml` to match its translation name (`Screen Actors Guild Awards <<key_name>>`); fix accent typo in `award/cesar.yml` (`César <<key_name>>`). #3189
 Fix an issue where Plex would fail to update collections if the casing of the collection name did not match the YAML (such as "Dogs And Cats" vs "Dogs and Cats")
 Fix shared `ignore_ids` and `ignore_imdb_ids` template variables for builders that resolve Plex `ratingKey`s first.
+Fix an issue where collections would not be recognized as configured if they were not scheduled to run
+
