@@ -3510,14 +3510,6 @@ class CollectionBuilder:
                     logger.ghost(f"Parsing ID {i}/{total_ids}")
                     rating_keys = []
                     if id_type == "ratingKey":
-                        item = self.library.fetch_item(int(input_id))
-                        tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
-                        if (
-                            (tmdb_id and tmdb_id in self.ignore_ids)
-                            or (tvdb_id and tvdb_id in self.ignore_ids)
-                            or (imdb_id and imdb_id in self.ignore_imdb_ids)
-                        ):
-                            continue
                         rating_keys = int(input_id)
                     elif id_type == "imdb":
                         if input_id not in self.ignore_imdb_ids:
