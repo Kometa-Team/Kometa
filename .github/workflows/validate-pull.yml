@@ -104,10 +104,11 @@ jobs:
       - name: Update VERSION File
         id: update-version
         run: |
-            branch_name=${{ github.event.pull_request.head.ref }}
+            branch_name="${{ github.event.pull_request.head.ref }}"
+            branch_name=$(echo "${branch_name}" | sed 's/[^a-zA-Z0-9._-]/-/g')
             repo_name=${{ github.event.pull_request.head.repo.full_name }}
             base_name="${repo_name%/*}"
-            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then
                 tag_name="${base_name}"
             else
                 tag_name="${branch_name}"
