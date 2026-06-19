@@ -20,7 +20,7 @@ auto = {
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto,
 }
-dynamic_attributes = ["type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys", "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name", "ignore_ids", "ignore_imdb_ids"]
+dynamic_attributes = ["type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys", "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"]
 auto_type_translation = {
     "content_rating": "contentRating",
     "subtitle_language": "subtitleLanguage",
@@ -1254,9 +1254,6 @@ class MetadataFile(DataFile):
                         if "limit" in self.temp_vars and "<<limit>>" in title_format:
                             title_format = title_format.replace("<<limit>>", str(self.temp_vars["limit"]))
                         template_variables = util.parse("Config", "template_variables", dynamic, parent=map_name, methods=methods, datatype="dictdict") if "template_variables" in methods else {}
-                        for shared_key, shared_datatype in [("ignore_ids", "intlist"), ("ignore_imdb_ids", "list")]:
-                            if shared_key in methods:
-                                template_variables[shared_key] = {"default": util.parse("Config", shared_key, dynamic, parent=map_name, methods=methods, datatype=shared_datatype)}
                         if "template" in methods:
                             template_names = util.parse("Config", "template", dynamic, parent=map_name, methods=methods, datatype="strlist")
                             has_var = False
