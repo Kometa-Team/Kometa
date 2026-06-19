@@ -7,6 +7,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     # The checkout step
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v7
     - uses: rojopolis/spellcheck-github-actions@v0
       name: Spellcheck

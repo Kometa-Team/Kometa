@@ -1280,7 +1280,7 @@ class MetadataFile(DataFile):
                             remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variables", datatype="commalist")
                         elif "remove_suffix" in methods:
                             remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
-                        sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync and not self.configured_names_only else {}
+                        sync = {str(i.title).casefold(): i for i in self.library.get_all_collections(label=str(map_name))} if sync and not self.configured_names_only else {}
                         other_name = None
                         if "other_name" in self.temp_vars and include:
                             other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variables")
@@ -1362,10 +1362,10 @@ class MetadataFile(DataFile):
                             else:
                                 # Sync-key priority: name_format (user override) → translation_key → title_format
                                 _name_fmt = og_call.get("name_format") or self.temp_vars.get("name_format")
+                                _trans_base = None
                                 if isinstance(_name_fmt, str):
                                     _base = _name_fmt
                                 else:
-                                    _trans_base = None
                                     _trans_key_val = og_call.get("translation_key")
                                     if isinstance(_trans_key_val, str):
                                         try:
@@ -1389,6 +1389,12 @@ class MetadataFile(DataFile):
                                             for _var_key, _var_val in self.templates[_template_name][0].get("default", {}).items():
                                                 if f"<<{_var_key}>>" in collection_title and not isinstance(_var_val, (dict, list)):
                                                     collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
+                                    # Fall back to title_format if translation name has unresolvable library-context vars (e.g. <<library_translationU>>).
+                                    if "<<" in collection_title and _trans_base:
+                                        collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                                        for _var_key, _var_val in og_call.items():
+                                            if f"<<{_var_key}>>" in collection_title:
+                                                collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
                             if collection_title in col_names:
                                 logger.warning(f"Config Warning: Skipping duplicate collection: {collection_title}")
                             else:
@@ -1400,8 +1406,8 @@ class MetadataFile(DataFile):
                                     col["name"] = collection_title
                                 if test:
                                     col["test"] = True
-                                if collection_title in sync:
-                                    sync.pop(collection_title)
+                                if collection_title.casefold() in sync:
+                                    sync.pop(collection_title.casefold())
                                 col_names.append(collection_title)
                                 self.collections[collection_title] = col
                         if other_name and not other_keys:
@@ -1425,13 +1431,13 @@ class MetadataFile(DataFile):
                             col = {"template": other_call, "append_label": str(map_name)}
                             if test:
                                 col["test"] = True
-                            if other_name in sync:
-                                sync.pop(other_name)
+                            if other_name.casefold() in sync:
+                                sync.pop(other_name.casefold())
                             self.collections[other_name] = col
-                        for col_title, col in sync.items():
+                        for _, col in sync.items():
                             try:
                                 self.library.delete(col)
-                                logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
+                                logger.info(f"{map_name} Dynamic Collection: {col.title} Deleted")
                             except Failed as e:
                                 logger.error(e)
                     except Failed as e:
