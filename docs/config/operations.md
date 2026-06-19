@@ -119,6 +119,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     **The collection does not need to be scheduled to be considered configured and only needs to be in the config file.**
 
+    **`configured` works correctly regardless of `run_order` position.** The configured check is based on your config file, not on what Kometa has processed so far in the current run, so placing `operations` before `collections` in `run_order` will not cause configured collections to be incorrectly deleted.
+
     ???+ example "Example"
 
         Removes all Managed Collections (Collections with the `Kometa` Label) that are not configured in the Current Run.
