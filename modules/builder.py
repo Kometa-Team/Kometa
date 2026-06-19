@@ -3496,6 +3496,22 @@ class CollectionBuilder:
         if unique_total is not None:
             logger.info(f"{unique_total} Unique Episode{'s' if unique_total != 1 else ''} Kept")
 
+    def _rating_key_is_ignored(self, rating_key):
+        try:
+            rating_key = int(rating_key)
+        except (TypeError, ValueError):
+            return False
+        for pl_library in self.libraries:
+            for ignored_id in self.ignore_imdb_ids:
+                if rating_key in getattr(pl_library, "imdb_map", {}).get(ignored_id, []):
+                    return True
+            for ignored_id in self.ignore_ids:
+                if rating_key in getattr(pl_library, "movie_map", {}).get(ignored_id, []):
+                    return True
+                if rating_key in getattr(pl_library, "show_map", {}).get(ignored_id, []):
+                    return True
+        return False
+
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
@@ -3693,6 +3709,8 @@ class CollectionBuilder:
                     if not isinstance(rating_keys, list):
                         rating_keys = [rating_keys]
                     for rk in rating_keys:
+                        if self._rating_key_is_ignored(rk):
+                            continue
                         try:
                             item = self.library.fetch_item(rk)
                             if self.playlist and isinstance(item, (Show, Season)):
