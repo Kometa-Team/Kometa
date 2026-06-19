@@ -1279,7 +1279,7 @@ class MetadataFile(DataFile):
                             remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variables", datatype="commalist")
                         elif "remove_suffix" in methods:
                             remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
-                        sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync else {}
+                        sync = {str(i.title).casefold(): i for i in self.library.get_all_collections(label=str(map_name))} if sync else {}
                         other_name = None
                         if "other_name" in self.temp_vars and include:
                             other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variables")
@@ -1405,8 +1405,8 @@ class MetadataFile(DataFile):
                                     col["name"] = collection_title
                                 if test:
                                     col["test"] = True
-                                if collection_title in sync:
-                                    sync.pop(collection_title)
+                                if collection_title.casefold() in sync:
+                                    sync.pop(collection_title.casefold())
                                 col_names.append(collection_title)
                                 self.collections[collection_title] = col
                         if other_name and not other_keys:
@@ -1430,13 +1430,13 @@ class MetadataFile(DataFile):
                             col = {"template": other_call, "append_label": str(map_name)}
                             if test:
                                 col["test"] = True
-                            if other_name in sync:
-                                sync.pop(other_name)
+                            if other_name.casefold() in sync:
+                                sync.pop(other_name.casefold())
                             self.collections[other_name] = col
-                        for col_title, col in sync.items():
+                        for _, col in sync.items():
                             try:
                                 self.library.delete(col)
-                                logger.info(f"{map_name} Dynamic Collection: {col_title} Deleted")
+                                logger.info(f"{map_name} Dynamic Collection: {col.title} Deleted")
                             except Failed as e:
                                 logger.error(e)
                     except Failed as e:
