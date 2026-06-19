@@ -135,14 +135,41 @@ def test_textfile_is_allowed_for_episode_or_season_collections():
     assert "text_file" in parts_collection_valid
 
 
-def test_shared_ignore_keys_are_inherited_from_template_variables():
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.data = {"name": "Example Collection"}
-    builder.metadata = SimpleNamespace(temp_vars={"ignore_ids": [1, 2], "ignore_imdb_ids": ["tt1234567"]})
+def test_ratingkey_items_respect_shared_ignore_ids(monkeypatch):
+    class FakeMovie:
+        def __init__(self, rating_key):
+            self.ratingKey = rating_key
+            self.title = "Ignored Movie"
 
-    assert builder._inherit_shared_ignore_keys() == ["ignore_ids", "ignore_imdb_ids"]
-    assert builder.data["ignore_ids"] == [1, 2]
-    assert builder.data["ignore_imdb_ids"] == ["tt1234567"]
+    class FakeLibrary:
+        def fetch_item(self, rating_key):
+            assert rating_key == 101
+            return FakeMovie(rating_key)
+
+        def get_ids(self, item):
+            return 353546, None, None
+
+    monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+
+    builder = CollectionBuilder.__new__(CollectionBuilder)
+    builder.Type = "Collection"
+    builder.builder_level = "movie"
+    builder.playlist = False
+    builder.library = FakeLibrary()
+    builder.libraries = [builder.library]
+    builder.ignore_ids = [353546]
+    builder.ignore_imdb_ids = []
+    builder.do_missing = True
+    builder.details = {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False}
+    builder.filtered_keys = {}
+    builder.found_items = []
+    builder.filters = []
+    builder.name = "Test Collection"
+    builder.obj = None
+    builder.check_filters = lambda item, display: True
+
+    assert builder.filter_and_save_items([(101, "ratingKey")]) is None
+    assert builder.found_items == []
 
 
 def test_filter_and_save_items_records_missing_tvdb_season_for_episode_builder(monkeypatch):

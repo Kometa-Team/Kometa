@@ -733,9 +733,6 @@ class CollectionBuilder:
                     self.data[attr] = new_attributes[attr]
                     methods[attr.lower()] = attr
 
-        for ignore_key in self._inherit_shared_ignore_keys():
-            methods[ignore_key] = ignore_key
-
         logger.separator(f"Validating {self.mapping_name} Attributes", space=False, border=False)
 
         self.builder_language = self.metadata.language
@@ -1801,16 +1798,6 @@ class CollectionBuilder:
                 self.square_arts[method_name] = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Square Art Path Does Not Exist: {os.path.abspath(method_data)}")
-
-    def _inherit_shared_ignore_keys(self):
-        inherited = []
-        if not self.metadata or not getattr(self.metadata, "temp_vars", None):
-            return inherited
-        for ignore_key in ["ignore_ids", "ignore_imdb_ids"]:
-            if ignore_key not in self.data and ignore_key in self.metadata.temp_vars:
-                self.data[ignore_key] = self.metadata.temp_vars[ignore_key]
-                inherited.append(ignore_key)
-        return inherited
 
     def _details(self, method_name, method_data, method_final, methods):
         if method_name == "url_theme":
@@ -3523,6 +3510,14 @@ class CollectionBuilder:
                     logger.ghost(f"Parsing ID {i}/{total_ids}")
                     rating_keys = []
                     if id_type == "ratingKey":
+                        item = self.library.fetch_item(int(input_id))
+                        tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
+                        if (
+                            (tmdb_id and tmdb_id in self.ignore_ids)
+                            or (tvdb_id and tvdb_id in self.ignore_ids)
+                            or (imdb_id and imdb_id in self.ignore_imdb_ids)
+                        ):
+                            continue
                         rating_keys = int(input_id)
                     elif id_type == "imdb":
                         if input_id not in self.ignore_imdb_ids:
