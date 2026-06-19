@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, util
 from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, LimitReached, NotScheduled
+from modules.util import Failed, FilterFailed, LimitReached, NotScheduled, OverlayError, MappingConvertError, ServiceError
 
 logger = util.logger
 
@@ -114,7 +114,7 @@ class Overlays:
                             if current_overlay.queue not in queue_overlays:
                                 queue_overlays[current_overlay.queue] = {}
                             if current_overlay.weight in queue_overlays[current_overlay.queue]:
-                                raise Failed("Overlay Error: Overlays in a queue cannot have the same weight")
+                                raise OverlayError("Overlay Error: Overlays in a queue cannot have the same 'weight' value")
                             queue_overlays[current_overlay.queue][current_overlay.weight] = over_name
                         else:
                             applied_names.append(over_name)
@@ -284,7 +284,7 @@ class Overlays:
                                                         else:
                                                             found_rating = _item.vote_average
                                                     else:
-                                                        raise Failed(f"No TMDb ID for Guid: {item.guid}")
+                                                        raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
                                                 elif format_var == "imdb_rating":
                                                     if isinstance(item, Episode):
                                                         found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
@@ -296,12 +296,12 @@ class Overlays:
                                                     if _id in _ratings:
                                                         found_rating = _ratings[_id]
                                                     else:
-                                                        raise Failed("No Trakt User Rating Found")
+                                                        raise OverlayError("Overlay Error: No Trakt user rating found")
                                                 elif format_var == "trakt_rating":
                                                     if self.config.Trakt:
                                                         found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
                                                     else:
-                                                        raise Failed("No Trakt Rating Found")
+                                                        raise OverlayError("Overlay Error: No Trakt rating found")
                                                 elif str(format_var).startswith("mdb"):
                                                     mdb_item = None
                                                     if self.config.MDBList.limit is False:
@@ -336,7 +336,7 @@ class Overlays:
                                                                 logger.trace(f"IMDb ID: {imdb_id}")
                                                                 raise
                                                         if not mdb_item:
-                                                            raise Failed(f"No MdbItem for {item.title} (Guid: {item.guid})")
+                                                            raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
                                                     if format_var == "mdb_average_rating":
                                                         found_rating = mdb_item.average / 10 if mdb_item.average else None
                                                     elif format_var == "mdb_imdb_rating":
@@ -361,9 +361,9 @@ class Overlays:
                                                         found_rating = mdb_item.score / 10 if mdb_item.score else None
                                                 elif str(format_var).startswith("omdb"):
                                                     if self.config.OMDb.limit is not False:
-                                                        raise Failed("Daily OMDb Limit Reached")
+                                                        raise ServiceError("OMDb Error: Daily OMDb Limit Reached")
                                                     elif not imdb_id:
-                                                        raise Failed(f"No IMDb ID for Guid: {item.guid}")
+                                                        raise MappingConvertError(f"Mapping/Convert Error: No IMDb ID for {item.title} (Guid: {item.guid})")
                                                     else:
                                                         try:
                                                             omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
@@ -389,17 +389,17 @@ class Overlays:
                                                             elif format_var == "anidb_score_rating":
                                                                 found_rating = anidb_obj.score
                                                         else:
-                                                            raise Failed(f"No AniDB ID for Guid: {item.guid}")
+                                                            raise MappingConvertError(f"Mapping/Convert Error: No AniDB ID for {item.title} (Guid: {item.guid})")
                                                     else:
                                                         if item.ratingKey in self.library.reverse_mal:
                                                             mal_id = self.library.reverse_mal[item.ratingKey]
                                                         elif not anidb_id:
-                                                            raise Failed(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                                                            raise MappingConvertError(f"Mapping/Convert Error:  No AniDB ID to Convert to MyAnimeList ID for {item.title} (Guid: {item.guid})")
                                                         else:
                                                             try:
                                                                 mal_id = self.config.Convert.anidb_to_mal(anidb_id)
                                                             except Failed as errr:
-                                                                raise Failed(f"{errr} of Guid: {item.guid}")
+                                                                raise MappingConvertError(f"Mapping/Convert Error:  {errr} of {item.title} (Guid: {item.guid})")
                                                         if mal_id:
                                                             found_rating = self.config.MyAnimeList.get_anime(mal_id).score
                                                 elif str(format_var).startswith("plex"):
@@ -415,7 +415,7 @@ class Overlays:
                                                 actual_value = found_rating
                                                 logger.trace(f"{format_var}: {actual_value}")
                                             else:
-                                                raise Failed(f"No {format_var} found for {item_title}")
+                                                raise OverlayError(f"Overlay Error: No '{format_var}' found for {item_title}")
                                         elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
@@ -429,7 +429,7 @@ class Overlays:
                                             actual_value = sum(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
-                                                raise Failed(f"Overlay Warning: No {full_text} found")
+                                                raise OverlayError(f"Overlay Error: No '{full_text}' found")
                                             actual_value = getattr(item, actual_attr)
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
