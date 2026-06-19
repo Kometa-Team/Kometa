@@ -615,10 +615,11 @@ class DataFile:
 
 
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
         super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
+        self.configured_names_only = configured_names_only
         self.data_type = "Collection"
         self.library = library
         self.metadata = None
@@ -1279,7 +1280,7 @@ class MetadataFile(DataFile):
                             remove_suffix = util.parse("Config", "remove_suffix", self.temp_vars["remove_suffix"], parent="template_variables", datatype="commalist")
                         elif "remove_suffix" in methods:
                             remove_suffix = util.parse("Config", "remove_suffix", dynamic, parent=map_name, methods=methods, datatype="commalist")
-                        sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync else {}
+                        sync = {i.title: i for i in self.library.get_all_collections(label=str(map_name))} if sync and not self.configured_names_only else {}
                         other_name = None
                         if "other_name" in self.temp_vars and include:
                             other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variables")
