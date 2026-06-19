@@ -41,7 +41,7 @@ dynamic_collections:
       event_id: ev0000598
       starting: latest-4
       ending: latest
-    title_format: Screen Actors Guild <<key_name>>
+    title_format: Screen Actors Guild Awards <<key_name>>
     template:
       - use_year_collections
       - imdb_award
