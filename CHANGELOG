@@ -48,6 +48,7 @@ Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter
 Add Apprise as a webhook notification provider.
 Extend default "Metacritic Must See" collection to work with TV
 Add support for boxd.it urls, used for letterboxd share lists
+Allow metadata updates to proceed on existing collections even if the builder returns 0 items
 
 # Docs
 Updates to Quickstart docs about limitations
