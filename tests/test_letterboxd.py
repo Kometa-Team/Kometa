@@ -241,6 +241,37 @@ def test_list_url_is_normalized_before_fallback(monkeypatch):
     assert items == [("111", "/film/first-film/", 2001, None, None)]
 
 
+def test_detail_list_url_extracts_rating_from_star_glyphs():
+    requests = FakeRequests(
+        {
+            "https://letterboxd.com/demo/list/staff-picks/detail/": """
+                <html><body>
+                    <article class="list-detailed-entry">
+                        <div class="react-component" data-item-link="/film/first-film/" data-item-name="First Film (2001)" data-postered-identifier="{&quot;uid&quot;:&quot;film:111&quot;}"></div>
+                        <div class="content-reactions-strip">
+                            <span class="inline-symbol inline-rating">
+                                <svg><title>&#9733;&#9733;&#9733;&#9733;&#189;</title></svg>
+                            </span>
+                        </div>
+                    </article>
+                </body></html>
+            """
+        }
+    )
+    adapter = Letterboxd(requests, FakeCache())
+
+    items = adapter._get_list_items("https://letterboxd.com/demo/list/staff-picks/detail/", 0, "en")
+
+    assert items == [("111", "/film/first-film/", 2001, None, 9)]
+
+
+def test_parse_list_url_accepts_detail_segment():
+    adapter = Letterboxd(None, None)
+
+    assert adapter._parse_list_url("https://letterboxd.com/demo/list/staff-picks/detail/") == ("demo", "staff-picks")
+    assert adapter._parse_list_url("https://letterboxd.com/demo/list/staff-picks/detail/by/rating/") == ("demo", "staff-picks")
+
+
 def test_request_html_retries_with_scraper_on_cloudflare_challenge(monkeypatch, patch_logger):
     monkeypatch.setattr(letterboxd_module, "Films", FakeFilms)
     monkeypatch.setattr(letterboxd_module, "LetterboxdList", FakeList)
