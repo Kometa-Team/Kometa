@@ -135,6 +135,16 @@ def test_textfile_is_allowed_for_episode_or_season_collections():
     assert "text_file" in parts_collection_valid
 
 
+def test_shared_ignore_keys_are_inherited_from_template_variables():
+    builder = CollectionBuilder.__new__(CollectionBuilder)
+    builder.data = {"name": "Example Collection"}
+    builder.metadata = SimpleNamespace(temp_vars={"ignore_ids": [1, 2], "ignore_imdb_ids": ["tt1234567"]})
+
+    assert builder._inherit_shared_ignore_keys() == ["ignore_ids", "ignore_imdb_ids"]
+    assert builder.data["ignore_ids"] == [1, 2]
+    assert builder.data["ignore_imdb_ids"] == ["tt1234567"]
+
+
 def test_filter_and_save_items_records_missing_tvdb_season_for_episode_builder(monkeypatch):
     logger = FakeLogger()
     monkeypatch.setattr(builder_module, "logger", logger)
