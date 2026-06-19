@@ -37,7 +37,7 @@ dynamic_collections:
       event_id: ev0000157
       starting: latest-4
       ending: latest
-    title_format: Cesar <<key_name>>
+    title_format: César <<key_name>>
     template:
       - use_year_collections
       - imdb_award

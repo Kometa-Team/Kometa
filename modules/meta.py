@@ -1359,7 +1359,26 @@ class MetadataFile(DataFile):
                             if key in title_override:
                                 collection_title = title_override[key]
                             else:
-                                collection_title = title_format.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
+                                # Sync-key priority: name_format (user override) → translation_key → title_format
+                                _name_fmt = og_call.get("name_format") or self.temp_vars.get("name_format")
+                                if isinstance(_name_fmt, str):
+                                    _base = _name_fmt
+                                else:
+                                    _trans_base = None
+                                    _trans_key_val = og_call.get("translation_key")
+                                    if isinstance(_trans_key_val, str):
+                                        try:
+                                            _en = self.config.GitHub.translation_yaml("en")
+                                            _tr = self.config.GitHub.translation_yaml(self.language)
+                                            if _trans_key_val in _en.get("collections", {}):
+                                                _trans_base = (
+                                                    _tr.get("collections", {}).get(_trans_key_val, {}).get("name")
+                                                    or _en["collections"][_trans_key_val].get("name")
+                                                )
+                                        except Exception:
+                                            pass
+                                    _base = _trans_base if _trans_base else title_format
+                                collection_title = _base.replace("<<title>>", key_name).replace("<<key_name>>", key_name)
                                 for _var_key, _var_val in og_call.items():
                                     if f"<<{_var_key}>>" in collection_title:
                                         collection_title = collection_title.replace(f"<<{_var_key}>>", str(_var_val))
@@ -1374,6 +1393,10 @@ class MetadataFile(DataFile):
                             else:
                                 logger.info(template_call)
                                 col = {"template": template_call, "append_label": str(map_name)}
+                                # Only set col["name"] for name_format/title_override — lets builder.py resolve translation naturally while still matching our sync key.
+                                _name_fmt_check = og_call.get("name_format") or self.temp_vars.get("name_format")
+                                if key in title_override or isinstance(_name_fmt_check, str):
+                                    col["name"] = collection_title
                                 if test:
                                     col["test"] = True
                                 if collection_title in sync:
