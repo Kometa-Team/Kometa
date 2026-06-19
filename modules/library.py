@@ -80,6 +80,10 @@ class Library(ABC):
         self.item_refresh_delay = params["item_refresh_delay"]
         self.delete_below_minimum = params["delete_below_minimum"]
         self.delete_not_scheduled = params["delete_not_scheduled"]
+        self.auto_sort_hubs = params["auto_sort_hubs"]
+        self.hub_priorities = {}
+        self.hub_config_order = {}
+        self.hub_title_sorts = {}
         self.missing_only_released = params["missing_only_released"]
         self.show_unmanaged = params["show_unmanaged"]
         self.show_unconfigured = params["show_unconfigured"]

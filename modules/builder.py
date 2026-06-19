@@ -156,6 +156,7 @@ ignored_details = [
     "translation_prefix",
     "tmdb_birthday",
     "tmdb_deathday",
+    "hub_priority",
 ]
 details = (
     [
@@ -766,6 +767,14 @@ class CollectionBuilder:
             if not self.data[methods["limit"]]:
                 raise Failed(f"{self.Type} Error: limit attribute is blank")
             self.limit = util.parse(self.Type, "limit", self.data[methods["limit"]], datatype="int", minimum=1)
+
+        self.hub_priority = None
+        if "hub_priority" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: hub_priority")
+            if not self.data[methods["hub_priority"]] and self.data[methods["hub_priority"]] != 0:
+                raise Failed(f"{self.Type} Error: hub_priority attribute is blank")
+            self.hub_priority = util.parse(self.Type, "hub_priority", self.data[methods["hub_priority"]], datatype="int", minimum=1)
 
         en_key = None
         trans_key = None
@@ -4896,6 +4905,16 @@ class CollectionBuilder:
                     )
                     advance_update = True
                     logger.info("Collection Visibility Updated")
+
+            if self.obj is not None and self.library and not self.playlist and not self.overlay:
+                rk = self.obj.ratingKey
+                if self.details.get("visible_library") or self.details.get("visible_home") or self.details.get("visible_shared"):
+                    if rk not in self.library.hub_config_order:
+                        self.library.hub_config_order[rk] = len(self.library.hub_config_order)
+                    self.library.hub_title_sorts[rk] = getattr(self.obj, "titleSort", None) or self.name
+                if self.hub_priority is not None:
+                    self.library.hub_priorities[rk] = (self.hub_priority, self.name)
+                    logger.debug(f"Hub Priority | {self.hub_priority}")
 
             if advance_update and "Metadata" not in updated_details:
                 updated_details.append("Metadata")

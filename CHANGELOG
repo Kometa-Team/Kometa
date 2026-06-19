@@ -17,6 +17,8 @@ Bump requests to 2.34.2
 Bump setuptools to 82.0.1
 
 # New Features
+Add `auto_sort_hubs` global/library setting to sort Recommendation Hub rows on the Plex home screen after all collections are processed. Accepts `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, or `random`.
+Add `hub_priority` per-collection attribute to pin a collection's hub row to a specific position (lower number = higher up). Collections with `hub_priority` are sorted first; the remainder follow in `auto_sort_hubs` order.
 Add comprehensive config validation with `--validate`, `--validate-level`, `--validate-schema`, and `--schema-path` CLI flags. Supports syntax, structure, full, and schema-level validation with a gap report showing missing/extra fields.
 Add `--validate-file` and `--validate-dir` CLI flags for standalone and batch YAML validation against auto-detected schema types (config, collection, metadata, overlay, playlist). Output written to `validate.log`.
 Add `modules/validator.py` with `ConfigValidator` (multi-level config validation) and `FileSetValidator` (standalone/batch YAML validation with schema type detection).

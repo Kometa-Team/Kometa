@@ -336,6 +336,28 @@ The available setting attributes which can be set at each level are outlined bel
         ```
 
 
+??? blank "`auto_sort_hubs` - Used to sort Recommendation Hub rows on the Plex home screen.<a class="headerlink" href="#auto-sort-hubs" title="Permanent link">¶</a>"
+
+    <div id="auto-sort-hubs" />After all collections have been processed, sort the Recommendation Hub rows for this library on the Plex home screen and/or library Recommended tab. Only collections promoted to a hub (`visible_home` or `visible_shared`) are affected. Built-in Plex section hubs (Recently Added, Top Unwatched, Continue Watching, etc.) are not touched. Use `hub_priority` on individual collections to pin them to the front of the sorted list.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `auto_sort_hubs`
+
+    **Levels with this Attribute:** Global/Library
+
+    **Accepted Values:** `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, `random`
+
+    **Default Value:** `None`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          auto_sort_hubs: sort_title
+        ```
+
+
 ??? blank "`dimensional_asset_rename` - Used to automatically rename asset files based on their dimensions.<a class="headerlink" href="#dimensional-asset-rename" title="Permanent link">¶</a>"
 
     <div id="dimensional-asset-rename" />Whilst searching for assets, scan the folders within the `asset_directory` and if an asset poster (i.e. `/ASSET_NAME/poster.ext`) was not found,
