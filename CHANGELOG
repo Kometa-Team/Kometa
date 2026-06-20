@@ -48,6 +48,8 @@ Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter
 Add Apprise as a webhook notification provider.
 Extend default "Metacritic Must See" collection to work with TV
 Add support for boxd.it urls, used for letterboxd share lists
+Add new operations attributes `respect_ignore_ids` to skip operations processing items in `ignore_ids` or `ignore_imdb_ids`
+Add new operations attributes `ignore_labels` to skip operations processing items with the specified label(s)
 
 # Docs
 Updates to Quickstart docs about limitations

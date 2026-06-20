@@ -4555,6 +4555,25 @@
             "assets_for_all_collections": {
               "type": "boolean"
             },
+            "ignore_labels": {
+              "description": "Skip item operations for items with any of these labels.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              ]
+            },
+            "respect_ignore_ids": {
+              "description": "When true, this library operations run skips items listed in ignore_ids or ignore_imdb_ids.",
+              "type": "boolean"
+            },
             "update_blank_track_titles": {
               "type": "boolean"
             },

@@ -189,6 +189,8 @@ reset_overlay_options = {"tmdb": "Reset to TMDb poster", "plex": "Reset to Plex 
 library_operations = {
     "assets_for_all": "bool",
     "assets_for_all_collections": "bool",
+    "ignore_labels": "list",
+    "respect_ignore_ids": "bool",
     "split_duplicates": "bool",
     "update_blank_track_titles": "bool",
     "remove_title_parentheses": "bool",

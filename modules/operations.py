@@ -119,6 +119,8 @@ class Operations:
         logger.debug(f"Genre Mapper: {self.library.genre_mapper}")
         logger.debug(f"Content Rating Mapper: {self.library.content_rating_mapper}")
         logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
+        logger.debug(f"Ignore Labels: {self.library.ignore_labels}")
+        logger.debug(f"Respect Ignore IDs: {self.library.respect_ignore_ids}")
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
         logger.debug("")
@@ -178,14 +180,21 @@ class Operations:
                 except Failed as e:
                     logger.error(e)
                     continue
+
                 current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
+                if self.library.item_has_ignore_label(item, current_labels=current_labels):
+                    logger.info("Ignored by ignore_labels")
+                    continue
+
+                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
+                if self.library.respect_ignore_ids and self.library.item_is_ignored(item, tmdb_id=tmdb_id, tvdb_id=tvdb_id, imdb_id=imdb_id):
+                    logger.info("Ignored by ignore_ids or ignore_imdb_ids")
+                    continue
 
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
 
                 locked_fields = [f.name for f in item.fields if f.locked]
-
-                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item_edits = ""
 
@@ -948,6 +957,9 @@ class Operations:
                                         except Failed:
                                             logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
                                             continue
+                                        if self.library.item_has_ignore_label(episode):
+                                            logger.info(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Ignored by ignore_labels")
+                                            continue
                                         try:
                                             episode_poster, episode_background, _, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                         except Failed:
@@ -976,6 +988,9 @@ class Operations:
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")
                         logger.info(f"{item_title}")
+                        if self.library.item_has_ignore_label(ep):
+                            logger.info("Ignored by ignore_labels")
+                            continue
                         item_edits = ""
 
                         for attribute, item_attr in episode_ops:
