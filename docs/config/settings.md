@@ -340,6 +340,13 @@ The available setting attributes which can be set at each level are outlined bel
 
     <div id="auto-sort-hubs" />After all collections have been processed, sort the Recommendation Hub rows for this library on the Plex home screen and/or library Recommended tab. Only collections promoted to a hub (`visible_home` or `visible_shared`) are affected. Built-in Plex section hubs (Recently Added, Top Unwatched, Continue Watching, etc.) are not touched. Use `hub_priority` on individual collections to pin them to the front of the sorted list.
 
+<<<<<<< Updated upstream
+=======
+    ???+ tip "Plex Pass Required"
+
+        Promoting collections to Recommendation Hubs requires an active [Plex Pass](https://www.plex.tv/plex-pass/) subscription.
+
+>>>>>>> Stashed changes
     <hr style="margin: 0px;">
 
     **Attribute:** `auto_sort_hubs`
