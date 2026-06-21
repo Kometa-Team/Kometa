@@ -96,4 +96,4 @@ Fix `title_format` fallback value in `award/sag.yml` to match its translation na
 Fix an issue where Plex would fail to update collections if the casing of the collection name did not match the YAML (such as "Dogs And Cats" vs "Dogs and Cats")
 Fix shared `ignore_ids` and `ignore_imdb_ids` template variables for builders that resolve Plex `ratingKey`s first.
 Fix an issue where collections would not be recognized as configured if they were not scheduled to run
-
+Fix sync-based collections with `minimum_items: 1` and `delete_below_minimum: true` so they remove the last stale item and delete the collection when the source list drops to zero items.
