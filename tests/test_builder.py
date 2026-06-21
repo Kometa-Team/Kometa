@@ -135,6 +135,40 @@ def test_textfile_is_allowed_for_episode_or_season_collections():
     assert "text_file" in parts_collection_valid
 
 
+def test_ratingkey_items_respect_shared_ignore_ids():
+    class FakeLibrary:
+        def __init__(self):
+            self.movie_map = {353546: [101]}
+            self.show_map = {}
+            self.imdb_map = {}
+            self.fetch_calls = []
+
+        def fetch_item(self, rating_key):
+            self.fetch_calls.append(rating_key)
+            raise AssertionError("fetch_item should not be called for ignored rating keys")
+
+    builder = CollectionBuilder.__new__(CollectionBuilder)
+    builder.Type = "Collection"
+    builder.builder_level = "movie"
+    builder.playlist = False
+    builder.library = FakeLibrary()
+    builder.libraries = [builder.library]
+    builder.ignore_ids = [353546]
+    builder.ignore_imdb_ids = []
+    builder.do_missing = True
+    builder.details = {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False}
+    builder.filtered_keys = {}
+    builder.found_items = []
+    builder.filters = []
+    builder.name = "Test Collection"
+    builder.obj = None
+    builder.check_filters = lambda item, display: True
+
+    assert builder.filter_and_save_items([(101, "ratingKey")]) is None
+    assert builder.found_items == []
+    assert builder.library.fetch_calls == []
+
+
 def test_filter_and_save_items_records_missing_tvdb_season_for_episode_builder(monkeypatch):
     logger = FakeLogger()
     monkeypatch.setattr(builder_module, "logger", logger)

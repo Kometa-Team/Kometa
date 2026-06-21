@@ -19,6 +19,7 @@ Bump setuptools to 82.0.1
 # New Features
 Add `auto_sort_hubs` global/library setting to sort Recommendation Hub rows on the Plex home screen after all collections are processed. Accepts `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, or `random`.
 Add `hub_priority` per-collection attribute to pin a collection's hub row to a specific position (lower number = higher up). Collections with `hub_priority` are sorted first; the remainder follow in `auto_sort_hubs` order.
+Add `monthly(last)` schedule option: fires on the last day of every month regardless of its length (Feb 28/29, Apr/Jun/Sep/Nov 30, or the 31st in 31-day months).
 Add comprehensive config validation with `--validate`, `--validate-level`, `--validate-schema`, and `--schema-path` CLI flags. Supports syntax, structure, full, and schema-level validation with a gap report showing missing/extra fields.
 Add `--validate-file` and `--validate-dir` CLI flags for standalone and batch YAML validation against auto-detected schema types (config, collection, metadata, overlay, playlist). Output written to `validate.log`.
 Add `modules/validator.py` with `ConfigValidator` (multi-level config validation) and `FileSetValidator` (standalone/batch YAML validation with schema type detection).
@@ -93,3 +94,10 @@ Hide some traceback errors for "known good" errors that don't really need a trac
 Fix `imdb_awards` failing when any one of the `award_filters` or `category_filters` do not exist, this will now produce a warning and the builder will only fail if all of the `award_filters` or all of the `category_filters` does not exist.
 Fix imdb_watchlist rejecting new IMDb user ID format (p.xxxxxxx). Now accepts both ur######## (legacy) and p.xxxxxxx formats, as a bare ID or full watchlist URL.
 Restore and/or verify support for Letterboxd /detail/ list views and /USERNAME/films/reviews/ URLs.
+Fix dynamic collection sync loop when `translation_key` and `title_format`/`name_format` are both set — meta.py sync key now follows the same name-resolution priority as builder.py (name_format → translation → title_format), eliminating the orphan-delete loop on every run. If the translation name still contains unresolvable library-context variables (e.g. `<<library_translationU>>`), meta.py falls back to `title_format` (which has `<<library_typeU>>` pre-resolved) to ensure the sync key matches what builder.py writes to Plex. #3189
+Fix `title_format` fallback value in `award/sag.yml` to match its translation name (`Screen Actors Guild Awards <<key_name>>`); fix accent typo in `award/cesar.yml` (`César <<key_name>>`). #3189
+Fix an issue where Plex would fail to update collections if the casing of the collection name did not match the YAML (such as "Dogs And Cats" vs "Dogs and Cats")
+Fix shared `ignore_ids` and `ignore_imdb_ids` template variables for builders that resolve Plex `ratingKey`s first.
+Fix an issue where collections would not be recognized as configured if they were not scheduled to run
+Fix `monthly(N)` schedule: values greater than the current month's last day (e.g. `monthly(31)` in November) no longer fire on the last day of the month as a fallback. `monthly(N)` now only triggers when today is exactly day N. A warning is logged when a configured day does not exist in the current month, directing users to the new `monthly(last)` option. Fixes #2884
+

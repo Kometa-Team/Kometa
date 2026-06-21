@@ -1643,6 +1643,7 @@ class ConfigFile:
                     lib_vars = lib["template_variables"]
 
                 params["collection_files"] = []
+                params["configured_collection_files"] = []
                 try:
                     if lib and "collection_files" in lib:
                         logger.info("")
@@ -1655,6 +1656,14 @@ class ConfigFile:
                             schedule=(current_time, self.run_hour, self.ignore_schedules),
                             lib_vars=lib_vars,
                         )
+                        configured_files = files
+                        if had_scheduled:
+                            configured_files, _ = util.load_files(
+                                lib["collection_files"],
+                                "collection_files",
+                                lib_vars=lib_vars,
+                            )
+                        params["configured_collection_files"] = configured_files
                         if files:
                             params["collection_files"] = files
                         elif not had_scheduled:

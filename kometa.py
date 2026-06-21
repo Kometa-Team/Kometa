@@ -35,7 +35,7 @@ try:
     from dotenv import load_dotenv
     from dotenv import version as dotenv_version
     from PIL import ImageFile
-    from plexapi.exceptions import NotFound
+    from plexapi.exceptions import BadRequest, NotFound
 except (ModuleNotFoundError, ImportError) as ie:
     print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
@@ -250,12 +250,38 @@ util.logger = logger
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled  # noqa: E402
+from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, ServiceError, BuilderValidationError, OverlayError, MappingConvertError  # noqa: E402
+
+
+plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
+
+
+def is_plex_maintenance_error(error):
+    error_text = str(error)
+    return isinstance(error, BadRequest) and "(503) service_unavailable" in error_text and (
+        "title=\"Maintenance\"" in error_text
+        or "startup maintenance tasks" in error_text
+        or "currently running maintenance tasks" in error_text
+    )
+
+
+def get_critical_error_message(error):
+    return plex_maintenance_error if is_plex_maintenance_error(error) else error
+
+
+def log_critical_exception(error):
+    if is_plex_maintenance_error(error):
+        logger.critical(plex_maintenance_error)
+    else:
+        logger.stacktrace()
+        logger.critical(error)
 
 
 def my_except_hook(exctype, value, tb):
     if issubclass(exctype, KeyboardInterrupt):
         sys.__excepthook__(exctype, value, tb)
+    elif is_plex_maintenance_error(value):
+        logger.critical(plex_maintenance_error)
     else:
         logger.critical("Uncaught Exception", exc_info=(exctype, value, tb))
 
@@ -477,8 +503,7 @@ def start(attrs):
         try:
             config = ConfigFile(my_requests, default_dir, attrs, secret_args)
         except Exception as e:
-            logger.stacktrace()
-            logger.critical(e)
+            log_critical_exception(e)
         else:
             if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
                 logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
@@ -486,9 +511,8 @@ def start(attrs):
                 try:
                     stats = run_config(config, stats)
                 except Exception as e:
-                    config.notify(e)
-                    logger.stacktrace()
-                    logger.critical(e)
+                    config.notify(get_critical_error_message(e))
+                    log_critical_exception(e)
         logger.info("")
         end_time = datetime.now()
         run_time = str(end_time - start_time).split(".")[0]
@@ -509,17 +533,24 @@ def start(attrs):
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
-                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID:", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID: (.*)"),
-                ("Convert Warning: No AniDB ID Found for AniList ID:", r"Convert Warning: No AniDB ID Found for AniList ID: (.*)"),
-                ("Convert Warning: No AniDB ID Found for MyAnimeList ID:", r"Convert Warning: No AniDB ID Found for MyAnimeList ID: (.*)"),
-                ("Convert Warning: No IMDb ID Found for TMDb ID:", r"Convert Warning: No IMDb ID Found for TMDb ID: (.*)"),
-                ("Convert Warning: No TMDb ID Found for IMDb ID:", r"Convert Warning: No TMDb ID Found for IMDb ID: (.*)"),
-                ("Convert Warning: No TVDb ID Found for TMDb ID:", r"Convert Warning: No TVDb ID Found for TMDb ID: (.*)"),
-                ("Convert Warning: No TMDb ID Found for TVDb ID:", r"Convert Warning: No TMDb ID Found for TVDb ID: (.*)"),
-                ("Convert Warning: No IMDb ID Found for TVDb ID:", r"Convert Warning: No IMDb ID Found for TVDb ID: (.*)"),
-                ("Convert Warning: No TVDb ID Found for IMDb ID:", r"Convert Warning: No TVDb ID Found for IMDb ID: (.*)"),
-                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid:", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: (.*)"),
+                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
+                ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
+                ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
+                ("Convert Warning: No IMDb ID found for TMDb ID", r"Convert Warning: No IMDb ID found for TMDb ID '(.*)'"),
+                ("Convert Warning: No TMDb ID found for IMDb ID", r"Convert Warning: No TMDb ID found for IMDb ID '(.*)'"),
+                ("Convert Warning: No TVDb ID found for TMDb ID", r"Convert Warning: No TVDb ID found for TMDb ID '(.*)'"),
+                ("Convert Warning: No TMDb ID found for TVDb ID", r"Convert Warning: No TMDb ID found for TVDb ID '(.*)'"),
+                ("Convert Warning: No IMDb ID found for TVDb ID", r"Convert Warning: No IMDb ID found for TVDb ID '(.*)'"),
+                ("Convert Warning: No TVDb ID found for IMDb ID", r"Convert Warning: No TVDb ID found for IMDb ID '(.*)'"),
+                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '(.*)'"),
                 ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
+                ("Convert Error: No AniDB ID found for IMDb ID", r"Convert Error: No AniDB ID found for IMDb ID '(.*)'"),
+                ("Convert Error: No AniDB ID found for TVDb ID", r"Convert Error: No AniDB ID found for TVDb ID '(.*)'"),
+                ("Convert Error: No MyAnimeList ID found for AniDB ID", r"Convert Error: No MyAnimeList ID found for AniDB ID '(.*)'"),
+                ("Convert Error: No AniDB Anime found for AniDB ID", r"Convert Error: No AniDB Anime found for AniDB ID '(.*)'"),
+                ("Convert Error: No AniDB ID found for MyAnimeList ID", r"Convert Error: No AniDB ID found for MyAnimeList ID '(.*)'"),
+                ("Convert Error: No mapping found for AniDB ID", r"Convert Error: No mapping found for AniDB ID '(.*)'"),
+                ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
             ]
             other_message = {}
 
@@ -531,12 +562,15 @@ def start(attrs):
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
+                                    match = re.match(reg, log_line)
+                                    if not match:
+                                        continue
                                     other = True
-                                    _name = re.match(reg, log_line).group(1)
+                                    _name = match.group(1)
                                     if key not in other_message:
                                         other_message[key] = {"list": [], "count": 0}
                                     other_message[key]["count"] += 1
-                                    if _name not in other_message[key]:
+                                    if _name not in other_message[key]["list"]:
                                         other_message[key]["list"].append(_name)
                             if other is False:
                                 if err_type not in log_data:
@@ -550,14 +584,22 @@ def start(attrs):
                 logger.info("")
 
             convert_title = False
+            def convert_summary_title(key):
+                summary = key.split(": ", 1)[1].rstrip(":")
+                if " for " not in summary:
+                    return f"{summary}:"
+                message, source = summary.rsplit(" for ", 1)
+                source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
+                return f"{message} for the following {source}:"
+
             for key, _ in other_log_groups:
-                if key.startswith("Convert Warning") and key in other_message:
+                if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
                     if convert_title is False:
                         logger.separator("Convert Summary", space=False, border=False)
                         logger.info("")
                         convert_title = True
-                    logger.info(f"{key[17:]}")
-                    logger.info(", ".join(other_message[key]["list"]))
+                    logger.info(convert_summary_title(key))
+                    logger.info(f"    {', '.join(other_message[key]['list'])}")
             if convert_title:
                 logger.info("")
 
@@ -581,8 +623,7 @@ def start(attrs):
         logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
         logger.remove_main_handler()
     except Exception as e:
-        logger.stacktrace()
-        logger.critical(e)
+        log_critical_exception(e)
 
 
 def run_config(config, stats):
@@ -651,9 +692,8 @@ def run_config(config, stats):
                                 logger.error(e)
                         # logger.remove_library_handler(library.mapping_name)
                     except Exception as e:
-                        library.notify(e)
-                        logger.stacktrace()
-                        logger.critical(e)
+                        library.notify(get_critical_error_message(e))
+                        log_critical_exception(e)
 
     if not run_args["collections-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
         used_url = []
@@ -916,9 +956,8 @@ def run_libraries(config):
                     library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
-            library.notify(e)
-            logger.stacktrace()
-            logger.critical(e)
+            library.notify(get_critical_error_message(e))
+            log_critical_exception(e)
     return library_status
 
 
@@ -987,6 +1026,14 @@ def run_collection(config, library, metadata, requested_collections):
                     logger.info("")
                     try:
                         builder.filter_and_save_items(builder.gather_ids(method, value))
+                    except BuilderValidationError:
+                        raise
+                    except OverlayError:
+                        raise
+                    except MappingConvertError:
+                        raise
+                    except ServiceError:
+                        raise
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
@@ -1094,6 +1141,22 @@ def run_collection(config, library, metadata, requested_collections):
                 library.status[str(mapping_name)]["status"] = "Not Scheduled"
         except FilterFailed:
             pass
+        except BuilderValidationError as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Builder Validation Error"
+            library.status[str(mapping_name)]["errors"].append(e)
+        except MappingConvertError as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Mapping/Conversion Error"
+            library.status[str(mapping_name)]["errors"].append(e)
+        except OverlayError as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Overlay Error"
+            library.status[str(mapping_name)]["errors"].append(e)
+        except ServiceError as e:
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "Service Error"
+            library.status[str(mapping_name)]["errors"].append(e)
         except Failed as e:
             library.notify(e, collection=mapping_name)
             logger.stacktrace()

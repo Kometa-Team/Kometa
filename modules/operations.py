@@ -371,7 +371,7 @@ class Operations:
                         if item.ratingKey in self.library.reverse_mal:
                             mal_id = self.library.reverse_mal[item.ratingKey]
                         elif not anidb_id:
-                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid: {item.guid}")
+                            logger.warning(f"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '{item.guid}'")
                         else:
                             try:
                                 mal_id = self.config.Convert.anidb_to_mal(anidb_id)

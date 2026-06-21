@@ -62,6 +62,19 @@ class NotScheduled(Exception):
 class NotScheduledRange(NotScheduled):
     pass
 
+class BuilderValidationError(Failed):
+    pass
+
+class OverlayError(Failed):
+    pass
+
+class NoValueFound(Failed):
+    pass
+class MappingConvertError(Failed):
+    pass
+
+class ServiceError(Failed):
+    pass
 
 class retry_if_http_429_error(retry_if_exception):
 
@@ -704,15 +717,24 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 if pass_day:
                     all_check += 1
             elif run_time.startswith("month"):
-                try:
-                    if 1 <= int(param) <= 31:
-                        schedule_str += f"\nScheduled monthly on the {num2words(param, to='ordinal_num')}"
-                        if current_time.day == int(param) or (current_time.day == last_day.day and int(param) > last_day.day):
-                            all_check += 1
-                    else:
-                        raise ValueError
-                except ValueError:
-                    logger.error(f"Schedule Error: monthly {display} must be an integer between 1 and 31")
+                if param == "last":
+                    schedule_str += "\nScheduled monthly on the last day of the month"
+                    if current_time.day == last_day.day:
+                        all_check += 1
+                else:
+                    try:
+                        if 1 <= int(param) <= 31:
+                            schedule_str += f"\nScheduled monthly on the {num2words(param, to='ordinal_num')}"
+                            if current_time.day == int(param):
+                                all_check += 1
+                            elif int(param) > last_day.day:
+                                logger.warning(f"Schedule Warning: monthly({param}) will not run this month; "
+                                               f"{current_time.strftime('%B')} does not have a {num2words(param, to='ordinal_num')} day. "
+                                               f"Use monthly(last) if you want to schedule for the last day of every month.")
+                        else:
+                            raise ValueError
+                    except ValueError:
+                        logger.error(f"Schedule Error: monthly {display} must be an integer between 1 and 31 or 'last'")
             elif run_time.startswith("year"):
                 try:
                     if "/" in param:

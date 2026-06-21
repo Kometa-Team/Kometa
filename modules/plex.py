@@ -1454,9 +1454,10 @@ class Plex(Library):
         elif isinstance(data, int) and not force_search:
             return self.fetchItem(data)
         else:
-            cols = self.search(title=str(data), libtype="collection")
+            title = str(data)
+            cols = self.search(title=title, libtype="collection")
             for d in cols:
-                if d.title == data:
+                if str(d.title).casefold() == title.casefold():
                     return d
             if debug:
                 logger.debug("")
