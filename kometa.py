@@ -67,6 +67,7 @@ arguments = {
     "config": {"args": "c", "type": "str", "help": "Run with desired *.yml file"},
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
     "run": {"args": "r", "type": "bool", "help": "Run without the scheduler"},
+    "daily": {"args": "da", "type": "int_or_bool", "nargs": "?", "const": 1, "default": False, "help": "Run only items added in the past number of days (Default: 1)"},
     "tests": {"args": ["ts", "rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
@@ -110,17 +111,21 @@ for arg_key, arg_data in arguments.items():
         kwargs["action"] = "store_true"
         kwargs["default"] = False  # noqa
     else:
-        kwargs["type"] = int if arg_data["type"] == "int" else str
+        kwargs["type"] = int if arg_data["type"] in ["int", "int_or_bool"] else str
 
     if "default" in arg_data:
         kwargs["default"] = arg_data["default"]
+    if "nargs" in arg_data:
+        kwargs["nargs"] = arg_data["nargs"]
+    if "const" in arg_data:
+        kwargs["const"] = arg_data["const"]
 
     parser.add_argument(*args, **kwargs)
 
 args, unknown = parser.parse_known_args()
 
 
-def get_env(env_str, default, arg_bool=False, arg_int=False):
+def get_env(env_str, default, arg_bool=False, arg_int=False, arg_int_or_bool=False):
     env_vars = [env_str] if not isinstance(env_str, list) else env_str
     final_value = None
     static_envs.extend(env_vars)
@@ -136,7 +141,7 @@ def get_env(env_str, default, arg_bool=False, arg_int=False):
                 if env_value is not None:
                     final_value = env_value
                     break
-    if final_value or (arg_int and final_value == 0):
+    if final_value or ((arg_int or arg_int_or_bool) and final_value == 0):
         if arg_bool:
             if final_value is True or final_value is False:
                 return final_value
@@ -144,6 +149,19 @@ def get_env(env_str, default, arg_bool=False, arg_int=False):
                 return True
             else:
                 return False
+        elif arg_int_or_bool:
+            if final_value is True:
+                return 1
+            if final_value is False:
+                return False
+            if str(final_value).lower() in ["t", "true"]:
+                return 1
+            if str(final_value).lower() in ["f", "false"]:
+                return False
+            try:
+                return int(final_value)
+            except ValueError:
+                return default
         elif arg_int:
             try:
                 return int(final_value)
@@ -160,7 +178,7 @@ run_args = {}
 for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
-    run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
+    run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int", arg_int_or_bool=arg_data["type"] == "int_or_bool")
 
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
@@ -214,6 +232,10 @@ except ImportError:
 
 if run_args["run-collections"]:
     run_args["collections-only"] = True
+
+if run_args["daily"] and run_args["daily"] < 1:
+    print(f"Argument Error: daily argument invalid: {run_args['daily']} must be an integer greater than 0. Using the default value of 1")
+    run_args["daily"] = 1
 
 if run_args["width"] < 90 or run_args["width"] > 300:
     print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
@@ -440,6 +462,7 @@ def start(attrs):
         attrs["read_only"] = run_args["read-only-config"]
         attrs["no_missing"] = run_args["no-missing"]
         attrs["no_report"] = run_args["no-report"]
+        attrs["daily"] = run_args["daily"]
         attrs["collection_only"] = run_args["collections-only"]
         attrs["metadata_only"] = run_args["metadata-only"]
         attrs["playlist_only"] = run_args["playlists-only"]
@@ -656,7 +679,7 @@ def run_config(config, stats):
         # logger.remove_playlists_handler()
 
     amount_added = 0
-    if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
+    if not run_args["daily"] and not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
         has_run_again = False
         for library in config.libraries:
             if library.run_again:
@@ -825,7 +848,10 @@ def run_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if run_args["delete-collections"] and not run_args["playlists-only"]:
+            if run_args["daily"] and run_args["delete-collections"] and not run_args["playlists-only"]:
+                logger.info("")
+                logger.info("Daily run: delete-collections ignored")
+            elif run_args["delete-collections"] and not run_args["playlists-only"]:
                 time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
@@ -838,7 +864,10 @@ def run_libraries(config):
                         logger.error(e)
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
-            if run_args["delete-labels"] and not run_args["playlists-only"]:
+            if run_args["daily"] and run_args["delete-labels"] and not run_args["playlists-only"]:
+                logger.info("")
+                logger.info("Daily run: delete-labels ignored")
+            elif run_args["delete-labels"] and not run_args["playlists-only"]:
                 time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Labels from All items in the {library.name} Library", space=False, border=False)
@@ -859,15 +888,13 @@ def run_libraries(config):
                 library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             time_start = datetime.now()
-            temp_items = None
             list_key = None
             if config.Cache:
                 list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
 
-            if not temp_items:
-                temp_items = library.cache_items()
-                if config.Cache and list_key:
-                    config.Cache.delete_list_ids(list_key)
+            temp_items = library.cache_items()
+            if config.Cache and list_key and not run_args["daily"]:
+                config.Cache.delete_list_ids(list_key)
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
@@ -995,6 +1022,16 @@ def run_collection(config, library, metadata, requested_collections):
 
         try:
             builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
+            if config.daily:
+                if builder.sync:
+                    builder.sync = False
+                    logger.info("Daily run: sync_mode ignored")
+                if builder.details["delete_below_minimum"]:
+                    builder.details["delete_below_minimum"] = False
+                    logger.info("Daily run: delete_below_minimum ignored")
+                if builder.do_missing:
+                    builder.do_missing = False
+                    logger.info("Daily run: missing item processing ignored")
             library.stats["names"].append(builder.name)
             if builder.build_collection:
                 library.collection_names.append(builder.name)
@@ -1013,6 +1050,7 @@ def run_collection(config, library, metadata, requested_collections):
 
             items_added = 0
             items_removed = 0
+            daily_no_updates = False
             if not builder.smart_url and builder.builders and not builder.blank_collection:
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
@@ -1032,7 +1070,11 @@ def run_collection(config, library, metadata, requested_collections):
                     except ServiceError:
                         raise
                     except Failed as e:
-                        if builder.ignore_blank_results:
+                        if config.daily and "not found" in str(e).lower():
+                            logger.info("No Updates Required")
+                            daily_no_updates = True
+                            break
+                        elif builder.ignore_blank_results:
                             logger.warning(e)
                         else:
                             raise Failed(e)
@@ -1061,10 +1103,17 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
                 if not builder.found_items and not builder.ignore_blank_results:
-                    raise NonExisting(f"{builder.Type} Warning: No items found")
+                    if config.daily:
+                        logger.info("No Updates Required")
+                        library.status[str(mapping_name)]["status"] = "No Updates Required"
+                        daily_no_updates = True
+                    else:
+                        raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
-            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            if daily_no_updates:
+                valid = False
+            if valid and builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"

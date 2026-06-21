@@ -785,7 +785,7 @@ class Plex(Library):
         self.type = self.Plex.type.capitalize()
         self.plex_pass = self.PlexServer.myPlexSubscription
         self._users = []
-        self._all_items = []
+        self._all_items = None
         self._account = None
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
@@ -862,11 +862,19 @@ class Plex(Library):
     def fetchItems(self, uri_args):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
+    def get_recently_added_items(self):
+        days = self.config.daily if self.config.daily else 1
+        date_attr = "episode.addedAt" if self.is_show else "addedAt"
+        item_type = utils.searchType("show" if self.is_show else self.Plex.TYPE)
+        items_text = f"{self.type}s with Episodes Added" if self.is_show else f"{self.type}s Added"
+        logger.info(f"Loading {items_text} in the Past {days} Day{'s' if days != 1 else ''} from Library: {self.name}")
+        return self.fetchItems(f"?type={item_type}&sort={date_attr}%3Adesc&{date_attr}%3E%3E=-{days}d")
+
     def get_all(self, builder_level=None, load=False):
         cache_top_level = builder_level in [None, "show", "artist", "movie"]
         if load and cache_top_level:
-            self._all_items = []
-        if self._all_items and cache_top_level:
+            self._all_items = None
+        if self._all_items is not None and cache_top_level:
             return self._all_items
         builder_type = builder_level if builder_level else self.Plex.TYPE
         if not builder_level:

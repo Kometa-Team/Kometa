@@ -34,7 +34,7 @@ class Overlays:
             key_to_overlays, properties = self.compile_overlays()
         ignore_list = [rk for rk in key_to_overlays]
 
-        old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
+        old_overlays = [] if self.config.daily else [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]
         if old_overlays:
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
             logger.info("")
@@ -50,12 +50,16 @@ class Overlays:
                         self.remove_overlay(item, item_title, old_overlay.title, [os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")])
             logger.info("")
 
-        remove_overlays = self.get_overlay_items(ignore=ignore_list)
-        if self.library.is_show:
-            remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
-            remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
-        elif self.library.is_music:
-            remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
+        remove_overlays = []
+        if self.config.daily:
+            logger.separator(f"Daily Run: Overlay removal ignored for the {self.library.name} Library")
+        else:
+            remove_overlays = self.get_overlay_items(ignore=ignore_list)
+            if self.library.is_show:
+                remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
+                remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
+            elif self.library.is_music:
+                remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
 
         if remove_overlays:
             logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")

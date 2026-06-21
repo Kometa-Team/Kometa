@@ -1700,7 +1700,10 @@ class MetadataFile(DataFile):
                     elif mapping_id in self.library.imdb_map:
                         item.extend([self.library.fetch_item(i) for i in self.library.imdb_map[mapping_id]])
                     else:
-                        logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
+                        if self.config.daily:
+                            logger.info("No Updates Required")
+                        else:
+                            logger.error(f"{self.type_str} Error: {id_type} ID not mapped")
                         continue
 
                 blank_edition = False
@@ -1762,7 +1765,10 @@ class MetadataFile(DataFile):
                         item.extend(temp_items)
 
                     if not item:
-                        logger.error(f"Skipping {mapping_name}: Item not found")
+                        if self.config.daily:
+                            logger.info("No Updates Required")
+                        else:
+                            logger.error(f"Skipping {mapping_name}: Item not found")
                         continue
 
                 if not isinstance(item, list):

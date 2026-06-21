@@ -243,6 +243,7 @@ class ConfigFile:
         self.read_only = attrs["read_only"] if "read_only" in attrs else False
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
+        self.daily = attrs["daily"] if "daily" in attrs else False
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour

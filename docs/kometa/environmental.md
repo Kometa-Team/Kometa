@@ -194,6 +194,34 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run
             ```
 
+??? blank "Run Daily Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-da`/`--daily`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DAILY`<a class="headerlink" href="#daily" title="Permanent link">¶</a>"
+
+    <div id="daily" />Run Kometa against only items added to Plex within the last day. You can optionally provide a number of days to check; for example, `--daily 7` or `KOMETA_DAILY=7` will include items added in the past 7 days.
+
+    For Movie libraries and other non-Show libraries, Kometa uses Plex's item `addedAt` value. For Show libraries, Kometa uses Plex's `episode.addedAt` value so shows with newly added episodes are included.
+
+    ???+ important
+
+        When `--daily` is set, destructive sync-style behavior is ignored to avoid mass removals while only a subset of library items is in scope. This includes `sync_mode: sync`, `delete_below_minimum`, missing item processing, full collection/label deletion, overlay removal cleanup, library-wide collection operations, Radarr/Sonarr remove-by-tag operations, and metadata backup.
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** `true` for 1 day, or an integer number of days
+
+    **Shell Flags:** `-da` or `--daily` (ex. `--daily` or `--daily 7`)
+
+    **Environment Variable:** `KOMETA_DAILY` (ex. `KOMETA_DAILY=true` or `KOMETA_DAILY=7`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --run --daily 7
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run --daily 7
+            ```
+
 ??? blank "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`<a class="headerlink" href="#tests" title="Permanent link">¶</a>"
 
     <div id="tests" />If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).

@@ -3511,7 +3511,20 @@ class CollectionBuilder:
                 if rating_key in getattr(pl_library, "show_map", {}).get(ignored_id, []):
                     return True
         return False
-    
+
+    def _rating_key_in_daily_scope(self, rating_key):
+        config = getattr(self, "config", None)
+        if not getattr(config, "daily", False) or self.playlist:
+            return True
+        try:
+            rating_key = int(rating_key)
+        except (TypeError, ValueError):
+            return False
+        for pl_library in self.libraries:
+            if rating_key in getattr(pl_library, "cached_items", {}):
+                return True
+        return False
+
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
@@ -3709,6 +3722,8 @@ class CollectionBuilder:
                     if not isinstance(rating_keys, list):
                         rating_keys = [rating_keys]
                     for rk in rating_keys:
+                        if not self._rating_key_in_daily_scope(rk):
+                            continue
                         if self._rating_key_is_ignored(rk):
                             continue
                         try:
@@ -3732,7 +3747,13 @@ class CollectionBuilder:
                             else:
                                 items.append(item)
                         except Failed as e:
-                            logger.error(e)
+                            config = getattr(self, "config", None)
+                            if getattr(config, "daily", False) and "not found" in str(e).lower():
+                                if not getattr(self, "_daily_no_updates_logged", False):
+                                    logger.info("No Updates Required")
+                                    self._daily_no_updates_logged = True
+                            else:
+                                logger.error(e)
                 except Exception as e:
                     logger.stacktrace()
                     logger.error(e)

@@ -46,6 +46,7 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        self.all_items = []
         self.run_again = []
         self.type = ""
         self.config = config
@@ -528,11 +529,30 @@ class Library(ABC):
         yaml.data = self.report_data
         yaml.save()
 
+    def get_recently_added_items(self):
+        return None
+
     def cache_items(self):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_all()
+        daily_run = getattr(self.config, "daily", False)
+        if daily_run:
+            items = self.get_recently_added_items()
+            if items is None:
+                all_items = self.get_all()
+                items = all_items
+                logger.warning("Daily Run Warning: recently added items could not be loaded directly; all items will be processed")
+            else:
+                all_items = items
+                logger.info(f"Daily Run: {len(items)} {self.type}{'s' if len(items) != 1 else ''} added in the past {daily_run} day{'s' if daily_run != 1 else ''}")
+            if hasattr(self, "_all_items"):
+                self._all_items = items
+        else:
+            all_items = self.get_all()
+            items = all_items
+        self.all_items = all_items
+        self.cached_items = {}
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items

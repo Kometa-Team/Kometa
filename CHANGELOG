@@ -27,6 +27,7 @@ Add Plex square art support: upload `square.ext` assets for movies, shows, seaso
 Add `apprise` and `schedule_overlays` to the config JSON schema.
 The `tmdb_discover` YAML validator now enforces: unknown keys are rejected, value types are checked, `certification_country`/`certification` must co-occur, `watch_region` must accompany any watch-provider or monetization key, and movie-only and TV-only parameters are mutually exclusive. Note: `with_watch_providers` and `without_watch_providers` now require `watch_region` at validation time (the TMDb Discover API requires this), which is stricter than the runtime check in `builder.py`.
 Improve JSON Schemas, add prototype YAML for all builders.
+Add `--daily`/`-da` runtime flag and `KOMETA_DAILY` environment variable to process only Plex items added in the past day, or a custom number of days with values like `--daily 7`/`KOMETA_DAILY=7`. Daily runs ignore sync/deletion cleanup behaviors such as `sync_mode: sync`, `delete_below_minimum`, collection deletion and overlay removals to avoid mass removals while only recent items are in scope.
 
 # Performance
 Use the SQLite cache for TMDb queries in `check_filters` and `check_missing_filters` instead of bypassing it with `ignore_cache=True`.
