@@ -17,6 +17,9 @@ Bump requests to 2.34.2
 Bump setuptools to 82.0.1
 
 # New Features
+Add `auto_sort_hubs` global/library setting to sort Recommendation Hub rows on the Plex home screen after all collections are processed. Accepts `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, or `random`.
+Add `hub_priority` per-collection attribute to pin a collection's hub row to a specific position (lower number = higher up). Collections with `hub_priority` are sorted first; the remainder follow in `auto_sort_hubs` order.
+Add `monthly(last)` schedule option: fires on the last day of every month regardless of its length (Feb 28/29, Apr/Jun/Sep/Nov 30, or the 31st in 31-day months).
 Add comprehensive config validation with `--validate`, `--validate-level`, `--validate-schema`, and `--schema-path` CLI flags. Supports syntax, structure, full, and schema-level validation with a gap report showing missing/extra fields.
 Add `--validate-file` and `--validate-dir` CLI flags for standalone and batch YAML validation against auto-detected schema types (config, collection, metadata, overlay, playlist). Output written to `validate.log`.
 Add `modules/validator.py` with `ConfigValidator` (multi-level config validation) and `FileSetValidator` (standalone/batch YAML validation with schema type detection).
@@ -97,3 +100,5 @@ Fix an issue where Plex would fail to update collections if the casing of the co
 Fix shared `ignore_ids` and `ignore_imdb_ids` template variables for builders that resolve Plex `ratingKey`s first.
 Fix an issue where collections would not be recognized as configured if they were not scheduled to run
 Fix sync-based collections with `minimum_items: 1` and `delete_below_minimum: true` so they remove the last stale item and delete the collection when the source list drops to zero items.
+Fix `monthly(N)` schedule: values greater than the current month's last day (e.g. `monthly(31)` in November) no longer fire on the last day of the month as a fallback. `monthly(N)` now only triggers when today is exactly day N. A warning is logged when a configured day does not exist in the current month, directing users to the new `monthly(last)` option. Fixes #2884
+
