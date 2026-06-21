@@ -54,6 +54,15 @@ filetype_list = {
     "webp_lossy": "Use Lossy WEBP files for saving Overlays",
     "webp_lossless": "Use Lossless WEBP files for saving Overlays",
 }
+hub_sort_options = {
+    "sort_title": "Sort Recommendation Hubs by Collection Sort Title (ascending)",
+    "sort_title.desc": "Sort Recommendation Hubs by Collection Sort Title (descending)",
+    "alpha": "Sort Recommendation Hubs by Collection Title alphabetically (ascending)",
+    "alpha.desc": "Sort Recommendation Hubs by Collection Title alphabetically (descending)",
+    "configured": "Sort Recommendation Hubs in the order collections appear in your config files (first to last)",
+    "configured.desc": "Sort Recommendation Hubs in the order collections appear in your config files (last to first)",
+    "random": "Sort Recommendation Hubs in a random order",
+}
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
     "none": "Add IMDb Parental Labels for None, Mild, Moderate, or Severe",
@@ -638,6 +647,7 @@ class ConfigFile:
             "item_refresh_delay": check_for_attribute(self.data, "item_refresh_delay", parent="settings", var_type="int", default=0),
             "delete_below_minimum": check_for_attribute(self.data, "delete_below_minimum", parent="settings", var_type="bool", default=False),
             "delete_not_scheduled": check_for_attribute(self.data, "delete_not_scheduled", parent="settings", var_type="bool", default=False),
+            "auto_sort_hubs": check_for_attribute(self.data, "auto_sort_hubs", parent="settings", test_list=hub_sort_options, default_is_none=True),
             "run_again_delay": check_for_attribute(self.data, "run_again_delay", parent="settings", var_type="int", default=0),
             "missing_only_released": check_for_attribute(self.data, "missing_only_released", parent="settings", var_type="bool", default=False),
             "only_filter_missing": check_for_attribute(self.data, "only_filter_missing", parent="settings", var_type="bool", default=False),
@@ -1349,6 +1359,16 @@ class ConfigFile:
                     parent="settings",
                     var_type="bool",
                     default=self.general["delete_not_scheduled"],
+                    do_print=False,
+                    save=False,
+                )
+                params["auto_sort_hubs"] = check_for_attribute(
+                    lib,
+                    "auto_sort_hubs",
+                    parent="settings",
+                    test_list=hub_sort_options,
+                    default=self.general["auto_sort_hubs"],
+                    default_is_none=True,
                     do_print=False,
                     save=False,
                 )
