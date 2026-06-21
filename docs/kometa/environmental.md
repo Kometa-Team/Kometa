@@ -222,6 +222,30 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run --daily 7
             ```
 
+??? blank "Ignore Daily Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-id`/`--ignore-daily`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_DAILY`<a class="headerlink" href="#ignore-daily" title="Permanent link">¶</a>"
+
+    <div id="ignore-daily" />Tell Kometa to ignore [Daily Mode](#daily) on one or more specific days of the week and perform a full run instead.
+
+    This is useful if you want fast daily runs most days, but still want a full library pass on a regular schedule. For example, `--daily 1 --ignore-daily "1|3|5"` will run in Daily Mode every day except Monday, Wednesday, and Friday, when Kometa will do a full run.
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** Day name or number, where `1` is Monday and `7` is Sunday. Multiple days can be separated with commas, such as `Monday,Friday,Sunday` or `1,3,5`.
+
+    **Shell Flags:** `-id` or `--ignore-daily` (ex. `--ignore-daily Sunday`, `--ignore-daily 7`, or `--ignore-daily "1,3,5"`)
+
+    **Environment Variable:** `KOMETA_IGNORE_DAILY` (ex. `KOMETA_IGNORE_DAILY=Sunday`, `KOMETA_IGNORE_DAILY=7`, or `KOMETA_IGNORE_DAILY=Monday,Friday,Sunday`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --run --daily 1 --ignore-daily "Monday,Friday,Sunday"
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run --daily 1 --ignore-daily "Monday,Friday,Sunday"
+            ```
+
 ??? blank "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`<a class="headerlink" href="#tests" title="Permanent link">¶</a>"
 
     <div id="tests" />If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).

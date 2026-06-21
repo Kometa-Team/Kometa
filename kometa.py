@@ -68,6 +68,7 @@ arguments = {
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
     "run": {"args": "r", "type": "bool", "help": "Run without the scheduler"},
     "daily": {"args": "da", "type": "int_or_bool", "nargs": "?", "const": 1, "default": False, "help": "Run only items added in the past number of days (Default: 1)"},
+    "ignore-daily": {"args": "id", "type": "str", "help": "Run a full non-daily run on the specified day(s) of the week"},
     "tests": {"args": ["ts", "rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
@@ -173,6 +174,28 @@ def get_env(env_str, default, arg_bool=False, arg_int=False, arg_int_or_bool=Fal
         return default
 
 
+def parse_ignore_daily(ignore_daily):
+    if not ignore_daily:
+        return []
+    days = {"monday": 0, "tuesday": 1, "wednesday": 2, "thursday": 3, "friday": 4, "saturday": 5, "sunday": 6}
+    final_days = []
+    for day in re.split(r"[|,]", str(ignore_daily).lower()):
+        day = day.strip()
+        if not day:
+            continue
+        if day.isdigit() and 1 <= int(day) <= 7:
+            final_days.append(int(day) - 1)
+        elif day in days:
+            final_days.append(days[day])
+        else:
+            print(f"Argument Error: ignore-daily argument invalid: {day} must be a day name or number 1-7")
+    return final_days
+
+
+def get_effective_daily():
+    return False if run_args["daily"] and datetime.now().weekday() in ignore_daily_days else run_args["daily"]
+
+
 static_envs = []
 run_args = {}
 for arg_key, arg_data in arguments.items():
@@ -236,6 +259,8 @@ if run_args["run-collections"]:
 if run_args["daily"] and run_args["daily"] < 1:
     print(f"Argument Error: daily argument invalid: {run_args['daily']} must be an integer greater than 0. Using the default value of 1")
     run_args["daily"] = 1
+
+ignore_daily_days = parse_ignore_daily(run_args["ignore-daily"])
 
 if run_args["width"] < 90 or run_args["width"] > 300:
     print(f"Argument Error: width argument invalid: {run_args['width']} must be an integer between 90 and 300. Using the default value of 100")
@@ -456,13 +481,16 @@ def start(attrs):
         start_time = datetime.now()
         if "time" not in attrs:
             attrs["time"] = start_time.strftime("%H:%M")
+        effective_daily = get_effective_daily()
+        if run_args["daily"] and not effective_daily:
+            logger.info("Daily Run Ignored: today matches ignore-daily; running a full run instead")
         attrs["time_obj"] = start_time
         attrs["config_file"] = run_args["config"]
         attrs["ignore_schedules"] = run_args["ignore-schedules"]
         attrs["read_only"] = run_args["read-only-config"]
         attrs["no_missing"] = run_args["no-missing"]
         attrs["no_report"] = run_args["no-report"]
-        attrs["daily"] = run_args["daily"]
+        attrs["daily"] = effective_daily
         attrs["collection_only"] = run_args["collections-only"]
         attrs["metadata_only"] = run_args["metadata-only"]
         attrs["playlist_only"] = run_args["playlists-only"]
@@ -679,7 +707,7 @@ def run_config(config, stats):
         # logger.remove_playlists_handler()
 
     amount_added = 0
-    if not run_args["daily"] and not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
+    if not config.daily and not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
         has_run_again = False
         for library in config.libraries:
             if library.run_again:
@@ -848,7 +876,7 @@ def run_libraries(config):
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if run_args["daily"] and run_args["delete-collections"] and not run_args["playlists-only"]:
+            if config.daily and run_args["delete-collections"] and not run_args["playlists-only"]:
                 logger.info("")
                 logger.info("Daily run: delete-collections ignored")
             elif run_args["delete-collections"] and not run_args["playlists-only"]:
@@ -864,7 +892,7 @@ def run_libraries(config):
                         logger.error(e)
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
-            if run_args["daily"] and run_args["delete-labels"] and not run_args["playlists-only"]:
+            if config.daily and run_args["delete-labels"] and not run_args["playlists-only"]:
                 logger.info("")
                 logger.info("Daily run: delete-labels ignored")
             elif run_args["delete-labels"] and not run_args["playlists-only"]:
@@ -893,7 +921,7 @@ def run_libraries(config):
                 list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
 
             temp_items = library.cache_items()
-            if config.Cache and list_key and not run_args["daily"]:
+            if config.Cache and list_key and not config.daily:
                 config.Cache.delete_list_ids(list_key)
             if not library.is_music:
                 logger.info("")
