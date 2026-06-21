@@ -197,8 +197,7 @@ class Library(ABC):
         if not self.ignore_ids and not self.ignore_imdb_ids:
             return False
         ignored_ids = {str(ignore_id) for ignore_id in self.ignore_ids}
-        item_ids = [getattr(item, "ratingKey", None), tmdb_id, tvdb_id]
-        if any(item_id is not None and str(item_id) in ignored_ids for item_id in item_ids):
+        if any(item_id is not None and str(item_id) in ignored_ids for item_id in [tmdb_id, tvdb_id]):
             return True
         if tmdb_id is None and tvdb_id is None and imdb_id is None:
             try:
