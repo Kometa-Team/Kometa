@@ -1283,9 +1283,14 @@ class MetadataFile(DataFile):
                         sync = {str(i.title).casefold(): i for i in self.library.get_all_collections(label=str(map_name))} if sync and not self.configured_names_only else {}
                         other_name = None
                         if "other_name" in self.temp_vars and include:
-                            other_name = util.parse("Config", "other_name", self.temp_vars["remove_suffix"], parent="template_variables")
+                            other_name = util.parse("Config", "other_name", self.temp_vars["other_name"], parent="template_variables")
                         elif "other_name" in methods and include:
                             other_name = util.parse("Config", "other_name", dynamic, parent=map_name, methods=methods)
+                        if other_name:
+                            if "<<library_type>>" in other_name:
+                                other_name = other_name.replace("<<library_type>>", library.type.lower())
+                            if "<<library_typeU>>" in other_name:
+                                other_name = other_name.replace("<<library_typeU>>", library.type)
                         other_templates = util.parse("Config", "other_template", dynamic, parent=map_name, methods=methods, datatype="strlist") if "other_template" in methods and include else None
                         if other_templates:
                             for other_template in other_templates:

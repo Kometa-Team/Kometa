@@ -303,10 +303,6 @@ from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotSchedule
 plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
 
 
-def collection_count_after_run(beginning_count, items_added, items_removed):
-    return beginning_count + items_added - items_removed
-
-
 def is_plex_maintenance_error(error):
     error_text = str(error)
     return isinstance(error, BadRequest) and "(503) service_unavailable" in error_text and (
@@ -408,6 +404,16 @@ if run_args["low-priority"]:
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
         executor.submit(start, *[attrs])
+
+
+def should_sync_collection(builder):
+    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (
+        not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum
+    )
+
+
+def collection_count_after_run(beginning_count, items_added, items_removed):
+    return max(0, items_added + beginning_count - items_removed)
 
 
 def start(attrs):
@@ -973,6 +979,9 @@ def run_libraries(config):
                             run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
+                    if library.hub_priorities or library.auto_sort_hubs:
+                        library.sort_collection_hubs(library.hub_priorities, library.auto_sort_hubs, library.hub_config_order, library.hub_title_sorts)
+                        library.hub_priorities = {}
                 elif run_type == "metadata" and runs[run_type]:
                     time_start = datetime.now()
                     for images in library.images_files:
@@ -1108,22 +1117,25 @@ def run_collection(config, library, metadata, requested_collections):
                             break
                         elif builder.ignore_blank_results:
                             logger.warning(e)
+                        elif builder.obj:
+                            logger.warning(e)
                         else:
                             raise Failed(e)
 
                 builder.display_filters()
 
+                items_added = 0
+                items_removed = 0
                 if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
                     library.stats["unchanged"] += items_unchanged
                     library.status[str(mapping_name)]["unchanged"] = items_unchanged
-                    items_removed = 0
-                    if builder.sync:
-                        items_removed = builder.sync_collection()
-                        library.stats["removed"] += items_removed
-                        library.status[str(mapping_name)]["removed"] = items_removed
+                if should_sync_collection(builder):
+                    items_removed = builder.sync_collection()
+                    library.stats["removed"] += items_removed
+                    library.status[str(mapping_name)]["removed"] = items_removed
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     logger.info("")

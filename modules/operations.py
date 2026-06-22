@@ -1106,23 +1106,23 @@ class Operations:
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
-                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
+                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
             for item_attr, rt_edits in rating_edits.items():
                 plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
-            plex_update_in_batches(content_edits, display_attr="contentRating")
-            plex_update_in_batches(studio_edits, display_attr="studio")
-            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt")
-            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt")
-            plex_update_in_batches(remove_edits, out_type="remove")
-            plex_update_in_batches(reset_edits, out_type="reset")
-            plex_update_in_batches(lock_edits, out_type="lock")
-            plex_update_in_batches(unlock_edits, out_type="unlock")
+            plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
+            plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
+            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
+            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
+            plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
+            plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
+            plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
+            plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
             for item_attr, ep_edits in ep_rating_edits.items():
-                plex_update_in_batches(ep_edits, item_attr, is_episode=True)
-            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True)
-            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True)
-            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True)
-            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True)
+                plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 logger.info("")
