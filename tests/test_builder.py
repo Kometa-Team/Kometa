@@ -224,3 +224,52 @@ def test_filter_and_save_items_logs_expanded_and_unique_episode_counts(monkeypat
 
     assert "3 Episodes Expanded from 2 IDs" in logger.info_messages
     assert "2 Unique Episodes Kept" in logger.info_messages
+
+
+def test_delete_marks_builder_deleted_and_skips_notifications():
+    class FakeLibrary:
+        def __init__(self):
+            self.deleted_items = []
+            self.reloaded_items = []
+            self.webhook_calls = 0
+
+            class _Webhooks:
+                def __init__(self, outer):
+                    self.outer = outer
+
+                def collection_hooks(self, *args, **kwargs):
+                    self.outer.webhook_calls += 1
+
+            self.Webhooks = _Webhooks(self)
+
+        def delete(self, item):
+            self.deleted_items.append(item)
+
+        def item_reload(self, item):
+            self.reloaded_items.append(item)
+
+    builder = CollectionBuilder.__new__(CollectionBuilder)
+    builder.Type = "Collection"
+    builder.playlist = False
+    builder.name = "Test Collection"
+    builder.obj = SimpleNamespace(title="Test Collection")
+    builder.library = FakeLibrary()
+    builder.smart_label_collection = False
+    builder.builder_level = "movie"
+    builder.deleted = False
+    builder.created = True
+    builder.notification_additions = []
+    builder.notification_removals = []
+    builder.added_to_radarr = []
+    builder.added_to_sonarr = []
+    builder.details = {"changes_webhooks": True}
+    builder.collection_poster = None
+    builder.collection_background = None
+
+    assert builder.delete() == "Collection Test Collection deleted"
+    builder.send_notifications()
+
+    assert builder.deleted is True
+    assert builder.library.deleted_items == [builder.obj]
+    assert builder.library.reloaded_items == []
+    assert builder.library.webhook_calls == 0
