@@ -14,7 +14,7 @@ attr_translation = {
     "year": "seasonYear", "adult": "isAdult", "start": "startDate", "end": "endDate", "tag_category": "tagCategory",
     "score": "averageScore", "min_tag_percent": "minimumTagRank", "country": "countryOfOrigin",
 }
-mod_translation = {"": "in", "not": "not_in", "before": "greater", "after": "lesser", "gt": "greater", "gte": "greater", "lt": "lesser", "lte": "lesser"}
+mod_translation = {"": "in", "not": "not_in", "before": "lesser", "after": "greater", "gt": "greater", "gte": "greater", "lt": "lesser", "lte": "lesser"}
 mod_searches = [
     "start.before", "start.after", "end.before", "end.after",
     "format", "format.not", "status", "status.not", "genre", "genre.not", "tag", "tag.not", "tag_category", "tag_category.not",

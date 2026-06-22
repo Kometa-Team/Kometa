@@ -359,6 +359,16 @@ def process(attrs):
         executor.submit(start, *[attrs])
 
 
+def should_sync_collection(builder):
+    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (
+        not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum
+    )
+
+
+def collection_count_after_run(beginning_count, items_added, items_removed):
+    return max(0, items_added + beginning_count - items_removed)
+
+
 def start(attrs):
     try:
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -1037,22 +1047,25 @@ def run_collection(config, library, metadata, requested_collections):
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
+                        elif builder.obj:
+                            logger.warning(e)
                         else:
                             raise Failed(e)
 
                 builder.display_filters()
 
+                items_added = 0
+                items_removed = 0
                 if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
                     library.stats["unchanged"] += items_unchanged
                     library.status[str(mapping_name)]["unchanged"] = items_unchanged
-                    items_removed = 0
-                    if builder.sync:
-                        items_removed = builder.sync_collection()
-                        library.stats["removed"] += items_removed
-                        library.status[str(mapping_name)]["removed"] = items_removed
+                if should_sync_collection(builder):
+                    items_removed = builder.sync_collection()
+                    library.stats["removed"] += items_removed
+                    library.status[str(mapping_name)]["removed"] = items_removed
 
                 if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
                     logger.info("")
@@ -1063,11 +1076,12 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
-            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)
+            if builder.build_collection and not builder.blank_collection and final_collection_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"

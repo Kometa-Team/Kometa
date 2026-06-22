@@ -27,6 +27,7 @@ logger = util.logger
 
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
+asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp")
 search_translation = {
     "episode_actor": "episode.actor",
     "episode_title": "episode.title",
@@ -106,6 +107,12 @@ search_translation = {
     "track_source": "track.source",
     "track_label": "track.label",
 }
+
+
+def get_asset_image_matches(file_filter, file_name):
+    matches = [m for m in util.glob_filter(file_filter) if os.path.isfile(m) and os.path.splitext(m)[1].lower() in asset_image_extensions]
+    exact_matches = [m for m in matches if os.path.splitext(os.path.basename(m))[0].lower() == file_name.lower()]
+    return exact_matches or matches
 show_translation = {
     "title": "show.title",
     "country": "show.country",
@@ -1154,13 +1161,17 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
+            is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
             for choice in self.get_tags(final_search):
                 if choice.title not in names:
                     names.append((choice.title, choice.key) if name_pairs else choice.title)
-                choices[choice.title] = choice.title if use_title else choice.key
-                choices[choice.key] = choice.title if use_title else choice.key
-                choices[choice.title.lower()] = choice.title if use_title else choice.key
-                choices[choice.key.lower()] = choice.title if use_title else choice.key
+                value = choice.title if use_title else choice.key
+                # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
+                title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
+                choices[choice.title] = title_value
+                choices[choice.key] = value
+                choices[choice.title.lower()] = title_value
+                choices[choice.key.lower()] = value
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
@@ -1897,7 +1908,7 @@ class Plex(Library):
                                 item_asset_directory = os.path.abspath(matches[0])
                                 break
                 else:
-                    matches = util.glob_filter(os.path.join(ad, f"{file_name}.*"))
+                    matches = get_asset_image_matches(os.path.join(ad, f"{file_name}.*"), file_name)
                     if len(matches) > 0:
                         item_asset_directory = ad
                 if item_asset_directory:
@@ -1917,19 +1928,22 @@ class Plex(Library):
         logo_filter = os.path.join(item_asset_directory, "logo.*" if file_name == "poster" else f"{file_name}_logo.*")
         square_art_filter = os.path.join(item_asset_directory, "square.*" if file_name == "poster" else f"{file_name}_square.*")
 
-        poster_matches = util.glob_filter(poster_filter)
+        poster_matches = get_asset_image_matches(poster_filter, file_name)
         if len(poster_matches) > 0:
             poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
 
-        background_matches = util.glob_filter(background_filter)
+        background_name = "background" if file_name == "poster" else f"{file_name}_background"
+        background_matches = get_asset_image_matches(background_filter, background_name)
         if len(background_matches) > 0:
             background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
 
-        logo_matches = util.glob_filter(logo_filter)
+        logo_name = "logo" if file_name == "poster" else f"{file_name}_logo"
+        logo_matches = get_asset_image_matches(logo_filter, logo_name)
         if len(logo_matches) > 0:
             logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
 
-        square_art_matches = util.glob_filter(square_art_filter)
+        square_art_name = "square" if file_name == "poster" else f"{file_name}_square"
+        square_art_matches = get_asset_image_matches(square_art_filter, square_art_name)
         if len(square_art_matches) > 0:
             square_art = ImageData("asset_directory", os.path.abspath(square_art_matches[0]), prefix=prefix, image_type="square_art", is_url=False)
 

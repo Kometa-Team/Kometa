@@ -127,6 +127,8 @@ class Operations:
         logger.debug(f"Genre Mapper: {self.library.genre_mapper}")
         logger.debug(f"Content Rating Mapper: {self.library.content_rating_mapper}")
         logger.debug(f"Metadata Backup: {self.library.metadata_backup}")
+        logger.debug(f"Ignore Labels: {self.library.ignore_labels}")
+        logger.debug(f"Respect Ignore IDs: {self.library.respect_ignore_ids}")
         logger.debug(f"Item Operation: {self.library.items_library_operation}")
         logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
         logger.debug("")
@@ -186,14 +188,21 @@ class Operations:
                 except Failed as e:
                     logger.error(e)
                     continue
+
                 current_labels = [la.tag for la in self.library.item_labels(item)] if self.library.label_operations else []
+                if self.library.item_has_ignore_label(item, current_labels=current_labels):
+                    logger.info("Ignored by ignore_labels")
+                    continue
+
+                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
+                if self.library.respect_ignore_ids and self.library.item_is_ignored(item, tmdb_id=tmdb_id, tvdb_id=tvdb_id, imdb_id=imdb_id):
+                    logger.info("Ignored by ignore_ids or ignore_imdb_ids")
+                    continue
 
                 if self.library.assets_for_all and self.library.asset_directory:
                     self.library.find_and_upload_assets(item, current_labels)
 
                 locked_fields = [f.name for f in item.fields if f.locked]
-
-                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
 
                 item_edits = ""
 
@@ -981,6 +990,9 @@ class Operations:
                                         except Failed:
                                             logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
                                             continue
+                                        if self.library.item_has_ignore_label(episode):
+                                            logger.info(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Ignored by ignore_labels")
+                                            continue
                                         try:
                                             episode_poster, episode_background, _, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                         except Failed:
@@ -1009,6 +1021,9 @@ class Operations:
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")
                         logger.info(f"{item_title}")
+                        if self.library.item_has_ignore_label(ep):
+                            logger.info("Ignored by ignore_labels")
+                            continue
                         item_edits = ""
 
                         for attribute, item_attr in episode_ops:
@@ -1135,23 +1150,23 @@ class Operations:
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
-                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
+                    plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation, evict_cache=True)
             for item_attr, rt_edits in rating_edits.items():
                 plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
-            plex_update_in_batches(content_edits, display_attr="contentRating")
-            plex_update_in_batches(studio_edits, display_attr="studio")
-            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt")
-            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt")
-            plex_update_in_batches(remove_edits, out_type="remove")
-            plex_update_in_batches(reset_edits, out_type="reset")
-            plex_update_in_batches(lock_edits, out_type="lock")
-            plex_update_in_batches(unlock_edits, out_type="unlock")
+            plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
+            plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
+            plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
+            plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
+            plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
+            plex_update_in_batches(reset_edits, out_type="reset", evict_cache=True)
+            plex_update_in_batches(lock_edits, out_type="lock", evict_cache=True)
+            plex_update_in_batches(unlock_edits, out_type="unlock", evict_cache=True)
             for item_attr, ep_edits in ep_rating_edits.items():
-                plex_update_in_batches(ep_edits, item_attr, is_episode=True)
-            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True)
-            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True)
-            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True)
-            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True)
+                plex_update_in_batches(ep_edits, item_attr, is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_remove_edits, out_type="remove", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
+            plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 logger.info("")

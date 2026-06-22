@@ -97,6 +97,8 @@ class Library(ABC):
         self.only_filter_missing = params["only_filter_missing"]
         self.ignore_ids = params["ignore_ids"]
         self.ignore_imdb_ids = params["ignore_imdb_ids"]
+        self.ignore_labels = params["ignore_labels"]
+        self.respect_ignore_ids = bool(params["respect_ignore_ids"])
         self.overlay_artwork_quality = params["overlay_artwork_quality"]
         self.overlay_artwork_filetype = params["overlay_artwork_filetype"]
         self.assets_for_all = params["assets_for_all"]
@@ -184,7 +186,7 @@ class Library(ABC):
             or self.update_blank_track_titles
             else False
         )
-        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels else False
+        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.ignore_labels else False
 
         if self.asset_directory:
             logger.info("")
@@ -194,6 +196,29 @@ class Library(ABC):
         if output:
             logger.info("")
             logger.info(output)
+
+    def item_is_ignored(self, item, tmdb_id=None, tvdb_id=None, imdb_id=None):
+        if not self.ignore_ids and not self.ignore_imdb_ids:
+            return False
+        ignored_ids = {str(ignore_id) for ignore_id in self.ignore_ids}
+        if any(item_id is not None and str(item_id) in ignored_ids for item_id in [tmdb_id, tvdb_id]):
+            return True
+        if tmdb_id is None and tvdb_id is None and imdb_id is None:
+            try:
+                tmdb_id, tvdb_id, imdb_id = self.get_ids(item)
+            except Failed:
+                tmdb_id = None
+                tvdb_id = None
+                imdb_id = None
+        if any(item_id is not None and str(item_id) in ignored_ids for item_id in [tmdb_id, tvdb_id]):
+            return True
+        return imdb_id is not None and str(imdb_id).lower() in self.ignore_imdb_ids
+
+    def item_has_ignore_label(self, item, current_labels=None):
+        if not self.ignore_labels:
+            return False
+        labels = current_labels if current_labels is not None else [la.tag for la in self.item_labels(item)]
+        return any(label in labels for label in self.ignore_labels)
 
     def scan_configured_collection_names(self):
         for file_type, metadata_file, temp_vars, asset_directory in self.configured_collection_files:
