@@ -147,7 +147,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Bones:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Bones, BONES, Bones Film, BONES FILM]}]
 
   Brain's Base:
     template: [name: standard, name: studios]
@@ -252,7 +252,7 @@ overlays:
     template: [name: standard, {name: studios, search: [GoHands, Go Hands]}]
 
   Gonzo:
-    template: [name: standard, {name: studios, search: [Gonzo, Gonzo Digimation]}]
+    template: [name: standard, {name: studios, search: [Gonzo, GONZO, Gonzo Digimation]}]
 
   Graphinica:
     template: [name: standard, name: studios]
@@ -342,7 +342,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Nut:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Nut, NUT]}]
 
   Okuruto Noboru:
     template: [name: standard, name: studios]
@@ -429,7 +429,7 @@ overlays:
     template: [name: standard, {name: studios, search: [Seven, Seven Arcs, Seven Arcs Pictures]}]
 
   Shaft:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Shaft, SHAFT]}]
 
   Shin-Ei Animation:
     template: [name: standard, name: studios]
@@ -525,7 +525,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Sunrise:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Sunrise, SUNRISE]}]
 
   SynergySP:
     template: [name: standard, name: studios]
@@ -555,7 +555,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Trigger:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Trigger, TRIGGER]}]
 
   TROYCA:
     template: [name: standard, name: studios]
@@ -582,7 +582,7 @@ overlays:
     template: [name: standard, name: studios]
 
   Wit Studio:
-    template: [name: standard, name: studios]
+    template: [name: standard, {name: studios, search: [Wit Studio, WIT STUDIO]}]
 
   Wolfsbane:
     template: [name: standard, name: studios]

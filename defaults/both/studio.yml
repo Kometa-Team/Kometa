@@ -566,6 +566,10 @@ dynamic_collections:
         - Bibury Animation CG
       Blue Sky Studios:
         - Blue Sky Films
+      Bones:
+        - BONES
+        - Bones Film
+        - BONES FILM
       Canal+:
         - Canal+ Polska
       Cloud Hearts:
@@ -604,6 +608,7 @@ dynamic_collections:
       GoHands:
         - Go Hands
       Gonzo:
+        - GONZO
         - Gonzo Digimation
       Hallmark:
         - Hallmark+
@@ -644,6 +649,8 @@ dynamic_collections:
         - New Line
       Nexus:
         - Nexus Factory
+      Nut:
+        - NUT
       P.A. Works:
         - P.A.WORKS
       Paramount Pictures:
@@ -675,6 +682,8 @@ dynamic_collections:
       Seven Arcs:
         - Seven
         - Seven Arcs Pictures
+      Shaft:
+        - SHAFT
       Shogakukan:
         - Shogakukan Production
       Signal.MD:
@@ -702,6 +711,8 @@ dynamic_collections:
         - The Kennedy/Marshall Company
       The Mark Gordon Company:
         - Tiger Aspect Productions
+      Sunrise:
+        - SUNRISE
       TOHO:
         - Toho Pictures
         - Toho Pictures, Inc.
@@ -709,6 +720,8 @@ dynamic_collections:
         - Tokyo Movie Shinsha
       Toei Animation:
         - Toei
+      Trigger:
+        - TRIGGER
       TriStar Pictures:
         - TriStar
       Universal Pictures:
@@ -722,5 +735,7 @@ dynamic_collections:
       Warner Bros. Pictures:
         - Warner
         - Warner Animation Group
+      Wit Studio:
+        - WIT STUDIO
       Yokohama Animation Lab:
         - Yokohama Animation Laboratory
