@@ -303,6 +303,10 @@ from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotSchedule
 plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
 
 
+def collection_count_after_run(beginning_count, items_added, items_removed):
+    return beginning_count + items_added - items_removed
+
+
 def is_plex_maintenance_error(error):
     error_text = str(error)
     return isinstance(error, BadRequest) and "(503) service_unavailable" in error_text and (
@@ -1135,13 +1139,14 @@ def run_collection(config, library, metadata, requested_collections):
                         logger.info("No Updates Required")
                         library.status[str(mapping_name)]["status"] = "No Updates Required"
                         daily_no_updates = True
-                    else:
+                    elif not builder.obj:
                         raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
+            final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)
             if daily_no_updates:
                 valid = False
-            if valid and builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            if valid and builder.build_collection and not builder.blank_collection and final_collection_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
