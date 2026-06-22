@@ -2092,7 +2092,7 @@ class CollectionBuilder:
                     elif search_attr in ["format", "status", "genre", "tag", "tag_category"]:
                         new_dictionary[lower_method] = self.config.AniList.validate(search_attr.replace("_", " ").title(), util.parse(self.Type, search_method, search_data))
                     elif search_attr in ["start", "end"]:
-                        new_dictionary[search_attr] = util.parse(
+                        new_dictionary[lower_method] = util.parse(
                             self.Type,
                             search_attr,
                             search_data,
