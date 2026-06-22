@@ -27,6 +27,7 @@ logger = util.logger
 
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
+asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp")
 search_translation = {
     "episode_actor": "episode.actor",
     "episode_title": "episode.title",
@@ -106,6 +107,12 @@ search_translation = {
     "track_source": "track.source",
     "track_label": "track.label",
 }
+
+
+def get_asset_image_matches(file_filter, file_name):
+    matches = [m for m in util.glob_filter(file_filter) if os.path.isfile(m) and os.path.splitext(m)[1].lower() in asset_image_extensions]
+    exact_matches = [m for m in matches if os.path.splitext(os.path.basename(m))[0].lower() == file_name.lower()]
+    return exact_matches or matches
 show_translation = {
     "title": "show.title",
     "country": "show.country",
@@ -1334,6 +1341,104 @@ class Plex(Library):
         key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
         self._query(key, post=True)
 
+    def sort_collection_hubs(self, hub_priorities, auto_sort_hubs, hub_config_order=None, hub_title_sorts=None):
+        # Sort hub rows: prioritised (hub_priority set) first by priority then auto_sort_hubs tiebreak, then unprioritised by auto_sort_hubs. Uses raw XML (_query()) — plexapi Hub has no ratingKey.
+        logger.separator("Sorting Recommendation Hubs", space=False, border=False)
+        logger.info("")
+
+        if self.Plex is None:
+            logger.error("Plex Error: No Plex connection available for hub sort")
+            return
+
+        hub_config_order = hub_config_order or {}
+        hub_title_sorts = hub_title_sorts or {}
+
+        try:
+            response = self._query(f"/hubs/sections/{self.Plex.key}/manage")
+        except Exception as e:
+            logger.error(f"Plex Error: Failed to fetch hub list: {e}")
+            return
+
+        # Custom collection hubs: identifier="custom.collection.{sectionKey}.{ratingKey}". Built-in hubs have no trailing numeric ratingKey — skip them.
+        hubs = []
+        for elem in (response or []):
+            identifier = elem.attrib.get("identifier", "")
+            parts = identifier.split(".")
+            if len(parts) < 4 or parts[0] != "custom" or parts[1] != "collection":
+                continue
+            try:
+                rk = int(parts[-1])
+            except ValueError:
+                continue
+            title = elem.attrib.get("title", "")
+            hubs.append({
+                "ratingKey": rk,
+                "identifier": identifier,
+                "title": title,
+            })
+
+        if not hubs:
+            logger.info("No items in hub list, skipping sort")
+            return
+
+        # Warn for any collection with hub_priority set but not in the hub list
+        hub_rating_keys = {h["ratingKey"] for h in hubs}
+        for rk, (priority, name) in hub_priorities.items():
+            if rk not in hub_rating_keys:
+                logger.warning(
+                    f"Plex Warning: hub_priority set on collection '{name}' but it is not promoted to any hub. "
+                    f"Ensure visible_library, visible_home, or visible_shared is enabled."
+                )
+
+        # hub_title_sorts is populated in builder.py from plexapi collection objects; falls back to title for unprocessed collections.
+        def _sort_key(h, mode):
+            rk = h["ratingKey"]
+            if mode in ("sort_title", "sort_title.desc"):
+                return hub_title_sorts.get(rk) or h["title"]
+            elif mode in ("configured", "configured.desc"):
+                return hub_config_order.get(rk, 999999)
+            else:  # alpha, alpha.desc, or default
+                return h["title"]
+
+        # When auto_sort_hubs is not set but hub_priorities are, default unprioritised to alpha order.
+        sort_mode = auto_sort_hubs or "alpha"
+        reverse = sort_mode.endswith(".desc")
+
+        # Split into prioritised (hub_priority set) and unprioritised
+        prioritised = [h for h in hubs if h["ratingKey"] in hub_priorities]
+        unprioritised = [h for h in hubs if h["ratingKey"] not in hub_priorities]
+
+        # Sort prioritised: primary by priority value (asc), tiebreak by the same key as auto_sort_hubs (always asc)
+        prioritised = sorted(
+            prioritised,
+            key=lambda h: (hub_priorities[h["ratingKey"]][0], _sort_key(h, sort_mode)),
+        )
+
+        # Sort unprioritised by auto_sort_hubs mode
+        if sort_mode == "random":
+            import random
+            random.shuffle(unprioritised)
+        else:
+            unprioritised = sorted(unprioritised, key=lambda h: _sort_key(h, sort_mode), reverse=reverse)
+
+        sorted_hubs = prioritised + unprioritised
+
+        logger.info(f"Sorting {len(sorted_hubs)} Recommendation Hub(s)")
+        previous_identifier = None
+        for h in sorted_hubs:
+            try:
+                key = f"/hubs/sections/{self.Plex.key}/manage/{h['identifier']}/move"
+                if previous_identifier:
+                    key += f"?after={previous_identifier}"
+                self._query(key, put=True)
+                logger.debug(f"Hub Moved: {h['title']}")
+            except Exception as e:
+                logger.error(f"Plex Error: Failed to move hub '{h['title']}': {e}")
+            previous_identifier = h["identifier"]
+
+        logger.info("Recommendation Hub sort complete")
+        logger.info("")
+
     def get_playlist(self, title):
         try:
             return self.PlexServer.playlist(title)
@@ -1799,7 +1904,7 @@ class Plex(Library):
                                 item_asset_directory = os.path.abspath(matches[0])
                                 break
                 else:
-                    matches = util.glob_filter(os.path.join(ad, f"{file_name}.*"))
+                    matches = get_asset_image_matches(os.path.join(ad, f"{file_name}.*"), file_name)
                     if len(matches) > 0:
                         item_asset_directory = ad
                 if item_asset_directory:
@@ -1819,19 +1924,22 @@ class Plex(Library):
         logo_filter = os.path.join(item_asset_directory, "logo.*" if file_name == "poster" else f"{file_name}_logo.*")
         square_art_filter = os.path.join(item_asset_directory, "square.*" if file_name == "poster" else f"{file_name}_square.*")
 
-        poster_matches = util.glob_filter(poster_filter)
+        poster_matches = get_asset_image_matches(poster_filter, file_name)
         if len(poster_matches) > 0:
             poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
 
-        background_matches = util.glob_filter(background_filter)
+        background_name = "background" if file_name == "poster" else f"{file_name}_background"
+        background_matches = get_asset_image_matches(background_filter, background_name)
         if len(background_matches) > 0:
             background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
 
-        logo_matches = util.glob_filter(logo_filter)
+        logo_name = "logo" if file_name == "poster" else f"{file_name}_logo"
+        logo_matches = get_asset_image_matches(logo_filter, logo_name)
         if len(logo_matches) > 0:
             logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
 
-        square_art_matches = util.glob_filter(square_art_filter)
+        square_art_name = "square" if file_name == "poster" else f"{file_name}_square"
+        square_art_matches = get_asset_image_matches(square_art_filter, square_art_name)
         if len(square_art_matches) > 0:
             square_art = ImageData("asset_directory", os.path.abspath(square_art_matches[0]), prefix=prefix, image_type="square_art", is_url=False)
 

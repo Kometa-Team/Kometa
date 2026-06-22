@@ -138,6 +138,7 @@ settings:
   default_collection_order: release
   delete_below_minimum: true
   delete_not_scheduled: false
+  auto_sort_hubs: sort_title
   run_again_delay: 2
   show_unmanaged: true
   show_unconfigured: false

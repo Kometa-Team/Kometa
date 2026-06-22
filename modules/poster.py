@@ -11,6 +11,7 @@ logger = util.logger
 
 class ImageData:
     def __init__(self, attribute, location, prefix="", image_type="poster", is_url=True, compare=None):
+        file_stat = None if is_url else os.stat(location)
         self.attribute = attribute
         self.location = location
         self.prefix = prefix
@@ -19,7 +20,7 @@ class ImageData:
         self.is_logo = image_type == "logo"
         self.is_square_art = image_type == "square_art"
         self.is_url = is_url
-        self.compare = compare if compare else location if is_url else os.stat(location).st_size
+        self.compare = compare if compare else location if is_url else f"{os.path.abspath(location)}:{file_stat.st_size}:{file_stat.st_mtime_ns}"
         self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):
