@@ -20,9 +20,8 @@ venv
 .gitignore
 .readthedocs.yml
 .spellcheck.yml
-CHANGELOG
+CHANGELOG.md
 Dockerfile
-Dockerfile.lxml
 LICENSE
 mkdocs.yml
 README.md

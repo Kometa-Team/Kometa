@@ -1,42 +1,37 @@
-JSON schemas for Kometa YAML files
+# JSON schemas for Kometa YAML files
 
-CURRENTLY THERE IS ONLY A SCHEMA AVAILABLE FOR `config.yml`.
+## Available Schemas
 
-Do not use this schema file with collection, overlay, metadata, or any other type of Kometa YAML file.
+| Schema File | Use With |
+| ----------- | -------- |
+| `config-schema.json` | `config.yml` |
+| `collection-schema.json` | Collection files |
+| `metadata-schema.json` | Metadata files |
+| `overlay-schema.json` | Overlay files |
+| `playlist-schema.json` | Playlist files |
 
-How to:
+## How to Use
 
-Add this as the first line in your `config.yml`:
-```
+Add the appropriate schema declaration as the first line of your YAML file:
+
+```yaml
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Kometa-Team/Kometa/nightly/json-schema/config-schema.json
 ```
-[change `nightly` to `develop`, or `master` if you wish]
 
-Then open your config file in an editor that supports the use of JSON schema.
+Change `nightly` to `develop` or `master` as appropriate for your branch.
 
-For example, VS Code with the Red Hat YAML extension.
+Then open the file in an editor that supports JSON Schema — for example, VS Code with the [Red Hat YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml).
 
-This will give you context-sensitive hints and auto-complete for much of the Kometa `config.yml`
+This gives you context-sensitive hints, auto-complete, and inline error highlighting.
 
 ![schema-example](./../docs/assets/images/schema-example.png)
 
 ![schema-error](./../docs/assets/images/schema-error.png)
 
-limitations:
+## Known Limitations
 
-- template variables not cased for specific default file
-- template variables with keys are wildcarded
-- "position" attribute has no validation
-- "streaming" default has no validation
-- search has no validation; just accepts string
-- schedule has no validation; just accepts string
-
-TODO:
-"list of coordinates"
-
-- schema for collection yaml
-- schema for metadata yaml
-- schema for overlay yaml
-- schema for template yaml
-
-Notes:
+- Template variables are not validated against specific default files
+- Template variables with keys are wildcarded
+- `position` attribute has no validation
+- `streaming` default has no validation
+- `search` and `schedule` accept any string (no structural validation)

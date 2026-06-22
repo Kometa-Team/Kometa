@@ -38,22 +38,22 @@ jobs:
 
     - name: Run Black check
       run: |
-        black --check --diff src/ tests/ *.py
+        black --check --diff modules/ tests/ *.py
 
     - name: Run isort check
       run: |
-        isort --check-only --diff src/ tests/ *.py
+        isort --check-only --diff modules/ tests/ *.py
 
     - name: Run flake8
       run: |
-        flake8 src/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
+        flake8 modules/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
 
     - name: Run mypy
       run: |
-        mypy src/
+        mypy modules/
       continue-on-error: true
 
     - name: Run bandit security check
       run: |
-        bandit -r src/ -c pyproject.toml
+        bandit -r modules/ -c pyproject.toml
       continue-on-error: true

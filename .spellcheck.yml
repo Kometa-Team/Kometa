@@ -1,8 +1,7 @@
 matrix:
 - name: Markdown
   sources:
-  - '**/*.md|!AGENTS.md|!**/MODULE.md|!config/**|!test_venv/**|!.direnv/**|!.github/**|!.mypy_cache/**|!.pytest_cache/**|!.ruff_cache/**|!.vscode/**|!docs/superpowers/**'
-  - 'CHANGELOG'
+  - '**/*.md|!AGENTS.md|!**/MODULE.md|!config/**|!test_venv/**|!.direnv/**|!.github/**|!.mypy_cache/**|!.pytest_cache/**|!.ruff_cache/**|!.vscode/**|!docs/superpowers/**|!docs/kometa/acknowledgements.md'
   aspell:
     lang: en
     ignore-case: true
