@@ -100,6 +100,7 @@ templates:
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
       minimum_items_<<key>>: <<minimum_items>>
+      hub_priority_<<key>>: <<hub_priority>>
     optional:
       - use_<<key>>
       - allowed_libraries
@@ -125,6 +126,7 @@ templates:
       - name_mapping
       - delete_collections_named
       - schedule
+      - hub_priority
     run_definition:
       - <<final_use>>
       - <<use_<<key>>>>
@@ -151,6 +153,7 @@ templates:
     url_background: <<url_background_<<key>>>>
     file_background: <<file_background_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
+    hub_priority: <<hub_priority_<<key>>>>
     delete_collections_named: <<delete_collections_named>>
     schedule: <<schedule_<<key>>>>
 
