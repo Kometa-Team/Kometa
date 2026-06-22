@@ -28,6 +28,14 @@ meta_operations = [
     "mass_studio_update",
 ]
 name_display = {"audienceRating": "Audience Rating", "rating": "Critic Rating", "userRating": "User Rating", "originallyAvailableAt": "Originally Available Date", "addedAt": "Added At Date", "contentRating": "Content Rating"}
+tmdb_release_types = {
+    "tmdb_premiere": 1,
+    "tmdb_theatricallimited": 2,
+    "tmdb_theatrical": 3,
+    "tmdb_digital": 4,
+    "tmdb_physical": 5,
+    "tmdb_tv": 6,
+}
 
 
 def _item_batches(items_iterable, batch_size):
@@ -251,6 +259,29 @@ class Operations:
                     if not _tmdb_obj:
                         raise Failed
                     return _tmdb_obj
+
+                _tmdb_release_dates_obj = None
+
+                def tmdb_release_date(release_option):
+                    nonlocal _tmdb_release_dates_obj
+                    if not self.library.is_movie:
+                        logger.info(f"TMDb Release Dates are only available for Movies: {item.title}")
+                        raise Failed
+                    if _tmdb_release_dates_obj is None:
+                        _tmdb_release_dates_obj = False
+                        try:
+                            _tmdb_release_dates_obj = self.config.TMDb.get_movie_release_dates(tmdb_obj().tmdb_id)
+                        except Failed as err:
+                            logger.error(str(err))
+                    if not _tmdb_release_dates_obj:
+                        raise Failed
+                    release_dates = []
+                    region = self.config.TMDb.region
+                    for releases in [_tmdb_release_dates_obj[region]] if region and region in _tmdb_release_dates_obj else _tmdb_release_dates_obj.values():
+                        release_dates.extend([release.release_date for release in releases if release.type == tmdb_release_types[release_option] and release.release_date])
+                    if not release_dates:
+                        raise Failed
+                    return min(release_dates)
 
                 _omdb_obj = None
 
@@ -792,6 +823,8 @@ class Operations:
                                 try:
                                     if option == "tmdb":
                                         new_date = tmdb_obj().release_date if self.library.is_movie else tmdb_obj().first_air_date  # noqa
+                                    elif option in tmdb_release_types:
+                                        new_date = tmdb_release_date(option)
                                     elif option == "omdb":
                                         new_date = omdb_obj().released  # noqa
                                     elif option == "tvdb":

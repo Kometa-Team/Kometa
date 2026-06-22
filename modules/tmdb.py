@@ -318,6 +318,16 @@ class TMDb:
     def get_movie(self, tmdb_id, ignore_cache=False):
         return TMDbMovie(self, tmdb_id, ignore_cache=ignore_cache)
 
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    def get_movie_release_dates(self, tmdb_id):
+        try:
+            return self.TMDb.movie(tmdb_id, partial="release_dates").release_dates
+        except TMDbNotFound as e:
+            raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
+        except TMDbException as e:
+            logger.stacktrace()
+            raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {tmdb_id}: {e}")
+
     def get_show(self, tmdb_id, ignore_cache=False):
         return TMDbShow(self, tmdb_id, ignore_cache=ignore_cache)
 
