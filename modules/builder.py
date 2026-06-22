@@ -5115,6 +5115,8 @@ class CollectionBuilder:
                     output += f"\nPlaylist not found on User {user}"
         elif self.obj:
             self.library.delete(self.obj)
+        if self.obj:
+            self.deleted = True
         return output
 
     def sync_playlist(self):
@@ -5143,7 +5145,7 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
+        if self.obj and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.library.item_reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(
