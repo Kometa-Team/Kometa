@@ -67,6 +67,8 @@ Call out the schema file as supporting only config.yml. explicitly.
 Add E4 to network overlay and show network collection. #2975
 
 # Bug Fixes
+Sanitize PR branch names in CI workflows (`validate-pull.yml`, `increment-build.yml`, `tag-cleanup.yml`) by replacing non-Docker-safe characters with `-`; branch names containing `/` (e.g. `feature/my-fix`) previously caused Docker Hub tag pushes and deletes to fail.
+Fix `tag-cleanup.yml` output key mismatch (`tag_name` vs `tag-name`) that caused the Docker Hub tag DELETE to always target an empty tag name, leaving stale tester tags behind.
 Update Letterbox URL parsing to handle unlisted lists and shuffle argument in the url
 Update Letterboxd list/watchlist parser for the React-based `LazyPoster` markup, which replaced the `data-film-id` nodes the `letterboxd_list`, `letterboxd_user_films`, and `letterboxd_user_reviews` builders relied on.
 Catch KeyError on Plex NFO build.
