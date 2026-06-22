@@ -50,6 +50,20 @@ _Please replace this line with a meaningful description of your PR. What does it
 -->
 - [ ] Yes
 - [ ] No
+- [ ] Not Applicable
+
+## Have you updated the JSON Schema files (if necessary)?
+
+<!--
+    This is optional and only necessary when your PR changes supported attributes,
+    accepted values, or structure for Configuration Files, Collection Files,
+    Metadata Files, Overlay Files, Playlist Files, or Defaults template variables.
+    Type X in the brackets of any relevant option, for example:
+    - [X] Yes
+-->
+- [ ] Yes
+- [ ] No
+- [ ] Not Applicable
 
 ## Have you updated the CHANGELOG?
 

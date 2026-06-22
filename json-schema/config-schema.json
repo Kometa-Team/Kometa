@@ -1671,6 +1671,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
+          "type": "integer",
+          "minimum": 1
+        },
         "default_collection_order": {
           "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by Kometa unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
           "type": [
@@ -5794,6 +5799,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
+          "type": "integer",
+          "minimum": 1
+        },
         "name_mapping": {
           "description": "Changes the name_mapping for all collections. Use <<key_name>> as a placeholder.",
           "type": "string"
@@ -6169,6 +6179,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -6445,6 +6460,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -6905,6 +6925,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -7168,6 +7193,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -7543,6 +7573,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -7815,6 +7850,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -8142,6 +8182,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -8413,6 +8458,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -8733,6 +8783,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -9004,6 +9059,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -9377,6 +9437,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -9648,6 +9713,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -10052,6 +10122,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -10315,6 +10390,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -10648,6 +10728,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -10919,6 +11004,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -11249,6 +11339,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -11520,6 +11615,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -11943,6 +12043,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "^hub_priority_.+$": {
+          "description": "Override hub_priority for a specific collection by key.",
+          "type": "integer",
+          "minimum": 1
+        },
         "^url_poster_.+$": {
           "description": "Override the poster URL for a specific collection by key.",
           "type": "string",
@@ -12220,6 +12325,11 @@
           "type": "integer",
           "minimum": 1
         },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
+          "type": "integer",
+          "minimum": 1
+        },
         "delete_below_minimum": {
           "type": "boolean"
         },
@@ -12482,6 +12592,11 @@
           "type": "string"
         },
         "minimum_items": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },
@@ -13805,6 +13920,11 @@
         },
         "minimum_items": {
           "description": "Minimum items required for any playlist to be created.",
+          "type": "integer",
+          "minimum": 1
+        },
+        "hub_priority": {
+          "description": "Priority position for all collections in this defaults file's Recommendation Hub rows. Lower numbers appear first.",
           "type": "integer",
           "minimum": 1
         },

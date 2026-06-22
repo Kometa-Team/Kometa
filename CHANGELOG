@@ -51,6 +51,10 @@ Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter
 Add Apprise as a webhook notification provider.
 Extend default "Metacritic Must See" collection to work with TV
 Add support for boxd.it urls, used for letterboxd share lists
+Add `hub_priority` and `hub_priority_<<key>>` template variables to the shared default templates so collections can set hub row priority from templates.
+Add `hub_priority` to the collection config schema so the new template variable validates correctly.
+Allow metadata updates to proceed on existing collections even if the builder returns 0 items
+
 
 # Docs
 Updates to Quickstart docs about limitations
@@ -100,4 +104,7 @@ Fix an issue where Plex would fail to update collections if the casing of the co
 Fix shared `ignore_ids` and `ignore_imdb_ids` template variables for builders that resolve Plex `ratingKey`s first.
 Fix an issue where collections would not be recognized as configured if they were not scheduled to run
 Fix `monthly(N)` schedule: values greater than the current month's last day (e.g. `monthly(31)` in November) no longer fire on the last day of the month as a fallback. `monthly(N)` now only triggers when today is exactly day N. A warning is logged when a configured day does not exist in the current month, directing users to the new `monthly(last)` option. Fixes #2884
+Fix `audio_language`/`subtitle_language` `plex_search` on show libraries returning fewer results than expected when Plex returns regional language codes (e.g. `en-US`) instead of base codes (`en`). (#2777)
+Fix `other_name` in dynamic collections: `<<library_type>>` and `<<library_typeU>>` placeholders are now resolved (they were applied to `title_format` but not to `other_name`). Also fix a long-standing copy-paste bug where `other_name` supplied via `template_variables` was read from `self.temp_vars["remove_suffix"]` instead of `self.temp_vars["other_name"]`.
+Fix inconsistent asset poster selection and overlay cache invalidation when replacing local asset files.
 Invalidate cached Plex items after batched edits in operations so metadata files can override values in the same run instead of flip-flopping on later runs.
