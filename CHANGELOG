@@ -51,7 +51,7 @@ Replace Kometa's internal Letterboxd scraping with a letterboxdpy-backed adapter
 Add Apprise as a webhook notification provider.
 Extend default "Metacritic Must See" collection to work with TV
 Add support for boxd.it urls, used for letterboxd share lists
-Add `hub_priority` template variable to the shared default templates so collections can set hub row priority from templates.
+Add `hub_priority` and `hub_priority_<<key>>` template variables to the shared default templates so collections can set hub row priority from templates.
 
 # Docs
 Updates to Quickstart docs about limitations
