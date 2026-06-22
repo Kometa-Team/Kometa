@@ -1105,7 +1105,7 @@ class Operations:
                     plex_update_in_batches(batch_edits, display_attr=tag_attribute, tag_type=tag_operation)
             for item_attr, rt_edits in rating_edits.items():
                 plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
-            plex_update_in_batches(content_edits, display_attr="contentRating")
+            plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
             plex_update_in_batches(studio_edits, display_attr="studio")
             plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt")
             plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt")
