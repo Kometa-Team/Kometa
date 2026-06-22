@@ -1047,6 +1047,8 @@ def run_collection(config, library, metadata, requested_collections):
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
+                        elif builder.obj:
+                            logger.warning(e)
                         else:
                             raise Failed(e)
 
@@ -1074,7 +1076,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
