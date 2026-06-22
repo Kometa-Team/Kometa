@@ -24,7 +24,7 @@ The scheduling options are:
 | Hourly       | Update only when the script is run in that hour or hour range.                                                       | hourly(Hour of Day)<br>hourly(Start Hour-End Hour) | `hourly(17)`<br>`hourly(17-04)`                                      |
 | Daily        | Update once a day.                                                                                                   | daily                                              | `daily`                                                              |
 | Weekly       | Update once a week on the specified days. (For multiple days, use a bar-separated (<code>&#124;</code>) list)        | weekly(Days of Week)                               | `weekly(sunday)`<br><code>weekly(sunday&#124;tuesday)</code>         |
-| Monthly      | Update once a month on the specified day. (multiple days not supported as a parameter) (For multiple days, use a list: `[monthly(1), monthly(15)]`) | monthly(Day of Month)                              | `monthly(1)`                                                         |
+| Monthly      | Update once a month on the specified day. Use `monthly(last)` to run on the last day of every month regardless of its length. (multiple days not supported as a parameter) (For multiple days, use a list: `[monthly(1), monthly(15)]`) | monthly(Day of Month)<br>monthly(last) | `monthly(1)`<br>`monthly(last)`                                      |
 | Yearly       | Update once a year on the specified day. (multiple days not supported as a parameter)                                | yearly(MM/DD)                                      | `yearly(01/30)`                                                      |
 | Date         | Update on a specific date.                                                                                           | date(MM/DD/YYYY)                                   |                                                                      |
 | Range        | Updates whenever the date is within the range. A range can be a single day (`range(06/01-06/01)`) (For multiple ranges, use a bar-separated (<code>&#124;</code>) list) | range(MM/DD-MM/DD)                                 | `range(12/01-12/31)`<br><code>range(8/01-8/15&#124;9/01-9/15)</code> |
@@ -36,6 +36,18 @@ The scheduling options are:
 * You can run Kometa multiple times per day but using the `--time` command line argument detailed on the [Run Commands & Environmental Variables Page](../kometa/environmental.md).
 * You can have multiple scheduling options as a list.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
+
+???+ warning "monthly(N) behaviour change"
+    In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.
+
+    This fallback has been removed. `monthly(N)` now only fires when today is exactly day N. If you want to schedule something for the last day of every month, use **`monthly(last)`** instead.
+
+    If your config uses `monthly(29)`, `monthly(30)`, or `monthly(31)` and relies on the fallback behaviour, Kometa will log a warning on months where that day doesn't exist:
+
+    ```
+    Schedule Warning: monthly(31) will not run this month; November does not have a 31st day.
+    Use monthly(last) if you want to schedule for the last day of every month.
+    ```
 
 ## Examples
 

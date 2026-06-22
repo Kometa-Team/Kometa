@@ -914,6 +914,9 @@ def run_libraries(config):
                             run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
+                    if library.hub_priorities or library.auto_sort_hubs:
+                        library.sort_collection_hubs(library.hub_priorities, library.auto_sort_hubs, library.hub_config_order, library.hub_title_sorts)
+                        library.hub_priorities = {}
                 elif run_type == "metadata" and runs[run_type]:
                     time_start = datetime.now()
                     for images in library.images_files:
@@ -1034,6 +1037,8 @@ def run_collection(config, library, metadata, requested_collections):
                     except Failed as e:
                         if builder.ignore_blank_results:
                             logger.warning(e)
+                        elif builder.obj:
+                            logger.warning(e)
                         else:
                             raise Failed(e)
 
@@ -1060,11 +1065,11 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
-            if builder.build_collection and not builder.blank_collection and items_added + builder.beginning_count < builder.minimum:
+            if builder.build_collection and not builder.blank_collection and (builder.found_items or not builder.obj) and items_added + builder.beginning_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"

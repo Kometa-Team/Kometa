@@ -156,6 +156,7 @@ ignored_details = [
     "translation_prefix",
     "tmdb_birthday",
     "tmdb_deathday",
+    "hub_priority",
 ]
 details = (
     [
@@ -766,6 +767,14 @@ class CollectionBuilder:
             if not self.data[methods["limit"]]:
                 raise BuilderValidationError(f"{self.Type} Error: 'limit' attribute is blank")
             self.limit = util.parse(self.Type, "limit", self.data[methods["limit"]], datatype="int", minimum=1)
+
+        self.hub_priority = None
+        if "hub_priority" in methods:
+            logger.debug("")
+            logger.debug("Validating Method: hub_priority")
+            if not self.data[methods["hub_priority"]] and self.data[methods["hub_priority"]] != 0:
+                raise Failed(f"{self.Type} Error: hub_priority attribute is blank")
+            self.hub_priority = util.parse(self.Type, "hub_priority", self.data[methods["hub_priority"]], datatype="int", minimum=1)
 
         en_key = None
         trans_key = None
@@ -3496,6 +3505,22 @@ class CollectionBuilder:
         if unique_total is not None:
             logger.info(f"{unique_total} Unique Episode{'s' if unique_total != 1 else ''} Kept")
 
+    def _rating_key_is_ignored(self, rating_key):
+        try:
+            rating_key = int(rating_key)
+        except (TypeError, ValueError):
+            return False
+        for pl_library in self.libraries:
+            for ignored_id in self.ignore_imdb_ids:
+                if rating_key in getattr(pl_library, "imdb_map", {}).get(ignored_id, []):
+                    return True
+            for ignored_id in self.ignore_ids:
+                if rating_key in getattr(pl_library, "movie_map", {}).get(ignored_id, []):
+                    return True
+                if rating_key in getattr(pl_library, "show_map", {}).get(ignored_id, []):
+                    return True
+        return False
+    
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
@@ -3693,6 +3718,8 @@ class CollectionBuilder:
                     if not isinstance(rating_keys, list):
                         rating_keys = [rating_keys]
                     for rk in rating_keys:
+                        if self._rating_key_is_ignored(rk):
+                            continue
                         try:
                             item = self.library.fetch_item(rk)
                             if self.playlist and isinstance(item, (Show, Season)):
@@ -4898,6 +4925,16 @@ class CollectionBuilder:
                     )
                     advance_update = True
                     logger.info("Collection Visibility Updated")
+
+            if self.obj is not None and self.library and not self.playlist and not self.overlay:
+                rk = self.obj.ratingKey
+                if self.details.get("visible_library") or self.details.get("visible_home") or self.details.get("visible_shared"):
+                    if rk not in self.library.hub_config_order:
+                        self.library.hub_config_order[rk] = len(self.library.hub_config_order)
+                    self.library.hub_title_sorts[rk] = getattr(self.obj, "titleSort", None) or self.name
+                if self.hub_priority is not None:
+                    self.library.hub_priorities[rk] = (self.hub_priority, self.name)
+                    logger.debug(f"Hub Priority | {self.hub_priority}")
 
             if advance_update and "Metadata" not in updated_details:
                 updated_details.append("Metadata")
