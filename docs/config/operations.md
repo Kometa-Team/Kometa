@@ -304,6 +304,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     <div id="mass-originally-available-update" />Updates every item's originally available date in the library to the chosen site's date.
 
+    **NOTE**: If you have your `region` set within the `tmdb` section of the Configuration File, this region will be used to determine the release date.
+
     ???+ tip
 
         As plex does not allow this field to be empty, using `remove` or `reset` will set the date to the Plex default date, which is `1969-12-31`.
@@ -322,6 +324,12 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Release Date.</td></tr>
+      <tr><td>`tmdb_premiere`</td><td>Use TMDb Premiere Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_theatrical`</td><td>Use TMDb Theatrical Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_theatricallimited`</td><td>Use TMDb Theatrical Limited Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_digital`</td><td>Use TMDb Digital Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_physical`</td><td>Use TMDb Physical Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_tv`</td><td>Use TMDb TV Release Date. Movie libraries only.</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date.</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
       <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
@@ -342,8 +350,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
           TV Shows:
             operations:
               mass_originally_available_update:
-                - mdb_digital
-                - mdb
+                - tmdb_digital
+                - tmdb_premiere
+                - tmdb
                 - 1900-01-01
         ```
 
@@ -352,6 +361,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 ??? blank "`mass_added_at_update` - Updates the added at date of every item in the library.<a class="headerlink" href="#mass-added-at-update" title="Permanent link">¶</a>"
 
     <div id="mass-added-at-update" />Updates every item's added at date in the library to the chosen site's date.
+
+    **NOTE**: If you have your `region` set within the `tmdb` section of the Configuration File, this region will be used to determine the release date.
 
     <hr style="margin: 0px;">
 
@@ -367,6 +378,12 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     <table class="clearTable">
       <tr><td>`tmdb`</td><td>Use TMDb Release Date.</td></tr>
+      <tr><td>`tmdb_premiere`</td><td>Use TMDb Premiere Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_theatrical`</td><td>Use TMDb Theatrical Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_theatricallimited`</td><td>Use TMDb Theatrical Limited Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_digital`</td><td>Use TMDb Digital Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_physical`</td><td>Use TMDb Physical Release Date. Movie libraries only.</td></tr>
+      <tr><td>`tmdb_tv`</td><td>Use TMDb TV Release Date. Movie libraries only.</td></tr>
       <tr><td>`tvdb`</td><td>Use TVDb Release Date.</td></tr>
       <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
       <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
@@ -387,8 +404,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
           TV Shows:
             operations:
               mass_added_at_update:
-                - mdb_digital
-                - mdb
+                - tmdb_digital
+                - tmdb_premiere
+                - tmdb
                 - 1900-01-01
         ```
 

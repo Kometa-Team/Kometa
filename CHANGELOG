@@ -56,6 +56,7 @@ Add `hub_priority` to the collection config schema so the new template variable 
 Allow metadata updates to proceed on existing collections even if the builder returns 0 items
 Add new operations attributes `respect_ignore_ids` to skip operations processing items in `ignore_ids` or `ignore_imdb_ids`
 Add new operations attributes `ignore_labels` to skip operations processing items with the specified label(s)
+Added new TMDb release date types for `mass_originally_available_update and `mass_added_at_update` operations: `tmdb_premiere`, `tmdb_theatrical`, `tmdb_theatricallimited`, `tmdb_digital`, `tmdb_physical`, `tmdb_tv`
 
 # Docs
 Updates to Quickstart docs about limitations
