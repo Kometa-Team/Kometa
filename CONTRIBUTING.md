@@ -98,6 +98,8 @@ Use the appropriate section - standard keepachangelog types take priority; Komet
 
 Keep entries concise and user-facing - describe what changed and why it matters to the user, not implementation detail. Reference the related issue number where applicable (e.g. `#3006`).
 
+**Cutting a release (maintainers only):** Before tagging, rename `## [Unreleased]` to `## [X.Y.Z] - YYYY-MM-DD`, add a fresh `## [Unreleased]` above it, and update the `[unreleased]` compare link at the bottom of `CHANGELOG.md`. The `docker-version.yml` workflow reads this version block automatically via `mindsers/changelog-reader-action` to populate the GitHub Release body.
+
 ## Pull request checklist
 
 - [ ] Branch is up to date with `nightly` (`git rebase upstream/nightly`)
