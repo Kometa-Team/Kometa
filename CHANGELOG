@@ -53,6 +53,8 @@ Extend default "Metacritic Must See" collection to work with TV
 Add support for boxd.it urls, used for letterboxd share lists
 Add `hub_priority` and `hub_priority_<<key>>` template variables to the shared default templates so collections can set hub row priority from templates.
 Add `hub_priority` to the collection config schema so the new template variable validates correctly.
+Allow metadata updates to proceed on existing collections even if the builder returns 0 items
+
 
 # Docs
 Updates to Quickstart docs about limitations
