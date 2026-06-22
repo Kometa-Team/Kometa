@@ -704,6 +704,43 @@ Several of these operations perform **mass** updates; these are just that, **mas
               remove_title_parentheses: true
         ```
 
+###### Respect Ignore IDs
+
+??? blank "`respect_ignore_ids` - Skips items from Library Operations when their IDs are ignored.<a class="headerlink" href="#respect-ignore-ids" title="Permanent link">¶</a>"
+
+    <div id="respect-ignore-ids" />Enabling this Operation tells Kometa to skip items from Library Operations when their TMDb/TVDb ID is listed in `ignore_ids` or their IMDb ID is listed in `ignore_imdb_ids`.
+
+    This applies the library's configured `ignore_ids` and `ignore_imdb_ids` to item-based Library Operations such as mass updates, asset updates, label updates, Radarr/Sonarr add-all operations, and similar operations that process every item in the library.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `respect_ignore_ids`
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example Usage"
+
+        In this example, the 2 IMDb IDs set to be ignored at the global level and the 2 TMDb IDs set to be ignored at the library level will be skipped during the `mass_critic_rating_update` Library Operation.
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              respect_ignore_ids: true
+              mass_critic_rating_update: tmdb
+            settings:
+              ignore_ids:
+                - 572802
+                - 695721
+        settings:
+          ignore_imdb_ids:
+            - tt6710474
+            - tt1630029
+
+        ```
+
 ###### Split Duplicates
 
 ??? blank "`split_duplicates` - Splits all duplicate items found in this library.<a class="headerlink" href="#split-duplicates" title="Permanent link">¶</a>"
