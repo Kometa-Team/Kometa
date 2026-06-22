@@ -33,7 +33,7 @@ dependencies = [
     "plexapi==4.18.1",
     "psutil==7.2.2",
     "pygments>=2.20.0",
-    "pymdown-extensions>=10.21.2",
+    "pymdown-extensions>=10.21.3",
     "python-dateutil==2.9.0.post0",
     "python-dotenv==1.2.2",
     "pywin32==312 ; sys_platform == 'win32'",
