@@ -30,6 +30,209 @@ dynamic_collections:
         default: genre
       image:
         default: genre/<<original_key_name_encoded>>
+        Abenteuer: genre/Adventure
+        Acción: genre/Action
+        Acción y Aventura: genre/Action%20%26%20Adventure
+        Actie: genre/Action
+        Actie & Avontuur: genre/Action%20%26%20Adventure
+        Action & Abenteuer: genre/Action%20%26%20Adventure
+        Action & eventyr: genre/Action%20%26%20Adventure
+        Action & Äventyr: genre/Action%20%26%20Adventure
+        Action et Aventure: genre/Action%20%26%20Adventure
+        Akció: genre/Action
+        Akció és Kaland: genre/Action%20%26%20Adventure
+        Aktion: genre/Action
+        Aktion & Eventyr: genre/Action%20%26%20Adventure
+        Animación: genre/Animation
+        Animatie: genre/Animation
+        Animazione: genre/Animation
+        Animação: genre/Animation
+        Animering: genre/Animation
+        Animáció: genre/Animation
+        Aventura: genre/Adventure
+        Aventure: genre/Adventure
+        Avontuur: genre/Adventure
+        Avventura: genre/Adventure
+        Azione: genre/Action
+        Azione & Avventura: genre/Action%20%26%20Adventure
+        Ação: genre/Action
+        Ação e Aventura: genre/Action%20%26%20Adventure
+        Bambini: genre/Kids
+        Barn: genre/Kids
+        Brott: genre/Crime
+        Børn: genre/Kids
+        Bűnügyi: genre/Crime
+        Ciencia Ficción: genre/Science%20Fiction
+        Ciencia Ficción y Fantasía: genre/Sci-Fi%20%26%20Fantasy
+        Comedia: genre/Comedy
+        Commedia: genre/Comedy
+        Comédia: genre/Comedy
+        Comédie: genre/Comedy
+        Crianças: genre/Kids
+        Crimen: genre/Crime
+        Crimine: genre/Crime
+        Családi: genre/Family
+        Des gamins: genre/Kids
+        Documentaire: genre/Documentary
+        Documental: genre/Documentary
+        Documentario: genre/Documentary
+        Documentário: genre/Documentary
+        Dokumentar: genre/Documentary
+        Dokumentation: genre/Documentary
+        Dokumentumfilm: genre/Documentary
+        Dokumentär: genre/Documentary
+        Dramatiques: genre/Drama
+        Drame: genre/Drama
+        Drammatico: genre/Drama
+        Dráma: genre/Drama
+        Eventyr: genre/Adventure
+        Famiglia: genre/Family
+        Familia: genre/Family
+        Familial: genre/Family
+        Familie: genre/Family
+        Familj: genre/Family
+        Famille: genre/Family
+        Família: genre/Family
+        Fantaisies: genre/Fantasy
+        Fantascienza: genre/Science%20Fiction
+        Fantascienza e Fantasy: genre/Sci-Fi%20%26%20Fantasy
+        Fantasi: genre/Fantasy
+        Fantasia: genre/Fantasy
+        Fantasie: genre/Fantasy
+        Fantastique: genre/Fantasy
+        Fantasía: genre/Fantasy
+        Feuilleton: genre/Soap
+        Ficção científica: genre/Science%20Fiction
+        Ficção científica e fantasia: genre/Sci-Fi%20%26%20Fantasy
+        Film TV: genre/TV%20Movie
+        Filme de ação: genre/Thriller
+        Filme para TV: genre/TV%20Movie
+        Forbrytelser: genre/Crime
+        Geschiedenis: genre/History
+        Guerra: genre/War
+        Guerra e Politica: genre/War%20%26%20Politics
+        Guerra e Política: genre/War%20%26%20Politics
+        Guerra y Política: genre/War%20%26%20Politics
+        Guerre: genre/War
+        Guerre & Politique: genre/War%20%26%20Politics
+        Gyerekeknek: genre/Kids
+        Gyser: genre/Horror
+        Histoire: genre/History
+        Historia: genre/History
+        Historie: genre/History
+        Historiques: genre/History
+        História: genre/History
+        Horreur: genre/Horror
+        Háború: genre/War
+        Háború és Politika: genre/War%20%26%20Politics
+        Hírek: genre/News
+        Kaland: genre/Adventure
+        Kinder: genre/Kids
+        Komedi: genre/Comedy
+        Komedie: genre/Comedy
+        Komödie: genre/Comedy
+        Krieg: genre/War
+        Krieg & Politik: genre/War%20%26%20Politics
+        Krig: genre/War
+        Krig & Politik: genre/War%20%26%20Politics
+        Krig & politik: genre/War%20%26%20Politics
+        Krig og politikk: genre/War%20%26%20Politics
+        Krimi: genre/Crime
+        Misdaad: genre/Crime
+        Misterio: genre/Mystery
+        Mistero: genre/Mystery
+        Mistério: genre/Mystery
+        Musica: genre/Music
+        Musik: genre/Music
+        Musikk: genre/Music
+        Musique: genre/Music
+        Musiques: genre/Music
+        Mysterie: genre/Mystery
+        Mysterium: genre/Mystery
+        Mystère: genre/Mystery
+        Música: genre/Music
+        Nachrichten: genre/News
+        Niños: genre/Kids
+        Noticias: genre/News
+        Notizie: genre/News
+        Notícia: genre/News
+        Nouvelles: genre/News
+        Nyheder: genre/News
+        Nyheter: genre/News
+        Ocidental: genre/Western
+        Oeste: genre/Western
+        Orrore: genre/Horror
+        Realidad: genre/Reality
+        Realidade: genre/Reality
+        Realität: genre/Reality
+        Realtà: genre/Reality
+        Rejtély: genre/Mystery
+        Romanse: genre/Romance
+        Romantik: genre/Romance
+        Romantikus: genre/Romance
+        Romantiques: genre/Romance
+        Romanze: genre/Romance
+        Romanzo: genre/Romance
+        Réalité: genre/Reality
+        Sabão: genre/Soap
+        Sci-Fi & Fantasi: genre/Sci-Fi%20%26%20Fantasy
+        Sci-fi og fantasi: genre/Sci-Fi%20%26%20Fantasy
+        Sci-Fi és Fantasy: genre/Sci-Fi%20%26%20Fantasy
+        Science-Fiction: genre/Science%20Fiction
+        Science-fiction: genre/Science%20Fiction
+        Science-fiction et fantaisie: genre/Sci-Fi%20%26%20Fantasy
+        Skrekk: genre/Horror
+        Skräck: genre/Horror
+        Storia: genre/History
+        Suspense: genre/Thriller
+        Szappanopera: genre/Soap
+        Såpa: genre/Soap
+        Sæbe: genre/Soap
+        Telefilme: genre/TV%20Movie
+        Telenovela: genre/Soap
+        Tudományos-Fantasztikus: genre/Science%20Fiction
+        TV Film: genre/TV%20Movie
+        TV film: genre/TV%20Movie
+        Téléfilm: genre/TV%20Movie
+        Történelem: genre/History
+        Verbrechen: genre/Crime
+        Västerländsk: genre/Western
+        Vígjáték: genre/Comedy
+        Zene: genre/Music
+        Äventyr: genre/Adventure
+        Анимация: genre/Animation
+        Война: genre/War
+        Война и политика: genre/War%20%26%20Politics
+        Детски: genre/Kids
+        Документален: genre/Documentary
+        Документальное кино: genre/Documentary
+        Драма: genre/Drama
+        Екшън: genre/Action
+        Екшън и приключения: genre/Action%20%26%20Adventure
+        История: genre/History
+        Комедия: genre/Comedy
+        Криминал: genre/Crime
+        Криминален: genre/Crime
+        Мистерия: genre/Mystery
+        Музика: genre/Music
+        Научна фантастика: genre/Science%20Fiction
+        Научна фантастика и фентъзи: genre/Sci-Fi%20%26%20Fantasy
+        Новини: genre/News
+        Приключение: genre/Adventure
+        Приключенски: genre/Adventure
+        Приключенческий экшн: genre/Action%20%26%20Adventure
+        Риалити: genre/Reality
+        Романтичен: genre/Romance
+        Сапунена опера: genre/Soap
+        Семеен: genre/Family
+        Семейное: genre/Family
+        ТВ Филм: genre/TV%20Movie
+        Трилър: genre/Thriller
+        Уестърн: genre/Western
+        Ужаси: genre/Horror
+        Фентъзи: genre/Fantasy
+        Фэнтези: genre/Fantasy
+        Экшн: genre/Action
       translation_key:
         default: genre
       dynamic:

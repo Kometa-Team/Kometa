@@ -65,6 +65,7 @@ Call out the schema file as supporting only config.yml. explicitly.
 
 # Defaults
 Add E4 to network overlay and show network collection. #2975
+Adds some translations for Genre Defaults posters
 
 # Bug Fixes
 Sanitize PR branch names in CI workflows (`validate-pull.yml`, `increment-build.yml`, `tag-cleanup.yml`) by replacing non-Docker-safe characters with `-`; branch names containing `/` (e.g. `feature/my-fix`) previously caused Docker Hub tag pushes and deletes to fail.
