@@ -3405,7 +3405,7 @@ class CollectionBuilder:
                         current_filters.append(
                             (
                                 "episodes" if self.builder_level in ["show", "season"] else "tracks",
-                                {filter_final: final_data, "percentage": self.default_percent},
+                                {filter_final: final_data, "count": 1},
                             )
                         )
                     else:
