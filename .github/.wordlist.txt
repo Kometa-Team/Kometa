@@ -53,6 +53,7 @@ bw
 cappella
 cd
 césar
+changelog
 chazlarson
 CLI
 clientver
@@ -60,6 +61,7 @@ cloudflare
 CloudFront
 cloudscraper
 cn
+codebase
 codec
 codecs
 collectionless
@@ -70,6 +72,7 @@ cov
 cpp
 cpt
 cpus
+CRLF
 cron
 cronjob
 crontab
@@ -187,6 +190,7 @@ jpeg
 jpg
 json
 jsonschema
+keepachangelog
 Kenobi
 kesleyalfa
 keyerror
@@ -203,6 +207,7 @@ kuesel
 launchd
 letterboxd
 letterboxdpy
+LF
 lgbtq
 limburgish
 linas
@@ -311,9 +316,11 @@ portainer
 powershell
 pre
 precommit
+prek
 prepend
 prepended
 preroll
+PRs
 psutil
 puid
 py
@@ -334,6 +341,7 @@ readwriteonce
 realtime
 reauthenticating
 reauthentication
+rebased
 Reciperr
 reddit
 redheadjedi
@@ -392,6 +400,7 @@ tautulli's
 telesync
 templatizing
 TestAniDB
+TestName
 textless
 th
 theatricallimited
@@ -425,6 +434,7 @@ tutin
 tv
 tvdb
 tw
+txt
 TZ
 ua
 ui
@@ -469,6 +479,7 @@ wildcarded
 witherspoon
 wizarding
 wolof
+wordlist
 www
 xmark
 xmen
