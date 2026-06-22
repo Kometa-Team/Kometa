@@ -58,6 +58,7 @@
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
                 "delete_not_scheduled": { "type": "boolean" },
+                "hub_priority": { "type": "integer", "minimum": 1, "description": "Priority position for this collection's Recommendation Hub row. Lower numbers appear first." },
                 "ignore_blank_results": { "type": "boolean" },
                 "ignore_ids": {
                     "anyOf": [

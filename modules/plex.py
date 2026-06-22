@@ -1334,6 +1334,104 @@ class Plex(Library):
         key += f"&promotedToSharedHome={1 if (shared is None and visibility['shared']) or shared else 0}"
         self._query(key, post=True)
 
+    def sort_collection_hubs(self, hub_priorities, auto_sort_hubs, hub_config_order=None, hub_title_sorts=None):
+        # Sort hub rows: prioritised (hub_priority set) first by priority then auto_sort_hubs tiebreak, then unprioritised by auto_sort_hubs. Uses raw XML (_query()) — plexapi Hub has no ratingKey.
+        logger.separator("Sorting Recommendation Hubs", space=False, border=False)
+        logger.info("")
+
+        if self.Plex is None:
+            logger.error("Plex Error: No Plex connection available for hub sort")
+            return
+
+        hub_config_order = hub_config_order or {}
+        hub_title_sorts = hub_title_sorts or {}
+
+        try:
+            response = self._query(f"/hubs/sections/{self.Plex.key}/manage")
+        except Exception as e:
+            logger.error(f"Plex Error: Failed to fetch hub list: {e}")
+            return
+
+        # Custom collection hubs: identifier="custom.collection.{sectionKey}.{ratingKey}". Built-in hubs have no trailing numeric ratingKey — skip them.
+        hubs = []
+        for elem in (response or []):
+            identifier = elem.attrib.get("identifier", "")
+            parts = identifier.split(".")
+            if len(parts) < 4 or parts[0] != "custom" or parts[1] != "collection":
+                continue
+            try:
+                rk = int(parts[-1])
+            except ValueError:
+                continue
+            title = elem.attrib.get("title", "")
+            hubs.append({
+                "ratingKey": rk,
+                "identifier": identifier,
+                "title": title,
+            })
+
+        if not hubs:
+            logger.info("No items in hub list, skipping sort")
+            return
+
+        # Warn for any collection with hub_priority set but not in the hub list
+        hub_rating_keys = {h["ratingKey"] for h in hubs}
+        for rk, (priority, name) in hub_priorities.items():
+            if rk not in hub_rating_keys:
+                logger.warning(
+                    f"Plex Warning: hub_priority set on collection '{name}' but it is not promoted to any hub. "
+                    f"Ensure visible_library, visible_home, or visible_shared is enabled."
+                )
+
+        # hub_title_sorts is populated in builder.py from plexapi collection objects; falls back to title for unprocessed collections.
+        def _sort_key(h, mode):
+            rk = h["ratingKey"]
+            if mode in ("sort_title", "sort_title.desc"):
+                return hub_title_sorts.get(rk) or h["title"]
+            elif mode in ("configured", "configured.desc"):
+                return hub_config_order.get(rk, 999999)
+            else:  # alpha, alpha.desc, or default
+                return h["title"]
+
+        # When auto_sort_hubs is not set but hub_priorities are, default unprioritised to alpha order.
+        sort_mode = auto_sort_hubs or "alpha"
+        reverse = sort_mode.endswith(".desc")
+
+        # Split into prioritised (hub_priority set) and unprioritised
+        prioritised = [h for h in hubs if h["ratingKey"] in hub_priorities]
+        unprioritised = [h for h in hubs if h["ratingKey"] not in hub_priorities]
+
+        # Sort prioritised: primary by priority value (asc), tiebreak by the same key as auto_sort_hubs (always asc)
+        prioritised = sorted(
+            prioritised,
+            key=lambda h: (hub_priorities[h["ratingKey"]][0], _sort_key(h, sort_mode)),
+        )
+
+        # Sort unprioritised by auto_sort_hubs mode
+        if sort_mode == "random":
+            import random
+            random.shuffle(unprioritised)
+        else:
+            unprioritised = sorted(unprioritised, key=lambda h: _sort_key(h, sort_mode), reverse=reverse)
+
+        sorted_hubs = prioritised + unprioritised
+
+        logger.info(f"Sorting {len(sorted_hubs)} Recommendation Hub(s)")
+        previous_identifier = None
+        for h in sorted_hubs:
+            try:
+                key = f"/hubs/sections/{self.Plex.key}/manage/{h['identifier']}/move"
+                if previous_identifier:
+                    key += f"?after={previous_identifier}"
+                self._query(key, put=True)
+                logger.debug(f"Hub Moved: {h['title']}")
+            except Exception as e:
+                logger.error(f"Plex Error: Failed to move hub '{h['title']}': {e}")
+            previous_identifier = h["identifier"]
+
+        logger.info("Recommendation Hub sort complete")
+        logger.info("")
+
     def get_playlist(self, title):
         try:
             return self.PlexServer.playlist(title)
