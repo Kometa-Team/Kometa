@@ -328,6 +328,8 @@ PRs
 psutil
 puid
 py
+pyright
+pyright's
 pyspelling
 pytest
 Pytest
