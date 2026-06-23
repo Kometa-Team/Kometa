@@ -299,6 +299,7 @@ pcm
 pdb
 persistentvolumeclaim
 pgid
+pil
 pkkid
 planetrocky
 player
@@ -369,6 +370,7 @@ scudlee
 sdtv
 semver
 setuptools
+sha
 shawshank
 shoutout
 Simkl
