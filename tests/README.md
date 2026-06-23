@@ -14,7 +14,7 @@ pytest tests/test_schema_validation.py
 ```
 
 The CI pipeline at `.github/workflows/test.yml` runs the full suite plus
-schema validation, regression checks, perf timing, and a smoke test on
+schema validation, regression checks, performance timing, and a smoke test on
 every PR to `nightly`.
 
 ## Test layout
