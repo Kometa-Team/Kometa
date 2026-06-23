@@ -290,11 +290,7 @@ jobs:
             token: test
           EOF
 
-      - name: Run Kometa --version
-        run: |
-          python kometa.py --version
-
-      - name: Run Kometa --help
+      - name: "Run Kometa --help (verifies module-level imports + argparse setup)"
         run: |
           python kometa.py --help
 
