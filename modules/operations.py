@@ -138,6 +138,7 @@ class Operations:
 
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
             return self._should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, configured_names=configured_names)
+
         if self.library.split_duplicates:
             items = self.library.search(**{"duplicate": True})
             for item in items:

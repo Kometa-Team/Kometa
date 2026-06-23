@@ -1,7 +1,9 @@
 from json import JSONDecodeError
+
+from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+
 from modules import util
 from modules.util import Failed
-from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_not_exception_type
 
 logger = util.logger
 

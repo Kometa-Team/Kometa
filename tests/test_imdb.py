@@ -1,6 +1,8 @@
 """Tests for modules/imdb.py -- focused on parental_guide edge cases."""
-import pytest
+
 from unittest.mock import MagicMock
+
+import pytest
 
 from modules.imdb import IMDb
 from modules.util import Failed
@@ -16,6 +18,7 @@ def make_imdb(graph_response):
 # ---------------------------------------------------------------------------
 # Regression: demonstrate the bugs that existed before the fix
 # ---------------------------------------------------------------------------
+
 
 def test_parental_guide_none_response_pre_fix_raises_attribute_error():
     """Phase 1 regression: .get() on None raised AttributeError before the fix.
@@ -45,6 +48,7 @@ def test_parental_guide_null_title_pre_fix_raises_attribute_error():
 # Fix: _graph_request returns None (network/auth failure or empty response)
 # ---------------------------------------------------------------------------
 
+
 def test_parental_guide_none_response_raises_failed():
     """When _graph_request returns None, parental_guide raises Failed (not AttributeError)
     so operations.py can catch it and skip the item gracefully."""
@@ -58,14 +62,13 @@ def test_parental_guide_none_response_does_not_raise_attribute_error():
     imdb = make_imdb(graph_response=None)
     with pytest.raises(Exception) as exc_info:
         imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), (
-        "AttributeError escaped -- the None guard is missing"
-    )
+    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the None guard is missing"
 
 
 # ---------------------------------------------------------------------------
 # Fix: IMDb returns {"data": {"title": null}} for unknown IDs
 # ---------------------------------------------------------------------------
+
 
 def test_parental_guide_null_title_raises_failed():
     """When IMDb returns null for the title (ID not in their DB), parental_guide
@@ -80,14 +83,13 @@ def test_parental_guide_null_title_does_not_raise_attribute_error():
     imdb = make_imdb(graph_response={"data": {"title": None}})
     with pytest.raises(Exception) as exc_info:
         imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), (
-        "AttributeError escaped -- the null title guard is missing"
-    )
+    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the null title guard is missing"
 
 
 # ---------------------------------------------------------------------------
 # Fix: IMDb returns {"data": {"title": {"parentsGuide": null}}}
 # ---------------------------------------------------------------------------
+
 
 def test_parental_guide_null_parents_guide_raises_failed():
     """When the title exists but parentsGuide is null, parental_guide raises Failed."""
@@ -101,14 +103,13 @@ def test_parental_guide_null_parents_guide_does_not_raise_attribute_error():
     imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": None}}})
     with pytest.raises(Exception) as exc_info:
         imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), (
-        "AttributeError escaped -- the null parentsGuide guard is missing"
-    )
+    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the null parentsGuide guard is missing"
 
 
 # ---------------------------------------------------------------------------
 # Happy path: valid response with parental guide data
 # ---------------------------------------------------------------------------
+
 
 def test_parental_guide_valid_response():
     """A well-formed GraphQL response returns the expected parental dict."""
@@ -134,17 +135,10 @@ def test_parental_guide_valid_response():
 # Edge case: empty categories list
 # ---------------------------------------------------------------------------
 
+
 def test_parental_guide_empty_categories_raises_failed():
     """An empty categories list (title exists but no guide data) raises Failed."""
-    graph_response = {
-        "data": {
-            "title": {
-                "parentsGuide": {
-                    "categories": []
-                }
-            }
-        }
-    }
+    graph_response = {"data": {"title": {"parentsGuide": {"categories": []}}}}
     imdb = make_imdb(graph_response=graph_response)
     with pytest.raises(Failed, match="No Parental Guide Found"):
         imdb.parental_guide("tt0000000")
@@ -156,6 +150,7 @@ def test_parental_guide_empty_categories_raises_failed():
 # IMDb stopped showing ur######## IDs in their UI. Users now see p.xxxxxxx
 # in watchlist URLs. These tests cover both formats as bare IDs and full URLs.
 # ---------------------------------------------------------------------------
+
 
 class TestValidateImdbWatchlist:
 

@@ -1377,10 +1377,7 @@ class MetadataFile(DataFile):
                                             _en = self.config.GitHub.translation_yaml("en")
                                             _tr = self.config.GitHub.translation_yaml(self.language)
                                             if _trans_key_val in _en.get("collections", {}):
-                                                _trans_base = (
-                                                    _tr.get("collections", {}).get(_trans_key_val, {}).get("name")
-                                                    or _en["collections"][_trans_key_val].get("name")
-                                                )
+                                                _trans_base = _tr.get("collections", {}).get(_trans_key_val, {}).get("name") or _en["collections"][_trans_key_val].get("name")
                                         except Exception:
                                             pass
                                     _base = _trans_base if _trans_base else title_format

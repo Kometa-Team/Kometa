@@ -1,13 +1,16 @@
 import re
-from modules import util
-from modules.util import Failed, NonExisting, MappingConvertError
-from modules.request import urlparse
+
 from plexapi.exceptions import BadRequest
 from requests.exceptions import ConnectionError
+
+from modules import util
+from modules.request import urlparse
+from modules.util import Failed, MappingConvertError, NonExisting
 
 logger = util.logger
 
 anime_lists_url = "https://raw.githubusercontent.com/Kometa-Team/Anime-IDs/master/anime_ids.json"
+
 
 class Convert:
     def __init__(self, requests, cache, tmdb):
@@ -296,9 +299,12 @@ class Convert:
                     for guid_tag in item.guids:
                         try:
                             url_parsed = urlparse(guid_tag.id)
-                            if url_parsed.scheme == "tvdb" and library.is_show:                 tvdb_id.append(int(url_parsed.netloc))
-                            elif url_parsed.scheme == "imdb":               imdb_id.append(url_parsed.netloc)
-                            elif url_parsed.scheme == "tmdb":               tmdb_id.append(int(url_parsed.netloc))
+                            if url_parsed.scheme == "tvdb" and library.is_show:
+                                tvdb_id.append(int(url_parsed.netloc))
+                            elif url_parsed.scheme == "imdb":
+                                imdb_id.append(url_parsed.netloc)
+                            elif url_parsed.scheme == "tmdb":
+                                tmdb_id.append(int(url_parsed.netloc))
                         except ValueError:
                             pass
                 except ConnectionError:
@@ -308,9 +314,12 @@ class Convert:
                 if not tvdb_id and not imdb_id and not tmdb_id:
                     library.query(item.refresh)
                     raise MappingConvertError("Mapping Error: Please refresh metadata on this item/library")
-            elif item_type == "imdb":                       imdb_id.append(check_id)
-            elif item_type == "thetvdb":                    tvdb_id.append(int(check_id))
-            elif item_type == "themoviedb":                 tmdb_id.append(int(check_id))
+            elif item_type == "imdb":
+                imdb_id.append(check_id)
+            elif item_type == "thetvdb":
+                tvdb_id.append(int(check_id))
+            elif item_type == "themoviedb":
+                tmdb_id.append(int(check_id))
             elif item_type in ["xbmcnfo", "xbmcnfotv"]:
                 if len(check_id) > 10:
                     raise MappingConvertError(f"Mapping Error: XMBC NFO Local ID '{check_id}'")
@@ -336,8 +345,10 @@ class Convert:
                     anidb_id = self._mal_to_anidb[int(check_id)]
                 else:
                     raise MappingConvertError(f"Convert Error: No AniDB ID found for MyAnimeList ID '{check_id}'")
-            elif item_type == "local":                      raise NonExisting("No match in Plex")
-            else:                                           raise NonExisting(f"Agent {item_type} not supported")
+            elif item_type == "local":
+                raise NonExisting("No match in Plex")
+            else:
+                raise NonExisting(f"Agent {item_type} not supported")
 
             if anidb_id:
                 if anidb_id in self._anidb_to_imdb:

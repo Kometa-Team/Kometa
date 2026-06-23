@@ -1,11 +1,13 @@
 from datetime import datetime
+from json import JSONDecodeError
+
 from modules import util
 from modules.util import Failed
-from json import JSONDecodeError
 
 logger = util.logger
 
 base_url = "http://www.omdbapi.com/"
+
 
 class OMDbObj:
     def __init__(self, imdb_id, data):
@@ -16,7 +18,7 @@ class OMDbObj:
 
         def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
             try:
-                value = str(data[key]).replace(replace, '') if replace else data[key]
+                value = str(data[key]).replace(replace, "") if replace else data[key]
                 if is_int:
                     return int(value)
                 elif is_float:
@@ -43,7 +45,7 @@ class OMDbObj:
         try:
             for rating in data["Ratings"]:
                 if rating["Source"] == "Rotten Tomatoes":
-                    data["tempRT"] = rating["Value"] # This is a hack to allow _parse to work without changes
+                    data["tempRT"] = rating["Value"]  # This is a hack to allow _parse to work without changes
                     self.rotten_tomatoes = _parse("tempRT", is_int=True, replace="%")
                     break
         except KeyError:
@@ -54,6 +56,7 @@ class OMDbObj:
         self.series_id = _parse("seriesID")
         self.season_num = _parse("Season", is_int=True)
         self.episode_num = _parse("Episode", is_int=True)
+
 
 class OMDb:
     def __init__(self, requests, cache, params):
@@ -80,7 +83,7 @@ class OMDb:
             return omdb
         else:
             try:
-                error = response.json()['Error']
+                error = response.json()["Error"]
                 if error == "Request limit reached!":
                     self.limit = True
             except JSONDecodeError:

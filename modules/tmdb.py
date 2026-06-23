@@ -16,6 +16,7 @@ class NotFound(Failed):
     did not directly configure (e.g. collection IDs auto-built from Plex metadata).
     """
 
+
 logger = util.logger
 
 
@@ -404,12 +405,9 @@ class TMDb:
             except NotFound as e:
                 logger.error(e)
                 if type_map[tmdb_method] == "Collection":
-                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. "
-                                 f"If this is auto-built by the franchise default, add '{tmdb_id}' to "
-                                 f"your exclude list in template_variables to suppress this error.")
+                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. " f"If this is auto-built by the franchise default, add '{tmdb_id}' to " f"your exclude list in template_variables to suppress this error.")
                 else:
-                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed "
-                                 f"from TMDb. Verify it still exists and update your config.")
+                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed " f"from TMDb. Verify it still exists and update your config.")
             except Failed as e:
                 all_not_found = False
                 logger.error(e)

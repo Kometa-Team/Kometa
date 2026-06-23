@@ -1,8 +1,10 @@
 from json import JSONDecodeError
+
 from modules import util
 from modules.util import Failed
 
 logger = util.logger
+
 
 def get_message(json):
     message = ""
@@ -10,14 +12,16 @@ def get_message(json):
     if json["event"] == "run_end":
         priority = 4
         title = "Run Completed"
-        message = f"Start Time: {json['start_time']}\n" \
-                  f"End Time: {json['end_time']}\n" \
-                  f"Run Time: {json['run_time']}\n" \
-                  f"Collections Created: {json['collections_created']}\n" \
-                  f"Collections Modified: {json['collections_modified']}\n" \
-                  f"Collections Deleted: {json['collections_deleted']}\n" \
-                  f"Items Added: {json['items_added']}\n" \
-                  f"Items Removed: {json['items_removed']}"
+        message = (
+            f"Start Time: {json['start_time']}\n"
+            f"End Time: {json['end_time']}\n"
+            f"Run Time: {json['run_time']}\n"
+            f"Collections Created: {json['collections_created']}\n"
+            f"Collections Modified: {json['collections_modified']}\n"
+            f"Collections Deleted: {json['collections_deleted']}\n"
+            f"Items Added: {json['items_added']}\n"
+            f"Items Removed: {json['items_removed']}"
+        )
         if json["added_to_radarr"]:
             message += f"\n{json['added_to_radarr']} Movies Added To Radarr"
         if json["added_to_sonarr"]:
@@ -29,9 +33,7 @@ def get_message(json):
     elif json["event"] == "version":
         priority = 2
         title = "New Version Available"
-        message = f"Current: {json['current']}\n" \
-                  f"Latest: {json['latest']}\n" \
-                  f"Notes: {json['notes']}"
+        message = f"Current: {json['current']}\n" f"Latest: {json['latest']}\n" f"Notes: {json['notes']}"
     elif json["event"] == "delete":
         if "library_name" in json:
             title = "Collection Deleted"
@@ -62,15 +64,15 @@ def get_message(json):
             message += f"{new_line if message else ''}Error Message: {json['error']}"
         else:
             title = f"{'Collection' if 'collection' in json else 'Playlist'} {'Created' if json['created'] else 'Modified'}"
-            if json['radarr_adds']:
+            if json["radarr_adds"]:
                 message += f"{new_line if message else ''}{len(json['radarr_adds'])} Radarr Additions:"
-            if json['sonarr_adds']:
+            if json["sonarr_adds"]:
                 message += f"{new_line if message else ''}{len(json['sonarr_adds'])} Sonarr Additions:"
             message += f"{new_line if message else ''}{len(json['additions'])} Additions:"
-            for add_dict in json['additions']:
+            for add_dict in json["additions"]:
                 message += f"\n{add_dict['title']}"
             message += f"{new_line if message else ''}{len(json['removals'])} Removals:"
-            for add_dict in json['removals']:
+            for add_dict in json["removals"]:
                 message += f"\n{add_dict['title']}"
 
     return message, title, priority
@@ -126,6 +128,7 @@ class Webhooks:
                     response_json = response.json()
                     logger.trace(f"Response: {response_json}")
                     if webhook == "notifiarr" and self.notifiarr and response.status_code == 400:
+
                         def remove_from_config(text, hook_cat):
                             if response_json["details"]["response"] == text:
                                 yaml = self.requests.file_yaml(self.config.config_path)
@@ -139,6 +142,7 @@ class Webhooks:
                                         yaml.data["webhooks"][hook_cat] = None
                                 if changed:
                                     yaml.save()
+
                         remove_from_config("Kometa updated trigger is not enabled", "changes")
                         remove_from_config("Kometa created trigger is not enabled", "changes")
                         remove_from_config("Kometa deleted trigger is not enabled", "changes")
@@ -169,39 +173,47 @@ class Webhooks:
 
     def end_time_hooks(self, start_time, end_time, run_time, stats):
         if self.run_end_webhooks:
-            self._request(self.run_end_webhooks, {
-                "event": "run_end",
-                "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "run_time": run_time,
-                "collections_created": stats["created"],
-                "collections_modified": stats["modified"],
-                "collections_deleted": stats["deleted"],
-                "items_added": stats["added"],
-                "items_removed": stats["removed"],
-                "added_to_radarr": stats["radarr"],
-                "added_to_sonarr": stats["sonarr"],
-                "names": stats["names"]
-            })
+            self._request(
+                self.run_end_webhooks,
+                {
+                    "event": "run_end",
+                    "start_time": start_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "end_time": end_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "run_time": run_time,
+                    "collections_created": stats["created"],
+                    "collections_modified": stats["modified"],
+                    "collections_deleted": stats["deleted"],
+                    "items_added": stats["added"],
+                    "items_removed": stats["removed"],
+                    "added_to_radarr": stats["radarr"],
+                    "added_to_sonarr": stats["sonarr"],
+                    "names": stats["names"],
+                },
+            )
 
     def error_hooks(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         if self.error_webhooks:
             json = {"event": "error", "error": str(text), "critical": critical}
-            if server:          json["server_name"] = str(server)
-            if library:         json["library_name"] = str(library)
-            if collection:      json["collection"] = str(collection)
-            if playlist:        json["playlist"] = str(playlist)
+            if server:
+                json["server_name"] = str(server)
+            if library:
+                json["library_name"] = str(library)
+            if collection:
+                json["collection"] = str(collection)
+            if playlist:
+                json["playlist"] = str(playlist)
             self._request(self.error_webhooks, json)
 
     def delete_hooks(self, message, server=None, library=None):
         if self.delete_webhooks:
             json = {"event": "delete", "message": str(message)}
-            if server:          json["server_name"] = str(server)
-            if library:         json["library_name"] = str(library)
+            if server:
+                json["server_name"] = str(server)
+            if library:
+                json["library_name"] = str(library)
             self._request(self.delete_webhooks, json)
 
-    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False,
-                         additions=None, removals=None, radarr=None, sonarr=None, playlist=False):
+    def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, additions=None, removals=None, radarr=None, sonarr=None, playlist=False):
         if self.library:
             thumb = None
             if not poster_url and collection.thumb and next((f for f in collection.fields if f.name == "thumb"), None):
@@ -209,21 +221,24 @@ class Webhooks:
             art = None
             if not playlist and not background_url and collection.art and next((f for f in collection.fields if f.name == "art"), None):
                 art = self.requests.get_image_encoded(f"{self.library.url}{collection.art}?X-Plex-Token={self.library.token}")
-            self._request(webhooks, {
-                "event": "changes",
-                "server_name": self.library.PlexServer.friendlyName,
-                "library_name": self.library.name,
-                "playlist" if playlist else "collection": collection.title,
-                "created": created,
-                "poster": thumb,
-                "background": art,
-                "poster_url": poster_url,
-                "background_url": background_url,
-                "additions": additions if additions else [],
-                "removals": removals if removals else [],
-                "radarr_adds": radarr if radarr else [],
-                "sonarr_adds": sonarr if sonarr else [],
-            })
+            self._request(
+                webhooks,
+                {
+                    "event": "changes",
+                    "server_name": self.library.PlexServer.friendlyName,
+                    "library_name": self.library.name,
+                    "playlist" if playlist else "collection": collection.title,
+                    "created": created,
+                    "poster": thumb,
+                    "background": art,
+                    "poster_url": poster_url,
+                    "background_url": background_url,
+                    "additions": additions if additions else [],
+                    "removals": removals if removals else [],
+                    "radarr_adds": radarr if radarr else [],
+                    "sonarr_adds": sonarr if sonarr else [],
+                },
+            )
 
     def slack(self, json):
         if json["event"] == "run_end":
@@ -231,28 +246,21 @@ class Webhooks:
             rows = [
                 [("*Start Time*", json["start_time"]), ("*End Time*", json["end_time"]), ("*Run Time*", json["run_time"])],
                 [],
-                [
-                    (":heavy_plus_sign: *Collections Created*", str(json["collections_created"])),
-                    (":infinity: *Collections Modified*", str(json["collections_modified"])),
-                    (":heavy_minus_sign: *Collections Deleted*", str(json["collections_deleted"]))
-                ]
+                [(":heavy_plus_sign: *Collections Created*", str(json["collections_created"])), (":infinity: *Collections Modified*", str(json["collections_modified"])), (":heavy_minus_sign: *Collections Deleted*", str(json["collections_deleted"]))],
             ]
             if json["added_to_radarr"] or json["added_to_sonarr"]:
                 rows.append([])
             if json["added_to_radarr"]:
-                rows.append([("*Added To Radarr*", json['added_to_radarr'])])
+                rows.append([("*Added To Radarr*", json["added_to_radarr"])])
             if json["added_to_sonarr"]:
-                rows.append([("*Added To Sonarr*", json['added_to_sonarr'])])
+                rows.append([("*Added To Sonarr*", json["added_to_sonarr"])])
 
         elif json["event"] == "run_start":
             title = ":information_source: Kometa Has Started!"
             rows = [[("*Start Time*", json["start_time"])]]
         elif json["event"] == "version":
             title = "Kometa Has a New Version Available"
-            rows = [
-                [("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])],
-                [(json["notes"], )]
-            ]
+            rows = [[("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])], [(json["notes"],)]]
         else:
             rows = []
             row1 = []
@@ -274,7 +282,7 @@ class Webhooks:
             elif "error" in json:
                 title = f":warning: Kometa Encountered {'a Critical' if json['critical'] else 'an'} Error"
                 rows.append([])
-                rows.append([(json["error"], )])
+                rows.append([(json["error"],)])
             else:
                 title = f"{':heavy_plus_sign:' if json['created'] else ':infinity:'} A {text} has Been {'Created' if json['created'] else 'Modified'}!"
 
@@ -292,19 +300,13 @@ class Webhooks:
                 if json["additions"]:
                     rows.append([])
                     rows.append([("*Items Added*", " ")])
-                    rows.append([(get_field_text(json["additions"]), )])
+                    rows.append([(get_field_text(json["additions"]),)])
                 if json["removals"]:
                     rows.append([])
                     rows.append([("*Items Removed*", " ")])
-                    rows.append([(get_field_text(json["removals"]), )])
+                    rows.append([(get_field_text(json["removals"]),)])
 
-        new_json = {
-            "text": title,
-            "blocks": [{
-                "type": "header",
-                "text": {"type": "plain_text", "text": title}
-            }]
-        }
+        new_json = {"text": title, "blocks": [{"type": "header", "text": {"type": "plain_text", "text": title}}]}
 
         if rows:
             for row in rows:
@@ -317,9 +319,9 @@ class Webhooks:
                         for col in row:
                             section["fields"].append({"type": "mrkdwn", "text": col[0]})
                             section["fields"].append({"type": "plain_text", "text": col[1]})
-                        new_json["blocks"].append(section) # noqa
+                        new_json["blocks"].append(section)  # noqa
                 else:
-                    new_json["blocks"].append({"type": "divider"}) # noqa
+                    new_json["blocks"].append({"type": "divider"})  # noqa
         return new_json
 
     def discord(self, json):
@@ -333,8 +335,8 @@ class Webhooks:
                 [
                     ("Created", json["collections_created"] if json["collections_created"] else "0"),
                     ("Modified", json["collections_modified"] if json["collections_modified"] else "0"),
-                    ("Deleted", json["collections_deleted"] if json["collections_deleted"] else "0")
-                ]
+                    ("Deleted", json["collections_deleted"] if json["collections_deleted"] else "0"),
+                ],
             ]
             if json["added_to_radarr"]:
                 rows.append([(f"{json['added_to_radarr']} Movies Added To Radarr", None)])
@@ -345,10 +347,7 @@ class Webhooks:
             description = json["start_time"]
         elif json["event"] == "version":
             title = "New Version Available"
-            rows = [
-                [("Current", json["current"]), ("Latest", json["latest"])],
-                [("New Commits", json["notes"])]
-            ]
+            rows = [[("Current", json["current"]), ("Latest", json["latest"])], [("New Commits", json["notes"])]]
         else:
             row1 = []
             text = ""
@@ -387,16 +386,7 @@ class Webhooks:
                     rows.append([("Items Added", get_field_text(json["additions"]))])
                 if json["removals"]:
                     rows.append([("Items Removed", get_field_text(json["removals"]))])
-        new_json = {
-            "embeds": [
-                {
-                    "title": title,
-                    "color": 0x00bc8c
-                }
-            ],
-            "username": "Kobota",
-            "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/bot.png"
-        }
+        new_json = {"embeds": [{"title": title, "color": 0x00BC8C}], "username": "Kobota", "avatar_url": "https://github.com/Kometa-Team/Kometa/raw/master/.github/bot.png"}
         if description:
             new_json["embeds"][0]["description"] = description
 

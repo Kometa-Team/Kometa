@@ -1,11 +1,13 @@
-from modules import util
-from modules.util import Failed
 from plexapi.exceptions import BadRequest
 from plexapi.video import Movie, Show
+
+from modules import util
+from modules.util import Failed
 
 logger = util.logger
 
 builders = ["tautulli_popular", "tautulli_watched"]
+
 
 class Tautulli:
     def __init__(self, requests, library, params):
@@ -33,7 +35,7 @@ class Tautulli:
             params["section_id"] = self.section_id
         response = self._request("get_home_stats", params=params)
         stat_id = f"{'popular' if data['list_type'] == 'popular' else 'top'}_{'movies' if self.library.is_movie else 'tv'}"
-        stat_type = "users_watched" if data['list_type'] == 'popular' else "total_plays"
+        stat_type = "users_watched" if data["list_type"] == "popular" else "total_plays"
 
         items = None
         for entry in response["response"]["data"]:
@@ -45,8 +47,8 @@ class Tautulli:
 
         rating_keys = []
         for item in items:
-            if (all_items or item["section_id"] == self.section_id) and len(rating_keys) < int(data['list_size']):
-                if int(item[stat_type]) < data['list_minimum']:
+            if (all_items or item["section_id"] == self.section_id) and len(rating_keys) < int(data["list_size"]):
+                if int(item[stat_type]) < data["list_minimum"]:
                     continue
                 try:
                     plex_item = self.library.fetch_item(int(item["rating_key"]))

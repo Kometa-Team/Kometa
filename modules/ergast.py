@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+
 from modules import util
 from modules.util import Failed
 
@@ -8,17 +9,58 @@ base_url = "https://api.jolpi.ca/ergast/f1/"
 
 translations = {
     "nl": {
-        "70th Anniversary": "70th Anniversary", "Abu Dhabi": "Abu Dhabi", "Argentine": "Argentinië", "Australian": "Australië",
-        "Austrian": "Oostenrijk", "Azerbaijan": "Azerbeidzjan", "Bahrain": "Bahrein", "Belgian": "België", "Brazilian": "Brazilië",
-        "British": "Groot-Brittannië", "Caesars Palace": "Caesars Palace", "Canadian": "Canada", "Chinese": "China", "Dallas": "Dallas",
-        "Detroit": "Detroit", "Dutch": "Nederland", "Eifel": "Eifel", "Emilia Romagna": "Emilia Romagna", "European": "Europa",
-        "French": "Frankrijk", "German": "Duitsland", "Hungarian": "Hongarije", "Indian": "India", "Indianapolis 500": "Indianapolis 500",
-        "Italian": "Italië", "Japanese": "Japan", "Korean": "Zuid-Korea", "Luxembourg": "Luxemburg", "Malaysian": "Maleisië",
-        "Mexican": "Mexico", "Mexico City": "Mexico City", "Miami": "Miami", "Monaco": "Monaco", "Moroccan": "Marroko",
-        "Pacific": "Pacific", "Pescara": "Pescara", "Portuguese": "Portugal", "Qatar": "Qatar", "Russian": "Rusland",
-        "Sakhir": "Sakhir", "San Marino": "San Marino", "Saudi Arabian": "Saudi Arabië", "Singapore": "Singapore",
-        "South African": "Zuid-Afrika", "Spanish": "Spanje", "Styrian": "Stiermarken", "Swedish": "Zweden", "Swiss": "Zwitserland",
-        "São Paulo": "São Paulo", "Turkish": "Turkije", "Tuscan": "Toscane", "United States": "Verenigde Staten"
+        "70th Anniversary": "70th Anniversary",
+        "Abu Dhabi": "Abu Dhabi",
+        "Argentine": "Argentinië",
+        "Australian": "Australië",
+        "Austrian": "Oostenrijk",
+        "Azerbaijan": "Azerbeidzjan",
+        "Bahrain": "Bahrein",
+        "Belgian": "België",
+        "Brazilian": "Brazilië",
+        "British": "Groot-Brittannië",
+        "Caesars Palace": "Caesars Palace",
+        "Canadian": "Canada",
+        "Chinese": "China",
+        "Dallas": "Dallas",
+        "Detroit": "Detroit",
+        "Dutch": "Nederland",
+        "Eifel": "Eifel",
+        "Emilia Romagna": "Emilia Romagna",
+        "European": "Europa",
+        "French": "Frankrijk",
+        "German": "Duitsland",
+        "Hungarian": "Hongarije",
+        "Indian": "India",
+        "Indianapolis 500": "Indianapolis 500",
+        "Italian": "Italië",
+        "Japanese": "Japan",
+        "Korean": "Zuid-Korea",
+        "Luxembourg": "Luxemburg",
+        "Malaysian": "Maleisië",
+        "Mexican": "Mexico",
+        "Mexico City": "Mexico City",
+        "Miami": "Miami",
+        "Monaco": "Monaco",
+        "Moroccan": "Marroko",
+        "Pacific": "Pacific",
+        "Pescara": "Pescara",
+        "Portuguese": "Portugal",
+        "Qatar": "Qatar",
+        "Russian": "Rusland",
+        "Sakhir": "Sakhir",
+        "San Marino": "San Marino",
+        "Saudi Arabian": "Saudi Arabië",
+        "Singapore": "Singapore",
+        "South African": "Zuid-Afrika",
+        "Spanish": "Spanje",
+        "Styrian": "Stiermarken",
+        "Swedish": "Zweden",
+        "Swiss": "Zwitserland",
+        "São Paulo": "São Paulo",
+        "Turkish": "Turkije",
+        "Tuscan": "Toscane",
+        "United States": "Verenigde Staten",
     }
 }
 
@@ -66,6 +108,7 @@ names = {
         "Sprint Shootout Session": "Sprint Shootout",
     }
 }
+
 
 class Race:
     def __init__(self, data, language, round_prefix, shorten_gp):
@@ -126,7 +169,7 @@ class Race:
                 output = "Pre-Qualifying Build-up"
             elif any([x in title for x in terms["post"]]):
                 output = "Post-Qualifying Analysis"
-            elif any ([x in title for x in terms["notebook"]]):
+            elif any([x in title for x in terms["notebook"]]):
                 output = "Ted's Qualifying Notebook"
             else:
                 output = "Qualifying"
@@ -152,11 +195,9 @@ class Race:
         if "2160" in title or "4K" in title:
             output = f"{output} (4K)"
 
-        if (sprint_weekend and any([x in output for x in ["Sprint", "Free Practice 2"]])) or \
-                (not sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 3"]])):
+        if (sprint_weekend and any([x in output for x in ["Sprint", "Free Practice 2"]])) or (not sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 3"]])):
             video_date = self.date - timedelta(days=1)
-        elif (sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 1", "Formula 1 Cafe"]])) or \
-                (not sprint_weekend and any([x in output for x in ["Free Practice 1", "Free Practice 2", "Formula 1 Cafe"]])):
+        elif (sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 1", "Formula 1 Cafe"]])) or (not sprint_weekend and any([x in output for x in ["Free Practice 1", "Free Practice 2", "Formula 1 Cafe"]])):
             video_date = self.date - timedelta(days=2)
         else:
             video_date = self.date

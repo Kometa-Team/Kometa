@@ -226,11 +226,7 @@ class MyLogger:
     def stacktrace(self, trace=False):
         stack = traceback.format_exc()
 
-        suppress_stacktrace_patterns = [
-            r"Plex Error: .* not found",
-            r"No matches found with regex pattern",
-            r"Plex Error: No Items found in Plex"
-        ]
+        suppress_stacktrace_patterns = [r"Plex Error: .* not found", r"No matches found with regex pattern", r"Plex Error: No Items found in Plex"]
 
         if any(re.search(pattern, stack) for pattern in suppress_stacktrace_patterns):
             return

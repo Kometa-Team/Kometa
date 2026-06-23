@@ -1,10 +1,14 @@
-import os, re, time
+import os
+import re
+import time
 from datetime import datetime
-from modules import util
-from modules.util import Failed, OverlayError
+
 from PIL import Image, ImageColor, ImageDraw, ImageFont
 from plexapi.audio import Album
 from plexapi.video import Episode
+
+from modules import util
+from modules.util import Failed, OverlayError
 
 logger = util.logger
 
@@ -39,7 +43,7 @@ rating_sources = [
     "plex_tomatoesaudience_rating",
     "tmdb_rating",
     "trakt_rating",
-    "trakt_user_rating"
+    "trakt_user_rating",
 ]
 float_vars = ["audience_rating", "critic_rating", "user_rating"] + rating_sources
 int_vars = ["runtime", "total_runtime", "season_number", "episode_number", "episode_count", "versions"]
@@ -48,12 +52,28 @@ types_for_var = {
     "movie_show_season_episode_artist_album": ["runtime", "title", "user_rating"],
     "movie_show_episode_album": ["critic_rating", "originally_available"],
     "movie_show_season_episode": [
-        "imdb_rating", "mdb_average_rating", "mdb_imdb_rating", "mdb_letterboxd_rating",
-        "mdb_metacritic_rating", "mdb_metacriticuser_rating", "mdb_rating",
-        "mdb_tmdb_rating", "mdb_tomatoes_rating", "mdb_tomatoesaudience_rating",
-        "mdb_trakt_rating", "mdb_myanimelist_rating", "omdb_rating", "omdb_imdb_rating", "tmdb_rating",
-        "omdb_metascore_rating", "omdb_tomatoes_rating", "plex_imdb_rating", "plex_tmdb_rating",
-        "plex_tomatoes_rating", "plex_tomatoesaudience_rating", "trakt_rating",
+        "imdb_rating",
+        "mdb_average_rating",
+        "mdb_imdb_rating",
+        "mdb_letterboxd_rating",
+        "mdb_metacritic_rating",
+        "mdb_metacriticuser_rating",
+        "mdb_rating",
+        "mdb_tmdb_rating",
+        "mdb_tomatoes_rating",
+        "mdb_tomatoesaudience_rating",
+        "mdb_trakt_rating",
+        "mdb_myanimelist_rating",
+        "omdb_rating",
+        "omdb_imdb_rating",
+        "tmdb_rating",
+        "omdb_metascore_rating",
+        "omdb_tomatoes_rating",
+        "plex_imdb_rating",
+        "plex_tmdb_rating",
+        "plex_tomatoes_rating",
+        "plex_tomatoesaudience_rating",
+        "trakt_rating",
     ],
     "movie_show_season": ["original_title", "trakt_user_rating"],
     "show_season_artist_album": ["total_runtime"],
@@ -63,7 +83,7 @@ types_for_var = {
     "season_episode": ["season_number", "show_title"],
     "show_season": ["episode_count"],
     "movie": ["edition"],
-    "episode": ["episode_number", "season_title"]
+    "episode": ["episode_number", "season_title"],
 }
 var_mods = {
     "bitrate": ["", "H", "L"],
@@ -88,6 +108,7 @@ vars_by_type = {
     "album": [f"{item}{m}" for check, sub in types_for_var.items() for item in sub for m in var_mods[item] if "album" in check],
 }
 
+
 def get_canvas_size(item):
     if isinstance(item, Episode):
         return landscape_dim
@@ -95,6 +116,7 @@ def get_canvas_size(item):
         return square_dim
     else:
         return portrait_dim
+
 
 class Overlay:
     def __init__(self, config, library, overlay_file, original_mapping_name, overlay_data, suppress, level):
@@ -171,6 +193,7 @@ class Overlay:
                     return ImageColor.getcolor(self.data[attr], "RGBA")
                 except ValueError:
                     raise OverlayError(f"Overlay Error: Overlay value '{attr}: {self.data[attr]}' invalid")
+
         self.back_color = color("back_color")
         self.back_radius = util.parse("Overlay", "back_radius", self.data["back_radius"], datatype="int", parent="overlay") if "back_radius" in self.data and self.data["back_radius"] else None
         self.back_line_color = color("back_line_color")
@@ -397,12 +420,7 @@ class Overlay:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(overlay_image)
             if self.has_back:
-                cords = (
-                    start_x - self.back_padding,
-                    start_y - self.back_padding,
-                    start_x + (back_width if self.back_box else box_width) + self.back_padding,
-                    start_y + (back_height if self.back_box else box_height) + self.back_padding
-                )
+                cords = (start_x - self.back_padding, start_y - self.back_padding, start_x + (back_width if self.back_box else box_width) + self.back_padding, start_y + (back_height if self.back_box else box_height) + self.back_padding)
                 if self.back_radius:
                     drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
                 else:
@@ -438,8 +456,7 @@ class Overlay:
                     addon_y = main_y + ((text_height - image_height) / 2)
 
             if text is not None:
-                drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color,
-                             stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
+                drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color, stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
@@ -457,8 +474,7 @@ class Overlay:
             output += f"{self.back_box[0]}{self.back_box[1]}{self.back_align}"
         if self.addon_position is not None:
             output += f"{self.addon_position}{self.addon_offset}"
-        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color,
-                      self.back_line_width, self.stroke_color, self.stroke_width, self.scale_width, self.scale_height]:
+        for value in [self.font_color, self.back_color, self.back_radius, self.back_padding, self.back_line_color, self.back_line_width, self.stroke_color, self.stroke_width, self.scale_width, self.scale_height]:
             if value is not None:
                 output += f"{value}"
         return output
@@ -467,7 +483,7 @@ class Overlay:
         return self.horizontal_offset is not None and self.vertical_offset is not None
 
     def get_text_size(self, text):
-        return ImageDraw.Draw(Image.new("RGBA", (0, 0))).textbbox((0, 0), text, font=self.font, anchor='lt')
+        return ImageDraw.Draw(Image.new("RGBA", (0, 0))).textbbox((0, 0), text, font=self.font, anchor="lt")
 
     def get_coordinates(self, canvas_box, box, new_cords=None):
         if new_cords is None and not self.has_coordinates():

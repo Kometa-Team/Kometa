@@ -1,4 +1,5 @@
 import time
+
 from modules import util
 from modules.util import Failed
 
@@ -6,55 +7,322 @@ logger = util.logger
 
 builders = ["anilist_id", "anilist_popular", "anilist_trending", "anilist_relations", "anilist_studio", "anilist_top_rated", "anilist_search", "anilist_userlist"]
 pretty_names = {"score": "Average Score", "popular": "Popularity", "trending": "Trending"}
-pretty_user = {
-    "status": "Status", "score": "User Score", "progress": "Progress", "last_updated": "Last Updated",
-    "last_added": "Last Added", "start_date": "Start Date", "completed_date": "Completed Date", "popularity": "Popularity"
-}
+pretty_user = {"status": "Status", "score": "User Score", "progress": "Progress", "last_updated": "Last Updated", "last_added": "Last Added", "start_date": "Start Date", "completed_date": "Completed Date", "popularity": "Popularity"}
 attr_translation = {
-    "year": "seasonYear", "adult": "isAdult", "start": "startDate", "end": "endDate", "tag_category": "tagCategory",
-    "score": "averageScore", "min_tag_percent": "minimumTagRank", "country": "countryOfOrigin",
+    "year": "seasonYear",
+    "adult": "isAdult",
+    "start": "startDate",
+    "end": "endDate",
+    "tag_category": "tagCategory",
+    "score": "averageScore",
+    "min_tag_percent": "minimumTagRank",
+    "country": "countryOfOrigin",
 }
 mod_translation = {"": "in", "not": "not_in", "before": "lesser", "after": "greater", "gt": "greater", "gte": "greater", "lt": "lesser", "lte": "lesser"}
 mod_searches = [
-    "start.before", "start.after", "end.before", "end.after",
-    "format", "format.not", "status", "status.not", "genre", "genre.not", "tag", "tag.not", "tag_category", "tag_category.not",
-    "episodes.gt", "episodes.gte", "episodes.lt", "episodes.lte", "duration.gt", "duration.gte", "duration.lt", "duration.lte",
-    "score.gt", "score.gte", "score.lt", "score.lte", "popularity.gt", "popularity.gte", "popularity.lt", "popularity.lte"
+    "start.before",
+    "start.after",
+    "end.before",
+    "end.after",
+    "format",
+    "format.not",
+    "status",
+    "status.not",
+    "genre",
+    "genre.not",
+    "tag",
+    "tag.not",
+    "tag_category",
+    "tag_category.not",
+    "episodes.gt",
+    "episodes.gte",
+    "episodes.lt",
+    "episodes.lte",
+    "duration.gt",
+    "duration.gte",
+    "duration.lt",
+    "duration.lte",
+    "score.gt",
+    "score.gte",
+    "score.lt",
+    "score.lte",
+    "popularity.gt",
+    "popularity.gte",
+    "popularity.lt",
+    "popularity.lte",
 ]
 no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by", "source", "country"]
 searches = mod_searches + no_mod_searches
 sort_options = {"score": "SCORE_DESC", "popular": "POPULARITY_DESC", "trending": "TRENDING_DESC"}
 userlist_sort_options = {
-    "score": "SCORE_DESC", "status": "STATUS_DESC", "progress": "PROGRESS_DESC",
-    "last_updated": "UPDATED_TIME_DESC", "last_added": "ADDED_TIME_DESC", "start_date": "STARTED_ON_DESC",
-    "completed_date": "FINISHED_ON_DESC", "popularity": "MEDIA_POPULARITY_DESC"
+    "score": "SCORE_DESC",
+    "status": "STATUS_DESC",
+    "progress": "PROGRESS_DESC",
+    "last_updated": "UPDATED_TIME_DESC",
+    "last_added": "ADDED_TIME_DESC",
+    "start_date": "STARTED_ON_DESC",
+    "completed_date": "FINISHED_ON_DESC",
+    "popularity": "MEDIA_POPULARITY_DESC",
 }
 media_season = {"winter": "WINTER", "spring": "SPRING", "summer": "SUMMER", "fall": "FALL"}
 media_format = {"tv": "TV", "short": "TV_SHORT", "movie": "MOVIE", "special": "SPECIAL", "ova": "OVA", "ona": "ONA", "music": "MUSIC"}
 media_status = {"finished": "FINISHED", "airing": "RELEASING", "not_yet_aired": "NOT_YET_RELEASED", "cancelled": "CANCELLED", "hiatus": "HIATUS"}
-media_source = {
-    "original": "ORIGINAL", "manga": "MANGA", "light_novel": "LIGHT_NOVEL", "visual_novel": "VISUAL_NOVEL",
-    "video_game": "VIDEO_GAME", "other": "OTHER", "novel": "NOVEL", "doujinshi": "DOUJINSHI", "anime": "ANIME"
-}
+media_source = {"original": "ORIGINAL", "manga": "MANGA", "light_novel": "LIGHT_NOVEL", "visual_novel": "VISUAL_NOVEL", "video_game": "VIDEO_GAME", "other": "OTHER", "novel": "NOVEL", "doujinshi": "DOUJINSHI", "anime": "ANIME"}
 base_url = "https://graphql.anilist.co"
 tag_query = "query{MediaTagCollection {name, category}}"
 genre_query = "query{GenreCollection}"
 country_codes = [
-    "af", "ax", "al", "dz", "as", "ad", "ao", "ai", "aq", "ag", "ar", "am", "aw", "au", "at", "az", "bs", "bh", "bd",
-    "bb", "by", "be", "bz", "bj", "bm", "bt", "bo", "bq", "ba", "bw", "bv", "br", "io", "bn", "bg", "bf", "bi", "cv",
-    "kh", "cm", "ca", "ky", "cf", "td", "cl", "cn", "cx", "cc", "co", "km", "cg", "cd", "ck", "cr", "ci", "hr", "cu",
-    "cw", "cy", "cz", "dk", "dj", "dm", "do", "ec", "eg", "sv", "gq", "er", "ee", "sz", "et", "fk", "fo", "fj", "fi",
-    "fr", "gf", "pf", "tf", "ga", "gm", "ge", "de", "gh", "gi", "gr", "gl", "gd", "gp", "gu", "gt", "gg", "gn", "gw",
-    "gy", "ht", "hm", "va", "hn", "hk", "hu", "is", "in", "id", "ir", "iq", "ie", "im", "il", "it", "jm", "jp", "je",
-    "jo", "kz", "ke", "ki", "kp", "kr", "kw", "kg", "la", "lv", "lb", "ls", "lr", "ly", "li", "lt", "lu", "mo", "mg",
-    "mw", "my", "mv", "ml", "mt", "mh", "mq", "mr", "mu", "yt", "mx", "fm", "md", "mc", "mn", "me", "ms", "ma", "mz",
-    "mm", "na", "nr", "np", "nl", "nc", "nz", "ni", "ne", "ng", "nu", "nf", "mk", "mp", "no", "om", "pk", "pw", "ps",
-    "pa", "pg", "py", "pe", "ph", "pn", "pl", "pt", "pr", "qa", "re", "ro", "ru", "rw", "bl", "sh", "kn", "lc", "mf",
-    "pm", "vc", "ws", "sm", "st", "sa", "sn", "rs", "sc", "sl", "sg", "sx", "sk", "si", "sb", "so", "za", "gs", "ss",
-    "es", "lk", "sd", "sr", "sj", "se", "ch", "sy", "tw", "tj", "tz", "th", "tl", "tg", "tk", "to", "tt", "tn", "tr",
-    "tm", "tc", "tv", "ug", "ua", "ae", "gb", "us", "um", "uy", "uz", "vu", "ve", "vn", "vg", "vi", "wf", "eh", "ye",
-    "zm", "zw",
+    "af",
+    "ax",
+    "al",
+    "dz",
+    "as",
+    "ad",
+    "ao",
+    "ai",
+    "aq",
+    "ag",
+    "ar",
+    "am",
+    "aw",
+    "au",
+    "at",
+    "az",
+    "bs",
+    "bh",
+    "bd",
+    "bb",
+    "by",
+    "be",
+    "bz",
+    "bj",
+    "bm",
+    "bt",
+    "bo",
+    "bq",
+    "ba",
+    "bw",
+    "bv",
+    "br",
+    "io",
+    "bn",
+    "bg",
+    "bf",
+    "bi",
+    "cv",
+    "kh",
+    "cm",
+    "ca",
+    "ky",
+    "cf",
+    "td",
+    "cl",
+    "cn",
+    "cx",
+    "cc",
+    "co",
+    "km",
+    "cg",
+    "cd",
+    "ck",
+    "cr",
+    "ci",
+    "hr",
+    "cu",
+    "cw",
+    "cy",
+    "cz",
+    "dk",
+    "dj",
+    "dm",
+    "do",
+    "ec",
+    "eg",
+    "sv",
+    "gq",
+    "er",
+    "ee",
+    "sz",
+    "et",
+    "fk",
+    "fo",
+    "fj",
+    "fi",
+    "fr",
+    "gf",
+    "pf",
+    "tf",
+    "ga",
+    "gm",
+    "ge",
+    "de",
+    "gh",
+    "gi",
+    "gr",
+    "gl",
+    "gd",
+    "gp",
+    "gu",
+    "gt",
+    "gg",
+    "gn",
+    "gw",
+    "gy",
+    "ht",
+    "hm",
+    "va",
+    "hn",
+    "hk",
+    "hu",
+    "is",
+    "in",
+    "id",
+    "ir",
+    "iq",
+    "ie",
+    "im",
+    "il",
+    "it",
+    "jm",
+    "jp",
+    "je",
+    "jo",
+    "kz",
+    "ke",
+    "ki",
+    "kp",
+    "kr",
+    "kw",
+    "kg",
+    "la",
+    "lv",
+    "lb",
+    "ls",
+    "lr",
+    "ly",
+    "li",
+    "lt",
+    "lu",
+    "mo",
+    "mg",
+    "mw",
+    "my",
+    "mv",
+    "ml",
+    "mt",
+    "mh",
+    "mq",
+    "mr",
+    "mu",
+    "yt",
+    "mx",
+    "fm",
+    "md",
+    "mc",
+    "mn",
+    "me",
+    "ms",
+    "ma",
+    "mz",
+    "mm",
+    "na",
+    "nr",
+    "np",
+    "nl",
+    "nc",
+    "nz",
+    "ni",
+    "ne",
+    "ng",
+    "nu",
+    "nf",
+    "mk",
+    "mp",
+    "no",
+    "om",
+    "pk",
+    "pw",
+    "ps",
+    "pa",
+    "pg",
+    "py",
+    "pe",
+    "ph",
+    "pn",
+    "pl",
+    "pt",
+    "pr",
+    "qa",
+    "re",
+    "ro",
+    "ru",
+    "rw",
+    "bl",
+    "sh",
+    "kn",
+    "lc",
+    "mf",
+    "pm",
+    "vc",
+    "ws",
+    "sm",
+    "st",
+    "sa",
+    "sn",
+    "rs",
+    "sc",
+    "sl",
+    "sg",
+    "sx",
+    "sk",
+    "si",
+    "sb",
+    "so",
+    "za",
+    "gs",
+    "ss",
+    "es",
+    "lk",
+    "sd",
+    "sr",
+    "sj",
+    "se",
+    "ch",
+    "sy",
+    "tw",
+    "tj",
+    "tz",
+    "th",
+    "tl",
+    "tg",
+    "tk",
+    "to",
+    "tt",
+    "tn",
+    "tr",
+    "tm",
+    "tc",
+    "tv",
+    "ug",
+    "ua",
+    "ae",
+    "gb",
+    "us",
+    "um",
+    "uy",
+    "uz",
+    "vu",
+    "ve",
+    "vn",
+    "vg",
+    "vi",
+    "wf",
+    "eh",
+    "ye",
+    "zm",
+    "zw",
 ]
+
 
 class AniList:
     def __init__(self, requests):
@@ -66,10 +334,14 @@ class AniList:
         if self._options:
             return self._options
         self._options = {
-            "Tag": {}, "Tag Category": {},
+            "Tag": {},
+            "Tag Category": {},
             "Genre": {g.lower().replace(" ", "-"): g for g in self._request(genre_query, {})["data"]["GenreCollection"]},
             "Country": {c: c.upper() for c in country_codes},
-            "Season": media_season, "Format": media_format, "Status": media_status, "Source": media_source,
+            "Season": media_season,
+            "Format": media_format,
+            "Status": media_status,
+            "Source": media_source,
         }
         for media_tag in self._request(tag_query, {})["data"]["MediaTagCollection"]:
             self._options["Tag"][media_tag["name"].lower().replace(" ", "-")] = media_tag["name"]
@@ -83,7 +355,7 @@ class AniList:
         json_obj = response.json()
         logger.trace(f"Response: {json_obj}")
         if "errors" in json_obj:
-            if json_obj['errors'][0]['message'] == "Too Many Requests.":
+            if json_obj["errors"][0]["message"] == "Too Many Requests.":
                 wait_time = int(response.headers["Retry-After"]) if "Retry-After" in response.headers else 0
                 time.sleep(wait_time if wait_time > 0 else 10)
                 if level < 6:
@@ -126,7 +398,7 @@ class AniList:
 
     def _search(self, **kwargs):
         media_vars = f"sort: {sort_options[kwargs['sort_by']]}, type: ANIME"
-        variables = {"sort": sort_options[kwargs['sort_by']]}
+        variables = {"sort": sort_options[kwargs["sort_by"]]}
         for key, value in kwargs.items():
             if key not in ["sort_by", "limit"]:
                 if "." in key:
@@ -142,7 +414,7 @@ class AniList:
                     except Failed as e:
                         raise Failed(f"Collection Error: anilist_search {key}: {e}")
                 elif attr in ["format", "status", "genre", "tag", "tag_category"]:
-                    temp_value = [self.options[attr.replace('_', ' ').title()][v.lower().replace(' / ', '-').replace(' ', '-')] for v in value]
+                    temp_value = [self.options[attr.replace("_", " ").title()][v.lower().replace(" / ", "-").replace(" ", "-")] for v in value]
                     if attr in ["format", "status"]:
                         value = f"[{', '.join(temp_value)}]"
                     else:
@@ -210,8 +482,7 @@ class AniList:
             anilist_id, name = self._validate_id(anilist_id)
             anilist_ids.append(anilist_id)
         json_obj = self._request(query, {"id": anilist_id})
-        edges = [media["node"]["id"] for media in json_obj["data"]["Media"]["relations"]["edges"]
-                 if media["relationType"] not in ["CHARACTER", "OTHER"] and media["node"]["type"] == "ANIME"]
+        edges = [media["node"]["id"] for media in json_obj["data"]["Media"]["relations"]["edges"] if media["relationType"] not in ["CHARACTER", "OTHER"] and media["node"]["type"] == "ANIME"]
         for media in json_obj["data"]["Media"]["relations"]["nodes"]:
             if media["id"] and media["id"] not in ignore_ids and media["id"] in edges and media["type"] == "ANIME":
                 new_anilist_ids.append(media["id"])
@@ -280,7 +551,8 @@ class AniList:
             try:
                 self._request(query, {"id": anilist_id})
                 anilist_values.append(anilist_id)
-            except Failed as e:     logger.error(e)
+            except Failed as e:
+                logger.error(e)
         if len(anilist_values) > 0:
             return anilist_values
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
@@ -309,7 +581,7 @@ class AniList:
             elif method not in builders:
                 raise Failed(f"AniList Error: Method {method} not supported")
             message = f"Processing {method.replace('_', ' ').title().replace('Anilist', 'AniList')}:\n    Sort By {pretty_names[data['sort_by']]}"
-            if data['limit'] > 0:
+            if data["limit"] > 0:
                 message += f"\n    Limit to {data['limit']} Anime"
             for key, value in data.items():
                 if key not in ["limit", "sort_by"]:

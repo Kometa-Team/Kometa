@@ -62,19 +62,26 @@ class NotScheduled(Exception):
 class NotScheduledRange(NotScheduled):
     pass
 
+
 class BuilderValidationError(Failed):
     pass
+
 
 class OverlayError(Failed):
     pass
 
+
 class NoValueFound(Failed):
     pass
+
+
 class MappingConvertError(Failed):
     pass
 
+
 class ServiceError(Failed):
     pass
+
 
 class retry_if_http_429_error(retry_if_exception):
 
@@ -728,9 +735,11 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                             if current_time.day == int(param):
                                 all_check += 1
                             elif int(param) > last_day.day:
-                                logger.warning(f"Schedule Warning: monthly({param}) will not run this month; "
-                                               f"{current_time.strftime('%B')} does not have a {num2words(param, to='ordinal_num')} day. "
-                                               f"Use monthly(last) if you want to schedule for the last day of every month.")
+                                logger.warning(
+                                    f"Schedule Warning: monthly({param}) will not run this month; "
+                                    f"{current_time.strftime('%B')} does not have a {num2words(param, to='ordinal_num')} day. "
+                                    f"Use monthly(last) if you want to schedule for the last day of every month."
+                                )
                         else:
                             raise ValueError
                     except ValueError:

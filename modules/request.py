@@ -1,15 +1,23 @@
-import base64, cloudscraper, os, ruamel.yaml, requests, time
+import base64
+import os
+import time
+from urllib import parse
+
+import cloudscraper
+import requests
+import ruamel.yaml
 from lxml import html
+from requests.exceptions import ConnectionError
+from tenacity import retry, stop_after_attempt, wait_fixed
+
 from modules import util
 from modules.poster import ImageData
 from modules.util import Failed
-from requests.exceptions import ConnectionError
-from tenacity import retry, stop_after_attempt, wait_fixed
-from urllib import parse
 
 logger = util.logger
 
 image_content_types = ["image/png", "image/jpeg", "image/webp"]
+
 
 def get_header(headers, header, language):
     if headers:
@@ -18,10 +26,7 @@ def get_header(headers, header, language):
         if header and not language:
             language = "en-US,en;q=0.5"
         if language:
-            return {
-                "Accept-Language": "eng" if language == "default" else language,
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"
-            }
+            return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"}
 
 
 def quote(data):
@@ -38,6 +43,7 @@ def parse_qs(data):
 
 def urlparse(data):
     return parse.urlparse(str(data))
+
 
 class Version:
     def __init__(self, version_string="Unknown", part_string=""):
@@ -57,6 +63,7 @@ class Version:
 
     def __str__(self):
         return f"{self.full}.{self.part}" if self.part else self.full
+
 
 class Requests:
     def __init__(self, local, part, env_branch, git_branch, verify_ssl=True):
@@ -88,6 +95,7 @@ class Requests:
         session.verify = False
         if session.verify is False:
             import urllib3
+
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
@@ -131,7 +139,7 @@ class Requests:
     def get_stream(self, url, location, info="Item"):
         with self.session.get(url, stream=True) as r:
             r.raise_for_status()
-            total_length = r.headers.get('content-length')
+            total_length = r.headers.get("content-length")
             if total_length is not None:
                 total_length = int(total_length)
             dl = 0
@@ -168,7 +176,7 @@ class Requests:
         return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params)
 
     def get_image_encoded(self, url):
-        return base64.b64encode(self.get(url).content).decode('utf-8')
+        return base64.b64encode(self.get(url).content).decode("utf-8")
 
     def post_html(self, url, data=None, json=None, headers=None, header=None, language=None):
         return html.fromstring(self.post(url, data=data, json=json, headers=headers, header=header, language=language).content)
@@ -263,7 +271,7 @@ class YAML:
                 self.data = self.yaml.load(input_data)
             else:
                 if start_empty or (create and not os.path.exists(self.path)):
-                    with open(self.path, 'w'):
+                    with open(self.path, "w"):
                         pass
                     self.data = {}
                 else:
@@ -275,7 +283,7 @@ class YAML:
                 e = f"Tabs are not allowed in YAML files; only spaces are allowed.\nfirst tab character found at:\n{location}"
             else:
                 e = str(e).replace("\n", "\n      ")
-            
+
             raise Failed(f"YAML Error: {e}")
         except Exception as e:
             raise Failed(f"YAML Error: {e}")
@@ -286,5 +294,5 @@ class YAML:
 
     def save(self):
         if self.path:
-            with open(self.path, 'w', encoding="utf-8") as fp:
+            with open(self.path, "w", encoding="utf-8") as fp:
                 self.yaml.dump(self.data, fp)

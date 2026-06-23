@@ -182,9 +182,7 @@ def test_list_fallback_extracts_movies_when_letterboxdpy_returns_empty(monkeypat
             "movies": {},
         }
     }
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/demo/list/staff-picks/": """
+    requests = FakeRequests({"https://letterboxd.com/demo/list/staff-picks/": """
                 <html><body>
                     <ul>
                         <li class="posteritem">
@@ -195,9 +193,7 @@ def test_list_fallback_extracts_movies_when_letterboxdpy_returns_empty(monkeypat
                         </li>
                     </ul>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/demo/list/staff-picks/", 0, "en")
@@ -221,9 +217,7 @@ def test_list_url_is_normalized_before_fallback(monkeypatch):
             "movies": {},
         }
     }
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/demo/list/staff-picks/": """
+    requests = FakeRequests({"https://letterboxd.com/demo/list/staff-picks/": """
                 <html><body>
                     <ul>
                         <li class="posteritem">
@@ -231,9 +225,7 @@ def test_list_url_is_normalized_before_fallback(monkeypatch):
                         </li>
                     </ul>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/demo/list/staff-picks", 0, "en")
@@ -242,9 +234,7 @@ def test_list_url_is_normalized_before_fallback(monkeypatch):
 
 
 def test_detail_list_url_extracts_rating_from_star_glyphs():
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/demo/list/staff-picks/detail/": """
+    requests = FakeRequests({"https://letterboxd.com/demo/list/staff-picks/detail/": """
                 <html><body>
                     <article class="list-detailed-entry">
                         <div class="react-component" data-item-link="/film/first-film/" data-item-name="First Film (2001)" data-postered-identifier="{&quot;uid&quot;:&quot;film:111&quot;}"></div>
@@ -255,9 +245,7 @@ def test_detail_list_url_extracts_rating_from_star_glyphs():
                         </div>
                     </article>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/demo/list/staff-picks/detail/", 0, "en")
@@ -278,18 +266,12 @@ def test_request_html_retries_with_scraper_on_cloudflare_challenge(monkeypatch, 
     monkeypatch.setattr(letterboxd_module, "Movie", FakeMovie)
     monkeypatch.setattr(letterboxd_module, "Scraper", FakeScraper)
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/demo/list/staff-picks/": """
+    requests = FakeRequests({"https://letterboxd.com/demo/list/staff-picks/": """
                 <html><head><title>Just a moment...</title></head><body>Enable JavaScript and cookies to continue</body></html>
-            """
-        }
-    )
-    FakeScraper.html_pages = {
-        "https://letterboxd.com/demo/list/staff-picks/": """
+            """})
+    FakeScraper.html_pages = {"https://letterboxd.com/demo/list/staff-picks/": """
             <html><body><div data-film-id="111" data-item-link="/film/first-film/" data-item-name="First Film (2001)"></div></body></html>
-        """
-    }
+        """}
     adapter = Letterboxd(requests, FakeCache())
 
     response = adapter._request_html("https://letterboxd.com/demo/list/staff-picks/", "en")
@@ -356,9 +338,7 @@ def test_watchlist_falls_back_when_letterboxdpy_returns_empty(monkeypatch, patch
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
     monkeypatch.setattr(letterboxd_module, "Watchlist", FakeWatchlist)
     FakeWatchlist.payloads = {"demo": {"movies": {}}}
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/demo/watchlist/": """
+    requests = FakeRequests({"https://letterboxd.com/demo/watchlist/": """
                 <html><body>
                     <ul>
                         <li class="griditem">
@@ -366,9 +346,7 @@ def test_watchlist_falls_back_when_letterboxdpy_returns_empty(monkeypatch, patch
                         </li>
                     </ul>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/demo/watchlist", 0, "en")
@@ -406,9 +384,7 @@ def test_user_scoped_films_url_uses_fallback_not_letterboxdpy(monkeypatch, patch
     monkeypatch.setattr(letterboxd_module, "Scraper", FakeScraper)
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
     FakeFilms.calls = []
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/raphh11/films/rated/0.5/": """
+    requests = FakeRequests({"https://letterboxd.com/raphh11/films/rated/0.5/": """
                 <html><body>
                     <ul>
                         <li class="griditem">
@@ -417,9 +393,7 @@ def test_user_scoped_films_url_uses_fallback_not_letterboxdpy(monkeypatch, patch
                         </li>
                     </ul>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/raphh11/films/rated/0.5/", 0, "en")
@@ -435,17 +409,13 @@ def test_user_scoped_films_fallback_extracts_direct_react_components(monkeypatch
     monkeypatch.setattr(letterboxd_module, "Movie", FakeMovie)
     monkeypatch.setattr(letterboxd_module, "Scraper", FakeScraper)
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/raphh11/films/rated/0.5/": """
+    requests = FakeRequests({"https://letterboxd.com/raphh11/films/rated/0.5/": """
                 <html><body>
                     <section>
                         <div class="react-component poster" data-item-link="/film/direct-react/" data-item-name="Direct React (1988)" data-postered-identifier="{&quot;uid&quot;:&quot;film:777&quot;}"></div>
                     </section>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_list_items("https://letterboxd.com/raphh11/films/rated/0.5/", 0, "en")
@@ -586,9 +556,7 @@ def test_user_reviews_fallback_extracts_review_entries(monkeypatch, patch_logger
     monkeypatch.setattr(letterboxd_module, "Scraper", FakeScraper)
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
     FakeUser.payloads = {"reviewer": {"reviews": {}}}
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/reviewer/films/reviews/": """
+    requests = FakeRequests({"https://letterboxd.com/reviewer/films/reviews/": """
                 <html><body>
                     <div class="viewing-list">
                         <div class="film-detail">
@@ -603,9 +571,7 @@ def test_user_reviews_fallback_extracts_review_entries(monkeypatch, patch_logger
                         </div>
                     </div>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_user_entries("reviewer", "reviews", "en")
@@ -621,9 +587,7 @@ def test_user_films_fallback_extracts_watched_entries(monkeypatch, patch_logger)
     monkeypatch.setattr(letterboxd_module, "Scraper", FakeScraper)
     monkeypatch.setattr(letterboxd_module, "User", FakeUser)
     FakeUser.payloads = {"watcher": {"films": {}}}
-    requests = FakeRequests(
-        {
-            "https://letterboxd.com/watcher/films/": """
+    requests = FakeRequests({"https://letterboxd.com/watcher/films/": """
                 <html><body>
                     <ul>
                         <li class="griditem">
@@ -635,9 +599,7 @@ def test_user_films_fallback_extracts_watched_entries(monkeypatch, patch_logger)
                         </li>
                     </ul>
                 </body></html>
-            """
-        }
-    )
+            """})
     adapter = Letterboxd(requests, FakeCache())
 
     items = adapter._get_user_entries("watcher", "films", "en")
