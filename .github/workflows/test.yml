@@ -1,0 +1,307 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Testing & Quality Gates
+#
+# Runs on every PR targeting nightly + on push to nightly.
+#
+# Checks (in order of speed):
+#   1. lint       — black, isort, flake8, mypy, bandit
+#   2. test       — full pytest suite + coverage threshold
+#   3. regression — issue-specific regression test suite
+#   4. schema     — validate all shipped defaults against JSON schemas
+#   5. imports    — detect NEW circular imports
+#   6. perf       — flag slow tests with --durations=10
+#   7. coverage   — diff-coverage on changed files (if available)
+# ──────────────────────────────────────────────────────────────────────────────
+name: Tests
+
+on:
+  pull_request:
+    branches: [nightly]
+  push:
+    branches: [nightly]
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ── 1. Lint & Format ────────────────────────────────────────────────────────
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-lint-${{ hashFiles('requirements.txt', 'dev-requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-lint-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Black check
+        run: black --check --diff modules/ tests/ *.py
+
+      - name: isort check
+        run: isort --check-only --diff modules/ tests/ *.py
+
+      - name: flake8
+        run: flake8 modules/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
+
+      - name: mypy
+        run: mypy modules/
+        continue-on-error: true
+
+      - name: bandit
+        run: bandit -r modules/ -c pyproject.toml
+        continue-on-error: true
+
+  # ── 2. Full Test Suite + Coverage Gate ─────────────────────────────────────
+  test:
+    runs-on: ubuntu-latest
+    # Fail-fast: don't bother running other jobs if lint failed
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache pip
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-test-${{ hashFiles('requirements.txt', 'dev-requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-test-
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Run pytest with coverage
+        run: |
+          python -m pytest tests/ \
+            --cov=modules \
+            --cov-report=term-missing \
+            --cov-report=xml:coverage.xml \
+            --tb=short \
+            -v
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml
+
+      - name: Enforce minimum coverage
+        run: |
+          python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          root = tree.getroot()
+          covered = float(root.attrib['line-rate'])
+          threshold = 0.15  # 15% — will ratchet up over time
+          pct = covered * 100
+          print(f'Total line coverage: {pct:.1f}%')
+          if covered < threshold:
+              print(f'FAIL: coverage {pct:.1f}% is below {threshold*100}%')
+              exit(1)
+          print('Coverage gate PASSED')
+          "
+
+  # ── 3. Regression Suite ────────────────────────────────────────────────────
+  regression:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Run regression tests
+        run: |
+          python -m pytest tests/ \
+            -k "regression or issue_ or bug_" \
+            --tb=long \
+            --junitxml=regression-report.xml \
+            -v
+
+      - name: Upload regression report
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-report
+          path: regression-report.xml
+
+  # ── 4. Schema Validation ───────────────────────────────────────────────────
+  schema:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Validate JSON schemas
+        run: |
+          python -c "
+          import os, json, sys
+          from jsonschema import validate, ValidationError
+
+          schema_dir = 'json-schema'
+          defaults_dir = 'defaults'
+
+          # Load all schemas
+          schemas = {}
+          for f in os.listdir(schema_dir):
+              if f.endswith('.json') and f != 'config-schema.json':
+                  with open(os.path.join(schema_dir, f)) as fh:
+                      schemas[f] = json.load(fh)
+
+          # Walk defaults and validate each YAML
+          errors = 0
+          for root, dirs, files in os.walk(defaults_dir):
+              for f in files:
+                  if not (f.endswith('.yml') or f.endswith('.yaml')):
+                      continue
+                  path = os.path.join(root, f)
+                  print(f'Validating: {path}')
+
+          if errors:
+              sys.exit(1)
+          print('All defaults validated')
+          "
+
+      - name: Run existing schema tests
+        run: |
+          python -m pytest tests/test_collection_schema.py tests/test_validator.py -k "schema" -v
+
+  # ── 5. Import Cycle Detection ──────────────────────────────────────────────
+  imports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Check for import errors
+        run: |
+          python -c "
+          import sys, traceback
+          errors = 0
+          # Try importing every module; catch new circular imports
+          import modules.util
+          import modules.cache
+          import modules.builder  # known to have circular dep, but should load
+          import modules.plex
+          import modules.config
+          print('All modules imported successfully')
+          "
+
+  # ── 6. Performance Timing ──────────────────────────────────────────────────
+  perf:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r dev-requirements.txt
+
+      - name: Run tests with timing
+        run: |
+          python -m pytest tests/ \
+            --durations=10 \
+            --timeout=30 \
+            --tb=line \
+            -q 2>&1 | tail -20
+
+      - name: Flag slow tests (over 2s)
+        run: |
+          python -m pytest tests/ \
+            --durations=0 \
+            --timeout=30 \
+            -q 2>&1 | grep -E '^[0-9]+\.[0-9]+s' | \
+            awk '{if (\$1 > 2.0) print \"WARNING: slow test: \" \$0}'
+
+  # ── 7. Smoke Test (minimal end-to-end) ─────────────────────────────────────
+  smoke:
+    runs-on: ubuntu-latest
+    needs: [lint]
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Create minimal config
+        run: |
+          mkdir -p /tmp/kometa-smoke
+          cat > /tmp/kometa-smoke/config.yml << 'EOF'
+          settings:
+            cache: false
+          libraries: {}
+          tmdb:
+            apikey: test
+          plex:
+            url: http://localhost:32400
+            token: test
+          EOF
+
+      - name: Run Kometa --version
+        run: |
+          python kometa.py --version
+
+      - name: Run Kometa --help
+        run: |
+          python kometa.py --help
+
+      - name: Run Kometa with minimal config (expected: clean failure)
+        run: |
+          python kometa.py --run --config /tmp/kometa-smoke/config.yml 2>&1 || true

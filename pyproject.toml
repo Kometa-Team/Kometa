@@ -96,6 +96,7 @@ dev = [
     "pytest==9.1.1",
     "pytest-cov>=7.0.0",
     "responses>=0.25.0",
+    "pytest-timeout>=2.3.0",
     "python-dateutil==2.9.0.post0",
     "python-dotenv==1.2.2",
     "pywin32==312 ; sys_platform == 'win32'",
