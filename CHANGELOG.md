@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix image size validation during metadata uploads so local poster/background/square art files are checked using their actual file size instead of the string `compare` field, avoiding a `TypeError` in operations.
+
 ## [v2.4.2] - 2026-06-22
 
 ### Added
@@ -136,7 +140,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `other_name` in dynamic collections: `<<library_type>>` and `<<library_typeU>>` placeholders are now resolved (they were applied to `title_format` but not to `other_name`). Also fix a long-standing copy-paste bug where `other_name` supplied via `template_variables` was read from `self.temp_vars["remove_suffix"]` instead of `self.temp_vars["other_name"]`. #3215
 - Fix an issue with AniList search date modifiers not working. #3220
 - Fix Studio Defaults capitalization issues. #3221
-- Fix image size validation during metadata uploads so local poster/background/square art files are checked using their actual file size instead of the string `compare` field, avoiding a `TypeError` in operations.
+
 
 ## [v2.3.1] - 2026-04-01
 
