@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.4.3] - 2026-06-22
+
+### Fixed
+
+- Fix image size validation during metadata uploads so local poster/background/square art files are checked using their actual file size instead of the string `compare` field, avoiding a `TypeError` in operations.
+
 ## [v2.4.2] - 2026-06-22
 
 ### Added
@@ -141,6 +147,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...HEAD
+[v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2
 [v2.3.1]: https://github.com/Kometa-Team/Kometa/releases/tag/v2.3.1
