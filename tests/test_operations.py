@@ -242,4 +242,160 @@ def test_collection_names_used_not_collections():
     # If it incorrectly uses library.collections: is_configured=False → configured_check=True → DELETE
     # If it correctly uses library.collection_names: is_configured=True → configured_check=False → KEEP
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
-    assert result is False, "_should_be_deleted is reading library.collections instead of library.collection_names"
+    assert result is False, (
+        "_should_be_deleted is reading library.collections instead of library.collection_names"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Module-level pure functions
+# ---------------------------------------------------------------------------
+
+
+class TestItemBatches:
+    """Tests for operations._item_batches generator."""
+
+    def test_empty_list_yields_nothing(self):
+        from modules.operations import _item_batches
+
+        assert list(_item_batches([], 10)) == []
+
+    def test_exact_multiple(self):
+        from modules.operations import _item_batches
+
+        result = list(_item_batches([1, 2, 3, 4, 5, 6], 2))
+        assert result == [[1, 2], [3, 4], [5, 6]]
+
+    def test_leftover_batch(self):
+        from modules.operations import _item_batches
+
+        result = list(_item_batches([1, 2, 3, 4, 5], 2))
+        assert result == [[1, 2], [3, 4], [5]]
+
+    def test_batch_larger_than_items(self):
+        from modules.operations import _item_batches
+
+        result = list(_item_batches([1, 2, 3], 100))
+        assert result == [[1, 2, 3]]
+
+    def test_batch_size_one(self):
+        from modules.operations import _item_batches
+
+        result = list(_item_batches([1, 2, 3], 1))
+        assert result == [[1], [2], [3]]
+
+
+class TestFindCollectionTransKey:
+    """Tests for operations._find_collection_trans_key recursive lookup."""
+
+    def test_top_level_string(self):
+        from modules.operations import _find_collection_trans_key
+
+        assert _find_collection_trans_key({"translation_key": "movie_genre"}) == "movie_genre"
+
+    def test_nested_dict(self):
+        from modules.operations import _find_collection_trans_key
+
+        data = {"outer": {"inner": {"translation_key": "trending"}}}
+        assert _find_collection_trans_key(data) == "trending"
+
+    def test_inside_list(self):
+        from modules.operations import _find_collection_trans_key
+
+        data = {"items": [{"name": "a"}, {"translation_key": "comedy"}]}
+        assert _find_collection_trans_key(data) == "comedy"
+
+    def test_absent_returns_none(self):
+        from modules.operations import _find_collection_trans_key
+
+        assert _find_collection_trans_key({"name": "foo", "count": 5}) is None
+
+    def test_unresolved_template_value_skipped(self):
+        """Values containing '<<' are template placeholders — must not match."""
+        from modules.operations import _find_collection_trans_key
+
+        # Skips the template placeholder and keeps recursing
+        assert _find_collection_trans_key({"translation_key": "<<key>>"}) is None
+
+    def test_non_string_value_skipped(self):
+        from modules.operations import _find_collection_trans_key
+
+        assert _find_collection_trans_key({"translation_key": 42}) is None
+
+    def test_non_dict_non_list_input(self):
+        from modules.operations import _find_collection_trans_key
+
+        assert _find_collection_trans_key("just a string") is None
+        assert _find_collection_trans_key(None) is None
+        assert _find_collection_trans_key(123) is None
+
+    def test_returns_first_match_depth_first(self):
+        from modules.operations import _find_collection_trans_key
+
+        data = {
+            "a": {"translation_key": "first"},
+            "b": {"translation_key": "second"},
+        }
+        # dict iteration order is insertion order in Python 3.7+
+        assert _find_collection_trans_key(data) == "first"
+
+
+# ---------------------------------------------------------------------------
+# Module constants — sanity checks on the dispatch / format tables
+# ---------------------------------------------------------------------------
+
+
+class TestModuleConstants:
+    """Verify the operations module's lookup tables are well-formed.
+
+    These constants drive runtime dispatch (e.g. ``meta_operations``
+    enumerates the supported mass-update operations). A duplicate
+    or typo here is a silent bug — these tests catch it at CI time.
+    """
+
+    def test_meta_operations_no_duplicates(self):
+        from modules.operations import meta_operations
+
+        assert len(meta_operations) == len(set(meta_operations)), (
+            f"meta_operations has duplicates: "
+            f"{[x for x in meta_operations if meta_operations.count(x) > 1]}"
+        )
+
+    def test_meta_operations_all_strings(self):
+        from modules.operations import meta_operations
+
+        for op in meta_operations:
+            assert isinstance(op, str)
+            assert op  # non-empty
+
+    def test_meta_operations_naming_convention(self):
+        """Every meta-operation must start with 'mass_' and end with '_update'."""
+        from modules.operations import meta_operations
+
+        for op in meta_operations:
+            assert op.startswith("mass_"), f"{op!r} doesn't follow mass_*_update convention"
+            assert op.endswith("_update"), f"{op!r} doesn't follow mass_*_update convention"
+
+    def test_name_display_keys_are_camelcase(self):
+        """name_display maps Plex field names (camelCase) to human labels."""
+        from modules.operations import name_display
+
+        for plex_field in name_display:
+            assert isinstance(plex_field, str)
+            # Plex field names are camelCase — should never contain underscores
+            assert "_" not in plex_field, f"{plex_field!r} looks like snake_case, not a Plex field"
+
+    def test_tmdb_release_types_have_valid_ids(self):
+        """TMDb release_type IDs are 1-6 per the TMDb API spec."""
+        from modules.operations import tmdb_release_types
+
+        for key, value in tmdb_release_types.items():
+            assert key.startswith("tmdb_"), f"{key!r} should start with tmdb_"
+            assert 1 <= value <= 6, f"{key}={value} is outside TMDb's valid release_type range (1-6)"
+
+    def test_tmdb_release_types_values_unique(self):
+        """Each release_type ID maps to one Kometa key."""
+        from modules.operations import tmdb_release_types
+
+        values = list(tmdb_release_types.values())
+        assert len(values) == len(set(values)), "tmdb_release_types has duplicate IDs"

@@ -381,3 +381,131 @@ class TestBuildFilter:
 
         with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
             builder.build_filter("tmdb", "not_a_dict")
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Dispatch table sanity tests
+# ═══════════════════════════════════════════════════════════════════════
+#
+# CollectionBuilder dispatches based on membership in module-level lists.
+# A typo or duplicate in any of these lists is a silent routing bug:
+# the builder will either ignore an attribute or double-process it.
+#
+# These tests are *only* about the data, no fixtures needed.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestDispatchTables:
+    """Sanity checks on builder.py's module-level dispatch tables.
+
+    Catches:
+      - Typos that create duplicate entries (silent double-dispatch).
+      - Cross-list contamination where a name belongs to mutually
+        exclusive categories (e.g. movie_only AND show_only).
+      - Non-string entries that would never match dictionary lookups.
+    """
+
+    @pytest.mark.parametrize(
+        "table_name",
+        [
+            "advance_new_agent",
+            "advance_show",
+            "show_only_builders",
+            "movie_only_builders",
+            "music_only_builders",
+            "summary_details",
+            "poster_details",
+            "background_details",
+            "square_art_details",
+            "boolean_details",
+            "scheduled_boolean",
+            "string_details",
+            "ignored_details",
+            "item_false_details",
+            "item_bool_details",
+            "none_details",
+            "none_builders",
+            "radarr_details",
+            "sonarr_details",
+        ],
+    )
+    def test_table_has_no_duplicates(self, table_name):
+        """Duplicate entries cause silent double-processing in dispatch."""
+        table = getattr(builder_module, table_name)
+        dupes = [x for x in table if table.count(x) > 1]
+        assert len(table) == len(set(table)), (
+            f"{table_name} has duplicate entries: {sorted(set(dupes))}"
+        )
+
+    @pytest.mark.parametrize(
+        "table_name",
+        [
+            "advance_new_agent",
+            "advance_show",
+            "show_only_builders",
+            "movie_only_builders",
+            "music_only_builders",
+            "summary_details",
+            "poster_details",
+            "background_details",
+            "square_art_details",
+            "boolean_details",
+            "scheduled_boolean",
+            "string_details",
+            "ignored_details",
+            "item_false_details",
+            "item_bool_details",
+            "none_details",
+            "none_builders",
+            "radarr_details",
+            "sonarr_details",
+        ],
+    )
+    def test_table_entries_are_non_empty_strings(self, table_name):
+        """A non-string or empty-string entry can never match an attribute name."""
+        table = getattr(builder_module, table_name)
+        for entry in table:
+            assert isinstance(entry, str), f"{table_name} contains non-string: {entry!r}"
+            assert entry, f"{table_name} contains empty string"
+
+    def test_movie_only_and_show_only_are_disjoint(self):
+        """A builder cannot be both movie-only and show-only at the same time."""
+        movies = set(builder_module.movie_only_builders)
+        shows = set(builder_module.show_only_builders)
+        overlap = movies & shows
+        assert not overlap, f"Builders claim to be both movie-only and show-only: {overlap}"
+
+    def test_movie_only_and_music_only_are_disjoint(self):
+        movies = set(builder_module.movie_only_builders)
+        music = set(builder_module.music_only_builders)
+        overlap = movies & music
+        assert not overlap, f"Builders are both movie-only and music-only: {overlap}"
+
+    def test_show_only_and_music_only_are_disjoint(self):
+        shows = set(builder_module.show_only_builders)
+        music = set(builder_module.music_only_builders)
+        overlap = shows & music
+        assert not overlap, f"Builders are both show-only and music-only: {overlap}"
+
+    def test_poster_details_disjoint_from_background_details(self):
+        """A field name is either a poster or a background, never both."""
+        posters = set(builder_module.poster_details)
+        backgrounds = set(builder_module.background_details)
+        overlap = posters & backgrounds
+        assert not overlap, f"Fields appear in both poster_details and background_details: {overlap}"
+
+    def test_radarr_and_sonarr_details_disjoint(self):
+        """A detail name belongs to radarr OR sonarr, not both."""
+        radarr = set(builder_module.radarr_details)
+        sonarr = set(builder_module.sonarr_details)
+        overlap = radarr & sonarr
+        assert not overlap, f"Field names overlap between radarr_details and sonarr_details: {overlap}"
+
+    def test_all_builders_contains_known_data_sources(self):
+        """Sanity: the master builder list mentions tmdb, trakt, imdb."""
+        all_builders = builder_module.all_builders
+        # all_builders is a tuple of strings — at minimum some core sources
+        text = " ".join(str(b) for b in all_builders)
+        assert "tmdb" in text, "all_builders missing tmdb-related entries"
+        assert "trakt" in text, "all_builders missing trakt-related entries"
+        assert "imdb" in text, "all_builders missing imdb-related entries"
