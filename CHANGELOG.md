@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Downgrade "Skipping `<name>`: Item not found" log message from `ERROR` to `WARNING` in metadata file processing when a mapped item cannot be found in the Plex library.
-
+- Allow `builder_level` to work with playlists. Fixes #2267
 ## [v2.4.3] - 2026-06-22
 
 ### Fixed

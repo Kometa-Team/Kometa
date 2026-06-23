@@ -964,7 +964,7 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: {level_attr} attribute will run as builder_level")
                 break
 
-        if level and not self.playlist and not self.library.is_movie:
+        if level and not self.library.is_movie:
             logger.debug("")
             logger.debug("Validating Method: builder_level")
             if level is None:
