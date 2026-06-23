@@ -360,7 +360,7 @@ class AniList:
                 time.sleep(wait_time if wait_time > 0 else 10)
                 if level < 6:
                     return self._request(query, variables, level=level + 1)
-                raise Failed(f"AniList Error: Connection Failed")
+                raise Failed("AniList Error: Connection Failed")
             else:
                 raise Failed(f"AniList Error: {json_obj['errors'][0]['message']}")
         else:
@@ -500,7 +500,7 @@ class AniList:
             query ($user: String, $sort: [MediaListSort]) {
               MediaListCollection (userName: $user, sort: $sort, type: ANIME) {
                 lists {
-                  name 
+                  name
                   entries {
                     score(format: POINT_10)
                     media{id}

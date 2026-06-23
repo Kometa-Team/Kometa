@@ -1,16 +1,14 @@
 import gzip
-import io
 import json
 import os
 import time
 import traceback
-import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 from lxml import etree
 
 from modules import util
-from modules.util import Failed, logger
+from modules.util import Failed
 
 logger = util.logger
 
@@ -316,12 +314,12 @@ class AniDB:
             # 7. Parse XML with error handling
             try:
                 xml_result = etree.fromstring(content)
-            except etree.XMLSyntaxError as e:
+            except etree.XMLSyntaxError:
                 logger.error(f"AniDB Error: Invalid XML response from {target_url}")
                 logger.error(f"Response content type: {response.headers.get('content-type', 'unknown')}")
                 try:
                     logger.error(f"Response preview: {content[:500].decode('utf-8', errors='replace')}")
-                except:
+                except Exception:
                     logger.error(f"Response preview (bytes): {content[:500]}")
                 raise Failed(f"AniDB Error: Endpoint may not be implemented - {target_url}")
 

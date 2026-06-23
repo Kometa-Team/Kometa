@@ -8,7 +8,7 @@ from plexapi.audio import Album
 from plexapi.video import Episode
 
 from modules import util
-from modules.util import Failed, OverlayError
+from modules.util import OverlayError
 
 logger = util.logger
 
@@ -157,7 +157,7 @@ class Overlay:
             self.data = {"name": str(self.data)}
             logger.warning(f"Overlay Warning: No overlay attribute using mapping name {self.data} as the overlay name")
         if "name" not in self.data or not self.data["name"]:
-            raise OverlayError(f"Overlay Error: Overlays must have the 'name' attribute")
+            raise OverlayError("Overlay Error: Overlays must have the 'name' attribute")
         self.name = str(self.data["name"])
 
         self.prefix = f"Overlay File ({self.overlay_file.file_num}) "
@@ -175,15 +175,15 @@ class Overlay:
         if "weight" in self.data:
             self.weight = util.parse("Overlay", "weight", self.data["weight"], datatype="int", parent="overlay", minimum=0)
         if "group" in self.data and (self.weight is None or not self.group):
-            raise OverlayError(f"Overlay Error: Overlay attribute 'group' requires the 'weight' attribute")
+            raise OverlayError("Overlay Error: Overlay attribute 'group' requires the 'weight' attribute")
         elif "queue" in self.data and (self.weight is None or not self.queue_name):
-            raise OverlayError(f"Overlay Error: Overlay attribute 'queue' requires the 'weight' attribute")
+            raise OverlayError("Overlay Error: Overlay attribute 'queue' requires the 'weight' attribute")
         elif self.group and self.queue_name:
-            raise OverlayError(f"Overlay Error: Overlay attributes 'group' and 'queue' cannot be used together")
+            raise OverlayError("Overlay Error: Overlay attributes 'group' and 'queue' cannot be used together")
         self.horizontal_offset, self.horizontal_align, self.vertical_offset, self.vertical_align = util.parse_cords(self.data, "overlay")
 
         if (self.horizontal_offset is None and self.vertical_offset is not None) or (self.vertical_offset is None and self.horizontal_offset is not None):
-            raise OverlayError(f"Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' must be used together")
+            raise OverlayError("Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' must be used together")
 
         self.scale_width, self.scale_height = util.parse_scale(self.data, "overlay")
 
@@ -206,12 +206,12 @@ class Overlay:
         if self.name == "backdrop":
             self.back_box = (back_width, back_height)
         elif self.back_align != "center" and back_width < 0:
-            raise OverlayError(f"Overlay Error: Overlay attribute 'back_align' only works when 'back_width' is used")
+            raise OverlayError("Overlay Error: Overlay attribute 'back_align' only works when 'back_width' is used")
         elif back_width >= 0 or back_height >= 0:
             self.back_box = (back_width, back_height)
         self.has_back = True if self.back_color or self.back_line_color else False
         if self.name != "backdrop" and self.has_back and not self.has_coordinates() and not self.queue_name:
-            raise OverlayError(f"Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' are required when using 'backdrop'")
+            raise OverlayError("Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' are required when using 'backdrop'")
 
         def get_and_save_image(image_url):
             response = self.requests.get(image_url)
@@ -272,7 +272,7 @@ class Overlay:
                 self.name = "blur(50)"
         elif self.name.startswith("text"):
             if not self.has_coordinates() and not self.queue_name:
-                raise OverlayError(f"Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' are required when using 'text'")
+                raise OverlayError("Overlay Error: Overlay attributes 'horizontal_offset' and 'vertical_offset' are required when using 'text'")
             if self.path:
                 if not os.path.exists(self.path):
                     raise OverlayError(f"Overlay Error: Text overlay addon image not found at '{self.path}'")
@@ -348,7 +348,7 @@ class Overlay:
                 if text_mod is None:
                     self.name = f"text(<<{text}>>)"
                 else:
-                    self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{''  if text_mod == '0' else '%'})"
+                    self.name = f"text(<<{text}#>>)" if text_mod == "#" else f"text(<<{text}%>>{'' if text_mod == '0' else '%'})"
             if "<<originally_available[" in text:
                 match = re.search("<<originally_available\\[(.+)]>>", text)
                 if match:

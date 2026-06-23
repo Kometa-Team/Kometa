@@ -1,9 +1,7 @@
 import time
 from datetime import datetime
-from json import JSONDecodeError
 
 from modules import util
-from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
 logger = util.logger
@@ -138,7 +136,7 @@ class MDBList:
 
             self.get_item(media_provider="imdb", media_type="movie", media_id="tt0080684", ignore_cache=True)
         except LimitReached:
-            logger.info(f"MDBList API limit exhausted")
+            logger.info("MDBList API limit exhausted")
             self.limit = True
         except Failed as fe:
             logger.info(f"MDBList API connection failed: {fe}")
