@@ -1,14 +1,18 @@
-import csv, gzip, json, math, os, re, shutil
+import csv
+import gzip
+import json
+import math
+import os
+import re
+import shutil
+
 from modules import util
 from modules.util import Failed
 
 logger = util.logger
 
 builders = ["imdb_list", "imdb_id", "imdb_chart", "imdb_watchlist", "imdb_search", "imdb_award"]
-movie_charts = [
-    "box_office", "popular_movies", "top_movies", "top_english", "lowest_rated",
-    "top_indian", "top_tamil", "top_telugu", "top_malayalam", "trending_india", "trending_tamil", "trending_telugu"
-]
+movie_charts = ["box_office", "popular_movies", "top_movies", "top_english", "lowest_rated", "top_indian", "top_tamil", "top_telugu", "top_malayalam", "trending_india", "trending_tamil", "trending_telugu"]
 show_charts = ["popular_shows", "top_shows", "trending_india"]
 charts = {
     "box_office": "Box Office",
@@ -47,55 +51,99 @@ chart_urls = {
 # that returns exact chart data in correct rank order (bypasses HTML scraping + AWS WAF)
 chart_graphql_map = {
     # chartTitles query: returns edges->node->id, has total field
-    "top_movies":       {"query": "chartTitles", "chartType": "TOP_RATED_MOVIES", "first": 250},
-    "top_shows":        {"query": "chartTitles", "chartType": "TOP_RATED_TV_SHOWS", "first": 250},
-    "popular_movies":   {"query": "chartTitles", "chartType": "MOST_POPULAR_MOVIES", "first": 100},
-    "popular_shows":    {"query": "chartTitles", "chartType": "MOST_POPULAR_TV_SHOWS", "first": 100},
-    "lowest_rated":     {"query": "chartTitles", "chartType": "LOWEST_RATED_MOVIES", "first": 100},
-    "top_english":      {"query": "chartTitles", "chartType": "TOP_RATED_ENGLISH_MOVIES", "first": 250},
-    "top_indian":       {"query": "chartTitles", "chartType": "TOP_RATED_INDIAN_MOVIES", "first": 250},
-    "top_tamil":        {"query": "chartTitles", "chartType": "TOP_RATED_TAMIL_MOVIES", "first": 250},
-    "top_telugu":       {"query": "chartTitles", "chartType": "TOP_RATED_TELUGU_MOVIES", "first": 250},
-    "top_malayalam":    {"query": "chartTitles", "chartType": "TOP_RATED_MALAYALAM_MOVIES", "first": 250},
+    "top_movies": {"query": "chartTitles", "chartType": "TOP_RATED_MOVIES", "first": 250},
+    "top_shows": {"query": "chartTitles", "chartType": "TOP_RATED_TV_SHOWS", "first": 250},
+    "popular_movies": {"query": "chartTitles", "chartType": "MOST_POPULAR_MOVIES", "first": 100},
+    "popular_shows": {"query": "chartTitles", "chartType": "MOST_POPULAR_TV_SHOWS", "first": 100},
+    "lowest_rated": {"query": "chartTitles", "chartType": "LOWEST_RATED_MOVIES", "first": 100},
+    "top_english": {"query": "chartTitles", "chartType": "TOP_RATED_ENGLISH_MOVIES", "first": 250},
+    "top_indian": {"query": "chartTitles", "chartType": "TOP_RATED_INDIAN_MOVIES", "first": 250},
+    "top_tamil": {"query": "chartTitles", "chartType": "TOP_RATED_TAMIL_MOVIES", "first": 250},
+    "top_telugu": {"query": "chartTitles", "chartType": "TOP_RATED_TELUGU_MOVIES", "first": 250},
+    "top_malayalam": {"query": "chartTitles", "chartType": "TOP_RATED_MALAYALAM_MOVIES", "first": 250},
     # boxOfficeWeekendChart query: returns entries->title->id
-    "box_office":       {"query": "boxOfficeWeekendChart"},
+    "box_office": {"query": "boxOfficeWeekendChart"},
     # topTrendingSetsPredefined query: returns edges->node->item->...on Title->id
-    "trending_india":   {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_UPCOMING", "first": 50},
-    "trending_tamil":   {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TAMIL", "first": 200},
-    "trending_telugu":  {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TELUGU", "first": 200},
+    "trending_india": {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_UPCOMING", "first": 50},
+    "trending_tamil": {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TAMIL", "first": 200},
+    "trending_telugu": {"query": "topTrendingSetsPredefined", "predefined": "INDIA_TITLE_TRENDS_RELEASED_TELUGU", "first": 200},
 }
 
 imdb_search_attributes = [
     "limit",
     "sort_by",
     "title",
-    "type", "type.not",
-    "release.after", "release.before", "rating.gte", "rating.lte",
-    "votes.gte", "votes.lte",
-    "genre", "genre.any", "genre.not",
-    "interests", "interests.any", "interests.not",
-    "topic", "topic.any", "topic.not",
-    "alternate_version", "alternate_version.any", "alternate_version.not",
-    "crazy_credit", "crazy_credit.any", "crazy_credit.not",
-    "location", "location.any", "location.not",
-    "goof", "goof.any", "goof.not",
-    "plot", "plot.any", "plot.not",
-    "quote", "quote.any", "quote.not",
-    "soundtrack", "soundtrack.any", "soundtrack.not",
-    "trivia", "trivia.any", "trivia.not",
-    "event", "event.winning",
-    "imdb_top", "imdb_bottom",
+    "type",
+    "type.not",
+    "release.after",
+    "release.before",
+    "rating.gte",
+    "rating.lte",
+    "votes.gte",
+    "votes.lte",
+    "genre",
+    "genre.any",
+    "genre.not",
+    "interests",
+    "interests.any",
+    "interests.not",
+    "topic",
+    "topic.any",
+    "topic.not",
+    "alternate_version",
+    "alternate_version.any",
+    "alternate_version.not",
+    "crazy_credit",
+    "crazy_credit.any",
+    "crazy_credit.not",
+    "location",
+    "location.any",
+    "location.not",
+    "goof",
+    "goof.any",
+    "goof.not",
+    "plot",
+    "plot.any",
+    "plot.not",
+    "quote",
+    "quote.any",
+    "quote.not",
+    "soundtrack",
+    "soundtrack.any",
+    "soundtrack.not",
+    "trivia",
+    "trivia.any",
+    "trivia.not",
+    "event",
+    "event.winning",
+    "imdb_top",
+    "imdb_bottom",
     "company",
     "content_rating",
-    "country", "country.any", "country.not", "country.origin",
-    "keyword", "keyword.any", "keyword.not",
-    "series", "series.not",
-    "list", "list.any", "list.not",
-    "language", "language.any", "language.not", "language.primary",
-    "popularity.gte", "popularity.lte",
+    "country",
+    "country.any",
+    "country.not",
+    "country.origin",
+    "keyword",
+    "keyword.any",
+    "keyword.not",
+    "series",
+    "series.not",
+    "list",
+    "list.any",
+    "list.not",
+    "language",
+    "language.any",
+    "language.not",
+    "language.primary",
+    "popularity.gte",
+    "popularity.lte",
     "character",
-    "cast", "cast.any", "cast.not",
-    "runtime.gte", "runtime.lte",
+    "cast",
+    "cast.any",
+    "cast.not",
+    "runtime.gte",
+    "runtime.lte",
     "adult",
 ]
 sort_by_options = {
@@ -121,15 +169,52 @@ list_sort_by_options = {
 }
 list_sort_options = [f"{a}.{d}" for a in list_sort_by_options for d in ["asc", "desc"]]
 title_type_options = {
-    "movie": "movie", "tv_series": "tvSeries", "short": "short", "tv_episode": "tvEpisode", "tv_mini_series": "tvMiniSeries",
-    "tv_movie": "tvMovie", "tv_special": "tvSpecial", "tv_short": "tvShort", "video_game": "videoGame", "video": "video",
-    "music_video": "musicVideo", "podcast_series": "podcastSeries", "podcast_episode": "podcastEpisode"
+    "movie": "movie",
+    "tv_series": "tvSeries",
+    "short": "short",
+    "tv_episode": "tvEpisode",
+    "tv_mini_series": "tvMiniSeries",
+    "tv_movie": "tvMovie",
+    "tv_special": "tvSpecial",
+    "tv_short": "tvShort",
+    "video_game": "videoGame",
+    "video": "video",
+    "music_video": "musicVideo",
+    "podcast_series": "podcastSeries",
+    "podcast_episode": "podcastEpisode",
 }
-genre_options = {a.lower(): a for a in [
-    "Action", "Adventure", "Animation", "Biography", "Comedy", "Documentary", "Drama", "Crime", "Family", "History",
-    "News", "Short", "Western", "Sport", "Reality-TV", "Horror", "Fantasy", "Film-Noir", "Music", "Romance",
-    "Talk-Show", "Thriller", "War", "Sci-Fi", "Musical", "Mystery", "Game-Show"
-]}
+genre_options = {
+    a.lower(): a
+    for a in [
+        "Action",
+        "Adventure",
+        "Animation",
+        "Biography",
+        "Comedy",
+        "Documentary",
+        "Drama",
+        "Crime",
+        "Family",
+        "History",
+        "News",
+        "Short",
+        "Western",
+        "Sport",
+        "Reality-TV",
+        "Horror",
+        "Fantasy",
+        "Film-Noir",
+        "Music",
+        "Romance",
+        "Talk-Show",
+        "Thriller",
+        "War",
+        "Sci-Fi",
+        "Musical",
+        "Mystery",
+        "Game-Show",
+    ]
+}
 interest_options = {
     "action": "in0000001",
     "action_epic": "in0000002",
@@ -387,6 +472,7 @@ list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/
 watchlist_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/WATCHLIST_HASH"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
+
 
 class IMDb:
     def __init__(self, requests, cache, default_dir):
@@ -662,11 +748,7 @@ class IMDb:
         step = "list" if list_type == "list" else "predefinedList"
         if list_type == "watchlist" and response_json["data"].get("predefinedList") is None:
             user_id = data["user_id"]
-            raise Failed(
-                f"IMDb Error: No public watchlist found for user '{user_id}'. "
-                f"Ensure the watchlist exists and is set to public. "
-                f"If your config uses a ur### ID, update it to the p.xxxxxxx format shown in your watchlist URL at imdb.com."
-            )
+            raise Failed(f"IMDb Error: No public watchlist found for user '{user_id}'. " f"Ensure the watchlist exists and is set to public. " f"If your config uses a ur### ID, update it to the p.xxxxxxx format shown in your watchlist URL at imdb.com.")
         search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
         total = search_data["total"]
         limit = data["limit"]
@@ -751,10 +833,7 @@ class IMDb:
         query_type = cfg["query"]
 
         if query_type == "chartTitles":
-            gql = (
-                "{ chartTitles(chart: { chartType: %s }, first: %d) "
-                "{ edges { node { id } } total } }" % (cfg["chartType"], cfg["first"])
-            )
+            gql = "{ chartTitles(chart: { chartType: %s }, first: %d) " "{ edges { node { id } } total } }" % (cfg["chartType"], cfg["first"])
             data = self._graph_request({"query": gql})["data"]
             return [edge["node"]["id"] for edge in data["chartTitles"]["edges"]]
 
@@ -764,12 +843,7 @@ class IMDb:
             return [entry["title"]["id"] for entry in data["boxOfficeWeekendChart"]["entries"]]
 
         elif query_type == "topTrendingSetsPredefined":
-            gql = (
-                "{ topTrendingSetsPredefined(first: %d, input: "
-                "{ topTrendingSetPredefined: %s }) "
-                "{ edges { node { item { ... on Title { id } } } } } }"
-                % (cfg["first"], cfg["predefined"])
-            )
+            gql = "{ topTrendingSetsPredefined(first: %d, input: " "{ topTrendingSetPredefined: %s }) " "{ edges { node { item { ... on Title { id } } } } } }" % (cfg["first"], cfg["predefined"])
             data = self._graph_request({"query": gql})["data"]
             return [edge["node"]["item"]["id"] for edge in data["topTrendingSetsPredefined"]["edges"]]
 
@@ -915,8 +989,7 @@ class IMDb:
                 modifier = f".{modifier[7:]}"
                 if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
                     return False
-            elif (not list(set(filter_data["keywords"]) & set(attrs)) and modifier == "") \
-                    or (list(set(filter_data["keywords"]) & set(attrs)) and modifier == ".not"):
+            elif (not list(set(filter_data["keywords"]) & set(attrs)) and modifier == "") or (list(set(filter_data["keywords"]) & set(attrs)) and modifier == ".not"):
                 return False
         return True
 
@@ -939,7 +1012,7 @@ class IMDb:
         if event_id not in self._web_event_validation:
             self._web_event_validation[event_id] = []
             for year_data in self._request(f"{base_url}/event/{event_id}", page_props=True)["historyEventEditions"]:
-                extra = '' if year_data["instanceWithinYear"] == 1 else f"-{year_data['instanceWithinYear']}"
+                extra = "" if year_data["instanceWithinYear"] == 1 else f"-{year_data['instanceWithinYear']}"
                 self._web_event_validation[event_id].append(f"{year_data['year']}{extra}")
         return False, self._web_event_validation[event_id]
 

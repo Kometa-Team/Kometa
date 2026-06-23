@@ -51,53 +51,40 @@ class Cache:
                     "tmdb_episode_data",
                 ]:
                     cursor.execute(f"DROP TABLE IF EXISTS {old_table}")
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS guids_map (
+                cursor.execute("""CREATE TABLE IF NOT EXISTS guids_map (
                     key INTEGER PRIMARY KEY,
                     plex_guid TEXT UNIQUE,
                     t_id TEXT,
                     imdb_id TEXT,
                     media_type TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS imdb_to_tmdb_map (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_to_tmdb_map (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     tmdb_id TEXT,
                     media_type TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS imdb_to_tvdb_map2 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_to_tvdb_map2 (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     tvdb_id TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_to_tvdb_map2 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tmdb_to_tvdb_map2 (
                     key INTEGER PRIMARY KEY,
                     tmdb_id TEXT UNIQUE,
                     tvdb_id TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS letterboxd_map (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS letterboxd_map (
                     key INTEGER PRIMARY KEY,
                     letterboxd_id TEXT UNIQUE,
                     tmdb_id TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mojo_map (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS mojo_map (
                     key INTEGER PRIMARY KEY,
                     mojo_url TEXT UNIQUE,
                     imdb_id TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS omdb_data3 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS omdb_data3 (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
                     title TEXT,
@@ -112,10 +99,8 @@ class Cache:
                     series_id TEXT,
                     season_num INTEGER,
                     episode_num INTEGER,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mdb_data5 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS mdb_data5 (
                     key INTEGER PRIMARY KEY,
                     key_id TEXT UNIQUE,
                     title TEXT,
@@ -140,10 +125,8 @@ class Cache:
                     certification TEXT,
                     commonsense TEXT,
                     age_rating TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS anidb_data4 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS anidb_data4 (
                     key INTEGER PRIMARY KEY,
                     anidb_id INTEGER UNIQUE,
                     main_title TEXT,
@@ -158,10 +141,8 @@ class Cache:
                     imdb_id TEXT,
                     tmdb_id INTEGER,
                     tmdb_type TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS mal_data4 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS mal_data4 (
                     key INTEGER PRIMARY KEY,
                     mal_id INTEGER UNIQUE,
                     title TEXT,
@@ -179,10 +160,8 @@ class Cache:
                     expiration_date TEXT,
                     explicit_genres TEXT,
                     themes TEXT,
-                    demographics TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_movie_data2 (
+                    demographics TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tmdb_movie_data2 (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER,
                     language TEXT,
@@ -204,10 +183,8 @@ class Cache:
                     collection_id INTEGER,
                     collection_name TEXT,
                     expiration_date TEXT,
-                    UNIQUE(tmdb_id, language))"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_show_data4 (
+                    UNIQUE(tmdb_id, language))""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tmdb_show_data4 (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER,
                     language TEXT,
@@ -233,10 +210,8 @@ class Cache:
                     countries TEXT,
                     seasons TEXT,
                     expiration_date TEXT,
-                    UNIQUE(tmdb_id, language))"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tmdb_episode_data2 (
+                    UNIQUE(tmdb_id, language))""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tmdb_episode_data2 (
                     key INTEGER PRIMARY KEY,
                     tmdb_id INTEGER,
                     season_number INTEGER,
@@ -251,10 +226,8 @@ class Cache:
                     imdb_id TEXT,
                     tvdb_id INTEGER,
                     expiration_date TEXT,
-                    UNIQUE(tmdb_id, season_number, episode_number, language))"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tvdb_data4 (
+                    UNIQUE(tmdb_id, season_number, episode_number, language))""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_data4 (
                     key INTEGER PRIMARY KEY,
                     tvdb_id INTEGER UNIQUE,
                     type TEXT,
@@ -265,74 +238,54 @@ class Cache:
                     background_url TEXT,
                     release_date TEXT,
                     genres TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS tvdb_map (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_map (
                     key INTEGER PRIMARY KEY,
                     tvdb_url TEXT UNIQUE,
                     tvdb_id INTEGER,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS anime_map (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS anime_map (
                     key INTEGER PRIMARY KEY,
                     anidb TEXT UNIQUE,
                     anilist TEXT,
                     myanimelist TEXT,
                     kitsu TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS image_maps (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS image_maps (
                     key INTEGER PRIMARY KEY,
-                    library TEXT UNIQUE)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS radarr_adds (
+                    library TEXT UNIQUE)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS radarr_adds (
                     key INTEGER PRIMARY KEY,
                     tmdb_id TEXT,
-                    library TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS sonarr_adds (
+                    library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS sonarr_adds (
                     key INTEGER PRIMARY KEY,
                     tvdb_id TEXT,
-                    library TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS list_cache (
+                    library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS list_cache (
                     key INTEGER PRIMARY KEY,
                     list_type TEXT,
                     list_data TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS list_ids (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS list_ids (
                     key INTEGER PRIMARY KEY,
                     list_key TEXT,
                     media_id TEXT,
-                    media_type TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS letterboxd_incremental_state (
+                    media_type TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS letterboxd_incremental_state (
                     key INTEGER PRIMARY KEY,
                     username TEXT,
                     page_type TEXT,
                     last_timestamp TEXT,
                     last_item_ids TEXT,
                     last_updated TEXT,
-                    UNIQUE(username, page_type))"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS imdb_keywords (
+                    UNIQUE(username, page_type))""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_keywords (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
                     keywords TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS imdb_parental (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_parental (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
                     nudity TEXT,
@@ -340,54 +293,43 @@ class Cache:
                     profanity TEXT,
                     alcohol TEXT,
                     frightening TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS ergast_race (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS ergast_race (
                     key INTEGER PRIMARY KEY,
                     season INTEGER,
                     round INTEGER,
                     name TEXT,
                     date TEXT,
-                    expiration_date TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS overlay_special_text2 (
+                    expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_special_text2 (
                     key INTEGER PRIMARY KEY,
                     rating_key TEXT,
                     type TEXT,
-                    text TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS testing (
+                    text TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS testing (
                     key INTEGER PRIMARY KEY,
                     name TEXT,
                     value1 TEXT,
                     value2 TEXT,
-                    success TEXT)"""
-                )
-                cursor.execute(
-                    """CREATE TABLE IF NOT EXISTS plex_people_cache (
+                    success TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS plex_people_cache (
                     key INTEGER PRIMARY KEY,
                     item_id TEXT,
                     people_type TEXT,
                     people_data TEXT,
                     expiration_date TEXT,
-                    UNIQUE(item_id, people_type))"""
-                )
+                    UNIQUE(item_id, people_type))""")
                 cursor.execute("PRAGMA table_info(plex_people_cache)")
                 plex_people_columns = [row[1] for row in cursor.fetchall()]
                 if "item_id" not in plex_people_columns:
                     cursor.execute("DROP TABLE IF EXISTS plex_people_cache")
-                    cursor.execute(
-                        """CREATE TABLE IF NOT EXISTS plex_people_cache (
+                    cursor.execute("""CREATE TABLE IF NOT EXISTS plex_people_cache (
                         key INTEGER PRIMARY KEY,
                         item_id TEXT,
                         people_type TEXT,
                         people_data TEXT,
                         expiration_date TEXT,
-                        UNIQUE(item_id, people_type))"""
-                    )
+                        UNIQUE(item_id, people_type))""")
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='image_map'")
                 if cursor.fetchone()[0] > 0:
                     cursor.execute("SELECT DISTINCT library FROM image_map")
@@ -1056,68 +998,54 @@ class Cache:
                 row = cursor.fetchone()
                 if row and row["key"]:
                     table_name = f"image_map_{row['key']}"
-                    cursor.execute(
-                        f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
                         key INTEGER PRIMARY KEY,
                         rating_key TEXT UNIQUE,
                         overlay TEXT,
                         compare TEXT,
-                        location TEXT)"""
-                    )
-                    cursor.execute(
-                        f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
+                        location TEXT)""")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
                         key INTEGER PRIMARY KEY,
                         rating_key TEXT UNIQUE,
                         overlay TEXT,
                         compare TEXT,
-                        location TEXT)"""
-                    )
+                        location TEXT)""")
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
                     row = cursor.fetchone()
                     if row and row["key"]:
                         table_name = f"image_map_{row['key']}"
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name} (
+                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
                             compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
+                            location TEXT)""")
+                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
                             compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
+                            location TEXT)""")
+                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
                             compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                            location TEXT)""")
+                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
                             compare TEXT,
-                            location TEXT)"""
-                        )
-                        cursor.execute(
-                            f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
+                            location TEXT)""")
+                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
                             overlay TEXT,
                             compare TEXT,
-                            location TEXT)"""
-                        )
+                            location TEXT)""")
         return table_name
 
     def query_image_map(self, rating_key, table_name):

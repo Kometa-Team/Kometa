@@ -7,6 +7,7 @@ so every managed collection appeared "unconfigured" and was deleted.
 
 Fix: use self.library.collection_names (pre-populated from YAML before the run_order loop).
 """
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -19,10 +20,10 @@ ops_module.logger = MagicMock()
 
 from modules.operations import Operations
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def make_ops(collections, collection_names):
     """Return a minimal Operations instance with mocked config and library."""
@@ -46,6 +47,7 @@ def make_col(title, childCount=5, smart=False):
 # Regression: demonstrate the bug that existed before the fix
 # ---------------------------------------------------------------------------
 
+
 def test_configured_check_pre_fix_uses_wrong_attribute():
     """Pre-fix regression: the broken code checked col.title in library.collections
     (populated during the collection run) rather than library.collection_names
@@ -57,22 +59,20 @@ def test_configured_check_pre_fix_uses_wrong_attribute():
     This test replicates the broken logic inline to prove the flaw.
     """
     collection_names = ["SAG Award Winners"]
-    collections = []        # always empty when operations runs first
-    configured_in = False   # user setting: delete unconfigured collections
+    collections = []  # always empty when operations runs first
+    configured_in = False  # user setting: delete unconfigured collections
 
     # Broken logic (old line 99):
-    is_configured_broken = "SAG Award Winners" in collections       # False (wrong: it IS configured)
+    is_configured_broken = "SAG Award Winners" in collections  # False (wrong: it IS configured)
     configured_check_broken = configured_in == is_configured_broken  # False == False → True (DELETE!)
 
-    assert configured_check_broken, (
-        "Bug not reproduced: broken code should trigger delete for a configured collection "
-        "when library.collections is empty"
-    )
+    assert configured_check_broken, "Bug not reproduced: broken code should trigger delete for a configured collection " "when library.collections is empty"
 
 
 # ---------------------------------------------------------------------------
 # Core fix: _should_be_deleted uses library.collection_names
 # ---------------------------------------------------------------------------
+
 
 def test_all_none_never_deletes():
     """Safety guard: when all criteria are None, nothing is deleted."""
@@ -121,6 +121,7 @@ def test_configured_true_collection_not_in_names_not_deleted():
 # managed flag
 # ---------------------------------------------------------------------------
 
+
 def test_managed_true_deletes_kometa_label():
     """managed=True → delete collections labelled Kometa."""
     ops = make_ops(collections=[], collection_names=[])
@@ -160,6 +161,7 @@ def test_managed_false_keeps_kometa():
 # combined configured + managed (the real-world #3168 scenario)
 # ---------------------------------------------------------------------------
 
+
 def test_combined_managed_true_configured_false_keeps_configured_collection():
     """delete_collections: {configured: false, managed: true}
 
@@ -172,10 +174,7 @@ def test_combined_managed_true_configured_false_keeps_configured_collection():
     ops = make_ops(collections=[], collection_names=["SAG Award Winners"])
     col = make_col("SAG Award Winners")
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
-    assert result is False, (
-        "Managed + configured collection must not be deleted by "
-        "delete_collections: {configured: false, managed: true}"
-    )
+    assert result is False, "Managed + configured collection must not be deleted by " "delete_collections: {configured: false, managed: true}"
 
 
 def test_combined_managed_true_configured_false_deletes_unconfigured_collection():
@@ -184,7 +183,7 @@ def test_combined_managed_true_configured_false_deletes_unconfigured_collection(
     A Kometa-managed collection that is NOT in collection_names (stale/renamed) should be deleted.
     """
     ops = make_ops(collections=[], collection_names=["SAG Award Winners"])
-    col = make_col("Spirit Best Feature Winners")   # old name, no longer in YAML
+    col = make_col("Spirit Best Feature Winners")  # old name, no longer in YAML
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
     assert result is True, "Managed + unconfigured (stale) collection should be deleted"
 
@@ -192,6 +191,7 @@ def test_combined_managed_true_configured_false_deletes_unconfigured_collection(
 # ---------------------------------------------------------------------------
 # less (childCount threshold)
 # ---------------------------------------------------------------------------
+
 
 def test_less_deletes_small_collection():
     """less=5: collection with 3 items should be deleted."""
@@ -225,6 +225,7 @@ def test_less_none_childcount_treated_as_zero():
 # collection_names pre-populated vs collections (the timing mismatch)
 # ---------------------------------------------------------------------------
 
+
 def test_collection_names_used_not_collections():
     """Explicit proof that _should_be_deleted reads collection_names, not collections.
 
@@ -233,7 +234,7 @@ def test_collection_names_used_not_collections():
     """
     # collection_names says configured, collections says not (as it was during run)
     ops = make_ops(
-        collections=[],                        # empty -- as it is when ops runs first
+        collections=[],  # empty -- as it is when ops runs first
         collection_names=["César Award Winners"],
     )
     col = make_col("César Award Winners")
@@ -241,6 +242,4 @@ def test_collection_names_used_not_collections():
     # If it incorrectly uses library.collections: is_configured=False → configured_check=True → DELETE
     # If it correctly uses library.collection_names: is_configured=True → configured_check=False → KEEP
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
-    assert result is False, (
-        "_should_be_deleted is reading library.collections instead of library.collection_names"
-    )
+    assert result is False, "_should_be_deleted is reading library.collections instead of library.collection_names"

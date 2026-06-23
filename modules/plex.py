@@ -113,6 +113,8 @@ def get_asset_image_matches(file_filter, file_name):
     matches = [m for m in util.glob_filter(file_filter) if os.path.isfile(m) and os.path.splitext(m)[1].lower() in asset_image_extensions]
     exact_matches = [m for m in matches if os.path.splitext(os.path.basename(m))[0].lower() == file_name.lower()]
     return exact_matches or matches
+
+
 show_translation = {
     "title": "show.title",
     "country": "show.country",
@@ -1366,7 +1368,7 @@ class Plex(Library):
 
         # Custom collection hubs: identifier="custom.collection.{sectionKey}.{ratingKey}". Built-in hubs have no trailing numeric ratingKey — skip them.
         hubs = []
-        for elem in (response or []):
+        for elem in response or []:
             identifier = elem.attrib.get("identifier", "")
             parts = identifier.split(".")
             if len(parts) < 4 or parts[0] != "custom" or parts[1] != "collection":
@@ -1376,11 +1378,13 @@ class Plex(Library):
             except ValueError:
                 continue
             title = elem.attrib.get("title", "")
-            hubs.append({
-                "ratingKey": rk,
-                "identifier": identifier,
-                "title": title,
-            })
+            hubs.append(
+                {
+                    "ratingKey": rk,
+                    "identifier": identifier,
+                    "title": title,
+                }
+            )
 
         if not hubs:
             logger.info("No items in hub list, skipping sort")
@@ -1390,10 +1394,7 @@ class Plex(Library):
         hub_rating_keys = {h["ratingKey"] for h in hubs}
         for rk, (priority, name) in hub_priorities.items():
             if rk not in hub_rating_keys:
-                logger.warning(
-                    f"Plex Warning: hub_priority set on collection '{name}' but it is not promoted to any hub. "
-                    f"Ensure visible_library, visible_home, or visible_shared is enabled."
-                )
+                logger.warning(f"Plex Warning: hub_priority set on collection '{name}' but it is not promoted to any hub. " f"Ensure visible_library, visible_home, or visible_shared is enabled.")
 
         # hub_title_sorts is populated in builder.py from plexapi collection objects; falls back to title for unprocessed collections.
         def _sort_key(h, mode):
@@ -1422,6 +1423,7 @@ class Plex(Library):
         # Sort unprioritised by auto_sort_hubs mode
         if sort_mode == "random":
             import random
+
             random.shuffle(unprioritised)
         else:
             unprioritised = sorted(unprioritised, key=lambda h: _sort_key(h, sort_mode), reverse=reverse)

@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, util
 from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, LimitReached, NotScheduled, OverlayError, MappingConvertError, ServiceError
+from modules.util import Failed, FilterFailed, LimitReached, MappingConvertError, NotScheduled, OverlayError, ServiceError
 
 logger = util.logger
 

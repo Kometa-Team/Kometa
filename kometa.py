@@ -250,19 +250,14 @@ util.logger = logger
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, ServiceError, BuilderValidationError, OverlayError, MappingConvertError  # noqa: E402
-
+from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
 
 plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
 
 
 def is_plex_maintenance_error(error):
     error_text = str(error)
-    return isinstance(error, BadRequest) and "(503) service_unavailable" in error_text and (
-        "title=\"Maintenance\"" in error_text
-        or "startup maintenance tasks" in error_text
-        or "currently running maintenance tasks" in error_text
-    )
+    return isinstance(error, BadRequest) and "(503) service_unavailable" in error_text and ('title="Maintenance"' in error_text or "startup maintenance tasks" in error_text or "currently running maintenance tasks" in error_text)
 
 
 def get_critical_error_message(error):
@@ -360,9 +355,7 @@ def process(attrs):
 
 
 def should_sync_collection(builder):
-    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (
-        not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum
-    )
+    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
 
 
 def collection_count_after_run(beginning_count, items_added, items_removed):
@@ -594,6 +587,7 @@ def start(attrs):
                 logger.info("")
 
             convert_title = False
+
             def convert_summary_title(key):
                 summary = key.split(": ", 1)[1].rstrip(":")
                 if " for " not in summary:

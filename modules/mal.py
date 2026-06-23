@@ -1,37 +1,57 @@
-import re, secrets, time, webbrowser
+import re
+import secrets
+import time
+import webbrowser
 from datetime import datetime
 from json import JSONDecodeError
+
 from modules import util
 from modules.util import Failed, TimeoutExpired
 
 logger = util.logger
 
-builders = [
-    "mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special",
-    "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist", "mal_genre", "mal_studio", "mal_search"
-]
-mal_ranked_name = {
-    "mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova",
-    "mal_movie": "movie", "mal_special": "special", "mal_popular": "bypopularity", "mal_favorite": "favorite"
-}
+builders = ["mal_id", "mal_all", "mal_airing", "mal_upcoming", "mal_tv", "mal_ova", "mal_movie", "mal_special", "mal_popular", "mal_favorite", "mal_season", "mal_suggested", "mal_userlist", "mal_genre", "mal_studio", "mal_search"]
+mal_ranked_name = {"mal_all": "all", "mal_airing": "airing", "mal_upcoming": "upcoming", "mal_tv": "tv", "mal_ova": "ova", "mal_movie": "movie", "mal_special": "special", "mal_popular": "bypopularity", "mal_favorite": "favorite"}
 mal_ranked_pretty = {
-    "mal_all": "MyAnimeList All", "mal_airing": "MyAnimeList Airing", "mal_search": "MyAnimeList Search",
-    "mal_upcoming": "MyAnimeList Upcoming", "mal_tv": "MyAnimeList TV", "mal_ova": "MyAnimeList OVA",
-    "mal_movie": "MyAnimeList Movie", "mal_special": "MyAnimeList Special", "mal_popular": "MyAnimeList Popular",
-    "mal_favorite": "MyAnimeList Favorite", "mal_genre": "MyAnimeList Genre", "mal_studio": "MyAnimeList Studio"
+    "mal_all": "MyAnimeList All",
+    "mal_airing": "MyAnimeList Airing",
+    "mal_search": "MyAnimeList Search",
+    "mal_upcoming": "MyAnimeList Upcoming",
+    "mal_tv": "MyAnimeList TV",
+    "mal_ova": "MyAnimeList OVA",
+    "mal_movie": "MyAnimeList Movie",
+    "mal_special": "MyAnimeList Special",
+    "mal_popular": "MyAnimeList Popular",
+    "mal_favorite": "MyAnimeList Favorite",
+    "mal_genre": "MyAnimeList Genre",
+    "mal_studio": "MyAnimeList Studio",
 }
 season_sort_translation = {"score": "anime_score", "anime_score": "anime_score", "members": "anime_num_list_users", "anime_num_list_users": "anime_num_list_users"}
 season_sort_options = ["score", "members"]
 pretty_names = {
-    "anime_score": "Score", "list_score": "Score", "anime_num_list_users": "Members", "list_updated_at": "Last Updated",
-    "anime_title": "Title", "anime_start_date": "Start Date", "all": "All Anime", "watching": "Currently Watching",
-    "completed": "Completed", "on_hold": "On Hold", "dropped": "Dropped", "plan_to_watch": "Plan to Watch"
+    "anime_score": "Score",
+    "list_score": "Score",
+    "anime_num_list_users": "Members",
+    "list_updated_at": "Last Updated",
+    "anime_title": "Title",
+    "anime_start_date": "Start Date",
+    "all": "All Anime",
+    "watching": "Currently Watching",
+    "completed": "Completed",
+    "on_hold": "On Hold",
+    "dropped": "Dropped",
+    "plan_to_watch": "Plan to Watch",
 }
 userlist_sort_translation = {
-    "score": "list_score", "list_score": "list_score",
-    "last_updated": "list_updated_at", "list_updated": "list_updated_at", "list_updated_at": "list_updated_at",
-    "title": "anime_title", "anime_title": "anime_title",
-    "start_date": "anime_start_date", "anime_start_date": "anime_start_date"
+    "score": "list_score",
+    "list_score": "list_score",
+    "last_updated": "list_updated_at",
+    "list_updated": "list_updated_at",
+    "list_updated_at": "list_updated_at",
+    "title": "anime_title",
+    "anime_title": "anime_title",
+    "start_date": "anime_start_date",
+    "anime_start_date": "anime_start_date",
 }
 userlist_sort_options = ["score", "last_updated", "title", "start_date"]
 userlist_status = ["all", "watching", "completed", "on_hold", "dropped", "plan_to_watch"]
@@ -49,7 +69,7 @@ urls = {
     "ranking": f"{base_url}anime/ranking",
     "season": f"{base_url}anime/season",
     "suggestions": f"{base_url}anime/suggestions",
-    "user": f"{base_url}users"
+    "user": f"{base_url}users",
 }
 
 
@@ -137,20 +157,17 @@ class MyAnimeList:
             logger.info("Login and click the Allow option. You will then be redirected to a localhost")
             logger.info("url that most likely won't load, which is fine. Copy the URL and paste it below")
             webbrowser.open(url, new=2)
-            try:                                url = util.logger_input("URL").strip()
-            except TimeoutExpired:              raise Failed("Input Timeout: URL required.")
-            if not url:                         raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
+            try:
+                url = util.logger_input("URL").strip()
+            except TimeoutExpired:
+                raise Failed("Input Timeout: URL required.")
+            if not url:
+                raise Failed("MyAnimeList Error: No input MyAnimeList code required.")
         match = re.search("code=([^&]+)", str(url))
         if not match:
             raise Failed("MyAnimeList Error: Invalid URL")
         code = match.group(1)
-        data = {
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
-            "code": code,
-            "code_verifier": code_verifier,
-            "grant_type": "authorization_code"
-        }
+        data = {"client_id": self.client_id, "client_secret": self.client_secret, "code": code, "code_verifier": code_verifier, "grant_type": "authorization_code"}
         new_authorization = self._oauth(data)
         if "error" in new_authorization:
             raise Failed("MyAnimeList Error: Invalid code")
@@ -168,12 +185,7 @@ class MyAnimeList:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            data = {
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-                "refresh_token": self.authorization["refresh_token"],
-                "grant_type": "refresh_token"
-            }
+            data = {"client_id": self.client_id, "client_secret": self.client_secret, "refresh_token": self.authorization["refresh_token"], "grant_type": "refresh_token"}
             refreshed_authorization = self._oauth(data)
             return self._save(refreshed_authorization)
         return False
@@ -182,12 +194,7 @@ class MyAnimeList:
         if authorization is not None and "access_token" in authorization and authorization["access_token"] and self._check(authorization):
             if self.authorization != authorization and not self.read_only:
                 yaml = self.requests.file_yaml(self.config_path)
-                yaml.data["mal"]["authorization"] = {
-                    "access_token": authorization["access_token"],
-                    "token_type": authorization["token_type"],
-                    "expires_in": authorization["expires_in"],
-                    "refresh_token": authorization["refresh_token"]
-                }
+                yaml.data["mal"]["authorization"] = {"access_token": authorization["access_token"], "token_type": authorization["token_type"], "expires_in": authorization["expires_in"], "refresh_token": authorization["refresh_token"]}
                 logger.info(f"Saving authorization information to {self.config_path}")
                 yaml.save()
                 logger.secret(authorization["access_token"])
@@ -204,8 +211,10 @@ class MyAnimeList:
         try:
             response = self.requests.get_json(url, headers={"Authorization": f"Bearer {token}"})
             logger.trace(f"Response: {response}")
-            if "error" in response:         raise Failed(f"MyAnimeList Error: {response['error']}")
-            else:                           return response
+            if "error" in response:
+                raise Failed(f"MyAnimeList Error: {response['error']}")
+            else:
+                return response
         except JSONDecodeError:
             raise Failed(f"MyAnimeList Error: Connection Failed")
 

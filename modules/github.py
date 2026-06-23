@@ -1,4 +1,5 @@
 import re
+
 from modules import util
 from modules.util import Failed
 
@@ -8,6 +9,7 @@ raw_url = "https://raw.githubusercontent.com"
 base_url = "https://api.github.com"
 kometa_base = f"{base_url}/repos/Kometa-Team/Kometa"
 configs_raw_url = f"{raw_url}/Kometa-Team/Community-Configs"
+
 
 class GitHub:
     def __init__(self, requests, params):

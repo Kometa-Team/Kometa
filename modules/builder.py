@@ -14,7 +14,7 @@ from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist
 from modules.overlay import Overlay
 from modules.poster import KometaImage
 from modules.request import quote
-from modules.util import Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError, BuilderValidationError
+from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError
 
 logger = util.logger
 
@@ -1654,7 +1654,9 @@ class CollectionBuilder:
             raise BuilderValidationError(f"{self.Type} Error: No builders allowed with blank_collection")
 
         if not isinstance(self.custom_sort, list) and self.custom_sort and (len(self.builders) > 1 or self.builders[0][0] not in custom_sort_builders):
-            raise BuilderValidationError(f"{self.Type} Error: " + ("Playlists" if self.playlist else "collection_order: custom") + (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}"))
+            raise BuilderValidationError(
+                f"{self.Type} Error: " + ("Playlists" if self.playlist else "collection_order: custom") + (f" can only be used with a single builder per {self.type}" if len(self.builders) > 1 else f" cannot be used with {self.builders[0][0]}")
+            )
 
         if "add_missing" not in self.radarr_details:
             self.radarr_details["add_missing"] = self.library.Radarr.add_missing if self.library.Radarr else False
@@ -2245,30 +2247,18 @@ class CollectionBuilder:
                             invalid_categories.append(category_filter)
 
                     if award_filters and not final_awards:
-                        raise BuilderValidationError(
-                            f"{self.Type} Error: imdb_award award_filter attribute invalid: "
-                            f"none of the provided award_filter values exist: [{', '.join(award_filters)}]. "
-                            f"Valid Award Options: [{', '.join(award_names)}]"
-                        )
+                        raise BuilderValidationError(f"{self.Type} Error: imdb_award award_filter attribute invalid: " f"none of the provided award_filter values exist: [{', '.join(award_filters)}]. " f"Valid Award Options: [{', '.join(award_names)}]")
 
                     if category_filters and not final_category:
                         raise BuilderValidationError(
-                            f"{self.Type} Error: imdb_award category_filter attribute invalid: "
-                            f"none of the provided category_filter values exist: [{', '.join(category_filters)}]. "
-                            f"Valid Category Options: [{', '.join(category_names)}]"
+                            f"{self.Type} Error: imdb_award category_filter attribute invalid: " f"none of the provided category_filter values exist: [{', '.join(category_filters)}]. " f"Valid Category Options: [{', '.join(category_names)}]"
                         )
 
                     for invalid_award in invalid_awards:
-                        logger.warning(
-                            f"{self.Type} Warning: imdb_award award_filter attribute invalid: "
-                            f"{invalid_award} not found and will be ignored"
-                        )
+                        logger.warning(f"{self.Type} Warning: imdb_award award_filter attribute invalid: " f"{invalid_award} not found and will be ignored")
 
                     for invalid_category in invalid_categories:
-                        logger.warning(
-                            f"{self.Type} Warning: imdb_award category_filter attribute invalid: "
-                            f"{invalid_category} not found and will be ignored"
-                        )
+                        logger.warning(f"{self.Type} Warning: imdb_award category_filter attribute invalid: " f"{invalid_category} not found and will be ignored")
 
                 self.builders.append(
                     (
@@ -3520,7 +3510,7 @@ class CollectionBuilder:
                 if rating_key in getattr(pl_library, "show_map", {}).get(ignored_id, []):
                     return True
         return False
-    
+
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
@@ -4148,13 +4138,13 @@ class CollectionBuilder:
             if isinstance(data, dict) and data:
                 has_percentage = "percentage" in data
                 has_count = "count" in data
-                
+
                 if has_percentage and has_count:
                     raise BuilderValidationError(f"{self.Type} Error: Cannot use both percentage and count in {attribute} filter. Please use one or the other.")
-                
+
                 percentage = None
                 count = None
-                
+
                 if has_count:
                     if data["count"] is None:
                         logger.warning(f"{self.Type} Warning: count filter attribute is blank")
@@ -4178,13 +4168,13 @@ class CollectionBuilder:
                 else:
                     # Default to percentage if neither is specified
                     percentage = self.default_percent
-                
+
                 final_filters = {}
                 if count is not None:
                     final_filters["count"] = count
                 else:
                     final_filters["percentage"] = percentage
-                    
+
                 for filter_method, filter_data in data.items():
                     filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
                     message = None

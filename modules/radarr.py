@@ -1,7 +1,8 @@
-from modules import util
-from modules.util import Failed, Continue
 from arrapi import RadarrAPI
 from arrapi.exceptions import ArrException
+
+from modules import util
+from modules.util import Continue, Failed
 
 logger = util.logger
 
@@ -11,6 +12,7 @@ monitor_translation = {"movie": "movieOnly", "collection": "movieAndCollection",
 apply_tags_translation = {"": "add", "sync": "replace", "remove": "remove"}
 availability_descriptions = {"announced": "For Announced", "cinemas": "For In Cinemas", "released": "For Released", "db": "For PreDB"}
 monitor_descriptions = {"movie": "Monitor Only the Movie", "collection": "Monitor the Movie and Collection", "none": "Do not Monitor"}
+
 
 class Radarr:
     def __init__(self, requests, cache, library, params):
@@ -24,7 +26,7 @@ class Radarr:
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.requests.session)
             self.api.respect_list_exclusions_when_adding()
-            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"]) # noqa
+            self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])  # noqa
             self.profiles = self.api.quality_profile()
         except ArrException as e:
             raise Failed(e)
@@ -133,8 +135,7 @@ class Radarr:
                 pass
             if movies and (len(movies) == 100 or len(tmdb_ids) == i):
                 try:
-                    _a, _e, _i, _x = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search,
-                                                                  availability, tags, per_request=100)
+                    _a, _e, _i, _x = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search, availability, tags, per_request=100)
                     added.extend(_a)
                     exists.extend(_e)
                     invalid.extend(_i)

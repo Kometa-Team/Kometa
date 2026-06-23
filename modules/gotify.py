@@ -1,4 +1,5 @@
 from json import JSONDecodeError
+
 from modules import util, webhooks
 from modules.util import Failed
 

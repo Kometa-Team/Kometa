@@ -1,12 +1,16 @@
-import json, time, os
-from datetime import datetime, timedelta
-from lxml import etree
-from modules import util
-from modules.util import Failed, logger
 import gzip
 import io
+import json
+import os
+import time
 import traceback
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+
+from lxml import etree
+
+from modules import util
+from modules.util import Failed, logger
 
 logger = util.logger
 
@@ -19,13 +23,14 @@ kometa_client_version = 1
 
 weights = {"anidb": 1000, "anidb_3_0": 600, "anidb_2_5": 500, "anidb_2_0": 400, "anidb_1_5": 300, "anidb_1_0": 200, "anidb_0_5": 100}
 
+
 class AniDBTitles:
     TITLES_URL = "https://anidb.net/api/anime-titles.xml.gz"
     CACHE_FILE = "config/anidb_cache/anime-titles.xml"
 
     def __init__(self, requests_obj):
         self.requests = requests_obj
-        self.title_map = {} # Maps title string -> AID
+        self.title_map = {}  # Maps title string -> AID
         self._load()
 
     def _load(self):
@@ -42,23 +47,18 @@ class AniDBTitles:
                 logger.info("Downloading Master Title List from AniDB...")
 
                 # AniDB requires a non-generic User-Agent and often checks identity
-                headers = {
-                    'User-Agent': f'Kometa/1.0 ({kometa_client})',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'Host': 'anidb.net'
-                }
+                headers = {"User-Agent": f"Kometa/1.0 ({kometa_client})", "Accept-Encoding": "gzip, deflate", "Host": "anidb.net"}
                 response = self.requests.get(self.TITLES_URL, headers=headers)
                 if response.status_code == 200:
                     # Decompress Gzip in memory and save as plain XML
                     content = gzip.decompress(response.content)
                     os.makedirs(os.path.dirname(self.CACHE_FILE), exist_ok=True)
-                    with open(self.CACHE_FILE, 'wb') as f:
+                    with open(self.CACHE_FILE, "wb") as f:
                         f.write(content)
                 else:
                     logger.error("Failed to download title list.")
             else:
                 logger.info("Using cached Master Title List from AniDB.")
-
 
             # 2. Parse XML into a searchable Dictionary
             if os.path.exists(self.CACHE_FILE):
@@ -79,17 +79,17 @@ class AniDBTitles:
         """Returns the AID for a given title string, or None."""
         return self.title_map.get(query.lower())
 
+
 class AniDBObj:
     def __init__(self, anidb, anidb_id, data):
         self._anidb = anidb
         self.anidb_id = anidb_id
         self._data = data
 
-
         # def _parse(self, field_name, xpath, is_dict=False):
         #     # Find all elements matching the XPath
-        #     nodes = self.xml_root.xpath(xpath) 
-            
+        #     nodes = self.xml_root.xpath(xpath)
+
         #     if not nodes:
         #         return {} if is_dict else []
 
@@ -98,7 +98,7 @@ class AniDBObj:
         #         for node in nodes:
         #             # Use the 'id' attribute as the primary key
         #             tag_id = node.get('id')
-                    
+
         #             # Map internal children to dictionary keys
         #             tag_data = {
         #                 'name': node.findtext('name'),
@@ -108,24 +108,28 @@ class AniDBObj:
         #             }
         #             result[tag_id] = tag_data
         #         return result
-            
+
         #     # Default behavior for non-dict parsing
         #     return [node.text for node in nodes]
- 
+
         def _parse(attr, xpath, is_list=False, is_dict=False, is_int=False, is_float=False, is_date=False, fail=False):
             try:
                 # Handle data if it's coming from a dictionary (Cache)
                 if isinstance(data, dict):
-                    lookup_attr = attr if not attr == 'tmdb' else 'tmdb_id'
-                    
+                    lookup_attr = attr if not attr == "tmdb" else "tmdb_id"
+
                     if lookup_attr == "tmdb_id":
-                        result = [str(data['tmdb_id']), str(data['tmdb_type'])] if 'tmdb_id' in data and data['tmdb_id'] else []
+                        result = [str(data["tmdb_id"]), str(data["tmdb_type"])] if "tmdb_id" in data and data["tmdb_id"] else []
                         return result
 
-                    if is_list: return data[lookup_attr].split("|") if data[lookup_attr] else []
-                    if is_dict: return json.loads(data[lookup_attr]) if data[lookup_attr] else {}
-                    if is_int or is_float: return util.check_num(data[lookup_attr], is_int=is_int)
-                    if is_date: return datetime.strptime(data[lookup_attr], "%Y-%m-%d") if data[lookup_attr] else None
+                    if is_list:
+                        return data[lookup_attr].split("|") if data[lookup_attr] else []
+                    if is_dict:
+                        return json.loads(data[lookup_attr]) if data[lookup_attr] else {}
+                    if is_int or is_float:
+                        return util.check_num(data[lookup_attr], is_int=is_int)
+                    if is_date:
+                        return datetime.strptime(data[lookup_attr], "%Y-%m-%d") if data[lookup_attr] else None
                     return data[lookup_attr]
 
                 # Handle data if it's an XML Element (Fresh API Response)
@@ -133,13 +137,13 @@ class AniDBObj:
 
                 if attr == "tmdb":
                     # Return text results as strings
-                    result = [str(r).strip() if isinstance(r, str) else str(r.text).strip() if hasattr(r, 'text') else str(r) for r in parse_results] if parse_results else []
+                    result = [str(r).strip() if isinstance(r, str) else str(r.text).strip() if hasattr(r, "text") else str(r) for r in parse_results] if parse_results else []
                     return result
 
                 if attr == "tags":
                     return {ta.xpath("name/text()")[0]: 1001 if ta.get("infobox") else int(ta.get("weight")) for ta in parse_results}
 
-                if  attr == "titles":
+                if attr == "titles":
                     # API Titles: <title xml:lang="en" type="official">Title</title>
                     return {ta.get("{http://www.w3.org/XML/1998/namespace}lang"): ta.text for ta in parse_results}
 
@@ -148,7 +152,7 @@ class AniDBObj:
                 #     for node in parse_results:
                 #         # Use the 'id' attribute as the primary key
                 #         tag_id = node.get('id')
-                        
+
                 #         # Map internal children to dictionary keys
                 #         tag_data = {
                 #             'name': node.findtext('name'),
@@ -161,13 +165,15 @@ class AniDBObj:
 
                 if parse_results:
                     if is_list:
-                        return [r.text.strip() if hasattr(r, 'text') else str(r).strip() for r in parse_results]
-                    # 
+                        return [r.text.strip() if hasattr(r, "text") else str(r).strip() for r in parse_results]
+                    #
                     val = parse_results[0]
-                    text_val = val.text if hasattr(val, 'text') else str(val)
-                    
-                    if is_int or is_float: return util.check_num(text_val.strip(), is_int=is_int)
-                    if is_date: return datetime.strptime(text_val.strip(), "%Y-%m-%d")
+                    text_val = val.text if hasattr(val, "text") else str(val)
+
+                    if is_int or is_float:
+                        return util.check_num(text_val.strip(), is_int=is_int)
+                    if is_date:
+                        return datetime.strptime(text_val.strip(), "%Y-%m-%d")
                     return text_val.strip()
 
             except (ValueError, TypeError, IndexError):
@@ -181,19 +187,19 @@ class AniDBObj:
         self.main_title = _parse("main_title", "//title[@type='main']/text()", fail=True)
         self.titles = _parse("titles", "//title[@type='official']", is_dict=True)
         self.official_title = self.titles.get(self._anidb.language, self.main_title)
-        
+
         self.studio = _parse("studio", "//creators/name[@type='Animation Work']/text()")
         self.rating = _parse("rating", "//ratings/permanent/text()", is_float=True)
         self.average = _parse("average", "//ratings/temporary/text()", is_float=True)
         self.score = _parse("score", "//ratings/review/text()", is_float=True)
         self.released = _parse("released", "//startdate/text()", is_date=True)
-        
+
         self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
 
         # Resources (External Links)
         self.mal_id = _parse("mal_id", "//resource[@type='2']/externalentity/identifier/text()", is_int=True)
         self.imdb_id = _parse("imdb_id", "//resource[@type='43']/externalentity/identifier/text()")
-        
+
         # TMDB handling (Type 44)
         tmdb_list = _parse("tmdb", "//resource[@type='44']/externalentity/identifier/text()", is_list=True)
         self.tmdb_id = None
@@ -203,6 +209,7 @@ class AniDBObj:
                 self.tmdb_id = int(item)
             elif isinstance(item, str):
                 self.tmdb_type = item
+
 
 class AniDB:
     def __init__(self, requests_obj, cache, data):
@@ -250,12 +257,12 @@ class AniDB:
             time.sleep(self.min_delay - elapsed)
 
         # 2. Check Cache
-        aid = api_params.get('aid') if api_params else None
+        aid = api_params.get("aid") if api_params else None
         cache_file = f"config/anidb_cache/anime_{aid}.xml" if aid else None
         if cache_file and os.path.exists(cache_file) and cache_days > 0:
             file_age = datetime.fromtimestamp(os.path.getmtime(cache_file))
             if datetime.now() - file_age < timedelta(days=cache_days):
-                with open(cache_file, 'rb') as f:
+                with open(cache_file, "rb") as f:
                     return etree.fromstring(f.read())
 
         # 3. Setup Target and Headers
@@ -266,19 +273,16 @@ class AniDB:
         else:
             # Default to anime endpoint with aid
             target_url = f"{api_url}/anime/{aid}" if aid else api_url
-            
-        headers = {
-            'Accept-Encoding': 'gzip',
-            'User-Agent': f'Kometa/1.0 ({kometa_client})'
-        }
-        
+
+        headers = {"Accept-Encoding": "gzip", "User-Agent": f"Kometa/1.0 ({kometa_client})"}
+
         # Build query parameters (for search endpoints)
         payload = {}
-        if api_params and 'aid' not in api_params:
+        if api_params and "aid" not in api_params:
             payload.update(api_params)
-        
+
         # Add mature flag as query parameter
-        payload['mature'] = 'true' if self.enable_mature else 'false'
+        payload["mature"] = "true" if self.enable_mature else "false"
 
         # 4. Execute Request
         response = self.requests.get(target_url, params=payload if payload else None, headers=headers)
@@ -286,10 +290,10 @@ class AniDB:
 
         if response.status_code == 200:
             content = response.content
-            
+
             # 5. Manual Gzip Decompression Check
             # Even if 'requests' fails to auto-decode, we check the magic bytes for gzip (\x1f\x8b)
-            if content.startswith(b'\x1f\x8b'):
+            if content.startswith(b"\x1f\x8b"):
                 try:
                     content = gzip.decompress(content)
                 except Exception as e:
@@ -301,8 +305,8 @@ class AniDB:
                 return None
 
             # 6. Check if response is JSON (for tag endpoints)
-            content_type = response.headers.get('content-type', '')
-            if 'json' in content_type or content.strip().startswith(b'{') or content.strip().startswith(b'['):
+            content_type = response.headers.get("content-type", "")
+            if "json" in content_type or content.strip().startswith(b"{") or content.strip().startswith(b"["):
                 try:
                     return json.loads(content)
                 except json.JSONDecodeError as e:
@@ -320,15 +324,15 @@ class AniDB:
                 except:
                     logger.error(f"Response preview (bytes): {content[:500]}")
                 raise Failed(f"AniDB Error: Endpoint may not be implemented - {target_url}")
-            
+
             # 8. Save to cache
             if cache_file:
                 os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-                with open(cache_file, 'wb') as f:
+                with open(cache_file, "wb") as f:
                     f.write(content)
-            
+
             return xml_result
-        
+
         elif response.status_code == 403:
             raise Failed("AniDB Error: 403 Banned (Too many requests or invalid Client ID)")
         elif response.status_code == 404:
@@ -337,11 +341,11 @@ class AniDB:
         else:
             logger.error(f"AniDB Error: HTTP {response.status_code} from {target_url}")
             return None
-            
+
         return None
 
     def _relations(self, anidb_id):
-        xml = self._request(api_params={'aid': anidb_id})
+        xml = self._request(api_params={"aid": anidb_id})
         return util.get_int_list(xml.xpath("//relatedanime/anime/@id"), "AniDB ID") if xml is not None else []
 
     def _validate(self, anidb_id):
@@ -352,7 +356,7 @@ class AniDB:
         aid = int(anidb_id)
 
         # 1. Check the local Master Title List (Fastest - No network)
-        if hasattr(self, 'titles_db') and aid in self.titles_db.title_map.values():
+        if hasattr(self, "titles_db") and aid in self.titles_db.title_map.values():
             return aid
 
         # 2. Check the Local XML Cache or fallback to API
@@ -365,21 +369,21 @@ class AniDB:
 
     def validate_anidb_ids(self, anidb_ids):
         """
-        Validates a list of AniDB IDs. 
+        Validates a list of AniDB IDs.
         Returns a list of valid integer IDs.
         """
         anidb_list = util.get_int_list(anidb_ids, "AniDB ID")
         anidb_values = []
-        
+
         for anidb_id in anidb_list:
             try:
                 anidb_values.append(self._validate(anidb_id))
             except Failed as e:
                 logger.error(e)
-        
+
         if not anidb_values:
             raise Failed(f"AniDB Error: No valid AniDB IDs found in input: {anidb_ids}")
-            
+
         return anidb_values
 
     def get_anime(self, anidb_id, ignore_cache=False):
@@ -402,7 +406,7 @@ class AniDB:
 
         # 3. Create the Object
         obj = AniDBObj(self, anidb_id, data_source)
-        
+
         # 4. Update Module Cache
         if self.cache and not ignore_cache:
             self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
@@ -417,17 +421,17 @@ class AniDB:
         """
         params = {}
         if limit is not None:
-            params['limit'] = limit
-        
+            params["limit"] = limit
+
         response = self._request(api_params=params, endpoint=f"tags/{tag_id}", cache_days=1)
         if response is None:
             return []
-        
+
         # Handle JSON response
         if isinstance(response, dict):
-            results = response.get('results', [])
-            return [anime['aid'] for anime in results if 'aid' in anime]
-        
+            results = response.get("results", [])
+            return [anime["aid"] for anime in results if "aid" in anime]
+
         # Fallback to XML parsing if needed
         return util.get_int_list(response.xpath("//anime/@id"), "AniDB ID")
 
@@ -439,20 +443,17 @@ class AniDB:
             min_weight: Minimum tag weight filter (default: 0)
         """
         tag_list = tags if isinstance(tags, list) else [tags]
-        params = {
-            'tags': ','.join(tag_list),
-            'min_weight': min_weight
-        }
-        
+        params = {"tags": ",".join(tag_list), "min_weight": min_weight}
+
         response = self._request(api_params=params, endpoint="search/tags", cache_days=1)
         if response is None:
             return []
-        
+
         # Handle JSON response
         if isinstance(response, dict):
-            results = response.get('results', [])
-            return [anime['aid'] for anime in results if 'aid' in anime]
-        
+            results = response.get("results", [])
+            return [anime["aid"] for anime in results if "aid" in anime]
+
         # Fallback to XML parsing if needed
         return util.get_int_list(response.xpath("//anime/@id"), "AniDB ID")
 
@@ -465,14 +466,14 @@ class AniDB:
             anidb_ids.extend(self._relations(data))
         elif method == "anidb_tag":
             # data should be a dict with 'tag_id' and optionally 'limit'
-            tag_id = data.get('tag_id', data) if isinstance(data, dict) else data
-            limit = data.get('limit') if isinstance(data, dict) else None
+            tag_id = data.get("tag_id", data) if isinstance(data, dict) else data
+            limit = data.get("limit") if isinstance(data, dict) else None
             anidb_ids.extend(self._search_by_tags(tag_id, limit))
         elif method == "anidb_tag_name":
             # data should be a dict with 'tags' (list or string) and optionally 'min_weight'
-            tags = data.get('tags', data) if isinstance(data, dict) else data
-            min_weight = data.get('min_weight', 0) if isinstance(data, dict) else 0
+            tags = data.get("tags", data) if isinstance(data, dict) else data
+            min_weight = data.get("min_weight", 0) if isinstance(data, dict) else 0
             anidb_ids.extend(self._search_by_tag_names(tags, min_weight))
-        
+
         logger.debug(f"{len(anidb_ids)} AniDB IDs Found via {method}")
         return anidb_ids
