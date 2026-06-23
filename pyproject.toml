@@ -77,6 +77,52 @@ line_length = 256
 exclude_dirs = ["tests", "config", ".venv", "test_venv", ".direnv"]
 skips = ["B101"]
 
+[tool.pyright]
+# Static type checker (replaces mypy as of this PR).
+#
+# Strategy: ratcheting baseline. We do NOT require zero errors. We require
+# that the error count does not GO UP on a PR. See:
+#   - .pyright-baseline.json (current accepted error count)
+#   - scripts/pyright_baseline.py (gate logic)
+#   - .github/workflows/pyright.yml (CI job)
+#
+# To opt a single file into stricter checking, add this line at the top:
+#   # pyright: strict
+#
+# To silence a single line (use sparingly!):
+#   foo.bar  # pyright: ignore[reportOptionalMemberAccess]
+include = ["modules", "kometa.py"]
+exclude = [
+    "**/__pycache__",
+    "**/.*",
+    ".venv",
+    "test_venv",
+    ".direnv",
+    "build",
+    "dist",
+    "docs",
+    "config",
+    "defaults",
+    "fonts",
+    "json-schema",
+    "tests",
+]
+pythonVersion = "3.12"
+typeCheckingMode = "basic"
+
+# Third-party packages without type stubs would otherwise generate hundreds
+# of false positives. We silence those globally; real errors still surface.
+reportMissingImports = "none"
+reportMissingTypeStubs = "none"
+
+# Allow gradual typing — don't punish code that simply isn't annotated yet.
+reportUnknownArgumentType = "none"
+reportUnknownLambdaType = "none"
+reportUnknownMemberType = "none"
+reportUnknownParameterType = "none"
+reportUnknownVariableType = "none"
+
+
 [tool.uv.sources]
 mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "master" }
 

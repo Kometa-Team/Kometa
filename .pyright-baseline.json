@@ -1,0 +1,33 @@
+{
+  "_comment": "Ratcheting pyright baseline. DO NOT hand-edit unless you know what you're doing. Regenerate with: python scripts/pyright_baseline.py --regenerate",
+  "total_errors": 419,
+  "per_file_errors": {
+    "kometa.py": 17,
+    "modules/anilist.py": 7,
+    "modules/builder.py": 53,
+    "modules/config.py": 2,
+    "modules/convert.py": 7,
+    "modules/ergast.py": 2,
+    "modules/icheckmovies.py": 3,
+    "modules/imdb.py": 7,
+    "modules/letterboxd.py": 9,
+    "modules/library.py": 7,
+    "modules/logs.py": 5,
+    "modules/mdblist.py": 2,
+    "modules/meta.py": 59,
+    "modules/ntfy.py": 1,
+    "modules/operations.py": 1,
+    "modules/overlay.py": 26,
+    "modules/overlays.py": 58,
+    "modules/plex.py": 51,
+    "modules/poster.py": 29,
+    "modules/radarr.py": 4,
+    "modules/request.py": 6,
+    "modules/sonarr.py": 4,
+    "modules/textfile.py": 3,
+    "modules/tmdb.py": 1,
+    "modules/trakt.py": 29,
+    "modules/tvdb.py": 1,
+    "modules/util.py": 25
+  }
+}
