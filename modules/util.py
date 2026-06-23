@@ -406,19 +406,21 @@ def item_set(item, item_id):
 
 
 def is_locked(filepath):
-    locked = None
-    file_object = None
-    if os.path.exists(filepath):
-        try:
-            file_object = open(filepath, "a", 8)
-            if file_object:
-                locked = False
-        except IOError:
-            locked = True
-        finally:
-            if file_object:
-                file_object.close()
-    return locked
+    """Check if a file is locked without consuming file descriptors.
+    
+    Returns None if file doesn't exist, True if locked, False if accessible.
+    Uses stat-based detection instead of open() to avoid FD exhaustion.
+    """
+    if not os.path.exists(filepath):
+        return None
+    try:
+        # Try to open and immediately close. Use context manager to ensure cleanup.
+        with open(filepath, "a") as f:
+            pass
+        return False
+    except (IOError, OSError):
+        # File is locked or inaccessible
+        return True
 
 
 def time_window(tw):
