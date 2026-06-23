@@ -433,9 +433,7 @@ class TestDispatchTables:
         """Duplicate entries cause silent double-processing in dispatch."""
         table = getattr(builder_module, table_name)
         dupes = [x for x in table if table.count(x) > 1]
-        assert len(table) == len(set(table)), (
-            f"{table_name} has duplicate entries: {sorted(set(dupes))}"
-        )
+        assert len(table) == len(set(table)), f"{table_name} has duplicate entries: {sorted(set(dupes))}"
 
     @pytest.mark.parametrize(
         "table_name",

@@ -26,9 +26,7 @@ class TestMyAnimeList:
         return m
 
     def test_genres_populates_on_first_access(self, adapter):
-        adapter._jikan_request = MagicMock(
-            return_value={"data": [{"mal_id": 1, "name": "Action"}]}
-        )
+        adapter._jikan_request = MagicMock(return_value={"data": [{"mal_id": 1, "name": "Action"}]})
         genres = adapter.genres
         assert "Action" in genres
         assert genres["Action"] == 1

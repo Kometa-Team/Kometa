@@ -50,7 +50,5 @@ class TestErgast:
     def test_get_races_returns_list(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.ergast.logger", FakeLogger())
         monkeypatch.setattr("modules.ergast.Race", MagicMock)
-        adapter.requests.get.return_value = FakeResponse(
-            {"MRData": {"RaceTable": {"Races": [{"season": "2025"}]}}}, 200
-        )
+        adapter.requests.get.return_value = FakeResponse({"MRData": {"RaceTable": {"Races": [{"season": "2025"}]}}}, 200)
         assert len(adapter.get_races(2025, "en", False, False)) > 0

@@ -8,9 +8,7 @@ so every managed collection appeared "unconfigured" and was deleted.
 Fix: use self.library.collection_names (pre-populated from YAML before the run_order loop).
 """
 
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
 import modules.operations as ops_module
@@ -18,7 +16,7 @@ import modules.operations as ops_module
 # util.logger is None until Kometa initialises its logger; patch it for tests.
 ops_module.logger = MagicMock()
 
-from modules.operations import Operations
+from modules.operations import Operations  # noqa: E402 -- must follow logger patch above
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -66,7 +64,14 @@ def test_configured_check_pre_fix_uses_wrong_attribute():
     is_configured_broken = "SAG Award Winners" in collections  # False (wrong: it IS configured)
     configured_check_broken = configured_in == is_configured_broken  # False == False → True (DELETE!)
 
+    # Demonstrate the fix would work: when the code checks collection_names
+    # (the actual configured list), the collection is correctly identified
+    # as configured and NOT deleted.
+    is_configured_fixed = "SAG Award Winners" in collection_names  # True
+    configured_check_fixed = configured_in == is_configured_fixed  # False == True → False (keep)
+
     assert configured_check_broken, "Bug not reproduced: broken code should trigger delete for a configured collection " "when library.collections is empty"
+    assert not configured_check_fixed, "Fix verification: collection_names check should keep configured collections"
 
 
 # ---------------------------------------------------------------------------
@@ -242,9 +247,7 @@ def test_collection_names_used_not_collections():
     # If it incorrectly uses library.collections: is_configured=False → configured_check=True → DELETE
     # If it correctly uses library.collection_names: is_configured=True → configured_check=False → KEEP
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
-    assert result is False, (
-        "_should_be_deleted is reading library.collections instead of library.collection_names"
-    )
+    assert result is False, "_should_be_deleted is reading library.collections instead of library.collection_names"
 
 
 # ---------------------------------------------------------------------------
@@ -356,10 +359,7 @@ class TestModuleConstants:
     def test_meta_operations_no_duplicates(self):
         from modules.operations import meta_operations
 
-        assert len(meta_operations) == len(set(meta_operations)), (
-            f"meta_operations has duplicates: "
-            f"{[x for x in meta_operations if meta_operations.count(x) > 1]}"
-        )
+        assert len(meta_operations) == len(set(meta_operations)), f"meta_operations has duplicates: " f"{[x for x in meta_operations if meta_operations.count(x) > 1]}"
 
     def test_meta_operations_all_strings(self):
         from modules.operations import meta_operations

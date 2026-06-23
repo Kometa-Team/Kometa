@@ -723,11 +723,7 @@ class TestRegressions:
             assert row is not None, f"row lookup by {query_key}={anime_ids[query_key]} returned None"
 
             for column in ("anidb", "anilist", "myanimelist", "kitsu"):
-                assert row[column] == anime_ids[column], (
-                    f"anime_map column swap: looked up by {query_key}, expected "
-                    f"{column}={anime_ids[column]} but got {row[column]} "
-                    f"(would equal anidb={anime_ids['anidb']} if the bug is back)"
-                )
+                assert row[column] == anime_ids[column], f"anime_map column swap: looked up by {query_key}, expected " f"{column}={anime_ids[column]} but got {row[column]} " f"(would equal anidb={anime_ids['anidb']} if the bug is back)"
 
     def test_bug_anime_map_update_is_idempotent(self, tmp_path):
         """Sister test to the bug above: calling update_anime_map twice

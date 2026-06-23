@@ -26,8 +26,6 @@ class TestOMDb:
 
     def test_get_omdb_parses_response(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.omdb.logger", FakeLogger())
-        adapter.requests.get.return_value = FakeResponse(
-            {"Title": "T", "Year": "2023", "imdbID": "tt1", "Response": "True"}, 200
-        )
+        adapter.requests.get.return_value = FakeResponse({"Title": "T", "Year": "2023", "imdbID": "tt1", "Response": "True"}, 200)
         r = adapter.get_omdb("tt1", ignore_cache=True)
         assert r.title == "T"

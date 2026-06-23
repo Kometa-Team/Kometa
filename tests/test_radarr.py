@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
 import modules.builder  # noqa: F401
 from tests.conftest import FakeLogger
 

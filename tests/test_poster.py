@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 import modules.builder  # noqa: F401
 
 

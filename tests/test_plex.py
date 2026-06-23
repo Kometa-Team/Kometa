@@ -7,15 +7,14 @@ manually-set attributes.
 
 from __future__ import annotations
 
-import os
 from types import SimpleNamespace
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import Plex
-from tests.conftest import FakeLogger, FakeRequests
+from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -228,7 +227,7 @@ class TestSearch:
         mock_lib = MagicMock()
         mock_lib.search.return_value = [make_plex_item()]
         plex = make_plex(Plex=mock_lib)
-        results = plex.exact_search(title="Test Movie", year=2023)
+        plex.exact_search(title="Test Movie", year=2023)
         mock_lib.search.assert_called_once_with(libtype=None, **{"title=": "Test Movie", "year": 2023})
 
 
@@ -240,7 +239,6 @@ class TestSearch:
 class TestFetchItem:
     def test_returns_cached_item(self):
         item = make_plex_item(rating_key=101)
-        cached = MagicMock()
         plex = make_plex(cached_items={101: (item, True)})
         plex.reload = MagicMock(return_value=item)
         result = plex.fetch_item(101)

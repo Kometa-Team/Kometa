@@ -8,7 +8,7 @@ import pytest
 
 import modules.builder  # noqa: F401
 from modules.util import Failed
-from tests.conftest import FakeLogger, FakeRequests
+from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
 # MDbObj — data parsing

@@ -23,16 +23,12 @@ class TestAniList:
         return a
 
     def test_validate_id_uses_romaji_when_no_english(self, adapter):
-        adapter._request.return_value = {
-            "data": {"Media": {"id": 1, "title": {"romaji": "Naruto", "english": None}}}
-        }
+        adapter._request.return_value = {"data": {"Media": {"id": 1, "title": {"romaji": "Naruto", "english": None}}}}
         result = adapter._validate_id(1)
         assert result == (1, "Naruto")
 
     def test_validate_id_prefers_english_title(self, adapter):
-        adapter._request.return_value = {
-            "data": {"Media": {"id": 2, "title": {"romaji": "Naru", "english": "Naruto EN"}}}
-        }
+        adapter._request.return_value = {"data": {"Media": {"id": 2, "title": {"romaji": "Naru", "english": "Naruto EN"}}}}
         result = adapter._validate_id(2)
         assert result == (2, "Naruto EN")
 

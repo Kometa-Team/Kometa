@@ -7,10 +7,7 @@ Plex/Pillow rendering pipeline.
 
 from __future__ import annotations
 
-import pytest
-
 from modules.overlay import Overlay
-from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers

@@ -8,7 +8,6 @@ to verify the config parsing and validation logic in isolation.
 
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from unittest.mock import MagicMock
 
