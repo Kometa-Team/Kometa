@@ -207,7 +207,10 @@ jobs:
         run: |
           python -m pytest tests/test_schema_validation.py tests/test_collection_schema.py tests/test_validator.py -v --tb=short
 
-  # ── 5. Import Cycle Detection ──────────────────────────────────────────────
+  # ── 5. Import Cycle Detection ────────────────────────────────────────────────
+  # Auto-discovers every modules/*.py and tries to import it. Catches new
+  # circular imports, missing dependencies, and lazy import bugs that wouldn't
+  # show up in unit tests. See tests/test_imports.py for the logic.
   imports:
     runs-on: ubuntu-latest
     steps:
@@ -221,20 +224,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
+          pip install -r dev-requirements.txt
 
-      - name: Check for import errors
+      - name: Import every module under modules/
         run: |
-          python -c "
-          import sys, traceback
-          errors = 0
-          # Try importing every module; catch new circular imports
-          import modules.util
-          import modules.cache
-          import modules.builder  # known to have circular dep, but should load
-          import modules.plex
-          import modules.config
-          print('All modules imported successfully')
-          "
+          python -m pytest tests/test_imports.py -v --tb=short
 
   # ── 6. Performance Timing ──────────────────────────────────────────────────
   # Uses pytest's native --durations-min flag (pytest >= 6) so we don't have
