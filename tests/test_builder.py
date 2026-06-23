@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
+import modules.plex as plex_module
 from modules.builder import CollectionBuilder, parts_collection_valid
 
 
@@ -273,3 +274,13 @@ def test_delete_marks_builder_deleted_and_skips_notifications():
     assert builder.library.deleted_items == [builder.obj]
     assert builder.library.reloaded_items == []
     assert builder.library.webhook_calls == 0
+
+
+def test_validate_image_size_uses_file_size(tmp_path, monkeypatch):
+    image_path = tmp_path / "image.jpg"
+    image_path.write_bytes(b"abc")
+
+    plex = plex_module.Plex.__new__(plex_module.Plex)
+    monkeypatch.setattr(plex_module, "MAX_IMAGE_SIZE", 2)
+
+    assert plex.validate_image_size(SimpleNamespace(location=str(image_path), compare="not-a-number")) is False
