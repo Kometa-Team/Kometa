@@ -216,7 +216,7 @@ class MyAnimeList:
             else:
                 return response
         except JSONDecodeError:
-            raise Failed(f"MyAnimeList Error: Connection Failed")
+            raise Failed("MyAnimeList Error: Connection Failed")
 
     def _jikan_request(self, url, params=None):
         logger.trace(f"URL: {jikan_base_url}{url}")

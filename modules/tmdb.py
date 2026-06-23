@@ -8,15 +8,6 @@ from tmdbapis import TMDbAPIs, TMDbException
 from modules import util
 from modules.util import Failed
 
-
-class NotFound(Failed):
-    """Raised when a TMDb Collection returns 404 — the collection may have been removed or renumbered on TMDb.
-
-    Distinct from Failed so callers can log actionable guidance for stale IDs that the user
-    did not directly configure (e.g. collection IDs auto-built from Plex metadata).
-    """
-
-
 logger = util.logger
 
 

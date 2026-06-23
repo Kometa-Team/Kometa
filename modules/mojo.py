@@ -205,13 +205,13 @@ class BoxOfficeMojo:
                 url = "/chart/top_lifetime_gross/" if data["chart"] == "domestic" else "/chart/ww_top_lifetime_gross/"
             else:
                 text += f" {data['content_rating_filter'].upper()}"
-                url = f"/chart/mpaa_title_lifetime_gross/"
+                url = "/chart/mpaa_title_lifetime_gross/"
                 params = {"by_mpaa": content_rating_options[data["content_rating_filter"]]}
             text += " Grosses"
         elif method == "mojo_never":
             pretty, arg_key = never_in_options[data["never"]]
             text = f"Top-Grossing Movies That Never Hit {pretty} {data['chart'].capitalize()}"
-            url = f"/chart/never_in_top/"
+            url = "/chart/never_in_top/"
             params = {"by_rank_threshold": data["never"]}
             if data["chart"] != "domestic":
                 params["area"] = self.never_options[data["chart"]]

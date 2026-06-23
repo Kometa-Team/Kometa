@@ -890,7 +890,7 @@ class IMDb:
                 logger.info(f"    {k}: {data[k]}")
             return [(_i, "imdb") for _i in self._award(data)]
         elif method == "imdb_search":
-            logger.info(f"Processing IMDb Search:")
+            logger.info("Processing IMDb Search:")
             for k, v in data.items():
                 logger.info(f"    {k}: {v}")
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
