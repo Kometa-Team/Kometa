@@ -88,8 +88,12 @@ class ImageBase:
             image_path = os.path.join(self.images_dir, f"temp{num}.{ext}")
         with open(image_path, "wb") as handler:
             handler.write(response.content)
-        while util.is_locked(image_path):
-            time.sleep(1)
+        # Wait for file to be unlocked (up to 10 seconds)
+        timeout = 10
+        elapsed = 0
+        while util.is_locked(image_path) and elapsed < timeout:
+            time.sleep(0.1)
+            elapsed += 0.1
         return image_path, url
 
     def check_color(self, attr):
@@ -260,7 +264,9 @@ class Component(ImageBase):
         generated_layer = None
         text_width, text_height = None, None
         if self.image:
-            image = Image.open(self.image)
+            # Use context manager to ensure file descriptor is closed
+            with Image.open(self.image) as img:
+                image = img.copy()  # Copy to ensure data persists after context closes
             image_width, image_height = image.size
             if self.image_width:
                 image_height = int(float(image_height) * float(self.image_width / float(image_width)))
@@ -374,9 +380,9 @@ class KometaImage(ImageBase):
 
         pmm_image = Image.new(mode="RGB", size=canvas_box, color=self.background_color)
         if self.background_image:
-            bkg_image = Image.open(self.background_image)
-            bkg_image = bkg_image.resize(canvas_box, Image.Resampling.LANCZOS)  # noqa
-            pmm_image.paste(bkg_image, (0, 0), bkg_image)
+            with Image.open(self.background_image) as bkg_img:
+                bkg_image = bkg_img.resize(canvas_box, Image.Resampling.LANCZOS)  # noqa
+                pmm_image.paste(bkg_image, (0, 0), bkg_image)
 
         if self.border_width:
             draw = ImageDraw.Draw(pmm_image)

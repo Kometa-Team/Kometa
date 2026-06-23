@@ -495,8 +495,12 @@ class Library(ABC):
 
     def check_image_for_overlay(self, image_url, image_path, remove=False):
         image_path = self.config.Requests.download_image("", image_url, image_path, session=self.session).location
-        while util.is_locked(image_path):
-            time.sleep(1)
+        # Wait for file to be unlocked (up to 10 seconds)
+        timeout = 10
+        elapsed = 0
+        while util.is_locked(image_path) and elapsed < timeout:
+            time.sleep(0.1)
+            elapsed += 0.1
         with Image.open(image_path) as image:
             exif_tags = image.getexif()
         if 0x04BC in exif_tags and exif_tags[0x04BC] == "overlay":

@@ -2,6 +2,7 @@ import argparse
 import os
 import platform
 import re
+import resource
 import sys
 import sysconfig
 import time
@@ -14,6 +15,14 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
 from modules.logs import MyLogger
+
+# Increase file descriptor limit to prevent exhaustion with large libraries
+try:
+    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+    if soft < 4096:
+        resource.setrlimit(resource.RLIMIT_NOFILE, (min(hard, 4096), hard))
+except (ValueError, OSError):
+    pass  # If we can't set it, continue anyway
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))

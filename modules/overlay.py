@@ -230,8 +230,12 @@ class Overlay:
                 os.remove(image_path)
             with open(image_path, "wb") as handler:
                 handler.write(response.content)
-            while util.is_locked(image_path):
-                time.sleep(1)
+            # Wait for file to be unlocked (up to 10 seconds)
+            timeout = 10
+            elapsed = 0
+            while util.is_locked(image_path) and elapsed < timeout:
+                time.sleep(0.1)
+                elapsed += 0.1
             return image_path
 
         if not self.name.startswith(("blur", "backdrop")):
@@ -284,16 +288,20 @@ class Overlay:
                 overlay_size = os.stat(self.path).st_size
                 self.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
-                    self.image = Image.open(self.path).convert("RGBA")
-                    if self.scale_width or self.scale_height:
-                        base_width, base_height = self.image.size
-                        width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                        height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
-                        if height and not width:
-                            width = int(base_width * height / base_height)
-                        if width and not height:
-                            height = int(base_height * width / base_width)
-                        self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
+                    # Load image and force decompression to free file descriptor
+                    with Image.open(self.path) as img:
+                        self.image = img.convert("RGBA")
+                        if self.scale_width or self.scale_height:
+                            base_width, base_height = self.image.size
+                            width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                            height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                            if height and not width:
+                                width = int(base_width * height / base_height)
+                            if width and not height:
+                                height = int(base_height * width / base_width)
+                            self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
+                        # Force image data to be loaded into memory before context closes
+                        self.image.load()
                     if self.cache:
                         self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
                 except OSError:
@@ -377,18 +385,22 @@ class Overlay:
             overlay_size = os.stat(self.path).st_size
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
-                self.image = Image.open(self.path).convert("RGBA")
-                if self.scale_width or self.scale_height:
-                    base_width, base_height = self.image.size
-                    width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                    height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
-                    if height and not width:
-                        width = int(base_width * height / base_height)
-                    if width and not height:
-                        height = int(base_height * width / base_width)
-                    self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
-                if self.has_coordinates():
-                    self.backdrop_box = self.image.size
+                # Load image and force decompression to free file descriptor
+                with Image.open(self.path) as img:
+                    self.image = img.convert("RGBA")
+                    if self.scale_width or self.scale_height:
+                        base_width, base_height = self.image.size
+                        width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                        height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                        if height and not width:
+                            width = int(base_width * height / base_height)
+                        if width and not height:
+                            height = int(base_height * width / base_width)
+                        self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
+                    if self.has_coordinates():
+                        self.backdrop_box = self.image.size
+                    # Force image data to be loaded into memory before context closes
+                    self.image.load()
                 if self.cache:
                     self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
             except OSError:
