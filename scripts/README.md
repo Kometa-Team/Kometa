@@ -50,6 +50,43 @@ formatting changes and refactors.
 | You added a new module | Run `--regenerate`; the new file appears with its starting count |
 | The baseline drifts because pyright shipped a new version | Regenerate and call it out in the commit message |
 
+### Always regenerate in a clean Python 3.12 environment
+
+The baseline is sensitive to installed package versions. Pyright reads
+type stubs from whatever your venv has installed, so regenerating with
+stale or future-versioned dependencies will produce a baseline that
+doesn't match what CI sees — and the gate will fail on perfectly good
+PRs.
+
+**CI environment:**
+
+* Python 3.12 (matches the `pythonVersion` setting in `pyproject.toml`)
+* Exactly the pinned versions from `requirements.txt`
+* No leftover dev tools or experimental package upgrades
+
+**To match CI locally, use a throwaway venv:**
+
+```bash
+# With uv (recommended — fast, deterministic):
+uv venv --python python3.12 /tmp/kometa-pyright
+uv pip install --python /tmp/kometa-pyright/bin/python \
+    -r requirements.txt pyright
+PATH="/tmp/kometa-pyright/bin:$PATH" \
+    python scripts/pyright_baseline.py --regenerate
+
+# Or with stdlib venv:
+python3.12 -m venv /tmp/kometa-pyright
+/tmp/kometa-pyright/bin/pip install -r requirements.txt pyright
+/tmp/kometa-pyright/bin/python scripts/pyright_baseline.py --regenerate
+```
+
+Reusing your day-to-day development venv — especially one that's been
+upgraded over time — will produce baselines that disagree with CI by
+hundreds of errors. We've seen the gap exceed 800.
+
+If `--check` passes locally but fails in CI on an unrelated PR, this is
+the first thing to verify.
+
 ### Suppressing a single line
 
 When you genuinely need to ignore one error (e.g. dynamic dispatch
