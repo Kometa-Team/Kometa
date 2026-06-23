@@ -202,6 +202,10 @@ jobs:
           "
 
   # ── 6. Performance Timing ──────────────────────────────────────────────────
+  # Uses pytest's native --durations-min flag (pytest >= 6) so we don't have
+  # to parse output with awk.  --timeout=30 fails the job if any single test
+  # hangs for more than 30s; --durations-min=2.0 surfaces every test slower
+  # than 2s in the report.
   perf:
     runs-on: ubuntu-latest
     needs: [lint]
@@ -218,21 +222,14 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Run tests with timing
+      - name: Run tests with timeout enforcement
         run: |
           python -m pytest tests/ \
+            --timeout=30 \
             --durations=10 \
-            --timeout=30 \
-            --tb=line \
-            -q 2>&1 | tail -20
-
-      - name: Flag slow tests (over 2s)
-        run: |
-          python -m pytest tests/ \
-            --durations=0 \
-            --timeout=30 \
-            -q 2>&1 | grep -E '^[0-9]+\.[0-9]+s' | \
-            awk '{if (\$1 > 2.0) print \"WARNING: slow test: \" \$0}'
+            --durations-min=2.0 \
+            --tb=short \
+            -q
 
   # ── 7. Smoke Test (minimal end-to-end) ─────────────────────────────────────
   smoke:
