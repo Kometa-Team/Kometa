@@ -168,39 +168,9 @@ jobs:
           pip install -r requirements.txt
           pip install -r dev-requirements.txt
 
-      - name: Validate JSON schemas
+      - name: Validate schemas and defaults
         run: |
-          python -c "
-          import os, json, sys
-          from jsonschema import validate, ValidationError
-
-          schema_dir = 'json-schema'
-          defaults_dir = 'defaults'
-
-          # Load all schemas
-          schemas = {}
-          for f in os.listdir(schema_dir):
-              if f.endswith('.json') and f != 'config-schema.json':
-                  with open(os.path.join(schema_dir, f)) as fh:
-                      schemas[f] = json.load(fh)
-
-          # Walk defaults and validate each YAML
-          errors = 0
-          for root, dirs, files in os.walk(defaults_dir):
-              for f in files:
-                  if not (f.endswith('.yml') or f.endswith('.yaml')):
-                      continue
-                  path = os.path.join(root, f)
-                  print(f'Validating: {path}')
-
-          if errors:
-              sys.exit(1)
-          print('All defaults validated')
-          "
-
-      - name: Run existing schema tests
-        run: |
-          python -m pytest tests/test_collection_schema.py tests/test_validator.py -k "schema" -v
+          python -m pytest tests/test_schema_validation.py tests/test_collection_schema.py tests/test_validator.py -v --tb=short
 
   # ── 5. Import Cycle Detection ──────────────────────────────────────────────
   imports:
