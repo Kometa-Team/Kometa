@@ -673,3 +673,74 @@ class TestEdgeCases:
         result, expired = cache.query_anime_map(999, "anidb")
         assert result is None
         assert expired is None
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Regression tests — see tests/README.md for naming convention
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRegressions:
+    """Regression tests for fixed bugs in the cache layer.
+
+    Each test docstring documents the bug it guards against. If a test in
+    this class fails after your change, you have likely re-introduced a
+    previously-fixed bug — check the docstring before "fixing" the test.
+    """
+
+    def test_bug_anime_map_update_writes_anidb_into_anilist_column(self, tmp_path):
+        """The anime_map UPDATE was passing anime_ids['anidb'] for the
+        anilist column instead of anime_ids['anilist'].
+
+        Discovered: 2026-06-19 during the test-infra-phase-0 expansion.
+        Fixed in: same branch, commit 60cbca0a (modules/cache.py:989).
+
+        Symptom for users: every anime they cached had its anilist ID
+        silently replaced by its anidb ID. Subsequent queries by anilist
+        ID would miss; queries by anidb ID would return wrong cross-source
+        IDs (anilist showed the anidb value).
+
+        Why this test uses values that don't collide: in the original
+        round-trip test, anidb=123 and anilist=1 are distinct, so the
+        bug was caught. We use four widely-spaced values here so any
+        column swap of ANY pair would be obvious in the failure output.
+        """
+        cache = make_cache(tmp_path)
+
+        # Use values that are distinct AND far apart so a column swap is
+        # unmistakable in the assertion failure.
+        anime_ids = {
+            "anidb": 1000,
+            "anilist": 2000,
+            "myanimelist": 3000,
+            "kitsu": 4000,
+        }
+        cache.update_anime_map(expired=False, anime_ids=anime_ids)
+
+        # Query by each source ID; every column must return its own value.
+        for query_key in ("anidb", "anilist", "myanimelist", "kitsu"):
+            row, expired = cache.query_anime_map(anime_ids[query_key], query_key)
+            assert row is not None, f"row lookup by {query_key}={anime_ids[query_key]} returned None"
+
+            for column in ("anidb", "anilist", "myanimelist", "kitsu"):
+                assert row[column] == anime_ids[column], (
+                    f"anime_map column swap: looked up by {query_key}, expected "
+                    f"{column}={anime_ids[column]} but got {row[column]} "
+                    f"(would equal anidb={anime_ids['anidb']} if the bug is back)"
+                )
+
+    def test_bug_anime_map_update_is_idempotent(self, tmp_path):
+        """Sister test to the bug above: calling update_anime_map twice
+        with the same anidb but different anilist must REPLACE, not
+        accumulate or corrupt.
+
+        Guards against a future regression where someone "fixes" the
+        INSERT/UPDATE flow and accidentally makes the second call a no-op.
+        """
+        cache = make_cache(tmp_path)
+
+        cache.update_anime_map(False, {"anidb": 555, "anilist": 100, "myanimelist": 200, "kitsu": 300})
+        cache.update_anime_map(False, {"anidb": 555, "anilist": 999, "myanimelist": 200, "kitsu": 300})
+
+        row, _ = cache.query_anime_map(555, "anidb")
+        assert row["anilist"] == 999, "second update did not overwrite anilist"
