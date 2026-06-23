@@ -414,7 +414,7 @@ def item_set(item, item_id):
 
 def is_locked(filepath):
     """Check if a file is locked without consuming file descriptors.
-    
+
     Returns None if file doesn't exist, True if locked, False if accessible.
     Uses stat-based detection instead of open() to avoid FD exhaustion.
     """
@@ -422,7 +422,7 @@ def is_locked(filepath):
         return None
     try:
         # Try to open and immediately close. Use context manager to ensure cleanup.
-        with open(filepath, "a") as f:
+        with open(filepath, "a"):
             pass
         return False
     except (IOError, OSError):
