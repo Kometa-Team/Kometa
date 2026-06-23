@@ -120,7 +120,28 @@ jobs:
           print('Coverage gate PASSED')
           "
 
-  # ── 3. Regression Suite ────────────────────────────────────────────────────
+  # ── 3. Regression Suite ──────────────────────────────────────────────────────────
+  # Runs tests tagged as regression tests — i.e. tests written specifically
+  # to prevent a fixed bug from coming back. The tag is the test function's
+  # name prefix:
+  #
+  #   def test_regression_<short_slug>():     # for tracked-bug regressions
+  #   def test_issue_<gh_number>():           # for GitHub issue numbers
+  #   def test_bug_<short_slug>():            # for bugs without a GH issue
+  #
+  # Example:
+  #
+  #   def test_issue_3168_anime_map_overwrites_anilist_with_anidb():
+  #       """Regression test for #3168 — cache.py was writing the anidb id
+  #       into the anilist column on UPDATE. See modules/cache.py:1234."""
+  #       cache = Cache(...)
+  #       cache.update_anime_map(...)
+  #       assert ...
+  #
+  # When zero regression tests exist (pytest exits 5 "no tests collected"),
+  # the job logs a friendly message and passes — we don't want to block PRs
+  # during the bootstrap phase. Once we have >= 1 regression test, this job
+  # will run them and fail if any break.
   regression:
     runs-on: ubuntu-latest
     needs: [lint]
@@ -139,13 +160,27 @@ jobs:
 
       - name: Run regression tests
         run: |
+          # pytest exit codes:
+          #   0 = all passed
+          #   1 = some failed (real signal — block the PR)
+          #   5 = no tests collected (expected during bootstrap; pass)
+          # Any other exit code = real error (pass through).
+          set +e
           python -m pytest tests/ \
             -k "regression or issue_ or bug_" \
             --tb=long \
             --junitxml=regression-report.xml \
             -v
+          status=$?
+          if [ $status -eq 5 ]; then
+            echo "::notice::No regression tests found yet. See tests/README.md"
+            echo "::notice::for the naming convention to add one."
+            exit 0
+          fi
+          exit $status
 
       - name: Upload regression report
+        if: always() && hashFiles('regression-report.xml') != ''
         uses: actions/upload-artifact@v4
         with:
           name: regression-report
@@ -269,6 +304,6 @@ jobs:
         run: |
           python kometa.py --help
 
-      - name: Run Kometa with minimal config (expected: clean failure)
+      - name: "Run Kometa with minimal config (expected: clean failure)"
         run: |
           python kometa.py --run --config /tmp/kometa-smoke/config.yml 2>&1 || true
