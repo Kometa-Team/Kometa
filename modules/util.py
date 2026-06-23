@@ -414,11 +414,7 @@ def item_set(item, item_id):
 
 def is_locked(filepath):
     """Check if a file is locked without consuming file descriptors.
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 23612923 (fix: resolve [Errno 24] 'Too many open files' crashes on large libraries (#3235))
     Returns None if file doesn't exist, True if locked, False if accessible.
     Uses stat-based detection instead of open() to avoid FD exhaustion.
     """
@@ -426,11 +422,7 @@ def is_locked(filepath):
         return None
     try:
         # Try to open and immediately close. Use context manager to ensure cleanup.
-<<<<<<< HEAD
         with open(filepath, "a"):
-=======
-        with open(filepath, "a") as f:
->>>>>>> 23612923 (fix: resolve [Errno 24] 'Too many open files' crashes on large libraries (#3235))
             pass
         return False
     except (IOError, OSError):
