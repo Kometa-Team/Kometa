@@ -392,6 +392,7 @@ stdout
 stevenlu
 stevenlu's
 stonecutter
+stdlib
 str
 subprocess
 sudo
@@ -416,6 +417,7 @@ themoviedb
 theposterdb
 thetvdb
 tippy
+tmp
 tmdb
 tmdb's
 tmdbapi
