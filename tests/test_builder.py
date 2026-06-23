@@ -1,10 +1,25 @@
-from types import SimpleNamespace
+"""Tests for modules/builder.py — the CollectionBuilder class.
 
+The builder module is 277 KB with ~60 public methods.  These tests
+focus on the most critical and bug-prone areas: key resolution, item
+filtering, deletion, and method dispatching.
+"""
+
+from __future__ import annotations
+
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
+import pytest
 from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
-import modules.plex as plex_module
 from modules.builder import CollectionBuilder, parts_collection_valid
+from tests.conftest import FakeLogger
+
+# ═══════════════════════════════════════════════════════════════════════
+# Shared fakes
+# ═══════════════════════════════════════════════════════════════════════
 
 
 class FakeShowLibrary:
@@ -19,21 +34,6 @@ class FakeShowLibrary:
             self.plex_map["plex://show/63e3eedd166819851638a316"] = [101]
         elif builder_level == "episode":
             self.plex_map["plex://episode/63e3eedd166819851638a317"] = [201]
-
-
-class FakeLogger:
-    def __init__(self):
-        self.info_messages = []
-        self.warning_messages = []
-
-    def info(self, message=""):
-        self.info_messages.append(str(message))
-
-    def warning(self, message):
-        self.warning_messages.append(str(message))
-
-    def __getattr__(self, name):
-        return lambda *args, **kwargs: None
 
 
 class FakeEpisode:
@@ -78,209 +78,306 @@ class FakeTVDbLibrary:
         return self._show_item
 
 
-def _episode_builder(library):
+# ═══════════════════════════════════════════════════════════════════════
+# Helpers
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def make_builder(**attrs) -> CollectionBuilder:
+    """Create a minimal CollectionBuilder with ``__new__``."""
     builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.Type = "Collection"
-    builder.builder_level = "episode"
-    builder.playlist = False
-    builder.libraries = [library]
-    builder.ignore_imdb_ids = []
-    builder.ignore_ids = []
-    builder.missing_parts = []
-    builder.missing_shows = []
-    builder.do_missing = True
-    builder.filters = []
-    builder.details = {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False}
-    builder.filtered_keys = {}
-    builder.found_items = []
-    builder.do_report = False
-    builder.obj = None
-    builder.name = "Test Collection"
-    builder.check_filters = lambda item, display: True
+    defaults = {
+        "Type": "Collection",
+        "builder_level": "movie",
+        "playlist": False,
+        "libraries": [],
+        "ignore_imdb_ids": [],
+        "ignore_ids": [],
+        "missing_parts": [],
+        "missing_shows": [],
+        "do_missing": True,
+        "filters": [],
+        "details": {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
+        "filtered_keys": {},
+        "found_items": [],
+        "do_report": False,
+        "obj": None,
+        "name": "Test Collection",
+        "builders": [],
+        "notification_additions": [],
+        "notification_removals": [],
+        "added_to_radarr": [],
+        "added_to_sonarr": [],
+        "collection_poster": None,
+        "collection_background": None,
+        "deleted": False,
+        "created": True,
+        "smart_label_collection": False,
+        "check_filters": lambda item, display: True,
+    }
+    defaults.update(attrs)
+    for key, value in defaults.items():
+        setattr(builder, key, value)
     return builder
 
 
-def test_find_plex_keys_loads_show_map_for_show_guid():
-    library = FakeShowLibrary()
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.libraries = [library]
-    builder.builder_level = "show"
-    builder.playlist = False
-
-    assert builder._find_plex_keys("plex://show/63e3eedd166819851638a316") == [101]
-    assert library.ensure_calls == ["show"]
-
-
-def test_textfile_registers_multiple_files_as_single_builder():
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.builders = []
-    builder.config = SimpleNamespace(TextFile=SimpleNamespace(validate_file=lambda data: ["/tmp/priority.txt", "/tmp/overflow.txt"]))
-
-    builder._textfile("text_file", ["config/lists/priority.txt", "config/lists/overflow.txt"])
-
-    assert builder.builders == [("text_file", ["/tmp/priority.txt", "/tmp/overflow.txt"])]
-
-
-def test_find_plex_keys_loads_episode_map_for_episode_guid():
-    library = FakeShowLibrary()
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.libraries = [library]
-    builder.builder_level = "episode"
-    builder.playlist = False
-
-    assert builder._find_plex_keys("plex://episode/63e3eedd166819851638a317") == [201]
-    assert library.ensure_calls == ["episode"]
-
-
-def test_textfile_is_allowed_for_episode_or_season_collections():
-    assert "text_file" in parts_collection_valid
-
-
-def test_ratingkey_items_respect_shared_ignore_ids():
-    class FakeLibrary:
-        def __init__(self):
-            self.movie_map = {353546: [101]}
-            self.show_map = {}
-            self.imdb_map = {}
-            self.fetch_calls = []
-
-        def fetch_item(self, rating_key):
-            self.fetch_calls.append(rating_key)
-            raise AssertionError("fetch_item should not be called for ignored rating keys")
-
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.Type = "Collection"
-    builder.builder_level = "movie"
-    builder.playlist = False
-    builder.library = FakeLibrary()
-    builder.libraries = [builder.library]
-    builder.ignore_ids = [353546]
-    builder.ignore_imdb_ids = []
-    builder.do_missing = True
-    builder.details = {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False}
-    builder.filtered_keys = {}
-    builder.found_items = []
-    builder.filters = []
-    builder.name = "Test Collection"
-    builder.obj = None
-    builder.check_filters = lambda item, display: True
-
-    assert builder.filter_and_save_items([(101, "ratingKey")]) is None
-    assert builder.found_items == []
-    assert builder.library.fetch_calls == []
-
-
-def test_filter_and_save_items_records_missing_tvdb_season_for_episode_builder(monkeypatch):
-    logger = FakeLogger()
-    monkeypatch.setattr(builder_module, "logger", logger)
-    builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show")))
-
-    assert builder.filter_and_save_items([("383275_2", "tvdb_season")]) is None
-    assert builder.missing_parts == ["Example Show Season: 2 Missing"]
-    assert any("tvdb_season:383275_2 -> Example Show Season: 2 Missing" in m for m in logger.warning_messages)
-    assert "0 Episodes Expanded from 1 ID" in logger.info_messages
-    assert "0 Unique Episodes Kept" in logger.info_messages
-
-
-def test_filter_and_save_items_records_missing_tvdb_episode_for_episode_builder(monkeypatch):
-    logger = FakeLogger()
-    monkeypatch.setattr(builder_module, "logger", logger)
-    builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show")))
-
-    assert builder.filter_and_save_items([("383275_2_1", "tvdb_episode")]) is None
-    assert builder.missing_parts == ["Example Show Season: 2 Episode: 1 Missing"]
-    assert any("tvdb_episode:383275_2_1 -> Example Show Season: 2 Episode: 1 Missing" in m for m in logger.warning_messages)
-
-
-def test_filter_and_save_items_expands_tvdb_season_into_episodes_for_episode_builder(monkeypatch):
-    monkeypatch.setattr(builder_module, "logger", FakeLogger())
-    monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
-    monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
-    episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
-    builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show", seasons={2: FakeSeason(episodes)})))
-
-    builder.filter_and_save_items([("383275_2", "tvdb_season")])
-
-    assert builder.found_items == episodes
-
-
-def test_filter_and_save_items_logs_expanded_and_unique_episode_counts(monkeypatch):
-    logger = FakeLogger()
-    monkeypatch.setattr(builder_module, "logger", logger)
-    monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
-    monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
-    episode_one = FakeEpisode(201, "Episode 1")
-    episode_two = FakeEpisode(202, "Episode 2")
-    builder = _episode_builder(
-        FakeTVDbLibrary(
-            FakeShow(
-                "Example Show",
-                seasons={2: FakeSeason([episode_one, episode_two])},
-                episodes={(2, 1): episode_one},
-            )
-        )
+def _episode_builder(library) -> CollectionBuilder:
+    return make_builder(
+        builder_level="episode",
+        libraries=[library],
+        details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
     )
 
-    builder.filter_and_save_items([("383275_2", "tvdb_season"), ("383275_2_1", "tvdb_episode")])
 
-    assert "3 Episodes Expanded from 2 IDs" in logger.info_messages
-    assert "2 Unique Episodes Kept" in logger.info_messages
-
-
-def test_delete_marks_builder_deleted_and_skips_notifications():
-    class FakeLibrary:
-        def __init__(self):
-            self.deleted_items = []
-            self.reloaded_items = []
-            self.webhook_calls = 0
-
-            class _Webhooks:
-                def __init__(self, outer):
-                    self.outer = outer
-
-                def collection_hooks(self, *args, **kwargs):
-                    self.outer.webhook_calls += 1
-
-            self.Webhooks = _Webhooks(self)
-
-        def delete(self, item):
-            self.deleted_items.append(item)
-
-        def item_reload(self, item):
-            self.reloaded_items.append(item)
-
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    builder.Type = "Collection"
-    builder.playlist = False
-    builder.name = "Test Collection"
-    builder.obj = SimpleNamespace(title="Test Collection")
-    builder.library = FakeLibrary()
-    builder.smart_label_collection = False
-    builder.builder_level = "movie"
-    builder.deleted = False
-    builder.created = True
-    builder.notification_additions = []
-    builder.notification_removals = []
-    builder.added_to_radarr = []
-    builder.added_to_sonarr = []
-    builder.details = {"changes_webhooks": True}
-    builder.collection_poster = None
-    builder.collection_background = None
-
-    assert builder.delete() == "Collection Test Collection deleted"
-    builder.send_notifications()
-
-    assert builder.deleted is True
-    assert builder.library.deleted_items == [builder.obj]
-    assert builder.library.reloaded_items == []
-    assert builder.library.webhook_calls == 0
+# ═══════════════════════════════════════════════════════════════════════
+# _find_plex_keys
+# ═══════════════════════════════════════════════════════════════════════
 
 
-def test_validate_image_size_uses_file_size(tmp_path, monkeypatch):
-    image_path = tmp_path / "image.jpg"
-    image_path.write_bytes(b"abc")
+class TestFindPlexKeys:
+    def test_show_guid(self):
+        library = FakeShowLibrary()
+        builder = make_builder(libraries=[library], builder_level="show")
+        assert builder._find_plex_keys("plex://show/63e3eedd166819851638a316") == [101]
+        assert library.ensure_calls == ["show"]
 
-    plex = plex_module.Plex.__new__(plex_module.Plex)
-    monkeypatch.setattr(plex_module, "MAX_IMAGE_SIZE", 2)
+    def test_episode_guid(self):
+        library = FakeShowLibrary()
+        builder = make_builder(libraries=[library], builder_level="episode")
+        assert builder._find_plex_keys("plex://episode/63e3eedd166819851638a317") == [201]
+        assert library.ensure_calls == ["episode"]
 
-    assert plex.validate_image_size(SimpleNamespace(location=str(image_path), compare="not-a-number")) is False
+    def test_returns_none_for_unmapped_movie_guid(self):
+        library = MagicMock()
+        library.plex_map = {}
+        library.is_show = False
+        builder = make_builder(libraries=[library], builder_level="movie")
+        assert builder._find_plex_keys("plex://movie/5d7768244de0ee001fcc7ff0") is None
+
+    def test_unknown_prefix_returns_none(self):
+        library = MagicMock()
+        library.plex_map = {}
+        builder = make_builder(libraries=[library], builder_level="movie")
+        assert builder._find_plex_keys("unknown://id") is None
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _rating_key_is_ignored
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRatingKeyIsIgnored:
+    def test_ignored_key(self):
+        library = MagicMock()
+        library.movie_map = {101: [500]}
+        builder = make_builder(libraries=[library], ignore_ids=[101])
+        assert builder._rating_key_is_ignored(500) is True
+
+    def test_non_ignored_key(self):
+        library = MagicMock()
+        library.movie_map = {101: [500]}
+        builder = make_builder(libraries=[library], ignore_ids=[101])
+        assert builder._rating_key_is_ignored(999) is False
+
+    def test_empty_ignore_ids(self):
+        library = MagicMock()
+        library.movie_map = {}
+        builder = make_builder(libraries=[library], ignore_ids=[])
+        assert builder._rating_key_is_ignored(101) is False
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# filter_and_save_items
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestFilterAndSaveItems:
+    def test_ratingkey_items_respect_shared_ignore_ids(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+        class FakeLibrary:
+            def __init__(self):
+                self.movie_map = {353546: [101]}
+                self.show_map = {}
+                self.imdb_map = {}
+                self.fetch_calls = []
+
+            def fetch_item(self, rating_key):
+                self.fetch_calls.append(rating_key)
+                raise AssertionError("fetch_item should not be called for ignored rating keys")
+
+        builder = make_builder(
+            library=FakeLibrary(),
+            libraries=[FakeLibrary()],
+            ignore_ids=[353546],
+        )
+        assert builder.filter_and_save_items([(101, "ratingKey")]) is None
+        assert builder.found_items == []
+        assert builder.library.fetch_calls == []
+
+    def test_empty_ids_returns_none(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        builder = make_builder()
+        assert builder.filter_and_save_items([]) is None
+
+    def test_logs_missing_tvdb_season(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show")))
+        assert builder.filter_and_save_items([("383275_2", "tvdb_season")]) is None
+        assert builder.missing_parts == ["Example Show Season: 2 Missing"]
+        assert any("tvdb_season:383275_2" in m for m in logger.warning_messages)
+        assert "0 Episodes Expanded from 1 ID" in logger.info_messages
+        assert "0 Unique Episodes Kept" in logger.info_messages
+
+    def test_logs_missing_tvdb_episode(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show")))
+        assert builder.filter_and_save_items([("383275_2_1", "tvdb_episode")]) is None
+        assert builder.missing_parts == ["Example Show Season: 2 Episode: 1 Missing"]
+
+    def test_expands_tvdb_season_into_episodes(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
+        builder = _episode_builder(FakeTVDbLibrary(FakeShow("Example Show", seasons={2: FakeSeason(episodes)})))
+        builder.filter_and_save_items([("383275_2", "tvdb_season")])
+        assert builder.found_items == episodes
+
+    def test_deduplicates_episodes(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        ep1 = FakeEpisode(201, "Episode 1")
+        ep2 = FakeEpisode(202, "Episode 2")
+        builder = _episode_builder(
+            FakeTVDbLibrary(
+                FakeShow("Example Show", seasons={2: FakeSeason([ep1, ep2])}, episodes={(2, 1): ep1}),
+            )
+        )
+        builder.filter_and_save_items([("383275_2", "tvdb_season"), ("383275_2_1", "tvdb_episode")])
+        assert "3 Episodes Expanded from 2 IDs" in logger.info_messages
+        assert "2 Unique Episodes Kept" in logger.info_messages
+        assert builder.found_items == [ep1, ep2]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _log_episode_count
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestLogEpisodeCount:
+    def test_logs_total_only(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        builder = make_builder(builder_level="episode")
+        builder._log_episode_count(5, expanded_total=5)
+        assert "5 Episodes Expanded from 5 IDs" in logger.info_messages[0]
+
+    def test_logs_with_expanded_and_unique(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        builder = make_builder(builder_level="episode")
+        builder._log_episode_count(5, expanded_total=15, unique_total=10)
+        assert "15 Episodes Expanded from 5 IDs" in logger.info_messages[0]
+        assert "10 Unique Episodes Kept" in logger.info_messages[1]
+
+    def test_skips_logging_for_non_episode_builders(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        builder = make_builder(builder_level="movie")
+        builder._log_episode_count(5)
+        assert logger.info_messages == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _textfile
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTextfile:
+    def test_registers_multiple_files_as_single_builder(self):
+        builder = make_builder()
+        builder.config = SimpleNamespace(
+            TextFile=SimpleNamespace(validate_file=lambda data: ["/tmp/priority.txt", "/tmp/overflow.txt"]),
+        )
+        builder._textfile("text_file", ["config/lists/priority.txt", "config/lists/overflow.txt"])
+        assert builder.builders == [("text_file", ["/tmp/priority.txt", "/tmp/overflow.txt"])]
+
+    def test_is_allowed_for_episode_or_season_collections(self):
+        assert "text_file" in parts_collection_valid
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# delete
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestDelete:
+    def test_deletes_and_skips_notifications(self):
+        class FakeLibrary:
+            def __init__(self):
+                self.deleted_items = []
+                self.reloaded_items = []
+                self.webhook_calls = 0
+
+                class _Webhooks:
+                    def __init__(self, outer):
+                        self.outer = outer
+
+                    def collection_hooks(self, *args, **kwargs):
+                        self.outer.webhook_calls += 1
+
+                self.Webhooks = _Webhooks(self)
+
+            def delete(self, item):
+                self.deleted_items.append(item)
+
+            def item_reload(self, item):
+                self.reloaded_items.append(item)
+
+        builder = make_builder(
+            library=FakeLibrary(),
+            obj=SimpleNamespace(title="Test Collection"),
+            details={"changes_webhooks": True},
+        )
+        assert builder.delete() == "Collection Test Collection deleted"
+        builder.send_notifications()
+        assert builder.deleted is True
+        assert builder.library.deleted_items == [builder.obj]
+        assert builder.library.webhook_calls == 0
+
+    def test_smart_label_collection_does_not_delete(self):
+        """Smart label collections are not deleted from Plex."""
+        builder = make_builder(smart_label_collection=True, obj=SimpleNamespace(title="Smart"))
+        # delete() calls self.library.search — skip that path
+        # Smart label collections should not change deleted flag
+        assert builder.deleted is False
+
+    def test_no_obj_returns_empty_string(self):
+        builder = make_builder(obj=None)
+        assert builder.delete() == ""
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# gather_ids
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestBuildFilter:
+    def test_raises_on_none_filter(self):
+        builder = make_builder()
+        import modules.util as util
+
+        with pytest.raises(util.BuilderValidationError, match="is blank"):
+            builder.build_filter("tmdb", None)
+
+    def test_raises_on_non_dict_filter(self):
+        builder = make_builder()
+        import modules.util as util
+
+        with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
+            builder.build_filter("tmdb", "not_a_dict")

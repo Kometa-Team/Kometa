@@ -48,6 +48,22 @@ dependencies = [
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+addopts = "--tb=short"
+
+[tool.coverage.run]
+source = ["modules"]
+omit = ["modules/MODULE.md"]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError",
+    "def __repr__",
+    "def __str__",
+]
+
 
 [tool.black]
 line-length = 256
@@ -78,6 +94,8 @@ dev = [
     "plexapi==4.18.1",
     "psutil==7.2.2",
     "pytest==9.1.1",
+    "pytest-cov>=7.0.0",
+    "responses>=0.25.0",
     "python-dateutil==2.9.0.post0",
     "python-dotenv==1.2.2",
     "pywin32==312 ; sys_platform == 'win32'",
