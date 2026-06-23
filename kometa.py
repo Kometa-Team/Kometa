@@ -225,7 +225,9 @@ try:
 
     try:
         git_branch = Repo(path=".").head.ref.name  # noqa
-    except InvalidGitRepositoryError:
+    except (InvalidGitRepositoryError, TypeError):
+        # InvalidGitRepositoryError: not running from a git checkout
+        # TypeError: HEAD is detached (e.g. checked out by SHA, common in CI)
         git_branch = None
 except ImportError:
     git_branch = None
