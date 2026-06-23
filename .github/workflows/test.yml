@@ -111,7 +111,7 @@ jobs:
           tree = ET.parse('coverage.xml')
           root = tree.getroot()
           covered = float(root.attrib['line-rate'])
-          threshold = 0.15  # 15% — will ratchet up over time
+          threshold = 0.20  # 20% — measured baseline is ~23%; ratchet up as coverage grows
           pct = covered * 100
           print(f'Total line coverage: {pct:.1f}%')
           if covered < threshold:
