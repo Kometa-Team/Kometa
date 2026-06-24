@@ -803,3 +803,62 @@ class TestOverlayValueCache:
             )
         _, expired = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
         assert expired is True
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Overlay state / overlay images
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestOverlayState:
+    def test_get_image_table_name_creates_overlay_state_and_image_tables(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        assert table_exists(cache, f"{table_name}_overlay_state")
+        assert table_exists(cache, f"{table_name}_overlay_images")
+
+    def test_insert_update_and_unique(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        state_table = f"{table_name}_overlay_state"
+        # Repeated writes for the same (rating_key, overlay_key) must update in place, not duplicate.
+        for value in ["7.3", "7.5"]:
+            cache.update_overlay_state(5173, "Overlay File (0) Rating1Fresh", state_table, "hashA", value)
+        states = cache.query_overlay_state(5173, state_table)
+        assert states["Overlay File (0) Rating1Fresh"] == ("hashA", "7.5")
+        with sqlite3.connect(cache.cache_path) as connection:
+            count = connection.execute(f"SELECT COUNT(*) FROM {state_table} WHERE rating_key='5173'").fetchone()[0]
+        assert count == 1
+
+    def test_multiple_keys_and_null_value(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        state_table = f"{table_name}_overlay_state"
+        cache.update_overlay_state(5173, "Overlay File (0) Rating1Fresh", state_table, "hashA", "7.3")
+        cache.update_overlay_state(5173, "Overlay File (0) 4K", state_table, "hashB")  # image-only, NULL value
+        states = cache.query_overlay_state(5173, state_table)
+        assert states["Overlay File (0) Rating1Fresh"] == ("hashA", "7.3")
+        assert states["Overlay File (0) 4K"] == ("hashB", None)
+
+    def test_delete(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        state_table = f"{table_name}_overlay_state"
+        cache.update_overlay_state(5173, "Overlay File (0) 4K", state_table, "hashB")
+        cache.delete_overlay_state(5173, state_table)
+        assert cache.query_overlay_state(5173, state_table) == {}
+
+
+class TestOverlayImages:
+    def test_insert_update_query(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        image_table = f"{table_name}_overlay_images"
+        assert cache.query_overlay_image("Overlay File (0) 4K", image_table) is None
+        cache.update_overlay_image("Overlay File (0) 4K", image_table, "12345")
+        assert cache.query_overlay_image("Overlay File (0) 4K", image_table) == "12345"
+        cache.update_overlay_image("Overlay File (0) 4K", image_table, "67890")
+        assert cache.query_overlay_image("Overlay File (0) 4K", image_table) == "67890"
+        with sqlite3.connect(cache.cache_path) as connection:
+            count = connection.execute(f"SELECT COUNT(*) FROM {image_table}").fetchone()[0]
+        assert count == 1
