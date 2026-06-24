@@ -371,6 +371,43 @@ def collection_count_after_run(beginning_count, items_added, items_removed):
     return max(0, items_added + beginning_count - items_removed)
 
 
+def summarize_duplicate_collections(collections):
+    titles = {}
+    counts = {}
+    for collection in collections:
+        title = str(getattr(collection, "title", "")).strip()
+        if not title:
+            continue
+        key = title.casefold()
+        counts[key] = counts.get(key, 0) + 1
+        titles.setdefault(key, title)
+    return sorted([(titles[key], count) for key, count in counts.items() if count > 1], key=lambda item: (-item[1], item[0].casefold()))
+
+
+def report_duplicate_collections(config):
+    duplicate_libraries = []
+    for library in config.libraries:
+        if getattr(library, "skip_library", False):
+            continue
+        try:
+            duplicate_titles = summarize_duplicate_collections(library.get_all_collections())
+        except Exception as e:
+            logger.warning(f"Plex Warning: Failed to scan duplicate collections in {library.name}: {e}")
+            continue
+        if duplicate_titles:
+            duplicate_libraries.append((library.name, duplicate_titles))
+
+    if duplicate_libraries:
+        logger.separator("Duplicate Collections", space=False, border=False)
+        logger.info("")
+        for library_name, duplicate_titles in duplicate_libraries:
+            logger.warning(f"Plex Warning: Duplicate collection titles detected in {library_name} Library")
+            for title, count in duplicate_titles:
+                logger.warning(f"  {count} instances: {title}")
+            logger.warning("If this is unexpected, consider checking Plex DBRepair.")
+            logger.warning("")
+
+
 def start(attrs):
     try:
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -759,6 +796,10 @@ def run_config(config, stats):
         logger.separator("Playlists Summary", space=False, border=False)
         logger.info("")
         print_status(playlist_status)
+
+    collections_ran = any("Library Collection Files" in library.status for library in config.libraries)
+    if collections_ran:
+        report_duplicate_collections(config)
 
     stats["added"] += amount_added
     for library in config.libraries:
