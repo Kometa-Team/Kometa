@@ -1,17 +1,22 @@
-# ──────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
 # Testing & Quality Gates
 #
 # Runs on every PR targeting nightly + on push to nightly.
 #
 # Checks (in order of speed):
-#   1. lint       — black, isort, flake8, mypy, bandit
-#   2. test       — full pytest suite + coverage threshold
-#   3. regression — issue-specific regression test suite
-#   4. schema     — validate all shipped defaults against JSON schemas
-#   5. imports    — detect NEW circular imports
-#   6. perf       — flag slow tests with --durations=10
-#   7. coverage   — diff-coverage on changed files (if available)
-# ──────────────────────────────────────────────────────────────────────────────
+#   1. lint       — black, isort, flake8, mypy, bandit                 (ubuntu)
+#   2. test       — full pytest suite + coverage threshold     (ubuntu+windows)
+#   3. regression — issue-specific regression test suite                (ubuntu)
+#   4. schema     — validate all shipped defaults against JSON schemas  (ubuntu)
+#   5. imports    — detect NEW circular imports + POSIX-only leaks (ubuntu+windows)
+#   6. perf       — flag slow tests with --durations=10                 (ubuntu)
+#   7. smoke      — `kometa.py --help` + minimal-config dry-run (ubuntu+windows)
+#
+# The three matrix jobs (test/imports/smoke) catch OS-specific regressions
+# like #3244, where #3235's unconditional `import resource` crashed every
+# Windows user. The other jobs stay ubuntu-only because their inputs (Python
+# source, JSON schemas, lint config) are platform-independent.
+# ─────────────────────────────────────────────────────────────────────────────
 name: Tests
 
 on:
@@ -65,10 +70,17 @@ jobs:
         continue-on-error: true
 
   # ── 2. Full Test Suite + Coverage Gate ─────────────────────────────────────
+  # Matrix: ubuntu + windows. Coverage gate only enforced on ubuntu — Windows
+  # leg exists to catch OS-specific test failures (path handling, FD APIs,
+  # subprocess differences), not to ratchet coverage twice.
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     # Fail-fast: don't bother running other jobs if lint failed
     needs: [lint]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
 
@@ -91,20 +103,17 @@ jobs:
 
       - name: Run pytest with coverage
         run: |
-          python -m pytest tests/ \
-            --cov=modules \
-            --cov-report=term-missing \
-            --cov-report=xml:coverage.xml \
-            --tb=short \
-            -v
+          python -m pytest tests/ --cov=modules --cov-report=term-missing --cov-report=xml:coverage.xml --tb=short -v
 
       - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: coverage.xml
 
       - name: Enforce minimum coverage
+        if: matrix.os == 'ubuntu-latest'
         run: |
           python -c "
           import xml.etree.ElementTree as ET
@@ -207,12 +216,20 @@ jobs:
         run: |
           python -m pytest tests/test_schema_validation.py tests/test_collection_schema.py tests/test_validator.py -v --tb=short
 
-  # ── 5. Import Cycle Detection ────────────────────────────────────────────────
+  # ── 5. Import Cycle Detection ────────────────────────────────────────
   # Auto-discovers every modules/*.py and tries to import it. Catches new
   # circular imports, missing dependencies, and lazy import bugs that wouldn't
   # show up in unit tests. See tests/test_imports.py for the logic.
+  #
+  # Matrix: ubuntu + windows. Windows leg catches POSIX-only imports leaking
+  # into module-level code (e.g. `import resource`, `import fcntl`, `import
+  # pwd`) — the exact class of bug that crashed every Windows user after #3235.
   imports:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v7
 
@@ -260,10 +277,24 @@ jobs:
             --tb=short \
             -q
 
-  # ── 7. Smoke Test (minimal end-to-end) ─────────────────────────────────────
+  # ── 7. Smoke Test (minimal end-to-end) ─────────────────────────
+  # Matrix: ubuntu + windows. The windows leg is the gate against future
+  # POSIX-only regressions like #3244 — `python kometa.py --help` is the
+  # literal command that crashed on Windows when #3235 added an unconditional
+  # `import resource` at module scope.
+  #
+  # `shell: bash` is set explicitly so the heredoc and `|| true` syntax work
+  # identically on both runners (Windows runners ship git-bash by default).
   smoke:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     needs: [lint]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v7
 
@@ -278,8 +309,8 @@ jobs:
 
       - name: Create minimal config
         run: |
-          mkdir -p /tmp/kometa-smoke
-          cat > /tmp/kometa-smoke/config.yml << 'EOF'
+          mkdir -p "${RUNNER_TEMP}/kometa-smoke"
+          cat > "${RUNNER_TEMP}/kometa-smoke/config.yml" << 'EOF'
           settings:
             cache: false
           libraries: {}
@@ -296,4 +327,4 @@ jobs:
 
       - name: "Run Kometa with minimal config (expected: clean failure)"
         run: |
-          python kometa.py --run --config /tmp/kometa-smoke/config.yml 2>&1 || true
+          python kometa.py --run --config "${RUNNER_TEMP}/kometa-smoke/config.yml" 2>&1 || true
