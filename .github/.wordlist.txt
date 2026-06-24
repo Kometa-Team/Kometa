@@ -339,6 +339,7 @@ qnap
 quickstart
 radarr
 rainbowindent
+ratcheting
 razzie
 razzies
 reacher
@@ -388,11 +389,11 @@ spartacus
 Springland
 ssl
 stderr
+stdlib
 stdout
 stevenlu
 stevenlu's
 stonecutter
-stdlib
 str
 subprocess
 sudo
