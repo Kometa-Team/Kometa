@@ -306,6 +306,13 @@ class Cache:
                     rating_key TEXT,
                     type TEXT,
                     text TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_value_cache (
+                    key INTEGER PRIMARY KEY,
+                    rating_key TEXT,
+                    type TEXT,
+                    value TEXT,
+                    expiration_date TEXT,
+                    UNIQUE(rating_key, type))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS testing (
                     key INTEGER PRIMARY KEY,
                     name TEXT,
@@ -1244,6 +1251,30 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO overlay_special_text2(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
                 cursor.execute("UPDATE overlay_special_text2 SET text = ? WHERE rating_key = ? AND type = ?", (text, str(rating_key), data_type))
+
+    def query_overlay_value_cache(self, rating_key, data_type):
+        value = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), data_type))
+                row = cursor.fetchone()
+                if row:
+                    value = row["value"]
+                    if row["expiration_date"]:
+                        datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                        time_between_insertion = datetime.now() - datetime_object
+                        expired = time_between_insertion.days > self.expiration
+        return value, expired
+
+    def update_overlay_value_cache(self, expired, rating_key, data_type, value):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO overlay_value_cache(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
+                cursor.execute("UPDATE overlay_value_cache SET value = ?, expiration_date = ? WHERE rating_key = ? AND type = ?", (value, expiration_date.strftime("%Y-%m-%d"), str(rating_key), data_type))
 
     def query_testing(self, name):
         value1 = None
