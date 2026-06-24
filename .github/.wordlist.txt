@@ -313,6 +313,7 @@ pokémon
 popeadam
 popularplex
 portainer
+posix
 powershell
 pre
 precommit
