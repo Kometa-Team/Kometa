@@ -10,7 +10,7 @@ SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "json-schema", "coll
 
 @pytest.fixture(scope="module")
 def collection_schema():
-    with open(SCHEMA_PATH) as f:
+    with open(SCHEMA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
