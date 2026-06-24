@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, util
 from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, LimitReached, MappingConvertError, NotScheduled, OverlayError, ServiceError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
 logger = util.logger
 
@@ -72,16 +72,6 @@ class Overlays:
         if not self.library.remove_overlays:
             logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")
-
-            _trakt_ratings = None
-
-            def trakt_ratings():
-                nonlocal _trakt_ratings
-                if _trakt_ratings is None:
-                    _trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie)
-                if not _trakt_ratings:
-                    raise Failed
-                return _trakt_ratings
 
             total_keys = len(key_to_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
@@ -276,146 +266,7 @@ class Overlays:
                                         elif format_var in overlay.rating_sources:
                                             found_rating = None
                                             try:
-                                                item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
-                                                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item_to_id)
-                                                if format_var == "tmdb_rating":
-                                                    _item = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=self.library.is_movie)
-                                                    if _item:
-                                                        if isinstance(item, Episode):
-                                                            found_rating = self.config.TMDb.get_episode(_item.tmdb_id, item.seasonNumber, item.episodeNumber).vote_average
-                                                        elif isinstance(item, Season):
-                                                            for season in _item.seasons:
-                                                                if item.seasonNumber == season.season_number:
-                                                                    found_rating = season.average
-                                                                    break
-                                                        else:
-                                                            found_rating = _item.vote_average
-                                                    else:
-                                                        raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
-                                                elif format_var == "imdb_rating":
-                                                    if isinstance(item, Episode):
-                                                        found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
-                                                    else:
-                                                        found_rating = self.config.IMDb.get_rating(imdb_id)
-                                                elif format_var == "trakt_user_rating":
-                                                    _ratings = trakt_ratings()
-                                                    _id = tmdb_id if self.library.is_movie else tvdb_id
-                                                    if _id in _ratings:
-                                                        found_rating = _ratings[_id]
-                                                    else:
-                                                        raise OverlayError("Overlay Error: No Trakt user rating found")
-                                                elif format_var == "trakt_rating":
-                                                    if self.config.Trakt:
-                                                        found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
-                                                    else:
-                                                        raise OverlayError("Overlay Error: No Trakt rating found")
-                                                elif str(format_var).startswith("mdb"):
-                                                    mdb_item = None
-                                                    if self.config.MDBList.limit is False:
-                                                        if self.library.is_show and tvdb_id:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_series(tvdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"TVDb ID: {tvdb_id}")
-                                                                raise
-                                                        if self.library.is_movie and tmdb_id:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_movie(tmdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"TMDb ID: {tmdb_id}")
-                                                                raise
-                                                        if imdb_id and not mdb_item:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_imdb(imdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"IMDb ID: {imdb_id}")
-                                                                raise
-                                                        if not mdb_item:
-                                                            raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
-                                                    if format_var == "mdb_average_rating":
-                                                        found_rating = mdb_item.average / 10 if mdb_item.average else None
-                                                    elif format_var == "mdb_imdb_rating":
-                                                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
-                                                    elif format_var == "mdb_metacritic_rating":
-                                                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
-                                                    elif format_var == "mdb_metacriticuser_rating":
-                                                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
-                                                    elif format_var == "mdb_trakt_rating":
-                                                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
-                                                    elif format_var == "mdb_tomatoes_rating":
-                                                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
-                                                    elif format_var == "mdb_tomatoesaudience_rating":
-                                                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
-                                                    elif format_var == "mdb_tmdb_rating":
-                                                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
-                                                    elif format_var == "mdb_letterboxd_rating":
-                                                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
-                                                    elif format_var == "mdb_myanimelist_rating":
-                                                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
-                                                    else:
-                                                        found_rating = mdb_item.score / 10 if mdb_item.score else None
-                                                elif str(format_var).startswith("omdb"):
-                                                    if self.config.OMDb.limit is not False:
-                                                        raise ServiceError("OMDb Error: Daily OMDb Limit Reached")
-                                                    elif not imdb_id:
-                                                        raise MappingConvertError(f"Mapping/Convert Error: No IMDb ID for {item.title} (Guid: {item.guid})")
-                                                    else:
-                                                        try:
-                                                            omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
-                                                            if format_var == "omdb_metascore_rating":
-                                                                found_rating = omdb_obj.metacritic_rating / 10 if omdb_obj.metacritic_rating else None
-                                                            elif format_var == "omdb_tomatoes_rating":
-                                                                found_rating = omdb_obj.rotten_tomatoes / 10 if omdb_obj.rotten_tomatoes else None
-                                                            else:
-                                                                found_rating = omdb_obj.imdb_rating if omdb_obj.imdb_rating else None
-                                                        except Exception:
-                                                            logger.error(f"Cannot retrieve {format_var} for: {imdb_id}")
-                                                            raise
-                                                elif str(format_var).startswith(("anidb", "mal")):
-                                                    anidb_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
-
-                                                    if str(format_var).startswith("anidb"):
-                                                        if anidb_id:
-                                                            anidb_obj = self.config.AniDB.get_anime(anidb_id)
-                                                            if format_var == "anidb_rating_rating":
-                                                                found_rating = anidb_obj.rating
-                                                            elif format_var == "anidb_average_rating":
-                                                                found_rating = anidb_obj.average
-                                                            elif format_var == "anidb_score_rating":
-                                                                found_rating = anidb_obj.score
-                                                        else:
-                                                            raise MappingConvertError(f"Mapping/Convert Error: No AniDB ID for {item.title} (Guid: {item.guid})")
-                                                    else:
-                                                        if item.ratingKey in self.library.reverse_mal:
-                                                            mal_id = self.library.reverse_mal[item.ratingKey]
-                                                        elif not anidb_id:
-                                                            raise MappingConvertError(f"Mapping/Convert Error:  No AniDB ID to Convert to MyAnimeList ID for {item.title} (Guid: {item.guid})")
-                                                        else:
-                                                            try:
-                                                                mal_id = self.config.Convert.anidb_to_mal(anidb_id)
-                                                            except Failed as errr:
-                                                                raise MappingConvertError(f"Mapping/Convert Error:  {errr} of {item.title} (Guid: {item.guid})")
-                                                        if mal_id:
-                                                            found_rating = self.config.MyAnimeList.get_anime(mal_id).score
-                                                elif str(format_var).startswith("plex"):
-                                                    ratings = self.library.get_ratings(item)
-                                                    rating_key = format_var.replace("_rating", "")
-                                                    try:
-                                                        found_rating = ratings[rating_key]  # noqa
-                                                    except KeyError:
-                                                        found_rating = None
+                                                found_rating = self.library.fetch_overlay_value(item, format_var)
                                             except Failed as err:
                                                 logger.error(err)
                                             if found_rating:
@@ -440,7 +291,7 @@ class Overlays:
                                             actual_value = getattr(item, actual_attr)
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
-                                        if self.cache:
+                                        if self.cache and format_var not in overlay.rating_sources:
                                             cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
                                             self.cache.update_overlay_value_cache(False, item.ratingKey, format_var, cache_store)
                                         sub_value = None
