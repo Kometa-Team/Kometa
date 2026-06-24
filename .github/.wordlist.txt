@@ -319,6 +319,7 @@ posix
 powershell
 pre
 precommit
+psd
 prek
 prepend
 prepended
@@ -349,6 +350,7 @@ Reciperr
 reddit
 redheadjedi
 remux
+renormalized
 repo
 repos
 rholder
