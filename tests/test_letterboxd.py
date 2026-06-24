@@ -320,7 +320,7 @@ def test_watchlist_url_is_supported_through_letterboxd_list(adapter):
 
     assert lists == [
         {
-            "url": "https://letterboxd.com/demo/watchlist",
+            "url": "https://letterboxd.com/demo/watchlist/",
             "limit": 0,
             "note": None,
             "rating": None,

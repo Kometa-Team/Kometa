@@ -4,3 +4,6 @@ flake8==7.3.0
 mypy==2.1.0
 bandit==1.9.4
 prek==0.4.5
+pytest-cov>=7.0.0
+responses>=0.25.0
+pytest-timeout>=2.3.0

@@ -24,7 +24,6 @@ advance_show = [
     "item_keep_episodes",
     "item_delete_episodes",
     "item_season_display",
-    "item_episode_sorting",
 ]
 all_builders = (
     anidb.builders
