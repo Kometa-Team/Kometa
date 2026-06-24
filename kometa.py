@@ -564,6 +564,10 @@ def start(attrs):
                 ("Convert Error: No mapping found for AniDB ID", r"Convert Error: No mapping found for AniDB ID '(.*)'"),
                 ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
             ]
+            summary_log_groups = [
+                (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory not found and created"),
+                (r"Asset Warning: No poster or background found in the assets folder '.+'", "Asset Warning: No poster or background found in the assets folder"),
+            ]
             other_message = {}
 
             with open(logger.main_log, encoding="utf-8") as f:
@@ -585,6 +589,11 @@ def start(attrs):
                                     if _name not in other_message[key]["list"]:
                                         other_message[key]["list"].append(_name)
                             if other is False:
+                                if not (run_args["trace"] or run_args["log-requests"]):
+                                    for reg, replacement in summary_log_groups:
+                                        if re.match(reg, log_line):
+                                            log_line = replacement
+                                            break
                                 if err_type not in log_data:
                                     log_data[err_type] = []
                                 log_data[err_type].append(log_line)
