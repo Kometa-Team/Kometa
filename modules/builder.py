@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
-from modules.overlay import Overlay
+from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError
@@ -562,7 +562,7 @@ custom_sort_builders = [
     "simkl_dvd",
 ]
 episode_parts_only = ["plex_pilots"]
-overlay_only = ["overlay", "suppress_overlays"]
+overlay_only = ["overlay", "suppress_overlays", "value_filter"]
 overlay_attributes = (
     [
         "filters",
@@ -1100,6 +1100,7 @@ class CollectionBuilder:
         self.added_to_sonarr = []
         self.builders = []
         self.filters = []
+        self.value_filters = []
         self.has_tmdb_filters = False
         self.has_imdb_filters = False
         self.found_items = []
@@ -1614,6 +1615,8 @@ class CollectionBuilder:
                     self._simkl(method_name, method_data)
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
+                elif method_name == "value_filter":
+                    self._value_filter(method_name, method_data)
                 else:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute is invalid")
             except tmdb.NotFound as e:
@@ -3410,6 +3413,27 @@ class CollectionBuilder:
         self.has_tmdb_filters = any([str(k).split(".")[0] in tmdb_filters for f in self.filters for k, v in f])
         self.has_imdb_filters = any([str(k).split(".")[0] in imdb_filters for f in self.filters for k, v in f])
 
+    def _value_filter(self, method_name, method_data):
+        # Post-filter (AND) on a runtime-fetched value, e.g. {mdb_tomatoes_rating.gte: 6.0}. Thresholds use the normalized 0-10 scale.
+        if not isinstance(method_data, dict):
+            raise BuilderValidationError(f"{self.Type} Error: {method_name} must be a dictionary")
+        comparators = ["gte", "gt", "lt", "lte"]
+        for key, value in method_data.items():
+            parts = str(key).split(".")
+            comparator = parts[-1]
+            variable_name = ".".join(parts[:-1])
+            if not variable_name:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} attribute '{key}' is missing a variable name")
+            if comparator not in comparators:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} comparator '{comparator}' is invalid. Options: {', '.join(comparators)}")
+            if variable_name not in rating_sources:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} variable '{variable_name}' is not a supported value_filter variable")
+            try:
+                threshold = float(value)
+            except (TypeError, ValueError):
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} threshold '{value}' for '{key}' must be a number")
+            self.value_filters.append((variable_name, comparator, threshold))
+
     def gather_ids(self, method, value):
         expired = None
         list_key = None
@@ -3759,7 +3783,7 @@ class CollectionBuilder:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
                 else:
                     current_title = util.item_title(item)
-                    if self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}"):
+                    if self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}") and self.check_value_filter(item):
                         self.found_items.append(item)
                         if self.details["show_unfiltered"] is True:
                             logger.info(f"{name} {self.Type} | = | {current_title}")
@@ -4425,6 +4449,29 @@ class CollectionBuilder:
                 if or_result:
                     final_return = True
         return final_return
+
+    def check_value_filter(self, item):
+        # AND post-filter on runtime-fetched values (counterpart to plex_search for non-Plex values). Excludes the item on any failed/missing/unmet condition.
+        if not self.value_filters:
+            return True
+        for variable_name, comparator, threshold in self.value_filters:
+            try:
+                value = self.library.fetch_overlay_value(item, variable_name)
+            except Failed as e:
+                logger.warning(f"Value Filter Warning: {e}")
+                return False
+            if value is None:
+                logger.warning(f"Value Filter Warning: No '{variable_name}' found for {item.title}")
+                return False
+            if comparator == "gte" and not value >= threshold:
+                return False
+            if comparator == "gt" and not value > threshold:
+                return False
+            if comparator == "lt" and not value < threshold:
+                return False
+            if comparator == "lte" and not value <= threshold:
+                return False
+        return True
 
     def display_filters(self):
         if self.filters:
