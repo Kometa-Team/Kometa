@@ -45,7 +45,7 @@ DEFAULT_YAML_FILES = sorted(list(DEFAULTS_DIR.rglob("*.yml")) + list(DEFAULTS_DI
 @pytest.mark.parametrize("schema_path", SCHEMA_FILES, ids=lambda p: p.name)
 def test_schema_file_is_valid_jsonschema(schema_path: Path) -> None:
     """Each *-schema.json file must be loadable AND a valid Draft-7 schema."""
-    with schema_path.open() as fh:
+    with schema_path.open(encoding="utf-8") as fh:
         schema = json.load(fh)
 
     # check_schema() raises SchemaError on a malformed schema definition.
@@ -66,7 +66,7 @@ def test_at_least_one_schema_exists() -> None:
 @pytest.mark.parametrize("yaml_path", DEFAULT_YAML_FILES, ids=lambda p: str(p.relative_to(REPO_ROOT)))
 def test_default_file_is_valid_yaml(yaml_path: Path) -> None:
     """Each YAML file under defaults/ must parse without errors."""
-    with yaml_path.open() as fh:
+    with yaml_path.open(encoding="utf-8") as fh:
         try:
             doc = yaml.safe_load(fh)
         except yaml.YAMLError as e:
