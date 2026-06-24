@@ -371,6 +371,24 @@ def collection_count_after_run(beginning_count, items_added, items_removed):
     return max(0, items_added + beginning_count - items_removed)
 
 
+ASSET_WARNING_KEY = "Asset Warning: Unable to find asset folder"
+ASSET_WARNING_PATTERN = re.compile(r"Asset Warning: Unable to find asset folder: '(.*)'")
+
+
+def summarize_asset_warnings(log_lines):
+    count = 0
+    folders = []
+    for log_line in log_lines:
+        match = ASSET_WARNING_PATTERN.match(log_line)
+        if not match:
+            continue
+        count += 1
+        folder_name = match.group(1)
+        if folder_name not in folders:
+            folders.append(folder_name)
+    return count, folders
+
+
 def start(attrs):
     try:
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -542,6 +560,7 @@ def start(attrs):
             no_overlays = []  # noqa: F841
             no_overlays_count = 0  # noqa: F841
             convert_errors = {}  # noqa: F841
+            asset_warning_lines = []
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
@@ -571,6 +590,11 @@ def start(attrs):
                     for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                         if f"[{err_type}]" in log_line:
                             log_line = log_line.split("|")[1].strip()
+                            if err_type == "WARNING":
+                                asset_warning_match = ASSET_WARNING_PATTERN.match(log_line)
+                                if asset_warning_match:
+                                    asset_warning_lines.append(log_line)
+                                    continue
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
@@ -616,17 +640,29 @@ def start(attrs):
             if convert_title:
                 logger.info("")
 
+            asset_warning_count, asset_warning_folders = summarize_asset_warnings(asset_warning_lines)
+
             for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-                if err_type not in log_data:
+                if err_type not in log_data and not (err_type == "WARNING" and asset_warning_count):
                     continue
                 logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
 
                 logger.info("")
                 logger.info("Count | Message")
                 logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
-                for k, v in Counter(log_data[err_type]).most_common():
+                warning_summary = Counter(log_data.get(err_type, []))
+                if err_type == "WARNING" and asset_warning_count:
+                    warning_summary[ASSET_WARNING_KEY] += asset_warning_count
+                for k, v in warning_summary.most_common():
                     logger.info(f"{v:>5} | {k}")
                 logger.info("")
+                if err_type == "WARNING" and asset_warning_count and (logger.is_debug or logger.is_trace):
+                    logger.separator("Asset Warning Details", space=False, border=False, debug=logger.is_debug, trace=logger.is_trace)
+                    detail_log = logger.trace if logger.is_trace else logger.debug
+                    detail_log(f"Missing asset folders ({asset_warning_count}):")
+                    for folder_name in asset_warning_folders:
+                        detail_log(f"  - {folder_name}")
+                    detail_log("")
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
