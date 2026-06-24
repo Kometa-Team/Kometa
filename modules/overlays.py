@@ -131,7 +131,12 @@ class Overlays:
                             if properties[over_name].name.startswith("text"):
                                 for cache_key, cache_value in self.cache.query_overlay_value_cache_all(item.ratingKey).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
-                                    if actual == "total_runtime":
+                                    if cache_key in overlay.rating_sources:
+                                        try:
+                                            real_value = self.library.fetch_overlay_value(item, cache_key)
+                                        except Failed:
+                                            continue
+                                    elif actual == "total_runtime":
                                         sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
                                         sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                         real_value = sum(sub_items)
