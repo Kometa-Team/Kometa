@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Downgrade "Skipping `<name>`: Item not found" log message from `ERROR` to `WARNING` in metadata file processing when a mapped item cannot be found in the Plex library.
 - Allow `builder_level` to work with playlists. Fixes #2267
-- Consolidate repeated asset warning messages in the warning summary into shared count buckets so the same warning is reported once instead of one row per affected folder or item.
+- Consolidate repeated warning messages in the warning summary, including asset and poster/background/square-art lookup warnings, and keep convert-summary details available only in trace or request-logging modes.
 
 ## [v2.4.3] - 2026-06-22
 
