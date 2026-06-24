@@ -1306,13 +1306,27 @@ class Plex(Library):
         if len(test_items) < 1:
             raise Failed(f"Plex Error: No items for smart filter: {uri_args}")
 
+    def _collection_by_title(self, title):
+        try:
+            return self.get_collection(title, force_search=True, debug=False)
+        except Failed:
+            return None
+
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
+        existing_collection = self._collection_by_title(title)
+        if existing_collection:
+            logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
+            return existing_collection
         if not ignore_blank_results:
             self.test_smart_filter(uri_args)
         args = {"type": smart_type, "title": title, "smart": 1, "sectionId": self.Plex.key, "uri": self.build_smart_filter(uri_args)}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def create_blank_collection(self, title):
+        existing_collection = self._collection_by_title(title)
+        if existing_collection:
+            logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
+            return existing_collection
         args = {"type": 1 if self.is_movie else 2 if self.is_show else 8, "title": title, "smart": 0, "sectionId": self.Plex.key, "uri": f"{self.PlexServer._uriRoot()}/library/metadata"}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
@@ -1470,9 +1484,13 @@ class Plex(Library):
         else:
             title = str(data)
             cols = self.search(title=title, libtype="collection")
-            for d in cols:
-                if str(d.title).casefold() == title.casefold():
-                    return d
+            exact_matches = [d for d in cols if str(d.title).casefold() == title.casefold()]
+            if not exact_matches and force_search:
+                exact_matches = [d for d in self.get_all_collections() if str(d.title).casefold() == title.casefold()]
+            if exact_matches:
+                if len(exact_matches) > 1:
+                    logger.warning(f"Plex Warning: Multiple collections found with title '{title}', using the first exact match")
+                return exact_matches[0]
             if debug:
                 logger.debug("")
                 for d in cols:
