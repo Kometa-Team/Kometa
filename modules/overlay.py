@@ -284,7 +284,7 @@ class Overlay:
                 self.addon_position = util.parse("Overlay", "addon_position", self.data["addon_position"], parent="overlay", options=["left", "right", "top", "bottom"]) if "addon_position" in self.data else "left"
                 image_compare = None
                 if self.cache:
-                    _, image_compare, _ = self.cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
+                    image_compare = self.cache.query_overlay_image(self.mapping_name, f"{self.library.image_table_name}_overlay_images")
                 overlay_size = os.stat(self.path).st_size
                 self.updated = not image_compare or str(overlay_size) != str(image_compare)
                 try:
@@ -303,7 +303,7 @@ class Overlay:
                         # Force image data to be loaded into memory before context closes
                         self.image.load()
                     if self.cache:
-                        self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.name, overlay_size)
+                        self.cache.update_overlay_image(self.mapping_name, f"{self.library.image_table_name}_overlay_images", overlay_size)
                 except OSError:
                     raise OverlayError(f"Overlay Error: Overlay image '{self.path}' failed to load")
             match = re.search("\\((.+)\\)", self.name)
@@ -381,7 +381,7 @@ class Overlay:
                 raise OverlayError(f"Overlay Error: Overlay image not found at '{self.path}'")
             image_compare = None
             if self.cache:
-                _, image_compare, _ = self.cache.query_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays")
+                image_compare = self.cache.query_overlay_image(self.mapping_name, f"{self.library.image_table_name}_overlay_images")
             overlay_size = os.stat(self.path).st_size
             self.updated = not image_compare or str(overlay_size) != str(image_compare)
             try:
@@ -402,7 +402,7 @@ class Overlay:
                     # Force image data to be loaded into memory before context closes
                     self.image.load()
                 if self.cache:
-                    self.cache.update_image_map(self.mapping_name, f"{self.library.image_table_name}_overlays", self.mapping_name, overlay_size)
+                    self.cache.update_overlay_image(self.mapping_name, f"{self.library.image_table_name}_overlay_images", overlay_size)
             except OSError:
                 raise OverlayError(f"Overlay Error: Overlay image '{self.path}' failed to load")
 
