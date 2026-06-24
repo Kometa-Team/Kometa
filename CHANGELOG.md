@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Downgrade "Skipping `<name>`: Item not found" log message from `ERROR` to `WARNING` in metadata file processing when a mapped item cannot be found in the Plex library.
 - Allow `builder_level` to work with playlists. Fixes #2267
-- Consolidate repeated warning messages in the warning summary, including asset folder and poster/background/square-art lookup warnings, builder/overlay validation noise, and Trakt list warnings; keep convert-summary ID lists hidden unless trace or request-logging is enabled, and suppress duplicate raw TMDb collection lookup noise outside trace.
 - Fix `ModuleNotFoundError: No module named 'resource'` crash on Windows at startup. The file-descriptor limit fix introduced in #3235 used the POSIX-only `resource` module unconditionally. Now wrapped in a `try`/`except ImportError` so the bump is applied on POSIX systems and skipped cleanly on Windows. (#3244)
 - Fix `kometa.py` crashing with `TypeError: HEAD is a detached symbolic reference` when run from a detached-HEAD checkout (release-tag checkouts, CI runners that check out by SHA, etc.). (#3232)
 - Fix `cache.update_anime_map()` writing the AniDB id into the AniList column on UPDATE. The original `anime_map` row was written correctly on INSERT but each subsequent update would clobber `anilist_id` with the AniDB value. (#3232)
+- Consolidate repeated warning messages in the warning summary, including asset folder and poster/background/square-art lookup warnings, builder/overlay validation noise, and Trakt list warnings; keep convert-summary ID lists hidden unless trace or request-logging is enabled, and suppress duplicate raw TMDb collection lookup noise outside trace.
 
 ### Changed
 
