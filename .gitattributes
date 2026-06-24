@@ -1,0 +1,108 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Git attributes for Kometa
+#
+# Primary goals:
+#   1. Normalize line endings to LF on commit (avoid the cross-platform CRLF
+#      mess that bit defaults/overlays/languages.yml in 2025).
+#   2. Mark binaries explicitly so Git doesn't try to diff/merge them or
+#      munge their bytes.
+#   3. Tell GitHub's "linguist" what's source vs. generated for accurate
+#      language stats on the repo page.
+#   4. Keep `git archive` (release tarballs) lean by excluding tests, CI,
+#      and dev-only files.
+#
+# Reference: https://git-scm.com/docs/gitattributes
+# ──────────────────────────────────────────────────────────────────────────────
+
+# Default: let Git auto-detect text vs. binary, and normalize line endings
+# to LF in the repo. On checkout, Windows users with `core.autocrlf=true`
+# will still get CRLF locally — but the canonical form in the repo stays LF.
+* text=auto eol=lf
+
+# ── Source code: must be LF, no exceptions ────────────────────────────────────
+# These files run on Linux containers (Docker), so CRLF endings would break
+# shebangs and break Python/YAML parsing in some cases. Force LF everywhere.
+*.py        text eol=lf
+*.pyi       text eol=lf
+*.pyx       text eol=lf
+*.sh        text eol=lf
+*.bash      text eol=lf
+
+# ── Config / data: text, LF ───────────────────────────────────────────────────
+*.yml       text eol=lf
+*.yaml      text eol=lf
+*.json      text eol=lf
+*.toml      text eol=lf
+*.cfg       text eol=lf
+*.ini       text eol=lf
+*.txt       text eol=lf
+*.template  text eol=lf
+*.md        text eol=lf
+*.rst       text eol=lf
+*.html      text eol=lf
+*.css       text eol=lf
+*.js        text eol=lf
+*.svg       text eol=lf
+
+# ── Dotfiles that don't have extensions ───────────────────────────────────────
+.gitignore       text eol=lf
+.gitattributes   text eol=lf
+.dockerignore    text eol=lf
+.envrc           text eol=lf
+Dockerfile       text eol=lf
+
+# ── Windows-specific files keep CRLF ──────────────────────────────────────────
+# (None in the repo today, but future-proofing in case anyone adds a .bat
+# or .ps1 — Windows native tools expect CRLF.)
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# ── Binaries: never try to diff, merge, or normalize ──────────────────────────
+# Images
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.webp      binary
+*.ico       binary
+*.bmp       binary
+
+# Fonts
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
+*.eot       binary
+
+# Documents / archives
+*.pdf       binary
+*.mp4       binary
+*.psd       binary
+*.pxd       binary
+
+# Compiled Python (just in case anything sneaks in — shouldn't, but defence
+# in depth)
+*.pyc       binary
+*.pyo       binary
+
+# ── linguist hints: clean up GitHub language stats ────────────────────────────
+# Vendor / generated content shouldn't count toward "what language is this
+# project written in?" on the GitHub repo header.
+docs/**            linguist-documentation
+defaults/**        linguist-vendored
+json-schema/**     linguist-vendored
+fonts/**           linguist-vendored
+tests/**           linguist-detectable
+
+# ── export-ignore: keep `git archive` (release tarballs) lean ─────────────────
+# Files only useful inside the git repo (CI configs, dev tooling, tests)
+# shouldn't ship in source-tarball releases.
+.github/           export-ignore
+.gitattributes     export-ignore
+.gitignore         export-ignore
+.dockerignore      export-ignore
+.envrc             export-ignore
+.spellcheck.yml    export-ignore
+tests/             export-ignore
+dev-requirements.txt  export-ignore

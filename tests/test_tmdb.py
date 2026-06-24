@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
 from tmdbapis import NotFound as TMDbApiNotFound
@@ -7,16 +8,9 @@ from modules import tmdb
 from modules.util import Failed
 
 
-class FakeLogger:
-    """No-op logger so validate_tmdb_ids' debug/error calls don't blow up."""
-
-    def __getattr__(self, name):
-        return lambda *args, **kwargs: None
-
-
 def _bare_tmdb(monkeypatch):
-    # Bypass __init__ (which needs a real API key / TMDbAPIs session) and just
-    # exercise the validation helpers in isolation.
+    from tests.conftest import FakeLogger
+
     monkeypatch.setattr(tmdb, "logger", FakeLogger())
     return tmdb.TMDb.__new__(tmdb.TMDb)
 
@@ -72,3 +66,78 @@ def test_validate_tmdb_ids_returns_valid_ids(monkeypatch):
     t = _bare_tmdb(monkeypatch)
     t.validate_tmdb = lambda tmdb_id, tmdb_method: tmdb_id
     assert t.validate_tmdb_ids("391, 938, 429", "tmdb_movie") == [391, 938, 429]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Data classes
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTMDbCountry:
+    def test_from_string(self):
+        c = tmdb.TMDbCountry("US:United States")
+        assert c.iso_3166_1 == "US"
+        assert c.name == "United States"
+
+    def test_from_object(self):
+        obj = SimpleNamespace(iso_3166_1="GB", name="United Kingdom")
+        c = tmdb.TMDbCountry(obj)
+        assert c.iso_3166_1 == "GB"
+        assert c.name == "United Kingdom"
+
+    def test_repr(self):
+        assert repr(tmdb.TMDbCountry("FR:France")) == "FR:France"
+
+
+class TestTMDbSeason:
+    def test_from_string(self):
+        s = tmdb.TMDbSeason("1%:%Season 1%:%7.5")
+        assert s.season_number == 1
+        assert s.name == "Season 1"
+        assert s.average == 7.5
+
+    def test_from_object(self):
+        obj = SimpleNamespace(season_number=2, name="Season 2", vote_average=8.0)
+        s = tmdb.TMDbSeason(obj)
+        assert s.season_number == 2
+        assert s.name == "Season 2"
+        assert s.average == 8.0
+
+    def test_repr(self):
+        assert repr(tmdb.TMDbSeason("1%:%S1%:%9.0")) == "1%:%S1%:%9.0"
+
+
+class TestTMDBObj:
+    def test_load_from_dict(self):
+        obj = tmdb.TMDBObj.__new__(tmdb.TMDBObj)
+        obj._load(
+            {
+                "title": "Test",
+                "tagline": "Tag",
+                "overview": "Desc",
+                "imdb_id": "tt123",
+                "release_date": "2023-06-15",
+                "vote_average": 7.5,
+                "vote_count": 100,
+                "poster_url": "/p.jpg",
+                "backdrop_url": "/b.jpg",
+                "language_iso": "en",
+                "language_name": "English",
+                "genres": "Action|Drama",
+                "keywords": "violence|crime",
+            }
+        )
+        assert obj.title == "Test"
+        assert obj.genres == ["Action", "Drama"]
+        assert obj.keywords == ["violence", "crime"]
+
+    def test_validate_tmdb_returns_id(self, monkeypatch):
+        t = _bare_tmdb(monkeypatch)
+        t.get_movie = MagicMock(return_value=SimpleNamespace(id=550))
+        assert t.validate_tmdb(550, "tmdb_movie") == 550
+
+    def test_validate_tmdb_ids_raises_notfound_when_all_missing(self, monkeypatch):
+        t = _bare_tmdb(monkeypatch)
+        t.validate_tmdb = MagicMock(side_effect=tmdb.NotFound("gone"))
+        with pytest.raises(tmdb.NotFound):
+            t.validate_tmdb_ids("99999", "tmdb_movie")

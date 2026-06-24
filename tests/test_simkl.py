@@ -3,44 +3,12 @@ import pytest
 import modules.simkl as simkl_module
 from modules.simkl import Simkl
 from modules.util import Failed
-
-
-class FakeLogger:
-    def info(self, *args, **kwargs):
-        pass
-
-    def warning(self, *args, **kwargs):
-        pass
-
-    def error(self, *args, **kwargs):
-        pass
-
-    def __getattr__(self, name):
-        return lambda *a, **k: None
+from tests.conftest import FakeLogger, FakeRequests, FakeResponse
 
 
 @pytest.fixture(autouse=True)
 def patch_logger(monkeypatch):
     monkeypatch.setattr(simkl_module, "logger", FakeLogger())
-
-
-class FakeResponse:
-    def __init__(self, payload, status_code=200):
-        self.payload = payload
-        self.status_code = status_code
-        self.text = str(payload)
-
-    def json(self):
-        return self.payload
-
-
-class FakeRequests:
-    def __init__(self, payloads):
-        self.payloads = payloads
-
-    def get(self, url):
-        payload = self.payloads[url]
-        return payload if isinstance(payload, FakeResponse) else FakeResponse(payload)
 
 
 def make_tv_item(tmdb="95557", tvdb="368207", simkl_id=1151762):

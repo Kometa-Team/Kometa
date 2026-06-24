@@ -2,7 +2,6 @@ import argparse
 import os
 import platform
 import re
-import resource
 import sys
 import sysconfig
 import time
@@ -16,13 +15,23 @@ from packaging.version import parse
 
 from modules.logs import MyLogger
 
-# Increase file descriptor limit to prevent exhaustion with large libraries
+# Increase file descriptor limit to prevent exhaustion with large libraries.
+# The `resource` module is POSIX-only; on Windows the OS manages FD limits
+# differently (and the default 8192 stdio handle cap is already plenty), so
+# we skip this entirely there.
 try:
-    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    if soft < 4096:
-        resource.setrlimit(resource.RLIMIT_NOFILE, (min(hard, 4096), hard))
-except (ValueError, OSError):
-    pass  # If we can't set it, continue anyway
+    import resource
+except ImportError:
+    resource = None  # type: ignore[assignment]
+
+if resource is not None:
+    try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if soft < 4096:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (min(hard, 4096), hard))
+    except (ValueError, OSError):
+        pass  # If we can't set it, continue anyway
+
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -216,7 +225,9 @@ try:
 
     try:
         git_branch = Repo(path=".").head.ref.name  # noqa
-    except InvalidGitRepositoryError:
+    except (InvalidGitRepositoryError, TypeError):
+        # InvalidGitRepositoryError: not running from a git checkout
+        # TypeError: HEAD is detached (e.g. checked out by SHA, common in CI)
         git_branch = None
 except ImportError:
     git_branch = None
@@ -601,6 +612,10 @@ def start(attrs):
                 ("Convert Error: No mapping found for AniDB ID", r"Convert Error: No mapping found for AniDB ID '(.*)'"),
                 ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
             ]
+            summary_log_groups = [
+                (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory not found and created"),
+                (r"Asset Warning: No poster or background found in the assets folder '.+'", "Asset Warning: No poster or background found in the assets folder"),
+            ]
             other_message = {}
 
             with open(logger.main_log, encoding="utf-8") as f:
@@ -622,6 +637,11 @@ def start(attrs):
                                     if _name not in other_message[key]["list"]:
                                         other_message[key]["list"].append(_name)
                             if other is False:
+                                if not (run_args["trace"] or run_args["log-requests"]):
+                                    for reg, replacement in summary_log_groups:
+                                        if re.match(reg, log_line):
+                                            log_line = replacement
+                                            break
                                 if err_type not in log_data:
                                     log_data[err_type] = []
                                 log_data[err_type].append(log_line)
