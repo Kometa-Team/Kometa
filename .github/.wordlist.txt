@@ -3,6 +3,7 @@ accessmodes
 ACL
 addon
 addons
+AST
 adlib
 afi's
 Ahsoka
@@ -299,6 +300,7 @@ pcm
 pdb
 persistentvolumeclaim
 pgid
+pil
 pkkid
 planetrocky
 player
@@ -313,6 +315,7 @@ pokémon
 popeadam
 popularplex
 portainer
+posix
 powershell
 pre
 precommit
@@ -368,6 +371,7 @@ scudlee
 sdtv
 semver
 setuptools
+sha
 shawshank
 shoutout
 Simkl

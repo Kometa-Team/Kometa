@@ -2,7 +2,6 @@ import argparse
 import os
 import platform
 import re
-import resource
 import sys
 import sysconfig
 import time
@@ -16,13 +15,23 @@ from packaging.version import parse
 
 from modules.logs import MyLogger
 
-# Increase file descriptor limit to prevent exhaustion with large libraries
+# Increase file descriptor limit to prevent exhaustion with large libraries.
+# The `resource` module is POSIX-only; on Windows the OS manages FD limits
+# differently (and the default 8192 stdio handle cap is already plenty), so
+# we skip this entirely there.
 try:
-    soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
-    if soft < 4096:
-        resource.setrlimit(resource.RLIMIT_NOFILE, (min(hard, 4096), hard))
-except (ValueError, OSError):
-    pass  # If we can't set it, continue anyway
+    import resource
+except ImportError:
+    resource = None  # type: ignore[assignment]
+
+if resource is not None:
+    try:
+        soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+        if soft < 4096:
+            resource.setrlimit(resource.RLIMIT_NOFILE, (min(hard, 4096), hard))
+    except (ValueError, OSError):
+        pass  # If we can't set it, continue anyway
+
 
 if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     print("Python Version %s.%s.%s has been detected and is not supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
@@ -216,7 +225,9 @@ try:
 
     try:
         git_branch = Repo(path=".").head.ref.name  # noqa
-    except InvalidGitRepositoryError:
+    except (InvalidGitRepositoryError, TypeError):
+        # InvalidGitRepositoryError: not running from a git checkout
+        # TypeError: HEAD is detached (e.g. checked out by SHA, common in CI)
         git_branch = None
 except ImportError:
     git_branch = None
