@@ -4467,7 +4467,7 @@ class CollectionBuilder:
                 logger.warning(f"Value Filter Warning: {e}")
                 return False
             if value is None:
-                logger.warning(f"Value Filter Warning: No '{variable_name}' found for {item.title}")
+                logger.trace(f"Value Filter: No '{variable_name}' found for {item.title}")
                 return False
             if comparator == "gte" and not value >= threshold:
                 return False

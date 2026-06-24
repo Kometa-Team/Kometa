@@ -2163,8 +2163,14 @@ class Plex(Library):
                 found_rating = ratings[rating_key]
             except KeyError:
                 found_rating = None
-        if found_rating is not None and self.config.Cache:
-            self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
+        if found_rating is not None:
+            # Sources are inconsistent (e.g. IMDb returns a string); normalize to float so callers can compare numerically.
+            try:
+                found_rating = float(found_rating)
+            except (TypeError, ValueError):
+                return None
+            if self.config.Cache:
+                self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
         return found_rating
 
     def get_locked_attributes(self, item, titles=None, year_titles=None, item_type=None):

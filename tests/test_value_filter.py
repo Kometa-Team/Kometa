@@ -74,7 +74,7 @@ def test_check_value_filter_and_logic_requires_all():
 
 
 def test_check_value_filter_excludes_on_none(monkeypatch):
-    monkeypatch.setattr(builder_module, "logger", SimpleNamespace(warning=lambda *a, **k: None))
+    monkeypatch.setattr(builder_module, "logger", SimpleNamespace(warning=lambda *a, **k: None, trace=lambda *a, **k: None))
     builder = _check_builder([("tmdb_rating", "gte", 6.0)], lambda item, variable: None)
     assert builder.check_value_filter(SimpleNamespace(title="X")) is False
 
