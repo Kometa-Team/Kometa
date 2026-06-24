@@ -571,6 +571,10 @@ def start(attrs):
                 (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
                 (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
+                (r".+ Error: No builders were found", "Error: No builders were found"),
+                (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
+                (r".+ Error: No Filter Created", "Error: No Filter Created"),
+                (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
             ]
             other_message = {}
 
