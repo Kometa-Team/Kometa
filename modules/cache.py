@@ -301,11 +301,6 @@ class Cache:
                     name TEXT,
                     date TEXT,
                     expiration_date TEXT)""")
-                cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_special_text2 (
-                    key INTEGER PRIMARY KEY,
-                    rating_key TEXT,
-                    type TEXT,
-                    text TEXT)""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_value_cache (
                     key INTEGER PRIMARY KEY,
                     rating_key TEXT,
@@ -348,6 +343,39 @@ class Cache:
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
                                 self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], overlay=row["overlay"])
                     cursor.execute("DROP TABLE IF EXISTS image_map")
+        self.migrate_overlay_value_cache()
+
+    def migrate_overlay_value_cache(self):
+        # Upgrade legacy overlay_special_text2 to overlay_value_cache; its presence is the one-time upgrade signal (not created on fresh installs, dropped once migrated), and runs regardless of cache_expiration.
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'")
+                if cursor.fetchone()[0] == 0:
+                    return
+                # 1. Migrate values, deduplicating on (rating_key, type) via the UNIQUE constraint.
+                expiration_date = (datetime.now() - timedelta(days=random.randint(1, self.expiration))).strftime("%Y-%m-%d")
+                cursor.execute("SELECT rating_key, type, text FROM overlay_special_text2")
+                for row in cursor.fetchall():
+                    cursor.execute("INSERT OR IGNORE INTO overlay_value_cache(rating_key, type) VALUES(?, ?)", (str(row["rating_key"]), row["type"]))
+                    cursor.execute("UPDATE overlay_value_cache SET value = ?, expiration_date = ? WHERE rating_key = ? AND type = ?", (row["text"], expiration_date, str(row["rating_key"]), row["type"]))
+                # 2. Drop the legacy table.
+                cursor.execute("DROP TABLE IF EXISTS overlay_special_text2")
+                # 3. Reset overlay application state for every library so all overlays reapply once.
+                cursor.execute("SELECT library, key FROM image_maps")
+                for lib in cursor.fetchall():
+                    for suffix in ["_overlays", "_square_arts"]:
+                        table = f"image_map_{lib['key']}{suffix}"
+                        cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?", (table,))
+                        if cursor.fetchone()[0] > 0:
+                            cursor.execute(f"DELETE FROM {table}")
+        logger.separator(
+            "Overlay Cache Upgraded\n"
+            "The overlay cache format has been updated.\n"
+            "All overlay states have been reset.\n"
+            "This run will reapply all overlays and may take longer than usual.\n"
+            "This will only happen once."
+        )
 
     def query_guid_map(self, plex_guid):
         id_to_return = None
