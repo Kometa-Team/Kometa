@@ -568,6 +568,9 @@ def start(attrs):
                 (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory not found and created"),
                 (r"Asset Warning: No poster or background found in the assets folder '.+'", "Asset Warning: No poster or background found in the assets folder"),
                 (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
+                (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
+                (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
+                (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
             ]
             other_message = {}
 
@@ -606,6 +609,7 @@ def start(attrs):
                 logger.info("")
 
             convert_title = False
+            details = run_args["trace"] or run_args["log-requests"]
 
             def convert_summary_title(key):
                 summary = key.split(": ", 1)[1].rstrip(":")
@@ -621,8 +625,15 @@ def start(attrs):
                         logger.separator("Convert Summary", space=False, border=False)
                         logger.info("")
                         convert_title = True
-                    logger.info(convert_summary_title(key))
-                    logger.info(f"    {', '.join(other_message[key]['list'])}")
+                    count = other_message[key]["count"]
+                    convert_line = convert_summary_title(key)
+                    if " for " in convert_line:
+                        convert_line = convert_line.replace(" for the following ", f" for {count} ")
+                    if not details:
+                        convert_line = convert_line.rstrip(":")
+                    logger.info(convert_line)
+                    if details:
+                        logger.info(f"    {', '.join(other_message[key]['list'])}")
             if convert_title:
                 logger.info("")
 
