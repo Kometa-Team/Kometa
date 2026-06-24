@@ -706,6 +706,7 @@ def run_config(config, stats):
         # logger.remove_playlists_handler()
 
     amount_added = 0
+    collections_ran = False
     if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
         has_run_again = False
         for library in config.libraries:
@@ -797,7 +798,6 @@ def run_config(config, stats):
         logger.info("")
         print_status(playlist_status)
 
-    collections_ran = any("Library Collection Files" in library.status for library in config.libraries)
     if collections_ran:
         report_duplicate_collections(config)
 
@@ -938,6 +938,8 @@ def run_libraries(config):
             # Pre-populate collection_names before the run_order loop so that operations can correctly identify unconfigured collections regardless of run_order.
             # Without this, if operations runs before collections, collection_names is empty and every Plex collection is incorrectly flagged as unconfigured. #1968
             if runs["collections"]:
+                # Only report duplicate collection titles when Kometa actually processed collections this run.
+                collections_ran = True
                 for metadata in library.collection_files:
                     if config.requested_files and metadata.get_file_name() not in config.requested_files:
                         continue
