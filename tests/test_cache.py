@@ -76,6 +76,7 @@ class TestInit:
             "imdb_parental",
             "ergast_race",
             "overlay_special_text2",
+            "overlay_value_cache",
             "testing",
             "letterboxd_incremental_state",
         ]:
@@ -740,3 +741,65 @@ class TestRegressions:
 
         row, _ = cache.query_anime_map(555, "anidb")
         assert row["anilist"] == 999, "second update did not overwrite anilist"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Overlay value cache
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def _ovc_row_count(cache: Cache, rating_key: int, data_type: str) -> int:
+    with sqlite3.connect(cache.cache_path) as connection:
+        return connection.execute(
+            "SELECT COUNT(*) FROM overlay_value_cache WHERE rating_key = ? AND type = ?",
+            (str(rating_key), data_type),
+        ).fetchone()[0]
+
+
+class TestOverlayValueCache:
+    def test_no_duplicate_rows(self, tmp_path):
+        # The old overlay_special_text2 table had no UNIQUE(rating_key, type), so repeated
+        # writes accumulated duplicate rows. overlay_value_cache must keep exactly one.
+        cache = make_cache(tmp_path)
+        for _ in range(3):
+            cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        value, _ = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
+        assert value == "7.3"
+        assert _ovc_row_count(cache, 5173, "plex_imdb_rating") == 1
+
+    def test_updates_in_place(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.5")
+        value, _ = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
+        assert value == "7.5"
+        assert _ovc_row_count(cache, 5173, "plex_imdb_rating") == 1
+
+    def test_distinct_types_coexist(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        cache.update_overlay_value_cache(False, 5173, "mdb_tomatoes_rating", "8.1")
+        assert cache.query_overlay_value_cache(5173, "plex_imdb_rating")[0] == "7.3"
+        assert cache.query_overlay_value_cache(5173, "mdb_tomatoes_rating")[0] == "8.1"
+
+    def test_miss_returns_none(self, tmp_path):
+        cache = make_cache(tmp_path)
+        assert cache.query_overlay_value_cache(123, "missing") == (None, None)
+
+    def test_fresh_write_not_expired(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        _, expired = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
+        assert expired is False
+
+    def test_aged_entry_expires(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        stale = (datetime.now() - timedelta(days=65)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute(
+                "UPDATE overlay_value_cache SET expiration_date = ? WHERE rating_key = ? AND type = ?",
+                (stale, "5173", "plex_imdb_rating"),
+            )
+        _, expired = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
+        assert expired is True
