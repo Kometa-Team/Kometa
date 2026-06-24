@@ -135,3 +135,59 @@ def test_overlay_image_insert_update_query(cache):
     with sqlite3.connect(cache.cache_path) as connection:
         count = connection.execute(f"SELECT COUNT(*) FROM {image_table}").fetchone()[0]
     assert count == 1
+
+
+def test_migrate_overlay_value_cache_upgrades_and_resets(cache):
+    table_name = cache.get_image_table_name("TestLib")
+    # Simulate a legacy cache: recreate overlay_special_text2 (with a duplicate row, the legacy bug)
+    # and a stale overlay application row that the migration must clear.
+    with sqlite3.connect(cache.cache_path) as connection:
+        connection.execute(
+            "CREATE TABLE IF NOT EXISTS overlay_special_text2 (key INTEGER PRIMARY KEY, rating_key TEXT, type TEXT, text TEXT)"
+        )
+        connection.executemany(
+            "INSERT INTO overlay_special_text2(rating_key, type, text) VALUES(?, ?, ?)",
+            [
+                ("5173", "plex_imdb_rating", "7.3"),
+                ("5173", "plex_imdb_rating", "7.3"),
+                ("5173", "mdb_tomatoes_rating", "8.1"),
+            ],
+        )
+        connection.execute(
+            f"INSERT INTO {table_name}_overlays(rating_key, overlay, compare, location) VALUES('5173', 'text(<<x>>)...', 'c', 'loc')"
+        )
+        connection.commit()
+
+    cache.migrate_overlay_value_cache()
+
+    assert cache.query_overlay_value_cache(5173, "plex_imdb_rating")[0] == "7.3"
+    assert cache.query_overlay_value_cache(5173, "mdb_tomatoes_rating")[0] == "8.1"
+    with sqlite3.connect(cache.cache_path) as connection:
+        # legacy table dropped
+        assert (
+            connection.execute(
+                "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'"
+            ).fetchone()[0]
+            == 0
+        )
+        # duplicate collapsed to a single row
+        assert (
+            connection.execute(
+                "SELECT COUNT(*) FROM overlay_value_cache WHERE rating_key='5173' AND type='plex_imdb_rating'"
+            ).fetchone()[0]
+            == 1
+        )
+        # overlay application state reset
+        assert connection.execute(f"SELECT COUNT(*) FROM {table_name}_overlays").fetchone()[0] == 0
+
+
+def test_migrate_overlay_value_cache_noop_without_legacy_table(cache):
+    # No legacy table present (fresh install): migration must be a silent no-op and not raise.
+    cache.migrate_overlay_value_cache()
+    with sqlite3.connect(cache.cache_path) as connection:
+        assert (
+            connection.execute(
+                "SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'"
+            ).fetchone()[0]
+            == 0
+        )
