@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `ModuleNotFoundError: No module named 'resource'` crash on Windows at startup. The file-descriptor limit fix introduced in #3235 used the POSIX-only `resource` module unconditionally. Now wrapped in a `try`/`except ImportError` so the bump is applied on POSIX systems and skipped cleanly on Windows. (#3244)
 - Fix `kometa.py` crashing with `TypeError: HEAD is a detached symbolic reference` when run from a detached-HEAD checkout (release-tag checkouts, CI runners that check out by SHA, etc.). (#3232)
 - Fix `cache.update_anime_map()` writing the AniDB id into the AniList column on UPDATE. The original `anime_map` row was written correctly on INSERT but each subsequent update would clobber `anilist_id` with the AniDB value. (#3232)
+- Remove TMDb ID `717095` from the Ice Age franchise default after TMDb no longer returns the collection.
 
 ### Changed
 
