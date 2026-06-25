@@ -141,7 +141,7 @@ class FileSetValidator:
             with open(path, encoding="utf-8") as fp:
                 data = y.load(fp)
             data = data if isinstance(data, dict) else {}
-        except ryaml.error.YAMLError as e:
+        except ryaml.YAMLError as e:
             msg = str(e)
             if "found character '\\t'" in msg:
                 result["errors"].append("YAML Error: tabs are not allowed, only spaces")
@@ -288,7 +288,7 @@ class ConfigValidator:
             with open(path, encoding="utf-8") as fp:
                 data = y.load(fp)
             return data if isinstance(data, dict) else {}
-        except ryaml.error.YAMLError as e:
+        except ryaml.YAMLError as e:
             msg = str(e)
             if "found character '\\t'" in msg:
                 self._errors.append(f"{label}: YAML Error: tabs are not allowed, only spaces")
