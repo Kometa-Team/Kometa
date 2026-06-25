@@ -632,10 +632,10 @@ def start(attrs):
             def convert_summary_title(key):
                 summary = key.split(": ", 1)[1].rstrip(":")
                 if " for " not in summary:
-                    return f"{summary}:"
+                    return summary
                 message, source = summary.rsplit(" for ", 1)
                 source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
-                return f"{message} for the following {source}:"
+                return f"{message} for the following {source}"
 
             for key, _ in other_log_groups:
                 if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
@@ -645,11 +645,10 @@ def start(attrs):
                         convert_title = True
                     count = other_message[key]["count"]
                     convert_line = convert_summary_title(key)
-                    if " for " in convert_line:
-                        convert_line = convert_line.replace(" for the following ", f" for {count} ")
                     if not details:
-                        convert_line = convert_line.rstrip(":")
-                    logger.info(convert_line)
+                        logger.info(f"{convert_line} ({count})")
+                    else:
+                        logger.info(f"{convert_line} ({count}):")
                     if details:
                         logger.info(f"    {', '.join(other_message[key]['list'])}")
             if convert_title:
