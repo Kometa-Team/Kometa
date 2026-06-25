@@ -3,27 +3,18 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse, urlunparse
 from urllib.request import Request, urlopen
 
+from letterboxdpy.core.scraper import Scraper
+from letterboxdpy.films import Films
+from letterboxdpy.list import List as LetterboxdList
+from letterboxdpy.movie import Movie
+from letterboxdpy.user import User
+from letterboxdpy.watchlist import Watchlist
 from lxml import html as lxml_html
 
 from modules import util
 from modules.util import Failed
 
 logger = util.logger
-
-try:
-    from letterboxdpy.core.scraper import Scraper
-    from letterboxdpy.films import Films
-    from letterboxdpy.list import List as LetterboxdList
-    from letterboxdpy.movie import Movie
-    from letterboxdpy.user import User
-    from letterboxdpy.watchlist import Watchlist
-except ImportError:
-    Films = None
-    LetterboxdList = None
-    Movie = None
-    Scraper = None
-    User = None
-    Watchlist = None
 
 sort_options = {
     "name": "by/name/",
@@ -73,10 +64,6 @@ class Letterboxd:
         self._scraper_cls = Scraper
         self._user_cls = User
         self._watchlist_cls = Watchlist
-
-    def _require_library(self):
-        if not all([self._films_cls, self._list_cls, self._movie_cls, self._scraper_cls, self._user_cls, self._watchlist_cls]):
-            raise Failed("Letterboxd Error: letterboxdpy is required. Install the pinned project dependency and try again.")
 
     def _info_once(self, key, message):
         if key not in self._warned:
@@ -178,7 +165,6 @@ class Letterboxd:
         return bool(title and "just a moment" in title.lower() or body_text and "enable javascript and cookies to continue" in body_text.lower())
 
     def _request_html_with_scraper(self, url):
-        self._require_library()
         try:
             soup = self._scraper_cls.get_page(url)
         except Exception as e:
@@ -462,7 +448,6 @@ class Letterboxd:
         return items
 
     def _tmdb(self, slug_path, language):
-        self._require_library()
         try:
             movie = self._movie_cls(self._slug_path(slug_path).strip("/").split("/")[1])
         except Exception as e:
@@ -524,7 +509,6 @@ class Letterboxd:
         return bool(note_value and note_filter in note_value)
 
     def _get_list_object(self, list_url):
-        self._require_library()
         list_url = self._normalize_url(list_url)
         if self._url_type(list_url) == "watchlist":
             username = self._parse_watchlist_url(list_url)
@@ -539,7 +523,6 @@ class Letterboxd:
             raise Failed(f"Letterboxd Error: Failed to load list {list_url}: {e}") from e
 
     def _get_list_items(self, list_url, limit, language):
-        self._require_library()
         list_url = self._normalize_url(list_url)
         items = []
         if self._url_type(list_url) == "films":
@@ -592,7 +575,6 @@ class Letterboxd:
         return items[:limit] if limit else items
 
     def _get_user_entries(self, username, page_type, language="en"):
-        self._require_library()
         try:
             user = self._user_cls(username)
         except Exception as e:
@@ -692,7 +674,6 @@ class Letterboxd:
         return entries
 
     def get_user_lists(self, username, sort, language):
-        self._require_library()
         try:
             user = self._user_cls(username)
             raw_lists = user.get_lists()
@@ -710,7 +691,7 @@ class Letterboxd:
 
     def validate_letterboxd_lists(self, err_type, letterboxd_lists, language):
         valid_lists = []
-        for letterboxd_dict in util.get_list(letterboxd_lists, split=False):
+        for letterboxd_dict in util.get_list(letterboxd_lists, split=False, return_none=False) or []:
             if not isinstance(letterboxd_dict, dict):
                 letterboxd_dict = {"url": letterboxd_dict}
             dict_methods = {dm.lower(): dm for dm in letterboxd_dict}
@@ -767,7 +748,7 @@ class Letterboxd:
                     letterboxd_dict.update(shared_params)
                     valid_pages.append(self._validate_single_user_page(err_type, letterboxd_dict, page_type, language))
         else:
-            for letterboxd_dict in util.get_list(letterboxd_user_pages, split=False):
+            for letterboxd_dict in util.get_list(letterboxd_user_pages, split=False, return_none=False) or []:
                 if not isinstance(letterboxd_dict, dict):
                     letterboxd_dict = {"username": letterboxd_dict}
                 valid_pages.append(self._validate_single_user_page(err_type, letterboxd_dict, page_type, language))
