@@ -369,13 +369,7 @@ class Cache:
                         cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?", (table,))
                         if cursor.fetchone()[0] > 0:
                             cursor.execute(f"DELETE FROM {table}")
-        logger.separator(
-            "Overlay Cache Upgraded\n"
-            "The overlay cache format has been updated.\n"
-            "All overlay states have been reset.\n"
-            "This run will reapply all overlays and may take longer than usual.\n"
-            "This will only happen once."
-        )
+        logger.separator("Overlay Cache Upgraded\n" "The overlay cache format has been updated.\n" "All overlay states have been reset.\n" "This run will reapply all overlays and may take longer than usual.\n" "This will only happen once.")
 
     def query_guid_map(self, plex_guid):
         id_to_return = None

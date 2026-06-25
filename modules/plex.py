@@ -2115,6 +2115,8 @@ class Plex(Library):
                 else:
                     found_rating = mdb_item.score / 10 if mdb_item.score else None
         elif str(variable_name).startswith("omdb"):
+            if not getattr(self.config, "OMDb", None):
+                raise OverlayError("Overlay Error: OMDb is not configured in your config file")
             if self.config.OMDb.limit is not False:
                 raise ServiceError("OMDb Error: Daily OMDb Limit Reached")
             elif not imdb_id:
@@ -2134,6 +2136,8 @@ class Plex(Library):
         elif str(variable_name).startswith(("anidb", "mal")):
             anidb_id = self.config.Convert.ids_to_anidb(self, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
             if str(variable_name).startswith("anidb"):
+                if not getattr(self.config, "AniDB", None):
+                    raise OverlayError("Overlay Error: AniDB is not configured in your config file")
                 if anidb_id:
                     anidb_obj = self.config.AniDB.get_anime(anidb_id)
                     if variable_name == "anidb_rating_rating":
@@ -2145,6 +2149,8 @@ class Plex(Library):
                 else:
                     raise MappingConvertError(f"Mapping/Convert Error: No AniDB ID for {item.title} (Guid: {item.guid})")
             else:
+                if not getattr(self.config, "MyAnimeList", None):
+                    raise OverlayError("Overlay Error: MyAnimeList is not configured in your config file")
                 if item.ratingKey in self.reverse_mal:
                     mal_id = self.reverse_mal[item.ratingKey]
                 elif not anidb_id:

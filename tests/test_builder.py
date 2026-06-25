@@ -114,6 +114,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "created": True,
         "smart_label_collection": False,
         "check_filters": lambda item, display: True,
+        "value_filters": [],
     }
     defaults.update(attrs)
     for key, value in defaults.items():
