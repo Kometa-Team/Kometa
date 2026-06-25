@@ -33,12 +33,12 @@ class Convert:
         for anidb_id, ids in self._anidb_ids.items():
             anidb_id = int(anidb_id)
             if "mal_id" in ids:
-                for mal_id in util.get_list(ids["mal_id"], int_list=True):
+                for mal_id in util.get_list(ids["mal_id"], int_list=True, return_none=False) or []:
                     self._mal_to_anidb[mal_id] = anidb_id
                     if anidb_id not in self._anidb_to_mal:
                         self._anidb_to_mal[anidb_id] = mal_id
             if "anilist_id" in ids:
-                for anilist_id in util.get_list(ids["anilist_id"], int_list=True):
+                for anilist_id in util.get_list(ids["anilist_id"], int_list=True, return_none=False) or []:
                     self._anilist_to_anidb[anilist_id] = anidb_id
             if "imdb_id" in ids and str(ids["imdb_id"]).startswith("tt"):
                 self._anidb_to_imdb[anidb_id] = util.get_list(ids["imdb_id"])
@@ -117,7 +117,9 @@ class Convert:
             elif anidb_id in self._anidb_to_tmdb_show:
                 for tmdb_id in self._anidb_to_tmdb_show[anidb_id]:
                     try:
-                        ids.append((int(self.tmdb_to_tvdb(tmdb_id, fail=True)), "tvdb"))
+                        tvdb_id = self.tmdb_to_tvdb(tmdb_id, fail=True)
+                        if tvdb_id is not None:
+                            ids.append((int(tvdb_id), "tvdb"))
                     except Failed:
                         pass
             elif str(anidb_id) in self._anidb_ids:
@@ -273,7 +275,7 @@ class Convert:
             if (cache_id or imdb_check) and not expired:
                 media_id_type = "movie" if "movie" in media_type else "show"
                 if item_type == "hama" and check_id.startswith("anidb"):
-                    anidb_id = int(re.search("-(.*)", check_id).group(1))
+                    anidb_id = int(self._hama_suffix(check_id))
                     library.anidb_map[anidb_id] = rating_key
                 elif item_type == "myanimelist":
                     library.mal_map[int(check_id)] = rating_key
@@ -282,6 +284,20 @@ class Convert:
     def scan_guid(self, guid_str):
         guid = urlparse(guid_str)
         return guid.scheme.split(".")[-1], guid.netloc
+
+    @staticmethod
+    def _hama_suffix(check_id):
+        """Return the substring after the first '-' in a Hama-style check_id.
+
+        Hama agent ids look like 'anidb-12345' or 'tvdb-67890'; this peels off
+        the prefix and returns the trailing identifier. Raises
+        MappingConvertError if the input is malformed (no dash), instead of
+        letting an AttributeError leak out of the regex.
+        """
+        match = re.search("-(.*)", check_id)
+        if match is None:
+            raise MappingConvertError(f"Mapping Error: Malformed Hama ID '{check_id}'")
+        return match.group(1)
 
     def get_id(self, item, library):
         expired = None
@@ -332,9 +348,9 @@ class Convert:
                     imdb_id.append(check_id)
             elif item_type == "hama":
                 if check_id.startswith("tvdb"):
-                    tvdb_id.append(int(re.search("-(.*)", check_id).group(1)))
+                    tvdb_id.append(int(self._hama_suffix(check_id)))
                 elif check_id.startswith("anidb"):
-                    anidb_str = str(re.search("-(.*)", check_id).group(1))
+                    anidb_str = self._hama_suffix(check_id)
                     anidb_id = int(anidb_str[1:] if anidb_str[0] == "a" else anidb_str)
                     library.anidb_map[anidb_id] = item.ratingKey
                 else:
