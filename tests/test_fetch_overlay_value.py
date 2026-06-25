@@ -9,6 +9,7 @@ fetch_overlay_value lives in modules/plex.py. It:
   4. Writes the result to cache; does NOT write on None or non-numeric.
   5. Returns None when no rating is available.
 """
+
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -32,6 +33,7 @@ def _item(rating_key=5173):
 
 
 # ── Cache-first logic ──────────────────────────────────────────────────────────
+
 
 def test_returns_cached_float_when_fresh():
     # Warm cache hit — source must never be called.
@@ -84,6 +86,7 @@ def test_no_cache_always_fetches():
 
 # ── Float normalization ────────────────────────────────────────────────────────
 
+
 def test_string_from_source_normalized_to_float():
     # Some sources (e.g. IMDb) return a string; must be cast to float before returning/writing.
     plx = _make_plex(cache=None, get_ratings=MagicMock(return_value={"plex_imdb": "7.3"}))
@@ -108,6 +111,7 @@ def test_non_numeric_string_returns_none():
 
 # ── None handling ──────────────────────────────────────────────────────────────
 
+
 def test_none_from_source_returns_none_and_no_cache_write():
     # Source returns nothing for this item — must NOT poison the cache with a None entry.
     cache = MagicMock()
@@ -121,6 +125,7 @@ def test_none_from_source_returns_none_and_no_cache_write():
 
 
 # ── plex_* variable dispatch ───────────────────────────────────────────────────
+
 
 def test_plex_rating_key_stripped_correctly():
     # "plex_imdb_rating" → strip "_rating" → look up "plex_imdb" in get_ratings result.
