@@ -23,7 +23,6 @@
     "modules/tmdb.py": 670,
     "modules/trakt.py": 29,
     "modules/tvdb.py": 1,
-    "modules/util.py": 26,
-    "modules/validator.py": 2
+    "modules/util.py": 26
   }
 }
