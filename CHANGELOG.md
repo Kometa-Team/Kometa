@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `kometa.py` crashing with `TypeError: HEAD is a detached symbolic reference` when run from a detached-HEAD checkout (release-tag checkouts, CI runners that check out by SHA, etc.). (#3232)
 - Fix `cache.update_anime_map()` writing the AniDB id into the AniList column on UPDATE. The original `anime_map` row was written correctly on INSERT but each subsequent update would clobber `anilist_id` with the AniDB value. (#3232)
 - Defer cache eviction until all batched Plex edits complete so genre updates (or other non-batched updates) no longer evict items before later rating and originally available date, etc writes run.
+- Remove TMDb ID `717095` from the Ice Age franchise default after TMDb no longer returns the collection.
 
 ### Changed
 
