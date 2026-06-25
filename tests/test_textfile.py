@@ -157,6 +157,56 @@ def test_text_file_concatenates_multiple_files_in_order():
         os.unlink(second_path)
 
 
+def test_text_file_validate_accepts_url():
+    text_builder = TextFile(FakeRequests({}))
+
+    assert text_builder.validate_file("https://example.com/list.txt") == ["https://example.com/list.txt"]
+
+
+def test_text_file_accepts_plain_text_url():
+    text_builder = TextFile(
+        FakeRequests(
+            {
+                "https://example.com/list.txt": FakeResponse(
+                    content="# remote list\n" "tt1234567\n" "12345 # tmdb\n" "plex://movie/5d7768244de0ee001fcc7ff0\n",
+                    json_error=ValueError("not json"),
+                )
+            }
+        )
+    )
+
+    assert text_builder.get_ids("https://example.com/list.txt", is_movie=True) == [
+        ("tt1234567", "imdb"),
+        (12345, "tmdb"),
+        ("plex://movie/5d7768244de0ee001fcc7ff0", "plex"),
+    ]
+
+
+def test_text_file_accepts_json_url_as_builder_input():
+    text_builder = TextFile(FakeRequests({"https://example.com/list.json": ["tt1234567", {"tmdb_id": 67890}]}))
+
+    assert text_builder.get_ids("https://example.com/list.json", is_movie=True) == [("tt1234567", "imdb"), (67890, "tmdb")]
+
+
+def test_text_file_concatenates_file_and_url_in_order():
+    path = _write_temp_file("tt1234567\n")
+    try:
+        text_builder = TextFile(
+            FakeRequests(
+                {
+                    "https://example.com/list.txt": FakeResponse(
+                        content="67890\n",
+                        json_error=ValueError("not json"),
+                    )
+                }
+            )
+        )
+
+        assert text_builder.get_ids([path, "https://example.com/list.txt"], is_movie=True) == [("tt1234567", "imdb"), (67890, "tmdb")]
+    finally:
+        os.unlink(path)
+
+
 def test_text_file_uses_tvdb_for_numeric_show_entries():
     path = _write_temp_file("12345\n")
     try:
