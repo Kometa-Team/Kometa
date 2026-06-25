@@ -87,3 +87,35 @@ def test_check_value_filter_excludes_on_fetch_failure(monkeypatch):
 
     builder = _check_builder([("tmdb_rating", "gte", 6.0)], fetch)
     assert builder.check_value_filter(SimpleNamespace(title="X")) is False
+
+
+def test_value_filter_gt_comparator():
+    builder = _parser_builder()
+    builder._value_filter("value_filter", {"tmdb_rating.gt": 6.0})
+    assert ("tmdb_rating", "gt", 6.0) in builder.value_filters
+
+
+def test_value_filter_lte_comparator():
+    builder = _parser_builder()
+    builder._value_filter("value_filter", {"tmdb_rating.lte": 8.0})
+    assert ("tmdb_rating", "lte", 8.0) in builder.value_filters
+
+
+def test_check_value_filter_all_comparators_at_exact_boundary(monkeypatch):
+    # At value == threshold: gte and lte must pass; gt and lt must fail.
+    monkeypatch.setattr(builder_module, "logger", SimpleNamespace(warning=lambda *a, **k: None, trace=lambda *a, **k: None))
+    fetch = lambda item, variable: 7.0
+    for comparator, should_pass in [("gte", True), ("lte", True), ("gt", False), ("lt", False)]:
+        result = _check_builder([("tmdb_rating", comparator, 7.0)], fetch).check_value_filter(SimpleNamespace(title="X"))
+        assert result is should_pass, f"comparator '{comparator}' at exact boundary: expected {should_pass}, got {result}"
+
+
+def test_check_value_filter_and_logic_different_variables(monkeypatch):
+    # AND across two different variables: both must individually pass.
+    monkeypatch.setattr(builder_module, "logger", SimpleNamespace(warning=lambda *a, **k: None, trace=lambda *a, **k: None))
+    values = {"tmdb_rating": 7.0, "imdb_rating": 6.5}
+    fetch = lambda item, variable: values.get(variable)
+    both_pass = _check_builder([("tmdb_rating", "gte", 6.0), ("imdb_rating", "gte", 6.0)], fetch)
+    assert both_pass.check_value_filter(SimpleNamespace(title="X")) is True
+    one_fails = _check_builder([("tmdb_rating", "gte", 6.0), ("imdb_rating", "gte", 7.0)], fetch)
+    assert one_fails.check_value_filter(SimpleNamespace(title="X")) is False
