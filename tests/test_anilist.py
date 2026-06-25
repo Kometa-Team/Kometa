@@ -43,3 +43,20 @@ class TestAniListValidate:
         a._request = MagicMock(side_effect=Failed("not found"))
         with pytest.raises(Failed, match="No valid"):
             a.validate_anilist_ids("1, 2", studio=False)
+
+    def test_validate_accepts_non_string_input_without_attribute_error(self, monkeypatch):
+        """Regression: pyright saw the items in `for d in util.get_list(data)` as
+        possibly non-string (dict | int | str). Without the `str(d).lower()` cast,
+        a non-string item would `AttributeError`. At runtime get_list happens to
+        stringify scalars, but we shouldn't rely on that contract — the cast is
+        defensive.
+        """
+        monkeypatch.setattr("modules.anilist.logger", FakeLogger())
+        from modules.anilist import AniList
+
+        a = AniList.__new__(AniList)
+        a._options = {"Format": {"42": "VALUE"}}
+        # get_list(42) -> ['42']; the test verifies the call doesn't crash
+        # and returns the original string item.
+        result = a.validate("Format", 42)
+        assert result == ["42"]

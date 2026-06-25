@@ -3,7 +3,6 @@
   "total_errors": 1172,
   "per_file_errors": {
     "kometa.py": 20,
-    "modules/anilist.py": 7,
     "modules/builder.py": 56,
     "modules/config.py": 1,
     "modules/ergast.py": 2,
@@ -17,12 +16,10 @@
     "modules/plex.py": 63,
     "modules/poster.py": 11,
     "modules/radarr.py": 54,
-    "modules/request.py": 7,
     "modules/sonarr.py": 54,
     "modules/tmdb.py": 670,
     "modules/trakt.py": 29,
     "modules/tvdb.py": 1,
-    "modules/util.py": 26,
-    "modules/validator.py": 2
+    "modules/util.py": 26
   }
 }

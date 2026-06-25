@@ -22,11 +22,11 @@ image_content_types = ["image/png", "image/jpeg", "image/webp"]
 def get_header(headers, header, language):
     if headers:
         return headers
-    else:
-        if header and not language:
-            language = "en-US,en;q=0.5"
-        if language:
-            return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"}
+    if header and not language:
+        language = "en-US,en;q=0.5"
+    if language:
+        return {"Accept-Language": "eng" if language == "default" else language, "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:147.0) Gecko/20100101 Firefox/147.0"}
+    return {}
 
 
 def quote(data):
@@ -147,7 +147,10 @@ class Requests:
                 for chunk in r.iter_content(chunk_size=8192):
                     dl += len(chunk)
                     f.write(chunk)
-                    logger.ghost(f"Downloading {info}: {dl / total_length * 100:6.2f}%")
+                    if total_length:
+                        logger.ghost(f"Downloading {info}: {dl / total_length * 100:6.2f}%")
+                    else:
+                        logger.ghost(f"Downloading {info}: {dl} bytes")
                 logger.exorcise()
 
     def get_cloudscrape_html(self, url, headers=None, params=None, language=None):
@@ -270,6 +273,8 @@ class YAML:
             if input_data:
                 self.data = self.yaml.load(input_data)
             else:
+                if not self.path:
+                    raise Failed("YAML Error: Either path or input_data must be provided")
                 if start_empty or (create and not os.path.exists(self.path)):
                     with open(self.path, "w"):
                         pass
@@ -277,8 +282,9 @@ class YAML:
                 else:
                     with open(self.path, encoding="utf-8") as fp:
                         self.data = self.yaml.load(fp)
-        except ruamel.yaml.error.YAMLError as e:
-            if "found character '\\t' that cannot start any token" in e.problem:
+        except ruamel.yaml.YAMLError as e:
+            problem = getattr(e, "problem", None)
+            if problem and "found character '\\t' that cannot start any token" in problem:
                 location = f"{e.args[3].name}; line {e.args[3].line + 1} column {e.args[3].column + 1}"
                 e = f"Tabs are not allowed in YAML files; only spaces are allowed.\nfirst tab character found at:\n{location}"
             else:
