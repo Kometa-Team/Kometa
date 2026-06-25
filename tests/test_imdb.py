@@ -202,3 +202,21 @@ class TestValidateImdbWatchlist:
         """ur prefix without a numeric suffix is rejected."""
         with pytest.raises(Failed, match="ur########"):
             self._imdb().validate_imdb("Test", "imdb_watchlist", "urnothex")
+
+    # --- non-string inputs (regression: str-coercion on .strip()) ---
+
+    def test_numeric_user_id_in_dict_doesnt_crash_with_attribute_error(self):
+        """YAML can deserialize a bare numeric id as int. The validator used to crash with
+        `AttributeError: 'int' object has no attribute 'strip'` before main_data was
+        wrapped in `str(...)`. The numeric id is invalid (no ur/p. prefix) so a clean
+        Failed is the expected outcome — the point is that we don't `AttributeError`.
+        """
+        with pytest.raises(Failed, match="ur########"):
+            self._imdb().validate_imdb("Test", "imdb_watchlist", [{"user_id": 64054558}])
+
+    def test_numeric_id_wrapped_in_ur_string_via_stringification(self):
+        """When the user provides a dict with a string ur######## id, the str() coercion
+        is a no-op and the value passes through unchanged.
+        """
+        result = self._imdb().validate_imdb("Test", "imdb_watchlist", [{"user_id": "ur64054558"}])
+        assert result[0]["user_id"] == "ur64054558"
