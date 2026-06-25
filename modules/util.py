@@ -5,6 +5,7 @@ import signal
 import sys
 import time
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, Literal, overload
 
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
@@ -24,7 +25,14 @@ except ModuleNotFoundError:
     windows = False
 
 
-logger: MyLogger = None  # noqa
+# Set by kometa.py at startup before any consumer's `from modules.X import ...`
+# fires. The TYPE_CHECKING split declares the visible type as MyLogger (so
+# consumers can call logger.info() without an Optional guard) while keeping the
+# runtime default as None for the brief window before kometa.py assigns it.
+if TYPE_CHECKING:
+    logger: MyLogger
+else:
+    logger = None
 
 
 class TimeoutExpired(Exception):
@@ -87,7 +95,7 @@ class retry_if_http_429_error(retry_if_exception):
 
     def __init__(self):
         def is_http_429_error(exception: BaseException) -> bool:
-            return isinstance(exception, HTTPError) and exception.response.status_code == 429
+            return isinstance(exception, HTTPError) and exception.response is not None and exception.response.status_code == 429
 
         super().__init__(predicate=is_http_429_error)
 
@@ -97,8 +105,8 @@ class wait_for_retry_after_header(wait_base):
         self.fallback = fallback
 
     def __call__(self, retry_state):
-        exc = retry_state.outcome.exception()
-        if isinstance(exc, HTTPError):
+        exc = retry_state.outcome.exception() if retry_state.outcome is not None else None
+        if isinstance(exc, HTTPError) and exc.response is not None:
             retry_after = exc.response.headers.get("Retry-After", None)
             try:
                 if retry_after is not None:
@@ -243,7 +251,11 @@ def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list
         return [d if isinstance(d, dict) else get_str(d) for d in list_data]
 
 
-def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):
+@overload
+def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, *, return_none: Literal[False]) -> list: ...
+@overload  # noqa: E302
+def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, *, return_none: Literal[True] = True) -> list | None: ...
+def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, return_none=True):  # noqa: E302
     if split is True:
         split = ","
     if data is None:
@@ -275,7 +287,7 @@ def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=Tr
 
 def get_int_list(data, id_type):
     int_values = []
-    for value in get_list(data):
+    for value in get_list(data, return_none=False):
         try:
             int_values.append(regex_first_int(value, id_type))
         except Failed as e:
@@ -295,7 +307,7 @@ def validate_date(date_text, return_as=None):
 
 
 def validate_regex(data, col_type, validate=True):
-    regex_list = get_list(data, split=False)
+    regex_list = get_list(data, split=False, return_none=False)
     valid_regex = []
     for reg in regex_list:
         try:
@@ -345,8 +357,8 @@ def windows_input(prompt, timeout=5):
     result = []
     s_time = time.time()
     while True:
-        if msvcrt.kbhit():
-            char = msvcrt.getwche()
+        if msvcrt.kbhit():  # pyright: ignore[reportAttributeAccessIssue]
+            char = msvcrt.getwche()  # pyright: ignore[reportAttributeAccessIssue]
             if ord(char) == 13:  # enter_key
                 out = "".join(result)
                 print("")
@@ -459,7 +471,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
     had_scheduled = False
     if not lib_vars:
         lib_vars = {}
-    files_to_load = get_list(files_to_load, split=False)
+    files_to_load = get_list(files_to_load, split=False, return_none=False)
     if single and len(files_to_load) > 1:
         raise Failed(f"{err_type} Error: {method} can only have one entry")
     for file in files_to_load:
@@ -513,7 +525,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
             asset_directory = []
             if "asset_directory" in file and file["asset_directory"]:
                 logger.info(f"Asset Directory: {file['asset_directory']}")
-                for asset_path in get_list(file["asset_directory"], split=False):
+                for asset_path in get_list(file["asset_directory"], split=False, return_none=False):
                     if os.path.exists(asset_path):
                         asset_directory.append(asset_path)
                     else:
@@ -653,7 +665,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
         raise Failed("Schedule Error: each all schedule must be on its own line")
     elif isinstance(data, str) and "all" in data:
         data = [data]
-    for schedule in get_list(data):
+    for schedule in get_list(data, return_none=False):
         run_time = str(schedule).lower()
         display = f"{attribute} attribute {schedule} invalid"
         schedules_run += 1
@@ -905,7 +917,7 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         return []
     elif datatype == "listdict":
         final_list = []
-        for dict_data in get_list(value, split=False):
+        for dict_data in get_list(value, split=False, return_none=False):
             if isinstance(dict_data, dict):
                 final_list.append(dict_data)
             else:
@@ -984,7 +996,8 @@ def parse(error, attribute, data, datatype=None, methods=None, parent=None, defa
         except Failed as e:
             message = f"{e}"
     elif (translation is not None and str(value).lower() not in translation) or (options is not None and translation is None and str(value).lower() not in options):
-        message = f"{display} {value} must be in [{', '.join([str(o) for o in options])}]"
+        valid_options = options if options is not None else list(translation) if translation is not None else []
+        message = f"{display} {value} must be in [{', '.join([str(o) for o in valid_options])}]"
     else:
         return translation[str(value).lower()] if translation is not None else value
 
