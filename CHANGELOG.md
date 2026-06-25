@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fixed CI: downgrade `actions/checkout` from `v7` to `v6` across all workflows to restore PR validation for fork pull requests (still an upgrade over Kometa 2.3.1)
 - Downgrade "Skipping `<name>`: Item not found" log message from `ERROR` to `WARNING` in metadata file processing when a mapped item cannot be found in the Plex library.
 - Allow `builder_level` to work with playlists. Fixes #2267
 - Consolidate repeated asset warning messages in the warning summary into shared count buckets so the same warning is reported once instead of one row per affected folder or item.
