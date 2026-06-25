@@ -410,7 +410,7 @@ class AniList:
                 final = ani_attr if attr in no_mod_searches else f"{ani_attr}_{mod_translation[mod]}"
                 if attr in ["start", "end"]:
                     try:
-                        value = int(util.validate_date(value, return_as="%Y%m%d"))
+                        value = int(str(util.validate_date(value, return_as="%Y%m%d")))
                     except Failed as e:
                         raise Failed(f"Collection Error: anilist_search {key}: {e}")
                 elif attr in ["format", "status", "genre", "tag", "tag_category"]:
@@ -427,9 +427,9 @@ class AniList:
                 elif value is False:
                     value = "false"
                 if mod == "gte":
-                    value -= 1
+                    value = int(value) - 1
                 elif mod == "lte":
-                    value += 1
+                    value = int(value) + 1
                 media_vars += f", {final}: {value}"
         query = f"query ($page: Int) {{Page(page: $page){{pageInfo {{hasNextPage}}media({media_vars}){{id}}}}}}"
         logger.debug(query)
@@ -536,8 +536,8 @@ class AniList:
 
     def validate(self, name, data):
         valid = []
-        for d in util.get_list(data):
-            if d.lower().replace(" / ", "-").replace(" ", "-") in self.options[name]:
+        for d in util.get_list(data, return_none=False) or []:
+            if str(d).lower().replace(" / ", "-").replace(" ", "-") in self.options[name]:
                 valid.append(d)
         if len(valid) > 0:
             return valid
