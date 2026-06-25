@@ -623,7 +623,12 @@ def start(attrs):
             if "No Items found for" in other_message:
                 logger.separator("Overlay Errors Summary", space=False, border=False)
                 logger.info("")
-                logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
+                overlay_count = other_message["No Items found for"]["count"]
+                overlay_line = f"No Items found for {overlay_count} Overlays"
+                if run_args["trace"] or run_args["log-requests"]:
+                    logger.info(f"{overlay_line}: {other_message['No Items found for']['list']}")
+                else:
+                    logger.info(overlay_line)
                 logger.info("")
 
             convert_title = False
