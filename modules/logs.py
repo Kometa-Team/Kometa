@@ -108,7 +108,8 @@ class MyLogger:
         self._logger.addHandler(self.main_handler)
 
     def remove_main_handler(self):
-        self._logger.removeHandler(self.main_handler)
+        if self.main_handler is not None:
+            self._logger.removeHandler(self.main_handler)
 
     def add_library_handler(self, library_key):
         os.makedirs(os.path.join(self.log_dir, library_key, COLLECTION_DIR), exist_ok=True)
@@ -129,7 +130,8 @@ class MyLogger:
         self._logger.addHandler(self.playlists_handler)
 
     def remove_playlists_handler(self):
-        self._logger.removeHandler(self.playlists_handler)
+        if self.playlists_handler is not None:
+            self._logger.removeHandler(self.playlists_handler)
 
     def add_collection_handler(self, library_key, collection_key):
         collection_dir = os.path.join(self.log_dir, str(library_key), COLLECTION_DIR, str(collection_key))
@@ -308,7 +310,7 @@ class MyLogger:
         if not f:
             f = orig_f
         rv = "(unknown file)", 0, "(unknown function)", None
-        while hasattr(f, "f_code"):
+        while f is not None:
             co = f.f_code
             filename = os.path.normcase(co.co_filename)
             if filename == _srcfile:
