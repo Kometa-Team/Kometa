@@ -139,6 +139,7 @@
                 "mal_season": { "type": "object", "additionalProperties": true },
                 "mal_search": { "type": "object", "additionalProperties": true },
 
+                "value_filter": { "type": "object", "additionalProperties": true },
                 "filters": { "type": "object", "additionalProperties": true }
             }
         },
@@ -153,6 +154,7 @@
                 "git": { "type": "string" },
                 "repo": { "type": "string" },
                 "file": { "type": "string" },
+                "default": { "type": "string", "description": "Fallback image path used when no explicit file/url/git/repo is set." },
                 "group": { "type": "string", "description": "Only one overlay per group will be applied per item." },
                 "weight": { "type": "integer", "description": "Priority within the group (higher wins)." },
                 "queue": { "type": "string", "description": "Queue name for stacking overlays." },

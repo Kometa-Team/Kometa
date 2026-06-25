@@ -7,10 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `value_filter` overlay-file attribute to filter items at selection time based on a runtime-fetched numeric value; supports comparators `gte`, `gt`, `lt`, `lte` on any `rating_sources` variable using the normalised 0–10 scale.
+- Add `overlay_value_cache` table (replaces `overlay_special_text2`) with a `UNIQUE(rating_key, type)` constraint and an `expiration_date` column; values refresh automatically after `cache_expiration` days.
+- Add `_overlay_state` and `_overlay_images` per-library tables replacing the dual-use `overlay TEXT` column in `_overlays`; one row per overlay per item, written only on successful resolution.
+- Add one-time migration that moves rows from `overlay_special_text2` into `overlay_value_cache` (deduped), resets overlay application state for a full reprocess, and logs a visible "Overlay Cache Upgraded" separator.
+- Rework `defaults/overlays/ratings.yml` to fetch ratings directly during the overlay run; Mass Rating Update operations are no longer required for fetched sources. Adds auto image-pick, Fresh/Rotten filtering via `value_filter`, a `Direct` image level for tomatoes/tomatoesaudience, and new image assets under `defaults/overlays/images/rating/`.
+
 ### Fixed
 
+- Fix overlay cache poisoning where application state was written for unresolved overlays (e.g. no IMDb rating), causing the item to be permanently skipped even after a rating became available.
+- Fix duplicate rows accumulating in `overlay_special_text2` on every run due to a missing `UNIQUE(rating_key, type)` constraint.
 - Downgrade "Skipping `<name>`: Item not found" log message from `ERROR` to `WARNING` in metadata file processing when a mapped item cannot be found in the Plex library.
 - Allow `builder_level` to work with playlists. Fixes #2267
+
 ## [v2.4.3] - 2026-06-22
 
 ### Fixed
