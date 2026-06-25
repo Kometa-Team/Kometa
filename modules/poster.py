@@ -11,7 +11,6 @@ logger = util.logger
 
 class ImageData:
     def __init__(self, attribute, location, prefix="", image_type="poster", is_url=True, compare=None):
-        file_stat = None if is_url else os.stat(location)
         self.attribute = attribute
         self.location = location
         self.prefix = prefix
@@ -20,7 +19,13 @@ class ImageData:
         self.is_logo = image_type == "logo"
         self.is_square_art = image_type == "square_art"
         self.is_url = is_url
-        self.compare = compare if compare else location if is_url else f"{os.path.abspath(location)}:{file_stat.st_size}:{file_stat.st_mtime_ns}"
+        if compare:
+            self.compare = compare
+        elif is_url:
+            self.compare = location
+        else:
+            file_stat = os.stat(location)
+            self.compare = f"{os.path.abspath(location)}:{file_stat.st_size}:{file_stat.st_mtime_ns}"
         self.message = f"{prefix}{image_type} to [{'URL' if is_url else 'File'}] {location}"
 
     def __str__(self):
@@ -175,10 +180,14 @@ class Component(ImageBase):
             raise Failed("Posters Error: An image or text is required for each component")
 
     def apply_vars(self, item_vars):
+        if self.text is None:
+            return
         for var_key, var_data in item_vars.items():
             self.text = self.text.replace(f"<<{var_key}>>", str(var_data))
 
     def adjust_text_width(self, max_width):
+        if self.text is None:
+            return
         lines = []
         for line in self.text.split("\n"):
             for word in line.split(" "):
@@ -275,6 +284,8 @@ class Component(ImageBase):
             if self.image_color:
                 r, g, b = self.image_color
                 pixels = image.load()
+                if pixels is None:
+                    raise Failed(f"Posters Error: failed to load pixels from image: {self.image}")
                 for x in range(image_width):
                     for y in range(image_height):
                         if pixels[x, y][3] > 0:  # noqa
@@ -316,6 +327,11 @@ class Component(ImageBase):
             addon_x = None
             addon_y = None
             if self.text is not None and self.image:
+                # text_width and text_height are guaranteed set by the
+                # `if self.text is not None:` block above; restate the
+                # invariant for the type checker.
+                if text_width is None or text_height is None:
+                    raise Failed("Posters Error: text dimensions not computed")
                 addon_x = main_x
                 addon_y = main_y
                 if self.addon_position == "left":
