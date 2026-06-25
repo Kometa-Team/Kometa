@@ -171,6 +171,9 @@ templates:
             value: Direct
           - rating<<rating_num>>_image: [rt_popcorn, rt_tomato]
             value: <<image_level>>
+          - rating<<rating_num>>_image: [critic, audience]
+            image_level: [Fresh, Rotten]
+            value: <<image_level>>
       rating<<rating_num>>_image_url:
         conditions:
           - rating<<rating_num>>_image: anidb
