@@ -1010,6 +1010,7 @@ class ConfigFile:
                     self.data["playlist_files"],
                     "playlist_files",
                     schedule=(current_time, self.run_hour, self.ignore_schedules),
+                    config_dir=self.default_dir,
                 )
                 if not files and not had_scheduled:
                     raise Failed("Config Error: No Paths Found for playlist_files")
@@ -1663,6 +1664,7 @@ class ConfigFile:
                             "collection_files",
                             schedule=(current_time, self.run_hour, self.ignore_schedules),
                             lib_vars=lib_vars,
+                            config_dir=self.default_dir,
                         )
                         configured_files = files
                         if had_scheduled:
@@ -1670,6 +1672,7 @@ class ConfigFile:
                                 lib["collection_files"],
                                 "collection_files",
                                 lib_vars=lib_vars,
+                                config_dir=self.default_dir,
                             )
                         params["configured_collection_files"] = configured_files
                         if files:
@@ -1691,6 +1694,7 @@ class ConfigFile:
                             "metadata_files",
                             schedule=(current_time, self.run_hour, self.ignore_schedules),
                             lib_vars=lib_vars,
+                            config_dir=self.default_dir,
                         )
                         if files:
                             params["metadata_files"] = files
@@ -1723,7 +1727,7 @@ class ConfigFile:
                         logger.info("Reading in Overlay Files")
                         if not lib["overlay_files"]:
                             raise Failed("Config Error: overlay_files attribute is blank")
-                        files, _ = util.load_files(lib["overlay_files"], "overlay_files", lib_vars=lib_vars)
+                        files, _ = util.load_files(lib["overlay_files"], "overlay_files", lib_vars=lib_vars, config_dir=self.default_dir)
                         for file in util.get_list(lib["overlay_files"], split=False):
                             if isinstance(file, dict):
                                 if ("remove_overlays" in file and file["remove_overlays"] is True) or ("remove_overlay" in file and file["remove_overlay"] is True) or ("revert_overlays" in file and file["revert_overlays"] is True):
@@ -1796,7 +1800,7 @@ class ConfigFile:
                     if lib and "image_files" in lib:
                         if not lib["image_files"]:
                             raise Failed("Config Error: image_files attribute is blank")
-                        files, _ = util.load_files(lib["image_files"], "image_files")
+                        files, _ = util.load_files(lib["image_files"], "image_files", config_dir=self.default_dir)
                         if not files:
                             raise Failed("Config Error: No Paths Found for image_files")
                         params["image_files"] = files

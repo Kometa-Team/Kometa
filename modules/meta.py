@@ -155,7 +155,10 @@ class DataFile:
                         if os.path.exists(os.path.join(defaults_path, default_folder, file_path)):
                             file_path = os.path.join(defaults_path, default_folder, file_path)
                             break
-            content_path = os.path.abspath(os.path.join(file_path, "default.yml") if translation else file_path)
+            _content_rel = os.path.join(file_path, "default.yml") if translation else file_path
+            if not os.path.isabs(_content_rel) and hasattr(self, "config") and self.config and hasattr(self.config, "default_dir"):
+                _content_rel = os.path.join(self.config.default_dir, _content_rel)
+            content_path = os.path.abspath(_content_rel)
             dir_path = file_path
             if not os.path.exists(content_path):
                 if content_path.endswith(".yml") and os.path.exists(f"{content_path[:-4]}.yaml"):
