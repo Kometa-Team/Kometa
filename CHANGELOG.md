@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.4.4] - 2026-06-25
+
 ### Fixed
 
 - Fixed CI: downgrade `actions/checkout` from `v7` to `v6` across all workflows to restore PR validation for fork pull requests (still an upgrade over Kometa 2.3.1)
@@ -166,7 +168,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...HEAD
+[v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2
 [v2.3.1]: https://github.com/Kometa-Team/Kometa/releases/tag/v2.3.1
