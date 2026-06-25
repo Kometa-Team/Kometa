@@ -75,7 +75,6 @@ class TestInit:
             "imdb_keywords",
             "imdb_parental",
             "ergast_race",
-            "overlay_special_text2",
             "overlay_value_cache",
             "testing",
             "letterboxd_incremental_state",
@@ -519,38 +518,6 @@ class TestLetterboxdIncrementalState:
         timestamp, ids = cache.query_letterboxd_incremental_state("user2", "films")
         assert timestamp == "2026-06-15"
         assert ids == [2, 3]
-
-
-# ═══════════════════════════════════════════════════════════════════════
-# Overlay special text
-# ═══════════════════════════════════════════════════════════════════════
-
-
-class TestOverlaySpecialText:
-    def test_round_trip(self, tmp_path):
-        cache = make_cache(tmp_path)
-        cache.update_overlay_special_text("rk-101", "rating", "PG-13")
-        result = cache.query_overlay_special_text("rk-101")
-        assert result == {"rating": "PG-13"}
-
-    def test_multiple_types(self, tmp_path):
-        cache = make_cache(tmp_path)
-        cache.update_overlay_special_text("rk-101", "rating", "R")
-        cache.update_overlay_special_text("rk-101", "audio", "5.1")
-        result = cache.query_overlay_special_text("rk-101")
-        assert result == {"rating": "R", "audio": "5.1"}
-
-    def test_missing(self, tmp_path):
-        cache = make_cache(tmp_path)
-        result = cache.query_overlay_special_text("rk-999")
-        assert result == {}
-
-    def test_update_overwrite(self, tmp_path):
-        cache = make_cache(tmp_path)
-        cache.update_overlay_special_text("rk-101", "rating", "R")
-        cache.update_overlay_special_text("rk-101", "rating", "NC-17")
-        result = cache.query_overlay_special_text("rk-101")
-        assert result == {"rating": "NC-17"}
 
 
 # ═══════════════════════════════════════════════════════════════════════
