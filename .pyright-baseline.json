@@ -3,7 +3,6 @@
   "total_errors": 1174,
   "per_file_errors": {
     "kometa.py": 20,
-    "modules/anilist.py": 7,
     "modules/builder.py": 56,
     "modules/config.py": 2,
     "modules/ergast.py": 2,
