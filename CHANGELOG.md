@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
+### Fixed
+
+- `modules/poster.py`: fix 18 Optional-member-access errors flagged by pyright. The `ImageData.__init__` triple-nested-ternary is unwound into an explicit `if`/`elif`/`else` (also skips a redundant `os.stat()` call when `compare=` is provided explicitly). `apply_vars` and `adjust_text_width` early-return on `self.text is None` (matches the callers' existing `if component.text:` guard). `get_generated_layer` raises `Failed` with a descriptive message instead of crashing with `'NoneType' object is not subscriptable` when `Image.load()` or text-dimension computation returns unexpectedly. Baseline drops 1223 → 1205.
+
 ## [v2.4.4] - 2026-06-25
 
 ### Fixed
