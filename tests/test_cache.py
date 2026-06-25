@@ -932,9 +932,7 @@ class TestOverlayMigration:
         # Simulate a legacy cache: overlay_special_text2 with a duplicate row (the legacy bug)
         # and a stale overlay application row that the migration must clear.
         with sqlite3.connect(cache.cache_path) as connection:
-            connection.execute(
-                "CREATE TABLE IF NOT EXISTS overlay_special_text2 (key INTEGER PRIMARY KEY, rating_key TEXT, type TEXT, text TEXT)"
-            )
+            connection.execute("CREATE TABLE IF NOT EXISTS overlay_special_text2 (key INTEGER PRIMARY KEY, rating_key TEXT, type TEXT, text TEXT)")
             connection.executemany(
                 "INSERT INTO overlay_special_text2(rating_key, type, text) VALUES(?, ?, ?)",
                 [
@@ -943,9 +941,7 @@ class TestOverlayMigration:
                     ("5173", "mdb_tomatoes_rating", "8.1"),
                 ],
             )
-            connection.execute(
-                f"INSERT INTO {table_name}_overlays(rating_key, compare, location) VALUES('5173', 'c', 'loc')"
-            )
+            connection.execute(f"INSERT INTO {table_name}_overlays(rating_key, compare, location) VALUES('5173', 'c', 'loc')")
             connection.commit()
 
         cache.migrate_overlay_value_cache()

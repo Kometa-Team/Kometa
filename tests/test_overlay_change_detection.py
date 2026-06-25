@@ -14,13 +14,13 @@ state transitions for:
 The actual change-detection comparisons in overlays.py are pure dict logic;
 these tests verify the cache layer produces the right state for those comparisons.
 """
-import sqlite3
+
+from unittest.mock import MagicMock
 
 import pytest
 
 from modules import cache as cache_module
 from modules.cache import Cache
-from unittest.mock import MagicMock
 
 
 @pytest.fixture
@@ -35,6 +35,7 @@ def _setup_table(cache):
 
 
 # ── Helpers that mirror what overlays.py does each run ────────────────────────
+
 
 def _write_state(cache, state_table, rating_key, overlays):
     """Simulate the post-render cache write: delete all then write resolved overlays.
@@ -60,13 +61,19 @@ def _detect_change(cached_state, current_hashes):
 
 # ── Change detection scenarios ─────────────────────────────────────────────────
 
+
 def test_no_change_detected_when_state_matches(cache):
     state_table = _setup_table(cache)
     # Run 1: write state for two overlays.
-    _write_state(cache, state_table, 5173, {
-        "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
-        "Overlay File (0) 4K":           ("hashB", None),
-    })
+    _write_state(
+        cache,
+        state_table,
+        5173,
+        {
+            "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
+            "Overlay File (0) 4K": ("hashB", None),
+        },
+    )
     # Run 2: same overlays, same hashes.
     cached_state = cache.query_overlay_state(5173, state_table)
     current_hashes = {"Overlay File (0) Rating1Fresh": "hashA", "Overlay File (0) 4K": "hashB"}
@@ -87,10 +94,15 @@ def test_new_overlay_triggers_change(cache):
 def test_removed_overlay_triggers_change(cache):
     state_table = _setup_table(cache)
     # Run 1: both overlays cached.
-    _write_state(cache, state_table, 5173, {
-        "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
-        "Overlay File (0) 4K":           ("hashB", None),
-    })
+    _write_state(
+        cache,
+        state_table,
+        5173,
+        {
+            "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
+            "Overlay File (0) 4K": ("hashB", None),
+        },
+    )
     # Run 2: 4K removed from config.
     cached_state = cache.query_overlay_state(5173, state_table)
     current_hashes = {"Overlay File (0) Rating1Fresh": "hashA"}
@@ -120,6 +132,7 @@ def test_resolved_value_change_is_visible_in_state(cache):
 
 
 # ── Poisoning fix ──────────────────────────────────────────────────────────────
+
 
 def test_unresolved_overlay_absent_from_state_is_retried(cache):
     """The cache-poisoning fix: when a rating fetch fails (overlay goes into 'unresolved'),
@@ -164,10 +177,15 @@ def test_previously_unresolved_overlay_written_once_it_resolves(cache):
     # HDR skipped (unresolved)
 
     # Run 2: HDR now resolves.
-    _write_state(cache, state_table, 5173, {
-        "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
-        "Overlay File (0) HDR":          ("hashB", None),
-    })
+    _write_state(
+        cache,
+        state_table,
+        5173,
+        {
+            "Overlay File (0) Rating1Fresh": ("hashA", "7.3"),
+            "Overlay File (0) HDR": ("hashB", None),
+        },
+    )
     states = cache.query_overlay_state(5173, state_table)
     assert "Overlay File (0) HDR" in states
 
