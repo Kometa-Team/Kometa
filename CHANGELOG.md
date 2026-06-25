@@ -15,12 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `ModuleNotFoundError: No module named 'resource'` crash on Windows at startup. The file-descriptor limit fix introduced in #3235 used the POSIX-only `resource` module unconditionally. Now wrapped in a `try`/`except ImportError` so the bump is applied on POSIX systems and skipped cleanly on Windows. (#3244)
 - Fix `kometa.py` crashing with `TypeError: HEAD is a detached symbolic reference` when run from a detached-HEAD checkout (release-tag checkouts, CI runners that check out by SHA, etc.). (#3232)
 - Fix `cache.update_anime_map()` writing the AniDB id into the AniList column on UPDATE. The original `anime_map` row was written correctly on INSERT but each subsequent update would clobber `anilist_id` with the AniDB value. (#3232)
+- Defer cache eviction until all batched Plex edits complete so genre updates (or other non-batched updates) no longer evict items before later rating and originally available date, etc writes run.
 - Remove TMDb ID `717095` from the Ice Age franchise default after TMDb no longer returns the collection.
 
 ### Changed
 
 - Internal: add a comprehensive pytest test suite (580 tests, up from 203) covering most of `modules/`, plus a regression-test convention (`test_issue_NNNN_*`) for documented bugs. (#3232)
 - Internal: add a GitHub Actions test workflow with separate jobs for `lint` (black + isort + flake8), `test` (pytest with 20% coverage gate), `regression` (regression-only suite), `schema` (JSON Schema validation of `json-schema/*.json` + kitchen-sink config), `imports` (auto-discovered import smoke check across all 40 modules), `perf` (slow-test reporting via `pytest --durations-min`), and `smoke` (`kometa.py --help` + minimal-config dry-run). (#3232)
+- Internal: add `.gitattributes` to normalize line endings to LF on commit for all text sources, flag image/font/PSD files as binary so Git won't try to diff them, and add `linguist-vendored`/`linguist-generated` hints for cleaner GitHub language stats. Renormalized `defaults/overlays/languages.yml` which had been checked in with CRLF endings since a 2025 community PR. Also adds `export-ignore` entries so `git archive` source tarballs no longer ship `tests/`, `.github/`, or other dev-only files.
 - Internal: extend the `test`, `imports`, and `smoke` CI jobs to a Linux + Windows OS matrix so POSIX-only regressions (the class of bug that produced #3244) get caught before merge instead of at user launch. Adds an AST-based regression test (`test_issue_3244_*`) that statically pins the `try/except ImportError` guard around `import resource` in `kometa.py` and asserts every `resource.<attr>` reference at module scope sits inside an `if resource is not None:` block.
 
 ## [v2.4.3] - 2026-06-22
