@@ -42,6 +42,9 @@ class TextFile:
     def __init__(self, requests):
         self.requests = requests
 
+    def _is_url(self, value):
+        return str(value).startswith(("http://", "https://"))
+
     def _clean_line(self, line):
         entry = str(line).strip()
         if not entry or entry.startswith("#"):
@@ -71,6 +74,24 @@ class TextFile:
                 return json.loads(raw)
             except (TypeError, json.JSONDecodeError, UnicodeDecodeError):
                 raise Failed(f"{name} Error: JSON not found at {url}")
+
+    def _request_text(self, url, name="Text File"):
+        response = self.requests.get(url)
+        if response.status_code >= 400:
+            raise Failed(f"{name} Error: Text File not found at {url}")
+        content = getattr(response, "content", None)
+        if content is None:
+            raise Failed(f"{name} Error: Text File not found at {url}")
+        raw = content.encode("utf-8") if isinstance(content, str) else bytes(content)
+        if raw.startswith(b"\x1f\x8b"):
+            try:
+                raw = gzip.decompress(raw)
+            except OSError:
+                raise Failed(f"{name} Error: Text File not found at {url}")
+        try:
+            return raw.decode("utf-8")
+        except UnicodeDecodeError:
+            raise Failed(f"{name} Error: Text File not found at {url}")
 
     def _request_list(self, url, name="Text File"):
         data = self._request(url, name=name)
@@ -167,6 +188,17 @@ class TextFile:
             raise Failed(f"Text File Error: No IDs found at {url}")
         return ids
 
+    def _parse_text_url(self, url, is_movie=None):
+        try:
+            return self._parse_json_url(url, is_movie=is_movie)
+        except Failed:
+            ids = []
+            for line_number, line in enumerate(self._request_text(url).splitlines(), 1):
+                ids.extend(self._parse_line(line, f"{url}:{line_number}", is_movie=is_movie))
+            if not ids:
+                raise Failed(f"Text File Error: No IDs found at {url}")
+            return ids
+
     def _parse_line(self, line, source, is_movie=None):
         entry = self._clean_line(line)
         if not entry:
@@ -194,10 +226,14 @@ class TextFile:
     def validate_file(self, data):
         valid_files = []
         for text_file in util.get_list(data, split=False, return_none=False):
-            file_path = os.path.abspath(str(text_file))
-            if not os.path.isfile(file_path):
-                raise Failed(f"Text File Error: File not found at {file_path}")
-            valid_files.append(file_path)
+            text_file = str(text_file).strip()
+            if self._is_url(text_file):
+                valid_files.append(text_file)
+            else:
+                file_path = os.path.abspath(text_file)
+                if not os.path.isfile(file_path):
+                    raise Failed(f"Text File Error: File not found at {file_path}")
+                valid_files.append(file_path)
         return valid_files
 
     def get_ids(self, data, is_movie=None):
@@ -205,9 +241,12 @@ class TextFile:
         for file_path in util.get_list(data, split=False, return_none=False):
             if util.logger:
                 util.logger.info(f"Processing Text File: {file_path}")
-            with open(file_path, encoding="utf-8") as handle:
-                for line_number, line in enumerate(handle, 1):
-                    ids.extend(self._parse_line(line, f"{file_path}:{line_number}", is_movie=is_movie))
+            if self._is_url(file_path):
+                ids.extend(self._parse_text_url(file_path, is_movie=is_movie))
+            else:
+                with open(file_path, encoding="utf-8") as handle:
+                    for line_number, line in enumerate(handle, 1):
+                        ids.extend(self._parse_line(line, f"{file_path}:{line_number}", is_movie=is_movie))
         if not ids:
             raise Failed("Text File Error: No IDs found.")
         return ids

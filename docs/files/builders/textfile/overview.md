@@ -4,10 +4,10 @@ hide:
 ---
 # Text File Builders
 
-You can find items using a simple manually maintained text file stored locally.
+You can find items using a simple manually maintained text file stored locally or available by URL.
 
 No external service configuration is required for this Builder.
 
 | Builder                          | Description                                                                  |             Works with Movies              |             Works with Shows             |    Works with Playlists and Custom Sort    |
 |:---------------------------------|:-----------------------------------------------------------------------------|:------------------------------------------:|:----------------------------------------:|:------------------------------------------:|
-| [`text_file`](text-file.md) | Reads supported IDs and URLs from a local text file while preserving file order. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`text_file`](text-file.md) | Reads supported IDs and URLs from a local or remote text file while preserving source order. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
