@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `value_filter` overlay-file attribute to filter items at selection time based on a runtime-fetched numeric value; supports comparators `gte`, `gt`, `lt`, `lte` on any `rating_sources` variable using the normalised 0–10 scale.
+- Add `overlay_value_cache` table (replaces `overlay_special_text2`) with a `UNIQUE(rating_key, type)` constraint and an `expiration_date` column; values refresh automatically after `cache_expiration` days.
+- Add `_overlay_state` and `_overlay_images` per-library tables replacing the dual-use `overlay TEXT` column in `_overlays`; one row per overlay per item, written only on successful resolution.
+- Add one-time migration that moves rows from `overlay_special_text2` into `overlay_value_cache` (deduped), resets overlay application state for a full reprocess, and logs a visible "Overlay Cache Upgraded" separator.
+- Rework `defaults/overlays/ratings.yml` to fetch ratings directly during the overlay run; Mass Rating Update operations are no longer required for fetched sources. Adds auto image-pick, Fresh/Rotten filtering via `value_filter`, a `Direct` image level for tomatoes/tomatoesaudience, and new image assets under `defaults/overlays/images/rating/`.
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 
 ### Changed
@@ -17,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix overlay cache poisoning where application state was written for unresolved overlays (e.g. no IMDb rating), causing the item to be permanently skipped even after a rating became available.
+- Fix duplicate rows accumulating in `overlay_special_text2` on every run due to a missing `UNIQUE(rating_key, type)` constraint.
 - `modules/textfile.py`: fix `tmdb:` entries in playlist/mixed mode (where `is_movie=None`) being silently dropped. The old `is_movie is not False` check treated `None` as `True`, tagging TV show TMDb IDs as `"tmdb"` type which only checks `movie_map`. Now returns both `(id, "tmdb")` and `(id, "tmdb_show")` so the builder resolves against both movie and show maps. Also updates `mdblist` and `simkl` three-state contract comments and docs.
 - `modules/poster.py`: fix 18 Optional-member-access errors flagged by pyright. The `ImageData.__init__` triple-nested-ternary is unwound into an explicit `if`/`elif`/`else` (also skips a redundant `os.stat()` call when `compare=` is provided explicitly). `apply_vars` and `adjust_text_width` early-return on `self.text is None` (matches the callers' existing `if component.text:` guard). `get_generated_layer` raises `Failed` with a descriptive message instead of crashing with `'NoneType' object is not subscriptable` when `Image.load()` or text-dimension computation returns unexpectedly. Baseline drops 1223 → 1205.
 - `modules/letterboxd.py`: fix 9 Optional-call/iterable errors flagged by pyright by removing dead defensive code. `letterboxdpy` is a pinned hard dependency in `requirements.txt`, so the speculative `try/except ImportError` (and the runtime `_require_library()` guard it required) was never reachable in any supported install. Imports are now unconditional, matching every other integration module (`plex.py`, `tmdb.py`, etc.). The two `util.get_list(...)` for-loops in `validate_letterboxd_lists` / `validate_letterboxd_user_pages` now pass `return_none=False` and fall back to `[]`, so they never try to iterate `None`. Net diff: -19 lines, no behavioural change for any real install. Baseline drops 1205 → 1196 (and `modules/letterboxd.py` falls out of the per-file table entirely).
@@ -197,7 +204,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
 [unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...HEAD
-[v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
+[v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2
 [v2.3.1]: https://github.com/Kometa-Team/Kometa/releases/tag/v2.3.1

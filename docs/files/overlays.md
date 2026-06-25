@@ -760,6 +760,76 @@ queues:
 
 * This will place 3 overlays with a different vertical offset of 15, 75, 135.
 
+## Value Filter
+
+`value_filter` is an overlay-file-only attribute that filters items at selection time based on a runtime-fetched numeric value. It is a post-filter (AND on top of whatever the builder returned) — only items where **all** conditions pass are included.
+
+It is the counterpart to `plex_search` for values that don't live in Plex's database. `plex_search` handles Plex-native attributes via an efficient DB query; `value_filter` handles values fetched at runtime from external sources such as IMDb, TMDb, MDBList, and Rotten Tomatoes.
+
+```yaml
+overlays:
+  RT Fresh:
+    overlay:
+      name: text(mdb_tomatoes_rating)
+      default: rating/RT-TomatoFresh.png
+    plex_all: true
+    value_filter:
+      mdb_tomatoes_rating.gte: 6.0
+
+  RT Rotten:
+    overlay:
+      name: text(mdb_tomatoes_rating)
+      default: rating/RT-TomatoRotten.png
+    plex_all: true
+    value_filter:
+      mdb_tomatoes_rating.lt: 6.0
+```
+
+Multiple conditions are supported and combined with AND logic — all must pass for an item to be included:
+
+```yaml
+value_filter:
+  tmdb_rating.gte: 6.0
+  tmdb_rating.lte: 10.0   # exclude unrated items that return 0.0
+```
+
+### Comparators
+
+| Comparator | Meaning |
+| - | - |
+| `.gte` | Greater than or equal to |
+| `.gt` | Greater than |
+| `.lt` | Less than |
+| `.lte` | Less than or equal to |
+
+### Supported Variables
+
+All values use Kometa's normalised **0–10 scale** regardless of source (e.g. a Rotten Tomatoes score of 79% is `7.9`). The default Fresh threshold used by the `ratings` defaults file is `6.0` (equivalent to 60%).
+
+Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `mdb_trakt_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `tmdb_rating`, `trakt_rating`, `trakt_user_rating`.
+
+### Caching
+
+Values are written to `overlay_value_cache` on first fetch and refreshed after your configured `cache_expiration` days. The filter and the render phase share the same cache entry — no value is fetched twice per item per run.
+
+### Behaviour on missing values
+
+If a value cannot be fetched (the item has no rating, or the external API is unavailable), the item is excluded from the overlay for that run and a trace-level log entry is written. The item is retried on every subsequent run rather than being permanently skipped.
+
+### Relationship to `filters`
+
+`filters` and `value_filter` are independent and both apply as AND conditions. `filters` operates on Plex metadata already in the item set; `value_filter` fetches external values. You can combine them freely:
+
+```yaml
+plex_search:
+  all:
+    genre: Action
+value_filter:
+  tmdb_rating.gte: 7.0
+filters:
+  release_year.gte: 2000
+```
+
 ## Suppress Overlays
 
 You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.

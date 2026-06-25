@@ -8,9 +8,7 @@ hide:
         "OVERLAY_NAME": "Ratings", 
         "CODE_NAME": "ratings",
         "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay based on the Critic Rating, Audience Rating, and User Rating in Plex for each item within your library.
-
-This file only updates the overlays based on the data in Plex, it will not pull the ratings directly from any third-party website, see recommendations below for more info"
+        "DESCRIPTION": "an overlay based on ratings from various sources including IMDb, TMDb, MDBList, OMDb, AniDB, MAL, Trakt, and Rotten Tomatoes on each item within your library"
     }'
     replace-tags='{"title-sub": "**Please read [Kometa Ratings Explained](../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with ratings.**"}'
     end='<!--rec-sub-->'
@@ -18,8 +16,8 @@ This file only updates the overlays based on the data in Plex, it will not pull 
 
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
-Recommendations: Use the [Mass * Rating Update Library Operation](../../config/operations.md#mass-rating-update) and the
-[Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode-rating-update) to update Plex to the Ratings you want on the Overlay.
+Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3: user`, use the [Mass * Rating Update Library Operation](../../config/operations.md#mass-rating-update) and the
+[Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode-rating-update) to populate Plex's rating slots from your preferred source. Fetched sources do not require this step.
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

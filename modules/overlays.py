@@ -86,8 +86,6 @@ class Overlays:
                         _, image_compare = self.cache.query_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays")
                         cached_state = self.cache.query_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
                     self.library.reload(item, force=self.library.reapply_overlays)
-
-                    
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
                     current_hashes = {properties[ov].mapping_name: properties[ov].get_overlay_compare() for ov in over_names}
@@ -275,11 +273,11 @@ class Overlays:
                                                 found_rating = self.library.fetch_overlay_value(item, format_var)
                                             except Failed as err:
                                                 logger.error(err)
-                                            if found_rating:
+                                            if found_rating is not None:
                                                 actual_value = found_rating
                                                 logger.trace(f"{format_var}: {actual_value}")
                                             else:
-                                                raise OverlayError(f"Overlay Error: No '{format_var}' found for {item_title}")
+                                                raise OverlayError(f"Overlay Warning: No '{format_var}' found for '{item_title}'")
                                         elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
@@ -504,7 +502,6 @@ class Overlays:
                 except FilterFailed:
                     pass
                 except Failed as e:
-                    logger.stacktrace()
                     logger.error(e)
                     logger.info("")
                 except Exception as e:

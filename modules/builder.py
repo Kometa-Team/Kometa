@@ -4460,24 +4460,32 @@ class CollectionBuilder:
         # AND post-filter on runtime-fetched values (counterpart to plex_search for non-Plex values). Excludes the item on any failed/missing/unmet condition.
         if not self.value_filters:
             return True
+        passed = True
+        logged_missing = set()
         for variable_name, comparator, threshold in self.value_filters:
             try:
                 value = self.library.fetch_overlay_value(item, variable_name)
             except Failed as e:
-                logger.warning(f"Value Filter Warning: {e}")
-                return False
+                logger.trace(f"Value Filter: {e}")
+                passed = False
+                continue
             if value is None:
-                logger.trace(f"Value Filter: No '{variable_name}' found for {item.title}")
-                return False
+                if variable_name not in logged_missing:
+                    logger.trace(f"Value Filter: No '{variable_name}' found for {item.title}")
+                    logged_missing.add(variable_name)
+                passed = False
+                continue
             if comparator == "gte" and not value >= threshold:
-                return False
-            if comparator == "gt" and not value > threshold:
-                return False
-            if comparator == "lt" and not value < threshold:
-                return False
-            if comparator == "lte" and not value <= threshold:
-                return False
-        return True
+                passed = False
+            elif comparator == "gt" and not value > threshold:
+                passed = False
+            elif comparator == "lt" and not value < threshold:
+                passed = False
+            elif comparator == "lte" and not value <= threshold:
+                passed = False
+        for var in sorted(logged_missing):
+            logger.warning(f"Overlay Warning: No '{var}' found for '{item.title}'")
+        return passed
 
     def display_filters(self):
         if self.filters:
