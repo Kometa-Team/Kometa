@@ -5,6 +5,7 @@ import math
 import os
 import re
 import shutil
+from typing import Literal, overload
 
 from modules import util
 from modules.util import Failed
@@ -526,7 +527,7 @@ class IMDb:
     def validate_imdb(self, err_type, method, imdb_dicts):
         valid_lists = []
         main = "list_id" if method == "imdb_list" else "user_id"
-        for imdb_dict in util.get_list(imdb_dicts, split=True if isinstance(imdb_dicts, str) else False):
+        for imdb_dict in util.get_list(imdb_dicts, split=True if isinstance(imdb_dicts, str) else False, return_none=False) or []:
             if not isinstance(imdb_dict, dict):
                 imdb_dict = {main: imdb_dict}
             if "url" in imdb_dict and main not in imdb_dict:
@@ -537,7 +538,7 @@ class IMDb:
             elif imdb_dict[dict_methods[main]] is None:
                 raise Failed(f"{err_type} Error: {method} {main} attribute is blank")
             else:
-                main_data = imdb_dict[dict_methods[main]].strip()
+                main_data = str(imdb_dict[dict_methods[main]]).strip()
                 if method == "imdb_list":
                     if main_data.startswith(f"{base_url}/search/"):
                         raise Failed(f"IMDb Error: URLs with https://www.imdb.com/search/ no longer works with {method} use imdb_search.")
@@ -623,7 +624,7 @@ class IMDb:
                                 out[constraint][f"{imdb_mod}{lower}"] = [d.replace(translation[0], translation[1]) for d in data[full_attr]]
                             elif isinstance(translation, dict):
                                 out[constraint][f"{imdb_mod}{lower}"] = [translation[d] if d in translation else d for d in data[full_attr]]
-                    if range_data:
+                    if range_data and range_name is not None:
                         out[constraint][range_name[i]] = range_data
 
         sort = data["sort_by"] if "sort_by" in data else "popularity.asc" if list_type == "search" else "custom.asc"
@@ -792,7 +793,10 @@ class IMDb:
             relevant = k.xpath("div[@class='did-you-know-actions']/div/a/text()")[0].strip()
             if "of" in relevant:
                 result = re.search(r"(\d+) of (\d+).*", relevant)
-                imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
+                if result is not None:
+                    imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
+                else:
+                    imdb_keywords[name] = (0, 0)
             else:
                 imdb_keywords[name] = (0, 0)
         if self.cache and not ignore_cache:
@@ -896,6 +900,13 @@ class IMDb:
             return [(_i, "imdb") for _i in self._pagination(data, "search")]
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
+
+    @overload
+    def _interface(self, interface: Literal["ratings"]) -> dict[str, str]: ...
+    @overload
+    def _interface(self, interface: Literal["basics"]) -> dict[str, list[str]]: ...
+    @overload
+    def _interface(self, interface: Literal["episode"]) -> list[list[str]]: ...
 
     def _interface(self, interface):
         gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")
