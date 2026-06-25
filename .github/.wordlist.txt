@@ -328,6 +328,8 @@ PRs
 psutil
 puid
 py
+pyright
+pyright's
 pyspelling
 pytest
 Pytest
@@ -337,6 +339,7 @@ qnap
 quickstart
 radarr
 rainbowindent
+ratcheting
 razzie
 razzies
 reacher
@@ -386,6 +389,7 @@ spartacus
 Springland
 ssl
 stderr
+stdlib
 stdout
 stevenlu
 stevenlu's
@@ -414,6 +418,7 @@ themoviedb
 theposterdb
 thetvdb
 tippy
+tmp
 tmdb
 tmdb's
 tmdbapi
@@ -451,6 +456,7 @@ unionfs
 unittest
 unmanaged
 unplayed
+untyped
 unraid
 unresolvable
 uri

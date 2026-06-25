@@ -4,7 +4,7 @@
 # Runs on every PR targeting nightly + on push to nightly.
 #
 # Checks (in order of speed):
-#   1. lint       — black, isort, flake8, mypy, bandit                 (ubuntu)
+#   1. lint       — black, isort, flake8, bandit                        (ubuntu)
 #   2. test       — full pytest suite + coverage threshold     (ubuntu+windows)
 #   3. regression — issue-specific regression test suite                (ubuntu)
 #   4. schema     — validate all shipped defaults against JSON schemas  (ubuntu)
@@ -60,10 +60,6 @@ jobs:
 
       - name: flake8
         run: flake8 modules/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
-
-      - name: mypy
-        run: mypy modules/
-        continue-on-error: true
 
       - name: bandit
         run: bandit -r modules/ -c pyproject.toml

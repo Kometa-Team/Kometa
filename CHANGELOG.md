@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 
+### Changed
+
+- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
+
 ## [v2.4.4] - 2026-06-25
 
 ### Fixed
