@@ -18,7 +18,6 @@
     "modules/plex.py": 63,
     "modules/poster.py": 11,
     "modules/radarr.py": 54,
-    "modules/request.py": 7,
     "modules/sonarr.py": 54,
     "modules/textfile.py": 3,
     "modules/tmdb.py": 670,
