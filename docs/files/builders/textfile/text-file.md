@@ -4,9 +4,9 @@ hide:
 ---
 # Text File
 
-Finds items using a manually created local text file.
+Finds items using a manually created local or remote text file.
 
-The expected input is a path to a text file or a list of text file paths.
+The expected input is a path or URL to a text file, or a list of text file paths and URLs.
 
 Each non-empty line can contain one of the following. Lines beginning with `#` are ignored, and you can also add trailing inline comments using ` # comment` after a value:
 
@@ -26,7 +26,9 @@ Numeric lines are interpreted by library type:
 - Show libraries: TVDb IDs
 - Playlists or mixed/unknown contexts: generic numeric IDs matched against available movie/show libraries
 
-The `sync_mode: sync` and `collection_order: custom` settings are recommended when you want the collection order to match the file exactly. If a line expands into multiple items from a JSON list URL, those items keep the order returned by that JSON list. If you provide multiple files, they are concatenated in the order listed and treated as a single `text_file` builder.
+The `sync_mode: sync` and `collection_order: custom` settings are recommended when you want the collection order to match the source exactly. If a line expands into multiple items from a JSON list URL, those items keep the order returned by that JSON list. If you provide multiple files or URLs, they are concatenated in the order listed and treated as a single `text_file` builder.
+
+A URL used directly as the `text_file` value can return either plain text content using the same line syntax as a local file, or a JSON list using the JSON list format shown below.
 
 On show libraries, `text_file` can also be used with `builder_level: season` or `builder_level: episode` collections. In those cases, `tvdb_season` and `tvdb_episode` entries can target specific show parts directly.
 
@@ -88,6 +90,14 @@ collections:
 
 ```yaml
 collections:
+  My Remote Hand Curated List:
+    text_file: https://example.com/hand-curated.txt
+    collection_order: custom
+    sync_mode: sync
+```
+
+```yaml
+collections:
   Tracker Episodes:
     builder_level: episode
     text_file: config/lists/tracker-episodes.txt
@@ -100,12 +110,12 @@ collections:
   My Combined Text Files:
     text_file:
       - config/lists/priority.txt
-      - config/lists/overflow.txt
+      - https://example.com/overflow.txt
     collection_order: custom
     sync_mode: sync
 ```
 
-When multiple files are listed, Kometa reads them as one `text_file` builder input in the order shown above. The file boundaries are not kept as separate builder groups; only the combined item order is preserved.
+When multiple files or URLs are listed, Kometa reads them as one `text_file` builder input in the order shown above. The source boundaries are not kept as separate builder groups; only the combined item order is preserved.
 
 ### Example Text File Contents
 
