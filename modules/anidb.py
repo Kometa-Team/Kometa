@@ -5,7 +5,7 @@ import time
 import traceback
 from datetime import datetime, timedelta
 
-from lxml import etree
+import lxml.etree as etree
 
 from modules import util
 from modules.util import Failed
