@@ -620,19 +620,28 @@ def start(attrs):
                 ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
             ]
             summary_log_groups = [
+                (r"AniDB Error: No valid AniDB IDs found in input: .+", "AniDB Error: No valid AniDB IDs found in input"),
+                (r"AniList Error: No valid AniList IDs in .+", "AniList Error: No valid AniList IDs"),
                 (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory not found and created"),
                 (r"Asset Warning: No poster or background found in the assets folder '.+'", "Asset Warning: No poster or background found in the assets folder"),
                 (r"Asset Warning: No poster found for '.+' in the assets folder '.+'", "Asset Warning: No poster found in the assets folder"),
                 (r"Asset Warning: No poster '.+' found in the assets folders", "Asset Warning: No poster found in the assets folders"),
                 (r"Asset Warning: No poster or background found in an assets folder for '.+'", "Asset Warning: No poster or background found in an assets folder"),
                 (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
-                (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
-                (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
-                (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
+                (r"Collection Error: No valid Plex Collections in .+", "Collection Error: No valid Plex Collections"),
                 (r".+ Error: No builders were found", "Error: No builders were found"),
                 (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
                 (r".+ Error: No Filter Created", "Error: No Filter Created"),
+                (r"Letterboxd Error: No List Items found in .+", "Letterboxd Error: No List Items found"),
+                (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
+                (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
+                (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
+                (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
+                (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
+                (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
+                (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
+                (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
             ]
             other_message = {}
 
