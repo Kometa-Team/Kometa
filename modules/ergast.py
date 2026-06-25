@@ -195,7 +195,9 @@ class Race:
         if "2160" in title or "4K" in title:
             output = f"{output} (4K)"
 
-        if (sprint_weekend and any([x in output for x in ["Sprint", "Free Practice 2"]])) or (not sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 3"]])):
+        if self.date is None:
+            video_date = None
+        elif (sprint_weekend and any([x in output for x in ["Sprint", "Free Practice 2"]])) or (not sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 3"]])):
             video_date = self.date - timedelta(days=1)
         elif (sprint_weekend and any([x in output for x in ["Qualifying", "Free Practice 1", "Formula 1 Cafe"]])) or (not sprint_weekend and any([x in output for x in ["Free Practice 1", "Free Practice 2", "Formula 1 Cafe"]])):
             video_date = self.date - timedelta(days=2)

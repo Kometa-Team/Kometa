@@ -35,6 +35,26 @@ class TestRace:
         )
         assert r.title == "Bahrain GP"
 
+    def test_session_info_with_none_date_returns_none(self):
+        """Regression: when the Ergast response omits or malforms the date field,
+        Race.date is set to None. session_info subtracted timedelta from
+        self.date unconditionally and would crash with TypeError. After the fix
+        it short-circuits to video_date=None.
+        """
+        from modules.ergast import Race
+
+        r = Race(
+            {"season": "2025", "round": "1", "raceName": "Bahrain Grand Prix", "date": "not-a-date"},
+            None,
+            False,
+            False,
+        )
+        assert r.date is None  # parse failed gracefully
+        # Hit each of the three branches that previously did `self.date - timedelta`
+        for title, sprint in [("Sprint", True), ("Qualifying", True), ("Race", False)]:
+            _, video_date = r.session_info(title, sprint)
+            assert video_date is None
+
 
 class TestErgast:
     @pytest.fixture

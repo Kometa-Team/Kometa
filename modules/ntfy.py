@@ -23,7 +23,7 @@ class Ntfy:
             logger.stacktrace()
             raise Failed("ntfy Error: Invalid details")
 
-    def _request(self, message: str, title: str = None, priority: int = 3):
+    def _request(self, message: str, title: str | None = None, priority: int = 3):
         headers = {"Authorization": f"Bearer {self.token}", "Icon": "https://kometa.wiki/en/latest/assets/icon.png", "Priority": str(priority)}
         if title:
             headers["Title"] = title
