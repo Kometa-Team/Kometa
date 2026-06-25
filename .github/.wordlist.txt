@@ -177,6 +177,7 @@ integrations
 ints
 io
 isort
+iterable
 iteratively
 itvx
 ja

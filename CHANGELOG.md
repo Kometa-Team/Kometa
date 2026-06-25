@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `modules/poster.py`: fix 18 Optional-member-access errors flagged by pyright. The `ImageData.__init__` triple-nested-ternary is unwound into an explicit `if`/`elif`/`else` (also skips a redundant `os.stat()` call when `compare=` is provided explicitly). `apply_vars` and `adjust_text_width` early-return on `self.text is None` (matches the callers' existing `if component.text:` guard). `get_generated_layer` raises `Failed` with a descriptive message instead of crashing with `'NoneType' object is not subscriptable` when `Image.load()` or text-dimension computation returns unexpectedly. Baseline drops 1223 → 1205.
+- `modules/letterboxd.py`: fix 9 Optional-call/iterable errors flagged by pyright by removing dead defensive code. `letterboxdpy` is a pinned hard dependency in `requirements.txt`, so the speculative `try/except ImportError` (and the runtime `_require_library()` guard it required) was never reachable in any supported install. Imports are now unconditional, matching every other integration module (`plex.py`, `tmdb.py`, etc.). The two `util.get_list(...)` for-loops in `validate_letterboxd_lists` / `validate_letterboxd_user_pages` now pass `return_none=False` and fall back to `[]`, so they never try to iterate `None`. Net diff: -19 lines, no behavioural change for any real install. Baseline drops 1205 → 1196 (and `modules/letterboxd.py` falls out of the per-file table entirely).
 
 ## [v2.4.4] - 2026-06-25
 
