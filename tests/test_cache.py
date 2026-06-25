@@ -804,57 +804,34 @@ class TestOverlayValueCache:
         _, expired = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
         assert expired is True
 
+    def test_force_expire_stores_today(self, tmp_path):
+        # expired=True resets the clock to today (no jitter), giving the entry the maximum freshness window.
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(True, 5173, "plex_imdb_rating", "7.3")
+        value, expired = cache.query_overlay_value_cache(5173, "plex_imdb_rating")
+        assert value == "7.3"
+        assert expired is False
+        with sqlite3.connect(cache.cache_path) as connection:
+            row = connection.execute("SELECT expiration_date FROM overlay_value_cache WHERE rating_key='5173' AND type='plex_imdb_rating'").fetchone()
+        assert row[0] == datetime.now().strftime("%Y-%m-%d")
 
-<<<<<<< HEAD
+    def test_query_all(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
+        cache.update_overlay_value_cache(False, 5173, "mdb_tomatoes_rating", "8.1")
+        cache.update_overlay_value_cache(False, 9999, "plex_imdb_rating", "5.0")
+        assert cache.query_overlay_value_cache_all(5173) == {"plex_imdb_rating": "7.3", "mdb_tomatoes_rating": "8.1"}
+        assert cache.query_overlay_value_cache_all(123) == {}
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Overlay state / overlay images
 # ═══════════════════════════════════════════════════════════════════════
-=======
-def _columns(cache, table):
+
+
+def _columns(cache: Cache, table: str) -> list:
     with sqlite3.connect(cache.cache_path) as connection:
         return [row[1] for row in connection.execute(f"PRAGMA table_info({table})").fetchall()]
-
-
-def test_get_image_table_name_creates_overlay_state_and_image_tables(cache):
-    table_name = cache.get_image_table_name("TestLib")
-    assert _table_exists(cache, f"{table_name}_overlay_state")
-    assert _table_exists(cache, f"{table_name}_overlay_images")
-    # _overlays is slim (no overlay column); _square_arts stays a poster cache (keeps overlay column).
-    assert "overlay" not in _columns(cache, f"{table_name}_overlays")
-    assert "overlay" in _columns(cache, f"{table_name}_square_arts")
-
-
-def test_get_image_table_name_slims_legacy_overlays_table(cache):
-    table_name = cache.get_image_table_name("TestLib")
-    # Simulate a pre-redesign _overlays table that still has the overlay column.
-    with sqlite3.connect(cache.cache_path) as connection:
-        connection.execute(f"DROP TABLE {table_name}_overlays")
-        connection.execute(
-            f"CREATE TABLE {table_name}_overlays (key INTEGER PRIMARY KEY, rating_key TEXT UNIQUE, overlay TEXT, compare TEXT, location TEXT)"
-        )
-        connection.commit()
-    # Re-resolving the table should drop+recreate it slim.
-    cache.get_image_table_name("TestLib")
-    assert "overlay" not in _columns(cache, f"{table_name}_overlays")
-
-
-def test_overlay_poster_query_update(cache):
-    table_name = cache.get_image_table_name("TestLib")
-    poster_table = f"{table_name}_overlays"
-    assert cache.query_overlay_poster(5173, poster_table) == (None, None)
-    cache.update_overlay_poster(5173, poster_table, "http://thumb/1", "compareA")
-    assert cache.query_overlay_poster(5173, poster_table) == ("http://thumb/1", "compareA")
-    cache.update_overlay_poster(5173, poster_table, "http://thumb/2", "compareB")
-    assert cache.query_overlay_poster(5173, poster_table) == ("http://thumb/2", "compareB")
-
-
-def test_query_overlay_value_cache_all(cache):
-    cache.update_overlay_value_cache(False, 5173, "plex_imdb_rating", "7.3")
-    cache.update_overlay_value_cache(False, 5173, "mdb_tomatoes_rating", "8.1")
-    cache.update_overlay_value_cache(False, 9999, "plex_imdb_rating", "5.0")
-    assert cache.query_overlay_value_cache_all(5173) == {"plex_imdb_rating": "7.3", "mdb_tomatoes_rating": "8.1"}
-    assert cache.query_overlay_value_cache_all(123) == {}
->>>>>>> 12d1050a (feat: detect overlay changes per overlay and stop caching unresolved overlays)
 
 
 class TestOverlayState:
@@ -863,6 +840,21 @@ class TestOverlayState:
         table_name = cache.get_image_table_name("TestLib")
         assert table_exists(cache, f"{table_name}_overlay_state")
         assert table_exists(cache, f"{table_name}_overlay_images")
+        # _overlays is slim (no overlay column); _square_arts stays a poster cache (keeps overlay column).
+        assert "overlay" not in _columns(cache, f"{table_name}_overlays")
+        assert "overlay" in _columns(cache, f"{table_name}_square_arts")
+
+    def test_slims_legacy_overlays_table(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        # Simulate a pre-redesign _overlays table that still has the overlay column.
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute(f"DROP TABLE {table_name}_overlays")
+            connection.execute(f"CREATE TABLE {table_name}_overlays (key INTEGER PRIMARY KEY, rating_key TEXT UNIQUE, overlay TEXT, compare TEXT, location TEXT)")
+            connection.commit()
+        # Re-resolving the table should drop+recreate it slim.
+        cache.get_image_table_name("TestLib")
+        assert "overlay" not in _columns(cache, f"{table_name}_overlays")
 
     def test_insert_update_and_unique(self, tmp_path):
         cache = make_cache(tmp_path)
@@ -912,6 +904,23 @@ class TestOverlayImages:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# Overlay poster
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestOverlayPoster:
+    def test_query_update(self, tmp_path):
+        cache = make_cache(tmp_path)
+        table_name = cache.get_image_table_name("TestLib")
+        poster_table = f"{table_name}_overlays"
+        assert cache.query_overlay_poster(5173, poster_table) == (None, None)
+        cache.update_overlay_poster(5173, poster_table, "http://thumb/1", "compareA")
+        assert cache.query_overlay_poster(5173, poster_table) == ("http://thumb/1", "compareA")
+        cache.update_overlay_poster(5173, poster_table, "http://thumb/2", "compareB")
+        assert cache.query_overlay_poster(5173, poster_table) == ("http://thumb/2", "compareB")
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # Overlay cache migration
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -955,5 +964,34 @@ class TestOverlayMigration:
         # No legacy table present (fresh install): migration must be a silent no-op and not raise.
         cache = make_cache(tmp_path)
         cache.migrate_overlay_value_cache()
+        with sqlite3.connect(cache.cache_path) as connection:
+            assert connection.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'").fetchone()[0] == 0
+
+    def test_multiple_libraries(self, tmp_path):
+        # Migration must reset _overlays rows for ALL libraries in image_maps, not only the first.
+        cache = make_cache(tmp_path)
+        table_a = cache.get_image_table_name("LibA")
+        table_b = cache.get_image_table_name("LibB")
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("CREATE TABLE IF NOT EXISTS overlay_special_text2 (key INTEGER PRIMARY KEY, rating_key TEXT, type TEXT, text TEXT)")
+            connection.execute("INSERT INTO overlay_special_text2(rating_key, type, text) VALUES('1', 'plex_imdb_rating', '7.0')")
+            connection.execute(f"INSERT INTO {table_a}_overlays(rating_key, compare, location) VALUES('1', 'c', 'loc')")
+            connection.execute(f"INSERT INTO {table_b}_overlays(rating_key, compare, location) VALUES('2', 'c', 'loc')")
+            connection.commit()
+        cache.migrate_overlay_value_cache()
+        with sqlite3.connect(cache.cache_path) as connection:
+            assert connection.execute(f"SELECT COUNT(*) FROM {table_a}_overlays").fetchone()[0] == 0, "LibA overlays not reset"
+            assert connection.execute(f"SELECT COUNT(*) FROM {table_b}_overlays").fetchone()[0] == 0, "LibB overlays not reset"
+
+    def test_idempotent(self, tmp_path):
+        # Second call is a silent no-op: legacy table was dropped by the first call.
+        cache = make_cache(tmp_path)
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("CREATE TABLE IF NOT EXISTS overlay_special_text2 (key INTEGER PRIMARY KEY, rating_key TEXT, type TEXT, text TEXT)")
+            connection.execute("INSERT INTO overlay_special_text2(rating_key, type, text) VALUES('5173', 'plex_imdb_rating', '7.3')")
+            connection.commit()
+        cache.migrate_overlay_value_cache()
+        cache.migrate_overlay_value_cache()  # must not raise or corrupt data
+        assert cache.query_overlay_value_cache(5173, "plex_imdb_rating")[0] == "7.3"
         with sqlite3.connect(cache.cache_path) as connection:
             assert connection.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'").fetchone()[0] == 0
