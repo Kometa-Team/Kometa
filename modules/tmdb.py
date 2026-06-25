@@ -394,11 +394,13 @@ class TMDb:
             try:
                 tmdb_values.append(self.validate_tmdb(tmdb_id, tmdb_method))
             except NotFound as e:
-                logger.error(e)
+                # Keep the raw TMDb exception trace-only; the caller logs the user-facing summary.
+                if logger.is_trace:
+                    logger.error(e)
                 if type_map[tmdb_method] == "Collection":
-                    logger.error(f"TMDb Error: Collection ID {tmdb_id} may have been removed from TMDb. " f"If this is auto-built by the franchise default, add '{tmdb_id}' to " f"your exclude list in template_variables to suppress this error.")
+                    logger.error(f"TMDb Error: Collection ID {tmdb_id} missing on TMDb; add '{tmdb_id}' to the franchise exclude list if this is auto-built.")
                 else:
-                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} may have been removed " f"from TMDb. Verify it still exists and update your config.")
+                    logger.error(f"TMDb Error: {type_map[tmdb_method]} ID {tmdb_id} missing on TMDb. Verify it still exists and update your config.")
             except Failed as e:
                 all_not_found = False
                 logger.error(e)

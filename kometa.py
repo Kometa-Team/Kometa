@@ -578,6 +578,17 @@ def start(attrs):
             summary_log_groups = [
                 (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory not found and created"),
                 (r"Asset Warning: No poster or background found in the assets folder '.+'", "Asset Warning: No poster or background found in the assets folder"),
+                (r"Asset Warning: No poster found for '.+' in the assets folder '.+'", "Asset Warning: No poster found in the assets folder"),
+                (r"Asset Warning: No poster '.+' found in the assets folders", "Asset Warning: No poster found in the assets folders"),
+                (r"Asset Warning: No poster or background found in an assets folder for '.+'", "Asset Warning: No poster or background found in an assets folder"),
+                (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
+                (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
+                (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
+                (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
+                (r".+ Error: No builders were found", "Error: No builders were found"),
+                (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
+                (r".+ Error: No Filter Created", "Error: No Filter Created"),
+                (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
             ]
             other_message = {}
 
@@ -612,18 +623,24 @@ def start(attrs):
             if "No Items found for" in other_message:
                 logger.separator("Overlay Errors Summary", space=False, border=False)
                 logger.info("")
-                logger.info(f"No Items found for {other_message['No Items found for']['count']} Overlays: {other_message['No Items found for']['list']}")
+                overlay_count = other_message["No Items found for"]["count"]
+                overlay_line = f"No Items found for {overlay_count} Overlays"
+                if run_args["trace"] or run_args["log-requests"]:
+                    logger.info(f"{overlay_line}: {other_message['No Items found for']['list']}")
+                else:
+                    logger.info(overlay_line)
                 logger.info("")
 
             convert_title = False
+            details = run_args["trace"] or run_args["log-requests"]
 
             def convert_summary_title(key):
                 summary = key.split(": ", 1)[1].rstrip(":")
                 if " for " not in summary:
-                    return f"{summary}:"
+                    return summary
                 message, source = summary.rsplit(" for ", 1)
                 source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
-                return f"{message} for the following {source}:"
+                return f"{message} for the following {source}"
 
             for key, _ in other_log_groups:
                 if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
@@ -631,8 +648,14 @@ def start(attrs):
                         logger.separator("Convert Summary", space=False, border=False)
                         logger.info("")
                         convert_title = True
-                    logger.info(convert_summary_title(key))
-                    logger.info(f"    {', '.join(other_message[key]['list'])}")
+                    count = other_message[key]["count"]
+                    convert_line = convert_summary_title(key)
+                    if not details:
+                        logger.info(f"{convert_line} ({count})")
+                    else:
+                        logger.info(f"{convert_line} ({count}):")
+                    if details:
+                        logger.info(f"    {', '.join(other_message[key]['list'])}")
             if convert_title:
                 logger.info("")
 
