@@ -1103,17 +1103,18 @@ class Operations:
             logger.info("")
 
             epoch = datetime(1970, 1, 1)
+            cache_evictions = set()
 
             def plex_update_in_batches(_edits, display_attr=None, out_type=None, tag_type=None, is_episode=None, evict_cache=False):
                 _size = len(_edits.items())
                 for j, (update_value, rating_keys) in enumerate(sorted(_edits.items()), 1):
+                    update_attr = update_value if display_attr is None else name_display[display_attr] if display_attr in name_display else display_attr.capitalize()
                     update_items = rating_keys if is_episode else self.library.load_list_from_cache(rating_keys)
                     if not update_items:
                         continue
                     total_update_items = len(update_items)
                     batch_size = self.library.plex_bulk_edit_batch_size if self.library.plex_bulk_edit_batch_size else total_update_items
                     num_batches = math.ceil(total_update_items / batch_size)
-                    update_attr = update_value if display_attr is None else name_display[display_attr] if display_attr in name_display else display_attr.capitalize()
                     display_value = update_value if out_type is None else None
                     item_type_name = f"{'Episode' if is_episode else 'Movie' if self.library.is_movie else 'Show'}{'s' if total_update_items > 1 else ''}"
                     logger.info(
@@ -1147,7 +1148,7 @@ class Operations:
                         self.library.Plex.saveMultiEdits()
                         if evict_cache:
                             for batch_item in batch_items:
-                                self.library.cached_items.pop(batch_item.ratingKey, None)
+                                cache_evictions.add(batch_item.ratingKey)
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():
@@ -1168,6 +1169,8 @@ class Operations:
             plex_update_in_batches(ep_reset_edits, out_type="reset", is_episode=True, evict_cache=True)
             plex_update_in_batches(ep_lock_edits, out_type="lock", is_episode=True, evict_cache=True)
             plex_update_in_batches(ep_unlock_edits, out_type="unlock", is_episode=True, evict_cache=True)
+            for rating_key in cache_evictions:
+                self.library.cached_items.pop(rating_key, None)
 
             if self.library.Radarr and self.library.radarr_add_all_existing:
                 logger.info("")
