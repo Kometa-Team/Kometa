@@ -1,12 +1,11 @@
 {
   "_comment": "Ratcheting pyright baseline. DO NOT hand-edit unless you know what you're doing. Regenerate with: python scripts/pyright_baseline.py --regenerate",
-  "total_errors": 1195,
+  "total_errors": 1188,
   "per_file_errors": {
     "kometa.py": 20,
     "modules/anilist.py": 7,
     "modules/builder.py": 56,
     "modules/config.py": 2,
-    "modules/convert.py": 7,
     "modules/ergast.py": 2,
     "modules/icheckmovies.py": 3,
     "modules/imdb.py": 7,
