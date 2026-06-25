@@ -57,6 +57,8 @@ The location types are outlined as follows:
     <div id="file" />Used to run a file which is located within the system that Kometa is being run from.
 
     File locations need to be accessible to Kometa at those paths; this is typically only something you need to consider when using Docker.
+
+    Relative paths are resolved relative to the directory containing your `config.yml`, regardless of where Kometa is launched from. Absolute paths are always used as-is.
     
     ???+ example "Example"
         
@@ -72,6 +74,8 @@ The location types are outlined as follows:
     <div id="folder" />Used to run all files located in a directory which is located within the system that Kometa is being run from.
 
     Folder locations need to be accessible to Kometa at those paths; this is typically only something you need to consider when using Docker.
+
+    Relative paths are resolved relative to the directory containing your `config.yml`, regardless of where Kometa is launched from. Absolute paths are always used as-is.
     
     ???+ example "Example"
         
@@ -222,6 +226,8 @@ You can have some control of the files from inside your Configuration file by us
     ???+ tip 
     
         Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
+
+        Relative paths are resolved relative to the directory containing your `config.yml`, regardless of where Kometa is launched from. Absolute paths are always used as-is.
 
     ??? warning
     
