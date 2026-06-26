@@ -6,11 +6,11 @@ from xml.etree.ElementTree import ParseError
 
 import plexapi
 from PIL import Image
-from plexapi import utils
+from plexapi import utils  # type: ignore[attr-defined]  # utils is not re-exported from plexapi.__init__
 from plexapi.audio import Album, Artist, Track
 from plexapi.collection import Collection
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
-from plexapi.library import FilterChoice, Role
+from plexapi.library import FilterChoice, LibrarySection, Role
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Episode, Movie, Season, Show
@@ -306,7 +306,7 @@ plex_languages = [
     "zh-TW",
 ]
 metadata_language_options = {lang.lower(): lang for lang in plex_languages}
-metadata_language_options["default"] = None
+metadata_language_options["default"] = None  # type: ignore[assignment]  # intentional: None signals "use Plex default"
 use_original_title_options = {"default": -1, "no": 0, "yes": 1}
 credits_detection_options = {"default": -1, "disabled": 0}
 audio_language_options = {lang.lower(): lang for lang in plex_languages}
@@ -735,7 +735,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
-            plexapi.server.TIMEOUT = self.timeout
+            plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
             logger.info(f"Running on {self.PlexServer.platform} version {self.PlexServer.platformVersion}")
@@ -777,7 +777,7 @@ class Plex(Library):
             logger.info("Plex Error: Plex connection attempt returned 'ConnectionError' or 'ParseError'")
             logger.stacktrace()
             raise Failed("Plex Error: Plex URL is probably invalid")
-        self.Plex = None
+        self.Plex: LibrarySection = None  # type: ignore[assignment]  # guaranteed non-None after __init__ raises if not found
         library_names = []
         for s in self.PlexServer.library.sections():
             library_names.append(s.title)
@@ -798,7 +798,7 @@ class Plex(Library):
         self._account = None
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
-        source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)
+        source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)  # type: ignore[union-attr]
         try:
             self.ratings_source = source_setting.enumValues[source_setting.value] if source_setting else "N/A"
         except Exception:
@@ -831,7 +831,7 @@ class Plex(Library):
     def get_all_collections(self, label=None):
         args = "?type=18"
         if label:
-            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)  # noqa
+            label_id = next((c.key for c in self.get_tags("label") if c.title == label), None)  # type: ignore[union-attr] # noqa
             if label_id:
                 args = f"{args}&label={label_id}"
             else:
@@ -883,7 +883,7 @@ class Plex(Library):
         logger.info(f"Loading All {builder_level.capitalize()}s from Library: {self.name}")
         key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(builder_type)}"
         container_start = 0
-        container_size = plexapi.X_PLEX_CONTAINER_SIZE
+        container_size: int = plexapi.X_PLEX_CONTAINER_SIZE  # type: ignore[assignment]
         results = []
         total_size = 1
         while total_size > len(results) and container_start <= total_size:
@@ -894,7 +894,7 @@ class Plex(Library):
             librarySectionID = utils.cast(int, data.attrib.get("librarySectionID"))
             if librarySectionID:
                 for item in subresults:
-                    item.librarySectionID = librarySectionID
+                    item.librarySectionID = librarySectionID  # type: ignore[union-attr]
 
             results.extend(subresults)
             container_start += container_size
@@ -970,7 +970,7 @@ class Plex(Library):
             if item.ratingKey in self.movie_rating_key_map:
                 return self.config.TMDb.get_movie(self.movie_rating_key_map[item.ratingKey]).poster_url
         elif isinstance(item, (Show, Season, Episode)):
-            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey
+            check_key = item.ratingKey if isinstance(item, Show) else item.show().ratingKey  # type: ignore[union-attr]
             if check_key in self.show_rating_key_map:
                 tmdb_id = self.config.Convert.tvdb_to_tmdb(self.show_rating_key_map[check_key])
                 if isinstance(item, Show) and item.ratingKey in self.show_rating_key_map:
@@ -1007,7 +1007,7 @@ class Plex(Library):
             if image_url:
                 break
         if not image_url and "plex" in providers and isinstance(item, Season):
-            for poster in item.show().posters():
+            for poster in item.show().posters():  # type: ignore[union-attr]
                 if poster.key.startswith("/"):
                     image_url = f"{self.url}{poster.key}&X-Plex-Token={self.token}"
                     if poster.ratingKey.startswith("upload"):
@@ -1166,15 +1166,15 @@ class Plex(Library):
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
             is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
             for choice in self.get_tags(final_search):
-                if choice.title not in names:
-                    names.append((choice.title, choice.key) if name_pairs else choice.title)
-                value = choice.title if use_title else choice.key
+                if choice.title not in names:  # type: ignore[union-attr]
+                    names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
+                value = choice.title if use_title else choice.key  # type: ignore[union-attr]
                 # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
                 title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
-                choices[choice.title] = title_value
-                choices[choice.key] = value
-                choices[choice.title.lower()] = title_value
-                choices[choice.key.lower()] = value
+                choices[choice.title] = title_value  # type: ignore[union-attr]
+                choices[choice.key] = value  # type: ignore[union-attr]
+                choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
+                choices[choice.key.lower()] = value  # type: ignore[union-attr]
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
@@ -1193,11 +1193,11 @@ class Plex(Library):
             except StopIteration:
                 available_filters = [f.filter for f in self.Plex.listFilters(libtype)]
                 raise NotFound(f'Unknown filter field "{tag}" for libtype "{libtype}". ' f"Available filters: {available_filters}") from None
-        items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)
-        if tag.key.endswith("/collection?type=4"):
-            keys = [k.key for k in items]
-            keys.extend([k.key for k in self.Plex.findItems(self.Plex._server.query(f"{tag.key[:-1]}3"), FilterChoice)])
-            items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]
+        items = self.Plex.findItems(self.Plex._server.query(tag.key), FilterChoice)  # type: ignore[union-attr]
+        if tag.key.endswith("/collection?type=4"):  # type: ignore[union-attr]
+            keys = [k.key for k in items]  # type: ignore[union-attr]
+            keys.extend([k.key for k in self.Plex.findItems(self.Plex._server.query(f"{tag.key[:-1]}3"), FilterChoice)])  # type: ignore[union-attr]
+            items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]  # type: ignore[union-attr]
         return items
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
@@ -1252,7 +1252,7 @@ class Plex(Library):
 
     def manage_recommendations(self):
         return [
-            (r.title, r._data.attrib.get("identifier"), r._data.attrib.get("promotedToRecommended"), r._data.attrib.get("promotedToOwnHome"), r._data.attrib.get("promotedToSharedHome"))
+            (r.title, r._data.attrib.get("identifier"), r._data.attrib.get("promotedToRecommended"), r._data.attrib.get("promotedToOwnHome"), r._data.attrib.get("promotedToSharedHome"))  # type: ignore[union-attr]
             for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")
         ]
 
@@ -1294,7 +1294,7 @@ class Plex(Library):
         self._query(key, put=True)
 
     def smart_label_check(self, label):
-        labels = [la.title for la in self.get_tags("label")]  # noqa
+        labels = [la.title for la in self.get_tags("label")]  # type: ignore[union-attr] # noqa
         if label in labels:
             return True
         logger.trace(f"Label not found in Plex. Options: {labels}")
@@ -1329,7 +1329,7 @@ class Plex(Library):
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart_filter(self, collection):
-        smart_filter = self.get_collection(collection).content
+        smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
         return smart_filter[smart_filter.index("?") :]
 
     def collection_visibility(self, collection):
@@ -1499,11 +1499,11 @@ class Plex(Library):
         if sort:
             params["sort"] = sort
         if libtype:
-            params["type"] = plexapi.utils.searchType(libtype)
+            params["type"] = utils.searchType(libtype)  # type: ignore[attr-defined]
 
         params.update(kwargs)
 
-        key = f"{self.account.DISCOVER}/library/sections/watchlist/{filter}{plexapi.utils.joinArgs(params)}"
+        key = f"{self.account.DISCOVER}/library/sections/watchlist/{filter}{utils.joinArgs(params)}"  # type: ignore[attr-defined]
         return self.account._toOnlineMetadata(self.account.fetchItems(key, maxresults=maxresults), **kwargs)
 
     def get_watchlist(self, sort=None, is_playlist=False):
@@ -1513,7 +1513,7 @@ class Plex(Library):
             libtype = "movie"
         else:
             libtype = "show"
-        watchlist = self._watchlist(sort=watchlist_sorts[sort], libtype=libtype)
+        watchlist = self._watchlist(sort=watchlist_sorts[sort], libtype=libtype)  # type: ignore[index]
         ids = []
         for item in watchlist:
             tmdb_id = []
@@ -1588,15 +1588,16 @@ class Plex(Library):
             for col in self.get_all_collections():
                 keep_collection = True
                 for pre in data["exclude_prefix"]:
-                    if col.title.startswith(pre) or (col.titleSort and col.titleSort.startswith(pre)):
+                    col_title_sort = col.titleSort  # type: ignore[union-attr]
+                    if col.title.startswith(pre) or (col_title_sort and col_title_sort.startswith(pre)):  # type: ignore[union-attr]
                         keep_collection = False
-                        logger.info(f"Excluded by Prefix Match: {col.title}")
+                        logger.info(f"Excluded by Prefix Match: {col.title}")  # type: ignore[union-attr]
                         break
                 if keep_collection:
                     for ext in data["exclude"]:
-                        if col.title == ext or (col.titleSort and col.titleSort == ext):
+                        if col.title == ext or (col_title_sort and col_title_sort == ext):  # type: ignore[union-attr]
                             keep_collection = False
-                            logger.info(f"Excluded by Exact Match: {col.title}")
+                            logger.info(f"Excluded by Exact Match: {col.title}")  # type: ignore[union-attr]
                             break
                 if keep_collection:
                     good_collections.append(col)
@@ -1622,7 +1623,7 @@ class Plex(Library):
             raise Failed(f"Plex Error: Method {method} not supported")
         if not items:
             raise Failed("Plex Error: No Items found in Plex")
-        return [(item.ratingKey, "ratingKey") for item in items]
+        return [(item.ratingKey, "ratingKey") for item in items]  # type: ignore[union-attr]
 
     def get_collection_items(self, collection, smart_label_collection):
         if smart_label_collection:
@@ -1881,9 +1882,9 @@ class Plex(Library):
                     starting = item.artist()
                 else:
                     starting = item
-                if not starting.locations:
+                if not starting.locations:  # type: ignore[union-attr]
                     raise Failed(f"Asset Warning: No video filepath found for {item.title}")
-                path_test = str(starting.locations[0])
+                path_test = str(starting.locations[0])  # type: ignore[union-attr]
                 if not os.path.dirname(path_test):
                     path_test = path_test.replace("\\", "/")
                 folder_name = os.path.basename(os.path.dirname(path_test) if isinstance(starting, Movie) else path_test)
@@ -1899,14 +1900,14 @@ class Plex(Library):
         if not item_asset_directory:
             for ad in asset_directory:
                 if self.asset_folders:
-                    if os.path.isdir(os.path.join(ad, folder_name)):
-                        item_asset_directory = os.path.join(ad, folder_name)
+                    if os.path.isdir(os.path.join(ad, folder_name)):  # type: ignore[arg-type]
+                        item_asset_directory = os.path.join(ad, folder_name)  # type: ignore[arg-type]
                     else:
                         for n in range(1, self.asset_depth + 1):
                             new_path = ad
                             for i in range(1, n + 1):
                                 new_path = os.path.join(new_path, "*")
-                            matches = util.glob_filter(os.path.join(new_path, folder_name))
+                            matches = util.glob_filter(os.path.join(new_path, folder_name))  # type: ignore[arg-type]
                             if len(matches) > 0:
                                 item_asset_directory = os.path.abspath(matches[0])
                                 break
@@ -1919,7 +1920,7 @@ class Plex(Library):
             if not item_asset_directory:
                 if self.asset_folders:
                     if self.create_asset_folders and asset_directory:
-                        item_asset_directory = os.path.join(asset_directory[0], folder_name)
+                        item_asset_directory = os.path.join(asset_directory[0], folder_name)  # type: ignore[arg-type]
                         os.makedirs(item_asset_directory, exist_ok=True)
                         logger.warning(f"Asset Warning: Asset Directory Not Found and Created: {item_asset_directory}")
                     else:
@@ -2021,8 +2022,8 @@ class Plex(Library):
         if isinstance(item, (Artist, Album, Track)):
             if item.userRating:
                 fields["userRating"] = item.userRating
-        if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:
-            if year_titles.count(f"{item.title} ({item.year})") > 1:
+        if isinstance(item, (Movie, Show)) and titles and titles.count(item.title) > 1:  # type: ignore[union-attr,arg-type]
+            if year_titles.count(f"{item.title} ({item.year})") > 1:  # type: ignore[union-attr,arg-type]
                 match_dict["title"] = item.title
                 match_dict["year"] = item.year
                 if hasattr(item, "editionTitle") and item.editionTitle:
@@ -2123,11 +2124,14 @@ class Plex(Library):
 
     def get_item_display_title(self, item_to_sort, sort=False):
         if isinstance(item_to_sort, Album):
-            return f"{item_to_sort.artist().titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"
+            artist = item_to_sort.artist()  # type: ignore[union-attr]
+            return f"{artist.titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"  # type: ignore[union-attr]
         elif isinstance(item_to_sort, Season):
-            return f"{item_to_sort.show().titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
+            show = item_to_sort.show()
+            return f"{show.titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"  # type: ignore[union-attr]
         elif isinstance(item_to_sort, Episode):
-            return f"{item_to_sort.show().titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
+            show = item_to_sort.show()
+            return f"{show.titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"  # type: ignore[union-attr]
         else:
             return item_to_sort.titleSort if sort else item_to_sort.title
 
@@ -2313,7 +2317,7 @@ class Plex(Library):
             else:
                 test_number = getattr(item, filter_actual)
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-                test_number = len(test_number) if test_number else 0
+                test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
             if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
                 return False
