@@ -311,7 +311,7 @@ class Trakt:
                 continue
             if current_type in ["person", "list"] and ignore_other:
                 continue
-            id_type, id_display = id_types[current_type]
+            id_type, id_display = id_types[current_type]  # type: ignore[index]
             if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
@@ -601,11 +601,11 @@ class Trakt:
                 "rt_user_meters",
                 "metascores",
             ]:
-                if attr in data:
-                    logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
-                    values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
-                    params[attr] = ",".join(values) if isinstance(values, list) else values
-            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)
+                if attr in data:  # type: ignore[operator]
+                    logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")  # type: ignore[index]
+                    values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]  # type: ignore[index]
+                    params[attr] = ",".join(values) if isinstance(values, list) else values  # type: ignore[index]
+            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)  # type: ignore[index]
         elif method == "trakt_userlist":
             logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
             return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"], ignore_other=True)
