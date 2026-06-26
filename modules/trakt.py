@@ -1,5 +1,6 @@
 import time
 import webbrowser
+from typing import Any
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 
@@ -198,7 +199,10 @@ class Trakt:
         return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
-    def _request(self, url, params=None, json_data=None):
+    def _request(self, url, params=None, json_data=None) -> Any:
+        # Returns dict[str, Any] for single-page endpoints and list[dict] for
+        # paginated endpoints.  Annotated Any so callers can subscript/iterate
+        # based on their knowledge of the specific endpoint being called.
         output_json = []
         if params is None:
             params = {}
@@ -332,9 +336,9 @@ class Trakt:
                 continue
             type_set = str(id_type).split("_")
             id_set = str(input_id).split("_")
-            item = {"ids": {type_set[0]: id_set[0] if type_set[0] == "imdb" else int(id_set[0])}}
+            item: dict[str, Any] = {"ids": {type_set[0]: id_set[0] if type_set[0] == "imdb" else int(id_set[0])}}
             if id_type in ["tvdb_season", "tvdb_episode"]:
-                season_data = {"number": int(id_set[1])}
+                season_data: dict[str, Any] = {"number": int(id_set[1])}
                 if id_type == "tvdb_episode":
                     season_data["episodes"] = [{"number": int(id_set[2])}]
                 item["seasons"] = [season_data]
@@ -462,7 +466,7 @@ class Trakt:
         return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"}  # noqa
 
     def validate_list(self, trakt_lists):
-        values = util.get_list(trakt_lists, split=False)
+        values = util.get_list(trakt_lists, split=False, return_none=False)
         trakt_values = []
         for value in values:
             if isinstance(value, dict):
@@ -478,7 +482,7 @@ class Trakt:
 
     def validate_chart(self, err_type, method_name, data, is_movie):
         valid_dicts = []
-        for trakt_dict in util.get_list(data, split=False):
+        for trakt_dict in util.get_list(data, split=False, return_none=False):
             if not isinstance(trakt_dict, dict):
                 raise Failed(f"{err_type} Error: {method_name} must be a dictionary")
             dict_methods = {dm.lower(): dm for dm in trakt_dict}

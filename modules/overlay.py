@@ -293,8 +293,8 @@ class Overlay:
                         self.image = img.convert("RGBA")
                         if self.scale_width or self.scale_height:
                             base_width, base_height = self.image.size
-                            width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                            height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                            width = (int(base_width * int(str(self.scale_width)[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                            height = (int(base_height * int(str(self.scale_height)[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
                             if height and not width:
                                 width = int(base_width * height / base_height)
                             if width and not height:
@@ -390,8 +390,8 @@ class Overlay:
                     self.image = img.convert("RGBA")
                     if self.scale_width or self.scale_height:
                         base_width, base_height = self.image.size
-                        width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                        height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                        width = (int(base_width * int(str(self.scale_width)[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                        height = (int(base_height * int(str(self.scale_height)[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
                         if height and not width:
                             width = int(base_width * height / base_height)
                         if width and not height:
