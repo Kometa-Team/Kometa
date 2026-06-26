@@ -600,6 +600,39 @@ def start(attrs):
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
+                ("Overlay Error: No 'anidb_average_rating' found", r"Overlay Error: No 'anidb_average_rating' found for (.*)"),
+                ("Overlay Error: No 'anidb_rating' found", r"Overlay Error: No 'anidb_rating' found for (.*)"),
+                ("Overlay Error: No 'anidb_score_rating' found", r"Overlay Error: No 'anidb_score_rating' found for (.*)"),
+                ("Overlay Error: No 'audience_rating' found", r"Overlay Error: No 'audience_rating' found for (.*)"),
+                ("Overlay Error: No 'critic_rating' found", r"Overlay Error: No 'critic_rating' found for (.*)"),
+                ("Overlay Error: No 'imdb_rating' found", r"Overlay Error: No 'imdb_rating' found for (.*)"),
+                ("Overlay Error: No 'mal_rating' found", r"Overlay Error: No 'mal_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_average_rating' found", r"Overlay Error: No 'mdb_average_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_imdb_rating' found", r"Overlay Error: No 'mdb_imdb_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_letterboxd_rating' found", r"Overlay Error: No 'mdb_letterboxd_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_metacritic_rating' found", r"Overlay Error: No 'mdb_metacritic_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_metacriticuser_rating' found", r"Overlay Error: No 'mdb_metacriticuser_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_myanimelist_rating' found", r"Overlay Error: No 'mdb_myanimelist_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_rating' found", r"Overlay Error: No 'mdb_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_tmdb_rating' found", r"Overlay Error: No 'mdb_tmdb_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_tomatoesaudience_rating' found", r"Overlay Error: No 'mdb_tomatoesaudience_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_tomatoes_rating' found", r"Overlay Error: No 'mdb_tomatoes_rating' found for (.*)"),
+                ("Overlay Error: No 'mdb_trakt_rating' found", r"Overlay Error: No 'mdb_trakt_rating' found for (.*)"),
+                ("Overlay Error: No 'omdb_imdb_rating' found", r"Overlay Error: No 'omdb_imdb_rating' found for (.*)"),
+                ("Overlay Error: No 'omdb_metascore_rating' found", r"Overlay Error: No 'omdb_metascore_rating' found for (.*)"),
+                ("Overlay Error: No 'omdb_rating' found", r"Overlay Error: No 'omdb_rating' found for (.*)"),
+                ("Overlay Error: No 'omdb_tomatoes_rating' found", r"Overlay Error: No 'omdb_tomatoes_rating' found for (.*)"),
+                ("Overlay Error: No 'plex_imdb_rating' found", r"Overlay Error: No 'plex_imdb_rating' found for (.*)"),
+                ("Overlay Error: No 'plex_tmdb_rating' found", r"Overlay Error: No 'plex_tmdb_rating' found for (.*)"),
+                ("Overlay Error: No 'plex_tomatoesaudience_rating' found", r"Overlay Error: No 'plex_tomatoesaudience_rating' found for (.*)"),
+                ("Overlay Error: No 'plex_tomatoes_rating' found", r"Overlay Error: No 'plex_tomatoes_rating' found for (.*)"),
+                ("Overlay Error: No 'plex_user_rating' found", r"Overlay Error: No 'plex_user_rating' found for (.*)"),
+                ("Overlay Error: No 'tmdb_rating' found", r"Overlay Error: No 'tmdb_rating' found for (.*)"),
+                ("Overlay Error: No 'trakt_rating' found", r"Overlay Error: No 'trakt_rating' found for (.*)"),
+                ("Overlay Error: No 'trakt_user_rating' found", r"Overlay Error: No 'trakt_user_rating' found for (.*)"),
+                ("Overlay Error: No 'user_rating' found", r"Overlay Error: No 'user_rating' found for (.*)"),
+                ("Overlay Error: No Trakt rating found", r"Overlay Error: No Trakt rating found for (.*)"),
+                ("Overlay Error: No Trakt user rating found", r"Overlay Error: No Trakt user rating found for (.*)"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
@@ -673,19 +706,29 @@ def start(attrs):
                                     log_data[err_type] = []
                                 log_data[err_type].append(log_line)
 
-            if "No Items found for" in other_message:
-                logger.separator("Overlay Errors Summary", space=False, border=False)
+            if log_data or other_message:
                 logger.info("")
-                overlay_count = other_message["No Items found for"]["count"]
-                overlay_line = f"No Items found for {overlay_count} Overlays"
-                if run_args["trace"] or run_args["log-requests"]:
-                    logger.info(f"{overlay_line}: {other_message['No Items found for']['list']}")
-                else:
-                    logger.info(overlay_line)
+                logger.info("The following errors and warnings were identified during the run. Search your log for any of the messages below to find where they originated.")
+                logger.info("")
+
+            overlay_title = False
+            details = run_args["trace"] or run_args["log-requests"]
+            for key, _ in other_log_groups:
+                if (key == "No Items found for" or key.startswith("Overlay Error")) and key in other_message:
+                    if overlay_title is False:
+                        logger.separator("Overlay Errors Summary", space=False, border=False)
+                        logger.info("")
+                        overlay_title = True
+                    overlay_count = other_message[key]["count"]
+                    overlay_line = f"No Items found for {overlay_count} Overlays" if key == "No Items found for" else f"{key} for {overlay_count} Items"
+                    if details:
+                        logger.info(f"{overlay_line}: {other_message[key]['list']}")
+                    else:
+                        logger.info(overlay_line)
+            if overlay_title:
                 logger.info("")
 
             convert_title = False
-            details = run_args["trace"] or run_args["log-requests"]
 
             def convert_summary_title(key):
                 summary = key.split(": ", 1)[1].rstrip(":")
