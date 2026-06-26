@@ -432,7 +432,12 @@ class Overlay:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(overlay_image)
             if self.has_back:
-                cords = (start_x - self.back_padding, start_y - self.back_padding, start_x + (back_width if self.back_box else box_width) + self.back_padding, start_y + (back_height if self.back_box else box_height) + self.back_padding)  # type: ignore[operator]
+                cords = (  # type: ignore[operator]
+                    start_x - self.back_padding,
+                    start_y - self.back_padding,
+                    start_x + (back_width if self.back_box else box_width) + self.back_padding,
+                    start_y + (back_height if self.back_box else box_height) + self.back_padding,
+                )
                 if self.back_radius:
                     drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)  # type: ignore[arg-type]
                 else:
