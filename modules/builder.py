@@ -2139,7 +2139,7 @@ class CollectionBuilder:
 
     def _imdb(self, method_name, method_data):
         if method_name == "imdb_id":
-            for value in util.get_list(method_data):
+            for value in util.get_list(method_data) or []:
                 if str(value).startswith("tt"):
                     self.builders.append((method_name, value))
                 else:
@@ -2148,7 +2148,7 @@ class CollectionBuilder:
             for imdb_dict in self.config.IMDb.validate_imdb(self.Type, method_name, method_data):
                 self.builders.append((method_name, imdb_dict))
         elif method_name == "imdb_chart":
-            for value in util.get_list(method_data):
+            for value in util.get_list(method_data) or []:
                 _chart = imdb.movie_charts if self.library.is_movie else imdb.show_charts
                 if value not in _chart:
                     raise BuilderValidationError(f"{self.Type} Error: Chart '{value}' is invalid. Options:  {', '.join(_chart)}")
@@ -2203,7 +2203,7 @@ class CollectionBuilder:
                     except ValueError:
                         raise BuilderValidationError(f"{self.Type} Error: imdb_award event_year attribute invalid: {og_year}")
                 elif str(og_year).startswith("-"):
-                    event_year = [str(self.current_year + int(og_year))]
+                    event_year = [str(self.current_year + int(og_year))]  # type: ignore[arg-type]
                     if event_year[0] not in year_options:
                         raise BuilderValidationError(f"{self.Type} Error: imdb_award event_year attribute not an option: {event_year[0]}. Event Options: [{', '.join(year_options)}]")
                 else:
@@ -2339,7 +2339,7 @@ class CollectionBuilder:
                             search_data,
                             datatype="float",
                             parent=method_name,
-                            minimum=0.1,
+                            minimum=0.1,  # type: ignore[arg-type]
                             maximum=10,
                         )
                     elif search_attr in ["votes", "imdb_top", "imdb_bottom", "popularity", "runtime"]:
@@ -2394,7 +2394,7 @@ class CollectionBuilder:
                             new_dictionary[lower_method] = companies
                     elif search_attr == "content_rating":
                         final_list = []
-                        for content in util.get_list(search_data):
+                        for content in util.get_list(search_data) or []:
                             if content:
                                 final_dict = {"region": "US", "rating": None}
                                 if not isinstance(content, dict):
@@ -3329,7 +3329,7 @@ class CollectionBuilder:
                 final_method = method_name
             elif method_name in ["trakt_watchlist", "trakt_collection"]:
                 trakt_dicts = []
-                for trakt_user in util.get_list(method_data, split=False):
+                for trakt_user in util.get_list(method_data, split=False) or []:
                     trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
                 final_method = "trakt_userlist"
             else:
@@ -3346,7 +3346,7 @@ class CollectionBuilder:
                 self.builders.append((final_method, trakt_dict))
 
     def _tvdb(self, method_name, method_data):
-        values = util.get_list(method_data)
+        values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
                 item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
@@ -3695,9 +3695,9 @@ class CollectionBuilder:
                                             if self.builder_level == "episode" and isinstance(item, Show):
                                                 if tvdb_season is not None:
                                                     item = item.season(season=tvdb_season)
-                                                rating_keys.extend([k.ratingKey for k in item.episodes()])
+                                                rating_keys.extend([k.ratingKey for k in item.episodes()])  # type: ignore[union-attr]
                                             elif self.builder_level == "season" and isinstance(item, Show):
-                                                rating_keys.extend([k.ratingKey for k in item.seasons()])
+                                                rating_keys.extend([k.ratingKey for k in item.seasons()])  # type: ignore[union-attr]
                                         except Failed as e:
                                             logger.error(e)
                                 else:
@@ -3890,7 +3890,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' is blank"
                 else:
                     if final_attr.startswith(("any", "all")):
-                        dicts = util.get_list(_data)
+                        dicts = util.get_list(_data) or []
                         results = ""
                         display_add = ""
                         for dict_data in dicts:
@@ -3907,9 +3907,9 @@ class CollectionBuilder:
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
                             last_text = "is not in the last" if modifier == ".not" else "is in the last"
                             last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
-                            search_mod = validation[-1]
+                            search_mod = validation[-1]  # type: ignore[index]
                             if search_mod == "o":
-                                validation = f"{validation[:-1]}mon"
+                                validation = f"{validation[:-1]}mon"  # type: ignore[index]
                             results, display_add = build_url_arg(
                                 f"-{validation}",
                                 mod=last_mod,
@@ -3927,7 +3927,7 @@ class CollectionBuilder:
                         elif (attr in plex.tag_attributes + plex.string_attributes + plex.year_attributes) and modifier in ["", ".is", ".isnot", ".not", ".begins", ".ends", ".regex"]:
                             results = ""
                             display_add = ""
-                            for og_value, result in validation:
+                            for og_value, result in validation:  # type: ignore[misc]
                                 built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
                                 display_add += built_arg[1]
                                 results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
@@ -4013,7 +4013,7 @@ class CollectionBuilder:
         elif attribute in year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
             if modifier in ["", ".not"]:
                 final_years = []
-                values = util.get_list(data)
+                values = util.get_list(data) or []
                 for value in values:
                     if str(value).startswith("current_year"):
                         year_values = str(value).split("-")
@@ -4085,14 +4085,14 @@ class CollectionBuilder:
         elif attribute in tag_attributes and modifier in ["", ".not"]:
             if attribute in plex.tmdb_attributes:
                 final_values = []
-                for value in util.get_list(data):
+                for value in util.get_list(data) or []:
                     if value.lower() == "tmdb" and "tmdb_person" in self.details:
                         for name in self.details["tmdb_person"]:
                             final_values.append(name)
                     else:
                         final_values.append(value)
             else:
-                final_values = util.get_list(data, trim=False)
+                final_values = util.get_list(data, trim=False) or []
             search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
             for fvalue in final_values:
@@ -4149,7 +4149,7 @@ class CollectionBuilder:
                         logger.warning(f"{self.Type} Warning: count filter attribute is blank")
                     else:
                         maybe = util.check_num(data["count"])
-                        if maybe < 1:
+                        if maybe < 1:  # type: ignore[operator]
                             logger.warning(f"{self.Type} Warning: count filter attribute must be a number 1 or greater")
                         else:
                             count = maybe
@@ -4159,7 +4159,7 @@ class CollectionBuilder:
                         percentage = self.default_percent
                     else:
                         maybe = util.check_num(data["percentage"])
-                        if maybe < 0 or maybe > 100:
+                        if maybe < 0 or maybe > 100:  # type: ignore[operator]
                             logger.warning(f"{self.Type} Warning: percentage filter attribute must be a number 0-100 using {self.default_percent} as default")
                             percentage = self.default_percent
                         else:
@@ -4237,7 +4237,7 @@ class CollectionBuilder:
             logger.info("")
             logger.info(f"Playlist: {self.name} created")
         elif self.playlist and items_added:
-            self.obj.addItems(items_added)
+            self.obj.addItems(items_added)  # type: ignore[union-attr]
         elif items_added:
             self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
         if self.do_report and items_added:
@@ -4271,7 +4271,7 @@ class CollectionBuilder:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
                 self.library.item_reload(self.obj)
-                self.obj.removeItems(items_removed)
+                self.obj.removeItems(items_removed)  # type: ignore[union-attr]
             elif items_removed:
                 self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
             if self.do_report and items_removed:
@@ -4323,7 +4323,7 @@ class CollectionBuilder:
                     logger.error(e)
                     return False
         if check_released:
-            date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date
+            date_to_check = tmdb_item.release_date if is_movie else tmdb_item.first_air_date  # type: ignore[union-attr]
             if not date_to_check or date_to_check > self.current_time:
                 return False
         final_return = True
@@ -4805,9 +4805,9 @@ class CollectionBuilder:
 
         if self.playlist:
             if summary[1]:
-                if str(summary[1]) != str(self.obj.summary):
+                if str(summary[1]) != str(self.obj.summary):  # type: ignore[union-attr]
                     try:
-                        self.obj.editSummary(str(summary[1]))
+                        self.obj.editSummary(str(summary[1]))  # type: ignore[union-attr]
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
@@ -4818,8 +4818,8 @@ class CollectionBuilder:
             self.library.item_reload(self.obj)
             # self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
-            if summary[1] and str(summary[1]) != str(self.obj.summary):
-                self.obj.editSummary(summary[1])
+            if summary[1] and str(summary[1]) != str(self.obj.summary):  # type: ignore[union-attr]
+                self.obj.editSummary(summary[1])  # type: ignore[union-attr]
                 batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
 
             if "sort_title" in self.details:
@@ -4827,16 +4827,16 @@ class CollectionBuilder:
                 if "<<title>>" in new_sort_title:
                     title = self.name
                     for op in ["The ", "A ", "An "]:
-                        if title.startswith(f"{op} "):
-                            title = f"{title[len(op):].strip()}, {op.strip()}"
+                        if title.startswith(f"{op} "):  # type: ignore[union-attr]
+                            title = f"{title[len(op):].strip()}, {op.strip()}"  # type: ignore[index]
                             break
-                    new_sort_title = new_sort_title.replace("<<title>>", title)
-                if new_sort_title != str(self.obj.titleSort):
-                    self.obj.editSortTitle(new_sort_title)
+                    new_sort_title = new_sort_title.replace("<<title>>", title)  # type: ignore[arg-type]
+                if new_sort_title != str(self.obj.titleSort):  # type: ignore[union-attr]
+                    self.obj.editSortTitle(new_sort_title)  # type: ignore[union-attr]
                     batch_display += f"\nSort Title | {new_sort_title}"
 
-            if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):
-                self.obj.editContentRating(self.details["content_rating"])
+            if "content_rating" in self.details and str(self.details["content_rating"]) != str(self.obj.contentRating):  # type: ignore[union-attr]
+                self.obj.editContentRating(self.details["content_rating"])  # type: ignore[union-attr]
                 batch_display += f"\nContent Rating | {self.details['content_rating']}"
 
             add_tags = self.details["label"] if "label" in self.details else []
@@ -4862,7 +4862,7 @@ class CollectionBuilder:
 
             advance_update = False
             if "collection_mode" in self.details:
-                if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:
+                if (self.blank_collection and self.created) or int(self.obj.collectionMode) not in plex.collection_mode_keys or plex.collection_mode_keys[int(self.obj.collectionMode)] != self.details["collection_mode"]:  # type: ignore[union-attr]
                     if self.blank_collection and self.created:
                         self.library.collection_mode_query(self.obj, "hide")
                         logger.info("Collection Mode | hide")
@@ -4884,7 +4884,7 @@ class CollectionBuilder:
                     logger.error("Collection Error: collection_filtering requires a more recent version of Plex Media Server")
 
             if "collection_order" in self.details:
-                if int(self.obj.collectionSort) not in plex.collection_order_keys or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:
+                if int(self.obj.collectionSort) not in plex.collection_order_keys or plex.collection_order_keys[int(self.obj.collectionSort)] != self.details["collection_order"]:  # type: ignore[union-attr]
                     self.library.collection_order_query(self.obj, self.details["collection_order"])
                     logger.info(f"Collection Order | {self.details['collection_order']}")
                     advance_update = True
@@ -4959,14 +4959,14 @@ class CollectionBuilder:
                 self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
 
         self.collection_poster = self.library.pick_image(
-            self.obj.title,
+            self.obj.title,  # type: ignore[union-attr]
             self.posters,
             self.library.prioritize_assets,
             self.library.download_url_assets,
             asset_location,
         )
         self.collection_background = self.library.pick_image(
-            self.obj.title,
+            self.obj.title,  # type: ignore[union-attr]
             self.backgrounds,
             self.library.prioritize_assets,
             self.library.download_url_assets,
@@ -4974,7 +4974,7 @@ class CollectionBuilder:
             image_type="background",
         )
         self.collection_square_art = self.library.pick_image(
-            self.obj.title,
+            self.obj.title,  # type: ignore[union-attr]
             self.square_arts,
             self.library.prioritize_assets,
             self.library.download_url_assets,
@@ -4985,7 +4985,7 @@ class CollectionBuilder:
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
             clean_temp = True
-            item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}
+            item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}  # type: ignore[union-attr]
             self.collection_poster = self.collection_poster.save(item_vars)
 
         if self.collection_poster or self.collection_background or self.collection_square_art:
@@ -5017,10 +5017,10 @@ class CollectionBuilder:
         else:
             plex_search = {"sort_by": self.custom_sort}
             if self.builder_level in ["season", "episode"]:
-                plex_search["type"] = f"{self.builder_level}s"
-                plex_search["any"] = {f"{self.builder_level}_collection": [self.name]}  # noqa
+                plex_search["type"] = f"{self.builder_level}s"  # type: ignore[assignment]
+                plex_search["any"] = {f"{self.builder_level}_collection": [self.name]}  # type: ignore[assignment] # noqa
             else:
-                plex_search["any"] = {"collection": [self.name]}
+                plex_search["any"] = {"collection": [self.name]}  # type: ignore[assignment]
             try:
                 search_data = self.build_filter("plex_search", plex_search)
             except FilterFailed as e:
