@@ -1,19 +1,11 @@
 {
   "_comment": "Ratcheting pyright baseline. DO NOT hand-edit unless you know what you're doing. Regenerate with: python scripts/pyright_baseline.py --regenerate",
-  "total_errors": 1067,
+  "total_errors": 5,
   "per_file_errors": {
-    "kometa.py": 9,
-    "modules/builder.py": 54,
+    "kometa.py": 1,
+    "modules/builder.py": 1,
     "modules/config.py": 1,
-    "modules/meta.py": 25,
-    "modules/operations.py": 1,
-    "modules/overlay.py": 26,
-    "modules/overlays.py": 70,
-    "modules/plex.py": 63,
-    "modules/poster.py": 11,
-    "modules/radarr.py": 54,
-    "modules/sonarr.py": 54,
-    "modules/tmdb.py": 670,
-    "modules/trakt.py": 29
+    "modules/meta.py": 1,
+    "modules/operations.py": 1
   }
 }

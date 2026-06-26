@@ -293,8 +293,8 @@ class Overlay:
                         self.image = img.convert("RGBA")
                         if self.scale_width or self.scale_height:
                             base_width, base_height = self.image.size
-                            width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                            height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                            width = (int(base_width * int(str(self.scale_width)[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                            height = (int(base_height * int(str(self.scale_height)[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
                             if height and not width:
                                 width = int(base_width * height / base_height)
                             if width and not height:
@@ -390,8 +390,8 @@ class Overlay:
                     self.image = img.convert("RGBA")
                     if self.scale_width or self.scale_height:
                         base_width, base_height = self.image.size
-                        width = (int(base_width * int(self.scale_width[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
-                        height = (int(base_height * int(self.scale_height[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
+                        width = (int(base_width * int(str(self.scale_width)[:-1]) / 100) if str(self.scale_width)[-1] == "%" else self.scale_width) if self.scale_width else None
+                        height = (int(base_height * int(str(self.scale_height)[:-1]) / 100) if str(self.scale_height)[-1] == "%" else self.scale_height) if self.scale_height else None
                         if height and not width:
                             width = int(base_width * height / base_height)
                         if width and not height:
@@ -414,12 +414,12 @@ class Overlay:
         if text is not None:
             _, _, text_width, text_height = self.get_text_size(text)
             if image_width is not None and self.addon_position in ["left", "right"]:
-                box = (text_width + image_width + self.addon_offset, text_height if text_height > image_height else image_height)
+                box = (text_width + image_width + self.addon_offset, text_height if text_height > image_height else image_height)  # type: ignore[operator]
             elif image_width is not None:
-                box = (text_width if text_width > image_width else image_width, text_height + image_height + self.addon_offset)
+                box = (text_width if text_width > image_width else image_width, text_height + image_height + self.addon_offset)  # type: ignore[operator]
             else:
                 box = (text_width, text_height)
-        box_width, box_height = box
+        box_width, box_height = box  # type: ignore[misc]
         back_width, back_height = self.back_box if self.back_box else (None, None)
         if back_width == -1:
             back_width = canvas_box[0] if self.name == "backdrop" else box_width
@@ -432,17 +432,17 @@ class Overlay:
             overlay_image = Image.new("RGBA", canvas_box, (255, 255, 255, 0))
             drawing = ImageDraw.Draw(overlay_image)
             if self.has_back:
-                cords = (start_x - self.back_padding, start_y - self.back_padding, start_x + (back_width if self.back_box else box_width) + self.back_padding, start_y + (back_height if self.back_box else box_height) + self.back_padding)
+                cords = (start_x - self.back_padding, start_y - self.back_padding, start_x + (back_width if self.back_box else box_width) + self.back_padding, start_y + (back_height if self.back_box else box_height) + self.back_padding)  # type: ignore[operator]
                 if self.back_radius:
-                    drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)
+                    drawing.rounded_rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width, radius=self.back_radius)  # type: ignore[arg-type]
                 else:
-                    drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)
+                    drawing.rectangle(cords, fill=self.back_color, outline=self.back_line_color, width=self.back_line_width)  # type: ignore[arg-type]
 
             if self.back_box:
                 if self.back_align in ["left", "right", "center", "bottom"]:
-                    main_y = start_y + (back_height - box_height) // (1 if self.back_align == "bottom" else 2)
+                    main_y = start_y + (back_height - box_height) // (1 if self.back_align == "bottom" else 2)  # type: ignore[operator]
                 if self.back_align in ["top", "bottom", "center", "right"]:
-                    main_x = start_x + (back_width - box_width) // (1 if self.back_align == "right" else 2)
+                    main_x = start_x + (back_width - box_width) // (1 if self.back_align == "right" else 2)  # type: ignore[operator]
 
             addon_x = None
             addon_y = None
@@ -450,29 +450,29 @@ class Overlay:
                 addon_x = main_x
                 addon_y = main_y
                 if self.addon_position == "left":
-                    main_x = main_x + image_width + self.addon_offset
+                    main_x = main_x + image_width + self.addon_offset  # type: ignore[operator]
                 elif self.addon_position == "right":
-                    addon_x = main_x + text_width + self.addon_offset
+                    addon_x = main_x + text_width + self.addon_offset  # type: ignore[operator]
                 elif text_width < image_width:
-                    main_x = main_x + ((image_width - text_width) / 2)
+                    main_x = main_x + ((image_width - text_width) / 2)  # type: ignore[operator]
                 elif text_width > image_width:
-                    addon_x = main_x + ((text_width - image_width) / 2)
+                    addon_x = main_x + ((text_width - image_width) / 2)  # type: ignore[operator]
 
                 if self.addon_position == "top":
-                    main_y = main_y + image_height + self.addon_offset
+                    main_y = main_y + image_height + self.addon_offset  # type: ignore[operator]
                 elif self.addon_position == "bottom":
-                    addon_y = main_y + text_height + self.addon_offset
-                elif text_height < image_height:
-                    main_y = main_y + ((image_height - text_height) / 2)
-                elif text_height > image_height:
-                    addon_y = main_y + ((text_height - image_height) / 2)
+                    addon_y = main_y + text_height + self.addon_offset  # type: ignore[operator]
+                elif text_height < image_height:  # type: ignore[operator]
+                    main_y = main_y + ((image_height - text_height) / 2)  # type: ignore[operator]
+                elif text_height > image_height:  # type: ignore[operator]
+                    addon_y = main_y + ((text_height - image_height) / 2)  # type: ignore[operator]
 
             if text is not None:
                 drawing.text((int(main_x), int(main_y)), text, font=self.font, fill=self.font_color, stroke_fill=self.stroke_color, stroke_width=self.stroke_width, anchor="lt")
             if addon_x is not None:
                 main_x = addon_x
                 main_y = addon_y
-        return overlay_image, (int(main_x), int(main_y))
+        return overlay_image, (int(main_x), int(main_y))  # type: ignore[arg-type]
 
     def get_overlay_compare(self):
         output = f"{self.name}"

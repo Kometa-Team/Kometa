@@ -225,7 +225,7 @@ class DataFile:
             raise Failed(f"{self.data_type} Error: template attribute is blank")
         else:
             new_attributes = {}
-            for original_variables in util.get_list(template_call, split=False):
+            for original_variables in util.get_list(template_call, split=False, return_none=False):
                 if original_variables["name"] not in self.templates:
                     raise Failed(f"{self.data_type} Error: template {original_variables['name']} not found")
                 elif not isinstance(self.templates[original_variables["name"]][0], dict):
@@ -353,7 +353,7 @@ class DataFile:
 
                     if "optional" in template:
                         if template["optional"]:
-                            for op in util.get_list(template["optional"]):
+                            for op in util.get_list(template["optional"], return_none=False):
                                 op = replace_var(op, variables)
                                 if op not in default and op not in conditionals:
                                     optional.append(str(op))
@@ -465,7 +465,7 @@ class DataFile:
                             logger.debug(f"{self.data_type} Warning: template sub-attribute move_collection_prefix will run as move_prefix")
                             prefix = template["move_collection_prefix"]
                         if prefix:
-                            for op in util.get_list(prefix):
+                            for op in util.get_list(prefix, return_none=False):
                                 if not sort_name and variables[name_var].startswith(f"{op} "):
                                     sort_name = f"{variables[name_var][len(op):].strip()}, {op}"
                                 if not sort_mapping and variables["mapping_name"].startswith(f"{op} "):
@@ -1583,8 +1583,8 @@ class MetadataFile(DataFile):
         return self.library.image_styles[style_id]
 
     def get_collections(self, requested_collections):
-        if requested_collections:
-            return {c: self.collections[c] for c in util.get_list(requested_collections) if c in self.collections}
+        if requested_collections and self.collections:
+            return {c: self.collections[c] for c in util.get_list(requested_collections, return_none=False) if c in self.collections}
         else:
             return self.collections
 
@@ -1600,7 +1600,7 @@ class MetadataFile(DataFile):
         elif f"{attr}.sync" in alias and not group[alias[f"{attr}.sync"]]:
             logger.warning(f"{self.type_str} Error: {attr}.sync attribute is blank")
         elif attr in alias or f"{attr}.remove" in alias or f"{attr}.sync" in alias:
-            add_tags = util.get_list(group[alias[attr]]) if attr in alias else []
+            add_tags = util.get_list(group[alias[attr]], return_none=False) if attr in alias else []
             if extra:
                 add_tags.extend(extra)
             remove_tags = util.get_list(group[alias[f"{attr}.remove"]]) if f"{attr}.remove" in alias else None
@@ -1627,7 +1627,7 @@ class MetadataFile(DataFile):
                     logger.separator("Building Definition From Templates", space=False, border=False)
                     logger.debug("")
                     named_templates = []
-                    for original_variables in util.get_list(meta[methods["template"]], split=False):
+                    for original_variables in util.get_list(meta[methods["template"]], split=False, return_none=False):
                         if not isinstance(original_variables, dict):
                             raise Failed(f"{self.type_str} Error: template attribute is not a dictionary")
                         elif "name" not in original_variables:
@@ -1658,7 +1658,7 @@ class MetadataFile(DataFile):
                         raise NotScheduled("Skipped because run_definition has no value")
                     logger.debug(f"Value: {meta[methods['run_definition']]}")
                     valid_options = ["true", "false"] + plex.library_types
-                    for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                    for library_type in util.get_list(meta[methods["run_definition"]], lower=True, return_none=False):
                         if library_type not in valid_options:
                             raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true, false, {', '.join(plex.library_types)}")
                         elif library_type == "false":
@@ -1666,7 +1666,7 @@ class MetadataFile(DataFile):
                         elif library_type != "true" and self.library and library_type != self.library.Plex.type:
                             raise NotScheduled(f"Skipped because run_definition library_type: {library_type} doesn't match")
 
-                match_data = None
+                match_data: dict = {}
                 match_methods = {}
                 if "match" in methods:
                     logger.debug("")
@@ -1825,6 +1825,8 @@ class MetadataFile(DataFile):
 
         def add_edit(name, current_item, group=None, alias=None, key=None, value=None, var_type="str"):
             nonlocal updated
+            if alias is None or group is None:
+                return
             if value or name in alias:
                 if value or group[alias[name]]:
                     if key is None:
@@ -1986,7 +1988,7 @@ class MetadataFile(DataFile):
                 logger.warning(f"{self.type_str} Warning: update_seasons has no value and season updates will be performed")
             else:
                 logger.debug(f"Value: {meta[methods['update_seasons']]}")
-                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True, return_none=False):
                     if library_type not in ["true", "false"]:
                         raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true or false")
                     elif library_type == "false":
@@ -2000,7 +2002,7 @@ class MetadataFile(DataFile):
                 logger.warning(f"{self.type_str} Warning: update_episodes has no value and episode updates will be performed")
             else:
                 logger.debug(f"Value: {meta[methods['update_episodes']]}")
-                for library_type in util.get_list(meta[methods["run_definition"]], lower=True):
+                for library_type in util.get_list(meta[methods["run_definition"]], lower=True, return_none=False):
                     if library_type not in ["true", "false"]:
                         raise Failed(f"{self.type_str} Error: {library_type} is invalid. Options: true or false")
                     elif library_type == "false":
@@ -2424,10 +2426,10 @@ class OverlayFile(DataFile):
                     dynamic_settings = {
                         "initial_vertical_align": util.parse("Config", "initial_vertical_align", dynamic_settings["initial_vertical_align"], options=["top", "center", "bottom"], default="top"),
                         "initial_horizontal_align": util.parse("Config", "initial_horizontal_align", dynamic_settings["initial_horizontal_align"], options=["left", "center", "right"], default="left"),
-                        "initial_vertical_offset": util.parse("Config", "initial_vertical_offset", dynamic_settings["initial_vertical_offset"], datatype="int", default=0, minimum=None),
-                        "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),
-                        "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),
-                        "horizontal_spacing": util.parse("Config", "horizontal_spacing", dynamic_settings["horizontal_spacing"], datatype="int", default=0, minimum=None),
+                        "initial_vertical_offset": util.parse("Config", "initial_vertical_offset", dynamic_settings["initial_vertical_offset"], datatype="int", default=0, minimum=None),  # type: ignore[arg-type]
+                        "initial_horizontal_offset": util.parse("Config", "initial_horizontal_offset", dynamic_settings["initial_horizontal_offset"], datatype="int", default=0, minimum=None),  # type: ignore[arg-type]
+                        "vertical_spacing": util.parse("Config", "vertical_spacing", dynamic_settings["vertical_spacing"], datatype="int", default=0, minimum=None),  # type: ignore[arg-type]
+                        "horizontal_spacing": util.parse("Config", "horizontal_spacing", dynamic_settings["horizontal_spacing"], datatype="int", default=0, minimum=None),  # type: ignore[arg-type]
                         "surround": util.parse("Config", "surround", dynamic_settings["surround"], datatype="bool", default=False),
                     }
                     queue_position = [

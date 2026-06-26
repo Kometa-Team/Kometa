@@ -44,6 +44,7 @@ try:
     import pathvalidate
     import PIL
     import plexapi
+    import plexapi.server  # needed for plexapi.server.TIMEOUT assignment
     import psutil
     import requests
     import ruamel.yaml
@@ -68,9 +69,9 @@ system_versions = {
     "PlexAPI": plexapi.__version__,
     "psutil": psutil.__version__,
     "python-dotenv": dotenv_version.__version__,
-    "python-dateutil": dateutil.__version__,  # noqa
+    "python-dateutil": dateutil.__version__,  # type: ignore[attr-defined]  # dateutil doesn't declare __version__ in stubs
     "pywin32": None,
-    "requests": requests.__version__,
+    "requests": requests.__version__,  # type: ignore[attr-defined]  # requests declares __version__ as private
     "ruamel.yaml": ruamel.yaml.__version__,
     "schedule": None,
     "setuptools": setuptools.__version__,
@@ -837,7 +838,7 @@ def run_libraries(config):
         library_status[library.name] = {}
         try:
             # logger.add_library_handler(library.mapping_name)
-            plexapi.server.TIMEOUT = library.timeout
+            plexapi.server.TIMEOUT = library.timeout  # pyright: ignore[reportPrivateImportUsage,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(library.timeout)
             logger.info("")
             logger.separator(f"{library.original_mapping_name} Library")
@@ -1248,7 +1249,7 @@ def run_playlists(config):
             if run_args["tests"] and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
                 no_template_test = True
                 if "template" in playlist_attrs and playlist_attrs["template"]:
-                    for data_template in util.get_list(playlist_attrs["template"], split=False):
+                    for data_template in util.get_list(playlist_attrs["template"], split=False, return_none=False):
                         if (
                             "name" in data_template
                             and data_template["name"]
@@ -1428,11 +1429,11 @@ if __name__ == "__main__":
         if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
             process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
         else:
-            times_to_run = util.get_list_bar_then_comma(run_args["times"])
+            times_to_run = util.get_list_bar_then_comma(run_args["times"]) or []
             valid_times = []
             for time_to_run in times_to_run:
                 try:
-                    final_time = datetime.strftime(datetime.strptime(time_to_run, "%H:%M"), "%H:%M")
+                    final_time = datetime.strftime(datetime.strptime(str(time_to_run), "%H:%M"), "%H:%M")
                     if final_time not in valid_times:
                         valid_times.append(final_time)
                 except ValueError:

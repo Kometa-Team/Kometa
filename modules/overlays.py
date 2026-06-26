@@ -96,7 +96,7 @@ class Overlays:
                         image, image_compare, overlay_compare = self.cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
                     self.library.reload(item, force=self.library.reapply_overlays)
 
-                    overlay_compare = [] if overlay_compare is None else util.get_list(overlay_compare, split="|")
+                    overlay_compare = [] if overlay_compare is None else (util.get_list(overlay_compare, split="|") or [])  # type: ignore[arg-type]
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
                     compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
@@ -107,7 +107,7 @@ class Overlays:
                         current_overlay = properties[over_name]
                         if current_overlay.name.startswith("blur"):
                             logger.info(over_name)
-                            blur_test = int(re.search("\\(([^)]+)\\)", current_overlay.name).group(1))
+                            blur_test = int(re.search("\\(([^)]+)\\)", current_overlay.name).group(1))  # type: ignore[union-attr]
                             if blur_test > blur_num:
                                 blur_num = blur_test
                         elif current_overlay.queue_name:
@@ -150,7 +150,7 @@ class Overlays:
                                     if cache_key in overlay.int_vars:
                                         cache_value = int(cache_value)
                                     if cache_key in overlay.date_vars:
-                                        real_value = real_value.strftime("%Y-%m-%d")  # noqa
+                                        real_value = real_value.strftime("%Y-%m-%d")  # type: ignore[union-attr] # noqa
                                     if real_value != cache_value:
                                         overlay_change = f"Special Text Changed from {cache_value} to {real_value}"
                     try:
@@ -224,7 +224,7 @@ class Overlays:
                             elif not self.library.reapply_overlays and overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
-                            with Image.open(poster.location if poster else has_original) as new_poster:
+                            with Image.open(poster.location if poster else has_original) as new_poster:  # type: ignore[arg-type]
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04BC] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
@@ -236,7 +236,7 @@ class Overlays:
                                     full_text = text_overlay.name[5:-1]
                                     for format_var in overlay.vars_by_type[text_overlay.level]:
                                         if f"<<{format_var}" in full_text and format_var == "originally_available[":
-                                            mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)
+                                            mod = re.search("<<originally_available\\[(.+)]>>", full_text).group(1)  # type: ignore[union-attr]
                                             format_var = "originally_available"
                                         elif f"<<{format_var}>>" in full_text and format_var.endswith(tuple(m for m in overlay.double_mods)):
                                             mod = format_var[-2:]
@@ -256,7 +256,7 @@ class Overlays:
                                             actual_attr = format_var
                                         if format_var == "bitrate":
                                             actual_value = None
-                                            for media in item.media:
+                                            for media in item.media:  # type: ignore[union-attr]
                                                 current = int(media.bitrate)
                                                 if actual_value is None:
                                                     actual_value = current
@@ -338,27 +338,27 @@ class Overlays:
                                                         if not mdb_item:
                                                             raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
                                                     if format_var == "mdb_average_rating":
-                                                        found_rating = mdb_item.average / 10 if mdb_item.average else None
+                                                        found_rating = mdb_item.average / 10 if mdb_item.average else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_imdb_rating":
-                                                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
+                                                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_metacritic_rating":
-                                                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                                                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_metacriticuser_rating":
-                                                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
+                                                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_trakt_rating":
-                                                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                                                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_tomatoes_rating":
-                                                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                                                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_tomatoesaudience_rating":
-                                                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                                                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_tmdb_rating":
-                                                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                                                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_letterboxd_rating":
-                                                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                                                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None  # type: ignore[union-attr]
                                                     elif format_var == "mdb_myanimelist_rating":
-                                                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
+                                                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None  # type: ignore[union-attr]
                                                     else:
-                                                        found_rating = mdb_item.score / 10 if mdb_item.score else None
+                                                        found_rating = mdb_item.score / 10 if mdb_item.score else None  # type: ignore[union-attr]
                                                 elif str(format_var).startswith("omdb"):
                                                     if self.config.OMDb.limit is not False:
                                                         raise ServiceError("OMDb Error: Daily OMDb Limit Reached")
@@ -420,12 +420,12 @@ class Overlays:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
                                             else:
-                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
-                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                                 actual_value = sum(sub_items) / len(sub_items)
                                         elif format_var == "total_runtime":
-                                            sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()
-                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                            sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                             actual_value = sum(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
@@ -434,39 +434,39 @@ class Overlays:
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
                                         if self.cache:
-                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value
+                                            cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value  # type: ignore[union-attr]
                                             self.cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
                                             if mod:
                                                 sub_value = "<<originally_available\\[(.+)]>>"
-                                                final_value = actual_value.strftime(mod)
+                                                final_value = actual_value.strftime(mod)  # type: ignore[union-attr]
                                             else:
-                                                final_value = actual_value.strftime("%Y-%m-%d")
+                                                final_value = actual_value.strftime("%Y-%m-%d")  # type: ignore[union-attr]
                                         elif format_var in ["runtime", "total_runtime"]:
                                             if mod == "H":
-                                                final_value = int((actual_value / 60000) // 60)
+                                                final_value = int((actual_value / 60000) // 60)  # type: ignore[operator]
                                             elif mod == "M":
-                                                final_value = int((actual_value / 60000) % 60)
+                                                final_value = int((actual_value / 60000) % 60)  # type: ignore[operator]
                                             else:
-                                                final_value = int(actual_value / 60000)
+                                                final_value = int(actual_value / 60000)  # type: ignore[operator]
                                         elif mod == "%":
-                                            final_value = int(float(actual_value) * 10)
+                                            final_value = int(float(actual_value) * 10)  # type: ignore[arg-type]
                                         elif mod == "#":
-                                            actual_value = f"{float(actual_value):.1f}"
+                                            actual_value = f"{float(actual_value):.1f}"  # type: ignore[arg-type]
                                             final_value = actual_value[:-2] if actual_value.endswith(".0") else actual_value
                                         elif mod == "/":
-                                            final_value = f"{float(actual_value) / 2:.1f}"
+                                            final_value = f"{float(actual_value) / 2:.1f}"  # type: ignore[arg-type]
                                         elif mod == "W":
-                                            final_value = num2words(int(actual_value))
+                                            final_value = num2words(int(actual_value))  # type: ignore[arg-type]
                                         elif mod == "WU":
-                                            final_value = num2words(int(actual_value)).upper()
+                                            final_value = num2words(int(actual_value)).upper()  # type: ignore[arg-type]
                                         elif mod == "WL":
-                                            final_value = num2words(int(actual_value)).lower()
+                                            final_value = num2words(int(actual_value)).lower()  # type: ignore[arg-type]
                                         elif mod == "0":
-                                            final_value = f"{int(actual_value):02}"
+                                            final_value = f"{int(actual_value):02}"  # type: ignore[arg-type]
                                         elif mod == "00":
-                                            final_value = f"{int(actual_value):03}"
+                                            final_value = f"{int(actual_value):03}"  # type: ignore[arg-type]
                                         elif mod == "U":
                                             final_value = str(actual_value).upper()
                                         elif mod == "L":
@@ -474,7 +474,7 @@ class Overlays:
                                         elif mod == "P":
                                             final_value = str(actual_value).title()
                                         elif format_var in overlay.rating_sources:
-                                            final_value = f"{float(actual_value):.1f}"
+                                            final_value = f"{float(actual_value):.1f}"  # type: ignore[arg-type]
                                         else:
                                             final_value = actual_value
                                         if sub_value:

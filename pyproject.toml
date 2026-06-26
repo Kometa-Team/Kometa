@@ -92,6 +92,7 @@ skips = ["B101"]
 # To silence a single line (use sparingly!):
 #   foo.bar  # pyright: ignore[reportOptionalMemberAccess]
 include = ["modules", "kometa.py"]
+stubPath = "stubs"
 exclude = [
     "**/__pycache__",
     "**/.*",
