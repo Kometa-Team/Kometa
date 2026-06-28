@@ -28,6 +28,13 @@ Numeric lines are interpreted by library type:
 
 The `sync_mode: sync` and `collection_order: custom` settings are recommended when you want the collection order to match the source exactly. If a line expands into multiple items from a JSON list URL, those items keep the order returned by that JSON list. If you provide multiple files or URLs, they are concatenated in the order listed and treated as a single `text_file` builder.
 
+???+ tip "Playlist ordering with mixed movie/show `tmdb:` entries"
+
+    When a `tmdb:` entry (e.g. `tmdb:550`) is used in a playlist or mixed library context, Kometa emits
+    **two** internal ID types (`"tmdb"` and `"tmdb_show"`) so both movies and shows are considered.
+    Only the correct type resolves to an item; the other is silently skipped.
+    This means **line order is preserved** even when movies and shows are interleaved.
+
 A URL used directly as the `text_file` value can return either plain text content using the same line syntax as a local file, or a JSON list using the JSON list format shown below.
 
 On show libraries, `text_file` can also be used with `builder_level: season` or `builder_level: episode` collections. In those cases, `tvdb_season` and `tvdb_episode` entries can target specific show parts directly.

@@ -14,6 +14,14 @@ The list is filtered automatically to match your library type (movies, shows, or
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
+???+ warning "Playlist ordering for trending"
+
+    The Simkl API returns trending data in **separate sections** (movies, TV, anime).
+    When used in a playlist (mixed library), items appear **grouped by type**:
+    all movies first, then all TV shows, then all anime.
+    The internal per-section order is preserved, but movies and shows are not interleaved.
+    If you need strict per-item interleaving, consider using `text_file` instead.
+
 ## Attribute
 
 | Attribute | Description                                                         | Required | Default  |

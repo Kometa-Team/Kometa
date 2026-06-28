@@ -15,6 +15,12 @@ The expected input is an MDBList List URL. Multiple values are supported **as a 
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
+???+ tip "Playlist ordering with mixed content"
+
+    When used in a playlist (mixed movie/show library), MDBList calls its **unified** endpoint and
+    returns items in the API's response order, preserving any interleaving of movies and shows.
+    No grouping by type occurs.
+
 ## Sort Options
 
 For these sorts to be reflected in your collection you **must** use `collection_order: custom`.

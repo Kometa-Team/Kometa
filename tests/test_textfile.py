@@ -243,11 +243,50 @@ def test_text_file_tmdb_prefix_returns_tmdb_show_for_show_library():
         os.unlink(path)
 
 
-def test_text_file_tmdb_prefix_returns_tmdb_when_library_type_unknown():
+def test_text_file_tmdb_prefix_returns_both_when_library_type_unknown():
     path = _write_temp_file("tmdb:12345\n")
     try:
         text_builder = TextFile(FakeRequests({}))
-        assert text_builder.get_ids(path, is_movie=None) == [(12345, "tmdb")]
+        assert text_builder.get_ids(path, is_movie=None) == [(12345, "tmdb"), (12345, "tmdb_show")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_mixed_playlist_produces_both_types():
+    """Guard: in playlist mode (is_movie=None), tmdb: entries for both
+    movies and shows must yield BOTH (id, "tmdb") and (id, "tmdb_show")
+    so the builder can resolve against movie_map OR show_map."""
+    path = _write_temp_file("tmdb:550\ntmdb:1399\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        ids = text_builder.get_ids(path, is_movie=None)
+        # Movie TMDb 550 (Fight Club)
+        assert (550, "tmdb") in ids
+        assert (550, "tmdb_show") in ids
+        # Show TMDb 1399 (Game of Thrones)
+        assert (1399, "tmdb") in ids
+        assert (1399, "tmdb_show") in ids
+        assert len(ids) == 4  # 2 entries x 2 types each
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_movie_library_only_tmdb_type():
+    """Guard: movie library gets only (id, "tmdb")."""
+    path = _write_temp_file("tmdb:550\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=True) == [(550, "tmdb")]
+    finally:
+        os.unlink(path)
+
+
+def test_text_file_tmdb_prefix_show_library_only_tmdb_show_type():
+    """Guard: show library gets only (id, "tmdb_show")."""
+    path = _write_temp_file("tmdb:1399\n")
+    try:
+        text_builder = TextFile(FakeRequests({}))
+        assert text_builder.get_ids(path, is_movie=False) == [(1399, "tmdb_show")]
     finally:
         os.unlink(path)
 
