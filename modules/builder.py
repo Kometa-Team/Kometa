@@ -3439,14 +3439,21 @@ class CollectionBuilder:
         elif "letterboxd" in method:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
         elif method in textfile.builders:
+            #  is_movie=None means playlist mode (movies + shows).
+            # The target method MUST handle all three states correctly:
+            # True = movie-only, False = show-only, None = both.
             ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
         elif "stevenlu" in method:
             ids = self.config.StevenLu.get_imdb_ids(method, value)
         elif "mojo" in method:
             ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
         elif "mdblist" in method:
+            #  is_movie=None = playlist mode. Must return BOTH movie
+            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
             ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "simkl" in method:
+            #  is_movie=None = playlist mode. Must return BOTH movie
+            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
             ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
