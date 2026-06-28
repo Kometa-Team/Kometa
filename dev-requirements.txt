@@ -1,7 +1,7 @@
 black==26.5.1
 isort==8.0.1
 flake8==7.3.0
-pyright==1.1.410
+pyright==1.1.411
 bandit==1.9.4
 prek==0.4.5
 pytest-cov>=7.0.0
