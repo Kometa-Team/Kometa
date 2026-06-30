@@ -61,8 +61,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-${{ matrix.tag-suffix }}
-          cache-from: type=gha,scope=${{ matrix.cache-scope }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.cache-scope }},ignore-error=true
+          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-${{ matrix.cache-scope }}
+          cache-to: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-${{ matrix.cache-scope }},mode=max
 
   docker-publish-nightly:
     runs-on: ubuntu-latest

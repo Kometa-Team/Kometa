@@ -31,10 +31,13 @@ jobs:
         include:
           - platform: linux/amd64
             cache-scope: docker-test-amd64
+            nightly-cache-scope: docker-nightly-amd64
           - platform: linux/arm64
             cache-scope: docker-test-arm64
+            nightly-cache-scope: docker-nightly-arm64
           - platform: linux/arm/v7
             cache-scope: docker-test-armv7
+            nightly-cache-scope: docker-nightly-armv7
     steps:
 
       - name: Check Out Repo
@@ -62,5 +65,4 @@ jobs:
             "BRANCH_NAME=${{ github.ref_name }}"
           platforms: ${{ matrix.platform }}
           push: false
-          cache-from: type=gha,scope=${{ matrix.cache-scope }}
-          cache-to: type=gha,mode=min,scope=${{ matrix.cache-scope }},ignore-error=true
+          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-${{ matrix.nightly-cache-scope }}
