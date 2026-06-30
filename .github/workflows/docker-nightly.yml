@@ -62,7 +62,7 @@ jobs:
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-${{ matrix.tag-suffix }}
           cache-from: type=gha,scope=${{ matrix.cache-scope }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.cache-scope }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.cache-scope }},ignore-error=true
 
   docker-publish-nightly:
     runs-on: ubuntu-latest
