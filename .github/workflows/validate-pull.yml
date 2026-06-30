@@ -168,7 +168,7 @@ jobs:
           push: true
           tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
           cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=min,ignore-error=true
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
