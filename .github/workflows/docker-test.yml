@@ -63,4 +63,4 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: false
           cache-from: type=gha,scope=${{ matrix.cache-scope }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.cache-scope }}
+          cache-to: type=gha,mode=min,scope=${{ matrix.cache-scope }},ignore-error=true
