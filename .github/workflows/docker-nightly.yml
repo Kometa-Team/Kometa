@@ -62,7 +62,7 @@ jobs:
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-${{ matrix.tag-suffix }}
           # Thin Dockerfile — just FROM base + COPY, no build cache needed
-          cache-to: ""
+          no-cache: true
 
   docker-publish-nightly:
     runs-on: ubuntu-latest
