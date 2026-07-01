@@ -162,17 +162,14 @@ jobs:
 
       - name: Build and Push
         id: docker_build
-        uses: docker/build-push-action@v7
-        with:
-          context: ./
-          file: ./Dockerfile
-          build-args: |
-            "BRANCH_NAME=${{ steps.update-version.outputs.tag-name }}"
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
-          # Thin Dockerfile — just FROM base + COPY, only cache final layer
-          cache-to: type=gha,mode=min
+        run: |
+          docker buildx build \
+            --build-arg BRANCH_NAME=${{ steps.update-version.outputs.tag-name }} \
+            --file ./Dockerfile \
+            --platform linux/amd64,linux/arm64 \
+            --tag kometateam/kometa:${{ steps.update-version.outputs.tag-name }} \
+            --push \
+            .
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
