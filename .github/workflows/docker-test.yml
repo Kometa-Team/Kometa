@@ -28,6 +28,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     strategy:
       fail-fast: false
       matrix:
@@ -68,5 +69,5 @@ jobs:
             "BRANCH_NAME=${{ github.ref_name }}"
           platforms: ${{ matrix.platform }}
           push: false
-          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          # Thin Dockerfile — just FROM base + COPY, only cache final layer
           cache-to: type=gha,mode=min

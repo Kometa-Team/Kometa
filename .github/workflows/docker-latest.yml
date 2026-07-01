@@ -37,7 +37,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:latest
-          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          # Thin Dockerfile — just FROM base + COPY, only cache final layer
           cache-to: type=gha,mode=min
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
