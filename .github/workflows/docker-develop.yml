@@ -44,7 +44,6 @@ jobs:
           # Thin Dockerfile — just FROM base + COPY, only cache final layer
           cache-to: type=gha,mode=min
       - name: Discord Success Notification
-      - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
         if: success()
         with:
