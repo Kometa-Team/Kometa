@@ -168,7 +168,7 @@ jobs:
           push: true
           tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
           # Thin Dockerfile — just FROM base + COPY, no build cache needed
-          cache-to: ""
+          no-cache: true
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
