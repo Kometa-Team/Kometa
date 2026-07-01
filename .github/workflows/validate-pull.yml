@@ -1,5 +1,10 @@
 name: Validate Pull Request
 
+permissions:
+  contents: read
+  actions: write
+  packages: write
+
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, labeled]
@@ -167,6 +172,9 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
