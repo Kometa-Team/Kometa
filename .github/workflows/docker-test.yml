@@ -65,4 +65,3 @@ jobs:
             "BRANCH_NAME=${{ github.ref_name }}"
           platforms: ${{ matrix.platform }}
           push: false
-          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-${{ matrix.nightly-cache-scope }}
