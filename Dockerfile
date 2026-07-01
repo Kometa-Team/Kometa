@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1.7
 ARG BASE_TAG=base
 FROM kometateam/kometa:${BASE_TAG}
+# This is a tiny bump to trigger Increment Build
 
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
