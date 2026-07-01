@@ -61,13 +61,10 @@ jobs:
       - name: Build Docker Image
         if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
         id: docker_build
-        uses: docker/build-push-action@v7
-        with:
-          context: ./
-          file: ./Dockerfile
-          build-args: |
-            "BRANCH_NAME=${{ github.ref_name }}"
-          platforms: ${{ matrix.platform }}
-          push: false
-          # Thin Dockerfile — just FROM base + COPY, only cache final layer
-          cache-to: type=gha,mode=min
+        run: |
+          docker buildx build \
+            --build-arg BRANCH_NAME=${{ github.ref_name }} \
+            --file ./Dockerfile \
+            --platform ${{ matrix.platform }} \
+            --load \
+            .
