@@ -158,6 +158,9 @@ class TMDbMovie(TMDBObj):
         self.studio = data["studio"] if isinstance(data, dict) else data.companies[0].name if data.companies else None
         self.collection_id = data["collection_id"] if isinstance(data, dict) else data.collection.id if data.collection else None
         self.collection_name = data["collection_name"] if isinstance(data, dict) else data.collection.name if data.collection else None
+        # tvdb_id is only meaningful for shows; set None here so the attribute
+        # exists on the class and pyright doesn't flag it in convert_from().
+        self.tvdb_id: None = None
 
         if self._tmdb.cache and not ignore_cache:
             self._tmdb.cache.update_tmdb_movie(expired, self, self._tmdb.language, self._tmdb.expiration)

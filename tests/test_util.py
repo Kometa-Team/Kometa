@@ -117,3 +117,46 @@ class TestCheckInt:
 
         with pytest.raises(Failed, match="must be"):
             check_int("not-a-number", "test", throw=True)
+
+
+class TestGetListOverload:
+    """Regression tests for the @overload signature on util.get_list.
+
+    The overload tells pyright that return_none=False guarantees list (never None).
+    Behaviour is unchanged at runtime; these tests pin the contract.
+    """
+
+    def test_returns_none_for_none_input_by_default(self):
+        from modules.util import get_list
+
+        assert get_list(None) is None
+
+    def test_returns_empty_list_when_return_none_false(self):
+        from modules.util import get_list
+
+        assert get_list(None, return_none=False) == []
+
+    def test_returns_list_for_scalar(self):
+        from modules.util import get_list
+
+        assert get_list("foo", return_none=False) == ["foo"]
+
+
+class TestParseValidatesOptionsList:
+    """Regression for parse()'s error-message path when translation is invalid
+    but options is None. The old code did `for o in options` and would crash
+    with TypeError. After the fix it falls back to translation keys (or []).
+    """
+
+    def test_invalid_translation_with_none_options_does_not_crash(self):
+        from modules.util import Failed, parse
+
+        with pytest.raises(Failed, match="must be in"):
+            parse(
+                "Test",
+                "attr",
+                "bogus-value",
+                datatype=None,
+                translation={"alpha": 1, "beta": 2},
+                options=None,
+            )

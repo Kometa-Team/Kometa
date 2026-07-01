@@ -25,8 +25,8 @@ class ICheckMovies:
 
     def validate_icheckmovies_lists(self, icheckmovies_lists):
         valid_lists = []
-        for icheckmovies_list in util.get_list(icheckmovies_lists, split=False):
-            list_url = icheckmovies_list.strip()
+        for icheckmovies_list in util.get_list(icheckmovies_lists, split=False, return_none=False) or []:
+            list_url = str(icheckmovies_list).strip()
             if not list_url.startswith(base_url):
                 raise Failed(f"ICheckMovies Error: {list_url} must begin with: {base_url}")
             elif len(self._parse_list(list_url)) > 0:

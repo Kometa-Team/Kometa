@@ -1,5 +1,6 @@
 import time
 import webbrowser
+from typing import Any
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 
@@ -198,7 +199,10 @@ class Trakt:
         return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
-    def _request(self, url, params=None, json_data=None):
+    def _request(self, url, params=None, json_data=None) -> Any:
+        # Returns dict[str, Any] for single-page endpoints and list[dict] for
+        # paginated endpoints.  Annotated Any so callers can subscript/iterate
+        # based on their knowledge of the specific endpoint being called.
         output_json = []
         if params is None:
             params = {}
@@ -307,7 +311,7 @@ class Trakt:
                 continue
             if current_type in ["person", "list"] and ignore_other:
                 continue
-            id_type, id_display = id_types[current_type]
+            id_type, id_display = id_types[current_type]  # type: ignore[index]
             if id_type in data["ids"] and data["ids"][id_type]:
                 final_id = data["ids"][id_type]
                 if current_type == "episode":
@@ -332,9 +336,9 @@ class Trakt:
                 continue
             type_set = str(id_type).split("_")
             id_set = str(input_id).split("_")
-            item = {"ids": {type_set[0]: id_set[0] if type_set[0] == "imdb" else int(id_set[0])}}
+            item: dict[str, Any] = {"ids": {type_set[0]: id_set[0] if type_set[0] == "imdb" else int(id_set[0])}}
             if id_type in ["tvdb_season", "tvdb_episode"]:
-                season_data = {"number": int(id_set[1])}
+                season_data: dict[str, Any] = {"number": int(id_set[1])}
                 if id_type == "tvdb_episode":
                     season_data["episodes"] = [{"number": int(id_set[2])}]
                 item["seasons"] = [season_data]
@@ -462,7 +466,7 @@ class Trakt:
         return {str(i[0][0]): i[0][1] for i in self._list(data) if i[1] == "tmdb_person"}  # noqa
 
     def validate_list(self, trakt_lists):
-        values = util.get_list(trakt_lists, split=False)
+        values = util.get_list(trakt_lists, split=False, return_none=False)
         trakt_values = []
         for value in values:
             if isinstance(value, dict):
@@ -478,7 +482,7 @@ class Trakt:
 
     def validate_chart(self, err_type, method_name, data, is_movie):
         valid_dicts = []
-        for trakt_dict in util.get_list(data, split=False):
+        for trakt_dict in util.get_list(data, split=False, return_none=False):
             if not isinstance(trakt_dict, dict):
                 raise Failed(f"{err_type} Error: {method_name} must be a dictionary")
             dict_methods = {dm.lower(): dm for dm in trakt_dict}
@@ -597,11 +601,11 @@ class Trakt:
                 "rt_user_meters",
                 "metascores",
             ]:
-                if attr in data:
-                    logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")
-                    values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]
-                    params[attr] = ",".join(values) if isinstance(values, list) else values
-            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)
+                if attr in data:  # type: ignore[operator]
+                    logger.info(f"{attr:>22}: {','.join(data[attr]) if isinstance(data[attr], list) else data[attr]}")  # type: ignore[index]
+                    values = [status_translation[v] for v in data[attr]] if attr == "status" else data[attr]  # type: ignore[index]
+                    params[attr] = ",".join(values) if isinstance(values, list) else values  # type: ignore[index]
+            return self._charts(data["chart"], is_movie, params, time_period=data["time_period"], ignore_other=True)  # type: ignore[index]
         elif method == "trakt_userlist":
             logger.info(f"Processing {pretty} {media_type}s from {data['user']}'s {data['userlist'].capitalize()}")
             return self._userlist(data["userlist"], data["user"], is_movie, sort_by=data["sort_by"], ignore_other=True)

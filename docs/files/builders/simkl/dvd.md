@@ -10,6 +10,13 @@ The list is filtered automatically to match your library type: movie libraries r
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.
 
+???+ tip "Playlist ordering for DVD"
+
+    The DVD release endpoint returns a single flat list of items.
+    When used in a playlist (mixed library), each item is evaluated individually and
+    **API order is preserved** -- movies and shows appear in the same sequence
+    returned by Simkl.
+
 ## Attribute
 
 | Attribute | Description                                                        | Required | Default |

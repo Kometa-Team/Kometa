@@ -181,16 +181,16 @@ class Sonarr:
                 upgrade_qp = []
                 remonitor = []
                 for series in exists:
-                    if monitor_existing or (series.qualityProfileId != qp.id and upgrade_existing):
+                    if monitor_existing or (qp is not None and series.qualityProfileId != qp.id and upgrade_existing):
                         if monitor_existing:
                             remonitor.append(series)
-                        if series.qualityProfileId != qp.id and upgrade_existing:
+                        if qp is not None and series.qualityProfileId != qp.id and upgrade_existing:
                             upgrade_qp.append(series)
                     else:
                         logger.info(f"Already in Sonarr | {series.tvdbId:<7} | {series.title}")
                     if self.cache:
                         self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
-                if upgrade_qp:
+                if upgrade_qp and qp is not None:
                     self.api.edit_multiple_series([s.tvdbId for s in upgrade_qp], quality_profile=qp.id)
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")

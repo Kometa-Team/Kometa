@@ -41,8 +41,8 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:develop
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-develop
+          cache-to: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-develop,mode=max
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master

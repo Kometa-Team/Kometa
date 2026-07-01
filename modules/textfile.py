@@ -144,8 +144,13 @@ class TextFile:
                 return [(imdb_id, "imdb")]
             raise Failed(f"Text File Error: IMDb ID not supported in {source}: {value}")
         if value_type == "tmdb":
-            tmdb_type = "tmdb" if is_movie is not False else "tmdb_show"
-            return [(util.regex_first_int(value, "TMDb ID"), tmdb_type)]
+            tmdb_id = util.regex_first_int(value, "TMDb ID")
+            if is_movie is True:
+                return [(tmdb_id, "tmdb")]
+            elif is_movie is False:
+                return [(tmdb_id, "tmdb_show")]
+            else:
+                return [(tmdb_id, "tmdb"), (tmdb_id, "tmdb_show")]
         if value_type == "tvdb":
             return [(util.regex_first_int(value, "TVDb ID"), "tvdb")]
         if value_type in ["tvdb_season", "tvdb_episode"]:
@@ -225,7 +230,7 @@ class TextFile:
 
     def validate_file(self, data):
         valid_files = []
-        for text_file in util.get_list(data, split=False, return_none=False):
+        for text_file in util.get_list(data, split=False, return_none=False) or []:
             text_file = str(text_file).strip()
             if self._is_url(text_file):
                 valid_files.append(text_file)
@@ -238,13 +243,13 @@ class TextFile:
 
     def get_ids(self, data, is_movie=None):
         ids = []
-        for file_path in util.get_list(data, split=False, return_none=False):
+        for file_path in util.get_list(data, split=False, return_none=False) or []:
             if util.logger:
                 util.logger.info(f"Processing Text File: {file_path}")
             if self._is_url(file_path):
                 ids.extend(self._parse_text_url(file_path, is_movie=is_movie))
             else:
-                with open(file_path, encoding="utf-8") as handle:
+                with open(str(file_path), encoding="utf-8") as handle:
                     for line_number, line in enumerate(handle, 1):
                         ids.extend(self._parse_line(line, f"{file_path}:{line_number}", is_movie=is_movie))
         if not ids:

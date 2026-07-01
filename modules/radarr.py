@@ -164,16 +164,16 @@ class Radarr:
                 upgrade_qp = []
                 remonitor = []
                 for movie in exists:
-                    if (movie.monitored != monitor and monitor_existing) or (movie.qualityProfileId != qp.id and upgrade_existing):
+                    if (movie.monitored != monitor and monitor_existing) or (qp is not None and movie.qualityProfileId != qp.id and upgrade_existing):
                         if movie.monitored != monitor and monitor_existing:
                             remonitor.append(movie)
-                        if movie.qualityProfileId != qp.id and upgrade_existing:
+                        if qp is not None and movie.qualityProfileId != qp.id and upgrade_existing:
                             upgrade_qp.append(movie)
                     else:
                         logger.info(f"Already in Radarr | {movie.tmdbId:<7} | {movie.title}")
                     if self.cache:
                         self.cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
-                if upgrade_qp:
+                if upgrade_qp and qp is not None:
                     self.api.edit_multiple_movies([m.tmdbId for m in upgrade_qp], quality_profile=qp.id)
                     for movie in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {movie.tmdbId:<7} | {movie.title}")

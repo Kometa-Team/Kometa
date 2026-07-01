@@ -208,11 +208,11 @@ class MDBList:
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
-        for mdb_dict in util.get_list(mdb_lists, split=False):
+        for mdb_dict in util.get_list(mdb_lists, split=False, return_none=False) or []:
             if not isinstance(mdb_dict, dict):
                 mdb_dict = {"url": mdb_dict}
 
-            url = mdb_dict.get("url", "").strip("/")
+            url = str(mdb_dict.get("url", "")).strip("/")
             if not url.startswith(base_url.strip("/")):
                 raise Failed(f"{error_type} Error: {url} must start with {base_url}")
 
