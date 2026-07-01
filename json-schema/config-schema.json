@@ -9054,6 +9054,10 @@
         "sort_title": {
           "type": "string"
         },
+        "build_collection": {
+          "description": "When false, the collection is not created but related Radarr or Sonarr actions can still run.",
+          "type": "boolean"
+        },
         "schedule": {
           "type": "string"
         },
@@ -9403,6 +9407,13 @@
         },
         "append_addons": {
           "type": "object"
+        },
+        "title_override": {
+          "description": "Override the generated collection title for specific dynamic collection keys.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
         },
         "remove_addons": {
           "oneOf": [
