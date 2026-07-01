@@ -65,3 +65,5 @@ jobs:
             "BRANCH_NAME=${{ github.ref_name }}"
           platforms: ${{ matrix.platform }}
           push: false
+          # Thin Dockerfile — just FROM base + COPY, no build cache needed
+          cache-to: ""
