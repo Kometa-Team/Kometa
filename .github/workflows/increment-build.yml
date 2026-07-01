@@ -131,6 +131,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     steps:
 
       - name: Check Out Repo
@@ -164,7 +165,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
-          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          # Thin Dockerfile — just FROM base + COPY, only cache final layer
           cache-to: type=gha,mode=min
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master

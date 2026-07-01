@@ -82,6 +82,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      actions: write
     outputs:
       commit-msg: ${{ steps.update-version.outputs.commit-msg }}
       part_value: ${{ steps.update-version.outputs.part_value }}
@@ -170,7 +171,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
-          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          # Thin Dockerfile — just FROM base + COPY, only cache final layer
           cache-to: type=gha,mode=min
 
       - name: Discord Success Notification
