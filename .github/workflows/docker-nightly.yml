@@ -61,8 +61,8 @@ jobs:
           platforms: ${{ matrix.platform }}
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-${{ matrix.tag-suffix }}
-          # Thin Dockerfile — just FROM base + COPY, no build cache needed
-          no-cache: true
+          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          cache-to: type=gha,mode=min
 
   docker-publish-nightly:
     runs-on: ubuntu-latest

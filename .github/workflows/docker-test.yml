@@ -25,6 +25,9 @@ jobs:
 
   docker-test-build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -65,5 +68,5 @@ jobs:
             "BRANCH_NAME=${{ github.ref_name }}"
           platforms: ${{ matrix.platform }}
           push: false
-          # Thin Dockerfile — just FROM base + COPY, no build cache needed
-          no-cache: true
+          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          cache-to: type=gha,mode=min

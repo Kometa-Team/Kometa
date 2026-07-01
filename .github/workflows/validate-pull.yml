@@ -79,6 +79,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ validate-pull ]
     if: needs.validate-pull.outputs.build == 'true' && (contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'tester'))
+    permissions:
+      contents: read
+      packages: write
     outputs:
       commit-msg: ${{ steps.update-version.outputs.commit-msg }}
       part_value: ${{ steps.update-version.outputs.part_value }}
@@ -167,8 +170,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: kometateam/kometa:${{ steps.update-version.outputs.tag-name }}
-          # Thin Dockerfile — just FROM base + COPY, no build cache needed
-          no-cache: true
+          # Thin Dockerfile — just FROM base + COPY, don't cache base layers
+          cache-to: type=gha,mode=min
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
