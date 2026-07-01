@@ -1,31 +1,12 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.13-slim
+ARG BASE_TAG=base
+FROM kometateam/kometa:${BASE_TAG}
+
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
-ENV TINI_VERSION=v0.19.0
 ENV KOMETA_DOCKER=True
-ENV LANG=C.UTF-8
-ENV LC_ALL=C.UTF-8
-COPY requirements.txt /requirements.txt
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/root/.cache/pip,sharing=locked \
-    echo "**** install system packages ****" \
- && rm -f /etc/apt/apt.conf.d/docker-clean \
- && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
- && apt-get update \
- && apt-get upgrade -y --no-install-recommends \
- && apt-get install -y tzdata --no-install-recommends \
- && apt-get install -y gcc g++ libffi-dev libxml2-dev libxslt-dev libz-dev libjpeg62-turbo-dev zlib1g-dev wget curl nano \
- && runtime_libffi="$(dpkg-query -W -f='${binary:Package}\n' 'libffi[0-9]*' | awk '!/-dev$/ { print; exit }')" \
- && if [ -n "$runtime_libffi" ]; then apt-mark manual "$runtime_libffi"; fi \
- && wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-"$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
- && chmod +x /tini \
- && pip3 install --upgrade --requirement /requirements.txt \
- && apt-get --purge autoremove gcc g++ libffi-dev libxml2-dev libxslt-dev libz-dev -y \
- && apt-get update \
- && apt-get check \
- && apt-get -f install \
- && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
- COPY . /
+
+COPY . /
+
 VOLUME /config
 ENTRYPOINT ["/tini", "-s", "python3", "kometa.py", "--"]
