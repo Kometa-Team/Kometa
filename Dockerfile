@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 ARG BASE_TAG=base
 FROM kometateam/kometa:${BASE_TAG}
-# Bump v3: permissions fix is in, trigger nightly rebuild
+# Bump v4: actions:write fix is in, trigger nightly rebuild
 
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
