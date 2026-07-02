@@ -301,11 +301,13 @@ class Cache:
                     name TEXT,
                     date TEXT,
                     expiration_date TEXT)""")
-                cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_special_text2 (
+                cursor.execute("""CREATE TABLE IF NOT EXISTS overlay_value_cache (
                     key INTEGER PRIMARY KEY,
                     rating_key TEXT,
                     type TEXT,
-                    text TEXT)""")
+                    value TEXT,
+                    expiration_date TEXT,
+                    UNIQUE(rating_key, type))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS testing (
                     key INTEGER PRIMARY KEY,
                     name TEXT,
@@ -341,6 +343,33 @@ class Cache:
                                 final_table = table_name if row["type"] == "poster" else f"{table_name}_backgrounds"
                                 self.update_image_map(row["rating_key"], final_table, row["location"], row["compare"], overlay=row["overlay"])
                     cursor.execute("DROP TABLE IF EXISTS image_map")
+        self.migrate_overlay_value_cache()
+
+    def migrate_overlay_value_cache(self):
+        # Upgrade legacy overlay_special_text2 to overlay_value_cache; its presence is the one-time upgrade signal (not created on fresh installs, dropped once migrated), and runs regardless of cache_expiration.
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'")
+                if cursor.fetchone()[0] == 0:
+                    return
+                # 1. Migrate values, deduplicating on (rating_key, type) via the UNIQUE constraint.
+                expiration_date = (datetime.now() - timedelta(days=random.randint(1, self.expiration))).strftime("%Y-%m-%d")
+                cursor.execute("SELECT rating_key, type, text FROM overlay_special_text2")
+                for row in cursor.fetchall():
+                    cursor.execute("INSERT OR IGNORE INTO overlay_value_cache(rating_key, type) VALUES(?, ?)", (str(row["rating_key"]), row["type"]))
+                    cursor.execute("UPDATE overlay_value_cache SET value = ?, expiration_date = ? WHERE rating_key = ? AND type = ?", (row["text"], expiration_date, str(row["rating_key"]), row["type"]))
+                # 2. Drop the legacy table.
+                cursor.execute("DROP TABLE IF EXISTS overlay_special_text2")
+                # 3. Reset overlay application state for every library so all overlays reapply once.
+                cursor.execute("SELECT library, key FROM image_maps")
+                for lib in cursor.fetchall():
+                    for suffix in ["_overlays", "_square_arts"]:
+                        table = f"image_map_{lib['key']}{suffix}"
+                        cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?", (table,))
+                        if cursor.fetchone()[0] > 0:
+                            cursor.execute(f"DELETE FROM {table}")
+        logger.separator("Overlay Cache Upgraded\n" "The overlay cache format has been updated.\n" "All overlay states have been reset.\n" "This run will reapply all overlays and may take longer than usual.\n" "This will only happen once.")
 
     def query_guid_map(self, plex_guid):
         id_to_return = None
@@ -998,18 +1027,6 @@ class Cache:
                 row = cursor.fetchone()
                 if row and row["key"]:
                     table_name = f"image_map_{row['key']}"
-                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                        key INTEGER PRIMARY KEY,
-                        rating_key TEXT UNIQUE,
-                        overlay TEXT,
-                        compare TEXT,
-                        location TEXT)""")
-                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
-                        key INTEGER PRIMARY KEY,
-                        rating_key TEXT UNIQUE,
-                        overlay TEXT,
-                        compare TEXT,
-                        location TEXT)""")
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
@@ -1034,18 +1051,34 @@ class Cache:
                             overlay TEXT,
                             compare TEXT,
                             location TEXT)""")
-                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)""")
-                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)""")
+                if table_name:
+                    cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?", (f"{table_name}_overlays",))
+                    if cursor.fetchone()[0] > 0:
+                        cursor.execute(f"PRAGMA table_info({table_name}_overlays)")
+                        if "overlay" in [col[1] for col in cursor.fetchall()]:
+                            cursor.execute(f"DROP TABLE {table_name}_overlays")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlays (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        compare TEXT,
+                        location TEXT)""")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_square_arts (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        overlay TEXT,
+                        compare TEXT,
+                        location TEXT)""")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlay_state (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT,
+                        overlay_key TEXT,
+                        definition_hash TEXT,
+                        resolved_value TEXT,
+                        UNIQUE(rating_key, overlay_key))""")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_overlay_images (
+                        key INTEGER PRIMARY KEY,
+                        overlay_key TEXT UNIQUE,
+                        compare TEXT)""")
         return table_name
 
     def query_image_map(self, rating_key, table_name):
@@ -1064,6 +1097,65 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
                 cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ?, overlay = ? WHERE rating_key = ?", (location, compare, overlay, rating_key))
+
+    def query_overlay_poster(self, rating_key, table_name):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (rating_key,))
+                row = cursor.fetchone()
+                if row:
+                    return row["location"], row["compare"]
+        return None, None
+
+    def update_overlay_poster(self, rating_key, table_name, location, compare):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key) VALUES(?)", (rating_key,))
+                cursor.execute(f"UPDATE {table_name} SET location = ?, compare = ? WHERE rating_key = ?", (location, compare, rating_key))
+
+    def query_overlay_state(self, rating_key, table_name):
+        states = {}
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM {table_name} WHERE rating_key = ?", (str(rating_key),))
+                for row in cursor.fetchall():
+                    if row:
+                        states[row["overlay_key"]] = (row["definition_hash"], row["resolved_value"])
+        return states
+
+    def update_overlay_state(self, rating_key, overlay_key, table_name, definition_hash, resolved_value=None):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO {table_name}(rating_key, overlay_key) VALUES(?, ?)", (str(rating_key), overlay_key))
+                cursor.execute(f"UPDATE {table_name} SET definition_hash = ?, resolved_value = ? WHERE rating_key = ? AND overlay_key = ?", (definition_hash, resolved_value, str(rating_key), overlay_key))
+
+    def delete_overlay_state(self, rating_key, table_name):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"DELETE FROM {table_name} WHERE rating_key = ?", (str(rating_key),))
+
+    def query_overlay_image(self, overlay_key, table_name):
+        compare = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"SELECT * FROM {table_name} WHERE overlay_key = ?", (overlay_key,))
+                row = cursor.fetchone()
+                if row:
+                    compare = row["compare"]
+        return compare
+
+    def update_overlay_image(self, overlay_key, table_name, compare):
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(f"INSERT OR IGNORE INTO {table_name}(overlay_key) VALUES(?)", (overlay_key,))
+                cursor.execute(f"UPDATE {table_name} SET compare = ? WHERE overlay_key = ?", (compare, overlay_key))
 
     def query_radarr_adds(self, tmdb_id, library):
         return self.query_arr_adds(tmdb_id, library, "radarr", "tmdb_id")
@@ -1244,6 +1336,41 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO overlay_special_text2(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
                 cursor.execute("UPDATE overlay_special_text2 SET text = ? WHERE rating_key = ? AND type = ?", (text, str(rating_key), data_type))
+
+    def query_overlay_value_cache(self, rating_key, data_type):
+        value = None
+        expired = None
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), data_type))
+                row = cursor.fetchone()
+                if row:
+                    value = row["value"]
+                    if row["expiration_date"]:
+                        datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+                        time_between_insertion = datetime.now() - datetime_object
+                        expired = time_between_insertion.days > self.expiration
+        return value, expired
+
+    def query_overlay_value_cache_all(self, rating_key):
+        values = {}
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT * FROM overlay_value_cache WHERE rating_key = ?", (str(rating_key),))
+                for row in cursor.fetchall():
+                    if row:
+                        values[row["type"]] = row["value"]
+        return values
+
+    def update_overlay_value_cache(self, expired, rating_key, data_type, value):
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        with sqlite3.connect(self.cache_path) as connection:
+            connection.row_factory = sqlite3.Row
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO overlay_value_cache(rating_key, type) VALUES(?, ?)", (str(rating_key), data_type))
+                cursor.execute("UPDATE overlay_value_cache SET value = ?, expiration_date = ? WHERE rating_key = ? AND type = ?", (value, expiration_date.strftime("%Y-%m-%d"), str(rating_key), data_type))
 
     def query_testing(self, name):
         value1 = None
