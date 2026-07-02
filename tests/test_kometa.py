@@ -108,3 +108,15 @@ def test_issue_3244_resource_uses_are_guarded() -> None:
     for use_line in resource_uses:
         inside_guard = any(start <= use_line <= end for start, end in guarded_ranges)
         assert inside_guard, f"`resource.<attr>` at kometa.py:{use_line} is not inside an `if resource is not None:` block. " f"On Windows `resource` is `None`, so this will raise AttributeError. See PR #3244."
+
+
+def test_overlay_summary_uses_warning_labeling() -> None:
+    """Regression for overlay missing-rating summaries.
+
+    The summary should consistently label these as warnings rather than
+    errors, since the overlay code now raises ``OverlayWarning``-style
+    messages for missing ratings.
+    """
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert '("Overlay Warning: No \'anidb_average_rating\' found",' in text
+    assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
