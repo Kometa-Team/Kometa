@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 ARG BASE_TAG=base
 FROM kometateam/kometa:${BASE_TAG}
-# Bump 10: registry cache, trigger nightly rebuild
+# Bump: BuildKit v0.20.0 pinned, trigger nightly rebuild
 
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
