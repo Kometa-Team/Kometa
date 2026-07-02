@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, util
 from modules.builder import CollectionBuilder
-from modules.util import Failed, FilterFailed, LimitReached, MappingConvertError, NotScheduled, OverlayError, ServiceError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
 logger = util.logger
 
@@ -73,16 +73,6 @@ class Overlays:
             logger.separator(f"{'Re-' if self.library.reapply_overlays else ''}Applying Overlays for the {self.library.name} Library")
             logger.info("")
 
-            _trakt_ratings = None
-
-            def trakt_ratings():
-                nonlocal _trakt_ratings
-                if _trakt_ratings is None:
-                    _trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie)
-                if not _trakt_ratings:
-                    raise Failed
-                return _trakt_ratings
-
             total_keys = len(key_to_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
@@ -90,16 +80,15 @@ class Overlays:
                 try:
                     logger.ghost(f"Overlaying: ({i}/{total_keys}) {item_title}")
                     image_compare = None
-                    overlay_compare = None
+                    cached_state = {}
                     poster = None
                     if self.cache:
-                        image, image_compare, overlay_compare = self.cache.query_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays")
+                        _, image_compare = self.cache.query_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays")
+                        cached_state = self.cache.query_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
                     self.library.reload(item, force=self.library.reapply_overlays)
-
-                    overlay_compare = [] if overlay_compare is None else (util.get_list(overlay_compare, split="|") or [])  # type: ignore[arg-type]
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
-                    compare_names = {properties[ov].get_overlay_compare(): ov for ov in over_names}
+                    current_hashes = {properties[ov].mapping_name: properties[ov].get_overlay_compare() for ov in over_names}
                     blur_num = 0
                     applied_names = []
                     queue_overlays = {}
@@ -121,21 +110,31 @@ class Overlays:
 
                     overlay_change = "" if has_overlay else "No Overlay Label"
                     if not overlay_change:
-                        for oc in overlay_compare:
-                            if oc not in compare_names:
-                                overlay_change = f"{oc} not in {compare_names}"
+                        for cached_key in cached_state:
+                            if cached_key not in current_hashes:
+                                overlay_change = f"Overlay Removed: {cached_key}"
 
                     if not overlay_change:
-                        for compare_name, original_name in compare_names.items():
-                            if compare_name not in overlay_compare or properties[original_name].updated:
-                                overlay_change = f"{compare_name} not in {overlay_compare} or {properties[original_name].updated}"
+                        for over_name in over_names:
+                            mapping_name = properties[over_name].mapping_name
+                            if mapping_name not in cached_state:
+                                overlay_change = f"New Overlay: {mapping_name}"
+                            elif cached_state[mapping_name][0] != current_hashes[mapping_name]:
+                                overlay_change = f"Overlay Changed: {mapping_name}"
+                            elif properties[over_name].updated:
+                                overlay_change = f"Overlay Image Updated: {mapping_name}"
 
                     if self.cache:
                         for over_name in over_names:
                             if properties[over_name].name.startswith("text"):
-                                for cache_key, cache_value in self.cache.query_overlay_special_text(item.ratingKey).items():
+                                for cache_key, cache_value in self.cache.query_overlay_value_cache_all(item.ratingKey).items():
                                     actual = plex.attribute_translation[cache_key] if cache_key in plex.attribute_translation else cache_key
-                                    if actual == "total_runtime":
+                                    if cache_key in overlay.rating_sources:
+                                        try:
+                                            real_value = self.library.fetch_overlay_value(item, cache_key)
+                                        except Failed:
+                                            continue
+                                    elif actual == "total_runtime":
                                         sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
                                         sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                         real_value = sum(sub_items)
@@ -215,6 +214,8 @@ class Overlays:
                         except Failed as e:
                             raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
+                    resolved_values = {}
+                    unresolved = set()
                     if poster is None and has_original is None:
                         logger.error("  Overlay Error: No poster found")
                     elif self.library.reapply_overlays or new_backup or overlay_change or changed_image:
@@ -269,153 +270,14 @@ class Overlays:
                                         elif format_var in overlay.rating_sources:
                                             found_rating = None
                                             try:
-                                                item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
-                                                tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item_to_id)
-                                                if format_var == "tmdb_rating":
-                                                    _item = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=self.library.is_movie)
-                                                    if _item:
-                                                        if isinstance(item, Episode):
-                                                            found_rating = self.config.TMDb.get_episode(_item.tmdb_id, item.seasonNumber, item.episodeNumber).vote_average
-                                                        elif isinstance(item, Season):
-                                                            for season in _item.seasons:
-                                                                if item.seasonNumber == season.season_number:
-                                                                    found_rating = season.average
-                                                                    break
-                                                        else:
-                                                            found_rating = _item.vote_average
-                                                    else:
-                                                        raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
-                                                elif format_var == "imdb_rating":
-                                                    if isinstance(item, Episode):
-                                                        found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
-                                                    else:
-                                                        found_rating = self.config.IMDb.get_rating(imdb_id)
-                                                elif format_var == "trakt_user_rating":
-                                                    _ratings = trakt_ratings()
-                                                    _id = tmdb_id if self.library.is_movie else tvdb_id
-                                                    if _id in _ratings:
-                                                        found_rating = _ratings[_id]
-                                                    else:
-                                                        raise OverlayError("Overlay Error: No Trakt user rating found")
-                                                elif format_var == "trakt_rating":
-                                                    if self.config.Trakt:
-                                                        found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
-                                                    else:
-                                                        raise OverlayError("Overlay Error: No Trakt rating found")
-                                                elif str(format_var).startswith("mdb"):
-                                                    mdb_item = None
-                                                    if self.config.MDBList.limit is False:
-                                                        if self.library.is_show and tvdb_id:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_series(tvdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"TVDb ID: {tvdb_id}")
-                                                                raise
-                                                        if self.library.is_movie and tmdb_id:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_movie(tmdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"TMDb ID: {tmdb_id}")
-                                                                raise
-                                                        if imdb_id and not mdb_item:
-                                                            try:
-                                                                mdb_item = self.config.MDBList.get_imdb(imdb_id)
-                                                            except LimitReached as err:
-                                                                logger.debug(err)
-                                                            except Failed as err:
-                                                                logger.error(str(err))
-                                                            except Exception:
-                                                                logger.trace(f"IMDb ID: {imdb_id}")
-                                                                raise
-                                                        if not mdb_item:
-                                                            raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
-                                                    if format_var == "mdb_average_rating":
-                                                        found_rating = mdb_item.average / 10 if mdb_item.average else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_imdb_rating":
-                                                        found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_metacritic_rating":
-                                                        found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_metacriticuser_rating":
-                                                        found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_trakt_rating":
-                                                        found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_tomatoes_rating":
-                                                        found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_tomatoesaudience_rating":
-                                                        found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_tmdb_rating":
-                                                        found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_letterboxd_rating":
-                                                        found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None  # type: ignore[union-attr]
-                                                    elif format_var == "mdb_myanimelist_rating":
-                                                        found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None  # type: ignore[union-attr]
-                                                    else:
-                                                        found_rating = mdb_item.score / 10 if mdb_item.score else None  # type: ignore[union-attr]
-                                                elif str(format_var).startswith("omdb"):
-                                                    if self.config.OMDb.limit is not False:
-                                                        raise ServiceError("OMDb Error: Daily OMDb Limit Reached")
-                                                    elif not imdb_id:
-                                                        raise MappingConvertError(f"Mapping/Convert Error: No IMDb ID for {item.title} (Guid: {item.guid})")
-                                                    else:
-                                                        try:
-                                                            omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
-                                                            if format_var == "omdb_metascore_rating":
-                                                                found_rating = omdb_obj.metacritic_rating / 10 if omdb_obj.metacritic_rating else None
-                                                            elif format_var == "omdb_tomatoes_rating":
-                                                                found_rating = omdb_obj.rotten_tomatoes / 10 if omdb_obj.rotten_tomatoes else None
-                                                            else:
-                                                                found_rating = omdb_obj.imdb_rating if omdb_obj.imdb_rating else None
-                                                        except Exception:
-                                                            logger.error(f"Cannot retrieve {format_var} for: {imdb_id}")
-                                                            raise
-                                                elif str(format_var).startswith(("anidb", "mal")):
-                                                    anidb_id = self.config.Convert.ids_to_anidb(self.library, item.ratingKey, tvdb_id, imdb_id, tmdb_id)
-
-                                                    if str(format_var).startswith("anidb"):
-                                                        if anidb_id:
-                                                            anidb_obj = self.config.AniDB.get_anime(anidb_id)
-                                                            if format_var == "anidb_rating_rating":
-                                                                found_rating = anidb_obj.rating
-                                                            elif format_var == "anidb_average_rating":
-                                                                found_rating = anidb_obj.average
-                                                            elif format_var == "anidb_score_rating":
-                                                                found_rating = anidb_obj.score
-                                                        else:
-                                                            raise MappingConvertError(f"Mapping/Convert Error: No AniDB ID for {item.title} (Guid: {item.guid})")
-                                                    else:
-                                                        if item.ratingKey in self.library.reverse_mal:
-                                                            mal_id = self.library.reverse_mal[item.ratingKey]
-                                                        elif not anidb_id:
-                                                            raise MappingConvertError(f"Mapping/Convert Error:  No AniDB ID to Convert to MyAnimeList ID for {item.title} (Guid: {item.guid})")
-                                                        else:
-                                                            try:
-                                                                mal_id = self.config.Convert.anidb_to_mal(anidb_id)
-                                                            except Failed as errr:
-                                                                raise MappingConvertError(f"Mapping/Convert Error:  {errr} of {item.title} (Guid: {item.guid})")
-                                                        if mal_id:
-                                                            found_rating = self.config.MyAnimeList.get_anime(mal_id).score
-                                                elif str(format_var).startswith("plex"):
-                                                    ratings = self.library.get_ratings(item)
-                                                    rating_key = format_var.replace("_rating", "")
-                                                    try:
-                                                        found_rating = ratings[rating_key]  # noqa
-                                                    except KeyError:
-                                                        found_rating = None
+                                                found_rating = self.library.fetch_overlay_value(item, format_var)
                                             except Failed as err:
                                                 logger.error(err)
-                                            if found_rating:
+                                            if found_rating is not None:
                                                 actual_value = found_rating
                                                 logger.trace(f"{format_var}: {actual_value}")
                                             else:
-                                                raise OverlayError(f"Overlay Error: No '{format_var}' found for {item_title}")
+                                                raise OverlayError(f"Overlay Warning: No '{format_var}' found for '{item_title}'")
                                         elif format_var == "runtime" and text_overlay.level in ["show", "season", "artist", "album"]:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
@@ -433,9 +295,9 @@ class Overlays:
                                             actual_value = getattr(item, actual_attr)
                                             if format_var == "versions":
                                                 actual_value = len(actual_value)
-                                        if self.cache:
+                                        if self.cache and format_var not in overlay.rating_sources:
                                             cache_store = actual_value.strftime("%Y-%m-%d") if format_var in overlay.date_vars else actual_value  # type: ignore[union-attr]
-                                            self.cache.update_overlay_special_text(item.ratingKey, format_var, cache_store)
+                                            self.cache.update_overlay_value_cache(False, item.ratingKey, format_var, cache_store)
                                         sub_value = None
                                         if format_var == "originally_available":
                                             if mod:
@@ -489,10 +351,13 @@ class Overlays:
                                         if "<<" in current_overlay.name:
                                             image_box = current_overlay.image.size if current_overlay.image else None
                                             try:
-                                                overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay))
+                                                rendered_text = get_text(current_overlay)
                                             except Failed as e:
                                                 logger.warning(f"  {e}")
+                                                unresolved.add(current_overlay.mapping_name)
                                                 continue
+                                            resolved_values[current_overlay.mapping_name] = rendered_text
+                                            overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=rendered_text)
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                         else:
                                             overlay_image, addon_box = current_overlay.get_canvas(item)
@@ -524,10 +389,13 @@ class Overlays:
                                         if current_overlay.name.startswith("text"):
                                             image_box = current_overlay.image.size if current_overlay.image else None
                                             try:
-                                                overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=get_text(current_overlay), new_cords=cord)
+                                                rendered_text = get_text(current_overlay)
                                             except Failed as e:
                                                 logger.warning(f"  {e}")
+                                                unresolved.add(current_overlay.mapping_name)
                                                 continue
+                                            resolved_values[current_overlay.mapping_name] = rendered_text
+                                            overlay_image, addon_box = current_overlay.get_backdrop((canvas_width, canvas_height), box=image_box, text=rendered_text, new_cords=cord)
                                             new_poster.paste(overlay_image, (0, 0), overlay_image)
                                             if current_overlay.image:
                                                 new_poster.paste(current_overlay.image, addon_box, current_overlay.image)
@@ -557,7 +425,14 @@ class Overlays:
                         logger.info(f"  Overlay Update Not Needed (Current Overlays: {', '.join(over_names)})")
 
                     if self.cache and poster_compare:
-                        self.cache.update_image_map(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare, overlay="|".join(compare_names))
+                        self.cache.update_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays", item.thumb, poster_compare)
+                        state_table = f"{self.library.image_table_name}_overlay_state"
+                        self.cache.delete_overlay_state(item.ratingKey, state_table)
+                        for over_name in over_names:
+                            mapping_name = properties[over_name].mapping_name
+                            if mapping_name in unresolved:
+                                continue
+                            self.cache.update_overlay_state(item.ratingKey, mapping_name, state_table, current_hashes[mapping_name], resolved_values.get(mapping_name))
                 except Failed as e:
                     logger.error(f"  {e}\n  Overlays Attempted on {item_title}: {', '.join(over_names)}")
                 except Exception as e:
@@ -627,7 +502,6 @@ class Overlays:
                 except FilterFailed:
                     pass
                 except Failed as e:
-                    logger.stacktrace()
                     logger.error(e)
                     logger.info("")
                 except Exception as e:

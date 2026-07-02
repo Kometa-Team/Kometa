@@ -317,6 +317,52 @@ overlays:
     plex_all: true
 
   # ---------------------------------------------------------------------------
+  # VALUE FILTER - filter items at selection time on a fetched numeric value.
+  # Comparators: gte, gt, lt, lte. Threshold uses the 0-10 normalised scale.
+  # All conditions are AND logic. Items with no value are excluded for that run.
+  # ---------------------------------------------------------------------------
+  RT Fresh Badge:
+    overlay:
+      name: text(mdb_tomatoes_rating)
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+    value_filter:
+      mdb_tomatoes_rating.gte: 6.0
+
+  RT Rotten Badge:
+    overlay:
+      name: text(mdb_tomatoes_rating)
+      horizontal_align: right
+      horizontal_offset: 15
+      vertical_align: top
+      vertical_offset: 15
+    plex_all: true
+    value_filter:
+      mdb_tomatoes_rating.lt: 6.0
+
+  # Combined value_filter + plex_search — Action films with a high TMDb rating
+  High Rated Action:
+    overlay:
+      name: "text(Top Rated)"
+      horizontal_align: left
+      horizontal_offset: 15
+      vertical_align: bottom
+      vertical_offset: 30
+      font_size: 36
+      font_color: "#FFD700"
+      back_color: "#000000AA"
+      back_padding: 8
+      back_radius: 5
+    plex_search:
+      all:
+        genre: Action
+    value_filter:
+      tmdb_rating.gte: 7.0
+
+  # ---------------------------------------------------------------------------
   # SUPPRESS OVERLAYS — prevents other named overlays from applying
   # If this overlay fires, the listed overlays are skipped for that item.
   # ---------------------------------------------------------------------------

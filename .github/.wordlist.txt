@@ -67,6 +67,8 @@ codec
 codecs
 collectionless
 commonsense
+comparator
+comparators
 config
 configs
 cov
@@ -86,6 +88,7 @@ dbader
 de
 death
 deathday
+deduped
 deneuve
 desc
 dev
@@ -428,7 +431,9 @@ toastjuh
 toc
 todo
 tomatoesaudience
+TomatoFresh
 tomatometer
+TomatoRotten
 tooltip
 tooltips
 traceback
