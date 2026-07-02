@@ -157,12 +157,13 @@ jobs:
       - name: Build and Push
         id: docker_build
         run: |
+          # Unset GHA cache env vars so BuildKit doesn't auto-add --cache-to type=gha
+          unset ACTIONS_CACHE_URL ACTIONS_RUNTIME_TOKEN
           docker buildx build \
             --build-arg BRANCH_NAME=nightly \
             --file ./Dockerfile \
             --platform linux/amd64,linux/arm64 \
             --tag ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly \
-            --cache-to type=inline \
             --push \
             .
       - name: Discord Success Notification
