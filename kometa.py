@@ -720,7 +720,7 @@ def start(attrs):
                         logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
                         overlay_title = True
                     overlay_count = other_message[key]["count"]
-                    overlay_line = "No Items found for Overlays" if key == "No Items found for" else key
+                    overlay_line = "No Items found" if key == "No Items found for" else key
                     if details:
                         logger.info(f"{overlay_count:>5} | {overlay_line}: {other_message[key]['list']}")
                     else:
