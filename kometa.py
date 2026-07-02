@@ -631,8 +631,6 @@ def start(attrs):
                 ("Overlay Warning: No 'trakt_rating' found", r"Overlay Warning: No 'trakt_rating' found for (.*)"),
                 ("Overlay Warning: No 'trakt_user_rating' found", r"Overlay Warning: No 'trakt_user_rating' found for (.*)"),
                 ("Overlay Warning: No 'user_rating' found", r"Overlay Warning: No 'user_rating' found for (.*)"),
-                ("Overlay Warning: No Trakt rating found", r"Overlay Warning: No Trakt rating found for (.*)"),
-                ("Overlay Warning: No Trakt user rating found", r"Overlay Warning: No Trakt user rating found for (.*)"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
