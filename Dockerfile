@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 ARG BASE_TAG=base
 FROM kometateam/kometa:${BASE_TAG}
-# Bump: BuildKit v0.20.0 pinned, trigger nightly rebuild
+# Bump: verify master's increment-build.yml fix (PR #3309) unblocks nightly Docker builds
 
 ARG BRANCH_NAME=master
 ENV BRANCH_NAME=${BRANCH_NAME}
