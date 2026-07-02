@@ -14137,6 +14137,16 @@
             }
           ]
         },
+        "^exclude_users_.+$": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array"
+            }
+          ]
+        },
         "^imdb_list_.+$": {},
         "^item_radarr_tag_.+$": {
           "oneOf": [
