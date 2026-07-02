@@ -870,6 +870,8 @@ def run_config(config, stats):
                 longest = len(title)
 
     def print_status(status):
+        if not status:
+            return
         logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
         breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
         logger.separator(breaker, space=False, border=False, side_space=False, left=True)

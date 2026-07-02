@@ -120,3 +120,13 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert '("Overlay Warning: No \'anidb_average_rating\' found",' in text
     assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
+
+
+def test_status_summary_skips_empty_tables() -> None:
+    """Regression for the run-status table header.
+
+    If there is no status data to report, the summary should stay quiet
+    rather than printing an empty header row.
+    """
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert "if not status:\n            return" in text
