@@ -718,13 +718,15 @@ def start(attrs):
                     if overlay_title is False:
                         logger.separator("Overlay Summary", space=False, border=False)
                         logger.info("")
+                        logger.info("Count | Message")
+                        logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
                         overlay_title = True
                     overlay_count = other_message[key]["count"]
-                    overlay_line = f"No Items found for {overlay_count} Overlays" if key == "No Items found for" else f"{key} for {overlay_count} Items"
+                    overlay_line = "No Items found for Overlays" if key == "No Items found for" else key
                     if details:
-                        logger.info(f"{overlay_line}: {other_message[key]['list']}")
+                        logger.info(f"{overlay_count:>5} | {overlay_line}: {other_message[key]['list']}")
                     else:
-                        logger.info(overlay_line)
+                        logger.info(f"{overlay_count:>5} | {overlay_line}")
             if overlay_title:
                 logger.info("")
 
@@ -736,22 +738,23 @@ def start(attrs):
                     return summary
                 message, source = summary.rsplit(" for ", 1)
                 source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
-                return f"{message} for the following {source}"
+                return f"{message} for {source}"
 
             for key, _ in other_log_groups:
                 if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
                     if convert_title is False:
                         logger.separator("Convert Summary", space=False, border=False)
                         logger.info("")
+                        logger.info("Count | Message")
+                        logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
                         convert_title = True
                     count = other_message[key]["count"]
                     convert_line = convert_summary_title(key)
-                    if not details:
-                        logger.info(f"{convert_line} ({count})")
-                    else:
-                        logger.info(f"{convert_line} ({count}):")
                     if details:
+                        logger.info(f"{count:>5} | {convert_line}:")
                         logger.info(f"    {', '.join(other_message[key]['list'])}")
+                    else:
+                        logger.info(f"{count:>5} | {convert_line}")
             if convert_title:
                 logger.info("")
 

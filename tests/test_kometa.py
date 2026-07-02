@@ -120,6 +120,9 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert '("Overlay Warning: No \'anidb_average_rating\' found",' in text
     assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
+    assert 'logger.info("Count | Message")' in text
+    assert 'logger.separator("Convert Summary", space=False, border=False)' in text
+    assert 'return f"{message} for {source}"' in text
 
 
 def test_status_summary_skips_empty_tables() -> None:
