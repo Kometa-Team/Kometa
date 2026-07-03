@@ -8,7 +8,7 @@ import requests
 import ruamel.yaml
 from lxml import html
 from requests.exceptions import ConnectionError
-from tenacity import retry, stop_after_attempt, wait_fixed
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from modules import util
 from modules.poster import ImageData
@@ -17,6 +17,11 @@ from modules.util import Failed
 logger = util.logger
 
 image_content_types = ["image/png", "image/jpeg", "image/webp"]
+
+# Per-socket-operation timeout for every outbound request; without one a
+# stalled external server hangs the whole run (tenacity only retries on
+# raised exceptions, and a silent stall never raises).
+DEFAULT_TIMEOUT = 30
 
 
 def get_header(headers, header, language):
@@ -90,10 +95,13 @@ class Requests:
         return session
 
     def no_verify_ssl(self, session=None):
+        global_opt_out = session is None
         if session is None:
             session = self.session
         session.verify = False
-        if session.verify is False:
+        if global_opt_out:
+            # Only a config-level opt-out silences the warning process-wide;
+            # a scoped session keeps it so other connections still surface it.
             import urllib3
 
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -127,7 +135,7 @@ class Requests:
         return YAML(input_data=response.content, check_empty=check_empty)
 
     def get_image(self, url, session=None):
-        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None))
+        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
         if response.status_code == 404:
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
@@ -137,30 +145,34 @@ class Requests:
         return response
 
     def get_stream(self, url, location, info="Item"):
-        with self.session.get(url, stream=True) as r:
+        with self.session.get(url, stream=True, timeout=DEFAULT_TIMEOUT) as r:
             r.raise_for_status()
             total_length = r.headers.get("content-length")
             if total_length is not None:
                 total_length = int(total_length)
             dl = 0
+            last_log = 0.0
             with open(location, "wb") as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     dl += len(chunk)
                     f.write(chunk)
-                    if total_length:
-                        logger.ghost(f"Downloading {info}: {dl / total_length * 100:6.2f}%")
-                    else:
-                        logger.ghost(f"Downloading {info}: {dl} bytes")
+                    now = time.monotonic()
+                    if now - last_log >= 0.25 or dl == total_length:
+                        last_log = now
+                        if total_length:
+                            logger.ghost(f"Downloading {info}: {dl / total_length * 100:6.2f}%")
+                        else:
+                            logger.ghost(f"Downloading {info}: {dl} bytes")
                 logger.exorcise()
 
     def get_cloudscrape_html(self, url, headers=None, params=None, language=None):
         cloud_headers = get_header(headers, True, language)
         cloud_headers.pop("User-Agent")
-        response = self.cloudscraper.get(url, params=params, headers=cloud_headers)
+        response = self.cloudscraper.get(url, params=params, headers=cloud_headers, timeout=DEFAULT_TIMEOUT)
         if response.status_code == 403:
             time.sleep(3)
             self.cloudscraper = cloudscraper.create_scraper()
-            response = self.cloudscraper.get(url, params=params, headers=cloud_headers)
+            response = self.cloudscraper.get(url, params=params, headers=cloud_headers, timeout=DEFAULT_TIMEOUT)
         return html.fromstring(response.content)
 
     def get_html(self, url, headers=None, params=None, header=None, language=None):
@@ -174,9 +186,9 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
+    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
-        return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params)
+        return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
 
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode("utf-8")
@@ -192,9 +204,9 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10))
+    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
-        return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language))
+        return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT)
 
     def has_new_version(self):
         return self.local and self.latest and self.local.main != self.latest.main or (self.local.build and self.local.build < self.latest.build)

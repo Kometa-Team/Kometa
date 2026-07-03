@@ -606,3 +606,34 @@ def test_user_films_fallback_extracts_watched_entries(monkeypatch, patch_logger)
 
     assert items == [("333", "/film/film-fallback/", 2021, None, 8, None)]
     assert any("using Kometa fallback parsing" in message for message in patch_logger.warning_messages)
+
+
+class TestResolveBoxdUrl:
+    def test_rejects_non_http_scheme(self, monkeypatch):
+        """A boxd.it URL with a non-http(s) scheme must fail before any network call."""
+        from modules.util import Failed
+
+        def no_network(*args, **kwargs):
+            raise AssertionError("network should not be hit")
+
+        monkeypatch.setattr(letterboxd_module, "urlopen", no_network)
+        with pytest.raises(Failed, match="scheme"):
+            Letterboxd._resolve_boxd_url("ftp://boxd.it/abc123")
+
+    def test_resolves_https_short_url(self, monkeypatch):
+        class FakeResponse:
+            def geturl(self):
+                return "https://letterboxd.com/user/list/foo/"
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+        monkeypatch.setattr(letterboxd_module, "urlopen", lambda *args, **kwargs: FakeResponse())
+        assert Letterboxd._resolve_boxd_url("https://boxd.it/abc") == "https://letterboxd.com/user/list/foo/"
+
+    def test_non_boxd_url_passes_through(self):
+        url = "https://letterboxd.com/user/list/foo/"
+        assert Letterboxd._resolve_boxd_url(url) == url
