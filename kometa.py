@@ -664,6 +664,8 @@ def start(attrs):
                 (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
                 (r".+ Error: No Filter Created", "Error: No Filter Created"),
                 (r"Letterboxd Error: No List Items found in .+", "Letterboxd Error: No List Items found"),
+                (r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\.", "Letterboxd Error: TMDb Movie ID not found"),
+                (r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\.", "Letterboxd Warning: TMDb link is for a TV show, not a movie"),
                 (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
                 (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
                 (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),

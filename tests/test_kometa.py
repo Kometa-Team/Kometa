@@ -125,6 +125,18 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     assert 'return f"{message} for {source}"' in text
 
 
+def test_letterboxd_tmdb_failures_are_summarized() -> None:
+    """Regression for repeated Letterboxd per-item TMDb lookup noise.
+
+    These are high-volume item-level messages that should collapse into
+    the end-of-run summary instead of filling the report with one line
+    per title.
+    """
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert 'r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\\."' in text
+    assert 'r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\\."' in text
+
+
 def test_status_summary_skips_empty_tables() -> None:
     """Regression for the run-status table header.
 
