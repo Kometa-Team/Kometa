@@ -683,10 +683,44 @@ class Letterboxd:
             self._warn_once(("user_lists_sort", sort), f"Letterboxd Warning: sort_by '{sort}' for letterboxd_user_lists is not guaranteed by letterboxdpy; using available order.")
         return self._normalize_user_lists(username, raw_lists, sort)
 
+    def _extract_list_description_from_html(self, list_url, language):
+        """Extract full list description from HTML page (fallback for letterboxdpy truncation)."""
+        try:
+            response = self._request_html(list_url, language)
+            # Try multiple possible selectors for the description element
+            # Look for divs with class containing 'description' or similar patterns
+            description_candidates = response.xpath(
+                "//div[contains(@class, 'description') or contains(@class, 'list-description') or contains(@class, 'summary')] | "
+                "//section[contains(@class, 'description') or contains(@class, 'summary')] | "
+                "//div[@data-component='ListDescription'] | "
+                "//div[contains(@class, 'section-headline')]//following-sibling::div[1]"
+            )
+            # Filter out navigation/header elements and find the main description
+            for element in description_candidates:
+                # Skip if it looks like a navigation menu
+                nav_check = element.xpath(".//nav | .//a[contains(@class, 'pill')]")
+                if nav_check:
+                    continue
+                paragraphs = [p.strip() for p in element.xpath(".//p//text()") if p.strip()]
+                if paragraphs:
+                    return "\n".join(paragraphs)
+                # Fallback: get all text content, filtering common noise
+                text = " ".join(t.strip() for t in element.xpath(".//text()") if t.strip() and len(t.strip()) > 1)
+                if text and len(text) > 50:  # Only return if we have substantial content
+                    return text
+        except Exception:
+            pass
+        return None
+
     def get_list_description(self, list_url, language):
         if self._url_type(list_url) != "list":
             return None
         description = getattr(self._get_list_object(list_url), "description", None)
+        # Try extracting from HTML as well to catch truncated descriptions (letterboxdpy uses og:description which is limited)
+        html_description = self._extract_list_description_from_html(list_url, language)
+        # Use HTML version if it exists and is significantly longer (indicates truncation from og:description)
+        if html_description and (not description or len(html_description) > len(description) * 1.2):
+            description = html_description
         return description if description else None
 
     def validate_letterboxd_lists(self, err_type, letterboxd_lists, language):
