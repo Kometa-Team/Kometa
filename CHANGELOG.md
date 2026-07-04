@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Fix overlay cache poisoning where application state was written for unresolved overlays (e.g. no IMDb rating), causing the item to be permanently skipped even after a rating became available.
 - Fix duplicate rows accumulating in `overlay_special_text2` on every run due to a missing `UNIQUE(rating_key, type)` constraint.
 - `modules/textfile.py`: fix `tmdb:` entries in playlist/mixed mode (where `is_movie=None`) being silently dropped. The old `is_movie is not False` check treated `None` as `True`, tagging TV show TMDb IDs as `"tmdb"` type which only checks `movie_map`. Now returns both `(id, "tmdb")` and `(id, "tmdb_show")` so the builder resolves against both movie and show maps. Also updates `mdblist` and `simkl` three-state contract comments and docs.
