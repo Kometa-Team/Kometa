@@ -1028,13 +1028,13 @@ class Cache:
                 cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
                 row = cursor.fetchone()
                 if row and row["key"]:
-                    table_name = f"image_map_{row['key']}"
+                    table_name = sql_identifier(f"image_map_{row['key']}")
                 else:
                     cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                     cursor.execute("SELECT * FROM image_maps WHERE library = ?", (library,))
                     row = cursor.fetchone()
                     if row and row["key"]:
-                        table_name = f"image_map_{row['key']}"
+                        table_name = sql_identifier(f"image_map_{row['key']}")
                         cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name} (
                             key INTEGER PRIMARY KEY,
                             rating_key TEXT UNIQUE,
