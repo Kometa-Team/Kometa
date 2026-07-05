@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rework `defaults/overlays/ratings.yml` to fetch ratings directly during the overlay run; Mass Rating Update operations are no longer required for fetched sources. Adds auto image-pick, Fresh/Rotten filtering via `value_filter`, a `Direct` image level for tomatoes/tomatoesaudience, and new image assets under `defaults/overlays/images/rating/`.
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 - Add `logo` and `square`/`square_art` asset detection and setting via `url_` and `file_` methods for Collection builders, as well as Defaults via `url_*_<<key>>` template variables.
+- Add `mass_image_update`, a grouped Library Operation for poster, background, logo, and square-art updates. Existing poster/background update options move under `poster` and `background`, with new item-level `logo` and `square_art` support.
 
 ### Changed
 

@@ -536,34 +536,73 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 - 2.0
         ```
 
-###### Mass Poster Update
+###### Mass Image Update
 
-??? blank "`mass_poster_update` - Updates the poster of every item in the library.<a class="headerlink" href="#mass-poster-update" title="Permanent link">¶</a>"
+??? blank "`mass_image_update` - Updates the poster, background, logo, and/or square art of every item in the library.<a class="headerlink" href="#mass-image-update" title="Permanent link">¶</a>"
 
-    <div id="mas-_poster-update" />Updates every item's poster to the chosen sites poster. Will fall back to `plex` if the given option fails.
-    Assets will be used over anything else.
+    <div id="mass-image-update" />Updates every item's images to the chosen source. Assets will be used over anything else.
+
+    The image type keys are optional; only the configured image types are processed.
 
     ???+ warning
 
-        When used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays
+        When `poster` is used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays
         on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
     <hr style="margin: 0px;">
 
-    **Attribute:** `mass_poster_update`
+    **Attribute:** `mass_image_update`
+
+    `mass_image_update` replaces the previous `mass_poster_update` and `mass_background_update` operations. Move the old
+    poster options under `mass_image_update: poster:` and the old background options under `mass_image_update: background:`.
 
     **Accepted Values:**
+
+    <table class="clearTable">
+      <tr><td>`poster`</td><td>Updates item posters.</td><td>Dictionary of poster options</td></tr>
+      <tr><td>`background`</td><td>Updates item backgrounds.</td><td>Dictionary of background options</td></tr>
+      <tr><td>`logo`</td><td>Updates item logos. Seasons and episodes are not supported.</td><td>Dictionary of logo options</td></tr>
+      <tr><td>`square_art`</td><td>Updates item square art. Seasons and episodes are not supported.</td><td>Dictionary of square art options</td></tr>
+    </table>
+
+    **Poster Options:**
 
     <table class="clearTable">
       <tr><td>`source`</td><td>Source of the poster update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_overlays`</td><td>Skip updating image if the current image has an Overlay :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-operations-2" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating if the poster field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_overlays`</td><td>Skip updating if the current poster has an Overlay :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-operations-2" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
 
-    1. The poster field will be locked if a previous `mass_poster_update` was run or if an Overlay has been applied.
+    **Background Options:**
+
+    <table class="clearTable">
+      <tr><td>`source`</td><td>Source of the background update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
+      <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating if the background field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+      <tr><td>`ignore_overlays`</td><td>Skip updating if the current background has an Overlay :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-operations-2" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+    </table>
+
+    **Logo Options:**
+
+    <table class="clearTable">
+      <tr><td>`source`</td><td>Source of the logo update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`language`</td><td>Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for language-neutral)</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating if the logo field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+    </table>
+
+    **Square Art Options:**
+
+    <table class="clearTable">
+      <tr><td>`source`</td><td>Source of the square art update.</td><td>`plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`ignore_locked`</td><td>Skip updating if the square art field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
+    </table>
+
+    1. The image field will be locked if a previous `mass_image_update` lock operation was run or if Plex has locked that field. Posters can also be locked when an Overlay has been applied.
     2. Kometa checks for the `Overlay` label on the item in Plex to determine if an Overlay is applied.
 
     ???+ example "Example"
@@ -572,10 +611,21 @@ Several of these operations perform **mass** updates; these are just that, **mas
         libraries:
           TV Shows:
             operations:
-              mass_poster_update:
-                source: tmdb
-                seasons: false
-                episodes: false
+              mass_image_update:
+                poster:
+                  source: tmdb
+                  seasons: false
+                  episodes: false
+                background:
+                  source: tmdb
+                  language: xx
+                logo:
+                  source: tmdb
+                  language: en
+                  ignore_locked: false
+                square_art:
+                  source: plex
+                  ignore_locked: false
         ```
 
     ???+ example "Textless Posters Example"
@@ -584,44 +634,10 @@ Several of these operations perform **mass** updates; these are just that, **mas
         libraries:
           Movies:
             operations:
-              mass_poster_update:
-                source: tmdb
-                language: xx
-        ```
-
-###### Mass Background Update
-
-??? blank "`mass_background_update` - Updates the background of every item in the library.<a class="headerlink" href="#mass-background-update" title="Permanent link">¶</a>"
-
-    <div id="mass-background-update" />Updates every item's background to the chosen sites background. Will fall back to `plex` if the given option fails.
-    Assets will be used over anything else.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_background_update`
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the background update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
-      <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
-      <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the background field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-    </table>
-
-    1. The background field will be locked if a previous `mass_background_update` was run.
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_background_update:
-                source: tmdb
-                seasons: false
-                episodes: false
+              mass_image_update:
+                poster:
+                  source: tmdb
+                  language: xx
         ```
 
 ###### Mass IMDb Parental Labels

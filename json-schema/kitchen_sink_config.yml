@@ -363,7 +363,9 @@ libraries:
       - tvdb                                        # Update all original available date from tvdb if not from tmdb
       - omdb                                        # Update all original available date from omdb(imdb) if not from tvdb
       mass_imdb_parental_labels: none               # Apply all Parental Labels with a value of None, Mild, Moderate, or Severe to match IMDb parental guide
-      # mass_poster_update: tmdb                      # Resets posters to tmdb, plex, locked, unlock which is useful to remove all overlays when running with -r -op
+      # mass_image_update:
+      #   poster:
+      #     source: tmdb                              # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
 # .-----------------------------------------------.
 # | _______     __  ____  _                       |
 # ||_   _\ \   / / / ___|| |__   _____      _____ |
@@ -780,7 +782,9 @@ libraries:
       mass_episode_critic_rating_update: imdb       # Update critic ratings with imdb for episodes
       mass_episode_audience_rating_update: tmdb     # Update audience ratings with tmdb for episodes
       mass_imdb_parental_labels: none               # Apply all Parental Labels with a value of None, Mild, Moderate, or Severe to match IMDb parental guide
-      # mass_poster_update: tmdb                      # Resets posters to tmdb, plex, locked, unlock which is useful to remove all overlays when running with -r -op
+      # mass_image_update:
+      #   poster:
+      #     source: tmdb                              # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
 # .---------------------------------.
 # | ____  _             _ _     _   |
 # ||  _ \| | __ _ _   _| (_)___| |_ |

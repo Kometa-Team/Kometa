@@ -116,6 +116,8 @@ class Operations:
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
+        logger.debug(f"Mass Logo Update: {self.library.mass_logo_update}")
+        logger.debug(f"Mass Square Art Update: {self.library.mass_square_art_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
         logger.debug(f"Split Duplicates: {self.library.split_duplicates}")
         logger.debug(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
@@ -867,22 +869,43 @@ class Operations:
                 else:
                     logger.info("No Item Edits")
 
-                if self.library.mass_poster_update or self.library.mass_background_update:
+                if self.library.mass_poster_update or self.library.mass_background_update or self.library.mass_logo_update or self.library.mass_square_art_update:
                     try:
-                        new_poster, new_background, _logo, _square_art, item_dir, name = self.library.find_item_assets(item)  # noqa: F841
+                        new_poster, new_background, new_logo, new_square_art, item_dir, name = self.library.find_item_assets(item)  # noqa: F841
                     except Failed:
-                        new_poster, new_background, _logo, _square_art, item_dir, name = None, None, None, None, None, None  # noqa: F841
+                        new_poster, new_background, new_logo, new_square_art, item_dir, name = None, None, None, None, None, None  # noqa: F841
                     try:
                         tmdb_item = tmdb_obj()
                     except Failed:
                         tmdb_item = None
 
-                    def _get_tmdb_image_url(image_config, is_poster=True):
+                    def _get_tmdb_image_url(image_config, is_poster=True, image_type=None):
                         # Get the TMDb image URL, using language override if configured.
                         lang = image_config.get("language") if image_config else None
                         source = image_config.get("source") if image_config else None
                         if lang and source != "tmdb":
                             logger.info(f"{item.title[:25]:<25} | Language '{lang}' ignored (source is not tmdb)")
+                        def _get_tmdb_logo_url(tmdb_image_item):
+                            logos = getattr(tmdb_image_item, "logos", None) or []
+                            if not logos:
+                                return None
+                            def _logo_url(logo_obj):
+                                return (
+                                    getattr(logo_obj, "logo_url", None)
+                                    or getattr(logo_obj, "file_url", None)
+                                    or getattr(logo_obj, "image_url", None)
+                                    or getattr(logo_obj, "url", None)
+                                    or (logo_obj._image_url(logo_obj.file_path) if hasattr(logo_obj, "_image_url") and hasattr(logo_obj, "file_path") else None)
+                                )
+                            for logo in logos:
+                                logo_language = getattr(logo, "iso_639_1", None)
+                                if logo_language is None and hasattr(logo, "language"):
+                                    logo_language = getattr(logo.language, "iso_639_1", logo.language)
+                                if lang and logo_language == lang:
+                                    return _logo_url(logo)
+                            logo = logos[0]
+                            return _logo_url(logo)
+
                         if lang and source == "tmdb" and tmdb_item:
                             original_language = self.config.TMDb.language
                             original_api_language = self.config.TMDb.TMDb.language
@@ -890,13 +913,27 @@ class Operations:
                                 self.config.TMDb.language = lang
                                 self.config.TMDb.TMDb.language = lang
                                 lang_tmdb_item = self.config.TMDb.get_movie(tmdb_item.tmdb_id, ignore_cache=True) if self.library.is_movie else self.config.TMDb.get_show(tmdb_item.tmdb_id, ignore_cache=True)  # noqa
+                                if image_type == "logo":
+                                    return _get_tmdb_logo_url(lang_tmdb_item)
                                 return lang_tmdb_item.poster_url if is_poster else lang_tmdb_item.backdrop_url
                             except Failed:
                                 return None
                             finally:
                                 self.config.TMDb.language = original_language
                                 self.config.TMDb.TMDb.language = original_api_language
+                        if tmdb_item and image_type == "logo":
+                            logo_url = _get_tmdb_logo_url(tmdb_item)
+                            if logo_url:
+                                return logo_url
+                            try:
+                                full_tmdb_item = self.config.TMDb.get_movie(tmdb_item.tmdb_id, ignore_cache=True) if self.library.is_movie else self.config.TMDb.get_show(tmdb_item.tmdb_id, ignore_cache=True)  # noqa
+                                return _get_tmdb_logo_url(full_tmdb_item)
+                            except Failed:
+                                return None
                         return (tmdb_item.poster_url if is_poster else tmdb_item.backdrop_url) if tmdb_item else None
+
+                    def _field_locked(field_name):
+                        return any(f.name == field_name and f.locked for f in item.fields)
 
                     if self.library.mass_poster_update:
                         source = self.library.mass_poster_update["source"]
@@ -923,7 +960,7 @@ class Operations:
                         source = self.library.mass_background_update["source"]
                         ignore_locked = self.library.mass_background_update["ignore_locked"]
                         ignore_overlays = self.library.mass_background_update["ignore_overlays"]
-                        art_locked = any(f.name == "art" and f.locked for f in item.fields)
+                        art_locked = _field_locked("art")
                         tmdb_backdrop_url = _get_tmdb_image_url(self.library.mass_background_update, is_poster=False)
 
                         if source in ["unlock", "lock"]:
@@ -931,6 +968,21 @@ class Operations:
 
                         elif not (ignore_locked and art_locked):
                             self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
+
+                    if self.library.mass_logo_update:
+                        source = self.library.mass_logo_update["source"]
+                        ignore_locked = self.library.mass_logo_update["ignore_locked"]
+                        logo_locked = _field_locked("logo")
+                        tmdb_logo_url = _get_tmdb_image_url(self.library.mass_logo_update, is_poster=False, image_type="logo")
+                        if source in ["unlock", "lock"] or not (ignore_locked and logo_locked):
+                            self.library.logo_update(item, new_logo, tmdb=tmdb_logo_url, title=item.title)
+
+                    if self.library.mass_square_art_update:
+                        source = self.library.mass_square_art_update["source"]
+                        ignore_locked = self.library.mass_square_art_update["ignore_locked"]
+                        square_art_locked = _field_locked("squareArt")
+                        if source in ["unlock", "lock"] or not (ignore_locked and square_art_locked):
+                            self.library.square_art_update(item, new_square_art, title=item.title)
 
                     if self.library.is_show and (
                         (self.library.mass_poster_update and (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"]))

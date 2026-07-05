@@ -230,6 +230,7 @@ library_operations = {
     "mass_collection_mode": "mass_collection_mode",
     "mass_poster_update": "dict",
     "mass_background_update": "dict",
+    "mass_image_update": "dict",
     "metadata_backup": "dict",
     "delete_collections": "dict",
     "genre_mapper": "dict",
@@ -626,6 +627,29 @@ class ConfigFile:
                 if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
             return default
+
+        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_show_levels=False):
+            image_config = input_dict.get(image_type)
+            if not image_config:
+                return None
+            if not isinstance(image_config, dict):
+                image_config = {"source": image_config}
+            options = mass_image_options if allow_tmdb else {k: v for k, v in mass_image_options.items() if k != "tmdb"}
+            _language = check_for_attribute(image_config, "language", default_is_none=True, save=False)
+            if _language is not None:
+                _language = str(_language).lower()
+                if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
+                    raise Failed(f"Config Error: mass_image_update {image_type} language {_language} is not a valid ISO 639-1 language code")
+            parsed = {
+                "source": check_for_attribute(image_config, "source", test_list=options, default_is_none=True, save=False),
+                "language": _language,
+                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, save=False),
+                "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, save=False),
+            }
+            if allow_show_levels:
+                parsed["seasons"] = check_for_attribute(image_config, "seasons", var_type="bool", default=True, save=False)
+                parsed["episodes"] = check_for_attribute(image_config, "episodes", var_type="bool", default=True, save=False)
+            return parsed
 
         self.general = {
             "run_order": check_for_attribute(
@@ -1118,6 +1142,8 @@ class ConfigFile:
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
                 params = {o: None for o in library_operations}
+                params["mass_logo_update"] = None
+                params["mass_square_art_update"] = None
                 params["mapping_name"] = str(library_name)
                 params["name"] = str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
@@ -1547,6 +1573,13 @@ class ConfigFile:
                                         "ignore_locked": check_for_attribute(input_dict, "ignore_locked", var_type="bool", default=False, save=False),
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
+                                elif op == "mass_image_update":
+                                    section_final["mass_poster_update"] = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_show_levels=True)
+                                    section_final["mass_background_update"] = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_show_levels=True)
+                                    section_final["mass_logo_update"] = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True)
+                                    section_final["mass_square_art_update"] = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False)
+                                    if "squart_art" in input_dict and "square_art" not in input_dict:
+                                        section_final["mass_square_art_update"] = parse_mass_image_operation(input_dict, "squart_art", allow_tmdb=False)
                                 elif op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:

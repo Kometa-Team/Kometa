@@ -5450,6 +5450,164 @@
                 },
                 "ignore_locked": {
                   "type": "boolean"
+                },
+                "ignore_overlays": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "mass_image_update": {
+              "type": "object",
+              "properties": {
+                "poster": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "tmdb",
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "tmdb",
+                            "plex",
+                            "lock",
+                            "unlock"
+                          ]
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "seasons": {
+                          "type": "boolean"
+                        },
+                        "episodes": {
+                          "type": "boolean"
+                        },
+                        "ignore_locked": {
+                          "type": "boolean"
+                        },
+                        "ignore_overlays": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "background": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "tmdb",
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "tmdb",
+                            "plex",
+                            "lock",
+                            "unlock"
+                          ]
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "seasons": {
+                          "type": "boolean"
+                        },
+                        "episodes": {
+                          "type": "boolean"
+                        },
+                        "ignore_locked": {
+                          "type": "boolean"
+                        },
+                        "ignore_overlays": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "logo": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "tmdb",
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "tmdb",
+                            "plex",
+                            "lock",
+                            "unlock"
+                          ]
+                        },
+                        "language": {
+                          "type": "string"
+                        },
+                        "ignore_locked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "square_art": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "source": {
+                          "type": "string",
+                          "enum": [
+                            "plex",
+                            "lock",
+                            "unlock"
+                          ]
+                        },
+                        "ignore_locked": {
+                          "type": "boolean"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               },
               "additionalProperties": false
