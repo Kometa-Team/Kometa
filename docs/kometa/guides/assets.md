@@ -154,15 +154,11 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                   |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`               |
     | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext`                     |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext`               |
+    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext` or `<path_to_assets>/ASSET_NAME/square_art.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`      |
-    | Season logo                      | `<path_to_assets>/ASSET_NAME/Season##_logo.ext`            |
-    | Season square art                | `<path_to_assets>/ASSET_NAME/Season##_square.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                   |
     | Episode background               | `<path_to_assets>/ASSET_NAME/S##E##_background.ext`        |
-    | Episode logo                     | `<path_to_assets>/ASSET_NAME/S##E##_logo.ext`              |
-    | Episode square art               | `<path_to_assets>/ASSET_NAME/S##E##_square.ext`        |
 
 === "ASSET_FOLDERS=False"
 
@@ -171,15 +167,15 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                         |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`               |
     | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`                     |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext`               |
+    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext` or `<path_to_assets>/ASSET_NAME_square_art.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext`      |
-    | Season logo                      | `<path_to_assets>/ASSET_NAME_Season##_logo.ext`            |
-    | Season square art                | `<path_to_assets>/ASSET_NAME_Season##_square.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                   |
     | Episode background               | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`        |
-    | Episode logo                     | `<path_to_assets>/ASSET_NAME_S##E##_logo.ext`              |
-    | Episode square art               | `<path_to_assets>/ASSET_NAME_S##E##_square.ext`        |
+
+???+ note
+
+    Plex seasons and episodes support poster/title-card and background artwork only. Season and episode logo and square-art assets are not searched for or uploaded.
 
 ## Determining the "Asset Name"
 

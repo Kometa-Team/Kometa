@@ -23,6 +23,8 @@ collections:
         in_the_last_released: 90
       - name: shared
         translation_key: basic_released
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Plex.png
+
 
   New Episodes:
     variables:
@@ -37,3 +39,4 @@ collections:
       - name: shared
         allowed_libraries: show
         translation_key: basic_episodes
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Plex.png

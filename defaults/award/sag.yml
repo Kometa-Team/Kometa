@@ -19,6 +19,7 @@ collections:
         sort: Screen Actors Guild !
         image: award/sag/winner
         translation_key: sag_best
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/SAG.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -59,3 +60,5 @@ dynamic_collections:
         default: sag_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/SAG.png?raw=true

@@ -38,6 +38,7 @@ collections:
         period: today
       - name: shared
         translation_key: simkl_trending_today
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/simkl.png
       - name: arr
       - name: custom
 
@@ -50,6 +51,7 @@ collections:
         period: week
       - name: shared
         translation_key: simkl_trending_week
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/simkl.png
       - name: arr
       - name: custom
 
@@ -62,6 +64,7 @@ collections:
         period: month
       - name: shared
         translation_key: simkl_trending_month
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/simkl.png
       - name: arr
       - name: custom
 
@@ -73,5 +76,6 @@ collections:
       - name: dvd
       - name: shared
         translation_key: simkl_dvd
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/simkl.png
       - name: arr
       - name: custom

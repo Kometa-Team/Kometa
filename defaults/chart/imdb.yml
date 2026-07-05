@@ -25,6 +25,7 @@ collections:
         chart: popular
       - name: shared
         translation_key: imdb_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/IMDb.png
       - name: arr
       - name: custom
 
@@ -37,6 +38,7 @@ collections:
         chart: top
       - name: shared
         translation_key: imdb_top
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/IMDb.png
       - name: arr
       - name: custom
 
@@ -49,5 +51,6 @@ collections:
       - name: shared
         allowed_libraries: movie
         translation_key: imdb_lowest
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/IMDb.png
       - name: arr
       - name: custom

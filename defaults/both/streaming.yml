@@ -142,6 +142,8 @@ dynamic_collections:
     template_variables:
       image:
         default: streaming/<<style>>/<<key_name_encoded>>
+      url_logo:
+        default: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/streaming/logos/<<key_name_encoded>>.png
       tmdb_key:
         channel4: 103
         appletv: 350

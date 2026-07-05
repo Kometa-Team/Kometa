@@ -20,6 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/oscars/best_picture_winner
         translation_key: oscars_picture
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Oscars.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -41,6 +42,7 @@ collections:
         allowed_libraries: movie
         image: award/oscars/best_director_winner
         translation_key: oscars_director
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Oscars.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -81,3 +83,5 @@ dynamic_collections:
         default: oscars_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Oscars.png?raw=true

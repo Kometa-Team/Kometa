@@ -29,6 +29,7 @@ collections:
       - name: trakt
       - name: shared
         translation_key: trakt_collected
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Trakt.png
       - name: arr
       - name: custom
 
@@ -40,6 +41,7 @@ collections:
       - name: trakt
       - name: shared
         translation_key: trakt_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Trakt.png
       - name: arr
       - name: custom
 
@@ -51,6 +53,7 @@ collections:
       - name: trakt
       - name: shared
         translation_key: trakt_recommended
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Trakt.png
       - name: arr
       - name: custom
 
@@ -62,6 +65,7 @@ collections:
       - name: trakt
       - name: shared
         translation_key: trakt_trending
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Trakt.png
       - name: arr
       - name: custom
 
@@ -73,5 +77,6 @@ collections:
       - name: trakt
       - name: shared
         translation_key: trakt_watched
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Trakt.png
       - name: arr
       - name: custom

@@ -29,6 +29,7 @@ collections:
         list: letterboxds-top-500-films
       - name: shared
         translation_key: letterboxd_top_500
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -44,6 +45,7 @@ collections:
         list: all-time-worldwide-box-office
       - name: shared
         translation_key: box_office_mojo_all_time_100
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -58,6 +60,7 @@ collections:
         list: afis-100-years100-movies-10th-anniversary
       - name: shared
         translation_key: afi_100_years_100_movies
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -72,6 +75,7 @@ collections:
         list: sight-and-sounds-greatest-films-of-all-time
       - name: shared
         translation_key: sight_and_sound_greatest_films
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -86,6 +90,7 @@ collections:
         list: 1001-movies-you-must-see-before-you-die-2024
       - name: shared
         translation_key: 1001_movies_to_see_before_you_die
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -100,6 +105,7 @@ collections:
         list: edgar-wrights-1000-favorite-movies
       - name: shared
         translation_key: edgar_wrights_1000_favorites
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -114,6 +120,7 @@ collections:
         list: roger-eberts-great-movies
       - name: shared
         translation_key: roger_eberts_great_movies
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -128,6 +135,7 @@ collections:
         list: top-250-films-by-women-directors
       - name: shared
         translation_key: top_250_women_directed
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -142,6 +150,7 @@ collections:
         list: top-250-films-by-black-directors
       - name: shared
         translation_key: top_250_black_directed
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -157,6 +166,7 @@ collections:
         list: top-250-films-with-the-most-fans
       - name: shared
         translation_key: top_250_most_fans
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -171,6 +181,7 @@ collections:
         list: top-250-documentary-films
       - name: shared
         translation_key: top_250_documentaries
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -185,6 +196,7 @@ collections:
         list: top-250-animated-films
       - name: shared
         translation_key: top_100_animation
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -199,6 +211,7 @@ collections:
         list: top-250-horror-films
       - name: shared
         translation_key: top_250_horror
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -213,6 +226,7 @@ collections:
         list: letterboxds-top-250-international-films
       - name: shared
         translation_key: top_250_international
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -227,6 +241,7 @@ collections:
         list: top-250-science-fiction-films
       - name: shared
         translation_key: top_250_sci-fi_films
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -241,6 +256,7 @@ collections:
         list: letterboxd-one-million-watched-club
       - name: shared
         translation_key: one_million_watched_club
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -255,6 +271,7 @@ collections:
         list: top-100-western-films
       - name: shared
         translation_key: top_100_western_films
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -269,6 +286,7 @@ collections:
         list: letterboxds-top-100-silent-films
       - name: shared
         translation_key: top_100_silent_films
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
@@ -283,6 +301,7 @@ collections:
         list: imdb-top-250
       - name: shared
         translation_key: imdb_top_250
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
         use_imdb_top_250: false
       - name: arr
@@ -298,6 +317,7 @@ collections:
         list: oscar-winning-films-best-picture
       - name: shared
         translation_key: oscars_best_picture_winners
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
         use_oscars: false
       - name: arr
@@ -313,6 +333,7 @@ collections:
         list: cannes-palme-dor-winners
       - name: shared
         translation_key: cannes_palmes_dor_winners
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
         use_cannes: false
       - name: arr

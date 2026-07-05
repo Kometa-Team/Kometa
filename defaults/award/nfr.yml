@@ -20,6 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/nfr/all_time
         translation_key: nfr_best
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/NFR.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -55,3 +56,5 @@ dynamic_collections:
         default: nfr_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/NFR.png?raw=true

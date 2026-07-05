@@ -159,6 +159,9 @@
                 "tmdb_background": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
                 "tvdb_background": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
 
+                "file_logo": { "type": "string" },
+                "url_logo": { "type": "string", "format": "uri" },
+
                 "smart_label": {
                     "description": "Make this a Smart Label Collection.",
                     "oneOf": [
@@ -757,6 +760,8 @@
                 "item_sonarr_tag.remove": { "$ref": "#/definitions/tag-value" },
                 "item_sonarr_tag.sync": { "$ref": "#/definitions/tag-value" },
                 "item_album_sorting": { "type": "string", "description": "Set album sort order for matched artist items (music libraries)." },
+                "url_logo": { "type": "string", "description": "URL of a logo image to apply to the collection." },
+                "file_logo": { "type": "string", "description": "Local path to a logo image." },
                 "url_square_art": { "type": "string", "description": "URL of a square-art image to apply to the collection." },
                 "file_square_art": { "type": "string", "description": "Local path to a square-art image." },
                 "icheckmovies_description": { "type": "string", "description": "ICheckMovies list URL to pull a collection description from." },

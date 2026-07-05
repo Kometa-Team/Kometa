@@ -39,6 +39,7 @@ collections:
       - name: anilist
       - name: shared
         translation_key: anilist_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/AniList.png
       - name: arr
       - name: custom
 
@@ -51,6 +52,7 @@ collections:
         chart: top_rated
       - name: shared
         translation_key: anilist_top_rated
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/AniList.png
       - name: arr
       - name: custom
 
@@ -62,6 +64,7 @@ collections:
       - name: anilist
       - name: shared
         translation_key: anilist_trending
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/AniList.png
       - name: arr
       - name: custom
 
@@ -73,5 +76,6 @@ collections:
       - name: season
       - name: shared
         translation_key: anilist_season
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/AniList.png
       - name: arr
       - name: custom

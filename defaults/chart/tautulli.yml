@@ -32,6 +32,7 @@ collections:
         type: popular
       - name: shared
         translation_key: tautulli_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Tautulli.png
       - name: custom
         cache_builders: 0
 
@@ -44,5 +45,6 @@ collections:
         type: watched
       - name: shared
         translation_key: tautulli_watched
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Tautulli.png
       - name: custom
         cache_builders: 0

@@ -20,6 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/golden/best_picture_winner
         translation_key: golden_picture
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Golden.png?raw=true
       - name: arr
       - name: custom
     delete_collections_named:
@@ -54,6 +55,7 @@ collections:
         allowed_libraries: movie
         image: award/golden/best_director_winner
         translation_key: golden_director
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Golden.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -90,3 +92,5 @@ dynamic_collections:
         default: golden_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Golden.png?raw=true

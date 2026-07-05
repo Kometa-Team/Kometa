@@ -41,6 +41,7 @@ collections:
       - name: mal
       - name: shared
         translation_key: mal_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/MyAnimeList.png
       - name: arr
       - name: custom
 
@@ -53,6 +54,7 @@ collections:
         chart: favorite
       - name: shared
         translation_key: mal_favorited
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/MyAnimeList.png
       - name: arr
       - name: custom
 
@@ -65,6 +67,7 @@ collections:
         chart: all
       - name: shared
         translation_key: mal_top
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/MyAnimeList.png
       - name: arr
       - name: custom
 
@@ -76,6 +79,7 @@ collections:
       - name: mal
       - name: shared
         translation_key: mal_airing
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/MyAnimeList.png
       - name: arr
       - name: custom
 
@@ -87,5 +91,6 @@ collections:
       - name: season
       - name: shared
         translation_key: mal_season
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/MyAnimeList.png
       - name: arr
       - name: custom

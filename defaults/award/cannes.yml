@@ -20,6 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/cannes/winner
         translation_key: cannes_best
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Cannes.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -56,3 +57,5 @@ dynamic_collections:
         default: cannes_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Cannes.png?raw=true

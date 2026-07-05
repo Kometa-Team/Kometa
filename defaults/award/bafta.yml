@@ -20,6 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/bafta/winner
         translation_key: bafta_best
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/BAFTA.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -58,3 +59,5 @@ dynamic_collections:
         default: bafta_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/BAFTA.png?raw=true
