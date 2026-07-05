@@ -173,10 +173,6 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                   |
     | Episode background               | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`        |
 
-???+ note
-
-    Plex seasons and episodes support poster/title-card and background artwork only. Season and episode logo and square-art assets are not searched for or uploaded.
-
 ## Determining the "Asset Name"
 
 === "Collections"
