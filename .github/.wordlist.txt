@@ -3,7 +3,6 @@ accessmodes
 ACL
 addon
 addons
-AST
 adlib
 afi's
 Ahsoka
@@ -27,9 +26,11 @@ appdata
 appletv
 arrapi
 arrowverse
+AST
 atmos
 atres
 avenir
+backoff
 bafta
 bambara
 bbfc
@@ -53,7 +54,6 @@ burkasaurusrex
 bw
 cappella
 cd
-césar
 changelog
 chazlarson
 CLI
@@ -83,6 +83,7 @@ crunchyroll
 CSM
 customizable
 customizations
+césar
 d'or
 dbader
 de
@@ -323,12 +324,12 @@ posix
 powershell
 pre
 precommit
-psd
 prek
 prepend
 prepended
 preroll
 PRs
+psd
 psutil
 puid
 py
@@ -422,11 +423,11 @@ themoviedb
 theposterdb
 thetvdb
 tippy
-tmp
 tmdb
 tmdb's
 tmdbapi
 tmdbapis
+tmp
 toastjuh
 toc
 todo
@@ -462,9 +463,9 @@ unionfs
 unittest
 unmanaged
 unplayed
-untyped
 unraid
 unresolvable
+untyped
 uri
 url
 urls
@@ -484,6 +485,7 @@ vscodium
 vv
 wachowski
 WAF
+WAL
 walkthrough
 walkthroughs
 watchlist

@@ -958,3 +958,64 @@ class TestOverlayMigration:
         assert cache.query_overlay_value_cache(5173, "plex_imdb_rating")[0] == "7.3"
         with sqlite3.connect(cache.cache_path) as connection:
             assert connection.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='overlay_special_text2'").fetchone()[0] == 0
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Connection reuse
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestConnectionReuse:
+    """Cache methods share one SQLite connection instead of opening one per call."""
+
+    def test_connection_object_is_reused(self, tmp_path):
+        cache = make_cache(tmp_path)
+        assert cache.connection is cache.connection
+
+    def test_wal_journal_mode_enabled(self, tmp_path):
+        cache = make_cache(tmp_path)
+        assert cache.connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
+
+    def test_round_trip_still_works_across_calls(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_letterboxd_map(False, 123, 456)
+        assert cache.query_letterboxd_map(123)[0] == 456
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# SQL identifier validation
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSqlIdentifierValidation:
+    """Dynamic table/column names interpolated into SQL must be plain identifiers."""
+
+    def test_query_map_rejects_injected_map_name(self, tmp_path):
+        cache = make_cache(tmp_path)
+        with pytest.raises(ValueError):
+            cache._query_map("guids_map; DROP TABLE guids_map", "some-id", "plex_guid", "t_id")
+
+    def test_update_map_rejects_injected_column_name(self, tmp_path):
+        cache = make_cache(tmp_path)
+        with pytest.raises(ValueError):
+            cache._update_map("letterboxd_map", "letterboxd_id = 1; --", 1, "tmdb_id", 2, False)
+
+    def test_query_image_map_rejects_injected_table_name(self, tmp_path):
+        cache = make_cache(tmp_path)
+        with pytest.raises(ValueError):
+            cache.query_image_map("1", 'image_map_1" OR "1"="1')
+
+    def test_query_anime_map_rejects_injected_id_type(self, tmp_path):
+        cache = make_cache(tmp_path)
+        with pytest.raises(ValueError):
+            cache.query_anime_map(1, "anidb OR 1=1")
+
+    def test_query_arr_adds_rejects_injected_arr(self, tmp_path):
+        cache = make_cache(tmp_path)
+        with pytest.raises(ValueError):
+            cache.query_arr_adds(1, "Movies", "radarr; --", "tmdb_id")
+
+    def test_valid_identifiers_still_work(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache._update_map("letterboxd_map", "letterboxd_id", 9, "tmdb_id", 99, False)
+        assert cache._query_map("letterboxd_map", 9, "letterboxd_id", "tmdb_id")[0] == 99

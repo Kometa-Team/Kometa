@@ -18,6 +18,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
+- `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
+- `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
+
+### Security
+
+- `modules/cache.py`: dynamic table/column names interpolated into SQL are now validated by a `sql_identifier()` guard at every method that accepts them. All current callers pass internal identifiers, so this hardens against future misuse rather than fixing an exploitable path (and addresses bandit B608).
+- `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
+- `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
+- `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
+
 - Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
 ### Fixed

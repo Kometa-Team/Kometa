@@ -96,6 +96,9 @@ class Letterboxd:
         if parsed.netloc.lower() not in ["boxd.it", "www.boxd.it"]:
             return url
 
+        if parsed.scheme.lower() not in ["http", "https"]:
+            raise Failed(f"Letterboxd Error: Short Letterboxd URL {url} has an unsupported URL scheme")
+
         try:
             request = Request(
                 url,
@@ -104,7 +107,7 @@ class Letterboxd:
                     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
                 },
             )
-            with urlopen(request, timeout=15) as response:
+            with urlopen(request, timeout=15) as response:  # nosec B310 - scheme and host validated above
                 resolved_url = response.geturl()
         except Exception as e:
             raise Failed(f"Letterboxd Error: Failed to resolve short Letterboxd URL {url}: {e}") from e
