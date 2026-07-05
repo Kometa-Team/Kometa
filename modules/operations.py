@@ -885,10 +885,12 @@ class Operations:
                         source = image_config.get("source") if image_config else None
                         if lang and source != "tmdb":
                             logger.info(f"{item.title[:25]:<25} | Language '{lang}' ignored (source is not tmdb)")
+
                         def _get_tmdb_logo_url(tmdb_image_item):
                             logos = getattr(tmdb_image_item, "logos", None) or []
                             if not logos:
                                 return None
+
                             def _logo_url(logo_obj):
                                 return (
                                     getattr(logo_obj, "logo_url", None)
@@ -897,6 +899,7 @@ class Operations:
                                     or getattr(logo_obj, "url", None)
                                     or (logo_obj._image_url(logo_obj.file_path) if hasattr(logo_obj, "_image_url") and hasattr(logo_obj, "file_path") else None)
                                 )
+
                             for logo in logos:
                                 logo_language = getattr(logo, "iso_639_1", None)
                                 if logo_language is None and hasattr(logo, "language"):
