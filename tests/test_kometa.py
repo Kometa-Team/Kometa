@@ -125,6 +125,17 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     assert 'return f"{message} for {source}"' in text
 
 
+def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
+    """Regression for overlay attempt noise from failed item overlays.
+
+    Per-item overlay failures should now be grouped into the overlay
+    summary instead of only surfacing in the generic error table.
+    """
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert '("Overlays Attempted on", r"Overlays Attempted on (.*): .+")' in text
+    assert 'key == "Overlays Attempted on"' in text
+
+
 def test_letterboxd_tmdb_failures_are_summarized() -> None:
     """Regression for repeated Letterboxd per-item TMDb lookup noise.
 

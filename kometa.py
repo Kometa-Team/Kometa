@@ -631,6 +631,7 @@ def start(attrs):
                 ("Overlay Warning: No 'trakt_rating' found", r"Overlay Warning: No 'trakt_rating' found for (.*)"),
                 ("Overlay Warning: No 'trakt_user_rating' found", r"Overlay Warning: No 'trakt_user_rating' found for (.*)"),
                 ("Overlay Warning: No 'user_rating' found", r"Overlay Warning: No 'user_rating' found for (.*)"),
+                ("Overlays Attempted on", r"Overlays Attempted on (.*): .+"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
@@ -714,7 +715,7 @@ def start(attrs):
             overlay_title = False
             details = run_args["trace"] or run_args["log-requests"]
             for key, _ in other_log_groups:
-                if (key == "No Items found for" or key.startswith("Overlay Warning")) and key in other_message:
+                if (key == "No Items found for" or key.startswith("Overlay Warning") or key == "Overlays Attempted on") and key in other_message:
                     if overlay_title is False:
                         logger.separator("Overlay Summary", space=False, border=False)
                         logger.info("")
