@@ -731,7 +731,7 @@
                 "item_analyze": { "type": "boolean", "description": "Trigger Plex analysis (chapter images, etc.) on matched items." },
                 "item_lock_background": { "type": "boolean", "description": "Lock/unlock background art on matched items." },
                 "item_lock_poster": { "type": "boolean", "description": "Lock/unlock poster art on matched items." },
-                "item_lock_square_art": { "type": "boolean", "description": "Lock/unlock square art on matched items." },
+                "item_lock_square_art": { "type": "boolean", "description": "Lock/unlock square on matched items." },
                 "item_lock_title": { "type": "boolean", "description": "Lock/unlock title field on matched items." },
                 "item_critic_rating": {
                     "description": "Set critic rating on matched items (0.0–10.0, null to clear).",
@@ -762,8 +762,8 @@
                 "item_album_sorting": { "type": "string", "description": "Set album sort order for matched artist items (music libraries)." },
                 "url_logo": { "type": "string", "description": "URL of a logo image to apply to the collection." },
                 "file_logo": { "type": "string", "description": "Local path to a logo image." },
-                "url_square_art": { "type": "string", "description": "URL of a square-art image to apply to the collection." },
-                "file_square_art": { "type": "string", "description": "Local path to a square-art image." },
+                "url_square_art": { "type": "string", "description": "URL of a square art image to apply to the collection." },
+                "file_square_art": { "type": "string", "description": "Local path to a square art image." },
                 "icheckmovies_description": { "type": "string", "description": "ICheckMovies list URL to pull a collection description from." },
                 "suppress_overlays": {
                     "description": "Overlay name(s) to suppress on items in this collection.",
