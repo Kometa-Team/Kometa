@@ -20,6 +20,7 @@ collections:
         allowed_libraries: show
         image: award/emmys/winner
         translation_key: emmy_best
+        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Emmys.png?raw=true
       - name: arr
       - name: custom
     imdb_award:
@@ -78,3 +79,5 @@ dynamic_collections:
         default: emmy_year
       dynamic:
         default: true
+      url_logo:
+        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/Emmys.png?raw=true

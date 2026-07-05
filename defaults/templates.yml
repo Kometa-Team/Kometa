@@ -96,6 +96,10 @@ templates:
       file_poster_<<key>>: <<file_poster>>
       url_background_<<key>>: <<url_background>>
       file_background_<<key>>: <<file_background>>
+      file_logo_<<key>>: <<file_logo>>
+      url_logo_<<key>>: <<url_logo>>
+      file_square_art_<<key>>: <<file_square_art>>
+      url_square_art_<<key>>: <<url_square_art>>
       visible_library_<<key>>: <<visible_library>>
       visible_home_<<key>>: <<visible_home>>
       visible_shared_<<key>>: <<visible_shared>>
@@ -122,6 +126,10 @@ templates:
       - file_poster
       - url_background
       - file_background
+      - url_logo
+      - file_logo
+      - url_square_art
+      - file_square_art
       - limit
       - name_mapping
       - delete_collections_named
@@ -152,6 +160,10 @@ templates:
     file_poster: <<file_poster_<<key>>>>
     url_background: <<url_background_<<key>>>>
     file_background: <<file_background_<<key>>>>
+    url_logo: <<url_logo_<<key>>>>
+    file_logo: <<file_logo_<<key>>>>
+    url_square_art: <<url_square_art_<<key>>>>
+    file_square_art: <<file_square_art_<<key>>>>
     minimum_items: <<minimum_items_<<key>>>>
     hub_priority: <<hub_priority_<<key>>>>
     delete_collections_named: <<delete_collections_named>>

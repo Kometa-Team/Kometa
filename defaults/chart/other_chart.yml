@@ -26,6 +26,7 @@ collections:
       - name: commonsense
       - name: shared
         translation_key: commonsense_selection
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/css.png
       - name: arr
       - name: custom
 
@@ -38,6 +39,7 @@ collections:
       - name: shared
         allowed_libraries: movie
         translation_key:  stevenlu_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/StevenLu.png
       - name: arr
       - name: custom
 
@@ -50,6 +52,7 @@ collections:
       - name: shared
         allowed_libraries: movie
         translation_key: pirated_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Pirated.png
       - name: arr
       - name: custom
 
@@ -61,5 +64,6 @@ collections:
       - name: metacritic
       - name: shared
         translation_key: metacritic_must_see
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Metacritic.png
       - name: arr
       - name: custom

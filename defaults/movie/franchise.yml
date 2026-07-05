@@ -38,11 +38,25 @@ templates:
       - item_radarr_tag
       - radarr_monitor
       - url_poster_<<key>>
+      - url_background_<<key>>
+      - url_logo_<<key>>
+      - url_square_art_<<key>>
+      - file_poster_<<key>>
+      - file_background_<<key>>
+      - file_logo_<<key>>
+      - file_square_art_<<key>>
     name: <<name_<<key>>>>
     summary: <<summary_<<key>>>>
     cache_builders: 1
     minimum_items: <<minimum_items>>
     url_poster: <<url_poster_<<key>>>>
+    url_background: <<url_background_<<key>>>>
+    url_logo: <<url_logo_<<key>>>>
+    url_square_art: <<url_square_art_<<key>>>>
+    file_poster: <<file_poster_<<key>>>>
+    file_background: <<file_background_<<key>>>>
+    file_logo: <<file_logo_<<key>>>>
+    file_square_art: <<file_square_art_<<key>>>>
     tmdb_collection_details: <<value>>
     tmdb_movie: <<movie_<<key>>>>
     name_mapping: <<name_mapping_<<key>>>>

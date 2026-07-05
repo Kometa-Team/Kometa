@@ -101,6 +101,7 @@ summary_details = [
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
+logo_details = ["url_logo", "file_logo"]
 square_art_details = ["url_square_art", "file_square_art"]
 boolean_details = [
     "show_filtered",
@@ -178,7 +179,7 @@ details = (
     + scheduled_boolean
     + string_details
 )
-collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + poster_details + background_details + summary_details + string_details + all_builders
+collectionless_details = ["collection_order", "plex_collectionless", "label", "label_sync_mode", "test", "item_label"] + poster_details + background_details + logo_details + square_art_details + summary_details + string_details + all_builders
 item_false_details = ["item_lock_background", "item_lock_poster", "item_lock_square_art", "item_lock_title"]
 item_bool_details = [
     "item_tmdb_season_titles",
@@ -618,6 +619,7 @@ parts_collection_valid = (
     + summary_details
     + poster_details
     + background_details
+    + logo_details
     + square_art_details
     + string_details
 )
@@ -668,6 +670,7 @@ music_attributes = (
     + summary_details
     + poster_details
     + background_details
+    + logo_details
     + square_art_details
 )
 
@@ -983,6 +986,7 @@ class CollectionBuilder:
 
         self.posters = {}
         self.backgrounds = {}
+        self.logos = {}
         self.square_arts = {}
         if not self.overlay and "kometa_poster" in methods:
             logger.debug("")
@@ -1127,6 +1131,7 @@ class CollectionBuilder:
         self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
+        self.collection_logo = None
         self.exists = False
         self.non_existing = False
         self.created = False
@@ -1567,6 +1572,8 @@ class CollectionBuilder:
                     self._poster(method_name, method_data)
                 elif method_name in background_details:
                     self._background(method_name, method_data)
+                elif method_name in logo_details:
+                    self._logo(method_name, method_data)
                 elif method_name in square_art_details:
                     self._square_art(method_name, method_data)
                 elif method_name in details:
@@ -1798,6 +1805,19 @@ class CollectionBuilder:
                 self.backgrounds[method_name] = os.path.abspath(method_data)
             else:
                 logger.error(f"{self.Type} Error: Background Path Does Not Exist: {os.path.abspath(method_data)}")
+
+    def _logo(self, method_name, method_data):
+        if method_name == "url_logo":
+            try:
+                self.config.Requests.get_image(method_data)
+                self.logos[method_name] = method_data
+            except Failed:
+                logger.warning(f"{self.Type} Warning: No Logo Found at {method_data}")
+        elif method_name == "file_logo":
+            if os.path.exists(os.path.abspath(method_data)):
+                self.logos[method_name] = os.path.abspath(method_data)
+            else:
+                logger.error(f"{self.Type} Error: Logo Path Does Not Exist: {os.path.abspath(method_data)}")
 
     def _square_art(self, method_name, method_data):
         if method_name == "url_square_art":
@@ -4999,11 +5019,13 @@ class CollectionBuilder:
                 else:
                     logger.error(f"{self.Type} Error: name_mapping attribute is blank")
             try:
-                asset_poster, asset_background, _, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
+                asset_poster, asset_background, asset_logo, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
                 if asset_poster:
                     self.posters["asset_directory"] = asset_poster
                 if asset_background:
                     self.backgrounds["asset_directory"] = asset_background
+                if asset_logo:
+                    self.logos["asset_directory"] = asset_logo
                 if asset_square_art:
                     self.square_arts["asset_directory"] = asset_square_art
             except Failed as e:
@@ -5019,6 +5041,10 @@ class CollectionBuilder:
                 self.backgrounds["style_data"] = style_data["url_background"]
             elif style_data and "tpdb_background" in style_data and style_data["tpdb_background"]:
                 self.backgrounds["style_data"] = f"https://theposterdb.com/api/assets/{style_data['tpdb_background']}"
+            if style_data and "url_logo" in style_data and style_data["url_logo"]:
+                self.logos["style_data"] = style_data["url_logo"]
+            if style_data and "url_square_art" in style_data and style_data["url_square_art"]:
+                self.square_arts["style_data"] = style_data["url_square_art"]
 
         self.collection_poster = self.library.pick_image(
             self.obj.title,  # type: ignore[union-attr]
@@ -5035,6 +5061,14 @@ class CollectionBuilder:
             asset_location,
             image_type="background",
         )
+        self.collection_logo = self.library.pick_image(
+            self.obj.title,  # type: ignore[union-attr]
+            self.logos,
+            self.library.prioritize_assets,
+            self.library.download_url_assets,
+            asset_location,
+            image_type="logo",
+        )
         self.collection_square_art = self.library.pick_image(
             self.obj.title,  # type: ignore[union-attr]
             self.square_arts,
@@ -5050,9 +5084,9 @@ class CollectionBuilder:
             item_vars = {"title": self.name, "titleU": self.name.upper(), "titleL": self.name.lower()}  # type: ignore[union-attr]
             self.collection_poster = self.collection_poster.save(item_vars)
 
-        if self.collection_poster or self.collection_background or self.collection_square_art:
-            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, square_art=self.collection_square_art)
-            if pu or bu or sau:
+        if self.collection_poster or self.collection_background or self.collection_logo or self.collection_square_art:
+            pu, bu, lu, sau = self.library.upload_images(self.obj, poster=self.collection_poster, background=self.collection_background, logo=self.collection_logo, square_art=self.collection_square_art)
+            if pu or bu or lu or sau:
                 updated_details.append("Image")
 
         if clean_temp:
