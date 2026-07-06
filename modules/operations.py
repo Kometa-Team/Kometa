@@ -998,6 +998,8 @@ class Operations:
                                 return _trakt_image_url(images, ["logo"])
                             if is_poster:
                                 return _trakt_image_url(images, ["poster", "screenshot", "thumb"])
+                            if episode is not None:
+                                return None
                             return _trakt_image_url(images, ["fanart", "background", "thumb", "screenshot"])
                         return None
 

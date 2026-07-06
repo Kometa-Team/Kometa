@@ -622,7 +622,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Poster Options:**
 
     <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`source`</td><td>Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
@@ -636,7 +636,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
       <tr><td>`source`</td><td>Source of the background update. Can be a single source or an ordered list of fallback sources.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
+      <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`ignore_locked`</td><td>Skip updating if the background field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
       <tr><td>`ignore_overlays`</td><td>Skip updating if the current background has an Overlay :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-operations-2" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
