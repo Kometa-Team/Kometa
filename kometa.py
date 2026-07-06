@@ -674,6 +674,7 @@ def start(attrs):
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
+                (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
                 (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
                 (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
             ]
