@@ -939,7 +939,6 @@ class Operations:
                         if not image_config:
                             return None
                         if not self.library.is_show:
-                            logger.info(f"{item.title[:25]:<25} | TVDb image updates are only available for show libraries")
                             return None
                         try:
                             tvdb_item = tvdb_obj()
@@ -984,7 +983,7 @@ class Operations:
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
                         if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_poster_update)) == 1:
-                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url), title=item.title)
+                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
                         elif ignore_locked and thumb_locked:
                             # Skip processing if ignore_locked is True and thumb is locked
                             pass
@@ -992,7 +991,7 @@ class Operations:
                             # Skip processing if ignore_overlays is True and Overlay label is found
                             pass
                         else:
-                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url), title=item.title)
+                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
 
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
@@ -1002,10 +1001,10 @@ class Operations:
                         resolved_source, background_url = _get_external_image(self.library.mass_background_update, is_poster=False)
 
                         if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_background_update)) == 1:
-                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url), title=item.title)
+                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
 
                         elif not (ignore_locked and art_locked):
-                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url), title=item.title)
+                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
 
                     if self.library.mass_logo_update:
                         source = self.library.mass_logo_update["source"]
@@ -1013,7 +1012,7 @@ class Operations:
                         logo_locked = _field_locked("logo")
                         resolved_source, logo_url = _get_external_image(self.library.mass_logo_update, is_poster=False, image_type="logo")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_logo_update)) == 1) or not (ignore_locked and logo_locked):
-                            self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url), title=item.title)
+                            self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url))
 
                     if self.library.mass_square_art_update:
                         source = self.library.mass_square_art_update["source"]
@@ -1021,7 +1020,7 @@ class Operations:
                         square_art_locked = _field_locked("squareArt")
                         resolved_source, square_art_url = _get_external_image(self.library.mass_square_art_update, is_poster=False, image_type="square_art")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_square_art_update)) == 1) or not (ignore_locked and square_art_locked):
-                            self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url), title=item.title)
+                            self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
 
                     if self.library.is_show and (
                         _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")

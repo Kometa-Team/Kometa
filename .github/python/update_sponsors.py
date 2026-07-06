@@ -67,7 +67,7 @@ def get_lifetime():
                     }}
                     nodes {{
                         amountInCents
-                        formattedAmount 
+                        formattedAmount
                         sponsor {{
                             ... on Organization {{
                                 name
@@ -129,7 +129,7 @@ def get_sponsors(private=False, active=False):
                         createdAt
                         privacyLevel
                         isActive
-                        isOneTimePayment 
+                        isOneTimePayment
                         tier {{
                             isOneTime
                             monthlyPriceInCents
