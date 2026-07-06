@@ -588,6 +588,23 @@ Several of these operations perform **mass** updates; these are just that, **mas
                   language: xx
         ```
 
+    ???+ example "Trakt Artwork Example"
+
+        ```yaml
+        libraries:
+          TV Shows:
+            operations:
+              mass_image_update:
+                poster:
+                  source: trakt
+                  seasons: true
+                  episodes: true
+                background:
+                  source:
+                    - trakt
+                    - tmdb
+        ```
+
     **Attribute:** `mass_image_update`
 
     `mass_image_update` replaces the previous `mass_poster_update` and `mass_background_update` operations. Move the old
@@ -605,7 +622,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Poster Options:**
 
     <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` only applies to top-level show posters.</td><td>`tmdb`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`source`</td><td>Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
@@ -616,7 +633,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Background Options:**
 
     <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the background update. Can be a single source or an ordered list of fallback sources. `tvdb` only applies to top-level show backgrounds.</td><td>`tmdb`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`source`</td><td>Source of the background update. Can be a single source or an ordered list of fallback sources.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
       <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
       <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true`</td><td>`true` or `false`</td></tr>
@@ -627,7 +644,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Logo Options:**
 
     <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the logo update. Can be a single source or an ordered list of fallback sources. `tvdb` uses the top-level show's TVDb ClearLogo.</td><td>`tmdb`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`source`</td><td>Source of the logo update. Can be a single source or an ordered list of fallback sources.</td><td>`tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`language`</td><td>Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for language-neutral)</td></tr>
       <tr><td>`ignore_locked`</td><td>Skip updating if the logo field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
@@ -635,7 +652,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     **Square Art Options:**
 
     <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the square art update. Can be a single source or an ordered list of fallback sources. `tvdb` uses the top-level show's TVDb Icon.</td><td>`tvdb`, `plex`, `lock`, or `unlock`</td></tr>
+      <tr><td>`source`</td><td>Source of the square art update. Can be a single source or an ordered list of fallback sources.</td><td>`tvdb`, `plex`, `lock`, or `unlock`</td></tr>
       <tr><td>`ignore_locked`</td><td>Skip updating if the square art field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
     </table>
 

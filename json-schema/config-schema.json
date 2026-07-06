@@ -5404,13 +5404,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                       }
                     }
                   ]
@@ -5440,13 +5440,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                       }
                     }
                   ]
@@ -5478,6 +5478,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "trakt",
                         "tvdb",
                         "plex",
                         "lock",
@@ -5491,13 +5492,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                               }
                             }
                           ]
@@ -5528,6 +5529,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "trakt",
                         "tvdb",
                         "plex",
                         "lock",
@@ -5541,13 +5543,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                               }
                             }
                           ]
@@ -5578,6 +5580,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "trakt",
                         "tvdb",
                         "plex",
                         "lock",
@@ -5591,13 +5594,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
                               }
                             }
                           ]

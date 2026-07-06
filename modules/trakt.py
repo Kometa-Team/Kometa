@@ -259,6 +259,39 @@ class Trakt:
         response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
         return response["rating"]
 
+    def get_item_images(self, item_id, media_type, season=None, episode=None):
+        if media_type not in ["movie", "show"]:
+            raise Failed(f"Trakt Error: Images not supported for media type {media_type}")
+
+        def _images(data):
+            if isinstance(data, list):
+                data = next((d for d in data if isinstance(d, dict) and (season is None or d.get("number") == season)), {})
+            return data.get("images") if isinstance(data, dict) else {}
+
+        show_id = item_id
+        if media_type == "movie":
+            data = self._request(f"/movies/{item_id}", params={"extended": "full"})
+        elif season is None:
+            data = self._request(f"/shows/{show_id}", params={"extended": "full"})
+        elif episode is None:
+            data = self._request(f"/shows/{show_id}/seasons", params={"extended": "full"})
+        else:
+            data = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}", params={"extended": "full"})
+        return _images(data) or {}
+
+    def lookup_item_images(self, external_id, from_source, media_type, season=None, episode=None):
+        if season is None:
+            lookup = self._request(f"/search/{from_source}/{external_id}", params={"type": media_type, "extended": "full"})
+            if lookup and media_type in lookup[0]:
+                return lookup[0][media_type].get("images") or {}
+            raise Failed(f"Trakt Error: No {media_type} found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
+        lookup = self._request(f"/search/{from_source}/{external_id}", params={"type": "show"})
+        if lookup and "show" in lookup[0]:
+            show_id = lookup[0]["show"]["ids"].get("slug") or lookup[0]["show"]["ids"].get("trakt")
+            if show_id:
+                return self.get_item_images(show_id, "show", season=season, episode=episode)
+        raise Failed(f"Trakt Error: No show found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
+
     def get_rating(self, show_id, is_movie):
         item_type = "movies" if is_movie else "shows"
         response = self._request(f"/{item_type}/{show_id}/ratings")

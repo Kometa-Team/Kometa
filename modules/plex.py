@@ -1744,11 +1744,11 @@ class Plex(Library):
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr in ["tmdb", "tvdb"] and tmdb:
+                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
                     image = tmdb
-                    source_name = {"tmdb": "TMDb", "tvdb": "TVDb"}[attr]
+                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
-                if not image and attr not in ["tmdb", "tvdb", "lock", "unlock"]:
+                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")

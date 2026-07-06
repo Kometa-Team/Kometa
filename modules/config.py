@@ -156,6 +156,7 @@ mass_image_options = {
     "unlock": "Unlock Image",
     "plex": "Use Plex Images",
     "tmdb": "Use TMDb Images",
+    "trakt": "Use Trakt Images",
     "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {

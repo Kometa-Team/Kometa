@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 - Add `logo` and `square`/`square_art` asset detection and setting via `url_` and `file_` methods for Collection builders, as well as Defaults via `url_*_<<key>>` template variables.
 - Add `mass_image_update`, a grouped Library Operation for poster, background, logo, and square-art updates. Existing poster/background update options move under `poster` and `background`, with new item-level `logo` and `square_art` support.
+- Add `trakt` as a `mass_image_update` source for posters, backgrounds, and logos. Squart remains unsupported.
+- Add `tvdb` as a `mass_image_update` source for posters, backgrounds, logos and square art.
 
 ### Changed
 

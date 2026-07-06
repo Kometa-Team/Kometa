@@ -7,6 +7,7 @@ from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
 from modules import anidb, plex, util
+from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
 logger = util.logger
@@ -323,9 +324,19 @@ class Operations:
                     nonlocal _tvdb_obj
                     if _tvdb_obj is None:
                         _tvdb_obj = False
-                        if tvdb_id:
+                        item_tvdb_id = tvdb_id
+                        if not item_tvdb_id and self.library.is_movie:
                             try:
-                                _tvdb_obj = self.config.TVDb.get_tvdb_obj(tvdb_id, is_movie=self.library.is_movie)
+                                for guid_tag in item.guids:
+                                    url_parsed = urlparse(guid_tag.id)
+                                    if url_parsed.scheme == "tvdb":
+                                        item_tvdb_id = int(url_parsed.netloc)
+                                        break
+                            except (AttributeError, TypeError, ValueError):
+                                pass
+                        if item_tvdb_id:
+                            try:
+                                _tvdb_obj = self.config.TVDb.get_tvdb_obj(item_tvdb_id, is_movie=self.library.is_movie)
                             except Failed as err:
                                 logger.error(str(err))
                         else:
@@ -938,8 +949,6 @@ class Operations:
                     def _get_tvdb_image_url(image_config, is_poster=True, image_type=None):
                         if not image_config:
                             return None
-                        if not self.library.is_show:
-                            return None
                         try:
                             tvdb_item = tvdb_obj()
                             if image_type == "logo":
@@ -950,7 +959,49 @@ class Operations:
                         except Failed:
                             return None
 
-                    def _get_external_image(image_config, is_poster=True, image_type=None):
+                    def _trakt_image_url(images, keys):
+                        for key in keys:
+                            values = images.get(key) or []
+                            if isinstance(values, str):
+                                values = [values]
+                            for value in values:
+                                if value:
+                                    return value if str(value).startswith(("http://", "https://")) else f"https://{value}"
+                        return None
+
+                    def _get_trakt_image_url(is_poster=True, image_type=None, season=None, episode=None):
+                        if not self.config.Trakt:
+                            return None
+                        if image_type == "square_art":
+                            return None
+                        media_type = "movie" if self.library.is_movie else "show"
+                        ids = []
+                        if self.library.is_movie:
+                            if tmdb_id:
+                                ids.append(("tmdb", tmdb_id))
+                            if imdb_id:
+                                ids.append(("imdb", imdb_id))
+                        else:
+                            if tvdb_id:
+                                ids.append(("tvdb", tvdb_id))
+                            if imdb_id:
+                                ids.append(("imdb", imdb_id))
+                            if tmdb_id:
+                                ids.append(("tmdb", tmdb_id))
+                        for from_source, external_id in ids:
+                            try:
+                                images = self.config.Trakt.lookup_item_images(external_id, from_source, media_type, season=season, episode=episode)
+                            except Failed as err:
+                                logger.debug(str(err))
+                                continue
+                            if image_type == "logo":
+                                return _trakt_image_url(images, ["logo"])
+                            if is_poster:
+                                return _trakt_image_url(images, ["poster", "screenshot", "thumb"])
+                            return _trakt_image_url(images, ["fanart", "background", "thumb", "screenshot"])
+                        return None
+
+                    def _get_external_image(image_config, is_poster=True, image_type=None, season=None, episode=None):
                         last_source = None
                         for source in _image_sources(image_config):
                             last_source = source
@@ -958,6 +1009,8 @@ class Operations:
                                 image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
                             elif source == "tmdb":
                                 image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "trakt":
+                                image_url = _get_trakt_image_url(is_poster=is_poster, image_type=image_type, season=season, episode=episode)
                             elif source == "plex":
                                 return "plex", None
                             else:
@@ -968,6 +1021,22 @@ class Operations:
 
                     def _show_level_image_update_enabled(image_config, level):
                         return image_config and image_config.get(level) and any(source != "tvdb" for source in _image_sources(image_config))
+
+                    def _get_show_level_external_image(image_config, tmdb_url=None, is_poster=True, season=None, episode=None):
+                        last_source = None
+                        for source in _image_sources(image_config):
+                            last_source = source
+                            if source == "trakt":
+                                image_url = _get_trakt_image_url(is_poster=is_poster, season=season, episode=episode)
+                            elif source == "tmdb":
+                                image_url = tmdb_url if is_poster else None
+                            elif source == "plex":
+                                return "plex", None
+                            else:
+                                image_url = None
+                            if image_url:
+                                return source, image_url
+                        return last_source, None
 
                     def _field_locked(field_name):
                         return any(f.name == field_name and f.locked for f in item.fields)
@@ -1063,9 +1132,11 @@ class Operations:
                                     season_title = f"S{season.seasonNumber} {season.title}"
                                     tmdb_poster = tmdb_season.poster_url if tmdb_season else None
                                     if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons"):
-                                        self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
+                                        resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber)
+                                        self.library.poster_update(season, season_poster, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
                                     if _show_level_image_update_enabled(self.library.mass_background_update, "seasons"):
-                                        self.library.background_update(season, season_background, title=season_title if season else None)
+                                        resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber)
+                                        self.library.background_update(season, season_background, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
 
                                 if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes") or _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                     tmdb_episodes = {}
@@ -1094,9 +1165,11 @@ class Operations:
                                         episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
                                         tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
                                         if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes"):
-                                            self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
+                                            resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber, episode=episode.episodeNumber)
+                                            self.library.poster_update(episode, episode_poster, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
                                         if _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
-                                            self.library.background_update(episode, episode_background, title=episode_title if episode else None)
+                                            resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber, episode=episode.episodeNumber)
+                                            self.library.background_update(episode, episode_background, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
                         finally:
                             if _image_lang:
                                 self.config.TMDb.language = _orig_lang
