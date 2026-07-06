@@ -27,7 +27,7 @@ logger = util.logger
 
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
-asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp")
+asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp", ".tbn")
 search_translation = {
     "episode_actor": "episode.actor",
     "episode_title": "episode.title",
@@ -111,8 +111,16 @@ search_translation = {
 
 def get_asset_image_matches(file_filter, file_name):
     matches = [m for m in util.glob_filter(file_filter) if os.path.isfile(m) and os.path.splitext(m)[1].lower() in asset_image_extensions]
-    exact_matches = [m for m in matches if os.path.splitext(os.path.basename(m))[0].lower() == file_name.lower()]
-    return exact_matches or matches
+    exact_matches = []
+    numbered_matches = []
+    for match in matches:
+        file_stem = os.path.splitext(os.path.basename(match))[0].lower()
+        target_name = file_name.lower()
+        if file_stem == target_name:
+            exact_matches.append(match)
+        elif re.match(rf"{re.escape(target_name)}-\d+$", file_stem):
+            numbered_matches.append(match)
+    return exact_matches or numbered_matches
 
 
 show_translation = {
@@ -1912,7 +1920,7 @@ class Plex(Library):
                                 item_asset_directory = os.path.abspath(matches[0])
                                 break
                 else:
-                    matches = get_asset_image_matches(os.path.join(ad, f"{file_name}.*"), file_name)
+                    matches = get_asset_image_matches(os.path.join(ad, f"{file_name}*.*"), file_name)
                     if len(matches) > 0:
                         item_asset_directory = ad
                 if item_asset_directory:
@@ -1927,28 +1935,44 @@ class Plex(Library):
                         raise Failed(f"Asset Warning: Unable to find asset folder: '{folder_name}'")
                 return None, None, None, None, item_asset_directory, folder_name
 
-        poster_filter = os.path.join(item_asset_directory, f"{file_name}.*")
-        background_filter = os.path.join(item_asset_directory, "background.*" if file_name == "poster" else f"{file_name}_background.*")
-        logo_filter = os.path.join(item_asset_directory, "logo.*" if file_name == "poster" else f"{file_name}_logo.*")
-        square_art_names = ["square", "square_art"] if file_name == "poster" else [f"{file_name}_square", f"{file_name}_square_art"]
+        if file_name == "poster":
+            poster_names = ["poster", "cover", "default", "folder", "movie"]
+            background_names = ["background", "art", "backdrop", "fanart"]
+            logo_names = ["logo", "clearlogo"]
+            square_art_names = ["square", "square_art", "squareArt", "backgroundSquare"]
+        else:
+            poster_names = [file_name]
+            background_names = [f"{file_name}_background", f"{file_name}-art", f"{file_name}-backdrop", f"{file_name}-background", f"{file_name}-fanart"]
+            logo_names = [f"{file_name}_logo", f"{file_name}-clearlogo", f"{file_name}-logo"]
+            square_art_names = [
+                f"{file_name}_square",
+                f"{file_name}_square_art",
+                f"{file_name}-square",
+                f"{file_name}-squareArt",
+                f"{file_name}-backgroundSquare",
+            ]
 
-        poster_matches = get_asset_image_matches(poster_filter, file_name)
-        if len(poster_matches) > 0:
-            poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
+        for poster_name in poster_names:
+            poster_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{poster_name}*.*"), poster_name)
+            if len(poster_matches) > 0:
+                poster = ImageData("asset_directory", os.path.abspath(poster_matches[0]), prefix=prefix, is_url=False)
+                break
 
-        background_name = "background" if file_name == "poster" else f"{file_name}_background"
-        background_matches = get_asset_image_matches(background_filter, background_name)
-        if len(background_matches) > 0:
-            background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
+        for background_name in background_names:
+            background_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{background_name}*.*"), background_name)
+            if len(background_matches) > 0:
+                background = ImageData("asset_directory", os.path.abspath(background_matches[0]), prefix=prefix, image_type="background", is_url=False)
+                break
 
         if not isinstance(item, (Episode, Season)):
-            logo_name = "logo" if file_name == "poster" else f"{file_name}_logo"
-            logo_matches = get_asset_image_matches(logo_filter, logo_name)
-            if len(logo_matches) > 0:
-                logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
+            for logo_name in logo_names:
+                logo_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{logo_name}*.*"), logo_name)
+                if len(logo_matches) > 0:
+                    logo = ImageData("asset_directory", os.path.abspath(logo_matches[0]), prefix=prefix, image_type="logo", is_url=False)
+                    break
 
             for square_art_name in square_art_names:
-                square_art_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{square_art_name}.*"), square_art_name)
+                square_art_matches = get_asset_image_matches(os.path.join(item_asset_directory, f"{square_art_name}*.*"), square_art_name)
                 if len(square_art_matches) > 0:
                     square_art = ImageData("asset_directory", os.path.abspath(square_art_matches[0]), prefix=prefix, image_type="square_art", is_url=False)
                     break

@@ -32,7 +32,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     <div id="asset-depth" />Specify how many folder levels to scan for an item within the asset directory.
 
-    At each asset level, Kometa will look for either `medianame.ext` [such as Star Wars.png] or a dedicated folder containing `poster.ext`.
+    At each asset level, Kometa will look for either `medianame.ext` [such as `Star Wars.png`] or a dedicated folder containing supported asset names such as `poster.ext`, `background.ext`, `logo.ext`, and `square.ext`.
 
     For example, if your asset directory is `/path/to/assets/`, and your `asset_depth` is 2, then Kometa will look for an asset match in any of these locations:
 
@@ -118,6 +118,8 @@ The available setting attributes which can be set at each level are outlined bel
     <div id="asset-folders" />While `true`, Kometa will search the `asset_directory` for a dedicated folder per item vs while false will look for an image.
 
     i.e. When `true` the example path would be `<asset_directory_path>/Star Wars/poster.png` instead of `<asset_directory_path>/Star Wars.png`.
+
+    See the [Image Asset Directory Guide](../kometa/guides/assets.md#asset-naming) for the full list of accepted poster, background, logo, and square art names, including Plex-compatible names such as `cover.ext`, `fanart.ext`, `clearlogo.ext`, and `backgroundSquare.ext`.
 
     <hr style="margin: 0px;">
 

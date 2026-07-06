@@ -85,8 +85,8 @@ All the following attributes update the poster of the collection/playlist from v
 **All of these details work with Playlists.**
 
 If no poster is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
-folder named either the collection/playlist name or the `name_mapping` if specified and look for a `poster.ext` file in 
-that folder (replacing .ext with the image extension).
+folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported poster asset
+such as `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` in that folder.
 
 | Attribute          | Description & Values                                                                                                                                                            |
 |:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -126,7 +126,7 @@ All the following attributes update the background of the collection/playlist fr
 
 If no background is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) 
 for a folder named either the collection/playlist name or the `name_mapping` if specified and look for a 
-`background.ext` file in that folder (replacing .ext with the image extension).
+supported background asset such as `background.ext`, `art.ext`, `backdrop.ext`, or `fanart.ext` in that folder.
 
 | Attribute         | Description & Values                                                                                                                                                                        |
 |:------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -155,7 +155,7 @@ All the following attributes update the logo of the collection from various sour
 
 If no logo is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md)
 for a folder named either the collection name or the `name_mapping` if specified and look for a
-`logo.ext` file in that folder (replacing .ext with the image extension).
+supported logo asset such as `logo.ext` or `clearlogo.ext` in that folder.
 
 | Attribute   | Description & Values                                                                                           |
 |:------------|:---------------------------------------------------------------------------------------------------------------|
@@ -179,8 +179,8 @@ All the following attributes update the square art (used by some Plex clients) o
 **All of these details work with Playlists.**
 
 If no square art is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
-folder named either the collection/playlist name or the `name_mapping` if specified and look for a `square.ext` or
-`square_art.ext` file in that folder (replacing .ext with the image extension).
+folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported square art asset
+such as `square.ext`, `square_art.ext`, `squareArt.ext`, or `backgroundSquare.ext` in that folder.
 
 | Attribute         | Description & Values                                                                                                   |
 |:------------------|:-----------------------------------------------------------------------------------------------------------------------|
