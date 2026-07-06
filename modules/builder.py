@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 from plexapi.audio import Album, Artist, Track
 from plexapi.exceptions import NotFound
 from plexapi.video import Episode, Movie, Season, Show
+from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
 from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
@@ -4532,6 +4533,9 @@ class CollectionBuilder:
                     movie = self.config.TMDb.get_movie(missing_id)
                 except Failed as e:
                     logger.error(e)
+                    continue
+                except TMDbException as e:
+                    logger.warning(f"TMDb Warning: unable to load TMDb ID {missing_id}; skipping item: {e}")
                     continue
                 current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                 if self.check_missing_filters(missing_id, True, tmdb_item=movie, check_released=self.details["missing_only_released"]):

@@ -4,6 +4,7 @@ from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wai
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
+from requests.exceptions import ConnectionError as RequestsConnectionError, ConnectTimeout, ReadTimeout, Timeout
 
 from modules import util
 from modules.util import Failed
@@ -121,6 +122,27 @@ class TMDbSeason:
         return f"{self.season_number}%:%{self.name}%:%{self.average}"
 
 
+def _is_transient_tmdb_exception(exception):
+    current = exception
+    seen = set()
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, (RequestsConnectionError, ConnectTimeout, ReadTimeout, Timeout)):
+            return True
+        message = str(current)
+        if any(pattern in message for pattern in ("Connection reset by peer", "Connection aborted", "Failed to Connect", "Read timed out", "timed out")):
+            return True
+        current = getattr(current, "__cause__", None) or getattr(current, "__context__", None)
+    return False
+
+
+def _log_tmdb_exception(tmdb_id, exception):
+    if _is_transient_tmdb_exception(exception):
+        logger.warning(f"TMDb Warning: transient network error for TMDb ID {tmdb_id}: {exception}")
+    else:
+        logger.stacktrace()
+
+
 class TMDBObj:
     def __init__(self, tmdb, tmdb_id, ignore_cache=False):
         self._tmdb = tmdb
@@ -172,7 +194,7 @@ class TMDbMovie(TMDBObj):
         except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
-            logger.stacktrace()
+            _log_tmdb_exception(self.tmdb_id, e)
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 
@@ -209,7 +231,7 @@ class TMDbShow(TMDBObj):
         except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
-            logger.stacktrace()
+            _log_tmdb_exception(self.tmdb_id, e)
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 
@@ -246,7 +268,7 @@ class TMDbEpisode:
         except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Episode found for TMDb ID {self.tmdb_id} Season {self.season_number} Episode {self.episode_number}: {e}")
         except TMDbException as e:
-            logger.stacktrace()
+            _log_tmdb_exception(self.tmdb_id, e)
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {self.tmdb_id}: {e}")
 
 
@@ -320,7 +342,7 @@ class TMDb:
         except TMDbNotFound as e:
             raise Failed(f"TMDb Error: No Movie found for TMDb ID {tmdb_id}: {e}")
         except TMDbException as e:
-            logger.stacktrace()
+            _log_tmdb_exception(tmdb_id, e)
             raise TMDbException(f"TMDb Error: Unexpected Error with TMDb ID: {tmdb_id}: {e}")
 
     def get_show(self, tmdb_id, ignore_cache=False):

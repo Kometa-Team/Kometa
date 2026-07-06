@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 - Add `logo` and `square`/`square_art` asset detection and setting via `url_` and `file_` methods for Collection builders, as well as Defaults via `url_*_<<key>>` template variables.
 
+### Fixed
+
+- Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
+
 ### Changed
 
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
