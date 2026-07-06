@@ -426,8 +426,8 @@ class Library(ABC):
     def logo_update(self, item, image, tmdb=None, title=None):
         return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
 
-    def square_art_update(self, item, image, title=None):
-        return self.image_update(item, image, title=title, poster=False, image_type="square_art")
+    def square_art_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
 
     @abstractmethod
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):

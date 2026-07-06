@@ -237,7 +237,7 @@ class Cache:
                     tvdb_id INTEGER,
                     expiration_date TEXT,
                     UNIQUE(tmdb_id, season_number, episode_number, language))""")
-                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_data4 (
+                cursor.execute("""CREATE TABLE IF NOT EXISTS tvdb_data5 (
                     key INTEGER PRIMARY KEY,
                     tvdb_id INTEGER UNIQUE,
                     type TEXT,
@@ -246,6 +246,8 @@ class Cache:
                     summary TEXT,
                     poster_url TEXT,
                     background_url TEXT,
+                    logo_url TEXT,
+                    icon_url TEXT,
                     release_date TEXT,
                     genres TEXT,
                     expiration_date TEXT)""")
@@ -945,7 +947,7 @@ class Cache:
         expired = None
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM tvdb_data4 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
+                cursor.execute("SELECT * FROM tvdb_data5 WHERE tvdb_id = ? and type = ?", (tvdb_id, "movie" if is_movie else "show"))
                 row = cursor.fetchone()
                 if row:
                     tvdb_dict["tvdb_id"] = int(row["tvdb_id"]) if row["tvdb_id"] else 0
@@ -955,6 +957,8 @@ class Cache:
                     tvdb_dict["summary"] = row["summary"] if row["summary"] else ""
                     tvdb_dict["poster_url"] = row["poster_url"] if row["poster_url"] else ""
                     tvdb_dict["background_url"] = row["background_url"] if row["background_url"] else ""
+                    tvdb_dict["logo_url"] = row["logo_url"] if row["logo_url"] else ""
+                    tvdb_dict["icon_url"] = row["icon_url"] if row["icon_url"] else ""
                     tvdb_dict["release_date"] = datetime.strptime(row["release_date"], "%Y-%m-%d") if row["release_date"] else None
                     tvdb_dict["genres"] = row["genres"] if row["genres"] else ""
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
@@ -966,10 +970,10 @@ class Cache:
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO tvdb_data4(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
-                update_sql = "UPDATE tvdb_data4 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, " "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
+                cursor.execute("INSERT OR IGNORE INTO tvdb_data5(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                update_sql = "UPDATE tvdb_data5 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, logo_url = ?, icon_url = ?, " "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
                 tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
-                cursor.execute(update_sql, (obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, tvdb_date, "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                cursor.execute(update_sql, (obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, obj.logo_url, obj.icon_url, tvdb_date, "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"))
 
     def query_tvdb_map(self, tvdb_url, expiration):
         tvdb_id = None

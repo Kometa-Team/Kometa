@@ -268,6 +268,8 @@ class TVDbObj:
             self.summary = data["summary"]
             self.poster_url = data["poster_url"]
             self.background_url = data["background_url"]
+            self.logo_url = data.get("logo_url", "")
+            self.icon_url = data.get("icon_url", "")
             self.release_date = data["release_date"]
             self.status = data["status"]
             self.genres = data["genres"].split("|")
@@ -280,8 +282,10 @@ class TVDbObj:
             if not self.title:
                 raise Failed(f"TVDb Error: Name not found from TVDb ID: {self.tvdb_id}")
 
-            self.poster_url = parse_page("//div[@id='artwork-posters']/div/div/a/@href")
-            self.background_url = parse_page("//div[@id='artwork-backgrounds']/div/div/a/@href")
+            self.poster_url = parse_page("//div[@id='artwork-posters']//a/@href")
+            self.background_url = parse_page("//div[@id='artwork-backgrounds']//a/@href")
+            self.logo_url = parse_page("//div[@id='artwork-clearlogo']//a/@href")
+            self.icon_url = parse_page("//div[@id='artwork-icons']//a/@href")
             if is_movie:
                 released = parse_page("//strong[text()='Released']/parent::li/span/text()[normalize-space()]")
             else:

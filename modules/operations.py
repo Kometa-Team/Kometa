@@ -879,12 +879,12 @@ class Operations:
                     except Failed:
                         tmdb_item = None
 
+                    def _image_sources(image_config):
+                        return image_config.get("sources") or ([image_config.get("source")] if image_config and image_config.get("source") else [])
+
                     def _get_tmdb_image_url(image_config, is_poster=True, image_type=None):
                         # Get the TMDb image URL, using language override if configured.
                         lang = image_config.get("language") if image_config else None
-                        source = image_config.get("source") if image_config else None
-                        if lang and source != "tmdb":
-                            logger.info(f"{item.title[:25]:<25} | Language '{lang}' ignored (source is not tmdb)")
 
                         def _get_tmdb_logo_url(tmdb_image_item):
                             logos = getattr(tmdb_image_item, "logos", None) or []
@@ -935,6 +935,41 @@ class Operations:
                                 return None
                         return (tmdb_item.poster_url if is_poster else tmdb_item.backdrop_url) if tmdb_item else None
 
+                    def _get_tvdb_image_url(image_config, is_poster=True, image_type=None):
+                        if not image_config:
+                            return None
+                        if not self.library.is_show:
+                            logger.info(f"{item.title[:25]:<25} | TVDb image updates are only available for show libraries")
+                            return None
+                        try:
+                            tvdb_item = tvdb_obj()
+                            if image_type == "logo":
+                                return tvdb_item.logo_url
+                            if image_type == "square_art":
+                                return tvdb_item.icon_url
+                            return tvdb_item.poster_url if is_poster else tvdb_item.background_url
+                        except Failed:
+                            return None
+
+                    def _get_external_image(image_config, is_poster=True, image_type=None):
+                        last_source = None
+                        for source in _image_sources(image_config):
+                            last_source = source
+                            if source == "tvdb":
+                                image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "tmdb":
+                                image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "plex":
+                                return "plex", None
+                            else:
+                                continue
+                            if image_url:
+                                return source, image_url
+                        return last_source, None
+
+                    def _show_level_image_update_enabled(image_config, level):
+                        return image_config and image_config.get(level) and any(source != "tvdb" for source in _image_sources(image_config))
+
                     def _field_locked(field_name):
                         return any(f.name == field_name and f.locked for f in item.fields)
 
@@ -945,11 +980,11 @@ class Operations:
                         thumb_locked = any(f.name == "thumb" and f.locked for f in item.fields)
                         labels = [la.tag for la in self.library.item_labels(item)]
                         has_overlay_label = "Overlay" in labels
-                        tmdb_poster_url = _get_tmdb_image_url(self.library.mass_poster_update, is_poster=True)
+                        resolved_source, poster_url = _get_external_image(self.library.mass_poster_update, is_poster=True)
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
-                        if source in ["unlock", "lock"]:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
+                        if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_poster_update)) == 1:
+                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url), title=item.title)
                         elif ignore_locked and thumb_locked:
                             # Skip processing if ignore_locked is True and thumb is locked
                             pass
@@ -957,45 +992,48 @@ class Operations:
                             # Skip processing if ignore_overlays is True and Overlay label is found
                             pass
                         else:
-                            self.library.poster_update(item, new_poster, tmdb=tmdb_poster_url, title=item.title)
+                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url), title=item.title)
 
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
                         ignore_locked = self.library.mass_background_update["ignore_locked"]
                         ignore_overlays = self.library.mass_background_update["ignore_overlays"]
                         art_locked = _field_locked("art")
-                        tmdb_backdrop_url = _get_tmdb_image_url(self.library.mass_background_update, is_poster=False)
+                        resolved_source, background_url = _get_external_image(self.library.mass_background_update, is_poster=False)
 
-                        if source in ["unlock", "lock"]:
-                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
+                        if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_background_update)) == 1:
+                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url), title=item.title)
 
                         elif not (ignore_locked and art_locked):
-                            self.library.background_update(item, new_background, tmdb=tmdb_backdrop_url, title=item.title)
+                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url), title=item.title)
 
                     if self.library.mass_logo_update:
                         source = self.library.mass_logo_update["source"]
                         ignore_locked = self.library.mass_logo_update["ignore_locked"]
                         logo_locked = _field_locked("logo")
-                        tmdb_logo_url = _get_tmdb_image_url(self.library.mass_logo_update, is_poster=False, image_type="logo")
-                        if source in ["unlock", "lock"] or not (ignore_locked and logo_locked):
-                            self.library.logo_update(item, new_logo, tmdb=tmdb_logo_url, title=item.title)
+                        resolved_source, logo_url = _get_external_image(self.library.mass_logo_update, is_poster=False, image_type="logo")
+                        if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_logo_update)) == 1) or not (ignore_locked and logo_locked):
+                            self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url), title=item.title)
 
                     if self.library.mass_square_art_update:
                         source = self.library.mass_square_art_update["source"]
                         ignore_locked = self.library.mass_square_art_update["ignore_locked"]
                         square_art_locked = _field_locked("squareArt")
-                        if source in ["unlock", "lock"] or not (ignore_locked and square_art_locked):
-                            self.library.square_art_update(item, new_square_art, title=item.title)
+                        resolved_source, square_art_url = _get_external_image(self.library.mass_square_art_update, is_poster=False, image_type="square_art")
+                        if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_square_art_update)) == 1) or not (ignore_locked and square_art_locked):
+                            self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url), title=item.title)
 
                     if self.library.is_show and (
-                        (self.library.mass_poster_update and (self.library.mass_poster_update["seasons"] or self.library.mass_poster_update["episodes"]))
-                        or (self.library.mass_background_update and (self.library.mass_background_update["seasons"] or self.library.mass_background_update["episodes"]))
+                        _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
+                        or _show_level_image_update_enabled(self.library.mass_poster_update, "episodes")
+                        or _show_level_image_update_enabled(self.library.mass_background_update, "seasons")
+                        or _show_level_image_update_enabled(self.library.mass_background_update, "episodes")
                     ):
                         # Determine if any language override applies for season/episode TMDb fetches
                         _image_lang = None
-                        if self.library.mass_poster_update and self.library.mass_poster_update.get("language") and self.library.mass_poster_update["source"] == "tmdb":
+                        if self.library.mass_poster_update and self.library.mass_poster_update.get("language") and "tmdb" in _image_sources(self.library.mass_poster_update):
                             _image_lang = self.library.mass_poster_update["language"]
-                        elif self.library.mass_background_update and self.library.mass_background_update.get("language") and self.library.mass_background_update["source"] == "tmdb":
+                        elif self.library.mass_background_update and self.library.mass_background_update.get("language") and "tmdb" in _image_sources(self.library.mass_background_update):
                             _image_lang = self.library.mass_background_update["language"]
 
                         _orig_lang = self.config.TMDb.language
@@ -1017,7 +1055,7 @@ class Operations:
                                         tmdb_season = self.config.TMDb.get_season(tmdb_item.tmdb_id, season.seasonNumber)
                                     except Failed:
                                         pass
-                                if (self.library.mass_poster_update and self.library.mass_poster_update["seasons"]) or (self.library.mass_background_update and self.library.mass_background_update["seasons"]):
+                                if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons") or _show_level_image_update_enabled(self.library.mass_background_update, "seasons"):
                                     try:
                                         season_poster, season_background, _, _, _, _ = self.library.find_item_assets(season, item_asset_directory=item_dir, folder_name=name)
                                     except Failed:
@@ -1025,12 +1063,12 @@ class Operations:
                                         season_background = None
                                     season_title = f"S{season.seasonNumber} {season.title}"
                                     tmdb_poster = tmdb_season.poster_url if tmdb_season else None
-                                    if self.library.mass_poster_update and self.library.mass_poster_update["seasons"]:
+                                    if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons"):
                                         self.library.poster_update(season, season_poster, tmdb=tmdb_poster, title=season_title if season else None)
-                                    if self.library.mass_background_update and self.library.mass_background_update["seasons"]:
+                                    if _show_level_image_update_enabled(self.library.mass_background_update, "seasons"):
                                         self.library.background_update(season, season_background, title=season_title if season else None)
 
-                                if (self.library.mass_poster_update and self.library.mass_poster_update["episodes"]) or (self.library.mass_background_update and self.library.mass_background_update["episodes"]):
+                                if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes") or _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                     tmdb_episodes = {}
                                     if tmdb_season:
                                         for episode in tmdb_season.episodes:
@@ -1056,9 +1094,9 @@ class Operations:
                                             episode_background = None
                                         episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
                                         tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
-                                        if self.library.mass_poster_update and self.library.mass_poster_update["episodes"]:
+                                        if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes"):
                                             self.library.poster_update(episode, episode_poster, tmdb=tmdb_poster, title=episode_title if episode else None)
-                                        if self.library.mass_background_update and self.library.mass_background_update["episodes"]:
+                                        if _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                             self.library.background_update(episode, episode_background, title=episode_title if episode else None)
                         finally:
                             if _image_lang:

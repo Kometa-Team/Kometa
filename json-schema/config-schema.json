@@ -5401,12 +5401,18 @@
               "type": "object",
               "properties": {
                 "source": {
-                  "type": "string",
-                  "enum": [
-                    "tmdb",
-                    "plex",
-                    "lock",
-                    "unlock"
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                      }
+                    }
                   ]
                 },
                 "language": {
@@ -5431,12 +5437,18 @@
               "type": "object",
               "properties": {
                 "source": {
-                  "type": "string",
-                  "enum": [
-                    "tmdb",
-                    "plex",
-                    "lock",
-                    "unlock"
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                      }
+                    }
                   ]
                 },
                 "language": {
@@ -5466,6 +5478,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "tvdb",
                         "plex",
                         "lock",
                         "unlock"
@@ -5475,12 +5488,18 @@
                       "type": "object",
                       "properties": {
                         "source": {
-                          "type": "string",
-                          "enum": [
-                            "tmdb",
-                            "plex",
-                            "lock",
-                            "unlock"
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              }
+                            }
                           ]
                         },
                         "language": {
@@ -5509,6 +5528,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "tvdb",
                         "plex",
                         "lock",
                         "unlock"
@@ -5518,12 +5538,18 @@
                       "type": "object",
                       "properties": {
                         "source": {
-                          "type": "string",
-                          "enum": [
-                            "tmdb",
-                            "plex",
-                            "lock",
-                            "unlock"
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              }
+                            }
                           ]
                         },
                         "language": {
@@ -5552,6 +5578,7 @@
                       "type": "string",
                       "enum": [
                         "tmdb",
+                        "tvdb",
                         "plex",
                         "lock",
                         "unlock"
@@ -5561,12 +5588,18 @@
                       "type": "object",
                       "properties": {
                         "source": {
-                          "type": "string",
-                          "enum": [
-                            "tmdb",
-                            "plex",
-                            "lock",
-                            "unlock"
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["tmdb", "tvdb", "plex", "lock", "unlock"]
+                              }
+                            }
                           ]
                         },
                         "language": {
@@ -5585,6 +5618,7 @@
                     {
                       "type": "string",
                       "enum": [
+                        "tvdb",
                         "plex",
                         "lock",
                         "unlock"
@@ -5594,11 +5628,18 @@
                       "type": "object",
                       "properties": {
                         "source": {
-                          "type": "string",
-                          "enum": [
-                            "plex",
-                            "lock",
-                            "unlock"
+                          "oneOf": [
+                            {
+                              "type": "string",
+                              "enum": ["tvdb", "plex", "lock", "unlock"]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": ["tvdb", "plex", "lock", "unlock"]
+                              }
+                            }
                           ]
                         },
                         "ignore_locked": {

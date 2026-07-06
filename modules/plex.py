@@ -1719,6 +1719,10 @@ class Plex(Library):
         }[image_type]
         attr = image_config["source"]
         lang = image_config.get("language")
+        resolved_attr = None
+        if isinstance(tmdb, tuple):
+            resolved_attr, tmdb = tmdb
+            attr = resolved_attr or attr
         if attr == "lock":
             lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]
             if not hasattr(item, lock_method):
@@ -1740,10 +1744,11 @@ class Plex(Library):
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr == "tmdb" and tmdb:
+                if attr in ["tmdb", "tvdb"] and tmdb:
                     image = tmdb
-                    location = f"TMDb (language: {lang})" if lang else "TMDb"
-                if not image and attr != "tmdb":
+                    source_name = {"tmdb": "TMDb", "tvdb": "TVDb"}[attr]
+                    location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
+                if not image and attr not in ["tmdb", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
