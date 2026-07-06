@@ -19,7 +19,7 @@ collections:
         sort: People's Choice Awards !
         image: award/pca/winner
         translation_key: pca_best
-        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/pca.png?raw=true
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/refs/heads/master/award/logos/pca.png
       - name: arr
       - name: custom
     imdb_award:
@@ -64,4 +64,4 @@ dynamic_collections:
       dynamic:
         default: true
       url_logo:
-        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/pca.png?raw=true
+        default: https://raw.githubusercontent.com/Kometa-Team/Default-Images/refs/heads/master/award/logos/pca.png
