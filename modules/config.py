@@ -635,11 +635,7 @@ class ConfigFile:
                 return None
             if not isinstance(image_config, dict):
                 image_config = {"source": image_config}
-            options = {
-                k: v
-                for k, v in mass_image_options.items()
-                if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")
-            }
+            options = {k: v for k, v in mass_image_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
             _language = check_for_attribute(image_config, "language", default_is_none=True, save=False)
             if _language is not None:
                 _language = str(_language).lower()

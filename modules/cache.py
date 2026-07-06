@@ -973,7 +973,9 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO tvdb_data5(tvdb_id, type) VALUES(?, ?)", (obj.tvdb_id, "movie" if obj.is_movie else "show"))
                 update_sql = "UPDATE tvdb_data5 SET title = ?, status = ?, summary = ?, poster_url = ?, background_url = ?, logo_url = ?, icon_url = ?, " "release_date = ?, genres = ?, expiration_date = ? WHERE tvdb_id = ? AND type = ?"
                 tvdb_date = f"{str(obj.release_date.year).zfill(4)}-{str(obj.release_date.month).zfill(2)}-{str(obj.release_date.day).zfill(2)}" if obj.release_date else None
-                cursor.execute(update_sql, (obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, obj.logo_url, obj.icon_url, tvdb_date, "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show"))
+                cursor.execute(
+                    update_sql, (obj.title, obj.status, obj.summary, obj.poster_url, obj.background_url, obj.logo_url, obj.icon_url, tvdb_date, "|".join(obj.genres), expiration_date.strftime("%Y-%m-%d"), obj.tvdb_id, "movie" if obj.is_movie else "show")
+                )
 
     def query_tvdb_map(self, tvdb_url, expiration):
         tvdb_id = None
