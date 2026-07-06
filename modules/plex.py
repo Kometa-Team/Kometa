@@ -14,7 +14,7 @@ from plexapi.library import FilterChoice, LibrarySection, Role
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Episode, Movie, Season, Show
-from requests.exceptions import ConnectionError, ConnectTimeout
+from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 
 from modules import builder, util
@@ -1283,7 +1283,11 @@ class Plex(Library):
                     self.Plex.addCollection(collection, locked=locked)
                 else:
                     self.Plex.removeCollection(collection, locked=locked)
-                self.Plex.saveMultiEdits()
+                try:
+                    self.Plex.saveMultiEdits()
+                except ReadTimeout as e:
+                    logger.stacktrace()
+                    raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout: {e}")
                 total_sent += len(chunk)
             logger.exorcise()
 
