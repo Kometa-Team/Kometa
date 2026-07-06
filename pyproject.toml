@@ -41,7 +41,7 @@ dependencies = [
     "requests==2.34.2",
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
-    "setuptools==82.0.1",
+    "setuptools==83.0.0",
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",
 ]
@@ -150,7 +150,7 @@ dev = [
     "requests==2.34.2",
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
-    "setuptools==82.0.1",
+    "setuptools==83.0.0",
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",
 ]
