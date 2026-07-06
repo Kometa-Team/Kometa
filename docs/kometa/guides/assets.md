@@ -132,6 +132,10 @@ the [`asset_folders` Setting Attribute](../../config/settings.md). Note that `as
 
 Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
+Replace `.ext` with a supported image extension: `.jpg`, `.jpeg`, `.png`, `.webp`, or `.tbn`.
+
+Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the same base asset names listed below. When both an exact asset name and a numbered variant exist, the exact asset name takes priority. For example, `poster.jpg` is used before `poster-2.png`.
+
 ???+ important
 
     In this table, `<path_to_assets>` is an asset directory OR some directory below an asset directory, depending on your setting for `asset_depth`.
@@ -151,10 +155,10 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
 
     | Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`         |
     |:---------------------------------|:-----------------------------------------------------------|
-    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`                   |
-    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`               |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext`                     |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext` or `<path_to_assets>/ASSET_NAME/square_art.ext` |
+    | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` |
+    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`, `art.ext`, `backdrop.ext`, or `fanart.ext` |
+    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext` or `clearlogo.ext` |
+    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext`, `square_art.ext`, `squareArt.ext`, or `backgroundSquare.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                   |
@@ -165,13 +169,62 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
     | Image Type                       | Flat Assets Image Paths<br>`asset_folders: false`          |
     |:---------------------------------|:-----------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                         |
-    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`               |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`                     |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext` or `<path_to_assets>/ASSET_NAME_square_art.ext` |
+    | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`, `ASSET_NAME-art.ext`, `ASSET_NAME-backdrop.ext`, `ASSET_NAME-background.ext`, or `ASSET_NAME-fanart.ext` |
+    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`, `ASSET_NAME-clearlogo.ext`, or `ASSET_NAME-logo.ext` |
+    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext`, `ASSET_NAME_square_art.ext`, `ASSET_NAME-square.ext`, `ASSET_NAME-squareArt.ext`, or `ASSET_NAME-backgroundSquare.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                   |
     | Episode background               | `<path_to_assets>/ASSET_NAME_S##E##_background.ext`        |
+
+For example, if the asset name is `Toy Story (1995)`, Kometa accepts the following item-level filenames:
+
+=== "ASSET_FOLDERS=True"
+
+    ```txt
+    config/assets/Toy Story (1995)/poster.jpg
+    config/assets/Toy Story (1995)/poster-2.png
+    config/assets/Toy Story (1995)/cover.jpg
+    config/assets/Toy Story (1995)/default.png
+    config/assets/Toy Story (1995)/folder.tbn
+    config/assets/Toy Story (1995)/movie.jpg
+
+    config/assets/Toy Story (1995)/background.jpg
+    config/assets/Toy Story (1995)/fanart.png
+    config/assets/Toy Story (1995)/backdrop.tbn
+    config/assets/Toy Story (1995)/art.jpg
+
+    config/assets/Toy Story (1995)/logo.png
+    config/assets/Toy Story (1995)/clearlogo.png
+
+    config/assets/Toy Story (1995)/square.jpg
+    config/assets/Toy Story (1995)/square_art.png
+    config/assets/Toy Story (1995)/squareArt.jpg
+    config/assets/Toy Story (1995)/backgroundSquare.png
+    ```
+
+=== "ASSET_FOLDERS=False"
+
+    ```txt
+    config/assets/Toy Story (1995).jpg
+    config/assets/Toy Story (1995)-2.png
+
+    config/assets/Toy Story (1995)_background.jpg
+    config/assets/Toy Story (1995)-background.jpg
+    config/assets/Toy Story (1995)-fanart.png
+    config/assets/Toy Story (1995)-backdrop.tbn
+    config/assets/Toy Story (1995)-art.jpg
+
+    config/assets/Toy Story (1995)_logo.png
+    config/assets/Toy Story (1995)-logo.png
+    config/assets/Toy Story (1995)-clearlogo.png
+
+    config/assets/Toy Story (1995)_square.jpg
+    config/assets/Toy Story (1995)_square_art.png
+    config/assets/Toy Story (1995)-square.jpg
+    config/assets/Toy Story (1995)-squareArt.png
+    config/assets/Toy Story (1995)-backgroundSquare.png
+    ```
 
 ## Determining the "Asset Name"
 
@@ -306,7 +359,7 @@ Assets can be stored anywhere on the host system that Kometa has visibility of (
         config/assets/The Expanse (2015) {tvdb-280619}_S01E01_background.ext
         ```
 
-* Replace `.ext` with the image extension
+* Replace `.ext` with a supported image extension: `.jpg`, `.jpeg`, `.png`, `.webp`, or `.tbn`.
 
 * When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
 

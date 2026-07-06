@@ -16,12 +16,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rework `defaults/overlays/ratings.yml` to fetch ratings directly during the overlay run; Mass Rating Update operations are no longer required for fetched sources. Adds auto image-pick, Fresh/Rotten filtering via `value_filter`, a `Direct` image level for tomatoes/tomatoesaudience, and new image assets under `defaults/overlays/images/rating/`.
 - Accept HTTP(S) URLs anywhere a `text_file` builder used to require a local file path. Kometa first tries to parse the response as JSON (matching today's behaviour) and falls back to a plain-text line-by-line parse on parse failure. Gzip-compressed responses are auto-decompressed. Mixed local/URL lists in a single `text_file` builder are supported.
 - Add `logo` and `square`/`square_art` asset detection and setting via `url_` and `file_` methods for Collection builders, as well as Defaults via `url_*_<<key>>` template variables.
+- Add Plex-compatible local asset names for posters, backgrounds, logos, and square art, including `.tbn` files and numbered variants such as `poster-2.png`; exact filenames such as `poster.jpg` take priority over numbered variants.
 
 ### Changed
 
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
 
 ### Security
 
