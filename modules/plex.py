@@ -57,7 +57,6 @@ def _plex_timeout_before_sleep(retry_state):
     logger.info(f"Plex Error: {label} attempt {retry_state.attempt_number} timed out: {exception}")
     if retry_state.next_action is not None:
         logger.info(f"Plex Error: retrying {label} in {int(retry_state.next_action.sleep)} seconds.")
-
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp")
