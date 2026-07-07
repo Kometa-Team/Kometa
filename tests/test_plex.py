@@ -11,7 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from requests.exceptions import ConnectTimeout, ReadTimeout
+from requests.exceptions import ReadTimeout
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import Plex
