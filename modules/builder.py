@@ -4529,13 +4529,8 @@ class CollectionBuilder:
             filtered_movies_with_names = []
             for missing_id in self.missing_movies:
                 i += 1
-                try:
-                    movie = self.config.TMDb.get_movie(missing_id)
-                except Failed as e:
-                    logger.error(e)
-                    continue
-                except TMDbException as e:
-                    logger.warning(f"TMDb Warning: unable to load TMDb ID {missing_id}; skipping item: {e}")
+                movie = self._safe_tmdb_lookup(self.config.TMDb.get_movie, missing_id, "movie")
+                if movie is None:
                     continue
                 current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title
                 if self.check_missing_filters(missing_id, True, tmdb_item=movie, check_released=self.details["missing_only_released"]):
@@ -4671,6 +4666,14 @@ class CollectionBuilder:
         if not self.items:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
+    def _safe_tmdb_lookup(self, getter, tmdb_id, item_type):
+        try:
+            return getter(tmdb_id)
+        except Failed as e:
+            logger.error(e)
+        except TMDbException as e:
+            logger.warning(f"TMDb Warning: unable to load {item_type} TMDb ID {tmdb_id}; skipping item: {e}")
+
     def update_item_details(self):
         logger.info("")
         logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
@@ -4751,14 +4754,13 @@ class CollectionBuilder:
                         logger.error(f"{item.title} Advanced Metadata Update Failed")
 
             if "item_tmdb_season_titles" in self.item_details and item.ratingKey in self.library.show_rating_key_map:
-                try:
-                    tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
-                    names = {s.season_number: s.name for s in self.config.TMDb.get_show(tmdb_id).seasons}
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey])
+                tmdb_show = self._safe_tmdb_lookup(self.config.TMDb.get_show, tmdb_id, "show")
+                if tmdb_show:
+                    names = {s.season_number: s.name for s in tmdb_show.seasons}
                     for season in self.library.query(item.seasons):
                         if season.index in names and season.title != names[season.index]:
                             season.editTitle(names[season.index])
-                except Failed as e:
-                    logger.error(e)
 
             # Locking should come before refreshing since refreshing can change metadata (i.e. if specified to both lock
             # background/poster and also refreshing, assume that the item background/poster should be kept)
@@ -5297,10 +5299,8 @@ class CollectionBuilder:
             logger.info("")
             for missing_id in self.run_again_movies:
                 if missing_id not in self.library.movie_map:
-                    try:
-                        movie = self.config.TMDb.get_movie(missing_id)
-                    except Failed as e:
-                        logger.error(e)
+                    movie = self._safe_tmdb_lookup(self.config.TMDb.get_movie, missing_id, "movie")
+                    if movie is None:
                         continue
                     if self.details["show_missing"] is True:
                         current_title = f"{movie.title} ({movie.release_date.year})" if movie.release_date else movie.title

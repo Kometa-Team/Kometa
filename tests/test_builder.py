@@ -104,6 +104,13 @@ def make_builder(**attrs) -> CollectionBuilder:
         "obj": None,
         "name": "Test Collection",
         "builders": [],
+        "items": [],
+        "item_details": {},
+        "asset_directory": None,
+        "radarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
+        "sonarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
+        "run_again_movies": [],
+        "run_again_shows": [],
         "notification_additions": [],
         "notification_removals": [],
         "added_to_radarr": [],
@@ -310,6 +317,73 @@ class TestTextfile:
 
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TMDb lookup resilience
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTmdbLookupResilience:
+    def test_item_tmdb_season_titles_skips_tmdb_exception(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        season = SimpleNamespace(index=1, title="Old Title", editTitle=MagicMock())
+        item = SimpleNamespace(ratingKey=1, title="Example Show", seasons=[season], locations=[])
+        library = SimpleNamespace(
+            reload=lambda value: value,
+            item_labels=lambda value: [],
+            edit_tags=lambda *args, **kwargs: None,
+            query=lambda value: value,
+            show_rating_key_map={1: 383275},
+            movie_rating_key_map={},
+            is_movie=False,
+            is_show=True,
+            Radarr=None,
+            Sonarr=None,
+        )
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_tmdb_season_titles": True},
+            config=SimpleNamespace(
+                Convert=SimpleNamespace(tvdb_to_tmdb=lambda tvdb_id: 987),
+                TMDb=SimpleNamespace(get_show=MagicMock(side_effect=builder_module.TMDbException("boom"))),
+            ),
+        )
+
+        builder.update_item_details()
+
+        assert any("unable to load show TMDb ID 987" in message for message in logger.warning_messages)
+        assert not season.editTitle.called
+
+    def test_run_collections_again_skips_tmdb_exception_for_missing_movie(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(
+            movie_map={},
+            show_map={},
+            is_movie=False,
+            is_show=False,
+            get_collection=lambda name, force_search=True: SimpleNamespace(title=name),
+            get_collection_name_and_items=lambda obj, smart_label_collection: (obj.title, []),
+            alter_collection=lambda *args, **kwargs: None,
+        )
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            name="Test Collection",
+            Type="Collection",
+            run_again_movies=[123],
+            details={"show_missing": True},
+            config=SimpleNamespace(TMDb=SimpleNamespace(get_movie=MagicMock(side_effect=builder_module.TMDbException("boom")))),
+        )
+        builder.send_notifications = MagicMock()
+
+        builder.run_collections_again()
+
+        assert any("unable to load movie TMDb ID 123" in message for message in logger.warning_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
