@@ -64,20 +64,21 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     **Attribute:** `mass_metadata_update`
 
-    | Attribute | Description |
-    | --- | --- |
-    | `genre` | Updates genres. Use `source` for update sources and `mappings` for genre remapping. |
-    | `content_rating` | Updates content ratings. Use `source` for update sources and `mappings` for content rating remapping. |
-    | `original_title` | Updates original titles. |
-    | `studio` | Updates studios. |
-    | `originally_available` | Updates originally available dates. |
-    | `added_at` | Updates added at dates. |
-    | `ratings` | Updates item and episode ratings using `audience`, `critic`, `user`, `episode_audience`, `episode_critic`, and `episode_user`. |
-    | `poster` | Updates posters. |
-    | `background` | Updates backgrounds. |
-    | `logo` | Updates logos. Seasons and episodes are not supported. |
-    | `square_art` | Updates square art. Seasons and episodes are not supported. |
-    | `backup` | Creates or maintains a metadata backup file. |
+    | Attribute              | Description                                                                                                                    |
+    | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+    | `added_at`             | Updates added at dates.                                                                                                        |
+    | `background`           | Updates backgrounds.                                                                                                           |
+    | `backup`               | Creates or maintains a metadata backup file.                                                                                   |
+    | `content_rating`       | Updates content ratings. Use `source` for update sources and `mappings` for content rating remapping.                          |
+    | `genre`                | Updates genres. Use `source` for update sources and `mappings` for genre remapping.                                            |
+    | `logo`                 | Updates logos. Seasons and episodes are not supported.                                                                         |
+    | `original_title`       | Updates original titles.                                                                                                       |
+    | `originally_available` | Updates originally available dates.                                                                                            |
+    | `poster`               | Updates posters.                                                                                                               |
+    | `ratings`              | Updates item and episode ratings using `audience`, `critic`, `user`, `episode_audience`, `episode_critic`, and `episode_user`. |
+    | `square_art`           | Updates square art. Seasons and episodes are not supported.                                                                    |
+    | `studio`               | Up                                                                                                                             |
+
 
     ??? example "Complete Example (click to expand)"
 
