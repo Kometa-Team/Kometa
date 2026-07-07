@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `logo` and `square`/`square_art` asset detection and setting via `url_` and `file_` methods for Collection builders, as well as Defaults via `url_*_<<key>>` template variables.
 - Add Plex-compatible local asset names for posters, backgrounds, logos, and square art, including `.tbn` files and numbered variants such as `poster-2.png`; exact filenames such as `poster.jpg` take priority over numbered variants.
 
+### Fixed
+
+- Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
+
 ### Changed
 
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
