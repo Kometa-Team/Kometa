@@ -14,7 +14,7 @@ hide:
         "EXAMPLE2": "G"
     }'
     replace-tags='{
-        "rec-sub": "Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with 
+        "rec-sub": "Recommendations: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with 
 `mal` to update Plex to the MyAnimeList Content Rating."
     }'
     rewrite-relative-urls=false

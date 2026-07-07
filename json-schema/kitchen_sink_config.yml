@@ -346,26 +346,31 @@ libraries:
         managed: false                              # False - Collection must be an Unmanaged Collection to be deleted (the collection does not have the Kometa label)
         less: 99999                                 # Effectively all collections regardless of the number of items in the collection
         ignore_empty_smart_collections: true        # Don't do the less check on empty smart collections
-      mass_user_rating_update: mdb_tomatoes         # Update user ratings with mdb_tomatoes
-      mass_critic_rating_update: imdb               # Update critic ratings with imdb
-      mass_audience_rating_update: tmdb             # Update audience ratings with tmdb
-      mass_genre_update:
-      - tmdb                                        # Update all genres from tmdb
-      - imdb                                        # Update all genres from imdb if not from tmdb
-      - tvdb                                        # Update all genres from tvdb if not from imdb
-      mass_content_rating_update:
-      - mdb_commonsense                             # Changes Content Rating to "1", "2" etc. to specify appropriate age
-      - omdb                                        # Changes Content Rating from omdb if not found on mdb_commonsense
-      mass_studio_update:
-      - tmdb                                        # Update all studios from tmdb
-      mass_originally_available_update:
-      - tmdb                                        # Update all original available date from tmdb
-      - tvdb                                        # Update all original available date from tvdb if not from tmdb
-      - omdb                                        # Update all original available date from omdb(imdb) if not from tvdb
+      mass_metadata_update:
+        ratings:
+          user: mdb_tomatoes                        # Update user ratings with mdb_tomatoes
+          critic: imdb                              # Update critic ratings with imdb
+          audience: tmdb                            # Update audience ratings with tmdb
+        genre:
+          source:
+          - tmdb                                    # Update all genres from tmdb
+          - imdb                                    # Update all genres from imdb if not from tmdb
+          - tvdb                                    # Update all genres from tvdb if not from imdb
+        content_rating:
+          source:
+          - mdb_commonsense                         # Changes Content Rating to "1", "2" etc. to specify appropriate age
+          - omdb                                    # Changes Content Rating from omdb if not found on mdb_commonsense
+        studio:
+          source:
+          - tmdb                                    # Update all studios from tmdb
+        originally_available:
+          source:
+          - tmdb                                    # Update all original available date from tmdb
+          - tvdb                                    # Update all original available date from tvdb if not from tmdb
+          - omdb                                    # Update all original available date from omdb(imdb) if not from tvdb
+        # poster:
+        #   source: tmdb                            # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
       mass_imdb_parental_labels: none               # Apply all Parental Labels with a value of None, Mild, Moderate, or Severe to match IMDb parental guide
-      # mass_image_update:
-      #   poster:
-      #     source: tmdb                              # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
 # .-----------------------------------------------.
 # | _______     __  ____  _                       |
 # ||_   _\ \   / / / ___|| |__   _____      _____ |
@@ -763,28 +768,30 @@ libraries:
         managed: false                              # False - Collection must be an Unmanaged Collection to be deleted (the collection does not have the Kometa label)
         less: 99999                                 # Effectively all collections regardless of the number of items in the collection
         ignore_empty_smart_collections: true        # Don't do the less check on empty smart collections
-      mass_user_rating_update: mdb_tomatoes         # Update user ratings with mdb_tomatoes
-      mass_critic_rating_update: imdb               # Update critic ratings with imdb
-      mass_audience_rating_update: tmdb             # Update audience ratings with tmdb
-      mass_genre_update:
-      - tmdb                                        # Update all genres from tmdb
-      - imdb                                        # Update all genres from imdb if not from tmdb
-      - tvdb                                        # Update all genres from tvdb if not from imdb
-      mass_content_rating_update:
-      - mdb_commonsense                             # Changes Content Rating to "1", "2" etc. to specify appropriate age
-      - omdb                                        # Changes Content Rating from omdb if not found on mdb_commonsense
-      mass_studio_update:
-      - tmdb                                        # Update all studios from tmdb
-      mass_originally_available_update:
-      - tmdb                                        # Update all original available date from tmdb
-      - tvdb                                        # Update all original available date from tvdb if not from tmdb
-      - omdb                                        # Update all original available date from omdb(imdb) if not from tvdb
-      mass_episode_critic_rating_update: imdb       # Update critic ratings with imdb for episodes
-      mass_episode_audience_rating_update: tmdb     # Update audience ratings with tmdb for episodes
+      mass_metadata_update:
+        ratings:
+          episode_critic: imdb                      # Update critic ratings with imdb for episodes
+          episode_audience: tmdb                    # Update audience ratings with tmdb for episodes
+        genre:
+          source:
+          - tmdb                                    # Update all genres from tmdb
+          - imdb                                    # Update all genres from imdb if not from tmdb
+          - tvdb                                    # Update all genres from tvdb if not from imdb
+        content_rating:
+          source:
+          - mdb_commonsense                         # Changes Content Rating to "1", "2" etc. to specify appropriate age
+          - omdb                                    # Changes Content Rating from omdb if not found on mdb_commonsense
+        studio:
+          source:
+          - tmdb                                    # Update all studios from tmdb
+        originally_available:
+          source:
+          - tmdb                                    # Update all original available date from tmdb
+          - tvdb                                    # Update all original available date from tvdb if not from tmdb
+          - omdb                                    # Update all original available date from omdb(imdb) if not from tvdb
+        # poster:
+        #   source: tmdb                            # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
       mass_imdb_parental_labels: none               # Apply all Parental Labels with a value of None, Mild, Moderate, or Severe to match IMDb parental guide
-      # mass_image_update:
-      #   poster:
-      #     source: tmdb                              # Resets posters to tmdb, plex, lock, or unlock which is useful to remove all overlays when running with -r -op
 # .---------------------------------.
 # | ____  _             _ _     _   |
 # ||  _ \| | __ _ _   _| (_)___| |_ |
@@ -953,4 +960,3 @@ mal:
     expires_in: 2678400
     refresh_token: (redacted)
   cache_expiration: 60
-

@@ -16,8 +16,7 @@ hide:
 
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
-Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3: user`, use the [Mass * Rating Update Library Operation](../../config/operations.md#mass-rating-update) and the
-[Mass Episode * Rating Update Library Operation](../../config/operations.md#mass-episode-rating-update) to populate Plex's rating slots from your preferred source. Fetched sources do not require this step.
+Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3: user`, use the [Mass Metadata Update Library Operation](../../config/operations.md#mass-metadata-update) to populate Plex's rating slots from your preferred source. Fetched sources do not require this step.
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

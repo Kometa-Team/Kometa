@@ -33,7 +33,7 @@ You can tell Kometa to remove overlays, which will restore the clean posters tha
 
 If you have not created a metadata backup in advance, there is probably no way to restore things that Kometa has changed.
 
-Kometa can make a [metadata backup](../../config/operations.md#metadata-backup) for you. This backup is a YAML file that contains things like ratings, titles, summaries, etc. 
+Kometa can make a [metadata backup](../../config/operations.md#mass-metadata-update) for you. This backup is a YAML file that contains things like ratings, titles, summaries, etc. 
 You can use this backup to revert changes that Kometa has made.
 
 Chazlarson has created a [metadata backup script](https://github.com/chazlarson/Media-Scripts/blob/main/Kometa/README.md#metadata-extractorpy) that backs up more metadata than Kometa does, 

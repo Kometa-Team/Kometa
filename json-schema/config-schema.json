@@ -61,6 +61,110 @@
     "tmdb"
   ],
   "definitions": {
+    "mass-metadata-source": {
+      "oneOf": [
+        {
+          "type": [
+            "string",
+            "number"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": [
+                  "string",
+                  "number"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "mass-metadata-scheduled-source": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/mass-metadata-source"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": {
+              "type": "string"
+            },
+            "source": {
+              "$ref": "#/definitions/mass-metadata-source"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "metadata-mapping": {
+      "type": "object",
+      "patternProperties": {
+        "^.*$": {
+          "type": [
+            "string",
+            "number",
+            "null"
+          ]
+        }
+      }
+    },
+    "mass-metadata-image": {
+      "oneOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": {
+              "type": "string"
+            },
+            "source": {
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              ]
+            },
+            "language": {
+              "type": "string"
+            },
+            "seasons": {
+              "type": "boolean"
+            },
+            "episodes": {
+              "type": "boolean"
+            },
+            "ignore_locked": {
+              "type": "boolean"
+            },
+            "ignore_overlays": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "plex-server": {
       "description": "Describes the primary Plex server to which Kometa can connect.\nThis attribute is REQUIRED.  It can be overridden at the library level.",
       "type": "object",
@@ -4598,6 +4702,139 @@
             },
             "sonarr_add_all": {
               "type": "boolean"
+            },
+            "mass_metadata_update": {
+              "type": "object",
+              "properties": {
+                "genre": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/definitions/mass-metadata-source"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "schedule": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "$ref": "#/definitions/mass-metadata-source"
+                        },
+                        "mappings": {
+                          "$ref": "#/definitions/metadata-mapping"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "content_rating": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/definitions/mass-metadata-source"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "schedule": {
+                          "type": "string"
+                        },
+                        "source": {
+                          "$ref": "#/definitions/mass-metadata-source"
+                        },
+                        "mappings": {
+                          "$ref": "#/definitions/metadata-mapping"
+                        }
+                      },
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "original_title": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-source"
+                },
+                "studio": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-source"
+                },
+                "originally_available": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-source"
+                },
+                "added_at": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-source"
+                },
+                "ratings": {
+                  "type": "object",
+                  "properties": {
+                    "schedule": {
+                      "type": "string"
+                    },
+                    "user": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    },
+                    "critic": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    },
+                    "audience": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    },
+                    "episode_user": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    },
+                    "episode_critic": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    },
+                    "episode_audience": {
+                      "$ref": "#/definitions/mass-metadata-scheduled-source"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "poster": {
+                  "$ref": "#/definitions/mass-metadata-image"
+                },
+                "background": {
+                  "$ref": "#/definitions/mass-metadata-image"
+                },
+                "logo": {
+                  "$ref": "#/definitions/mass-metadata-image"
+                },
+                "square_art": {
+                  "$ref": "#/definitions/mass-metadata-image"
+                },
+                "backup": {
+                  "type": "object",
+                  "properties": {
+                    "schedule": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "exclude": {
+                      "oneOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "uniqueItems": true,
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      ]
+                    },
+                    "sync_tags": {
+                      "type": "boolean"
+                    },
+                    "add_blank_entries": {
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
             },
             "mass_genre_update": {
               "anyOf": [

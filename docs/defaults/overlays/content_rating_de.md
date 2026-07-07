@@ -10,7 +10,7 @@ hide:
         "OVERLAY_LEVEL": "Movie, Show, Season, Episode",
         "DESCRIPTION": "an overlay based on the FSK Rating on each item within your library"
     }'
-    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either `mdb` or `omdb` to update Plex to the FSK Rating."}'
+    replace-tags='{"rec-sub": "Requirements: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with either `mdb` or `omdb` to update Plex to the FSK Rating."}'
     end='<!--table-before-->'
 %}
 
