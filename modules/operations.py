@@ -1145,7 +1145,7 @@ class Operations:
                             self.library.Plex.editTags(display_attr, update_value, remove=tag_type == "remove")
                         else:
                             self.library.Plex.editField(display_attr, update_value)
-                        self.library.Plex.saveMultiEdits()
+                        self.library.Plex._save_multi_edits_with_retry()
                         if evict_cache:
                             for batch_item in batch_items:
                                 cache_evictions.add(batch_item.ratingKey)

@@ -11,7 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectTimeout, ReadTimeout
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import Plex
@@ -42,6 +42,7 @@ def make_plex(**attrs) -> Plex:
     plex.cached_items = attrs.pop("cached_items", {})
     plex.collection_names = attrs.pop("collection_names", [])
     plex.collection_files = attrs.pop("collection_files", [])
+    plex.agent = attrs.pop("agent", "tv.plex.agents.movie")
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
 
     # Required by Plex class
@@ -308,6 +309,30 @@ class TestSaveMultiEditsRetry:
         sleep_mock.assert_any_call(2)
         sleep_mock.assert_any_call(5)
         assert any("attempt 3 timed out" in message for message in plex_module.logger.info_messages)
+
+    @pytest.mark.parametrize("method_name", ["addCollection", "removeCollection"])
+    def test_retries_entire_collection_edit_chunk_on_timeout(self, monkeypatch, method_name):
+        import modules.plex as plex_module
+
+        plex = make_plex(agent="tv.plex.agents.movie")
+        item = make_plex_item(fields=[])
+        collection = MagicMock()
+        collection.title.return_value = "Test Collection"
+        timeout = f"timeout-{method_name}"
+
+        plex.Plex.batchMultiEdits.side_effect = [None, None, None]
+        getattr(plex.Plex, method_name).side_effect = [ConnectTimeout(timeout), ConnectTimeout(timeout), None]
+        sleep_mock = MagicMock()
+        monkeypatch.setattr(plex_module.time, "sleep", sleep_mock)
+
+        plex.alter_collection([item], collection, add=(method_name == "addCollection"))
+
+        assert plex.Plex.batchMultiEdits.call_count == 3
+        assert getattr(plex.Plex, method_name).call_count == 3
+        assert plex.Plex.saveMultiEdits.call_count == 3
+        sleep_mock.assert_any_call(2)
+        sleep_mock.assert_any_call(5)
+        assert any("collection edit for Test Collection attempt 1 timed out" in message for message in plex_module.logger.info_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
