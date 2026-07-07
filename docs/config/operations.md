@@ -228,76 +228,35 @@ Several of these operations perform **mass** updates; these are just that, **mas
         In this example, `user` and `audience` run on every run, while `critic` only runs on Tuesday.
         ```
 
-    === "Genres"
+    === "Backup"
 
-        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final genre values after source lookup.
 
-        ??? example "Example Genre & Mapping Operation"
 
-            ```yaml
-            operations:
-              mass_metadata_update:
-                genre:
-                  source:
-                    - imdb
-                    - tmdb
-                    - ["Unknown"]
-                  mappings:
-                    "Action/Adventure": Action
-                    "Action & Adventure": Action
-            ```
-        | Source | Description |
-        | --- | --- |
-        | `tmdb` | Use TMDb for genres. |
-        | `tvdb` | Use TVDb for genres. |
-        | `imdb` | Use IMDb for genres. |
-        | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](../config/omdb.md). |
-        | `anidb` | Use AniDB main tags for genres. |
-        | `anidb_3_0` | Use AniDB main tags and all 3 star tags and above for genres. |
-        | `anidb_2_5` | Use AniDB main tags and all 2.5 star tags and above for genres. |
-        | `anidb_2_0` | Use AniDB main tags and all 2 star tags and above for genres. |
-        | `anidb_1_5` | Use AniDB main tags and all 1.5 star tags and above for genres. |
-        | `anidb_1_0` | Use AniDB main tags and all 1 star tags and above for genres. |
-        | `anidb_0_5` | Use AniDB main tags and all 0.5 star tags and above for genres. |
-        | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `lock` | Lock the genre field. |
-        | `unlock` | Unlock the genre field. |
-        | `remove` | Remove all genres and lock the genre field. |
-        | `reset` | Remove all genres and unlock the genre field. |
-        | List of strings | Set explicit genre values, for example `["String 1", "String 2"]`. |
+        `backup` creates or maintains a Kometa Metadata File with a full `metadata` mapping based on the library's item locked attributes.
 
-        | Mappings Attribute | Description |
-        | --- | --- |
-        | `key` | Genre value to map from. |
-        | `value` | Genre value to map to. Leave blank to remove the source genre. |
+        ???+ tip "Tip"
 
-    === "Studios"
+            If you point to an existing Metadata File then Kometa will sync the changes to the file, so you won't lose non-Plex changes in the file.
 
-        `studio` accepts a source, an ordered list of fallback sources, or an explicit string value.
-
-        ??? example "Example Studio Operation"
+        ??? example "Example Backup Operation"
 
             ```yaml
             operations:
               mass_metadata_update:
-                studio:
-                  - mal
-                  - anidb
-                  - Unknown
+                backup:
+                  path: config/Movie_Backup.yml
+                  exclude:
+                    - title
+                  sync_tags: true
+                  add_blank_entries: false
             ```
 
-         | Value | Description |
+        | Attribute | Description |
         | --- | --- |
-        | `anidb` | Use AniDB animation work. |
-        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `tmdb` | Use TMDb studio. |
-        | `lock` | Lock the studio field. |
-        | `unlock` | Unlock the studio field. |
-        | `remove` | Remove studio and lock the field. |
-        | `reset` | Remove studio and unlock the field. |
-        | Any string | Set an explicit studio. |
-
+        | `path` | Path to where the metadata will be saved or maintained. **Default:** `<<library_name>>_Metadata_Backup.yml` in your config folder. |
+        | `exclude` | Exclude all listed attributes from being saved in the Metadata File. |
+        | `sync_tags` | Tag attributes will use the `.sync` option and blank attributes will be added to sync. **Default:** `false`. |
+        | `add_blank_entries` | Add a line for entries that have no metadata changes. **Default:** `true`. |
 
 
     === "Content Ratings"
@@ -345,47 +304,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | --- | --- |
         | `key` | Content rating value to map from. |
         | `value` | Content rating value to map to. Leave blank to remove the source content rating. |
-
-
-    === "Titles"
-
-        `original_title` accepts a source, an ordered list of fallback sources, or an explicit string value.
-
-        ??? example "Example Original Title Operation"
-
-            ```yaml
-            operations:
-              mass_metadata_update:
-                original_title:
-                  - anidb_official
-                  - anidb
-                  - Unknown
-            ```
-
-        | Value | Description |
-        | --- | --- |
-        | `anidb` | Use AniDB main title. |
-        | `anidb_official` | Use AniDB official title based on the language attribute in the config file. |
-        | `mal` | Use MyAnimeList main title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_english` | Use MyAnimeList English title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `mal_japanese` | Use MyAnimeList Japanese title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `lock` | Lock the original title field. |
-        | `unlock` | Unlock the original title field. |
-        | `remove` | Remove original title and lock the field. |
-        | `reset` | Remove original title and unlock the field. |
-        | Any string | Set an explicit original title. |
-
-        | `studio` Value | Description |
-        | --- | --- |
-        | `anidb` | Use AniDB animation work. |
-        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
-        | `tmdb` | Use TMDb studio. |
-        | `lock` | Lock the studio field. |
-        | `unlock` | Unlock the studio field. |
-        | `remove` | Remove studio and lock the field. |
-        | `reset` | Remove studio and unlock the field. |
-        | Any string | Set an explicit studio. |
-
 
 
     === "Dates"
@@ -437,6 +355,115 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `remove` | Remove the date and lock the field. |
         | `reset` | Remove the date and unlock the field. |
         | `YYYY-MM-DD` | Set an explicit date, for example `2022-05-28`. |
+
+
+    === "Genres"
+
+        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final genre values after source lookup.
+
+        ??? example "Example Genre & Mapping Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                genre:
+                  source:
+                    - imdb
+                    - tmdb
+                    - ["Unknown"]
+                  mappings:
+                    "Action/Adventure": Action
+                    "Action & Adventure": Action
+            ```
+        | Source | Description |
+        | --- | --- |
+        | `tmdb` | Use TMDb for genres. |
+        | `tvdb` | Use TVDb for genres. |
+        | `imdb` | Use IMDb for genres. |
+        | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](../config/omdb.md). |
+        | `anidb` | Use AniDB main tags for genres. |
+        | `anidb_3_0` | Use AniDB main tags and all 3 star tags and above for genres. |
+        | `anidb_2_5` | Use AniDB main tags and all 2.5 star tags and above for genres. |
+        | `anidb_2_0` | Use AniDB main tags and all 2 star tags and above for genres. |
+        | `anidb_1_5` | Use AniDB main tags and all 1.5 star tags and above for genres. |
+        | `anidb_1_0` | Use AniDB main tags and all 1 star tags and above for genres. |
+        | `anidb_0_5` | Use AniDB main tags and all 0.5 star tags and above for genres. |
+        | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the genre field. |
+        | `unlock` | Unlock the genre field. |
+        | `remove` | Remove all genres and lock the genre field. |
+        | `reset` | Remove all genres and unlock the genre field. |
+        | List of strings | Set explicit genre values, for example `["String 1", "String 2"]`. |
+
+        | Mappings Attribute | Description |
+        | --- | --- |
+        | `key` | Genre value to map from. |
+        | `value` | Genre value to map to. Leave blank to remove the source genre. |
+
+
+    === "Images"
+
+        Assets will be used over anything else. The image type keys are optional; only the configured image types are processed.
+
+        ???+ warning
+
+            When `poster` is used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
+
+        ??? example "Example Image Operations"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                poster:
+                  source: trakt
+                  seasons: true
+                  episodes: true
+                background:
+                  source:
+                    - trakt
+                    - tmdb
+                logo:
+                  source: tmdb
+                  language: en
+                square_art:
+                  source: tvdb
+            ```
+        | Attribute | Description | Values |
+        | --- | --- | --- |
+        | `poster` | Updates item posters. | Dictionary of poster options. |
+        | `background` | Updates item backgrounds. | Dictionary of background options. |
+        | `logo` | Updates item logos. Seasons and episodes are not supported. | Dictionary of logo options. |
+        | `square_art` | Updates item square art. Seasons and episodes are not supported. | Dictionary of square art options. |
+
+        | Poster Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
+        | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Skip updating if the poster field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
+
+        | Background Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
+        | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
+
+        | Logo Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
+        | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
+
+        | Square Art Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
+        | `ignore_locked` | Skip updating if the square art field is locked. **Default:** `false` | `true` or `false` |
 
 
     === "Ratings"
@@ -524,100 +551,71 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | Number from `0.0` to `10.0` | Set an explicit rating value. |
 
 
+    === "Studios"
 
-    === "Images"
+        `studio` accepts a source, an ordered list of fallback sources, or an explicit string value.
 
-        Assets will be used over anything else. The image type keys are optional; only the configured image types are processed.
-
-        ???+ warning
-
-            When `poster` is used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
-
-        ??? example "Example Image Operations"
+        ??? example "Example Studio Operation"
 
             ```yaml
             operations:
               mass_metadata_update:
-                poster:
-                  source: trakt
-                  seasons: true
-                  episodes: true
-                background:
-                  source:
-                    - trakt
-                    - tmdb
-                logo:
-                  source: tmdb
-                  language: en
-                square_art:
-                  source: tvdb
-            ```
-        | Attribute | Description | Values |
-        | --- | --- | --- |
-        | `poster` | Updates item posters. | Dictionary of poster options. |
-        | `background` | Updates item backgrounds. | Dictionary of background options. |
-        | `logo` | Updates item logos. Seasons and episodes are not supported. | Dictionary of logo options. |
-        | `square_art` | Updates item square art. Seasons and episodes are not supported. | Dictionary of square art options. |
-
-        | Poster Option | Description | Values |
-        | --- | --- | --- |
-        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
-        | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
-        | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | Skip updating if the poster field is locked. **Default:** `false` | `true` or `false` |
-        | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
-
-        | Background Option | Description | Values |
-        | --- | --- | --- |
-        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
-        | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
-        | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
-        | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
-
-        | Logo Option | Description | Values |
-        | --- | --- | --- |
-        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
-        | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
-        | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
-
-        | Square Art Option | Description | Values |
-        | --- | --- | --- |
-        | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
-        | `ignore_locked` | Skip updating if the square art field is locked. **Default:** `false` | `true` or `false` |
-
-
-    === "Backup"
-
-
-
-        `backup` creates or maintains a Kometa Metadata File with a full `metadata` mapping based on the library's item locked attributes.
-
-        ???+ tip "Tip"
-
-            If you point to an existing Metadata File then Kometa will sync the changes to the file, so you won't lose non-Plex changes in the file.
-
-        ??? example "Example Backup Operation"
-
-            ```yaml
-            operations:
-              mass_metadata_update:
-                backup:
-                  path: config/Movie_Backup.yml
-                  exclude:
-                    - title
-                  sync_tags: true
-                  add_blank_entries: false
+                studio:
+                  - mal
+                  - anidb
+                  - Unknown
             ```
 
-        | Attribute | Description |
+         | Value | Description |
         | --- | --- |
-        | `path` | Path to where the metadata will be saved or maintained. **Default:** `<<library_name>>_Metadata_Backup.yml` in your config folder. |
-        | `exclude` | Exclude all listed attributes from being saved in the Metadata File. |
-        | `sync_tags` | Tag attributes will use the `.sync` option and blank attributes will be added to sync. **Default:** `false`. |
-        | `add_blank_entries` | Add a line for entries that have no metadata changes. **Default:** `true`. |
+        | `anidb` | Use AniDB animation work. |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `tmdb` | Use TMDb studio. |
+        | `lock` | Lock the studio field. |
+        | `unlock` | Unlock the studio field. |
+        | `remove` | Remove studio and lock the field. |
+        | `reset` | Remove studio and unlock the field. |
+        | Any string | Set an explicit studio. |
+
+
+    === "Titles"
+
+        `original_title` accepts a source, an ordered list of fallback sources, or an explicit string value.
+
+        ??? example "Example Original Title Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                original_title:
+                  - anidb_official
+                  - anidb
+                  - Unknown
+            ```
+
+        | Value | Description |
+        | --- | --- |
+        | `anidb` | Use AniDB main title. |
+        | `anidb_official` | Use AniDB official title based on the language attribute in the config file. |
+        | `mal` | Use MyAnimeList main title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_english` | Use MyAnimeList English title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_japanese` | Use MyAnimeList Japanese title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the original title field. |
+        | `unlock` | Unlock the original title field. |
+        | `remove` | Remove original title and lock the field. |
+        | `reset` | Remove original title and unlock the field. |
+        | Any string | Set an explicit original title. |
+
+        | `studio` Value | Description |
+        | --- | --- |
+        | `anidb` | Use AniDB animation work. |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `tmdb` | Use TMDb studio. |
+        | `lock` | Lock the studio field. |
+        | `unlock` | Unlock the studio field. |
+        | `remove` | Remove studio and lock the field. |
+        | `reset` | Remove studio and unlock the field. |
+        | Any string | Set an explicit studio. |
 
 
 ###### Assets For All
