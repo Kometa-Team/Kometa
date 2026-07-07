@@ -1256,6 +1256,20 @@ class Plex(Library):
             for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")
         ]
 
+    def _save_multi_edits_with_retry(self):
+        retry_delays = (2, 5)
+        for attempt in range(1, 4):
+            try:
+                self.Plex.saveMultiEdits()
+                return
+            except (ConnectTimeout, ReadTimeout) as e:
+                logger.info(f"Plex Error: saveMultiEdits attempt {attempt} timed out: {e}")
+                logger.stacktrace()
+                if attempt == 3:
+                    raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout: {e}")
+                logger.info(f"Plex Error: retrying saveMultiEdits in {retry_delays[attempt - 1]} seconds.")
+                time.sleep(retry_delays[attempt - 1])
+
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
         locked_items = []
@@ -1283,11 +1297,7 @@ class Plex(Library):
                     self.Plex.addCollection(collection, locked=locked)
                 else:
                     self.Plex.removeCollection(collection, locked=locked)
-                try:
-                    self.Plex.saveMultiEdits()
-                except ReadTimeout as e:
-                    logger.stacktrace()
-                    raise Failed(f"Plex Error: Plex did not respond within the {self.timeout}-second timeout: {e}")
+                self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
             logger.exorcise()
 
