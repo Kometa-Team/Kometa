@@ -14,8 +14,8 @@ from plexapi.library import FilterChoice, LibrarySection, Role
 from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Episode, Movie, Season, Show
-from requests.exceptions import ConnectionError, ConnectTimeout
-from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
+from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
 
 from modules import builder, util
 from modules.library import Library
@@ -24,6 +24,33 @@ from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, ServiceError
 
 logger = util.logger
+
+SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
+SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_MULTI_EDITS_RETRY_DELAYS])
+
+
+def _plex_timeout_sleep(seconds):
+    time.sleep(seconds)
+
+
+def _plex_timeout_retry_label(retry_state):
+    return "saveMultiEdits"
+
+
+def _plex_timeout_retry_exhausted(retry_state):
+    self = retry_state.args[0]
+    exception = retry_state.outcome.exception()
+    label = "saveMultiEdits"
+    raise Failed(f"Plex Error: {label} did not respond within the {self.timeout}-second timeout: {exception}") from exception
+
+
+def _plex_timeout_before_sleep(retry_state):
+    exception = retry_state.outcome.exception()
+    label = _plex_timeout_retry_label(retry_state)
+    logger.info(f"Plex Error: {label} attempt {retry_state.attempt_number} timed out: {exception}")
+    if retry_state.next_action is not None:
+        logger.info(f"Plex Error: retrying {label} in {int(retry_state.next_action.sleep)} seconds.")
+
 
 builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
@@ -1264,6 +1291,17 @@ class Plex(Library):
             for r in self.Plex.fetchItems(f"/hubs/sections/{self.Plex.key}/manage")
         ]
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=SAVE_MULTI_EDITS_RETRY_WAIT,
+        retry=retry_if_exception_type((ConnectTimeout, ReadTimeout)),
+        before_sleep=_plex_timeout_before_sleep,
+        retry_error_callback=_plex_timeout_retry_exhausted,
+        sleep=_plex_timeout_sleep,
+    )
+    def _save_multi_edits_with_retry(self):
+        self.Plex.saveMultiEdits()
+
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
         locked_items = []
@@ -1286,12 +1324,15 @@ class Plex(Library):
                 logger.ghost(f"{'Adding' if add else 'Removing'} {len(chunk)} items [{total_sent} so far] to{' smart label' if smart_label_collection else ''} collection: {collection.title()} (Locked: {locked})")
                 self.Plex.batchMultiEdits(chunk)
                 if smart_label_collection:
-                    self.query_data(self.Plex.addLabel if add else self.Plex.removeLabel, collection)
+                    if add:
+                        self.Plex.addLabel(collection)
+                    else:
+                        self.Plex.removeLabel(collection)
                 elif add:
                     self.Plex.addCollection(collection, locked=locked)
                 else:
                     self.Plex.removeCollection(collection, locked=locked)
-                self.Plex.saveMultiEdits()
+                self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
             logger.exorcise()
 
