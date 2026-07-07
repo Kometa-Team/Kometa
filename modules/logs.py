@@ -267,18 +267,21 @@ class MyLogger:
             if variant not in self.secrets:
                 self.secrets.append(variant)
 
-    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
+    def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1, continuation=False):
         trace = level == TRACE
         log_only = False
         if trace:
             level = DEBUG
-        if trace or msg.startswith("|"):
+        if continuation:
+            # Continuation chunk of a wrapped message - blank the file prefix (avoids #3328) but keep the same border rule as a normal message, or bordered chunks get double-boxed
+            self._formatter(log_only=True, space=True, border=not msg.startswith("|"))
+        elif trace or msg.startswith("|"):
             self._formatter(trace=trace, border=not msg.startswith("|"))
         if self.spacing > 0:
             self.exorcise()
         if "\n" in msg:
             for i, line in enumerate(msg.split("\n")):
-                self._log(level, line, args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel)
+                self._log(level, line, args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel, continuation=i > 0)
                 if i == 0:
                     self._formatter(log_only=True, space=True)
             log_only = True
@@ -287,12 +290,12 @@ class MyLogger:
             wrap_at = self.screen_width - 4  # leaves 2 chars for continuation indent on subsequent lines
             for i, chunk in enumerate(textwrap.wrap(content, wrap_at, break_long_words=True, break_on_hyphens=False) or [content]):
                 indent = "  " if i > 0 else ""
-                self._log(level, f"| {indent}{chunk:<{self.screen_width - 2 - len(indent)}} |", args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel)
+                self._log(level, f"| {indent}{chunk:<{self.screen_width - 2 - len(indent)}} |", args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel, continuation=i > 0)
             log_only = True
         elif not msg.startswith("|") and len(msg) > self.screen_width - 2:
             wrap_at = self.screen_width - 4  # leaves 2 chars for continuation indent on subsequent lines
             for i, chunk in enumerate(textwrap.wrap(msg, wrap_at, break_long_words=True, break_on_hyphens=False) or [msg]):
-                self._log(level, f"{'  ' if i > 0 else ''}{chunk}", args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel)
+                self._log(level, f"{'  ' if i > 0 else ''}{chunk}", args, exc_info=exc_info, extra=extra, stack_info=stack_info, stacklevel=stacklevel, continuation=i > 0)
             log_only = True
         else:
             for secret in self.secrets:

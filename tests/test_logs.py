@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -153,3 +155,34 @@ class TestMyLoggerWrapping:
         msgs = self._msgs(logger)
         for msg in msgs:
             assert len(msg) <= logger.screen_width + 2
+
+
+class TestMyLoggerFileOutput:
+    """Integration tests against a real RotatingFileHandler - regression coverage for #3328."""
+
+    def _make_logger(self, tmp_path):
+        from modules.logs import MyLogger
+
+        return MyLogger(f"test_logs_{uuid.uuid4().hex}", str(tmp_path), 100, "=", ignore_ghost=True, is_debug=False, is_trace=False, log_requests=False)
+
+    def test_wrapped_warning_writes_one_level_tag(self, tmp_path):
+        """A wrapped WARNING must produce exactly one [WARNING]-tagged line in meta.log, not one per chunk."""
+        log = self._make_logger(tmp_path)
+        log.add_main_handler()
+        log.warning("W" * 200)
+        log.main_handler.close()
+
+        content = Path(log.main_log).read_text(encoding="utf-8")
+        assert content.count("[WARNING]") == 1
+        assert len(content.splitlines()) > 1  # confirm it actually wrapped into multiple physical lines
+
+    def test_wrapped_error_writes_one_level_tag(self, tmp_path):
+        """Same guarantee for ERROR, since the summary parser scans WARNING/ERROR/CRITICAL identically."""
+        log = self._make_logger(tmp_path)
+        log.add_main_handler()
+        log.error("| " + "E" * 200 + " |")
+        log.main_handler.close()
+
+        content = Path(log.main_log).read_text(encoding="utf-8")
+        assert content.count("[ERROR]") == 1
+        assert len(content.splitlines()) > 1
