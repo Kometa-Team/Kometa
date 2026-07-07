@@ -34,20 +34,13 @@ def _plex_timeout_sleep(seconds):
 
 
 def _plex_timeout_retry_label(retry_state):
-    if retry_state.fn.__name__ == "_alter_collection_with_retry":
-        collection = retry_state.args[2]
-        return f"collection edit for {collection.title()}"
     return "saveMultiEdits"
 
 
 def _plex_timeout_retry_exhausted(retry_state):
     self = retry_state.args[0]
     exception = retry_state.outcome.exception()
-    if retry_state.fn.__name__ == "_alter_collection_with_retry":
-        collection = retry_state.args[2]
-        label = f"collection edit for {collection.title()}"
-    else:
-        label = "saveMultiEdits"
+    label = "saveMultiEdits"
     raise Failed(f"Plex Error: {label} did not respond within the {self.timeout}-second timeout: {exception}") from exception
 
 
@@ -1301,24 +1294,6 @@ class Plex(Library):
     def _save_multi_edits_with_retry(self):
         self.Plex.saveMultiEdits()
 
-    @retry(
-        stop=stop_after_attempt(3),
-        wait=SAVE_MULTI_EDITS_RETRY_WAIT,
-        retry=retry_if_exception_type((ConnectTimeout, ReadTimeout)),
-        before_sleep=_plex_timeout_before_sleep,
-        retry_error_callback=_plex_timeout_retry_exhausted,
-        sleep=_plex_timeout_sleep,
-    )
-    def _alter_collection_with_retry(self, chunk, collection, smart_label_collection, add, locked):
-        self.Plex.batchMultiEdits(chunk)
-        if smart_label_collection:
-            self.query_data(self.Plex.addLabel if add else self.Plex.removeLabel, collection)
-        elif add:
-            self.Plex.addCollection(collection, locked=locked)
-        else:
-            self.Plex.removeCollection(collection, locked=locked)
-        self.Plex.saveMultiEdits()
-
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
         locked_items = []
@@ -1339,7 +1314,17 @@ class Plex(Library):
             for i in range(0, len(_items), batch_size) if _items else []:
                 chunk = _items[i : i + batch_size]
                 logger.ghost(f"{'Adding' if add else 'Removing'} {len(chunk)} items [{total_sent} so far] to{' smart label' if smart_label_collection else ''} collection: {collection.title()} (Locked: {locked})")
-                self._alter_collection_with_retry(chunk, collection, smart_label_collection, add, locked)
+                self.Plex.batchMultiEdits(chunk)
+                if smart_label_collection:
+                    if add:
+                        self.Plex.addLabel(collection)
+                    else:
+                        self.Plex.removeLabel(collection)
+                elif add:
+                    self.Plex.addCollection(collection, locked=locked)
+                else:
+                    self.Plex.removeCollection(collection, locked=locked)
+                self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
             logger.exorcise()
 
