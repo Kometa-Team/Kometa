@@ -29,6 +29,8 @@ SUPPRESS_STACKTRACE_PATTERNS = [
     r"Plex Error: .* not found",
     r"No matches found with regex pattern",
     r"No Items found in Plex",
+    r"tmdb.*not found",
+    r"tmdb_id.*not found",
 ]
 
 
