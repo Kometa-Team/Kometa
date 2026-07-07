@@ -539,7 +539,7 @@ class Operations:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)
-                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                        item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
                                     break
                                 except Failed:
                                     continue
@@ -588,15 +588,15 @@ class Operations:
                             else:
                                 mapped_genres.append(genre)
                         new_genres = mapped_genres
-                    _add = list(set(new_genres) - set(item_genres))
-                    _remove = list(set(item_genres) - set(new_genres))
+                    _add = sorted(set(new_genres) - set(item_genres))
+                    _remove = sorted(set(item_genres) - set(new_genres))
                     for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
                         if genre_list:
                             for g in genre_list:
                                 if g not in genre_edits[edit_type]:
                                     genre_edits[edit_type][g] = []
                                 genre_edits[edit_type][g].append(item.ratingKey)
-                            item_edits += f"\n{edit_type.capitalize()} Genres (Batched) | {', '.join(genre_list)}"
+                            item_edits += f"\nGenres {'Added' if edit_type == 'add' else 'Removed'} (Batched) | {', '.join(genre_list)}"
                     if extra_option in ["unlock", "reset"] and ("genre" in locked_fields or _add or _remove):
                         if "genre" not in unlock_edits:
                             unlock_edits["genre"] = []
@@ -698,7 +698,7 @@ class Operations:
                         if new_rating not in content_edits:
                             content_edits[new_rating] = []
                         content_edits[new_rating].append(item.ratingKey)
-                        item_edits += f"\nUpdate Content Rating (Batched) | {new_rating}"
+                        item_edits += f"\nContent Rating (Batched) | {new_rating}"
                         do_lock = False
 
                     if extra_option == "lock" or do_lock:
@@ -758,7 +758,7 @@ class Operations:
                                     raise Failed
                                 if str(current_original) != str(new_original_title):
                                     item.editOriginalTitle(new_original_title)
-                                    item_edits += f"\nUpdated Original Title | {new_original_title}"
+                                    item_edits += f"\nOriginal Title | {new_original_title}"
                                 break
                             except Failed:
                                 continue
@@ -807,7 +807,7 @@ class Operations:
                                     if new_studio not in studio_edits:
                                         studio_edits[new_studio] = []
                                     studio_edits[new_studio].append(item.ratingKey)
-                                    item_edits += f"\nUpdate Studio (Batched) | {new_studio}"
+                                    item_edits += f"\nStudio (Batched) | {new_studio}"
                                 break
                             except Failed:
                                 continue
@@ -870,7 +870,7 @@ class Operations:
                                         if new_date not in date_edits[item_attr]:
                                             date_edits[item_attr][new_date] = []
                                         date_edits[item_attr][new_date].append(item.ratingKey)
-                                        item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {new_date}"
+                                        item_edits += f"\n{name_display[item_attr]} (Batched) | {new_date}"
                                     break
                                 except Failed:
                                     continue
@@ -1131,7 +1131,7 @@ class Operations:
                                     except Failed:
                                         season_poster = None
                                         season_background = None
-                                    season_title = f"S{season.seasonNumber} {season.title}"
+                                    season_title = f"Season {season.seasonNumber:02}"
                                     tmdb_poster = tmdb_season.poster_url if tmdb_season else None
                                     if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons"):
                                         resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber)
@@ -1154,17 +1154,17 @@ class Operations:
                                         try:
                                             episode = self.library.reload(episode)
                                         except Failed:
-                                            logger.error(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Failed to Reload from Plex")
+                                            logger.error(f"S{season.seasonNumber:02}E{episode.episodeNumber:02} Failed to Reload from Plex")
                                             continue
                                         if self.library.item_has_ignore_label(episode):
-                                            logger.info(f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title} Ignored by ignore_labels")
+                                            logger.info(f"S{season.seasonNumber:02}E{episode.episodeNumber:02} Ignored by ignore_labels")
                                             continue
                                         try:
                                             episode_poster, episode_background, _, _, _, _ = self.library.find_item_assets(episode, item_asset_directory=item_dir, folder_name=name)
                                         except Failed:
                                             episode_poster = None
                                             episode_background = None
-                                        episode_title = f"S{season.seasonNumber}E{episode.episodeNumber} {episode.title}"
+                                        episode_title = f"S{season.seasonNumber:02}E{episode.episodeNumber:02}"
                                         tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
                                         if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes"):
                                             resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber, episode=episode.episodeNumber)
@@ -1257,7 +1257,7 @@ class Operations:
                                                 if found_rating not in ep_rating_edits[item_attr]:
                                                     ep_rating_edits[item_attr][found_rating] = []
                                                 ep_rating_edits[item_attr][found_rating].append(ep)
-                                                item_edits += f"\nUpdate {name_display[item_attr]} (Batched) | {found_rating}"
+                                                item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
                                             break
                                         except Failed:
                                             continue

@@ -638,7 +638,7 @@ class ConfigFile:
             if not isinstance(image_config, dict):
                 image_config = {"source": image_config}
             options = {k: v for k, v in mass_image_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
-            _language = check_for_attribute(image_config, "language", default_is_none=True, save=False)
+            _language = check_for_attribute(image_config, "language", default_is_none=True, do_print=False, save=False)
             if _language is not None:
                 _language = str(_language).lower()
                 if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
@@ -653,12 +653,12 @@ class ConfigFile:
                 "source": source,
                 "sources": sources,
                 "language": _language,
-                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, save=False),
-                "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, save=False),
+                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, do_print=False, save=False),
+                "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, do_print=False, save=False),
             }
             if allow_show_levels:
-                parsed["seasons"] = check_for_attribute(image_config, "seasons", var_type="bool", default=True, save=False)
-                parsed["episodes"] = check_for_attribute(image_config, "episodes", var_type="bool", default=True, save=False)
+                parsed["seasons"] = check_for_attribute(image_config, "seasons", var_type="bool", default=True, do_print=False, save=False)
+                parsed["episodes"] = check_for_attribute(image_config, "episodes", var_type="bool", default=True, do_print=False, save=False)
             return parsed
 
         def expand_mass_metadata_operation(config_op, input_dict):
@@ -1718,12 +1718,20 @@ class ConfigFile:
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
                                 elif op == "mass_image_update":
-                                    section_final["mass_poster_update"] = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
-                                    section_final["mass_background_update"] = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
-                                    section_final["mass_logo_update"] = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True, allow_tvdb=True)
-                                    section_final["mass_square_art_update"] = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False, allow_tvdb=True)
+                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    logo_update = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True, allow_tvdb=True)
+                                    square_art_update = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False, allow_tvdb=True)
                                     if "squart_art" in input_dict and "square_art" not in input_dict:
-                                        section_final["mass_square_art_update"] = parse_mass_image_operation(input_dict, "squart_art", allow_tmdb=False, allow_tvdb=True)
+                                        square_art_update = parse_mass_image_operation(input_dict, "squart_art", allow_tmdb=False, allow_tvdb=True)
+                                    if poster_update:
+                                        section_final["mass_poster_update"] = poster_update
+                                    if background_update:
+                                        section_final["mass_background_update"] = background_update
+                                    if logo_update:
+                                        section_final["mass_logo_update"] = logo_update
+                                    if square_art_update:
+                                        section_final["mass_square_art_update"] = square_art_update
                                 elif op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:

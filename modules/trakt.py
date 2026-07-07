@@ -199,7 +199,7 @@ class Trakt:
         return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
-    def _request(self, url, params=None, json_data=None) -> Any:
+    def _request(self, url, params=None, json_data=None, ignore_404=False) -> Any:
         # Returns dict[str, Any] for single-page endpoints and list[dict] for
         # paginated endpoints.  Annotated Any so callers can subscript/iterate
         # based on their knowledge of the specific endpoint being called.
@@ -235,6 +235,8 @@ class Trakt:
                 if reauth_count > 1:
                     logger.debug("Trakt token has been refreshed twice on this request; this may be a private list")
                     raise Failed(f"({response.status_code}) {response.reason}")
+            elif response.status_code == 404 and ignore_404:
+                return None
             elif response.status_code != 200:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
@@ -270,13 +272,15 @@ class Trakt:
 
         show_id = item_id
         if media_type == "movie":
-            data = self._request(f"/movies/{item_id}", params={"extended": "full"})
+            data = self._request(f"/movies/{item_id}", params={"extended": "full,images"}, ignore_404=True)
         elif season is None:
-            data = self._request(f"/shows/{show_id}", params={"extended": "full"})
+            data = self._request(f"/shows/{show_id}", params={"extended": "full,images"}, ignore_404=True)
         elif episode is None:
-            data = self._request(f"/shows/{show_id}/seasons", params={"extended": "full"})
+            data = self._request(f"/shows/{show_id}/seasons", params={"extended": "full,images"}, ignore_404=True)
         else:
-            data = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}", params={"extended": "full"})
+            data = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}", params={"extended": "full,images"}, ignore_404=True)
+        if not data:
+            return {}
         return _images(data) or {}
 
     def lookup_item_images(self, external_id, from_source, media_type, season=None, episode=None):
