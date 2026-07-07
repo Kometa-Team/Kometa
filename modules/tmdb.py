@@ -1,10 +1,11 @@
 import re
 
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import ConnectTimeout, ReadTimeout, Timeout
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
-from requests.exceptions import ConnectionError as RequestsConnectionError, ConnectTimeout, ReadTimeout, Timeout
 
 from modules import util
 from modules.util import Failed
