@@ -308,7 +308,7 @@ class TestSaveMultiEditsRetry:
         assert plex.Plex.saveMultiEdits.call_count == 3
         sleep_mock.assert_any_call(2)
         sleep_mock.assert_any_call(5)
-        assert any("attempt 3 timed out" in message for message in plex_module.logger.info_messages)
+        assert any("attempt 2 timed out" in message for message in plex_module.logger.info_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
