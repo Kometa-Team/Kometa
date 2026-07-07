@@ -664,58 +664,99 @@ class ConfigFile:
         def expand_mass_metadata_operation(config_op, input_dict):
             if not input_dict or not isinstance(input_dict, dict):
                 raise Failed("Config Error: mass_metadata_update must be a dictionary")
-            output_op = dict(config_op)
-            output_op.pop("mass_metadata_update", None)
+            base_op = dict(config_op)
+            base_op.pop("mass_metadata_update", None)
+            base_schedule = base_op.pop("schedule", None)
+            output_ops = []
 
-            def set_expanded(new_key, old_key, value):
+            def get_schedule(input_value, inherited_schedule=None):
+                if isinstance(input_value, dict) and "schedule" in input_value:
+                    return input_value["schedule"]
+                return inherited_schedule
+
+            def get_source(input_value):
+                if isinstance(input_value, dict) and "source" in input_value:
+                    return input_value["source"]
+                return input_value
+
+            def add_expanded(new_key, old_key, value, output_op):
                 if old_key in output_op:
                     logger.warning(f"Config Warning: Operation {new_key} ignored because {old_key} is already scheduled")
                 else:
                     output_op[old_key] = value
+
+            def add_operation(new_key, expanded_values, schedule=None):
+                output_op = {}
+                schedule = schedule if schedule is not None else base_schedule
+                if schedule is not None:
+                    output_op["schedule"] = schedule
+                for old_key, value in expanded_values.items():
+                    add_expanded(new_key, old_key, value, output_op)
+                output_ops.append(output_op)
+
+            if base_op:
+                if base_schedule is not None:
+                    base_op["schedule"] = base_schedule
+                output_ops.append(base_op)
 
             direct_aliases = {
                 "original_title": "mass_original_title_update",
                 "studio": "mass_studio_update",
                 "originally_available": "mass_originally_available_update",
                 "added_at": "mass_added_at_update",
-                "backup": "metadata_backup",
             }
             for new_key, old_key in direct_aliases.items():
                 if new_key in input_dict:
-                    set_expanded(new_key, old_key, input_dict[new_key])
+                    input_value = input_dict[new_key]
+                    add_operation(new_key, {old_key: get_source(input_value)}, schedule=get_schedule(input_value))
+
+            if "backup" in input_dict:
+                backup_config = input_dict["backup"]
+                if isinstance(backup_config, dict):
+                    backup_config = {k: v for k, v in backup_config.items() if k != "schedule"}
+                add_operation("backup", {"metadata_backup": backup_config}, schedule=get_schedule(input_dict["backup"]))
 
             if "genre" in input_dict:
                 genre_config = input_dict["genre"]
+                genre_schedule = get_schedule(genre_config)
+                expanded_values = {}
                 if isinstance(genre_config, dict):
                     if "mappings" in genre_config:
-                        set_expanded("genre.mappings", "genre_mapper", genre_config["mappings"])
+                        expanded_values["genre_mapper"] = genre_config["mappings"]
                     if "source" in genre_config:
-                        set_expanded("genre.source", "mass_genre_update", genre_config["source"])
+                        expanded_values["mass_genre_update"] = genre_config["source"]
                     else:
-                        genre_updates = [k for k in genre_config if k != "mappings"]
+                        genre_updates = [k for k in genre_config if k not in ["mappings", "schedule"]]
                         if genre_updates:
-                            set_expanded("genre", "mass_genre_update", genre_updates)
+                            expanded_values["mass_genre_update"] = genre_updates
                 else:
-                    set_expanded("genre", "mass_genre_update", genre_config)
+                    expanded_values["mass_genre_update"] = genre_config
+                if expanded_values:
+                    add_operation("genre", expanded_values, schedule=genre_schedule)
 
             if "content_rating" in input_dict:
                 content_rating_config = input_dict["content_rating"]
+                content_rating_schedule = get_schedule(content_rating_config)
+                expanded_values = {}
                 if isinstance(content_rating_config, dict):
                     if "mappings" in content_rating_config:
-                        set_expanded("content_rating.mappings", "content_rating_mapper", content_rating_config["mappings"])
+                        expanded_values["content_rating_mapper"] = content_rating_config["mappings"]
                     if "source" in content_rating_config:
-                        set_expanded("content_rating.source", "mass_content_rating_update", content_rating_config["source"])
+                        expanded_values["mass_content_rating_update"] = content_rating_config["source"]
                     else:
-                        content_rating_updates = [k for k in content_rating_config if k != "mappings"]
+                        content_rating_updates = [k for k in content_rating_config if k not in ["mappings", "schedule"]]
                         if content_rating_updates:
-                            set_expanded("content_rating", "mass_content_rating_update", content_rating_updates)
+                            expanded_values["mass_content_rating_update"] = content_rating_updates
                 else:
-                    set_expanded("content_rating", "mass_content_rating_update", content_rating_config)
+                    expanded_values["mass_content_rating_update"] = content_rating_config
+                if expanded_values:
+                    add_operation("content_rating", expanded_values, schedule=content_rating_schedule)
 
             if "ratings" in input_dict:
                 ratings_config = input_dict["ratings"]
                 if not isinstance(ratings_config, dict):
                     raise Failed("Config Error: mass_metadata_update ratings must be a dictionary")
+                ratings_schedule = get_schedule(ratings_config)
                 ratings_aliases = {
                     "audience": "mass_audience_rating_update",
                     "critic": "mass_critic_rating_update",
@@ -726,12 +767,16 @@ class ConfigFile:
                 }
                 for new_key, old_key in ratings_aliases.items():
                     if new_key in ratings_config:
-                        set_expanded(f"ratings.{new_key}", old_key, ratings_config[new_key])
+                        input_value = ratings_config[new_key]
+                        add_operation(f"ratings.{new_key}", {old_key: get_source(input_value)}, schedule=get_schedule(input_value, inherited_schedule=ratings_schedule))
 
-            image_config = {k: input_dict[k] for k in ["poster", "background", "logo", "square_art", "squart_art"] if k in input_dict}
-            if image_config:
-                set_expanded("mass_metadata_update images", "mass_image_update", image_config)
-            return output_op
+            for image_key in ["poster", "background", "logo", "square_art", "squart_art"]:
+                if image_key in input_dict:
+                    image_config = input_dict[image_key]
+                    if isinstance(image_config, dict):
+                        image_config = {k: v for k, v in image_config.items() if k != "schedule"}
+                    add_operation(image_key, {"mass_image_update": {image_key: image_config}}, schedule=get_schedule(input_dict[image_key]))
+            return output_ops
 
         self.general = {
             "run_order": check_for_attribute(
@@ -1550,14 +1595,18 @@ class ConfigFile:
                     final_operations = {}
                     logger.separator("Operation Configuration", space=False, border=False)
                     config_ops = util.parse("Config", "operations", lib["operations"], datatype="listdict")
-                    op_size = len(config_ops)
-                    for i, config_op in enumerate(config_ops, 1):
+                    expanded_config_ops = []
+                    for config_op in config_ops:
                         if "mass_metadata_update" in config_op:
                             try:
-                                config_op = expand_mass_metadata_operation(config_op, config_op["mass_metadata_update"])
+                                expanded_config_ops.extend(expand_mass_metadata_operation(config_op, config_op["mass_metadata_update"]))
                             except Failed as e:
                                 logger.error(e)
-                                continue
+                        else:
+                            expanded_config_ops.append(config_op)
+                    config_ops = expanded_config_ops
+                    op_size = len(config_ops)
+                    for i, config_op in enumerate(config_ops, 1):
                         logger.info("")
                         logger.info(f"Operation {i}/{op_size}")
                         for k, v in config_op.items():
