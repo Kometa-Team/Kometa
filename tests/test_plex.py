@@ -42,7 +42,6 @@ def make_plex(**attrs) -> Plex:
     plex.cached_items = attrs.pop("cached_items", {})
     plex.collection_names = attrs.pop("collection_names", [])
     plex.collection_files = attrs.pop("collection_files", [])
-    plex.agent = attrs.pop("agent", "tv.plex.agents.movie")
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
 
     # Required by Plex class
