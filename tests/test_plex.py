@@ -302,7 +302,7 @@ class TestSaveMultiEditsRetry:
         sleep_mock = MagicMock()
         monkeypatch.setattr(plex_module.time, "sleep", sleep_mock)
 
-        with pytest.raises(util.Failed, match="Plex did not respond within the 30-second timeout"):
+        with pytest.raises(util.Failed, match="Plex Error: saveMultiEdits did not respond within the 30-second timeout"):
             plex._save_multi_edits_with_retry()
 
         assert plex.Plex.saveMultiEdits.call_count == 3
