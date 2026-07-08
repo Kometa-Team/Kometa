@@ -721,7 +721,7 @@ def start(attrs):
 
 
 def run_config(config, stats):
-    library_status = run_libraries(config)
+    library_status, collections_ran = run_libraries(config)
 
     playlist_status = {}
     playlist_stats = {}
@@ -750,7 +750,6 @@ def run_config(config, stats):
         # logger.remove_playlists_handler()
 
     amount_added = 0
-    collections_ran = False
     if not run_args["operations-only"] and not run_args["overlays-only"] and not run_args["playlists-only"]:
         has_run_again = False
         for library in config.libraries:
@@ -871,6 +870,7 @@ def run_config(config, stats):
 
 def run_libraries(config):
     library_status = {}
+    collections_ran = False
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
@@ -1058,7 +1058,7 @@ def run_libraries(config):
         except Exception as e:
             library.notify(get_critical_error_message(e))
             log_critical_exception(e)
-    return library_status
+    return library_status, collections_ran
 
 
 def run_collection(config, library, metadata, requested_collections):
