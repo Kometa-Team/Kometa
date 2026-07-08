@@ -9,6 +9,7 @@ import uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+from typing import TypeAlias
 
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
@@ -78,6 +79,8 @@ system_versions = {
     "tenacity": None,
     "tmdbapis": tmdbapis.__version__,
 }
+
+LibraryRunStatus: TypeAlias = dict[str, dict[str, str]]
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 load_dotenv(os.path.join(default_dir, ".env"))
@@ -868,8 +871,8 @@ def run_config(config, stats):
     return stats
 
 
-def run_libraries(config):
-    library_status = {}
+def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
+    library_status: LibraryRunStatus = {}
     collections_ran = False
     for library in config.libraries:
         if library.skip_library:
