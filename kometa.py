@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 import platform
 import re
@@ -271,6 +272,7 @@ logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][
 from modules import util  # noqa: E402
 
 util.logger = logger
+from modules import timings  # noqa: E402
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -440,6 +442,16 @@ def start(attrs):
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        # Startup banner doubles as a mount-verification tripwire: if this line is missing from the log
+        # despite KOMETA_TIMINGS=1, the mounted /modules code was silently ignored (see the Docker mount gotcha).
+        timings.registry.banner()
+        timings.registry.set_meta(
+            kometa_version=str(my_requests.local),
+            git_sha=timings.git_sha(),
+            image_digest=os.environ.get("KOMETA_IMAGE_DIGEST"),
+            run_label=os.environ.get("KOMETA_RUN_LABEL"),
+            config_file=run_args["config"],
+        )
         if is_linuxserver or is_docker:
             system_ver = f"{'Linuxserver' if is_linuxserver else 'Docker'}: {env_branch}"
         else:
@@ -572,14 +584,49 @@ def start(attrs):
             if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
                 logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
             else:
+                profiler = None
+                if os.environ.get("KOMETA_PROFILE") == "pyinstrument":
+                    try:
+                        from pyinstrument import Profiler  # noqa
+
+                        profiler = Profiler()
+                        profiler.start()
+                    except ImportError:
+                        logger.error("Timings Error: KOMETA_PROFILE=pyinstrument set but pyinstrument is not installed")
                 try:
                     stats = run_config(config, stats)
                 except Exception as e:
                     config.notify(get_critical_error_message(e))
                     log_critical_exception(e)
+                finally:
+                    if profiler is not None:
+                        profiler.stop()
+                        os.makedirs(logger.log_dir, exist_ok=True)
+                        profile_path = os.path.join(logger.log_dir, f"profile-{time.strftime('%Y%m%d-%H%M%S')}.html")
+                        with open(profile_path, "w", encoding="utf-8") as profile_fp:
+                            profile_fp.write(profiler.output_html())
+                        logger.info(f"pyinstrument profile written to {profile_path}")
         logger.info("")
         end_time = datetime.now()
         run_time = str(end_time - start_time).split(".")[0]
+        if timings.registry.enabled:
+            try:
+                config_path_for_hash = run_args["config"]
+                if config_path_for_hash and os.path.exists(config_path_for_hash):
+                    with open(config_path_for_hash, "rb") as config_fp:
+                        timings.registry.set_meta(config_hash=hashlib.sha256(config_fp.read()).hexdigest())
+            except OSError as e:
+                logger.error(f"Timings Error: Could not hash config file: {e}")
+            timings.registry.set_meta(start_time=str(start_time), end_time=str(end_time), run_time=run_time)
+            timings_json, timings_csv = timings.registry.export(logger.log_dir)
+            if timings_json:
+                logger.info("")
+                logger.separator("Timings", space=False, border=False)
+                logger.info("")
+                logger.info(f"Timings JSON: {timings_json}")
+                logger.info(f"Timings CSV: {timings_csv}")
+                for summary_line in timings.registry.summary_lines():
+                    logger.info(summary_line)
         if config:
             try:
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
@@ -1035,6 +1082,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 temp_items = library.cache_items()
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
+            timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)

@@ -6,7 +6,7 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta
 
-from modules import util
+from modules import timings, util
 
 logger = util.logger
 
@@ -20,6 +20,7 @@ def sql_identifier(name):
     return str(name)
 
 
+@timings.wrap_cache_methods
 class Cache:
     def __init__(self, config_path, expiration):
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"

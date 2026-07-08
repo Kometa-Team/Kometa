@@ -7,3 +7,7 @@ prek==0.4.9
 pytest-cov>=7.0.0
 responses>=0.25.0
 pytest-timeout>=2.3.0
+
+# Deep profilers for perf work - see KOMETA-PERF-PROFILING-PROCEDURES.md
+pyinstrument>=4.6.0
+py-spy>=0.3.14

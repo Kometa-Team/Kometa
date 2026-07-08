@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 from plexapi.exceptions import BadRequest
 from plexapi.video import Episode, Season
 
-from modules import overlay, plex, util
+from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder
 from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
@@ -76,6 +76,11 @@ class Overlays:
             total_keys = len(key_to_overlays)
             # Items freshly composed this run - flushed every plex_bulk_edit_batch_size items (if set), else once at the end.
             overlay_label_items = []
+            # Plain attribute set/cleared around the whole per-item loop (not a `with` block, to
+            # avoid re-indenting ~370 lines) - tags every network call made anywhere in this loop
+            # (reload, episodes() lookups, poster upload) with this library so timings-*.json can
+            # show per-library network cost, not just per-source.
+            timings.registry.library_ctx = self.library.name
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
@@ -87,7 +92,8 @@ class Overlays:
                     if self.cache:
                         _, image_compare = self.cache.query_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays")
                         cached_state = self.cache.query_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
-                    self.library.reload(item, force=self.library.reapply_overlays)
+                    with timings.track("overlay_item_reload", library=self.library.name):
+                        self.library.reload(item, force=self.library.reapply_overlays)
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
                     current_hashes = {properties[ov].mapping_name: properties[ov].get_overlay_compare() for ov in over_names}
@@ -137,8 +143,9 @@ class Overlays:
                                         except Failed:
                                             continue
                                     elif actual == "total_runtime":
-                                        sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
-                                        sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                        with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                            sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
+                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                         real_value = sum(sub_items)
                                     else:
                                         if not hasattr(item, actual):
@@ -202,7 +209,8 @@ class Overlays:
                         else:
                             reset_list = []
                         try:
-                            new_backup = self.library.item_posters(item, providers=reset_list)
+                            with timings.track("overlay_fetch", library=self.library.name):
+                                new_backup = self.library.item_posters(item, providers=reset_list)
                         except Failed as e:
                             if any(r in reset_list for r in ["plex", "tmdb"]):
                                 logger.error(e)
@@ -212,7 +220,8 @@ class Overlays:
                     logger.info(f"({i}/{len(key_to_overlays)}) {item_title}")
                     if new_backup:
                         try:
-                            has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
+                            with timings.track("overlay_fetch", library=self.library.name):
+                                has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
                         except Failed as e:
                             raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
@@ -227,7 +236,7 @@ class Overlays:
                             elif not self.library.reapply_overlays and overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
-                            with Image.open(poster.location if poster else has_original) as new_poster:  # type: ignore[arg-type]
+                            with timings.track("overlay_compose", library=self.library.name), Image.open(poster.location if poster else has_original) as new_poster:  # type: ignore[arg-type]
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04BC] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
@@ -284,12 +293,14 @@ class Overlays:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
                                             else:
-                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
-                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
+                                                with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                                    sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                    sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                                 actual_value = sum(sub_items) / len(sub_items)
                                         elif format_var == "total_runtime":
-                                            sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
-                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
+                                            with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                             actual_value = sum(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
@@ -416,7 +427,8 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags, lossless=True)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
-                                self.library.upload_poster(item, temp)
+                                with timings.track("overlay_plex_upload", library=self.library.name):
+                                    self.library.upload_poster(item, temp)
                                 overlay_label_items.append(item)
                                 if self.library.plex_bulk_edit_batch_size and len(overlay_label_items) >= self.library.plex_bulk_edit_batch_size:
                                     self.library.batch_add_label(overlay_label_items, "Overlay")
@@ -448,6 +460,7 @@ class Overlays:
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
             if overlay_label_items:
                 self.library.batch_add_label(overlay_label_items, "Overlay")
+        timings.registry.library_ctx = None
         logger.exorcise()
         for _, over in properties.items():
             if over.image:
@@ -457,6 +470,7 @@ class Overlays:
         logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
         return overlay_run_time
 
+    @timings.timed("compile_overlays")
     def compile_overlays(self):
         key_to_item = {}
         properties = {}
