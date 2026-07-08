@@ -1041,19 +1041,20 @@ class Cache:
                             overlay TEXT,
                             compare TEXT,
                             location TEXT)""")
-                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)""")
-                        cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
-                            key INTEGER PRIMARY KEY,
-                            rating_key TEXT UNIQUE,
-                            overlay TEXT,
-                            compare TEXT,
-                            location TEXT)""")
                 if table_name:
+                    # Created unconditionally so caches predating these tables self-heal on next run
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_backgrounds (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        overlay TEXT,
+                        compare TEXT,
+                        location TEXT)""")
+                    cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table_name}_logos (
+                        key INTEGER PRIMARY KEY,
+                        rating_key TEXT UNIQUE,
+                        overlay TEXT,
+                        compare TEXT,
+                        location TEXT)""")
                     cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name=?", (f"{table_name}_overlays",))
                     if cursor.fetchone()[0] > 0:
                         cursor.execute(f"PRAGMA table_info({table_name}_overlays)")
