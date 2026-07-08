@@ -716,6 +716,15 @@ class ConfigFile:
                     backup_config = {k: v for k, v in backup_config.items() if k != "schedule"}
                 add_operation("backup", {"metadata_backup": backup_config}, schedule=get_schedule(input_dict["backup"]))
 
+            if "collections" in input_dict:
+                collections_config = input_dict["collections"]
+                collections_schedule = get_schedule(collections_config)
+                if isinstance(collections_config, dict):
+                    if "mode" in collections_config:
+                        add_operation("collections.mode", {"mass_collection_mode": collections_config["mode"]}, schedule=collections_schedule)
+                else:
+                    add_operation("collections", {"mass_collection_mode": collections_config}, schedule=collections_schedule)
+
             if "genre" in input_dict:
                 genre_config = input_dict["genre"]
                 genre_schedule = get_schedule(genre_config)
@@ -751,6 +760,15 @@ class ConfigFile:
                     expanded_values["mass_content_rating_update"] = content_rating_config
                 if expanded_values:
                     add_operation("content_rating", expanded_values, schedule=content_rating_schedule)
+
+            if "labels" in input_dict:
+                labels_config = input_dict["labels"]
+                labels_schedule = get_schedule(labels_config)
+                if isinstance(labels_config, dict):
+                    if "severity" in labels_config:
+                        add_operation("labels.severity", {"mass_imdb_parental_labels": labels_config["severity"]}, schedule=labels_schedule)
+                else:
+                    add_operation("labels", {"mass_imdb_parental_labels": labels_config}, schedule=labels_schedule)
 
             if "ratings" in input_dict:
                 ratings_config = input_dict["ratings"]

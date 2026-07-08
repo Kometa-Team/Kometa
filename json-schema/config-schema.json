@@ -109,6 +109,74 @@
         }
       ]
     },
+    "mass-metadata-scheduled-collection-mode": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "default",
+            "hide",
+            "hide_items",
+            "show_items"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "default",
+                "hide",
+                "hide_items",
+                "show_items"
+              ]
+            }
+          },
+          "required": [
+            "mode"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "mass-metadata-scheduled-labels": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "none",
+            "mild",
+            "moderate",
+            "severe"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": {
+              "type": "string"
+            },
+            "severity": {
+              "type": "string",
+              "enum": [
+                "none",
+                "mild",
+                "moderate",
+                "severe"
+              ]
+            }
+          },
+          "required": [
+            "severity"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
     "metadata-mapping": {
       "type": "object",
       "patternProperties": {
@@ -4749,6 +4817,12 @@
                       "additionalProperties": false
                     }
                   ]
+                },
+                "collections": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-collection-mode"
+                },
+                "labels": {
+                  "$ref": "#/definitions/mass-metadata-scheduled-labels"
                 },
                 "original_title": {
                   "$ref": "#/definitions/mass-metadata-scheduled-source"

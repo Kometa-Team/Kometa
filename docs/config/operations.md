@@ -69,8 +69,10 @@ Several of these operations perform **mass** updates; these are just that, **mas
     | `added_at`             | Updates added at dates.                                                                                                        |
     | `background`           | Updates backgrounds.                                                                                                           |
     | `backup`               | Creates or maintains a metadata backup file.                                                                                   |
+    | `collections`          | Updates collection modes. Use `mode` to set the Plex collection mode.                                                           |
     | `content_rating`       | Updates content ratings. Use `source` for update sources and `mappings` for content rating remapping.                          |
     | `genre`                | Updates genres. Use `source` for update sources and `mappings` for genre remapping.                                            |
+    | `labels`               | Updates IMDb parental guide labels. Use `severity` to set the minimum IMDb parental guide severity.                             |
     | `logo`                 | Updates logos. Seasons and episodes are not supported.                                                                         |
     | `original_title`       | Updates original titles.                                                                                                       |
     | `originally_available` | Updates originally available dates.                                                                                            |
@@ -87,18 +89,33 @@ Several of these operations perform **mass** updates; these are just that, **mas
           Movies:
             operations:
               mass_metadata_update:
-                genre:
+                added_at: tmdb_digital
+                background:
                   source: tmdb
-                  mappings:
-                    Action & Adventure: Action
+                  language: en
+                backup:
+                  path: config/Movie_Backup.yml
+                  exclude:
+                    - title
+                  sync_tags: false
+                  add_blank_entries: true
+                collections: hide
                 content_rating:
                   source: mdb_commonsense
                   mappings:
                     TV-14: 14
+                genre:
+                  source: tmdb
+                  mappings:
+                    Action & Adventure: Action
+                labels: moderate
+                logo: tmdb
                 original_title: mal_english
-                studio: tmdb
                 originally_available: tmdb
-                added_at: tmdb_digital
+                poster:
+                  source: trakt
+                  seasons: true
+                  episodes: false
                 ratings:
                   user: tmdb
                   critic: imdb
@@ -106,23 +123,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
                   episode_user: tmdb
                   episode_critic: imdb
                   episode_audience: tmdb
-                poster:
-                  source: trakt
-                  seasons: true
-                  episodes: false
-                background:
-                  source: tmdb
-                  language: en
-                logo:
-                  source: tmdb
-                square_art:
-                  source: tvdb
-                backup:
-                  path: config/Movie_Backup.yml
-                  exclude:
-                    - title
-                  sync_tags: false
-                  add_blank_entries: true
+                square_art: tvdb
+                studio: tmdb
         ```
 
     ??? tip "Scheduling Mass Metadata Operations"
@@ -307,6 +309,27 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `value` | Content rating value to map to. Leave blank to remove the source content rating. |
 
 
+    === "Collections"
+
+        `mode` updates every Collection in your library to the specified Collection Mode.
+
+        ??? example "Example Collection Mode Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                collections:
+                  mode: hide
+            ```
+
+        | Mode | Description |
+        | --- | --- |
+        | `default` | Library default. |
+        | `hide` | Hide Collection. |
+        | `hide_items` | Hide Items in this Collection. |
+        | `show_items` | Show this Collection and its Items. |
+
+
     === "Dates"
 
         `originally_available` updates the item's originally available date. `added_at` updates the item's added at date.
@@ -465,6 +488,27 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | --- | --- | --- |
         | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
         | `ignore_locked` | Skip updating if the square art field is locked. **Default:** `false` | `true` or `false` |
+
+
+    === "Labels"
+
+        `severity` updates every item's labels in the library to match the IMDb Parental Guide.
+
+        ??? example "Example Labels Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                labels:
+                  severity: severe
+            ```
+
+        | Severity | Description |
+        | --- | --- |
+        | `none` | Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe`. |
+        | `mild` | Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`. |
+        | `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`. |
+        | `severe` | Apply all Parental Labels with a value of `Severe`. |
 
 
     === "Ratings"
@@ -691,58 +735,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
               delete_collections:
                 configured: false
                 managed: true
-        ```
-
-###### Mass IMDb Parental Labels
-
-??? info "`mass_imdb_parental_labels` - Adds IMDb Parental labels of every item in the library."
-    Updates every item's labels in the library to match the IMDb Parental Guide.
-
-    **Attribute:** `mass_imdb_parental_labels`
-
-    **Accepted Values:**
-
-    | Value | Description |
-    | --- | --- |
-    | `none` | Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe`. |
-    | `mild` | Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`. |
-    | `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`. |
-    | `severe` | Apply all Parental Labels with a value of `Severe`. |
-
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_imdb_parental_labels: severe
-        ```
-
-###### Mass Collection Mode
-
-??? info "`mass_collection_mode` - Updates the Collection Mode of every item in the library."
-    Updates every Collection in your library to the specified Collection Mode.
-
-    **Attribute:** `mass_collection_mode`
-
-    **Accepted Values:**
-
-    | Value | Description |
-    | --- | --- |
-    | `default` | Library default. |
-    | `hide` | Hide Collection. |
-    | `hide_items` | Hide Items in this Collection. |
-    | `show_items` | Show this Collection and its Items. |
-
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_collection_mode: hide
         ```
 
 ###### Update Blank Track Titles
