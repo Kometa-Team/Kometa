@@ -34,6 +34,10 @@ def _load_plex(monkeypatch):
     fake_util = types.ModuleType("modules.util")
     fake_util.logger = FakeLogger()
     fake_util.Failed = Exception
+    fake_util.LimitReached = Exception
+    fake_util.MappingConvertError = Exception
+    fake_util.OverlayError = Exception
+    fake_util.ServiceError = Exception
     monkeypatch.setitem(sys.modules, "modules.util", fake_util)
 
     fake_library = types.ModuleType("modules.library")
