@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
-- `modules/logs.py`: continuation lines of a wrapped WARNING/ERROR/CRITICAL message no longer repeat the `[LEVEL]` tag in `meta.log`, so the end-of-run summary counts each wrapped message once instead of once per wrapped line (#3328).
+- `modules/logs.py`: continuation lines of a wrapped WARNING/ERROR/CRITICAL message no longer repeat the `[LEVEL]` tag in `meta.log`, so the end-of-run summary counts each wrapped message once instead of once per wrapped line. The summary parser also now reassembles the full original message text from its wrapped lines instead of only keeping the first physical line (#3328).
 
 ### Changed
 

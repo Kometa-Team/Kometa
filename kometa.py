@@ -1,7 +1,6 @@
 import argparse
 import os
 import platform
-import re
 import sys
 import sysconfig
 import time
@@ -13,7 +12,7 @@ from datetime import datetime
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
-from modules.logs import MyLogger
+from modules.logs import MyLogger, build_error_summary
 
 # Increase file descriptor limit to prevent exhaustion with large libraries.
 # The `resource` module is POSIX-only; on Windows the OS manages FD limits
@@ -550,7 +549,6 @@ def start(attrs):
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
         try:
-            log_data = {}
             no_overlays = []  # noqa: F841
             no_overlays_count = 0  # noqa: F841
             convert_errors = {}  # noqa: F841
@@ -591,35 +589,7 @@ def start(attrs):
                 (r".+ Error: No Filter Created", "Error: No Filter Created"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
             ]
-            other_message = {}
-
-            with open(logger.main_log, encoding="utf-8") as f:
-                for log_line in f:
-                    for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-                        if f"[{err_type}]" in log_line:
-                            log_line = log_line.split("|")[1].strip()
-                            other = False
-                            for key, reg in other_log_groups:
-                                if log_line.startswith(key):
-                                    match = re.match(reg, log_line)
-                                    if not match:
-                                        continue
-                                    other = True
-                                    _name = match.group(1)
-                                    if key not in other_message:
-                                        other_message[key] = {"list": [], "count": 0}
-                                    other_message[key]["count"] += 1
-                                    if _name not in other_message[key]["list"]:
-                                        other_message[key]["list"].append(_name)
-                            if other is False:
-                                if not (run_args["trace"] or run_args["log-requests"]):
-                                    for reg, replacement in summary_log_groups:
-                                        if re.match(reg, log_line):
-                                            log_line = replacement
-                                            break
-                                if err_type not in log_data:
-                                    log_data[err_type] = []
-                                log_data[err_type].append(log_line)
+            log_data, other_message = build_error_summary(logger.main_log, other_log_groups, summary_log_groups, run_args["trace"] or run_args["log-requests"])
 
             if "No Items found for" in other_message:
                 logger.separator("Overlay Errors Summary", space=False, border=False)

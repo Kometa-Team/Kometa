@@ -350,3 +350,61 @@ class MyLogger:
             rv = (co.co_filename, f.f_lineno, co.co_name, sinfo)
             break
         return rv
+
+
+def build_error_summary(main_log_path, other_log_groups, summary_log_groups, suppress_grouping):
+    """Parse meta.log into the WARNING/ERROR/CRITICAL summary tables.
+
+    Wrapped continuation lines (blank file prefix, no [LEVEL] tag - see MyLogger._log) are folded
+    back into the single logical message they belong to before counting/grouping, so a message that
+    wrapped across several physical lines is neither double-counted nor missing its later text (#3328).
+    """
+    log_data = {}
+    other_message = {}
+
+    def process_summary_line(err_type, log_line):
+        other = False
+        for key, reg in other_log_groups:
+            if log_line.startswith(key):
+                match = re.match(reg, log_line)
+                if not match:
+                    continue
+                other = True
+                _name = match.group(1)
+                if key not in other_message:
+                    other_message[key] = {"list": [], "count": 0}
+                other_message[key]["count"] += 1
+                if _name not in other_message[key]["list"]:
+                    other_message[key]["list"].append(_name)
+        if other is False:
+            if not suppress_grouping:
+                for reg, replacement in summary_log_groups:
+                    if re.match(reg, log_line):
+                        log_line = replacement
+                        break
+            if err_type not in log_data:
+                log_data[err_type] = []
+            log_data[err_type].append(log_line)
+
+    current_err_type = None
+    current_message = None
+    with open(main_log_path, encoding="utf-8") as f:
+        for raw_line in f:
+            matched_type = next((et for et in ("WARNING", "ERROR", "CRITICAL") if f"[{et}]" in raw_line), None)
+            if matched_type:
+                if current_message is not None:
+                    process_summary_line(current_err_type, current_message)
+                current_err_type = matched_type
+                current_message = raw_line.split("|")[1].strip() if "|" in raw_line else ""
+            elif current_message is not None and not raw_line.startswith("[") and "|" in raw_line:
+                # Wrapped continuation of the message above - fold it back in instead of losing it (#3328)
+                current_message = f"{current_message} {raw_line.split('|')[1].strip()}"
+            else:
+                if current_message is not None:
+                    process_summary_line(current_err_type, current_message)
+                current_err_type = None
+                current_message = None
+        if current_message is not None:
+            process_summary_line(current_err_type, current_message)
+
+    return log_data, other_message

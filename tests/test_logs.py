@@ -186,3 +186,52 @@ class TestMyLoggerFileOutput:
         content = Path(log.main_log).read_text(encoding="utf-8")
         assert content.count("[ERROR]") == 1
         assert len(content.splitlines()) > 1
+
+
+class TestBuildErrorSummary:
+    """Regression coverage for #3328 (follow-up): a wrapped message must appear in the summary
+    exactly once, with its full original text - not once per chunk, and not truncated to the
+    first physical line."""
+
+    def _make_logger(self, tmp_path, screen_width=100):
+        from modules.logs import MyLogger
+
+        return MyLogger(f"test_logs_{uuid.uuid4().hex}", str(tmp_path), screen_width, "=", ignore_ghost=True, is_debug=False, is_trace=False, log_requests=False)
+
+    def test_wrapped_warning_summary_keeps_full_text_and_single_count(self, tmp_path):
+        """Reproduces the real-world case reported against the PR: a long overlay title that
+        wraps the raw WARNING line across two physical lines in meta.log."""
+        from modules.logs import build_error_summary
+
+        log = self._make_logger(tmp_path)
+        log.add_main_handler()
+        long_title = "Family Guy Presents: Something, Something, Something, Dark Side"
+        message = f"Overlay Warning: No 'plex_tomatoes_rating' found for '{long_title}'"
+        log.warning(message)
+        log.main_handler.close()
+
+        # Sanity check the fixture actually wrapped, or this test isn't exercising the bug.
+        content = Path(log.main_log).read_text(encoding="utf-8")
+        assert content.count("[WARNING]") == 1
+        assert len(content.splitlines()) > 1
+
+        log_data, other_message = build_error_summary(log.main_log, [], [], suppress_grouping=False)
+
+        assert log_data["WARNING"] == [message]
+        assert other_message == {}
+
+    def test_multiple_wrapped_warnings_count_and_text_correct(self, tmp_path):
+        """Two occurrences of the same wrapped message must count as 2, each with the full text."""
+        from modules.logs import build_error_summary
+
+        log = self._make_logger(tmp_path)
+        log.add_main_handler()
+        long_title = "An Unlikely Mormon: The Conversion Story of Parley P. Pratt and His Many Adventures"
+        message = f"Overlay Warning: No 'plex_tomatoes_rating' found for '{long_title}'"
+        log.warning(message)
+        log.warning(message)
+        log.main_handler.close()
+
+        log_data, _ = build_error_summary(log.main_log, [], [], suppress_grouping=False)
+
+        assert log_data["WARNING"] == [message, message]
