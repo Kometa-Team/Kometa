@@ -711,6 +711,7 @@ def start(attrs):
                                 log_data[err_type].append(log_line)
 
             if log_data or other_message:
+                logger.separator(space=False)
                 logger.info("")
                 logger.info("The following errors and warnings were identified during the run. Search your log for any of the messages below to find where they originated.")
                 logger.info("")
