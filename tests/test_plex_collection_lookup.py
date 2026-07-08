@@ -58,8 +58,8 @@ def _load_plex(monkeypatch):
 
     fake_tenacity = types.ModuleType("tenacity")
 
-    def _identity(value=None, **_kwargs):
-        return value
+    def _identity(*args, **_kwargs):
+        return args[0] if args else None
 
     def retry(*_args, **_kwargs):
         def decorator(func):
