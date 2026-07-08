@@ -118,7 +118,7 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     messages for missing ratings.
     """
     text = KOMETA_PY.read_text(encoding="utf-8")
-    assert '("Overlay Warning: No \'anidb_average_rating\' found",' in text
+    assert "(\"Overlay Warning: No 'anidb_average_rating' found\"," in text
     assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
     assert 'logger.info("Count | Message")' in text
     assert 'logger.separator("Convert Summary", space=False, border=False)' in text
