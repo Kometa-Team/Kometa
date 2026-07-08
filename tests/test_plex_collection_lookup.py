@@ -113,6 +113,19 @@ def test_get_collection_warns_when_inventory_has_duplicate_exact_matches(monkeyp
     assert any("Multiple collections found with title 'Duplicate Collection'" in msg for msg in logger.warning_messages)
 
 
+def test_get_collection_ignores_none_entries_in_full_collection_inventory(monkeypatch):
+    plex_module = _load_plex(monkeypatch)
+    logger = FakeLogger()
+    monkeypatch.setattr(plex_module, "logger", logger)
+    plex = plex_module.Plex.__new__(plex_module.Plex)
+    hidden_collection = SimpleNamespace(title="Hidden Collection")
+
+    plex.search = lambda *args, **kwargs: []
+    plex.get_all_collections = lambda label=None: [None, hidden_collection]
+
+    assert plex.get_collection("Hidden Collection", force_search=True) is hidden_collection
+
+
 def test_create_blank_collection_skips_create_when_collection_already_exists(monkeypatch):
     plex_module = _load_plex(monkeypatch)
     logger = FakeLogger()

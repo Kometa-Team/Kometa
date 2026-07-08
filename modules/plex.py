@@ -1542,7 +1542,7 @@ class Plex(Library):
             cols = self.search(title=title, libtype="collection")
             exact_matches = [d for d in cols if str(d.title).casefold() == title.casefold()]
             if not exact_matches and force_search:
-                exact_matches = [d for d in self.get_all_collections() if str(d.title).casefold() == title.casefold()]
+                exact_matches = [d for d in self.get_all_collections() if d is not None and str(d.title).casefold() == title.casefold()]
             if exact_matches:
                 if len(exact_matches) > 1:
                     logger.warning(f"Plex Warning: Multiple collections found with title '{title}', using the first exact match")
