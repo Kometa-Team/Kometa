@@ -1184,6 +1184,13 @@ class Plex(Library):
         else:
             item.uploadLogo(filepath=image)
 
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    def upload_square_art(self, item, image, url=False):
+        if url:
+            item.uploadSquareArt(url=image)
+        else:
+            item.uploadSquareArt(filepath=image)
+
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_actor_id(self, name):
         results = self.Plex.hubSearch(name)
@@ -1749,27 +1756,54 @@ class Plex(Library):
                 logger.info(final)
         return final[28:] if final else final
 
-    def image_update(self, item, image, tmdb=None, title=None, poster=True):
-        text = f"{f'{title} ' if title else ''}{'Poster' if poster else 'Background'}"
-        image_config = self.mass_poster_update if poster else self.mass_background_update
+    def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
+        image_type = image_type or ("poster" if poster else "background")
+        display_type = {"poster": "Poster", "background": "Background", "logo": "Logo", "square_art": "Square Art"}[image_type]
+        text = f"{f'{title} ' if title else ''}{display_type}"
+        image_config = {
+            "poster": self.mass_poster_update,
+            "background": self.mass_background_update,
+            "logo": self.mass_logo_update,
+            "square_art": self.mass_square_art_update,
+        }[image_type]
         attr = image_config["source"]
         lang = image_config.get("language")
+        resolved_attr = None
+        if isinstance(tmdb, tuple):
+            resolved_attr, tmdb = tmdb
+            attr = resolved_attr or attr
         if attr == "lock":
-            self.query(item.lockPoster if poster else item.lockArt)
+            lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]
+            if not hasattr(item, lock_method):
+                logger.warning(f"{text} | Lock Not Supported")
+                return
+            lock_method = getattr(item, lock_method)
+            self.query(lock_method)
             logger.info(f"{text} | Locked")
         elif attr == "unlock":
-            self.query(item.unlockPoster if poster else item.unlockArt)
+            unlock_method = {"poster": "unlockPoster", "background": "unlockArt", "logo": "unlockLogo", "square_art": "unlockSquareArt"}[image_type]
+            if not hasattr(item, unlock_method):
+                logger.warning(f"{text} | Unlock Not Supported")
+                return
+            unlock_method = getattr(item, unlock_method)
+            self.query(unlock_method)
             logger.info(f"{text} | Unlocked")
         else:
             location = "the Assets Directory" if image else ""
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr == "tmdb" and tmdb:
+                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
                     image = tmdb
-                    location = f"TMDb (language: {lang})" if lang else "TMDb"
-                if not image:
-                    images = item.posters() if poster else item.arts()
+                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
+                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
+                    images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
+                    if not hasattr(item, images_method):
+                        logger.warning(f"{text} | Plex Image Type Not Supported")
+                        return
+                    images_method = getattr(item, images_method)
+                    images = images_method()
                     temp_image = next((p for p in images), None)
                     if temp_image:
                         if temp_image.key.startswith("/"):
@@ -1779,16 +1813,26 @@ class Plex(Library):
                         location = "Plex"
             if image:
                 logger.info(f"{text} | Reset from {location}")
-                if poster:
+                if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
-                else:
+                elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
+                elif image_type == "logo":
+                    try:
+                        self.upload_logo(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.error(f"Plex Error: Failed to upload logo: {e}")
+                else:
+                    try:
+                        self.upload_square_art(item, image, url=image_url)
+                    except BadRequest as e:
+                        logger.error(f"Plex Error: Failed to upload square art: {e}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
             else:

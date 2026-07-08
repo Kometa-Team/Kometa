@@ -157,6 +157,7 @@ class TMDBObj:
         self.imdb_id = data["imdb_id"] if isinstance(data, dict) else data.imdb_id
         self.poster_url = data["poster_url"] if isinstance(data, dict) else data.poster_url
         self.backdrop_url = data["backdrop_url"] if isinstance(data, dict) else data.backdrop_url
+        self.logos = [] if isinstance(data, dict) else data.logos
         self.vote_count = data["vote_count"] if isinstance(data, dict) else data.vote_count
         self.vote_average = data["vote_average"] if isinstance(data, dict) else data.vote_average
         self.language_iso = data["language_iso"] if isinstance(data, dict) else data.original_language.iso_639_1 if data.original_language else None
@@ -191,7 +192,7 @@ class TMDbMovie(TMDBObj):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_movie(self):
         try:
-            return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords")
+            return self._tmdb.TMDb.movie(self.tmdb_id, partial="external_ids,keywords,images")
         except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Movie found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:
@@ -228,7 +229,7 @@ class TMDbShow(TMDBObj):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def load_show(self):
         try:
-            return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords")
+            return self._tmdb.TMDb.tv_show(self.tmdb_id, partial="external_ids,keywords,images")
         except TMDbNotFound:
             raise NotFound(f"TMDb Error: No Show found for TMDb ID: {self.tmdb_id}")
         except TMDbException as e:

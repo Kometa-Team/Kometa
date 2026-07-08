@@ -286,6 +286,27 @@ table.dualTable th {
 	transition: box-shadow 125ms;
 }
 
+.md-typeset details>.operation-admonition-link,
+.md-typeset details>summary>.operation-admonition-link {
+	color: var(--md-default-fg-color--lighter);
+	float: right;
+	font-weight: 700;
+	margin-left: .6rem;
+	opacity: 0;
+	text-decoration: none;
+	transition: color 125ms, opacity 125ms;
+}
+
+.md-typeset details:focus-within>summary>.operation-admonition-link,
+.md-typeset details:hover>summary>.operation-admonition-link,
+.md-typeset details>summary>.operation-admonition-link:focus {
+	opacity: 1;
+}
+
+.md-typeset details>summary>.operation-admonition-link:hover {
+	color: var(--md-accent-fg-color);
+}
+
 .md-typeset .blank>.admonition-title,
 .md-typeset .blank>summary {
 	background-color: rgba(43, 155, 70, 0.1);

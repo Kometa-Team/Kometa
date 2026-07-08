@@ -20,7 +20,7 @@ collections:
         allowed_libraries: movie
         image: award/tiff/winner
         translation_key: tiff_best
-        url_logo: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/tiff.png?raw=true
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/refs/heads/master/award/logos/tiff.png
       - name: arr
       - name: custom
     imdb_award:
@@ -65,4 +65,4 @@ dynamic_collections:
       dynamic:
         default: true
       url_logo:
-        default: https://github.com/Kometa-Team/Default-Images/blob/master/award/logos/tiff.png?raw=true
+        default: https://raw.githubusercontent.com/Kometa-Team/Default-Images/refs/heads/master/award/logos/tiff.png

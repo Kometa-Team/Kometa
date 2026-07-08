@@ -18,7 +18,9 @@ libraries:
     collection_files:
       - default: imdb
     operations:
-      mass_critic_rating_update: tmdb
+      mass_metadata_update:
+        ratings:
+          critic: tmdb
       split_duplicates: true
 ```
 
@@ -33,7 +35,9 @@ libraries:
       - default: imdb
     operations:
       - schedule: weekly(friday)
-        mass_critic_rating_update: tmdb
+        mass_metadata_update:
+          ratings:
+            critic: tmdb
       - schedule: weekly(saturday)
         split_duplicates: true
 ```
@@ -52,14 +56,618 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ## Operation Attributes
 
+###### Mass Metadata Update
+
+??? info "`mass_metadata_update` - Updates metadata fields, artwork, ratings, mappings, and metadata backup data."
+    `mass_metadata_update` groups the legacy `mass_*_update` operations into one operation block.
+
+
+    **Attribute:** `mass_metadata_update`
+
+    | Attribute              | Description                                                                                                                    |
+    | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+    | `added_at`             | Updates added at dates.                                                                                                        |
+    | `background`           | Updates backgrounds.                                                                                                           |
+    | `backup`               | Creates or maintains a metadata backup file.                                                                                   |
+    | `collections`          | Updates collection modes. Use `mode` to set the Plex collection mode.                                                           |
+    | `content_rating`       | Updates content ratings. Use `source` for update sources and `mappings` for content rating remapping.                          |
+    | `genre`                | Updates genres. Use `source` for update sources and `mappings` for genre remapping.                                            |
+    | `labels`               | Updates IMDb parental guide labels. Use `severity` to set the minimum IMDb parental guide severity.                             |
+    | `logo`                 | Updates logos. Seasons and episodes are not supported.                                                                         |
+    | `original_title`       | Updates original titles.                                                                                                       |
+    | `originally_available` | Updates originally available dates.                                                                                            |
+    | `poster`               | Updates posters.                                                                                                               |
+    | `ratings`              | Updates item and episode ratings using `audience`, `critic`, `user`, `episode_audience`, `episode_critic`, and `episode_user`. |
+    | `square_art`           | Updates square art. Seasons and episodes are not supported.                                                                    |
+    | `studio`               | Up                                                                                                                             |
+
+
+    ??? example "Complete Example (click to expand)"
+
+        ```yaml
+        libraries:
+          Movies:
+            operations:
+              mass_metadata_update:
+                added_at: tmdb_digital
+                background:
+                  source: tmdb
+                  language: en
+                backup:
+                  path: config/Movie_Backup.yml
+                  exclude:
+                    - title
+                  sync_tags: false
+                  add_blank_entries: true
+                collections: hide
+                content_rating:
+                  source: mdb_commonsense
+                  mappings:
+                    TV-14: 14
+                genre:
+                  source: tmdb
+                  mappings:
+                    Action & Adventure: Action
+                labels: moderate
+                logo: tmdb
+                original_title: mal_english
+                originally_available: tmdb
+                poster:
+                  source: trakt
+                  seasons: true
+                  episodes: false
+                ratings:
+                  user: tmdb
+                  critic: imdb
+                  audience: mdb_tomatoesaudience
+                  episode_user: tmdb
+                  episode_critic: imdb
+                  episode_audience: tmdb
+                square_art: tvdb
+                studio: tmdb
+        ```
+
+    ??? tip "Scheduling Mass Metadata Operations"
+
+        `mass_metadata_update` can be scheduled as a whole operation block, or each top-level sub-attribute can be scheduled individually.
+        
+        When `schedule` is set on the `mass_metadata_update` operation block, that schedule applies to every sub-operation inside the block unless the sub-operation defines its own `schedule`.
+        ```yaml
+        operations:
+          - schedule: weekly(monday)
+            mass_metadata_update:
+              genre:
+                source: tmdb
+              content_rating:
+                source: mdb
+              ratings:
+                critic: imdb
+        ```
+        In this example, `genre`, `content_rating`, and `ratings.critic` all run on Monday.
+        
+        You can also schedule individual sub-attributes:
+        ```yaml
+        operations:
+          mass_metadata_update:
+            genre:
+              schedule: weekly(monday)
+              source: tmdb
+              mappings:
+                Action & Adventure: Action
+            content_rating:
+              schedule: weekly(tuesday)
+              source: mdb
+              mappings:
+                TV-14: 14
+            original_title:
+              schedule: weekly(wednesday)
+              source: mal_english
+            studio:
+              schedule: weekly(thursday)
+              source: tmdb
+        ```
+        In this example:
+        
+        | Attribute | Schedule |
+        | --- | --- |
+        | `genre` | Monday |
+        | `content_rating` | Tuesday |
+        | `original_title` | Wednesday |
+        | `studio` | Thursday |
+        
+        For attributes that support both a shorthand value and a dictionary, `source` is optional. These two examples are equivalent:
+        ```yaml
+        operations:
+          mass_metadata_update:
+            originally_available: tmdb
+            added_at: tmdb_digital
+        ```
+
+        ```yaml
+        operations:
+          mass_metadata_update:
+            originally_available:
+              source: tmdb
+            added_at:
+              source: tmdb_digital
+        ```
+        Use the dictionary form when you need to add a `schedule`:
+        ```yaml
+        operations:
+          mass_metadata_update:
+            originally_available:
+              schedule: weekly(friday)
+              source: tmdb
+            added_at:
+              schedule: weekly(saturday)
+              source: tmdb_digital
+        ```
+        The same pattern can be used for ratings:
+        ```yaml
+        operations:
+          mass_metadata_update:
+            ratings:
+              user:
+                schedule: weekly(monday)
+                source: tmdb
+              critic:
+                schedule: weekly(tuesday)
+                source: imdb
+              audience:
+                schedule: weekly(wednesday)
+                source: mdb_tomatoesaudience
+        ```
+        If `schedule` is placed directly under `ratings`, it applies to every rating inside `ratings` unless that rating defines its own `schedule`.
+        ```yaml
+        operations:
+          mass_metadata_update:
+            ratings:
+              user: tmdb
+              critic:
+                schedule: weekly(tuesday)
+                source: imdb
+              audience: mdb_tomatoesaudience
+        ```
+        In this example, `user` and `audience` run on every run, while `critic` only runs on Tuesday.
+        ```
+
+    === "Backup"
+
+
+
+        `backup` creates or maintains a Kometa Metadata File with a full `metadata` mapping based on the library's item locked attributes.
+
+        ???+ tip "Tip"
+
+            If you point to an existing Metadata File then Kometa will sync the changes to the file, so you won't lose non-Plex changes in the file.
+
+        ??? example "Example Backup Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                backup:
+                  path: config/Movie_Backup.yml
+                  exclude:
+                    - title
+                  sync_tags: true
+                  add_blank_entries: false
+            ```
+
+        | Attribute | Description |
+        | --- | --- |
+        | `path` | Path to where the metadata will be saved or maintained. **Default:** `<<library_name>>_Metadata_Backup.yml` in your config folder. |
+        | `exclude` | Exclude all listed attributes from being saved in the Metadata File. |
+        | `sync_tags` | Tag attributes will use the `.sync` option and blank attributes will be added to sync. **Default:** `false`. |
+        | `add_blank_entries` | Add a line for entries that have no metadata changes. **Default:** `true`. |
+
+
+    === "Content Ratings"
+
+        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final content rating value after source lookup.
+
+        ???+ tip "Note on `mdb` sources"
+
+            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+
+        ??? example "Example Content Rating & Mapping Operations"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                content_rating:
+                  source:
+                    - mdb_commonsense
+                    - mdb_age_rating
+                    - NR
+                  mappings:
+                    PG: Y-10
+                    "PG-13": Y-10
+                    R:
+            ```
+
+        | Source | Description |
+        | --- | --- |
+        | `mdb` | Use MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_commonsense` | Use Common Sense rating through MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_commonsense0` | Use Common Sense rating with zero padding through MDBList for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `plex_csm` | Use Common Sense Media age rating cached on the Plex item itself. Requires the new Plex Movie/Series agent; no external API key. |
+        | `plex_csm0` | Use Common Sense Media age rating cached on the Plex item itself with zero padding. Requires the new Plex Movie/Series agent; no external API key. |
+        | `mdb_age_rating` | Use MDBList age rating for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_age_rating0` | Use MDBList age rating with zero padding for content ratings. Requires [MDBList key](../config/mdblist.md). |
+        | `omdb` | Use IMDb through OMDb for content ratings. Requires [OMDB key](../config/omdb.md). |
+        | `mal` | Use MyAnimeList for content ratings. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the content rating field. |
+        | `unlock` | Unlock the content rating field. |
+        | `remove` | Remove the content rating and lock the field. |
+        | `reset` | Remove the content rating and unlock the field. |
+        | Any string | Set an explicit content rating value. |
+
+        | Mapping Attribute | Description |
+        | --- | --- |
+        | `key` | Content rating value to map from. |
+        | `value` | Content rating value to map to. Leave blank to remove the source content rating. |
+
+
+    === "Collections"
+
+        `mode` updates every Collection in your library to the specified Collection Mode.
+
+        ??? example "Example Collection Mode Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                collections:
+                  mode: hide
+            ```
+
+        | Mode | Description |
+        | --- | --- |
+        | `default` | Library default. |
+        | `hide` | Hide Collection. |
+        | `hide_items` | Hide Items in this Collection. |
+        | `show_items` | Show this Collection and its Items. |
+
+
+    === "Dates"
+
+        `originally_available` updates the item's originally available date. `added_at` updates the item's added at date.
+
+        ???+ tip
+
+            Plex does not allow `originally_available` to be empty. Using `remove` or `reset` will set the date to the Plex default date, which is `1969-12-31`.
+
+        ???+ tip "Note on `mdb` sources"
+
+            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+
+        ??? example "Example Originally Available & Added At Operations"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                originally_available:
+                  - tmdb_digital
+                  - tmdb_premiere
+                  - tmdb
+                  - 1900-01-01
+                added_at:
+                  - tmdb_digital
+                  - tmdb_premiere
+                  - tmdb
+                  - 1900-01-01
+            ```
+
+        | Value | Description |
+        | --- | --- |
+        | `tmdb` | Use TMDb release date. |
+        | `tmdb_premiere` | Use TMDb premiere release date. Movie libraries only. |
+        | `tmdb_theatrical` | Use TMDb theatrical release date. Movie libraries only. |
+        | `tmdb_theatricallimited` | Use TMDb theatrical limited release date. Movie libraries only. |
+        | `tmdb_digital` | Use TMDb digital release date. Movie libraries only. |
+        | `tmdb_physical` | Use TMDb physical release date. Movie libraries only. |
+        | `tmdb_tv` | Use TMDb TV release date. Movie libraries only. |
+        | `tvdb` | Use TVDb release date. |
+        | `omdb` | Use IMDb release date through OMDb. Requires [OMDB key](../config/omdb.md). |
+        | `mdb` | Use MDBList release date. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_digital` | Use MDBList digital release date. Requires [MDBList key](../config/mdblist.md). |
+        | `anidb` | Use AniDB release date. |
+        | `mal` | Use MyAnimeList release date. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the date field. |
+        | `unlock` | Unlock the date field. |
+        | `remove` | Remove the date and lock the field. |
+        | `reset` | Remove the date and unlock the field. |
+        | `YYYY-MM-DD` | Set an explicit date, for example `2022-05-28`. |
+
+
+    === "Genres"
+
+        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final genre values after source lookup.
+
+        ??? example "Example Genre & Mapping Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                genre:
+                  source:
+                    - imdb
+                    - tmdb
+                    - ["Unknown"]
+                  mappings:
+                    "Action/Adventure": Action
+                    "Action & Adventure": Action
+            ```
+        | Source | Description |
+        | --- | --- |
+        | `tmdb` | Use TMDb for genres. |
+        | `tvdb` | Use TVDb for genres. |
+        | `imdb` | Use IMDb for genres. |
+        | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](../config/omdb.md). |
+        | `anidb` | Use AniDB main tags for genres. |
+        | `anidb_3_0` | Use AniDB main tags and all 3 star tags and above for genres. |
+        | `anidb_2_5` | Use AniDB main tags and all 2.5 star tags and above for genres. |
+        | `anidb_2_0` | Use AniDB main tags and all 2 star tags and above for genres. |
+        | `anidb_1_5` | Use AniDB main tags and all 1.5 star tags and above for genres. |
+        | `anidb_1_0` | Use AniDB main tags and all 1 star tags and above for genres. |
+        | `anidb_0_5` | Use AniDB main tags and all 0.5 star tags and above for genres. |
+        | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the genre field. |
+        | `unlock` | Unlock the genre field. |
+        | `remove` | Remove all genres and lock the genre field. |
+        | `reset` | Remove all genres and unlock the genre field. |
+        | List of strings | Set explicit genre values, for example `["String 1", "String 2"]`. |
+
+        | Mappings Attribute | Description |
+        | --- | --- |
+        | `key` | Genre value to map from. |
+        | `value` | Genre value to map to. Leave blank to remove the source genre. |
+
+
+    === "Images"
+
+        Assets will be used over anything else. The image type keys are optional; only the configured image types are processed.
+
+        ???+ warning
+
+            When `poster` is used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
+
+        ??? example "Example Image Operations"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                poster:
+                  source: trakt
+                  seasons: true
+                  episodes: true
+                background:
+                  source:
+                    - trakt
+                    - tmdb
+                logo:
+                  source: tmdb
+                  language: en
+                square_art:
+                  source: tvdb
+            ```
+        | Attribute | Description | Values |
+        | --- | --- | --- |
+        | `poster` | Updates item posters. | Dictionary of poster options. |
+        | `background` | Updates item backgrounds. | Dictionary of background options. |
+        | `logo` | Updates item logos. Seasons and episodes are not supported. | Dictionary of logo options. |
+        | `square_art` | Updates item square art. Seasons and episodes are not supported. | Dictionary of square art options. |
+
+        | Poster Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
+        | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Skip updating if the poster field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
+
+        | Background Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
+        | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
+
+        | Logo Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
+        | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
+
+        | Square Art Option | Description | Values |
+        | --- | --- | --- |
+        | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
+        | `ignore_locked` | Skip updating if the square art field is locked. **Default:** `false` | `true` or `false` |
+
+
+    === "Labels"
+
+        `severity` updates every item's labels in the library to match the IMDb Parental Guide.
+
+        ??? example "Example Labels Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                labels:
+                  severity: severe
+            ```
+
+        | Severity | Description |
+        | --- | --- |
+        | `none` | Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe`. |
+        | `mild` | Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`. |
+        | `moderate` | Apply all Parental Labels with a value of `Moderate` or `Severe`. |
+        | `severe` | Apply all Parental Labels with a value of `Severe`. |
+
+
+    === "Ratings"
+
+        Use `ratings.audience`, `ratings.critic`, and `ratings.user` for item ratings. Use `ratings.episode_audience`, `ratings.episode_critic`, and `ratings.episode_user` for episode ratings.
+
+        ???+ warning "Important Note"
+
+            This does not affect the icons displayed in the Plex UI. This places the number of your choice in the relevant field in the Plex database. One primary use of this feature is to put ratings overlays on posters. More information on ratings can be found [here](../kometa/guides/ratings.md).
+
+        ???+ tip "Note on `mdb` sources"
+
+            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+
+        ??? example "Example Rating & Episode Rating Operations"
+    
+            ```yaml
+            operations:
+              mass_metadata_update:
+                ratings:
+                  audience:
+                    - mdb
+                    - mdb_average
+                    - 2.0
+                  critic:
+                    - imdb
+                    - omdb
+                    - 2.0
+                  user:
+                    - trakt_user
+                    - 2.0
+                  episode_audience:
+                    - tmdb
+                    - 2.0
+                  episode_critic:
+                    - imdb
+                    - 2.0
+            ```
+
+        | Rating Value | Description |
+        | --- | --- |
+        | `anidb_average` | Use AniDB average. |
+        | `anidb_rating` | Use AniDB rating. |
+        | `anidb_score` | Use AniDB review score. |
+        | `imdb` | Use IMDb rating. |
+        | `mal` | Use MyAnimeList score. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mdb` | Use MDBList score. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_average` | Use MDBList average score. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_imdb` | Use IMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_letterboxd` | Use Letterboxd rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_metacritic` | Use Metacritic rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_metacriticuser` | Use Metacritic user rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_myanimelist` | Use MyAnimeList rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_tmdb` | Use TMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_tomatoes` | Use Rotten Tomatoes rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_tomatoesaudience` | Use Rotten Tomatoes audience rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `mdb_trakt` | Use Trakt rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
+        | `omdb` | Use IMDb rating through OMDb. Requires [OMDB key](../config/omdb.md). |
+        | `omdb_metascore` | Use Metacritic metascore through OMDb. Requires [OMDB key](../config/omdb.md). |
+        | `omdb_tomatoes` | Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](../config/omdb.md). |
+        | `plex_imdb` | Use IMDb rating through Plex. |
+        | `plex_tmdb` | Use TMDb rating through Plex. |
+        | `plex_tomatoes` | Use Rotten Tomatoes rating through Plex. |
+        | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
+        | `tmdb` | Use TMDb rating. |
+        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `trakt_user` | Use Trakt user's personal rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `lock` | Lock the rating field. |
+        | `unlock` | Unlock the rating field. |
+        | `remove` | Remove rating and lock the field. |
+        | `reset` | Remove rating and unlock the field. |
+        | Number from `0.0` to `10.0` | Set an explicit rating value. |
+
+        | Episode Rating Value | Description |
+        | --- | --- |
+        | `imdb` | Use IMDb rating. |
+        | `plex_imdb` | Use IMDb rating through Plex. |
+        | `plex_tmdb` | Use TMDb rating through Plex. |
+        | `tmdb` | Use TMDb rating. |
+        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `lock` | Lock the rating field. |
+        | `unlock` | Unlock the rating field. |
+        | `remove` | Remove rating and lock the field. |
+        | `reset` | Remove rating and unlock the field. |
+        | Number from `0.0` to `10.0` | Set an explicit rating value. |
+
+
+    === "Studios"
+
+        `studio` accepts a source, an ordered list of fallback sources, or an explicit string value.
+
+        ??? example "Example Studio Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                studio:
+                  - mal
+                  - anidb
+                  - Unknown
+            ```
+
+         | Value | Description |
+        | --- | --- |
+        | `anidb` | Use AniDB animation work. |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `tmdb` | Use TMDb studio. |
+        | `lock` | Lock the studio field. |
+        | `unlock` | Unlock the studio field. |
+        | `remove` | Remove studio and lock the field. |
+        | `reset` | Remove studio and unlock the field. |
+        | Any string | Set an explicit studio. |
+
+
+    === "Titles"
+
+        `original_title` accepts a source, an ordered list of fallback sources, or an explicit string value.
+
+        ??? example "Example Original Title Operation"
+
+            ```yaml
+            operations:
+              mass_metadata_update:
+                original_title:
+                  - anidb_official
+                  - anidb
+                  - Unknown
+            ```
+
+        | Value | Description |
+        | --- | --- |
+        | `anidb` | Use AniDB main title. |
+        | `anidb_official` | Use AniDB official title based on the language attribute in the config file. |
+        | `mal` | Use MyAnimeList main title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_english` | Use MyAnimeList English title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `mal_japanese` | Use MyAnimeList Japanese title. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `lock` | Lock the original title field. |
+        | `unlock` | Unlock the original title field. |
+        | `remove` | Remove original title and lock the field. |
+        | `reset` | Remove original title and unlock the field. |
+        | Any string | Set an explicit original title. |
+
+        | `studio` Value | Description |
+        | --- | --- |
+        | `anidb` | Use AniDB animation work. |
+        | `mal` | Use MyAnimeList studio. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `tmdb` | Use TMDb studio. |
+        | `lock` | Lock the studio field. |
+        | `unlock` | Unlock the studio field. |
+        | `remove` | Remove studio and lock the field. |
+        | `reset` | Remove studio and unlock the field. |
+        | Any string | Set an explicit studio. |
+
+
 ###### Assets For All
 
-??? blank "`assets_for_all` - Used to search the asset directories for images for all items in the library.<a class="headerlink" href="#assets-for-all" title="Permanent link">¶</a>"
-
-    <div id="assets-for-all" />Ordinarily, Kometa searches the asset directories for collection artwork. Enabling this Operation tells Kometa
+??? info "`assets_for_all` - Used to search the asset directories for images for all items in the library."
+    Ordinarily, Kometa searches the asset directories for collection artwork. Enabling this Operation tells Kometa
     to searches the asset directories for images for all items [movies, shows, seasons, episodes, etc] in the library.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `assets_for_all`
 
@@ -76,12 +684,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Assets For All Collections
 
-??? blank "`assets_for_all_collections` - Used to search the asset directories for images for all unmanaged and/or unconfigured in the library.<a class="headerlink" href="#assets-for-all-collections" title="Permanent link">¶</a>"
-
-    <div id="assets-for-all-collections" />Enabling this Operation tells Kometa
+??? info "`assets_for_all_collections` - Used to search the asset directories for images for all unmanaged and/or unconfigured in the library."
+    Enabling this Operation tells Kometa
     to search the asset directories for images for unmanaged and unconfigured collections in the library.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `assets_for_all_collections`
 
@@ -98,24 +703,22 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Delete Collections
 
-??? blank "`delete_collections` - Deletes collections based on a set of given attribute.<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
-
-    <div id="delete-collections" />Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
-
-    <hr style="margin: 0px;">
+??? info "`delete_collections` - Deletes collections based on a set of given attribute."
+    Deletes collections based on a set of given attributes. The Collection must match all set attributes to be deleted.
 
     **Attribute:** `delete_collections`
 
     **Accepted Values:** There are a few different options to determine how the `delete_collections` works.
 
-    <table class="clearTable">
-      <tr><td>`managed: true`</td><td>Collection must be Managed to be deleted.<br>(collection has the `Kometa` label)</td></tr>
-      <tr><td>`managed: false`</td><td>Collection must be Unmanaged to be deleted.<br>(collection does not have the `Kometa` label)</td></tr>
-      <tr><td>`configured: true`</td><td>Collection must be Configured to be deleted.<br>(collection is in the config file of the specific Kometa run)</td></tr>
-      <tr><td>`configured: false`</td><td>Collection must be Unconfigured to be deleted.<br>(collection is not in the config file of the specific Kometa run)</td></tr>
-      <tr><td>`less: ###`</td><td>Collection must contain less than the given number of items to be deleted.<br>`###` is a Number greater than 0<br>Optional value which if undefined means collections will be deleted regardless of how many items they have.</td></tr>
-      <tr><td>`ignore_empty_smart_collections: false`</td><td>Do not apply less check to empty smart collections<br>This allows retaining things like smart collections that show movies without subtitles or the like.</td></tr>
-    </table>
+    | Value | Description |
+    | --- | --- |
+    | `managed: true` | Collection must be Managed to be deleted. (collection has the `Kometa` label) |
+    | `managed: false` | Collection must be Unmanaged to be deleted. (collection does not have the `Kometa` label) |
+    | `configured: true` | Collection must be Configured to be deleted. (collection is in the config file of the specific Kometa run) |
+    | `configured: false` | Collection must be Unconfigured to be deleted. (collection is not in the config file of the specific Kometa run) |
+    | `less: ###` | Collection must contain less than the given number of items to be deleted. `###` is a Number greater than 0. Optional value which if undefined means collections will be deleted regardless of how many items they have. |
+    | `ignore_empty_smart_collections: false` | Do not apply less check to empty smart collections. This allows retaining things like smart collections that show movies without subtitles or the like. |
+
 
     **The collection does not need to be scheduled to be considered configured and only needs to be in the config file.**
 
@@ -134,559 +737,10 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 managed: true
         ```
 
-###### Mass Genre Update
-
-??? blank "`mass_genre_update` - Updates the genres of every item in the library.<a class="headerlink" href="#mass-genre-update" title="Permanent link">¶</a>"
-
-    <div id="mass-genre-update" />Updates every item's genres in the library to the chosen site's genres.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_genre_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    <table class="clearTable">
-      <tr><td>`tmdb`</td><td>Use TMDb for Genres.</td></tr>
-      <tr><td>`tvdb`</td><td>Use TVDb for Genres.</td></tr>
-      <tr><td>`imdb`</td><td>Use IMDb for Genres.</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDb through OMDb for Genres. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Main Tags for Genres.</td></tr>
-      <tr><td>`anidb_3_0`</td><td>Use AniDB Main Tags and All 3 Star Tags and above for Genres.</td></tr>
-      <tr><td>`anidb_2_5`</td><td>Use AniDB Main Tags and All 2.5 Star Tags and above for Genres.</td></tr>
-      <tr><td>`anidb_2_0`</td><td>Use AniDB Main Tags and All 2 Star Tags and above for Genres.</td></tr>
-      <tr><td>`anidb_1_5`</td><td>Use AniDB Main Tags and All 1.5 Star Tags and above for Genres.</td></tr>
-      <tr><td>`anidb_1_0`</td><td>Use AniDB Main Tags and All 1 Star Tags and above for Genres.</td></tr>
-      <tr><td>`anidb_0_5`</td><td>Use AniDB Main Tags and All 0.5 Star Tags and above for Genres.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList for Genres. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`mal_all`</td><td>Use MyAnimeList for Genres (includes Explicit Genres, Themes and Demographics). Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock all Genre Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock all Genre Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove all Genres and Lock all Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove all Genres and Unlock all Field.</td></tr>
-      <tr><td colspan="2">List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Strings for Genres. (<code>["String 1", "String 2"]</code>)</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            operations:
-              mass_genre_update:
-                - imdb
-                - tmdb
-                - ["Unknown"]
-        ```
-
-###### Mass Content Rating Update
-
-??? blank "`mass_content_rating_update` - Updates the content rating of every item in the library.<a class="headerlink" href="#mass-content-rating-update" title="Permanent link">¶</a>"
-
-    <div id="mass-content-rating-update" />Updates every item's content rating in the library to the chosen site's content rating.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_content_rating_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    ???+ tip "Note on `mdb` sources"
-
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only
-        periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources
-        directly.
-
-    <table class="clearTable">
-      <tr><td>`mdb`</td><td>Use MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_commonsense`</td><td>Use Common Sense Rating through MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_commonsense0`</td><td>Use Common Sense Rating with Zero Padding through MDBList for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`plex_csm`</td><td>Use Common Sense Media age rating cached on the Plex item itself (`commonSenseMedia.ageRatings`). Requires the new Plex Movie/Series agent which fetches CSM data; no external API key.</td></tr>
-      <tr><td>`plex_csm0`</td><td>Use Common Sense Media age rating cached on the Plex item itself with Zero Padding. Requires the new Plex Movie/Series agent; no external API key.</td></tr>
-      <tr><td>`mdb_age_rating`</td><td>Use MDBList Age Rating for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_age_rating0`</td><td>Use MDBList Age Rating with Zero Padding for Content Ratings. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDb through OMDb for Content Ratings. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList for Content Ratings. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Content Rating Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Content Rating Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Content Rating and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Content Rating and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any String for Content Ratings.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            operations:
-              mass_content_rating_update:
-                - mdb_commonsense
-                - mdb_age_rating
-                - NR
-        ```
-
-###### Mass Original Title Update
-
-??? blank "`mass_original_title_update` - Updates the original title of every item in the library.<a class="headerlink" href="#mass-original-title-update" title="Permanent link">¶</a>"
-
-    <div id="mass-original-title-update" />Updates every item's original title in the library to the chosen site's original title.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_original_title_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
-
-    <table class="clearTable">
-      <tr><td>`anidb`</td><td>Use AniDB Main Title for Original Titles.</td></tr>
-      <tr><td>`anidb_official`</td><td>Use AniDB Official Title based on the language attribute in the config file for Original Titles.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Main Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`mal_english`</td><td>Use MyAnimeList English Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`mal_japanese`</td><td>Use MyAnimeList Japanese Title for Original Titles. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Original Title Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Original Title Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Original Title and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Original Title and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any String for Original Titles.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Anime:
-            operations:
-              mass_original_title_update:
-                - anidb_official
-                - anidb
-                - Unknown
-        ```
-
-###### Mass Studio Update
-
-??? blank "`mass_studio_update` - Updates the studio of every item in the library.<a class="headerlink" href="#mass-studio-update" title="Permanent link">¶</a>"
-
-    <div id="mass-studio-update" />Updates every item's studio in the library to the chosen site's studio.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_studio_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order
-
-    <table class="clearTable">
-      <tr><td>`anidb`</td><td>Use AniDB Animation Work for Studio.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Studio for Studio. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`tmdb`</td><td>Use TMDb Studio for Studio.</td></tr>
-      <tr><td>`lock`</td><td>Lock Studio Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Studio Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Studio and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Studio and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any String for Studio.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Anime:
-            operations:
-              mass_studio_update:
-                - mal
-                - anidb
-                - Unknown
-        ```
-
-###### Mass Originally Available Update
-
-??? blank "`mass_originally_available_update` - Updates the originally available date of every item in the library.<a class="headerlink" href="#mass-originally-available-update" title="Permanent link">¶</a>"
-
-    <div id="mass-originally-available-update" />Updates every item's originally available date in the library to the chosen site's date.
-
-    **NOTE**: If you have your `region` set within the `tmdb` section of the Configuration File, this region will be used to determine the release date.
-
-    ???+ tip
-
-        As plex does not allow this field to be empty, using `remove` or `reset` will set the date to the Plex default date, which is `1969-12-31`.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_originally_available_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    ???+ tip "Note on `mdb` sources"
-
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only
-        periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources
-        directly.
-
-    <table class="clearTable">
-      <tr><td>`tmdb`</td><td>Use TMDb Release Date.</td></tr>
-      <tr><td>`tmdb_premiere`</td><td>Use TMDb Premiere Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_theatrical`</td><td>Use TMDb Theatrical Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_theatricallimited`</td><td>Use TMDb Theatrical Limited Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_digital`</td><td>Use TMDb Digital Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_physical`</td><td>Use TMDb Physical Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_tv`</td><td>Use TMDb TV Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tvdb`</td><td>Use TVDb Release Date.</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_digital`</td><td>Use MDBList Digital Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Release Date.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Release Date. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Originally Available Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Originally Available Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Originally Available and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Originally Available and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any String in the Format: YYYY-MM-DD for Originally Available. (<code>2022-05-28</code>)</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_originally_available_update:
-                - tmdb_digital
-                - tmdb_premiere
-                - tmdb
-                - 1900-01-01
-        ```
-
-###### Mass Added At Update
-
-??? blank "`mass_added_at_update` - Updates the added at date of every item in the library.<a class="headerlink" href="#mass-added-at-update" title="Permanent link">¶</a>"
-
-    <div id="mass-added-at-update" />Updates every item's added at date in the library to the chosen site's date.
-
-    **NOTE**: If you have your `region` set within the `tmdb` section of the Configuration File, this region will be used to determine the release date.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_added_at_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    ???+ tip "Note on `mdb` sources"
-
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only
-        periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources
-        directly.
-
-    <table class="clearTable">
-      <tr><td>`tmdb`</td><td>Use TMDb Release Date.</td></tr>
-      <tr><td>`tmdb_premiere`</td><td>Use TMDb Premiere Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_theatrical`</td><td>Use TMDb Theatrical Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_theatricallimited`</td><td>Use TMDb Theatrical Limited Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_digital`</td><td>Use TMDb Digital Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_physical`</td><td>Use TMDb Physical Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tmdb_tv`</td><td>Use TMDb TV Release Date. Movie libraries only.</td></tr>
-      <tr><td>`tvdb`</td><td>Use TVDb Release Date.</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDb Release Date through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`mdb`</td><td>Use MDBList Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_digital`</td><td>Use MDBList Digital Release Date. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`anidb`</td><td>Use AniDB Release Date.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Release Date. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Added At Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Added At Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Added At and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Added At and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any String in the Format: YYYY-MM-DD for Added At. (<code>2022-05-28</code>)</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_added_at_update:
-                - tmdb_digital
-                - tmdb_premiere
-                - tmdb
-                - 1900-01-01
-        ```
-
-###### Mass Rating Update
-
-??? blank "`mass_***_rating_update` - Updates the audience/critic/user rating of every item in the library.<a class="headerlink" href="#mass-star-rating-update" title="Permanent link">¶</a>"
-
-    <div id="mass-star-rating-update" />Updates every item's audience/critic/user rating in the library to the chosen site's rating.
-
-    ???+ warning "Important Note"
-
-        This does not affect the icons displayed in the Plex UI. This will place the number of your choice in the relevant field in the Plex database. In other words, if Plex is
-        configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update Operation, the icons in the Plex UI will remain Rotten Tomatoes. The
-        human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten
-        Tomatoes. One primary use of this feature is to put ratings overlays on posters. More information on what Kometa can do with these ratings can be found
-        [here](../kometa/guides/ratings.md).
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_audience_rating_update`/`mass_critic_rating_update`/`mass_user_rating_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    ???+ tip "Note on `mdb` sources"
-
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only
-        periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources
-        directly.
-
-    <table class="clearTable">
-      <tr><td>`anidb_average`</td><td>Use AniDB Average.</td></tr>
-      <tr><td>`anidb_rating`</td><td>Use AniDB Rating.</td></tr>
-      <tr><td>`anidb_score`</td><td>Use AniDB Review Score.</td></tr>
-      <tr><td>`imdb`</td><td>Use IMDb Rating.</td></tr>
-      <tr><td>`mal`</td><td>Use MyAnimeList Score. Requires [MyAnimeList authentication](../config/myanimelist.md).</td></tr>
-      <tr><td>`mdb_average`</td><td>Use MDBList Average Score. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_imdb`</td><td>Use IMDb Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_letterboxd`</td><td>Use Letterboxd Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_metacritic`</td><td>Use Metacritic Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_metacriticuser`</td><td>Use Metacritic User Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_myanimelist`</td><td>Use MyAnimeList Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_tmdb`</td><td>Use TMDb Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_tomatoes`</td><td>Use Rotten Tomatoes Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb_trakt`</td><td>Use Trakt Rating through MDBList. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`mdb`</td><td>Use MDBList Score. Requires [MDBList key](../config/mdblist.md).</td></tr>
-      <tr><td>`omdb_metascore`</td><td>Use Metacritic Metascore through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`omdb_tomatoes`</td><td>Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`omdb`</td><td>Use IMDbRating through OMDb. Requires [OMDB key](../config/omdb.md).</td></tr>
-      <tr><td>`plex_imdb`</td><td>Use IMDB Rating through Plex.</td></tr>
-      <tr><td>`plex_tmdb`</td><td>Use TMDB Rating through Plex.</td></tr>
-      <tr><td>`plex_tomatoes`</td><td>Use Rotten Tomatoes Rating through Plex.</td></tr>
-      <tr><td>`plex_tomatoesaudience`</td><td>Use Rotten Tomatoes Audience Rating through Plex.</td></tr>
-      <tr><td>`tmdb`</td><td>Use TMDb Rating.</td></tr>
-      <tr><td>`trakt_user`</td><td>Use Trakt User's Personal Rating. Requires [Trakt authentication](../config/trakt.md).</td></tr>
-      <tr><td>`trakt`</td><td>Use Trakt Rating. Requires [Trakt authentication](../config/trakt.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Rating Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Rating Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Rating and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Rating and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any Number between 0.0-10.0 for Ratings.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            operations:
-              mass_audience_rating_update:
-                - mdb
-                - mdb_average
-                - 2.0
-              mass_critic_rating_update:
-                - imdb
-                - omdb
-                - 2.0
-              mass_user_rating_update:
-                - trakt_user
-                - 2.0
-        ```
-
-###### Mass Episode Rating Update
-
-??? blank "`mass_episode_***_rating_update` - Updates the audience/critic/user rating of every episode in the library.<a class="headerlink" href="#mass-episode-star-rating-update" title="Permanent link">¶</a>"
-
-    <div id="mass-episode-star-rating-update" />Updates every item's episode's audience/critic/user rating in the library to the chosen site's rating.
-
-    ???+ warning "Important Note"
-
-        This does not affect the icons displayed in the Plex UI. This will place the number of your choice in the relevant field in the Plex database. In other words, if Plex is
-        configured to use Rotten Tomatoes ratings, then no matter what happens with this mass rating update Operation, the icons in the Plex UI will remain Rotten Tomatoes. The
-        human who decided to put TMDb ratings in the critic slot and Letterboxd ratings in the audience slot is the only party who knows that the ratings are no longer Rotten
-        Tomatoes. One primary use of this feature is to put ratings overlays on posters. More information on what Kometa can do with these ratings can be found
-        [here](../kometa/guides/ratings.md).
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_episode_audience_rating_update`/`mass_episode_critic_rating_update`/`mass_episode_user_rating_update`
-
-    **Accepted Values:** Source or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of sources to use in that order.
-
-    <table class="clearTable">
-      <tr><td>`imdb`</td><td>Use IMDb Rating.</td></tr>
-      <tr><td>`plex_imdb`</td><td>Use IMDB Rating through Plex.</td></tr>
-      <tr><td>`plex_tmdb`</td><td>Use TMDB Rating through Plex.</td></tr>
-      <tr><td>`tmdb`</td><td>Use TMDb Rating.</td></tr>
-      <tr><td>`trakt`</td><td>Use Trakt Rating. Requires [Trakt authentication](../config/trakt.md).</td></tr>
-      <tr><td>`lock`</td><td>Lock Rating Field.</td></tr>
-      <tr><td>`unlock`</td><td>Unlock Rating Field.</td></tr>
-      <tr><td>`remove`</td><td>Remove Rating and Lock Field.</td></tr>
-      <tr><td>`reset`</td><td>Remove Rating and Unlock Field.</td></tr>
-      <tr><td colspan="2">Any Number between 0.0-10.0 for Ratings.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_episode_audience_rating_update:
-                - tmdb
-                - 2.0
-              mass_episode_critic_rating_update:
-                - imdb
-                - 2.0
-        ```
-
-###### Mass Poster Update
-
-??? blank "`mass_poster_update` - Updates the poster of every item in the library.<a class="headerlink" href="#mass-poster-update" title="Permanent link">¶</a>"
-
-    <div id="mas-_poster-update" />Updates every item's poster to the chosen sites poster. Will fall back to `plex` if the given option fails.
-    Assets will be used over anything else.
-
-    ???+ warning
-
-        When used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays
-        on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_poster_update`
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the poster update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
-      <tr><td>`language`</td><td>Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
-      <tr><td>`seasons`</td><td>Update season posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode posters while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the poster field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_overlays`</td><td>Skip updating image if the current image has an Overlay :material-numeric-2-circle:{ data-tooltip data-tooltip-id="tippy-operations-2" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-    </table>
-
-    1. The poster field will be locked if a previous `mass_poster_update` was run or if an Overlay has been applied.
-    2. Kometa checks for the `Overlay` label on the item in Plex to determine if an Overlay is applied.
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_poster_update:
-                source: tmdb
-                seasons: false
-                episodes: false
-        ```
-
-    ???+ example "Textless Posters Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            operations:
-              mass_poster_update:
-                source: tmdb
-                language: xx
-        ```
-
-###### Mass Background Update
-
-??? blank "`mass_background_update` - Updates the background of every item in the library.<a class="headerlink" href="#mass-background-update" title="Permanent link">¶</a>"
-
-    <div id="mass-background-update" />Updates every item's background to the chosen sites background. Will fall back to `plex` if the given option fails.
-    Assets will be used over anything else.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_background_update`
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`source`</td><td>Source of the background update.</td><td>`tmdb`, `plex`, `lock`, or `unlock`</td></tr>
-      <tr><td>`language`</td><td>Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. Ignored for other sources.</td><td>ISO 639-1 language code (e.g. `en`, `de`, `xx` for textless)</td></tr>
-      <tr><td>`seasons`</td><td>Update season backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`episodes`</td><td>Update episode backgrounds while updating shows. **Default:** `true`</td><td>`true` or `false`</td></tr>
-      <tr><td>`ignore_locked`</td><td>Skip updating image if the background field is locked :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-operations-1" }<br> **Default:** `false`</td><td>`true` or `false`</td></tr>
-    </table>
-
-    1. The background field will be locked if a previous `mass_background_update` was run.
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_background_update:
-                source: tmdb
-                seasons: false
-                episodes: false
-        ```
-
-###### Mass IMDb Parental Labels
-
-??? blank "`mass_imdb_parental_labels` - Adds IMDb Parental labels of every item in the library.<a class="headerlink" href="#mass-imdb-parental-labels" title="Permanent link">¶</a>"
-
-    <div id="mass-imdb-parental-labels" />Updates every item's labels in the library to match the IMDb Parental Guide.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_imdb_parental_labels`
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`none`</td><td>Apply all Parental Labels with a value of `None`, `Mild`, `Moderate`, or `Severe`.</td></tr>
-      <tr><td>`mild`</td><td>Apply all Parental Labels with a value of `Mild`, `Moderate`, or `Severe`.</td></tr>
-      <tr><td>`moderate`</td><td>Apply all Parental Labels with a value of `Moderate` or `Severe`.</td></tr>
-      <tr><td>`severe`</td><td>Apply all Parental Labels with a value of `Severe`.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_imdb_parental_labels: severe
-        ```
-
-###### Mass Collection Mode
-
-??? blank "`mass_collection_mode` - Updates the Collection Mode of every item in the library.<a class="headerlink" href="#mass-collection-mode" title="Permanent link">¶</a>"
-
-    <div id="mass-collection-mode" />Updates every Collection in your library to the specified Collection Mode.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `mass_collection_mode`
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`default`</td><td>Library default.</td></tr>
-      <tr><td>`hide`</td><td>Hide Collection.</td></tr>
-      <tr><td>`hide_items`</td><td>Hide Items in this Collection.</td></tr>
-      <tr><td>`show_items`</td><td>Show this Collection and its Items.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          TV Shows:
-            operations:
-              mass_collection_mode: hide
-        ```
-
 ###### Update Blank Track Titles
 
-??? blank "`update_blank_track_titles` - Updates blank track titles of every item in the library.<a class="headerlink" href="#update-blank-track-titles" title="Permanent link">¶</a>"
-
-    <div id="update-blank-track-titles" />Search though every track in a music library and replace any blank track titles with the tracks sort title.
-
-    <hr style="margin: 0px;">
+??? info "`update_blank_track_titles` - Updates blank track titles of every item in the library."
+    Search though every track in a music library and replace any blank track titles with the tracks sort title.
 
     **Attribute:** `update_blank_track_titles`
 
@@ -703,11 +757,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Remove Title Parentheses
 
-??? blank "`remove_title_parentheses` - Removes title parentheses of every item in the library.<a class="headerlink" href="#remove-title-parentheses" title="Permanent link">¶</a>"
-
-    <div id="remove-title-parentheses" />Search through every title and remove all ending parentheses in an items title if the title is not locked.
-
-    <hr style="margin: 0px;">
+??? info "`remove_title_parentheses` - Removes title parentheses of every item in the library."
+    Search through every title and remove all ending parentheses in an items title if the title is not locked.
 
     **Attribute:** `remove_title_parentheses`
 
@@ -724,15 +775,12 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Ignore Labels
 
-??? blank "`ignore_labels` - Skips items from Library Operations when they have any of the given labels.<a class="headerlink" href="#ignore-labels" title="Permanent link">¶</a>"
-
-    <div id="ignore-labels" />Enabling this Operation tells Kometa to skip items from item-based Library Operations when the item has any label listed in `ignore_labels`.
+??? info "`ignore_labels` - Skips items from Library Operations when they have any of the given labels."
+    Enabling this Operation tells Kometa to skip items from item-based Library Operations when the item has any label listed in `ignore_labels`.
 
     This applies to item-based Library Operations such as mass updates, asset updates, label updates, Radarr/Sonarr add-all operations, and similar operations that process every item in the library.
 
     The label must match the Plex label exactly.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `ignore_labels`
 
@@ -740,7 +788,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     ???+ example "Example Usage"
 
-        In this example, items with the `Do Not Update` or `Manual Metadata` label will be skipped during the `mass_critic_rating_update` Library Operation.
+        In this example, items with the `Do Not Update` or `Manual Metadata` label will be skipped during the `mass_metadata_update.ratings.critic` Library Operation.
 
         ```yaml
         libraries:
@@ -749,18 +797,17 @@ Several of these operations perform **mass** updates; these are just that, **mas
               ignore_labels:
                 - Do Not Update
                 - Manual Metadata
-              mass_critic_rating_update: tmdb
+              mass_metadata_update:
+                ratings:
+                  critic: tmdb
         ```
 
 ###### Respect Ignore IDs
 
-??? blank "`respect_ignore_ids` - Skips items from Library Operations when their IDs are ignored.<a class="headerlink" href="#respect-ignore-ids" title="Permanent link">¶</a>"
-
-    <div id="respect-ignore-ids" />Enabling this Operation tells Kometa to skip items from Library Operations when their TMDb/TVDb ID is listed in `ignore_ids` or their IMDb ID is listed in `ignore_imdb_ids`.
+??? info "`respect_ignore_ids` - Skips items from Library Operations when their IDs are ignored."
+    Enabling this Operation tells Kometa to skip items from Library Operations when their TMDb/TVDb ID is listed in `ignore_ids` or their IMDb ID is listed in `ignore_imdb_ids`.
 
     This applies the library's configured `ignore_ids` and `ignore_imdb_ids` to item-based Library Operations such as mass updates, asset updates, label updates, Radarr/Sonarr add-all operations, and similar operations that process every item in the library.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `respect_ignore_ids`
 
@@ -770,14 +817,16 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     ???+ example "Example Usage"
 
-        In this example, the 2 IMDb IDs set to be ignored at the global level and the 2 TMDb IDs set to be ignored at the library level will be skipped during the `mass_critic_rating_update` Library Operation.
+        In this example, the 2 IMDb IDs set to be ignored at the global level and the 2 TMDb IDs set to be ignored at the library level will be skipped during the `mass_metadata_update.ratings.critic` Library Operation.
 
         ```yaml
         libraries:
           Movies:
             operations:
               respect_ignore_ids: true
-              mass_critic_rating_update: tmdb
+              mass_metadata_update:
+                ratings:
+                  critic: tmdb
             settings:
               ignore_ids:
                 - 572802
@@ -791,11 +840,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Split Duplicates
 
-??? blank "`split_duplicates` - Splits all duplicate items found in this library.<a class="headerlink" href="#split-duplicates" title="Permanent link">¶</a>"
-
-    <div id="split-duplicates" />Splits all duplicate items found in this library.
-
-    <hr style="margin: 0px;">
+??? info "`split_duplicates` - Splits all duplicate items found in this library."
+    Splits all duplicate items found in this library.
 
     **Attribute:** `split_duplicates`
 
@@ -812,16 +858,13 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Radarr Add All
 
-??? blank "`radarr_add_all` - Adds every item in the library to Radarr.<a class="headerlink" href="#radarr-add-all" title="Permanent link">¶</a>"
-
-    <div id="radarr-add-all" />Adds every item in the library to Radarr.
+??? info "`radarr_add_all` - Adds every item in the library to Radarr."
+    Adds every item in the library to Radarr.
 
     ???+ warning
 
         The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Radarr
         paths you can use the `plex_path` and `radarr_path` [Radarr](radarr.md) details to convert the paths.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `radarr_add_all`
 
@@ -838,11 +881,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Radarr Remove By Tag
 
-??? blank "`radarr_remove_by_tag` - Removes every item from Radarr with the Tags given.<a class="headerlink" href="#radarr-remove-by-tag" title="Permanent link">¶</a>"
-
-    <div id="radarr-remove-by-tag" />Removes every item from Radarr with the Tags given.
-
-    <hr style="margin: 0px;">
+??? info "`radarr_remove_by_tag` - Removes every item from Radarr with the Tags given."
+    Removes every item from Radarr with the Tags given.
 
     **Attribute:** `radarr_remove_by_tag`
 
@@ -859,16 +899,13 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Sonarr Add All
 
-??? blank "`sonarr_add_all` - Adds every item in the library to Sonarr.<a class="headerlink" href="#sonarr-add-all" title="Permanent link">¶</a>"
-
-    <div id="sonarr-add-all" />Adds every item in the library to Sonarr.
+??? info "`sonarr_add_all` - Adds every item in the library to Sonarr."
+    Adds every item in the library to Sonarr.
 
     ???+ warning
 
         The existing paths in plex will be used as the root folder of each item, if the paths in Plex are not the same as your Sonarr
         paths you can use the `plex_path` and `sonarr_path` [Sonarr](sonarr.md) details to convert the paths.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `sonarr_add_all`
 
@@ -885,11 +922,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
 ###### Sonarr Remove By Tag
 
-??? blank "`sonarr_remove_by_tag` - Removes every item from Sonarr with the Tags given.<a class="headerlink" href="#sonarr-remove-by-tag" title="Permanent link">¶</a>"
-
-    <div id="sonarr-remove-by-tag" />Removes every item from Sonarr with the Tags given.
-
-    <hr style="margin: 0px;">
+??? info "`sonarr_remove_by_tag` - Removes every item from Sonarr with the Tags given."
+    Removes every item from Sonarr with the Tags given.
 
     **Attribute:** `sonarr_remove_by_tag`
 
@@ -904,164 +938,15 @@ Several of these operations perform **mass** updates; these are just that, **mas
               sonarr_remove_by_tag: mytag1, mytag2
         ```
 
-###### Genre Mapper
-
-??? blank "`genre_mapper` - Maps genres in your library to be changed to other genres.<a class="headerlink" href="#genre-mapper" title="Permanent link">¶</a>"
-
-    <div id="genre-mapper" />Maps genres in your library to be changed to other genres.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `genre_mapper`
-
-    **Accepted Values:** Each attribute under `genre_mapper` is a separate mapping and has two parts.
-
-    <table class="clearTable">
-      <tr><td>`key`</td><td>Genre you want mapped to the value</td><td>`Action/Adventure, Action & Adventure` in the example below.</td></tr>
-      <tr><td>`value`</td><td>What the genre will end up as</td><td>`Action` in the example below.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        This example will change go through every item in your library and change the genre `Action/Adventure` or
-        `Action & Adventure` to `Action` and `Romantic Comedy` to `Comedy`.
-
-        ```yaml
-        libraries:
-          Movies:
-            # Metadata and Overlay files here
-            operations:
-              genre_mapper:
-                "Action/Adventure": Action
-                "Action & Adventure": Action
-                Romantic Comedy: Comedy
-        ```
-
-        To just Remove a Genre without replacing it just set the Genre to nothing like this.
-
-        ```yaml
-        libraries:
-          Movies:
-            # Metadata and Overlay files here
-            operations:
-              genre_mapper:
-                "Action/Adventure": Action
-                "Action & Adventure": Action
-                Romantic Comedy:
-        ```
-
-        The above example will change go through every item in your library and change the genre `Action/Adventure` or
-        `Action & Adventure` to `Action` and remove every instance of the Genre `Romantic Comedy`.
-
-###### Content Rating Mapper
-
-??? blank "`content_rating_mapper` - Maps content ratings in your library to be changed to other content ratings.<a class="headerlink" href="#content-rating-mapper" title="Permanent link">¶</a>"
-
-    <div id="content-rating-mapper" />Maps content ratings in your library to be changed to other content ratings.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `content_rating_mapper`
-
-    **Accepted Values:** Each attribute under `content_rating_mapper` is a separate mapping and has two parts.
-
-    <table class="clearTable">
-      <tr><td>`key`</td><td>Content rating you want mapped to the value.</td><td>`PG`, `PG-13` in the example below.</td></tr>
-      <tr><td>`value`</td><td>What the content rating will end up as.</td><td>`Y-10` in the example below.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        This example will change go through every item in your library and change the content rating `PG` or `PG-13` to
-        `Y-10` and `R` to `Y-17`.
-
-        ```yaml
-        libraries:
-          Movies:
-            # Metadata and Overlay files here
-            operations:
-              content_rating_mapper:
-                PG: Y-10
-                "PG-13": Y-10
-                R: Y-17
-        ```
-
-        To just Remove a content rating without replacing it just set the content rating to nothing like this.
-
-        ```yaml
-        libraries:
-          Movies:
-            # Metadata and Overlay files here
-            operations:
-              content_rating_mapper:
-                PG: Y-10
-                "PG-13": Y-10
-                R:
-        ```
-
-        The above example will change go through every item in your library and change the content rating
-        `PG` or `PG-13` to `Y-10` and remove every instance of the content rating `R`.
-
-###### Metadata Backup
-
-??? blank "`metadata_backup` - Creates/Maintains a Kometa Metadata File for the library.<a class="headerlink" href="#metadata-backup" title="Permanent link">¶</a>"
-
-    <div id="metadata-backup" />Creates/Maintains a Kometa Metadata File with a full `metadata` mapping based on the library's items locked attributes.
-
-    If you point to an existing Metadata File then Kometa will sync the changes to the file, so you won't lose non plex changes in the file.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `metadata_backup`
-
-    **Accepted Values:** There are a few different options to determine how the `metadata_backup` works.
-
-    <table class="clearTable">
-      <tr><td>`path`</td><td>Path to where the metadata will be saved/maintained.<br>**Default:** `<<library_name>>_Metadata_Backup.yml in your config folder`<br>**Values:** Path to Metadata File.</td></tr>
-      <tr><td>`exclude`</td><td>Exclude all listed attributes from being saved in the Collection File.<br>**Values:** `Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of attributes`.</td></tr>
-      <tr><td>`sync_tags`</td><td>All Tag Attributes will have the `.sync` option and blank attribute will be added to sync.<br>**Default:** `false`<br>**Values:** `true` or `false`.</td></tr>
-      <tr><td>`add_blank_entries`</td><td>Will add a line for entries that have no metadata changes.<br>**Default:** `true`<br>**Values:** `true` or `false`.</td></tr>
-    </table>
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            operations:
-              metadata_backup:
-                path: config/Movie_Backup.yml
-                sync_tags: true
-                add_blank_entries: false
-        ```
-
-    The resulting Metadata File can be used like any other [Metadata File](../files/metadata.md) in Kometa, for example,
-    you can use it to apply metadata to a new library or to restore metadata to a library.
-
-    ???+ example "Example"
-
-        ```yaml
-        libraries:
-          Movies:
-            metadata_files:
-              file: config/Movie_Backup.yml  # restore this Metadata File to the library
-          Movies - Alternate:
-            metadata_files:
-              file: config/Movie_Backup.yml  # apply this Metadata File to the library
-        ```
-
 ###### Plex Bulk Edits Batch Size
 
-??? blank "`plex_bulk_edit_batch_size` - Breaks up processing of operations into chunks of this many items.<a class="headerlink" href="#plex-bulk-edit-batch-size" title="Permanent link">¶</a>"
-
-    <div id="plex-bulk-edit-batch-size" />Setting this file tells Kometa to break up operations that require inspecting/modifying the entire library into chunks. Setting this can be particularly helpful for large libraries.
+??? info "`plex_bulk_edit_batch_size` - Breaks up processing of operations into chunks of this many items."
+    Setting this file tells Kometa to break up operations that require inspecting/modifying the entire library into chunks. Setting this can be particularly helpful for large libraries.
 
     If no value is set, the entire library is processed in one batch.
 
     For example, if your Movies library has 1000 items, by default all of them will be processed at once.
     If `plex_bulk_edit_batch_size=100`, then 100 items will be processed at once.
-
-    <hr style="margin: 0px;">
 
     **Attribute:** `plex_bulk_edit_batch_size`
 
@@ -1073,6 +958,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
         libraries:
           Movies:
             operations:
-                plex_bulk_edit_batch_size: 1000
-                mass_audience_rating_update: imdb
+              plex_bulk_edit_batch_size: 1000
+              mass_metadata_update:
+                ratings:
+                  audience: imdb
         ```

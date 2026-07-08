@@ -199,7 +199,7 @@ class Trakt:
         return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
-    def _request(self, url, params=None, json_data=None) -> Any:
+    def _request(self, url, params=None, json_data=None, ignore_404=False) -> Any:
         # Returns dict[str, Any] for single-page endpoints and list[dict] for
         # paginated endpoints.  Annotated Any so callers can subscript/iterate
         # based on their knowledge of the specific endpoint being called.
@@ -235,6 +235,8 @@ class Trakt:
                 if reauth_count > 1:
                     logger.debug("Trakt token has been refreshed twice on this request; this may be a private list")
                     raise Failed(f"({response.status_code}) {response.reason}")
+            elif response.status_code == 404 and ignore_404:
+                return None
             elif response.status_code != 200:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
@@ -258,6 +260,41 @@ class Trakt:
     def get_episode_rating(self, show_id, season, episode):
         response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
         return response["rating"]
+
+    def get_item_images(self, item_id, media_type, season=None, episode=None):
+        if media_type not in ["movie", "show"]:
+            raise Failed(f"Trakt Error: Images not supported for media type {media_type}")
+
+        def _images(data):
+            if isinstance(data, list):
+                data = next((d for d in data if isinstance(d, dict) and (season is None or d.get("number") == season)), {})
+            return data.get("images") if isinstance(data, dict) else {}
+
+        show_id = item_id
+        if media_type == "movie":
+            data = self._request(f"/movies/{item_id}", params={"extended": "full,images"}, ignore_404=True)
+        elif season is None:
+            data = self._request(f"/shows/{show_id}", params={"extended": "full,images"}, ignore_404=True)
+        elif episode is None:
+            data = self._request(f"/shows/{show_id}/seasons", params={"extended": "full,images"}, ignore_404=True)
+        else:
+            data = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}", params={"extended": "full,images"}, ignore_404=True)
+        if not data:
+            return {}
+        return _images(data) or {}
+
+    def lookup_item_images(self, external_id, from_source, media_type, season=None, episode=None):
+        if season is None:
+            lookup = self._request(f"/search/{from_source}/{external_id}", params={"type": media_type, "extended": "full"})
+            if lookup and media_type in lookup[0]:
+                return lookup[0][media_type].get("images") or {}
+            raise Failed(f"Trakt Error: No {media_type} found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
+        lookup = self._request(f"/search/{from_source}/{external_id}", params={"type": "show"})
+        if lookup and "show" in lookup[0]:
+            show_id = lookup[0]["show"]["ids"].get("slug") or lookup[0]["show"]["ids"].get("trakt")
+            if show_id:
+                return self.get_item_images(show_id, "show", season=season, episode=episode)
+        raise Failed(f"Trakt Error: No show found for {from_source.upper().replace('B', 'b')} ID: {external_id}")
 
     def get_rating(self, show_id, is_movie):
         item_type = "movies" if is_movie else "shows"

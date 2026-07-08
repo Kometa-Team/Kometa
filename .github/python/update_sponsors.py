@@ -1,5 +1,7 @@
-import os, requests
+import os
 from datetime import datetime
+
+import requests
 
 pat = os.getenv("GITHUB_PAT")
 
@@ -52,8 +54,8 @@ def get_lifetime():
     sponsors_list = []
     cursor = None
     while True:
-        cursor_text = f', after: "{cursor}"' if cursor is not None else ''
-        query = f'''
+        cursor_text = f', after: "{cursor}"' if cursor is not None else ""
+        query = f"""
         query {{
             viewer {{
                 login
@@ -65,7 +67,7 @@ def get_lifetime():
                     }}
                     nodes {{
                         amountInCents
-                        formattedAmount 
+                        formattedAmount
                         sponsor {{
                             ... on Organization {{
                                 name
@@ -83,8 +85,7 @@ def get_lifetime():
                     }}
                 }}
             }}
-        }}'''
-
+        }}"""
 
         response = requests.request("POST", "https://api.github.com/graphql", headers={"Authorization": f"Bearer {pat}"}, json={"query": query})
         response_json = response.json()["data"]["viewer"]["lifetimeReceivedSponsorshipValues"]
@@ -99,8 +100,8 @@ def get_sponsors(private=False, active=False):
     sponsors_list = []
     cursor = None
     while True:
-        cursor_text = f', after: "{cursor}"' if cursor is not None else ''
-        query = f'''
+        cursor_text = f', after: "{cursor}"' if cursor is not None else ""
+        query = f"""
         query {{
             viewer {{
                 login
@@ -128,7 +129,7 @@ def get_sponsors(private=False, active=False):
                         createdAt
                         privacyLevel
                         isActive
-                        isOneTimePayment 
+                        isOneTimePayment
                         tier {{
                             isOneTime
                             monthlyPriceInCents
@@ -136,7 +137,7 @@ def get_sponsors(private=False, active=False):
                     }}
                 }}
             }}
-        }}'''
+        }}"""
         response = requests.request("POST", "https://api.github.com/graphql", headers={"Authorization": f"Bearer {pat}"}, json={"query": query})
         response_json = response.json()["data"]["viewer"]["sponsorshipsAsMaintainer"]
         cursor = response_json["pageInfo"]["endCursor"]
@@ -156,7 +157,7 @@ active_sponsors = {s.name: s for s in get_sponsors(active=True)}
 for sponsor in get_lifetime():
     if sponsor.name in private_sponsors:
         continue
-    #print(sponsor)
+    # print(sponsor)
     active_amount = active_sponsors[sponsor.name].amount if sponsor.name in active_sponsors else 0
     if sponsor.amount >= 25000 or active_amount >= 2500:
         gold_sponsors.append(sponsor.gold_logo())
@@ -168,10 +169,10 @@ for sponsor in get_lifetime():
         standard_sponsors.append(sponsor.bronze_logo())
 
 
-#print(f"gold_sponsors: {len(gold_sponsors)}")
-#print(f"silver_sponsors: {len(silver_sponsors)}")
-#print(f"bronze_sponsors: {len(bronze_sponsors)}")
-#print(f"standard_sponsors: {len(standard_sponsors)}")
+# print(f"gold_sponsors: {len(gold_sponsors)}")
+# print(f"silver_sponsors: {len(silver_sponsors)}")
+# print(f"bronze_sponsors: {len(bronze_sponsors)}")
+# print(f"standard_sponsors: {len(standard_sponsors)}")
 
 with open("README.md", "r") as f:
     readme_data = f.readlines()

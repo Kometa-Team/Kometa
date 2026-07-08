@@ -14,7 +14,7 @@ hide:
         "EXAMPLE2": "G"
     }'
     replace-tags='{
-        "rec-sub": "Recommendation: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-content-rating-update) with either 
+        "rec-sub": "Recommendation: Use the [Mass Content Rating Update Library Operation](../../config/operations.md#mass-metadata-update) with either 
 `mdb_commonsense` or `mdb_commonsense0` to update Plex to the Common Sense Rating."
     }'
     rewrite-relative-urls=false

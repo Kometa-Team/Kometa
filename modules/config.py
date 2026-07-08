@@ -156,6 +156,8 @@ mass_image_options = {
     "unlock": "Unlock Image",
     "plex": "Use Plex Images",
     "tmdb": "Use TMDb Images",
+    "trakt": "Use Trakt Images",
+    "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {
     "lock": "Lock Rating",
@@ -230,6 +232,8 @@ library_operations = {
     "mass_collection_mode": "mass_collection_mode",
     "mass_poster_update": "dict",
     "mass_background_update": "dict",
+    "mass_image_update": "dict",
+    "mass_metadata_update": "dict",
     "metadata_backup": "dict",
     "delete_collections": "dict",
     "genre_mapper": "dict",
@@ -626,6 +630,171 @@ class ConfigFile:
                 if final_value and test_list is not None and final_value not in test_list:
                     logger.warning(options)
             return default
+
+        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False):
+            image_config = input_dict.get(image_type)
+            if not image_config:
+                return None
+            if not isinstance(image_config, dict):
+                image_config = {"source": image_config}
+            options = {k: v for k, v in mass_image_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
+            _language = check_for_attribute(image_config, "language", default_is_none=True, do_print=False, save=False)
+            if _language is not None:
+                _language = str(_language).lower()
+                if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
+                    raise Failed(f"Config Error: mass_image_update {image_type} language {_language} is not a valid ISO 639-1 language code")
+            if isinstance(image_config.get("source"), list):
+                sources = check_for_attribute(image_config, "source", test_list=options, var_type="lower_list", default_is_none=True, save=False)
+                source = sources[0] if sources else None
+            else:
+                source = check_for_attribute(image_config, "source", test_list=options, default_is_none=True, save=False)
+                sources = [source] if source else []
+            parsed = {
+                "source": source,
+                "sources": sources,
+                "language": _language,
+                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, do_print=False, save=False),
+                "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, do_print=False, save=False),
+            }
+            if allow_show_levels:
+                parsed["seasons"] = check_for_attribute(image_config, "seasons", var_type="bool", default=True, do_print=False, save=False)
+                parsed["episodes"] = check_for_attribute(image_config, "episodes", var_type="bool", default=True, do_print=False, save=False)
+            return parsed
+
+        def expand_mass_metadata_operation(config_op, input_dict):
+            if not input_dict or not isinstance(input_dict, dict):
+                raise Failed("Config Error: mass_metadata_update must be a dictionary")
+            base_op = dict(config_op)
+            base_op.pop("mass_metadata_update", None)
+            base_schedule = base_op.pop("schedule", None)
+            output_ops = []
+
+            def get_schedule(input_value, inherited_schedule=None):
+                if isinstance(input_value, dict) and "schedule" in input_value:
+                    return input_value["schedule"]
+                return inherited_schedule
+
+            def get_source(input_value):
+                if isinstance(input_value, dict) and "source" in input_value:
+                    return input_value["source"]
+                return input_value
+
+            def add_expanded(new_key, old_key, value, output_op):
+                if old_key in output_op:
+                    logger.warning(f"Config Warning: Operation {new_key} ignored because {old_key} is already scheduled")
+                else:
+                    output_op[old_key] = value
+
+            def add_operation(new_key, expanded_values, schedule=None):
+                output_op = {}
+                schedule = schedule if schedule is not None else base_schedule
+                if schedule is not None:
+                    output_op["schedule"] = schedule
+                for old_key, value in expanded_values.items():
+                    add_expanded(new_key, old_key, value, output_op)
+                output_ops.append(output_op)
+
+            if base_op:
+                if base_schedule is not None:
+                    base_op["schedule"] = base_schedule
+                output_ops.append(base_op)
+
+            direct_aliases = {
+                "original_title": "mass_original_title_update",
+                "studio": "mass_studio_update",
+                "originally_available": "mass_originally_available_update",
+                "added_at": "mass_added_at_update",
+            }
+            for new_key, old_key in direct_aliases.items():
+                if new_key in input_dict:
+                    input_value = input_dict[new_key]
+                    add_operation(new_key, {old_key: get_source(input_value)}, schedule=get_schedule(input_value))
+
+            if "backup" in input_dict:
+                backup_config = input_dict["backup"]
+                if isinstance(backup_config, dict):
+                    backup_config = {k: v for k, v in backup_config.items() if k != "schedule"}
+                add_operation("backup", {"metadata_backup": backup_config}, schedule=get_schedule(input_dict["backup"]))
+
+            if "collections" in input_dict:
+                collections_config = input_dict["collections"]
+                collections_schedule = get_schedule(collections_config)
+                if isinstance(collections_config, dict):
+                    if "mode" in collections_config:
+                        add_operation("collections.mode", {"mass_collection_mode": collections_config["mode"]}, schedule=collections_schedule)
+                else:
+                    add_operation("collections", {"mass_collection_mode": collections_config}, schedule=collections_schedule)
+
+            if "genre" in input_dict:
+                genre_config = input_dict["genre"]
+                genre_schedule = get_schedule(genre_config)
+                expanded_values = {}
+                if isinstance(genre_config, dict):
+                    if "mappings" in genre_config:
+                        expanded_values["genre_mapper"] = genre_config["mappings"]
+                    if "source" in genre_config:
+                        expanded_values["mass_genre_update"] = genre_config["source"]
+                    else:
+                        genre_updates = [k for k in genre_config if k not in ["mappings", "schedule"]]
+                        if genre_updates:
+                            expanded_values["mass_genre_update"] = genre_updates
+                else:
+                    expanded_values["mass_genre_update"] = genre_config
+                if expanded_values:
+                    add_operation("genre", expanded_values, schedule=genre_schedule)
+
+            if "content_rating" in input_dict:
+                content_rating_config = input_dict["content_rating"]
+                content_rating_schedule = get_schedule(content_rating_config)
+                expanded_values = {}
+                if isinstance(content_rating_config, dict):
+                    if "mappings" in content_rating_config:
+                        expanded_values["content_rating_mapper"] = content_rating_config["mappings"]
+                    if "source" in content_rating_config:
+                        expanded_values["mass_content_rating_update"] = content_rating_config["source"]
+                    else:
+                        content_rating_updates = [k for k in content_rating_config if k not in ["mappings", "schedule"]]
+                        if content_rating_updates:
+                            expanded_values["mass_content_rating_update"] = content_rating_updates
+                else:
+                    expanded_values["mass_content_rating_update"] = content_rating_config
+                if expanded_values:
+                    add_operation("content_rating", expanded_values, schedule=content_rating_schedule)
+
+            if "labels" in input_dict:
+                labels_config = input_dict["labels"]
+                labels_schedule = get_schedule(labels_config)
+                if isinstance(labels_config, dict):
+                    if "severity" in labels_config:
+                        add_operation("labels.severity", {"mass_imdb_parental_labels": labels_config["severity"]}, schedule=labels_schedule)
+                else:
+                    add_operation("labels", {"mass_imdb_parental_labels": labels_config}, schedule=labels_schedule)
+
+            if "ratings" in input_dict:
+                ratings_config = input_dict["ratings"]
+                if not isinstance(ratings_config, dict):
+                    raise Failed("Config Error: mass_metadata_update ratings must be a dictionary")
+                ratings_schedule = get_schedule(ratings_config)
+                ratings_aliases = {
+                    "audience": "mass_audience_rating_update",
+                    "critic": "mass_critic_rating_update",
+                    "user": "mass_user_rating_update",
+                    "episode_audience": "mass_episode_audience_rating_update",
+                    "episode_critic": "mass_episode_critic_rating_update",
+                    "episode_user": "mass_episode_user_rating_update",
+                }
+                for new_key, old_key in ratings_aliases.items():
+                    if new_key in ratings_config:
+                        input_value = ratings_config[new_key]
+                        add_operation(f"ratings.{new_key}", {old_key: get_source(input_value)}, schedule=get_schedule(input_value, inherited_schedule=ratings_schedule))
+
+            for image_key in ["poster", "background", "logo", "square_art", "squart_art"]:
+                if image_key in input_dict:
+                    image_config = input_dict[image_key]
+                    if isinstance(image_config, dict):
+                        image_config = {k: v for k, v in image_config.items() if k != "schedule"}
+                    add_operation(image_key, {"mass_image_update": {image_key: image_config}}, schedule=get_schedule(input_dict[image_key]))
+            return output_ops
 
         self.general = {
             "run_order": check_for_attribute(
@@ -1118,6 +1287,8 @@ class ConfigFile:
                 if self.requested_libraries and library_name not in self.requested_libraries:
                     continue
                 params = {o: None for o in library_operations}
+                params["mass_logo_update"] = None
+                params["mass_square_art_update"] = None
                 params["mapping_name"] = str(library_name)
                 params["name"] = str(lib["library_name"]) if lib and "library_name" in lib and lib["library_name"] else str(library_name)
                 display_name = f"{params['name']} ({params['mapping_name']})" if lib and "library_name" in lib and lib["library_name"] else params["mapping_name"]
@@ -1442,6 +1613,16 @@ class ConfigFile:
                     final_operations = {}
                     logger.separator("Operation Configuration", space=False, border=False)
                     config_ops = util.parse("Config", "operations", lib["operations"], datatype="listdict")
+                    expanded_config_ops = []
+                    for config_op in config_ops:
+                        if "mass_metadata_update" in config_op:
+                            try:
+                                expanded_config_ops.extend(expand_mass_metadata_operation(config_op, config_op["mass_metadata_update"]))
+                            except Failed as e:
+                                logger.error(e)
+                        else:
+                            expanded_config_ops.append(config_op)
+                    config_ops = expanded_config_ops
                     op_size = len(config_ops)
                     for i, config_op in enumerate(config_ops, 1):
                         logger.info("")
@@ -1533,20 +1714,42 @@ class ConfigFile:
                                         _language = str(_language).lower()
                                         if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
                                             raise Failed(f"Config Error: {op} language {_language} is not a valid ISO 639-1 language code")
-                                    section_final[op] = {
-                                        "source": check_for_attribute(
+                                    if isinstance(input_dict.get("source"), list):
+                                        sources = check_for_attribute(input_dict, "source", test_list=mass_image_options, var_type="lower_list", default_is_none=True, save=False)
+                                        source = sources[0] if sources else None
+                                    else:
+                                        source = check_for_attribute(
                                             input_dict,
                                             "source",
                                             test_list=mass_image_options,
                                             default_is_none=True,
                                             save=False,
-                                        ),
+                                        )
+                                        sources = [source] if source else []
+                                    section_final[op] = {
+                                        "source": source,
+                                        "sources": sources,
                                         "language": _language,
                                         "seasons": check_for_attribute(input_dict, "seasons", var_type="bool", default=True, save=False),
                                         "episodes": check_for_attribute(input_dict, "episodes", var_type="bool", default=True, save=False),
                                         "ignore_locked": check_for_attribute(input_dict, "ignore_locked", var_type="bool", default=False, save=False),
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
+                                elif op == "mass_image_update":
+                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    logo_update = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True, allow_tvdb=True)
+                                    square_art_update = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False, allow_tvdb=True)
+                                    if "squart_art" in input_dict and "square_art" not in input_dict:
+                                        square_art_update = parse_mass_image_operation(input_dict, "squart_art", allow_tmdb=False, allow_tvdb=True)
+                                    if poster_update:
+                                        section_final["mass_poster_update"] = poster_update
+                                    if background_update:
+                                        section_final["mass_background_update"] = background_update
+                                    if logo_update:
+                                        section_final["mass_logo_update"] = logo_update
+                                    if square_art_update:
+                                        section_final["mass_square_art_update"] = square_art_update
                                 elif op == "metadata_backup":
                                     default_path = os.path.join(default_dir, f"{str(library_name)}_Metadata_Backup.yml")
                                     if "path" not in input_dict:

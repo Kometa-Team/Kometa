@@ -40,6 +40,72 @@ document$.subscribe(function() {
   }
 });
 
+// Open operation details when navigating directly to an operation hash.
+document$.subscribe(function() {
+  if (window.operationAdmonitionHashHandler) {
+    window.removeEventListener("hashchange", window.operationAdmonitionHashHandler);
+    window.operationAdmonitionHashHandler = null;
+  }
+
+  const operationsPath = /\/config\/operations\/?$/;
+  if (!operationsPath.test(window.location.pathname)) {
+    return;
+  }
+
+  const operationHeadings = document.querySelectorAll("article h6[id]");
+
+  operationHeadings.forEach(function(heading) {
+    const details = heading.nextElementSibling;
+    if (!details || details.tagName.toLowerCase() !== "details") {
+      return;
+    }
+
+    details.dataset.operationAnchor = heading.id;
+
+    const summary = details.querySelector(":scope > summary");
+    if (!summary || summary.querySelector(".operation-admonition-link")) {
+      return;
+    }
+
+    const link = document.createElement("a");
+    link.className = "operation-admonition-link";
+    link.href = "#" + heading.id;
+    link.setAttribute("aria-label", "Link to this operation");
+    link.textContent = "#";
+    link.addEventListener("click", function(event) {
+      event.stopPropagation();
+      details.open = true;
+    });
+    summary.appendChild(link);
+  });
+
+  function openOperationFromHash() {
+    const hash = decodeURIComponent(window.location.hash.slice(1));
+    if (!hash) {
+      return;
+    }
+
+    const heading = document.getElementById(hash);
+    if (!heading) {
+      return;
+    }
+
+    const details = heading.nextElementSibling;
+    if (!details || details.tagName.toLowerCase() !== "details") {
+      return;
+    }
+
+    details.open = true;
+    window.requestAnimationFrame(function() {
+      details.scrollIntoView({ block: "start" });
+    });
+  }
+
+  openOperationFromHash();
+  window.operationAdmonitionHashHandler = openOperationFromHash;
+  window.addEventListener("hashchange", window.operationAdmonitionHashHandler);
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   const currentURL = window.location.href;
   const ellipsisSpan = document.querySelector(".md-ellipsis");

@@ -119,6 +119,8 @@ class Library(ABC):
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
         self.mass_poster_update = params["mass_poster_update"]
         self.mass_background_update = params["mass_background_update"]
+        self.mass_logo_update = params["mass_logo_update"]
+        self.mass_square_art_update = params["mass_square_art_update"]
         self.radarr_add_all_existing = params["radarr_add_all_existing"]
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
@@ -171,6 +173,8 @@ class Library(ABC):
             or self.sonarr_add_all_existing
             or self.mass_poster_update
             or self.mass_background_update
+            or self.mass_logo_update
+            or self.mass_square_art_update
             else False
         )
         self.library_operation = (
@@ -419,8 +423,14 @@ class Library(ABC):
     def background_update(self, item, image, tmdb=None, title=None):
         return self.image_update(item, image, tmdb=tmdb, title=title, poster=False)
 
+    def logo_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="logo")
+
+    def square_art_update(self, item, image, tmdb=None, title=None):
+        return self.image_update(item, image, tmdb=tmdb, title=title, poster=False, image_type="square_art")
+
     @abstractmethod
-    def image_update(self, item, image, tmdb=None, title=None, poster=True):
+    def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
 
     def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
