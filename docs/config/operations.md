@@ -79,7 +79,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
     | `poster`               | Updates posters.                                                                                                               |
     | `ratings`              | Updates item and episode ratings using `audience`, `critic`, `user`, `episode_audience`, `episode_critic`, and `episode_user`. |
     | `square_art`           | Updates square art. Seasons and episodes are not supported.                                                                    |
-    | `studio`               | Up                                                                                                                             |
+    | `studio`               | Update studios.                                                                                                                             |
 
 
     ??? example "Complete Example (click to expand)"
