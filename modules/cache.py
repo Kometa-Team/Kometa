@@ -372,6 +372,18 @@ class Cache:
             self._connection = connection
         return self._connection
 
+    def close(self):
+        """Close database connection and clean up WAL/SHM files."""
+        if self._connection is not None:
+            try:
+                # Disable WAL mode to trigger cleanup of .wal and .shm files
+                self._connection.execute("PRAGMA journal_mode=DELETE")
+                self._connection.close()
+            except sqlite3.Error:
+                pass
+            finally:
+                self._connection = None
+
     def migrate_overlay_value_cache(self):
         # Upgrade legacy overlay_special_text2 to overlay_value_cache; its presence is the one-time upgrade signal (not created on fresh installs, dropped once migrated), and runs regardless of cache_expiration.
         with self.connection as connection:
