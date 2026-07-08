@@ -64,8 +64,10 @@ def _load_plex(monkeypatch):
         return decorator
 
     fake_tenacity.retry = retry
+    fake_tenacity.retry_if_exception_type = _identity
     fake_tenacity.retry_if_not_exception_type = _identity
     fake_tenacity.stop_after_attempt = _identity
+    fake_tenacity.wait_chain = _identity
     fake_tenacity.wait_fixed = _identity
     monkeypatch.setitem(sys.modules, "tenacity", fake_tenacity)
 
