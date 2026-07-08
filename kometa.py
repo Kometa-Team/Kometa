@@ -9,6 +9,7 @@ import uuid
 from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
+from typing import TypeAlias
 
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
@@ -78,6 +79,8 @@ system_versions = {
     "tenacity": None,
     "tmdbapis": tmdbapis.__version__,
 }
+
+LibraryRunStatus: TypeAlias = dict[str, dict[str, str]]
 
 default_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config")
 load_dotenv(os.path.join(default_dir, ".env"))
@@ -381,6 +384,43 @@ def should_sync_collection(builder):
 
 def collection_count_after_run(beginning_count, items_added, items_removed):
     return max(0, items_added + beginning_count - items_removed)
+
+
+def summarize_duplicate_collections(collections):
+    titles = {}
+    counts = {}
+    for collection in collections:
+        title = str(getattr(collection, "title", "")).strip()
+        if not title:
+            continue
+        key = title.casefold()
+        counts[key] = counts.get(key, 0) + 1
+        titles.setdefault(key, title)
+    return sorted([(titles[key], count) for key, count in counts.items() if count > 1], key=lambda item: (-item[1], item[0].casefold()))
+
+
+def report_duplicate_collections(config):
+    duplicate_libraries = []
+    for library in config.libraries:
+        if getattr(library, "skip_library", False):
+            continue
+        try:
+            duplicate_titles = summarize_duplicate_collections(library.get_all_collections())
+        except Exception as e:
+            logger.warning(f"Plex Warning: Failed to scan duplicate collections in {library.name}: {e}")
+            continue
+        if duplicate_titles:
+            duplicate_libraries.append((library.name, duplicate_titles))
+
+    if duplicate_libraries:
+        logger.separator("Duplicate Collections", space=False, border=False)
+        logger.info("")
+        for library_name, duplicate_titles in duplicate_libraries:
+            logger.warning(f"Plex Warning: Duplicate collection titles detected in {library_name} Library")
+            for title, count in duplicate_titles:
+                logger.warning(f"  {count} instances: {title}")
+            logger.warning("If this is unexpected, consider checking Plex DBRepair.")
+            logger.warning("")
 
 
 def start(attrs):
@@ -687,7 +727,7 @@ def start(attrs):
 
 
 def run_config(config, stats):
-    library_status = run_libraries(config)
+    library_status, collections_ran = run_libraries(config)
 
     playlist_status = {}
     playlist_stats = {}
@@ -807,6 +847,9 @@ def run_config(config, stats):
         logger.info("")
         print_status(playlist_status)
 
+    if collections_ran:
+        report_duplicate_collections(config)
+
     stats["added"] += amount_added
     for library in config.libraries:
         stats["created"] += library.stats["created"]
@@ -831,8 +874,9 @@ def run_config(config, stats):
     return stats
 
 
-def run_libraries(config):
-    library_status = {}
+def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
+    library_status: LibraryRunStatus = {}
+    collections_ran = False
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
@@ -944,6 +988,8 @@ def run_libraries(config):
             # Pre-populate collection_names before the run_order loop so that operations can correctly identify unconfigured collections regardless of run_order.
             # Without this, if operations runs before collections, collection_names is empty and every Plex collection is incorrectly flagged as unconfigured. #1968
             if runs["collections"]:
+                # Only report duplicate collection titles when Kometa actually processed collections this run.
+                collections_ran = True
                 for metadata in library.collection_files:
                     if config.requested_files and metadata.get_file_name() not in config.requested_files:
                         continue
@@ -1018,7 +1064,7 @@ def run_libraries(config):
         except Exception as e:
             library.notify(get_critical_error_message(e))
             log_critical_exception(e)
-    return library_status
+    return library_status, collections_ran
 
 
 def run_collection(config, library, metadata, requested_collections):
