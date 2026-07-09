@@ -1898,6 +1898,7 @@ class Plex(Library):
     def find_and_upload_assets(self, item, current_labels, asset_directory=None):
         item_dir = None
         name = None
+        configured_asset_directories = self.asset_directory if asset_directory is None else asset_directory
         try:
             poster, background, logo, square_art, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             has_overlay = "Overlay" in current_labels
@@ -1907,7 +1908,8 @@ class Plex(Library):
             if has_overlay:
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
             elif not poster and not background and not logo and not square_art and self.show_missing_assets:
-                logger.warning(f"Asset Warning: No poster or background found in the assets folder '{item_dir}'")
+                searched_directory = item_dir or "', '".join(os.path.abspath(ad) for ad in configured_asset_directories)
+                logger.warning(f"Asset Warning: No poster or background found in the assets folder '{searched_directory}'")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
