@@ -668,7 +668,6 @@ def start(attrs):
                 (r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\.", "Letterboxd Error: TMDb Movie ID not found"),
                 (r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\.", "Letterboxd Warning: TMDb link is for a TV show, not a movie"),
                 (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
-                (r"Plex Error: resolution: No matches found with regex pattern .+", "Plex Error: resolution: No matches found with regex pattern"),
                 (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
                 (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
                 (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),

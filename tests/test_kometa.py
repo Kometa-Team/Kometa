@@ -124,6 +124,7 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     assert 'logger.separator("Convert Summary", space=False, border=False)' in text
     assert 'return f"{message} for {source}"' in text
     assert 'r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"' in text
+    assert 'Plex Error: resolution: No matches found with regex pattern' not in text
 
 
 def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
