@@ -1307,7 +1307,8 @@ class Plex(Library):
         sleep=_plex_timeout_sleep,
     )
     def _save_multi_edits_with_retry(self):
-        edits = dict(self.Plex._edits) if isinstance(getattr(self.Plex, "_edits", None), dict) else None
+        pending_edits = getattr(self.Plex, "_edits", None)
+        edits = pending_edits.copy() if isinstance(pending_edits, dict) else None
         try:
             self.Plex.saveMultiEdits()
         except (ConnectTimeout, ReadTimeout):
