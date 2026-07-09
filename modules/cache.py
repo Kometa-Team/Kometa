@@ -270,7 +270,7 @@ class Cache:
                     library_id INTEGER,
                     image_type TEXT,
                     source TEXT,
-                    UNIQUE(library_id, image_type, source))""")
+                    UNIQUE(library_id, image_type))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS radarr_adds (
                     key INTEGER PRIMARY KEY,
                     tmdb_id TEXT,
@@ -1124,7 +1124,13 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
                 cursor.execute(
-                    """INSERT OR IGNORE INTO op_image_source(library_id, image_type, source)
+                    """DELETE FROM op_image_source
+                    WHERE library_id = (SELECT key FROM image_maps WHERE library = ?)
+                    AND image_type = ?""",
+                    (library, image_type),
+                )
+                cursor.execute(
+                    """INSERT INTO op_image_source(library_id, image_type, source)
                     SELECT key, ?, ? FROM image_maps WHERE library = ?""",
                     (image_type, source, library),
                 )
