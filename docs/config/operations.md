@@ -468,7 +468,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | When `true`, Kometa does not reapply images from the previously completed source. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Ignores items where the poster field is locked, such as items with an Overlay or items where the configured source has already updated the field. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
 
         | Background Option | Description | Values |
@@ -477,18 +477,19 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | When `true`, Kometa does not reapply images from the previously completed source. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Ignores items where the background field is locked, such as items with an Overlay or items where the configured source has already updated the field. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
+
         | Logo Option | Description | Values |
         | --- | --- | --- |
         | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
-        | `ignore_locked` | When `true`, Kometa does not reapply images from the previously completed source. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Ignores items where the logo field is locked, such as items where the configured source has already updated the field. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
 
         | Square Art Option | Description | Values |
         | --- | --- | --- |
         | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
-        | `ignore_locked` | When `true`, Kometa does not reapply images from the previously completed source. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
+        | `ignore_locked` | Ignores items where the square art field is locked, such as items where the configured source has already updated the field. Set to `false` to force reapplication. **Default:** `true` | `true` or `false` |
 
     === "Labels"
 
