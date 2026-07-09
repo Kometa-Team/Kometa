@@ -432,6 +432,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ warning
 
+            Kometa caches the configured source separately for each library and image type after a successful operation run. Later runs skip the image operation when the source has not changed, preventing repeated application of the same images. Change `source`, or set `ignore_locked: false`, to force the operation to run again.
+
             When `poster` is used in combination with Overlays, this could cause Kometa to reset the poster and then reapply all overlays on each run, which will result in [image bloat](../kometa/scripts/imagemaid.md).
 
         ??? example "Example Image Operations"
@@ -466,7 +468,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | Skip updating if the poster field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_locked` | Skip the poster operation when its source has already been applied. Set to `false` to force the operation to run again. **Default:** `true` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current poster has an Overlay. **Default:** `false` | `true` or `false` |
 
         | Background Option | Description | Values |
@@ -475,19 +477,19 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
-        | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_locked` | Skip the background operation when its source has already been applied. Set to `false` to force the operation to run again. **Default:** `true` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
 
         | Logo Option | Description | Values |
         | --- | --- | --- |
         | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
-        | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_locked` | Skip the logo operation when its source has already been applied. Set to `false` to force the operation to run again. **Default:** `true` | `true` or `false` |
 
         | Square Art Option | Description | Values |
         | --- | --- | --- |
         | `source` | Source of the square art update. Can be a single source or an ordered list of fallback sources. | `tvdb`, `plex`, `lock`, or `unlock` |
-        | `ignore_locked` | Skip updating if the square art field is locked. **Default:** `false` | `true` or `false` |
+        | `ignore_locked` | Skip the square art operation when its source has already been applied. Set to `false` to force the operation to run again. **Default:** `true` | `true` or `false` |
 
 
     === "Labels"
