@@ -653,7 +653,7 @@ class ConfigFile:
                 "source": source,
                 "sources": sources,
                 "language": _language,
-                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=False, do_print=False, save=False),
+                "ignore_locked": check_for_attribute(image_config, "ignore_locked", var_type="bool", default=True, do_print=False, save=False),
                 "ignore_overlays": check_for_attribute(image_config, "ignore_overlays", var_type="bool", default=False, do_print=False, save=False),
             }
             if allow_show_levels:
@@ -1732,7 +1732,7 @@ class ConfigFile:
                                         "language": _language,
                                         "seasons": check_for_attribute(input_dict, "seasons", var_type="bool", default=True, save=False),
                                         "episodes": check_for_attribute(input_dict, "episodes", var_type="bool", default=True, save=False),
-                                        "ignore_locked": check_for_attribute(input_dict, "ignore_locked", var_type="bool", default=False, save=False),
+                                        "ignore_locked": check_for_attribute(input_dict, "ignore_locked", var_type="bool", default=True, save=False),
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
                                 elif op == "mass_image_update":

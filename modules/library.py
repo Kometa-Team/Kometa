@@ -150,33 +150,7 @@ class Library(ABC):
         self.status = {}
         self.plex_bulk_edit_batch_size = params["plex_bulk_edit_batch_size"]
 
-        self.items_library_operation = (
-            True
-            if self.assets_for_all
-            or self.mass_genre_update
-            or self.remove_title_parentheses
-            or self.mass_audience_rating_update
-            or self.mass_critic_rating_update
-            or self.mass_user_rating_update
-            or self.mass_episode_audience_rating_update
-            or self.mass_episode_critic_rating_update
-            or self.mass_episode_user_rating_update
-            or self.mass_content_rating_update
-            or self.mass_originally_available_update
-            or self.mass_added_at_update
-            or self.mass_original_title_update
-            or self.mass_imdb_parental_labels
-            or self.genre_mapper
-            or self.content_rating_mapper
-            or self.mass_studio_update
-            or self.radarr_add_all_existing
-            or self.sonarr_add_all_existing
-            or self.mass_poster_update
-            or self.mass_background_update
-            or self.mass_logo_update
-            or self.mass_square_art_update
-            else False
-        )
+        self.items_library_operation = self.has_items_library_operation()
         self.library_operation = (
             True
             if self.items_library_operation
@@ -200,6 +174,35 @@ class Library(ABC):
         if output:
             logger.info("")
             logger.info(output)
+
+    def has_items_library_operation(self):
+        return any(
+            [
+                self.assets_for_all,
+                self.mass_genre_update,
+                self.remove_title_parentheses,
+                self.mass_audience_rating_update,
+                self.mass_critic_rating_update,
+                self.mass_user_rating_update,
+                self.mass_episode_audience_rating_update,
+                self.mass_episode_critic_rating_update,
+                self.mass_episode_user_rating_update,
+                self.mass_content_rating_update,
+                self.mass_originally_available_update,
+                self.mass_added_at_update,
+                self.mass_original_title_update,
+                self.mass_imdb_parental_labels,
+                self.genre_mapper,
+                self.content_rating_mapper,
+                self.mass_studio_update,
+                self.radarr_add_all_existing,
+                self.sonarr_add_all_existing,
+                self.mass_poster_update,
+                self.mass_background_update,
+                self.mass_logo_update,
+                self.mass_square_art_update,
+            ]
+        )
 
     def item_is_ignored(self, item, tmdb_id=None, tvdb_id=None, imdb_id=None):
         if not self.ignore_ids and not self.ignore_imdb_ids:

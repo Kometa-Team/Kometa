@@ -266,6 +266,11 @@ class Cache:
                 cursor.execute("""CREATE TABLE IF NOT EXISTS image_maps (
                     key INTEGER PRIMARY KEY,
                     library TEXT UNIQUE)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS op_image_source (
+                    library_id INTEGER,
+                    image_type TEXT,
+                    source TEXT,
+                    UNIQUE(library_id, image_type, source))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS radarr_adds (
                     key INTEGER PRIMARY KEY,
                     tmdb_id TEXT,
@@ -1101,6 +1106,28 @@ class Cache:
                         overlay_key TEXT UNIQUE,
                         compare TEXT)""")
         return table_name
+
+    def query_op_image_source(self, library, image_type, source):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
+                cursor.execute(
+                    """SELECT 1 FROM op_image_source
+                    WHERE library_id = (SELECT key FROM image_maps WHERE library = ?)
+                    AND image_type = ? AND source = ?""",
+                    (library, image_type, source),
+                )
+                return cursor.fetchone() is not None
+
+    def update_op_image_source(self, library, image_type, source):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("INSERT OR IGNORE INTO image_maps(library) VALUES(?)", (library,))
+                cursor.execute(
+                    """INSERT OR IGNORE INTO op_image_source(library_id, image_type, source)
+                    SELECT key, ?, ? FROM image_maps WHERE library = ?""",
+                    (image_type, source, library),
+                )
 
     def query_image_map(self, rating_key, table_name):
         table_name = sql_identifier(table_name)

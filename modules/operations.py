@@ -136,6 +136,26 @@ class Operations:
         logger.debug(f"Plex Bulk Edit Batch Size: {self.library.plex_bulk_edit_batch_size}")
         logger.debug("")
 
+        image_operations = {
+            "poster": "mass_poster_update",
+            "background": "mass_background_update",
+            "logo": "mass_logo_update",
+            "square": "mass_square_art_update",
+        }
+        image_operations_to_cache = []
+        if self.config.Cache:
+            for image_type, attr in image_operations.items():
+                image_config = getattr(self.library, attr)
+                if image_config and image_config["ignore_locked"]:
+                    source = image_config["source"]
+                    if self.config.Cache.query_op_image_source(self.library.name, image_type, source):
+                        logger.warning(f"Mass {image_type.title()} Image Operation Skipped: {source} has already been applied; run with ignore_locked: false to force a rerun")
+                        setattr(self.library, attr, None)
+                    else:
+                        image_config["ignore_locked"] = False
+                        image_operations_to_cache.append((image_type, source))
+            self.library.items_library_operation = self.library.has_items_library_operation()
+
         # Populated before the delete loop; closure captures by reference.
         configured_names = None
 
@@ -1529,6 +1549,9 @@ class Operations:
             logger.info(f"{len(yaml.data['metadata'])} {self.library.type}{'s' if len(yaml.data['metadata']) > 1 else ''} Backed Up")
 
         operation_run_time = str(datetime.now() - operation_start).split(".")[0]
+        if self.config.Cache:
+            for image_type, source in image_operations_to_cache:
+                self.config.Cache.update_op_image_source(self.library.name, image_type, source)
         logger.info("")
         logger.separator(f"Finished {self.library.name} Library Operations\nOperations Run Time: {operation_run_time}")
         return operation_run_time
