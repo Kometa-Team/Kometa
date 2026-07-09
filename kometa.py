@@ -713,7 +713,8 @@ def start(attrs):
             if log_data or other_message:
                 logger.separator(space=False)
                 logger.info("")
-                logger.info("The following errors and warnings were identified during the run. Search your log for any of the messages below to find where they originated.")
+                logger.info_center("The following errors and warnings were identified during the run.")
+                logger.info_center("Search your log for any of the messages below to find where they originated.")
                 logger.info("")
 
             overlay_title = False
