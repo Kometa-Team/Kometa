@@ -1179,7 +1179,7 @@ class Operations:
 
                 episode_ops = [(self.library.mass_episode_audience_rating_update, "audienceRating"), (self.library.mass_episode_critic_rating_update, "rating"), (self.library.mass_episode_user_rating_update, "userRating")]
 
-                if any([x is not None for x, _ in episode_ops]):
+                if self.library.is_show and any([x is not None for x, _ in episode_ops]):
 
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
