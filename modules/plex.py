@@ -1307,7 +1307,15 @@ class Plex(Library):
         sleep=_plex_timeout_sleep,
     )
     def _save_multi_edits_with_retry(self):
-        self.Plex.saveMultiEdits()
+        edits = dict(self.Plex._edits) if isinstance(getattr(self.Plex, "_edits", None), dict) else None
+        try:
+            self.Plex.saveMultiEdits()
+        except (ConnectTimeout, ReadTimeout):
+            # PlexAPI clears its internal batch state before the request is sent.
+            # If the save times out, restore the pending edits so a retry can reuse them.
+            if edits is not None:
+                self.Plex._edits = edits
+            raise
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
