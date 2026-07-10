@@ -90,6 +90,7 @@ settings_path_aliases = {
     ("network", "verify_ssl"): "verify_ssl",
     ("network", "custom_repo"): "custom_repo",
 }
+settings_write_aliases = {legacy_attribute: (group, attribute) for (group, attribute), legacy_attribute in settings_path_aliases.items()}
 sync_modes = {
     "append": "Only Add Items to the Collection or Playlist",
     "sync": "Add & Remove Items from the Collection or Playlist",
@@ -361,22 +362,33 @@ class ConfigFile:
                 all_data["settings"][in_attr] = all_data[par][in_attr]
                 del all_data[par][in_attr]
 
+        legacy_settings_attributes = []
+
         def normalize_settings(all_data):
             if not all_data or "settings" not in all_data or not isinstance(all_data["settings"], dict):
                 return
             settings = all_data["settings"]
+            legacy_attributes = set()
+            for legacy_attribute, (group, _) in settings_write_aliases.items():
+                if legacy_attribute in settings and not (legacy_attribute == group and isinstance(settings[legacy_attribute], dict)):
+                    legacy_attributes.add(legacy_attribute)
+            legacy_settings_attributes.extend([legacy_attribute for legacy_attribute in sorted(legacy_attributes) if legacy_attribute not in legacy_settings_attributes])
+            normalized_attributes = []
             if "cache" in settings and isinstance(settings["cache"], dict):
                 cache_settings = settings["cache"]
-                if "cache_expiration" not in settings and "expiration_days" in cache_settings:
+                if "expiration_days" in cache_settings:
                     settings["cache_expiration"] = cache_settings["expiration_days"]
                 settings["cache"] = cache_settings["enabled"] if "enabled" in cache_settings else None
             for (parent, attribute), legacy_attribute in settings_path_aliases.items():
                 if parent == legacy_attribute:
                     continue
-                if legacy_attribute in settings:
-                    continue
                 if parent in settings and isinstance(settings[parent], dict) and attribute in settings[parent]:
+                    if legacy_attribute in normalized_attributes:
+                        continue
+                    if legacy_attribute in settings and legacy_attribute not in legacy_attributes:
+                        continue
                     settings[legacy_attribute] = settings[parent][attribute]
+                    normalized_attributes.append(legacy_attribute)
 
         if "libraries" not in self.data:
             self.data["libraries"] = {}
@@ -489,6 +501,9 @@ class ConfigFile:
                 temp["save_report"] = temp.pop("save_missing")
             self.data["settings"] = temp
             normalize_settings(self.data)
+        if legacy_settings_attributes:
+            logger.warning("Config Warning: Legacy settings attributes have been identified; please refer to the Kometa wiki for the latest settings.")
+            logger.info(f"Legacy settings attributes found: {', '.join(sorted(legacy_settings_attributes))}")
         if "webhooks" in self.data:
             temp = self.data.pop("webhooks")
             if "changes" not in temp:
@@ -595,11 +610,19 @@ class ConfigFile:
                 message = f"{text} not found"
                 if parent and save is True:
                     yaml = self.Requests.file_yaml(self.config_path)
-                    endline = f"\n{parent} sub-attribute {attribute} added to config"
-                    if parent not in yaml.data or not yaml.data[parent]:
-                        yaml.data[parent] = {attribute: default}
-                    elif attribute not in yaml.data[parent]:
-                        yaml.data[parent][attribute] = default
+                    save_parent = parent
+                    save_attribute = attribute
+                    save_data = yaml.data
+                    if parent == "settings" and attribute in settings_write_aliases:
+                        save_parent, save_attribute = settings_write_aliases[attribute]
+                        if "settings" not in yaml.data or not yaml.data["settings"]:
+                            yaml.data["settings"] = {}
+                        save_data = yaml.data["settings"]
+                    endline = f"\n{save_parent} sub-attribute {save_attribute} added to config"
+                    if save_parent not in save_data or not save_data[save_parent]:
+                        save_data[save_parent] = {save_attribute: default}
+                    elif save_attribute not in save_data[save_parent]:
+                        save_data[save_parent][save_attribute] = default
                     else:
                         endline = ""
                     yaml.save()
