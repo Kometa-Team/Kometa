@@ -33,6 +33,19 @@ SUPPRESS_STACKTRACE_PATTERNS = [
 ]
 
 
+def _suppress_traceback_hook(etype, value, tb):
+    """Custom exception hook that suppresses full tracebacks for known, non-critical errors."""
+    message = f"{etype.__name__}: {value}"
+    for pattern in SUPPRESS_STACKTRACE_PATTERNS:
+        if re.search(pattern, message):
+            print(f"[WARNING] {message}", file=sys.stderr)
+            return
+    traceback.print_exception(etype, value, tb)
+
+
+sys.excepthook = _suppress_traceback_hook
+
+
 def fmt_filter(record):
     record.levelname = f"[{record.levelname}]"
     record.filename = f"[{record.filename}:{record.lineno}]"

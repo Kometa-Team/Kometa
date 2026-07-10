@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Skip episode rating operations for movie libraries.
 - Show the configured assets directory in missing-asset warnings instead of `'None'` when no matching flat asset file is found.
+- Suppress full stack traces for a small set of known, non-critical logger patterns so expected Plex not-found noise prints as a warning instead of a stack trace.
 - Preserve Plex batch multi-edit state across timeout retries so a transient `saveMultiEdits()` timeout no longer raises `Batch multi-editing mode not enabled` on retry.
 - Create the per-library `_backgrounds` and `_logos` image-map tables unconditionally so caches created before those tables existed self-heal on the next run, instead of raising `no such table: image_map_<n>_logos` and failing every collection that sets a logo.
 - Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
