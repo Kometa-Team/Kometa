@@ -1755,8 +1755,28 @@
       "additionalProperties": false,
       "properties": {
         "cache": {
-          "type": "boolean",
-          "description": "Used to control Kometa's cache database.\nAllow Kometa to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean",
+                  "description": "Used to control Kometa's cache database.\nAllow Kometa to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file."
+                },
+                "expiration_days": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Used to control how long data is cached for.\nSet the number of days before each cache mapping expires and has to be re-cached. An integer greater than 0 in days"
+                }
+              },
+              "required": []
+            }
+          ],
+          "description": "Cache settings. Accepts the legacy boolean form or the grouped cache settings object."
         },
         "cache_expiration": {
           "type": "integer",
@@ -1903,7 +1923,15 @@
         "auto_sort_hubs": {
           "description": "Used to sort Recommendation Hub rows after all collections are processed.\nSorts the library Recommendation Hub rows on the Plex home screen and/or library Recommended tab.",
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "run_again_delay": {
           "description": "Used to control the number of minutes to delay running run_again collections.\nSet the number of minutes to delay running run_again collections after daily run is finished. For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run 'X' amount of time later so that any downloaded items are processed.",
@@ -2275,6 +2303,656 @@
               "type": "null"
             }
           ]
+        },
+        "run": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "order": {
+              "description": "Used to specify the run order of the library components.\nSpecify the run order of the library components [Library Operations, Collection Files and Overlay Files]",
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "operations",
+                  "metadata",
+                  "collections",
+                  "overlays"
+                ]
+              }
+            },
+            "rerun_delay": {
+              "description": "Used to control the number of minutes to delay running run_again collections.\nSet the number of minutes to delay running run_again collections after daily run is finished. For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run 'X' amount of time later so that any downloaded items are processed.",
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": []
+        },
+        "assets": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "directories": {
+              "description": "Used to define where local assets are located.\nSpecify the directories where assets (posters, backgrounds, etc) are located.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "use_folders": {
+              "description": "Used to control the asset directory folder structure.\nWhile true, Kometa will search the asset_directory for a dedicated folder per item vs while false will look for an image.",
+              "type": "boolean"
+            },
+            "search_depth": {
+              "description": "Used to control the depth of search in the asset directory.\nAt each asset level, Kometa will look for either medianame.ext [such as Star Wars.png] or a dedicated folder containing poster.ext. i.e. <path_to_assets>/Star Wars/poster.png and <path_to_assets>/Star Wars.png are both asset depth 0, whilst <path_to_assets>/Movies/Star Wars/poster.png and <path_to_assets>/Movies/Star Wars.png are both asset level 1.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "create_folders": {
+              "description": "Used to automatically create asset folders when none exist.\nWhilst searching for assets, if an asset folder cannot be found within the asset_directory one will be created. Asset Searches can happen in a number of ways.",
+              "type": "boolean"
+            },
+            "prioritize": {
+              "description": "Used to prioritize asset_directory images over all other images types.\nWhen determining which image to use on an item prioritize the asset_directory over all other images types.",
+              "type": "boolean"
+            },
+            "dimensional_rename": {
+              "description": "Used to automatically rename asset files based on their dimensions.\nWhilst searching for assets, scan the folders within the asset_directory and if an asset poster (i.e. /ASSET_NAME/poster.ext) was not found, rename the first image found that has a height greater than or equal to its width to poster.ext. If an asset background (i.e. /ASSET_NAME/background.ext), rename the first image found that has a width greater than its height to background.ext.",
+              "type": "boolean"
+            },
+            "download_from_urls": {
+              "description": "Used to download url images into the asset directory.\nWhilst searching for assets, download images set within Collection/Metadata/Playlist files( i.e. images set by url_poster or url_background) into the asset folder if none are already present.",
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "collections": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sync_mode": {
+              "description": "Used to set the sync_mode for collections and playlists.\nSets the sync_mode for collections and playlists. Setting the sync_mode directly in a collection or playlist definition will override the sync_mode for that definition.",
+              "enum": [
+                "sync",
+                "append"
+              ]
+            },
+            "minimum_items": {
+              "description": "Used to control minimum items requires to build a collection/playlist.\nSet the minimum number of items that must be found in order to build or update a collection/playlist.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "default_order": {
+              "description": "Used to set the collection_order for every collection run.\nSet the collection_order for every collection run by Kometa unless the collection has a specific collection_order\nTIP: 'custom' cannot be used if more than one builder is being used for the collection (such as imdb_list and trakt_list within the same collection). ",
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "added.asc",
+                "added.desc",
+                "alpha",
+                "audience_rating.asc",
+                "audience_rating.desc",
+                "bitrate.asc",
+                "bitrate.desc",
+                "content_rating.asc",
+                "content_rating.desc",
+                "critic_rating.asc",
+                "critic_rating.desc",
+                "custom",
+                "duration.asc",
+                "duration.desc",
+                "originally_available.asc",
+                "originally_available.desc",
+                "plays.asc",
+                "plays.desc",
+                "progress.asc",
+                "progress.desc",
+                "random",
+                "release",
+                "release.asc",
+                "release.desc",
+                "resolution.asc",
+                "resolution.desc",
+                "title.asc",
+                "title.desc",
+                "user_rating.asc",
+                "user_rating.desc",
+                "viewed.asc",
+                "viewed.desc",
+                "year.asc",
+                "year.desc",
+                null
+              ]
+            },
+            "delete_below_minimum": {
+              "description": "Used to delete collections below minimum_items.\nWhen a collection is run, delete the collection if it is below the minimum number specified by minimum_items.",
+              "type": "boolean"
+            },
+            "delete_not_scheduled": {
+              "description": "Used to delete collections not scheduled.\nIf a collection is skipped due to it not being scheduled, delete the collection.",
+              "type": "boolean"
+            },
+            "auto_sort_hubs": {
+              "description": "Used to sort Recommendation Hub rows after all collections are processed.\nSorts the library Recommendation Hub rows on the Plex home screen and/or library Recommended tab.",
+              "type": "string",
+              "enum": [
+                "sort_title",
+                "sort_title.desc",
+                "alpha",
+                "alpha.desc",
+                "configured",
+                "configured.desc",
+                "random"
+              ]
+            }
+          },
+          "required": []
+        },
+        "playlists": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sync_to_users": {
+              "description": "Set the default playlist sync_to_users.\nTo Sync a playlist to only yourself, leave playlist_sync_to_users blank/null. Therefore, leaving it blank, 'all', a list of users, or a comma-separated string of users is accepted",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "all"
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "string",
+                  "pattern": "^([^,]+)(,[^,]+)*$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "exclude_users": {
+              "description": "Set the default playlist exclude_users.\nProvide a null value, a list of users, or a comma-separated string of users to be excluded in the playlist.",
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "string",
+                  "pattern": "^([^,]+)(,[^,]+)*$"
+                }
+              ]
+            },
+            "show_report": {
+              "description": "Used to print out a playlist report.\nSet playlist_report to true to print out a playlist report at the end of the log.",
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tvdb_language": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "",
+                "default",
+                "aar",
+                "abk",
+                "afr",
+                "aka",
+                "alb",
+                "amh",
+                "ara",
+                "arg",
+                "arm",
+                "asm",
+                "ava",
+                "ave",
+                "aym",
+                "aze",
+                "bak",
+                "bam",
+                "baq",
+                "bel",
+                "ben",
+                "bis",
+                "bos",
+                "bre",
+                "bul",
+                "bur",
+                "cat",
+                "cha",
+                "che",
+                "chi",
+                "chu",
+                "chv",
+                "cor",
+                "cos",
+                "cre",
+                "cze",
+                "dan",
+                "div",
+                "dut",
+                "dzo",
+                "eng",
+                "epo",
+                "est",
+                "ewe",
+                "fao",
+                "fij",
+                "fin",
+                "fre",
+                "fry",
+                "ful",
+                "geo",
+                "ger",
+                "gla",
+                "gle",
+                "glg",
+                "glv",
+                "gre",
+                "grn",
+                "guj",
+                "hat",
+                "hau",
+                "heb",
+                "her",
+                "hin",
+                "hmo",
+                "hrv",
+                "hun",
+                "ibo",
+                "ice",
+                "ido",
+                "iii",
+                "iku",
+                "ile",
+                "ina",
+                "ind",
+                "ipk",
+                "ita",
+                "jav",
+                "jpn",
+                "kal",
+                "kan",
+                "kas",
+                "kau",
+                "kaz",
+                "khm",
+                "kik",
+                "kin",
+                "kir",
+                "kom",
+                "kon",
+                "kor",
+                "kua",
+                "kur",
+                "lao",
+                "lat",
+                "lav",
+                "lim",
+                "lin",
+                "lit",
+                "ltz",
+                "lub",
+                "lug",
+                "mac",
+                "mah",
+                "mal",
+                "mao",
+                "mar",
+                "may",
+                "mlg",
+                "mlt",
+                "mon",
+                "nau",
+                "nav",
+                "nbl",
+                "nde",
+                "ndo",
+                "nep",
+                "nno",
+                "nob",
+                "nor",
+                "nya",
+                "oci",
+                "oji",
+                "ori",
+                "orm",
+                "oss",
+                "pan",
+                "per",
+                "pli",
+                "pol",
+                "por",
+                "pus",
+                "que",
+                "roh",
+                "rum",
+                "run",
+                "rus",
+                "sag",
+                "san",
+                "sin",
+                "slo",
+                "slv",
+                "sme",
+                "smo",
+                "sna",
+                "snd",
+                "som",
+                "sot",
+                "spa",
+                "srd",
+                "srp",
+                "ssw",
+                "sun",
+                "swa",
+                "swe",
+                "tah",
+                "tam",
+                "tat",
+                "tel",
+                "tgk",
+                "tgl",
+                "tha",
+                "tib",
+                "tir",
+                "ton",
+                "tsn",
+                "tso",
+                "tuk",
+                "tur",
+                "twi",
+                "uig",
+                "ukr",
+                "urd",
+                "uzb",
+                "ven",
+                "vie",
+                "vol",
+                "wel",
+                "wln",
+                "wol",
+                "xho",
+                "yid",
+                "yor",
+                "zha",
+                "zul"
+              ],
+              "description": "Specify the language to query TVDb in.\nThis field can be either null or a valid ISO 639-2 language code."
+            },
+            "refresh_delay": {
+              "description": "Time to wait between each item_refresh.\nSpecify the amount of time to wait between each item_refresh of every movie/show in a collection/playlist.",
+              "type": "integer",
+              "minimum": 0
+            },
+            "ignore_ids": {
+              "description": "List of TMDb/TVDb IDs to ignore.\nSet a null, a single TMDb/TVDb ID, or a comma-separated string of TMDb/TVDb IDs to ignore in all collections.",
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{1,8}(\\s*,\\s*\\d{1,8})*$"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "ignore_imdb_ids": {
+              "description": "List of IMDb IDs to ignore.\nSet a null, a single IMDb ID, or a comma-separated string of IMDb IDs to ignore in all collections.",
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(tt\\d{7,8})(,(tt\\d{7,8}))*$"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^tt\\d{7,8}$"
+                  },
+                  "minItems": 1
+                }
+              ]
+            }
+          },
+          "required": []
+        },
+        "missing": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ignore_ids": {
+              "description": "List of TMDb/TVDb IDs to ignore.\nSet a null, a single TMDb/TVDb ID, or a comma-separated string of TMDb/TVDb IDs to ignore in all collections.",
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{1,8}(\\s*,\\s*\\d{1,8})*$"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "ignore_imdb_ids": {
+              "description": "List of IMDb IDs to ignore.\nSet a null, a single IMDb ID, or a comma-separated string of IMDb IDs to ignore in all collections.",
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string",
+                  "pattern": "^(tt\\d{7,8})(,(tt\\d{7,8}))*$"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^tt\\d{7,8}$"
+                  },
+                  "minItems": 1
+                }
+              ]
+            },
+            "filter_unreleased": {
+              "description": "Used to filter unreleased items from missing lists.\nWhilst running a collection or playlist, when Kometa handles missing items to either report it to the user, report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.",
+              "type": "boolean"
+            },
+            "only_filter_missing": {
+              "description": "Used to have the filter only apply to missing items.\nOnly items missing from a collection will be filtered. Only specific filters can filter missing. See Filters for more information.",
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "overlays": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "filetype": {
+              "description": "Used to control the filetype used with overlay images.",
+              "enum": [
+                "jpg",
+                "png",
+                "webp_lossy",
+                "webp_lossless"
+              ]
+            },
+            "quality": {
+              "description": "Used to control the JPG or Lossy WEBP quality used with overlay images.",
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": []
+        },
+        "reports": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "save": {
+              "description": "Used to save a report YAML file.\nSave a report of the items added, removed, filtered, or missing from collections to a YAML file in the same directory as the file run.",
+              "type": "boolean"
+            },
+            "path": {
+              "description": "Overrides the default report file path.",
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": []
+        },
+        "report_path": {
+          "description": "Overrides the default report file path.",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        },
+        "logging": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "options": {
+              "description": "Used to show attribute options from plex.\nWhile show_options is true the available options for an attribute when using plex_search, smart_filter or filters will be shown. i.e. a smart_filter on the genre attribute will return all of the attributes within the specified library.",
+              "type": "boolean"
+            },
+            "unmanaged": {
+              "description": "Used to show collections not managed by Kometa.\nList all collections not managed by Kometa at the end of each run.",
+              "type": "boolean"
+            },
+            "unconfigured": {
+              "description": "Used to show collections not in the current run.\nList all collections not configured in the current Kometa run at the end of each run.",
+              "type": "boolean"
+            },
+            "filtered": {
+              "description": "Used to show filtered items.\nList all items which have been filtered out of a collection or playlist (i.e. if it doesn't meet the filter criteria)",
+              "type": "boolean"
+            },
+            "unfiltered": {
+              "description": "Used to show unfiltered items.\nList all items which make it through a filter into a collection or playlist (i.e. if it MEETS the filter criteria)",
+              "type": "boolean"
+            },
+            "missing": {
+              "description": "Used to show missing items from collections or playlists.\nWhile show_missing is true items missing from collections or playlists will be displayed.",
+              "type": "boolean"
+            },
+            "missing_assets": {
+              "description": "Used to print a message when assets are missing.\nDisplay missing asset warnings for items, collections, and playlists.",
+              "type": "boolean"
+            },
+            "missing_seasons": {
+              "description": " Used to show any missing season assets.\nWhilst searching for assets, when scanning for assets for a TV Show, if Season posters are found (i.e. /ASSET_NAME/Season##.ext), notify the user of any seasons which do not have an asset image.",
+              "type": "boolean"
+            },
+            "missing_episodes": {
+              "description": "Used to show any missing episode assets.\nWhilst searching for assets, when scanning for assets for a TV Show, if an Episode Title Card is found (i.e. /ASSET_NAME/S##E##.ext), notify the user of any episodes which do not have an asset image.",
+              "type": "boolean"
+            },
+            "unused_assets": {
+              "description": "Used to show/hide the update not needed messages.\nWhilst searching for assets, show or hide the update not needed messages.",
+              "type": "boolean"
+            }
+          },
+          "required": []
+        },
+        "network": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "verify_ssl": {
+              "description": "Turn SSL Verification on or off.",
+              "type": "boolean"
+            },
+            "custom_repo": {
+              "description": "Used to set up the custom repo file block type.\nSpecify where the repo attribute's base is when defining collection_files, metadata_files, playlist_file, and overlay_files.",
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "required": []
         }
       },
       "required": [],
@@ -5715,13 +6393,27 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": [
+                        "tmdb",
+                        "trakt",
+                        "tvdb",
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": [
+                          "tmdb",
+                          "trakt",
+                          "tvdb",
+                          "plex",
+                          "lock",
+                          "unlock"
+                        ]
                       }
                     }
                   ]
@@ -5751,13 +6443,27 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": [
+                        "tmdb",
+                        "trakt",
+                        "tvdb",
+                        "plex",
+                        "lock",
+                        "unlock"
+                      ]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": [
+                          "tmdb",
+                          "trakt",
+                          "tvdb",
+                          "plex",
+                          "lock",
+                          "unlock"
+                        ]
                       }
                     }
                   ]
@@ -5803,13 +6509,27 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": [
+                                "tmdb",
+                                "trakt",
+                                "tvdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                              ]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": [
+                                  "tmdb",
+                                  "trakt",
+                                  "tvdb",
+                                  "plex",
+                                  "lock",
+                                  "unlock"
+                                ]
                               }
                             }
                           ]
@@ -5854,13 +6574,27 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": [
+                                "tmdb",
+                                "trakt",
+                                "tvdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                              ]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": [
+                                  "tmdb",
+                                  "trakt",
+                                  "tvdb",
+                                  "plex",
+                                  "lock",
+                                  "unlock"
+                                ]
                               }
                             }
                           ]
@@ -5905,13 +6639,27 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": [
+                                "tmdb",
+                                "trakt",
+                                "tvdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                              ]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": [
+                                  "tmdb",
+                                  "trakt",
+                                  "tvdb",
+                                  "plex",
+                                  "lock",
+                                  "unlock"
+                                ]
                               }
                             }
                           ]
@@ -5945,13 +6693,23 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tvdb", "plex", "lock", "unlock"]
+                              "enum": [
+                                "tvdb",
+                                "plex",
+                                "lock",
+                                "unlock"
+                              ]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tvdb", "plex", "lock", "unlock"]
+                                "enum": [
+                                  "tvdb",
+                                  "plex",
+                                  "lock",
+                                  "unlock"
+                                ]
                               }
                             }
                           ]
@@ -7046,7 +7804,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -7797,7 +8563,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -8454,7 +9228,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -9062,7 +9844,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -9667,7 +10457,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -10328,7 +11126,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -11005,7 +11811,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -11619,7 +12433,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -12230,7 +13052,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -12937,7 +13767,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
@@ -13207,7 +14045,15 @@
         },
         "auto_sort_hubs": {
           "type": "string",
-          "enum": ["sort_title", "sort_title.desc", "alpha", "alpha.desc", "configured", "configured.desc", "random"]
+          "enum": [
+            "sort_title",
+            "sort_title.desc",
+            "alpha",
+            "alpha.desc",
+            "configured",
+            "configured.desc",
+            "random"
+          ]
         },
         "ignore_ids": {
           "oneOf": [
