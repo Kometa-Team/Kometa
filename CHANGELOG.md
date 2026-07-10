@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Remove the broken Sight & Sound Letterboxd default collection so the shipped chart defaults no longer try to load an unsupported list URL.
 - Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
 - Fix asset-directory logos being ignored during metadata image updates.
 - Skip episode rating operations for movie libraries.
