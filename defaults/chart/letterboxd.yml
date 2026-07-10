@@ -65,21 +65,6 @@ collections:
       - name: arr
       - name: custom
 
-  "Sight & Sound Greatest Films":
-    variables:
-      style: color
-      key: sight_sound
-    template:
-      - name: letterboxd_list
-        user: bfi
-        list: sight-and-sounds-greatest-films-of-all-time
-      - name: shared
-        translation_key: sight_and_sound_greatest_films
-        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
-        summary: <<summary_<<key>>>>
-      - name: arr
-      - name: custom
-
   "1,001 To See Before You Die":
     variables:
       style: color
