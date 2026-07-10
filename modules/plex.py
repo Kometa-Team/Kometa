@@ -1888,6 +1888,8 @@ class Plex(Library):
                 posters["asset_directory"] = asset_poster
             if asset_background:
                 backgrounds["asset_directory"] = asset_background
+            if asset_logo:
+                logos["asset_directory"] = asset_logo
             if asset_square_art:
                 square_arts["asset_directory"] = asset_square_art
             if asset_location is None or initial:
@@ -1919,7 +1921,7 @@ class Plex(Library):
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
             elif not poster and not background and not logo and not square_art and self.show_missing_assets:
                 searched_directory = item_dir or "', '".join(os.path.abspath(ad) for ad in configured_asset_directories)
-                logger.warning(f"Asset Warning: No poster or background found in the assets folder '{searched_directory}'")
+                logger.warning(f"Asset Warning: No supported artwork found in the assets folder '{searched_directory}'")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)

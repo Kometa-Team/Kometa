@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
+- Fix asset-directory logos being ignored during metadata image updates.
 - Skip episode rating operations for movie libraries.
 - Show the configured assets directory in missing-asset warnings instead of `'None'` when no matching flat asset file is found.
 - Suppress full stack traces for a small set of known, non-critical logger patterns so expected Plex not-found noise prints as a warning instead of a stack trace.

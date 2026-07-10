@@ -149,13 +149,15 @@ Standard priority is as follows [lower numbers take precedence]:
 
 You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
 
-## Logo Collection Metadata Updates
+## Logo Collection/Playlist Metadata Updates
 
-All the following attributes update the logo of the collection from various sources.
+All the following attributes update the logo of the collection/playlist from various sources.
+
+**All of these details work with Playlists.**
 
 If no logo is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md)
-for a folder named either the collection name or the `name_mapping` if specified and look for a
-supported logo asset such as `logo.ext` or `clearlogo.ext` in that folder.
+for a folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported
+logo asset such as `logo.ext` or `clearlogo.ext` in that folder.
 
 | Attribute   | Description & Values                                                                                           |
 |:------------|:---------------------------------------------------------------------------------------------------------------|
