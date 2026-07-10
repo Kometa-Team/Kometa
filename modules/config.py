@@ -1281,6 +1281,7 @@ class ConfigFile:
             }
 
             self.libraries = []
+            self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
             for library_name, lib in libs.items():

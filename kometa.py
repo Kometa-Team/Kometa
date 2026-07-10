@@ -939,6 +939,7 @@ def run_config(config, stats):
 def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
     library_status: LibraryRunStatus = {}
     collections_ran = False
+    config.run_libraries = []
     for library in config.libraries:
         if library.skip_library:
             logger.info("")
@@ -1040,6 +1041,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 logger.info("")
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
+            config.run_libraries.append(library)
 
             runs = {
                 "metadata": all([not run_args[x] for x in ["tests", "operations-only", "overlays-only", "playlists-only", "collections-only"]]),
@@ -1406,9 +1408,19 @@ def run_playlists(config):
                     ids = builder.libraries[0].get_rating_keys(method, value, True)
                 elif "plex" in method:
                     ids = []
+                    logged_plex_search = False
                     for pl_library in builder.libraries:
                         try:
-                            ids.extend(pl_library.get_rating_keys(method, value, True))
+                            if method == "plex_search":
+                                builder.library = pl_library
+                                plex_search = builder.build_filter("plex_search", value)
+                                if not logged_plex_search:
+                                    search_details = "\n".join(plex_search[1].splitlines()[1:])
+                                    logger.info(f"Processing Plex Search{f'{chr(10)}{search_details}' if search_details else ''}")
+                                    logged_plex_search = True
+                                ids.extend(pl_library.get_rating_keys(method, plex_search, True, display=False))
+                            else:
+                                ids.extend(pl_library.get_rating_keys(method, value, True))
                         except Failed as e:
                             if builder.validate_builders:
                                 raise
