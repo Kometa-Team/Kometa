@@ -677,6 +677,17 @@ music_attributes = (
 
 
 class CollectionBuilder:
+    @staticmethod
+    def _playlist_libraries(config, data, methods):
+        if "libraries" in methods:
+            if not data[methods["libraries"]]:
+                raise BuilderValidationError("Playlist Error: 'libraries' attribute is blank")
+            return util.get_list(data[methods["libraries"]])
+        libraries = [library.original_mapping_name for library in config.run_libraries]
+        if not libraries:
+            raise BuilderValidationError("Playlist Error: No libraries were processed this run to use as the playlist default")
+        return libraries
+
     def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None):
         self.config = config
         self.metadata = metadata
@@ -905,14 +916,11 @@ class CollectionBuilder:
             self.library.collections.append(self.name)
 
         if self.playlist:
-            if "libraries" not in methods:
-                raise BuilderValidationError("Playlist Error: 'libraries' attribute is required")
             logger.debug("")
             logger.debug("Validating Method: libraries")
-            if not self.data[methods["libraries"]]:
-                raise BuilderValidationError(f"{self.Type} Error: 'libraries' attribute is blank")
-            logger.debug(f"Value: {self.data[methods['libraries']]}")
-            for pl_library in util.get_list(self.data[methods["libraries"]]):
+            playlist_libraries = self._playlist_libraries(config, self.data, methods)
+            logger.debug(f"Value: {', '.join(playlist_libraries)}")
+            for pl_library in playlist_libraries:
                 if str(pl_library) not in config.library_map:
                     raise BuilderValidationError(f"Playlist Error: Library '{pl_library}' not defined. Libraries must be defined within `libraries` section of Configuration File to be usable with playlists")
                 self.libraries.append(config.library_map[pl_library])
@@ -3098,7 +3106,7 @@ class CollectionBuilder:
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "plex_search":
                     try:
-                        self.builders.append((method_name, self.build_filter("plex_search", dict_data)))
+                        self.builders.append((method_name, dict_data if self.playlist else self.build_filter("plex_search", dict_data)))
                     except FilterFailed as e:
                         if self.ignore_blank_results:
                             raise

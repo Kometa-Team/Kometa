@@ -33,7 +33,7 @@
                 "variables": { "type": "object", "additionalProperties": true },
 
                 "libraries": {
-                    "description": "Which Plex libraries to pull items from. Defaults to 'Movies' and 'TV Shows'.",
+                    "description": "Which Plex libraries to pull items from. When omitted, defaults to every library processed as part of the run.",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
                 "sync_to_users": {

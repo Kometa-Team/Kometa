@@ -50,7 +50,6 @@ templates:
             mdblist_list_<<key>>.exists: false
             value: <<mdblist_url>>
     default:
-      libraries: Movies, TV Shows
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
       trakt_list_<<key>>: <<trakt_list>>
@@ -73,6 +72,7 @@ templates:
       - trakt_list
       - imdb_list
       - mdblist_list
+      - libraries
     run_definition:
       - <<use_<<key>>>>
     ignore_ids: <<ignore_ids>>

@@ -14504,7 +14504,7 @@
           ]
         },
         "libraries": {
-          "description": "Libraries to pull items from for all playlists in this defaults file.",
+          "description": "Libraries to pull items from for all playlists in this defaults file. When omitted, playlists use every library processed as part of the run.",
           "oneOf": [
             {
               "type": "string"

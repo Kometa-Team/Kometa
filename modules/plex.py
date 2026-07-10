@@ -1644,7 +1644,7 @@ class Plex(Library):
                 ids.extend([(t_id, "tmdb") for t_id in tmdb_id])
         return ids
 
-    def get_rating_keys(self, method, data, is_playlist=False):
+    def get_rating_keys(self, method, data, is_playlist=False, display=True):
         items = []
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
@@ -1661,7 +1661,8 @@ class Plex(Library):
                 except NotFound:
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
-            logger.info(f"Processing {data[1]}")
+            if display:
+                logger.info(f"Processing {data[1]}")
             logger.trace(data[2])
             items = self.fetchItems(data[2])
         elif method == "plex_collectionless":

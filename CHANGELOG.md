@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
 - Fix asset-directory logos being ignored during metadata image updates.
 - Skip episode rating operations for movie libraries.
 - Show the configured assets directory in missing-asset warnings instead of `'None'` when no matching flat asset file is found.
@@ -34,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
