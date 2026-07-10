@@ -59,8 +59,9 @@
           - default: streaming                                # Streaming on Disney+, Netflix, etc.
           - default: video_format                             # Remux, DVD, Blu-Ray, etc. in bottom left
         settings:
-          asset_directory:
-            - config/assets
+          assets:
+            directories:
+              - config/assets
     
         operations:
           split_duplicates: false
@@ -129,8 +130,9 @@
             template_variables:
               builder_level: episode
         settings:
-          asset_directory:
-            - config/assets
+          assets:
+            directories:
+              - config/assets
     
         operations:
           split_duplicates: false

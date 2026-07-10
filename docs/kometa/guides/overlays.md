@@ -225,7 +225,7 @@ The backup art that Plex provided and Kometa saved has gone corrupt.  This is ty
 
 Simplest:
 
-Put the new artwork into an [asset directory](./assets.md), make sure the `assets_for_all` operation is enabled on the library and `prioritize_assets` is set to `true`, and run Kometa.  Kometa will pick up the new art, apply overlays to it, and send it to Plex.  if you want to change the art, just drag a new image into that folder.
+Put the new artwork into an [asset directory](./assets.md), make sure the `assets_for_all` operation is enabled on the library and [`prioritize`](../../config/settings.md#prioritize-assets) is set to `true`, and run Kometa.  Kometa will pick up the new art, apply overlays to it, and send it to Plex.  if you want to change the art, just drag a new image into that folder.
 
 Slightly less Simple:
 

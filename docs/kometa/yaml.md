@@ -28,11 +28,13 @@ libraries:
     overlay_files:
       - default: ribbon
 settings:
-  cache: true
-  cache_expiration: 60
-  asset_directory:
-    - config/movie assets
-    - config/tv assets
+  cache:
+    enabled: true
+    expiration_days: 60
+  assets:
+    directories:
+      - config/movie assets
+      - config/tv assets
 ```
 
 ## Basic YAML Syntax
@@ -69,12 +71,14 @@ libraries:                        # Value is a Dictionary with keys `Movies` and
       - default: imdb             # List Item is a Dictionary with one key pair whose value is a String Literal
     overlay_files:                # Value is a List with one Item
       - default: ribbon           # List Item is a Dictionary with one key pair whose value is a String Literal
-settings:                         # Value is a Dictionary with keys `cache` and `cache_expiration`
-  cache: true                     # Value is a Boolean Literal
-  cache_expiration: 60            # Value is a Number Literal
-  asset_directory:                # Value is a List with two Items
-    - config/movie assets         # List Item is a String Literal
-    - config/tv assets            # List Item is a String Literal
+settings:                         # Value is a Dictionary with keys `cache` and `assets`
+  cache:                          # Value is a Dictionary with keys `enabled` and `expiration_days`
+    enabled: true                 # Value is a Boolean Literal
+    expiration_days: 60           # Value is a Number Literal
+  assets:                         # Value is a Dictionary with key `directories`
+    directories:                  # Value is a List with two Items
+      - config/movie assets       # List Item is a String Literal
+      - config/tv assets          # List Item is a String Literal
 ```
 
 ## Indentation 
@@ -101,8 +105,9 @@ libraries:                        # Nesting Level 1
     overlay_files:                # Nesting Level 3
       - default: ribbon           # Nesting Level 4
 settings:                         # Nesting Level 1
-  cache: true                     # Nesting Level 2
-  cache_expiration: 60            # Nesting Level 2
+  cache:                          # Nesting Level 2
+    enabled: true                 # Nesting Level 3
+    expiration_days: 60           # Nesting Level 3
 ```
 
 ## Dictionaries
@@ -111,26 +116,27 @@ Dictionaries are used to associate key/value pairs that are unordered. Dictionar
 or new dictionaries can be created at the same level by resolving the previous one.
 
 ```{ .yaml .no-copy }
-cache: true
-cache_expiration: 60
+enabled: true
+expiration_days: 60
 ```
 
-The "keys" are `cache` and `cache_expiration` and the "values" are `true` and `60` respectively.
+The "keys" are `enabled` and `expiration_days` and the "values" are `true` and `60` respectively.
 
 ### In-Line Dictionaries
 
 you can represent a dictionary on a single line by using `{` and `}`
 
 ```{ .yaml .no-copy }
-settings: {cache: true, cache_expiration: 60}
+settings: {cache: {enabled: true, expiration_days: 60}}
 ```
 
 is equivalent to
 
 ```{ .yaml .no-copy }
 settings:
-  cache: true
-  cache_expiration: 60
+  cache:
+    enabled: true
+    expiration_days: 60
 ```
 
 ## Lists
@@ -138,7 +144,7 @@ settings:
 Lists in YAML are represented by using the hyphen (-) and space. They are ordered and can be embedded inside a map using indentation.
 
 ```{ .yaml .no-copy }
-asset_directory:
+directories:
   - config/movie assets
   - config/tv assets
 ```
@@ -151,16 +157,18 @@ you can represent a dictionary on a single line by using `[` and `]`
 
 ```{ .yaml .no-copy }
 settings:
-    asset_directory: [config/movie assets, config/tv assets]
+    assets:
+      directories: [config/movie assets, config/tv assets]
 ```
 
 is equivalent to
 
 ```{ .yaml .no-copy }
 settings:
-    asset_directory:
-      - config/movie assets
-      - config/tv assets
+    assets:
+      directories:
+        - config/movie assets
+        - config/tv assets
 ```
 
 ## Literals

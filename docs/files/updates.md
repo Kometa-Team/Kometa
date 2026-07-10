@@ -108,7 +108,7 @@ Standard priority is as follows [lower numbers take precedence]:
 
 4. tvdb_poster
 
-5. asset_directory
+5. asset directory
 
 6. tmdb_person
 
@@ -116,7 +116,7 @@ Standard priority is as follows [lower numbers take precedence]:
 
 8+. all other _details methods
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+You can use the [`prioritize`](../config/settings.md#prioritize-assets) setting to push the asset directory to the top of this priority list.
 
 ## Background Collection/Playlist Metadata Updates
 
@@ -145,9 +145,9 @@ Standard priority is as follows [lower numbers take precedence]:
 
 4. tvdb_background
 
-5. asset_directory
+5. asset directory
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+You can use the [`prioritize`](../config/settings.md#prioritize-assets) setting to push the asset directory to the top of this priority list.
 
 ## Logo Collection Metadata Updates
 
@@ -168,9 +168,9 @@ Standard priority is as follows [lower numbers take precedence]:
 
 2. file_logo
 
-3. asset_directory
+3. asset directory
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+You can use the [`prioritize`](../config/settings.md#prioritize-assets) setting to push the asset directory to the top of this priority list.
 
 ## Square Art Collection/Playlist Metadata Updates
 
@@ -193,6 +193,6 @@ Standard priority is as follows [lower numbers take precedence]:
 
 2. file_square_art
 
-3. asset_directory
+3. asset directory
 
-You can use the `prioritize_assets` setting to push the asset_directory to the top of this priority list.
+You can use the [`prioritize`](../config/settings.md#prioritize-assets) setting to push the asset directory to the top of this priority list.

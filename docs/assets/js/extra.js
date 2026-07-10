@@ -40,37 +40,38 @@ document$.subscribe(function() {
   }
 });
 
-// Open operation details when navigating directly to an operation hash.
+// Open config details when navigating directly to an operation/settings hash.
 document$.subscribe(function() {
-  if (window.operationAdmonitionHashHandler) {
-    window.removeEventListener("hashchange", window.operationAdmonitionHashHandler);
-    window.operationAdmonitionHashHandler = null;
+  if (window.configAdmonitionHashHandler) {
+    window.removeEventListener("hashchange", window.configAdmonitionHashHandler);
+    window.configAdmonitionHashHandler = null;
   }
 
-  const operationsPath = /\/config\/operations\/?$/;
-  if (!operationsPath.test(window.location.pathname)) {
+  const configDetailsPath = /\/config\/(operations|settings)\/?$/;
+  if (!configDetailsPath.test(window.location.pathname)) {
     return;
   }
+  const configDetailType = /\/config\/operations\/?$/.test(window.location.pathname) ? "operation" : "setting";
 
-  const operationHeadings = document.querySelectorAll("article h6[id]");
+  const configHeadings = document.querySelectorAll("article h6[id]");
 
-  operationHeadings.forEach(function(heading) {
+  configHeadings.forEach(function(heading) {
     const details = heading.nextElementSibling;
     if (!details || details.tagName.toLowerCase() !== "details") {
       return;
     }
 
-    details.dataset.operationAnchor = heading.id;
+    details.dataset.configAnchor = heading.id;
 
     const summary = details.querySelector(":scope > summary");
-    if (!summary || summary.querySelector(".operation-admonition-link")) {
+    if (!summary || summary.querySelector(".config-admonition-link, .operation-admonition-link")) {
       return;
     }
 
     const link = document.createElement("a");
-    link.className = "operation-admonition-link";
+    link.className = "config-admonition-link operation-admonition-link";
     link.href = "#" + heading.id;
-    link.setAttribute("aria-label", "Link to this operation");
+    link.setAttribute("aria-label", "Link to this " + configDetailType);
     link.textContent = "#";
     link.addEventListener("click", function(event) {
       event.stopPropagation();
@@ -79,13 +80,31 @@ document$.subscribe(function() {
     summary.appendChild(link);
   });
 
-  function openOperationFromHash() {
+  function openConfigDetailFromHash() {
     const hash = decodeURIComponent(window.location.hash.slice(1));
     if (!hash) {
       return;
     }
 
-    const heading = document.getElementById(hash);
+    let heading = document.getElementById(hash);
+    if (!heading && configDetailType === "setting") {
+      document.querySelectorAll("article h6[id]").forEach(function(candidate) {
+        if (heading) {
+          return;
+        }
+
+        const details = candidate.nextElementSibling;
+        if (!details || details.tagName.toLowerCase() !== "details") {
+          return;
+        }
+
+        const settingName = details.querySelector(":scope > summary code");
+        if (settingName && settingName.textContent.replaceAll("_", "-") === hash) {
+          heading = candidate;
+        }
+      });
+    }
+
     if (!heading) {
       return;
     }
@@ -101,9 +120,9 @@ document$.subscribe(function() {
     });
   }
 
-  openOperationFromHash();
-  window.operationAdmonitionHashHandler = openOperationFromHash;
-  window.addEventListener("hashchange", window.operationAdmonitionHashHandler);
+  openConfigDetailFromHash();
+  window.configAdmonitionHashHandler = openConfigDetailFromHash;
+  window.addEventListener("hashchange", window.configAdmonitionHashHandler);
 });
 
 document.addEventListener("DOMContentLoaded", () => {

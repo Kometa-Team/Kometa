@@ -67,7 +67,7 @@ movies/The Empire Strikes Back (1980) Bluray-1080p.mkv
 
 If your movies and shows are not in individual folders, setting art using the asset directory will not work and you can stop here.
 
-You can specify your asset folders under the `settings` attribute `asset_directory`:
+You can specify your asset folders under the `settings` attribute [`directories`](../../config/settings.md#asset-directory):
 
 ???+ important
 
@@ -77,24 +77,26 @@ You can specify your asset folders under the `settings` attribute `asset_directo
 
 ```yaml
 settings:
-  asset_directory: config/assets
+  assets:
+    directories: config/assets
 ```
 
 To use multiple Image Asset Directories specify the directories as a YAML list:
 
 ```yaml
 settings:
-  asset_directory:
-    - config/assets
-    - config/more_assets
-    - config/assets_ahoy
+  assets:
+    directories:
+      - config/assets
+      - config/more_assets
+      - config/assets_ahoy
 ```
 
 * Kometa will not create the asset directories themselves; it will create folder *within* asset directories [if configured to do this], but not the asset directories themselves.
 
 * You can specify an Image Asset Directory per Metadata/Playlist/Overlay File when calling the file. See [File Blocks](../../config/files.md) for how to define them.
 
-* By default [if no `asset_directory` is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
+* By default [if no `directories` setting is specified], the program will look in the same folder as your `config.yml` for a folder called `assets`.
 
 ## Applying assets
 
@@ -112,11 +114,12 @@ Movies:
     assets_for_all_collections: true
 ```
 
-If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
+If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`missing_assets` setting](../../config/settings.md#show-missing-assets):
 
 ```yaml
 settings:
-  show_missing_assets: false
+  logging:
+    missing_assets: false
 ```
 
 ## Asset interaction with overlays
@@ -128,7 +131,7 @@ the simplest and safest way to ensure that the overlay pipeline doesn't unexpect
 ## Asset Naming
 
 The table below shows the asset folder path structures that will be searched for. There are two options for how Kometa looks at the files inside your Asset Directories. Choose an option with
-the [`asset_folders` Setting Attribute](../../config/settings.md). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
+the [`use_folders` setting](../../config/settings.md#asset-folders). Note that `use_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
 Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
@@ -138,9 +141,9 @@ Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the 
 
 ???+ important
 
-    In this table, `<path_to_assets>` is an asset directory OR some directory below an asset directory, depending on your setting for `asset_depth`.
+    In this table, `<path_to_assets>` is an asset directory OR some directory below an asset directory, depending on your setting for `search_depth`.
 
-    For example, if your `asset_directory` is `/config/assets` and your `asset_depth` is 2, then `<path_to_assets>` might be:
+    For example, if your `directories` setting includes `/config/assets` and your `search_depth` is 2, then `<path_to_assets>` might be:
 
     ```
     /config/assets
@@ -153,7 +156,7 @@ Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the 
 
 === "ASSET_FOLDERS=True"
 
-    | Image Type                       | Asset Folders Image Paths<br>`asset_folders: true`         |
+    | Image Type                       | Asset Folders Image Paths<br>`use_folders: true`           |
     |:---------------------------------|:-----------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`, `art.ext`, `backdrop.ext`, or `fanart.ext` |
@@ -166,7 +169,7 @@ Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the 
 
 === "ASSET_FOLDERS=False"
 
-    | Image Type                       | Flat Assets Image Paths<br>`asset_folders: false`          |
+    | Image Type                       | Flat Assets Image Paths<br>`use_folders: false`            |
     |:---------------------------------|:-----------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                         |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`, `ASSET_NAME-art.ext`, `ASSET_NAME-backdrop.ext`, `ASSET_NAME-background.ext`, or `ASSET_NAME-fanart.ext` |
@@ -361,11 +364,11 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
 
 * Replace `.ext` with a supported image extension: `.jpg`, `.jpeg`, `.png`, `.webp`, or `.tbn`.
 
-* When `asset_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
+* When `use_folders` is set to `true` movie/show folders can be nested inside other folders, but you must specify how deep you want to search because the more levels to search the longer it takes.
 
-* You can specify how deep you want to scan by using the [`asset_depth` Setting Attribute](../../config/settings.md).
+* You can specify how deep you want to scan by using the [`search_depth` setting](../../config/settings.md#asset-depth).
 
-Here's an example config folder structure with an assets directory with `asset_folders` set to true and false.
+Here's an example config folder structure with an assets directory with `use_folders` set to true and false.
 
 ### Asset Folders vs Flat Assets
 

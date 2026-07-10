@@ -44,6 +44,52 @@ run_order_options = {
     "overlays": "Represents Overlay Updates",
     "operations": "Represents Operations Updates",
 }
+settings_path_aliases = {
+    ("run", "order"): "run_order",
+    ("run", "rerun_delay"): "run_again_delay",
+    ("cache", "enabled"): "cache",
+    ("cache", "expiration_days"): "cache_expiration",
+    ("assets", "directories"): "asset_directory",
+    ("assets", "use_folders"): "asset_folders",
+    ("assets", "search_depth"): "asset_depth",
+    ("assets", "create_folders"): "create_asset_folders",
+    ("assets", "prioritize"): "prioritize_assets",
+    ("assets", "dimensional_rename"): "dimensional_asset_rename",
+    ("assets", "download_from_urls"): "download_url_assets",
+    ("collections", "sync_mode"): "sync_mode",
+    ("collections", "minimum_items"): "minimum_items",
+    ("collections", "default_order"): "default_collection_order",
+    ("collections", "delete_below_minimum"): "delete_below_minimum",
+    ("collections", "delete_not_scheduled"): "delete_not_scheduled",
+    ("collections", "auto_sort_hubs"): "auto_sort_hubs",
+    ("playlists", "sync_to_users"): "playlist_sync_to_users",
+    ("playlists", "exclude_users"): "playlist_exclude_users",
+    ("playlists", "show_report"): "playlist_report",
+    ("metadata", "tvdb_language"): "tvdb_language",
+    ("metadata", "refresh_delay"): "item_refresh_delay",
+    ("metadata", "ignore_ids"): "ignore_ids",
+    ("metadata", "ignore_imdb_ids"): "ignore_imdb_ids",
+    ("missing", "ignore_ids"): "ignore_ids",
+    ("missing", "ignore_imdb_ids"): "ignore_imdb_ids",
+    ("missing", "filter_unreleased"): "missing_only_released",
+    ("missing", "only_filter_missing"): "only_filter_missing",
+    ("overlays", "filetype"): "overlay_artwork_filetype",
+    ("overlays", "quality"): "overlay_artwork_quality",
+    ("reports", "save"): "save_report",
+    ("reports", "path"): "report_path",
+    ("logging", "options"): "show_options",
+    ("logging", "unmanaged"): "show_unmanaged",
+    ("logging", "unconfigured"): "show_unconfigured",
+    ("logging", "filtered"): "show_filtered",
+    ("logging", "unfiltered"): "show_unfiltered",
+    ("logging", "missing"): "show_missing",
+    ("logging", "missing_assets"): "show_missing_assets",
+    ("logging", "missing_seasons"): "show_missing_season_assets",
+    ("logging", "missing_episodes"): "show_missing_episode_assets",
+    ("logging", "unused_assets"): "show_asset_not_needed",
+    ("network", "verify_ssl"): "verify_ssl",
+    ("network", "custom_repo"): "custom_repo",
+}
 sync_modes = {
     "append": "Only Add Items to the Collection or Playlist",
     "sync": "Add & Remove Items from the Collection or Playlist",
@@ -315,6 +361,23 @@ class ConfigFile:
                 all_data["settings"][in_attr] = all_data[par][in_attr]
                 del all_data[par][in_attr]
 
+        def normalize_settings(all_data):
+            if not all_data or "settings" not in all_data or not isinstance(all_data["settings"], dict):
+                return
+            settings = all_data["settings"]
+            if "cache" in settings and isinstance(settings["cache"], dict):
+                cache_settings = settings["cache"]
+                if "cache_expiration" not in settings and "expiration_days" in cache_settings:
+                    settings["cache_expiration"] = cache_settings["expiration_days"]
+                settings["cache"] = cache_settings["enabled"] if "enabled" in cache_settings else None
+            for (parent, attribute), legacy_attribute in settings_path_aliases.items():
+                if parent == legacy_attribute:
+                    continue
+                if legacy_attribute in settings:
+                    continue
+                if parent in settings and isinstance(settings[parent], dict) and attribute in settings[parent]:
+                    settings[legacy_attribute] = settings[parent][attribute]
+
         if "libraries" not in self.data:
             self.data["libraries"] = {}
         if "settings" not in self.data:
@@ -381,6 +444,7 @@ class ConfigFile:
                         self.data["libraries"][library]["settings"]["minimum_items"] = self.data["libraries"][library]["settings"].pop("collection_minimum")
                     if "save_missing" in self.data["libraries"][library]["settings"]:
                         self.data["libraries"][library]["settings"]["save_report"] = self.data["libraries"][library]["settings"].pop("save_missing")
+                    normalize_settings(self.data["libraries"][library])
                 if "radarr" in self.data["libraries"][library] and self.data["libraries"][library]["radarr"]:
                     if "monitor" in self.data["libraries"][library]["radarr"] and isinstance(self.data["libraries"][library]["radarr"]["monitor"], bool):
                         self.data["libraries"][library]["radarr"]["monitor"] = True if self.data["libraries"][library]["radarr"]["monitor"] else False
@@ -424,6 +488,7 @@ class ConfigFile:
             if "save_missing" in temp:
                 temp["save_report"] = temp.pop("save_missing")
             self.data["settings"] = temp
+            normalize_settings(self.data)
         if "webhooks" in self.data:
             temp = self.data.pop("webhooks")
             if "changes" not in temp:
@@ -835,6 +900,7 @@ class ConfigFile:
             "show_options": check_for_attribute(self.data, "show_options", parent="settings", var_type="bool", default=False),
             "show_missing": check_for_attribute(self.data, "show_missing", parent="settings", var_type="bool", default=True),
             "save_report": check_for_attribute(self.data, "save_report", parent="settings", var_type="bool", default=False),
+            "report_path": check_for_attribute(self.data, "report_path", parent="settings", default_is_none=True),
             "tvdb_language": check_for_attribute(self.data, "tvdb_language", parent="settings", default="default"),
             "ignore_ids": check_for_attribute(self.data, "ignore_ids", parent="settings", var_type="int_list", default_is_none=True),
             "ignore_imdb_ids": check_for_attribute(self.data, "ignore_imdb_ids", parent="settings", var_type="lower_list", default_is_none=True),
@@ -1604,11 +1670,22 @@ class ConfigFile:
                     default_is_none=True,
                 )
                 params["report_path"] = None
-                if lib and "report_path" in lib and lib["report_path"]:
-                    if os.path.exists(os.path.dirname(os.path.abspath(lib["report_path"]))):
-                        params["report_path"] = lib["report_path"]
+                report_path = check_for_attribute(
+                    lib,
+                    "report_path",
+                    parent="settings",
+                    default=self.general["report_path"],
+                    do_print=False,
+                    save=False,
+                    default_is_none=True,
+                )
+                if not report_path and lib and "report_path" in lib and lib["report_path"]:
+                    report_path = lib["report_path"]
+                if report_path:
+                    if os.path.exists(os.path.dirname(os.path.abspath(report_path))):
+                        params["report_path"] = report_path
                     else:
-                        logger.error(f"Config Error: Folder {os.path.dirname(os.path.abspath(lib['report_path']))} does not exist")
+                        logger.error(f"Config Error: Folder {os.path.dirname(os.path.abspath(report_path))} does not exist")
                 if lib and "operations" in lib and lib["operations"]:
                     final_operations = {}
                     logger.separator("Operation Configuration", space=False, border=False)

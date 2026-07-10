@@ -48,7 +48,7 @@ Every file block under the parent attribute begins with a `-`.
 ### Location Types and Paths
 
 There are multiple location types that can be used to call a file. They can either be on the local system, online at an url, part of the [Kometa Defaults](../defaults/guide.md), 
-directly from the [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs) repository, or from another [`Custom Repository`](settings.md#custom-repo).
+directly from the [Kometa Community Configs](https://github.com/Kometa-Team/Community-Configs) repository, or from another [`custom_repo` setting](settings.md#custom-repo).
 
 The location types are outlined as follows:
 
@@ -128,7 +128,7 @@ The location types are outlined as follows:
 
 ??? blank "`repo` - Used to run a file hosted on a custom repository.<a class="headerlink" href="#repo" title="Permanent link">¶</a>"
 
-    <div id="repo" />Used to run a file which is hosted on a repo specified by the user with the [`custom_repo`](settings.md#custom-repo) Setting Attribute.
+    <div id="repo" />Used to run a file which is hosted on a repo specified by the user with the [`custom_repo`](settings.md#custom-repo) setting.
 
     Note that as with `git` you enter the bits of the items path relative to repo [`meisnate12/People`] and you don't need the `.yml` extension.
 

@@ -522,6 +522,171 @@ class TestGeneralDefaults:
         cf = make_config(tmp_path)
         assert "run_order" in cf.general
 
+    def test_nested_settings_aliases(self, tmp_path):
+        config = """
+settings:
+  run:
+    order:
+      - operations
+      - collections
+    rerun_delay: 7
+  cache:
+    enabled: false
+    expiration_days: 12
+  assets:
+    directories: config/assets
+    use_folders: false
+    search_depth: 2
+    create_folders: true
+    prioritize: true
+    dimensional_rename: true
+    download_from_urls: true
+  collections:
+    sync_mode: sync
+    minimum_items: 3
+    default_order: added.asc
+    delete_below_minimum: true
+    delete_not_scheduled: true
+    auto_sort_hubs: alpha
+  playlists:
+    sync_to_users: all
+    exclude_users: guest
+    show_report: false
+  metadata:
+    tvdb_language: eng
+    refresh_delay: 9
+    ignore_ids:
+      - 1
+    ignore_imdb_ids:
+      - tt1234567
+  missing:
+    filter_unreleased: true
+    only_filter_missing: true
+  overlays:
+    filetype: webp_lossy
+    quality: 80
+  reports:
+    save: true
+    path: ./report.yml
+  logging:
+    options: true
+    unmanaged: false
+    unconfigured: false
+    filtered: true
+    unfiltered: true
+    missing: false
+    missing_assets: false
+    missing_seasons: true
+    missing_episodes: true
+    unused_assets: false
+  network:
+    verify_ssl: true
+    custom_repo: https://github.com/Kometa-Team/Defaults/tree/nightly/
+libraries:
+  Movies:
+    collection_files: []
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        cf = make_config(tmp_path, config_yaml=config)
+        assert cf.general["run_order"] == ["operations", "metadata", "collections", "overlays"]
+        assert cf.general["run_again_delay"] == 7
+        assert cf.general["cache"] is False
+        assert cf.general["cache_expiration"] == 12
+        assert cf.general["asset_folders"] is False
+        assert cf.general["asset_depth"] == 2
+        assert cf.general["create_asset_folders"] is True
+        assert cf.general["sync_mode"] == "sync"
+        assert cf.general["minimum_items"] == 3
+        assert cf.general["playlist_report"] is False
+        assert cf.general["tvdb_language"] == "eng"
+        assert cf.general["item_refresh_delay"] == 9
+        assert cf.general["ignore_ids"] == [1]
+        assert cf.general["ignore_imdb_ids"] == ["tt1234567"]
+        assert cf.general["missing_only_released"] is True
+        assert cf.general["overlay_artwork_quality"] == 80
+        assert cf.general["save_report"] is True
+        assert cf.general["report_path"] == "./report.yml"
+        assert cf.general["show_options"] is True
+        assert cf.general["verify_ssl"] is True
+
+    def test_flat_settings_win_over_nested_aliases(self, tmp_path):
+        config = """
+settings:
+  run_again_delay: 4
+  show_options: false
+  run:
+    rerun_delay: 9
+  logging:
+    options: true
+libraries:
+  Movies:
+    collection_files: []
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        cf = make_config(tmp_path, config_yaml=config)
+        assert cf.general["run_again_delay"] == 4
+        assert cf.general["show_options"] is False
+
+    def test_metadata_ignore_ids_win_over_missing_aliases(self, tmp_path):
+        config = """
+settings:
+  metadata:
+    ignore_ids:
+      - 1
+    ignore_imdb_ids:
+      - tt0000001
+  missing:
+    ignore_ids:
+      - 2
+    ignore_imdb_ids:
+      - tt0000002
+libraries:
+  Movies:
+    collection_files: []
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        cf = make_config(tmp_path, config_yaml=config)
+        assert cf.general["ignore_ids"] == [1]
+        assert cf.general["ignore_imdb_ids"] == ["tt0000001"]
+
+    def test_library_nested_settings_aliases(self, tmp_path):
+        config = """
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    settings:
+      collections:
+        minimum_items: 4
+      logging:
+        options: true
+      overlays:
+        quality: 70
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        cf = make_config(tmp_path, config_yaml=config)
+        settings = cf.data["libraries"]["Movies"]["settings"]
+        assert settings["minimum_items"] == 4
+        assert settings["show_options"] is True
+        assert settings["overlay_artwork_quality"] == 70
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Edge cases

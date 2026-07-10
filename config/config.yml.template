@@ -4,9 +4,9 @@
 
 ## Plex and TMDb are the two connections which are required for the script to run
 
-plex:                              # Can be individually specified per library as well; REQUIRED for the script to run
-  url: http://192.168.1.12:32400   # Enter Plex URL (REQUIRED); this needs to point to your server, not app.plex.tv
-  token:                           # Enter Plex Token (REQUIRED)
+plex:                                                # Can be individually specified per library as well; REQUIRED for the script to run
+  url: http://192.168.1.12:32400                     # Enter Plex URL (REQUIRED); this needs to point to your server, not app.plex.tv
+  token:                                             # Enter Plex Token (REQUIRED)
   timeout: 60
   db_cache: 40
   clean_bundles: false
@@ -14,168 +14,181 @@ plex:                              # Can be individually specified per library a
   optimize: false
   verify_ssl: true
 tmdb:
-  apikey:                          # Enter TMDb API Key (REQUIRED)
+  apikey:                                            # Enter TMDb API Key (REQUIRED)
   cache_expiration: 60
   language: en
   region:
 
-                                   ## At least one library has to be configured for the script to do anything meaningful
-libraries:                         # This is called out once within the config.yml file
-  Movies:                          # These are names of libraries in your Plex
-    remove_overlays: false         # Set this to true to remove all overlays
+                                                     ## At least one library has to be configured for the script to do anything meaningful
+libraries:                                           # This is called out once within the config.yml file
+  Movies:                                            # These are names of libraries in your Plex
+    remove_overlays: false                           # Set this to true to remove all overlays
     collection_files:
-    - default: basic               # This is a file within Kometa's defaults folder
-    - default: imdb                # This is a file within Kometa's defaults folder
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+    - default: basic                                 # This is a file within Kometa's defaults folder
+    - default: imdb                                  # This is a file within Kometa's defaults folder
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-    - default: ribbon              # This is a file within Kometa's defaults folder
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+    - default: ribbon                                # This is a file within Kometa's defaults folder
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
   TV Shows:
-    remove_overlays: false         # Set this to true to remove all overlays
+    remove_overlays: false                           # Set this to true to remove all overlays
     collection_files:
-    - default: basic               # This is a file within Kometa's defaults folder
-    - default: imdb                # This is a file within Kometa's defaults folder
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+    - default: basic                                 # This is a file within Kometa's defaults folder
+    - default: imdb                                  # This is a file within Kometa's defaults folder
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
     overlay_files:
-    - default: ribbon              # This is a file within Kometa's defaults folder
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+    - default: ribbon                                # This is a file within Kometa's defaults folder
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
   Anime:
     collection_files:
-      - default: basic             # This is a file within Kometa's defaults folder
-      - default: anilist           # This is a file within Kometa's defaults folder
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+      - default: basic                               # This is a file within Kometa's defaults folder
+      - default: anilist                             # This is a file within Kometa's defaults folder
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
   Music:
     collection_files:
-      - file: config/Music.yml     # This is a local file THAT YOU MIGHT CREATE
+      - file: config/Music.yml                       # This is a local file THAT YOU MIGHT CREATE
 playlist_files:
-  - default: playlist              # This is a file within Kometa's defaults folder
+  - default: playlist                                # This is a file within Kometa's defaults folder
     template_variables:
-      libraries: Movies, TV Shows  # list of libraries that you want the Kometa Defaults playlists to look at
-                                   # see the wiki for how to use local files, folders, URLs, or files from git
+      libraries: Movies, TV Shows                    # list of libraries that you want the Kometa Defaults playlists to look at
+                                                     # see the wiki for how to use local files, folders, URLs, or files from git
 settings:
-  run_order:
-  - operations
-  - metadata
-  - collections
-  - overlays
-  cache: true
-  cache_expiration: 60
-  asset_directory:
-  - config/assets
-  asset_folders: true
-  asset_depth: 0
-  create_asset_folders: false
-  prioritize_assets: false
-  dimensional_asset_rename: false
-  download_url_assets: false
-  show_missing_season_assets: false
-  show_missing_episode_assets: false
-  show_asset_not_needed: true
-  sync_mode: append
-  minimum_items: 1
-  default_collection_order: release
-  delete_below_minimum: true
-  delete_not_scheduled: false
-  # auto_sort_hubs: sort_title  # Options: sort_title, sort_title.desc, alpha, alpha.desc, configured, configured.desc, random
-  run_again_delay: 2
-  missing_only_released: false
-  only_filter_missing: false
-  show_unmanaged: true
-  show_unconfigured: true
-  show_filtered: false
-  show_unfiltered: false
-  show_options: true
-  show_missing: true
-  show_missing_assets: true
-  save_report: false
-  tvdb_language: eng
-  ignore_ids:
-  ignore_imdb_ids:
-  item_refresh_delay: 0
-  playlist_sync_to_users:
-  playlist_exclude_users:
-  playlist_report: false
-  verify_ssl: true
-  custom_repo:
-  overlay_artwork_filetype: webp_lossy
-  overlay_artwork_quality: 90
-webhooks:                          # Can be individually specified per library as well
+  run:
+    order:                                           # Controls which major Kometa phases run and in what order.
+    - operations
+    - metadata
+    - collections
+    - overlays
+    rerun_delay: 2                                   # Minutes to wait before rerunning Kometa when scheduled to repeat.
+  cache:
+    enabled: true                                    # Enables Kometa's local cache for API responses and generated data.
+    expiration_days: 60                              # Number of days cached values remain valid before refresh.
+  assets:
+    directories:                                     # Folders Kometa searches for local posters, backgrounds, logos, and other assets.
+    - config/assets
+    use_folders: true                                # Uses one folder per item or collection when matching assets.
+    search_depth: 0                                  # Number of nested folder levels to search for assets.
+    create_folders: false                            # Creates missing asset folders when assets are needed.
+    prioritize: false                                # Prefers local asset files over images from metadata sources.
+    dimensional_rename: false                        # Renames downloaded assets with image dimensions in the filename.
+    download_from_urls: false                        # Downloads URL-based artwork into the asset directory.
+  collections:
+    sync_mode: append                                # Sets whether collections only add items or also remove missing items.
+    minimum_items: 1                                 # Minimum number of items required for a collection to be created or kept.
+    default_order: release                           # Default Plex sort order applied to collections.
+    delete_below_minimum: true                       # Deletes collections that fall below the minimum item count.
+    delete_not_scheduled: false                      # Deletes collections that are not scheduled to run.
+    # auto_sort_hubs: sort_title                     # Sorts Plex recommendation hubs; options include sort_title, alpha, configured, and random.
+  playlists:
+    sync_to_users:                                   # Plex users that playlists should be synced to.
+    exclude_users:                                   # Plex users that should be excluded from playlist syncing.
+    show_report: false                               # Includes playlist details in the generated report output.
+  metadata:
+    tvdb_language: eng                               # TVDb language code used for metadata lookups.
+    refresh_delay: 0                                 # Seconds to wait after refreshing item metadata.
+    ignore_ids:                                      # TMDb or TVDb IDs to ignore when reporting missing items.
+    ignore_imdb_ids:                                 # IMDb IDs to ignore when reporting missing items.
+  missing:
+    filter_unreleased: false                         # Filters unreleased items out of missing-item results.
+    only_filter_missing: false                       # Applies collection filters only to missing-item checks.
+  overlays:
+    filetype: webp_lossy                             # File format used when saving generated overlay artwork.
+    quality: 90                                      # Image quality used when saving generated overlay artwork.
+  reports:
+    save: false                                      # Saves a YAML report file for processed libraries.
+    path:                                            # Overrides the default report file path.
+  logging:
+    options: true                                    # Shows available options when invalid setting values are used.
+    unmanaged: true                                  # Logs collections in Plex that Kometa does not manage.
+    unconfigured: true                               # Logs collections that are not configured in Kometa files.
+    filtered: false                                  # Logs items excluded by collection filters.
+    unfiltered: false                                # Logs items kept after collection filters.
+    missing: true                                    # Logs missing items found during collection processing.
+    missing_assets: true                             # Logs missing collection and item assets.
+    missing_seasons: false                           # Logs missing season assets for show libraries.
+    missing_episodes: false                          # Logs missing episode assets for show libraries.
+    unused_assets: true                              # Logs assets that are not needed by configured libraries.
+  network:
+    verify_ssl: true                                 # Verifies SSL certificates for outbound network requests.
+    custom_repo:                                     # Overrides the default Kometa defaults repository URL.
+
+webhooks:                                            # Can be individually specified per library as well
   changes:
   delete:
   error:
   run_end:
   run_start:
   version:
-tautulli:                          # Can be individually specified per library as well
-  url: http://192.168.1.12:8181    # Enter Tautulli URL (Optional)
-  apikey:                          # Enter Tautulli API Key (Optional)
+tautulli:                                            # Can be individually specified per library as well
+  url: http://192.168.1.12:8181                      # Enter Tautulli URL (Optional)
+  apikey:                                            # Enter Tautulli API Key (Optional)
 github:
-  token:                           # Enter GitHub Personal Access Token (Optional)
+  token:                                             # Enter GitHub Personal Access Token (Optional)
 omdb:
-  apikey:                          # Enter OMDb API Key (Optional)
+  apikey:                                            # Enter OMDb API Key (Optional)
   cache_expiration: 60
 mdblist:
-  apikey:                          # Enter MDBList API Key (Optional)
+  apikey:                                            # Enter MDBList API Key (Optional)
   cache_expiration: 60
 simkl:
-  user_token:                      # Enter SIMKL User Token (Optional)
-                                   # Get one at https://utilities.kometa.wiki/simkl-oauth
+  user_token:                                        # Enter SIMKL User Token (Optional)
+                                                     # Get one at https://utilities.kometa.wiki/simkl-oauth
 notifiarr:
-  apikey:                          # Enter Notifiarr API Key (Optional)
+  apikey:                                            # Enter Notifiarr API Key (Optional)
 gotify:
-  url: http://192.168.1.12:80      # Enter Gotify server URL (Optional)
-  token:                           # Enter Gotify Token (Optional)
+  url: http://192.168.1.12:80                        # Enter Gotify server URL (Optional)
+  token:                                             # Enter Gotify Token (Optional)
 ntfy:
-  url: http://192.168.1.12:80      # Enter ntfy server URL (Optional)
-  token:                           # Enter ntfy Access Token (Optional)
-  topic:                           # Enter ntfy Topic (Optional)
+  url: http://192.168.1.12:80                        # Enter ntfy server URL (Optional)
+  token:                                             # Enter ntfy Access Token (Optional)
+  topic:                                             # Enter ntfy Topic (Optional)
 apprise:
-  config:                          # Enter path or URL to Apprise config file (Optional)
+  config:                                            # Enter path or URL to Apprise config file (Optional)
 anidb:
   cache_expiration: 60
   language: en
   enable_mature: false
-radarr:                            # Can be individually specified per library as well
-  url: http://192.168.1.12:7878    # Enter Radarr server URL (Optional)
-  token:                           # Enter Radarr API Key (Optional)
+radarr:                                              # Can be individually specified per library as well
+  url: http://192.168.1.12:7878                      # Enter Radarr server URL (Optional)
+  token:                                             # Enter Radarr API Key (Optional)
   add_missing: false
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
-  root_folder_path: "S:/Movies"    # This value is CASE SENSITIVE
+  root_folder_path: "S:/Movies"                      # This value is CASE SENSITIVE
   monitor: true
   availability: announced
-  quality_profile: HD-1080p        # This value is CASE SENSITIVE
+  quality_profile: HD-1080p                          # This value is CASE SENSITIVE
   tag:
   search: false
-  radarr_path:                    # This value is only needed in combination with the *_existing settings
-  plex_path:                      # This value is only needed in combination with the *_existing settings
+  radarr_path:                                       # This value is only needed in combination with the *_existing settings
+  plex_path:                                         # This value is only needed in combination with the *_existing settings
   ignore_cache: false
-sonarr:                            # Can be individually specified per library as well
-  url: http://192.168.1.12:8989    # Enter Sonarr server URL (Optional)
-  token:                           # Enter Sonarr API Key (Optional)
+sonarr:                                              # Can be individually specified per library as well
+  url: http://192.168.1.12:8989                      # Enter Sonarr server URL (Optional)
+  token:                                             # Enter Sonarr API Key (Optional)
   add_missing: false
   add_existing: false
   upgrade_existing: false
   monitor_existing: false
-  root_folder_path: "S:/TV Shows"  # This value is CASE SENSITIVE
+  root_folder_path: "S:/TV Shows"                    # This value is CASE SENSITIVE
   monitor: all
-  quality_profile: HD-1080p        # This value is CASE SENSITIVE
+  quality_profile: HD-1080p                          # This value is CASE SENSITIVE
   language_profile: English
   series_type: standard
   season_folder: true
   tag:
   search: false
   cutoff_search: false
-  sonarr_path:                     # This value is only needed in combination with the *_existing settings
-  plex_path:                       # This value is only needed in combination with the *_existing settings
+  sonarr_path:                                       # This value is only needed in combination with the *_existing settings
+  plex_path:                                         # This value is only needed in combination with the *_existing settings
   ignore_cache: false
 trakt:
-  client_id:                       # Enter Trakt Client ID (Optional)
-  client_secret:                   # Enter Trakt Client Secret (Optional)
+  client_id:                                         # Enter Trakt Client ID (Optional)
+  client_secret:                                     # Enter Trakt Client Secret (Optional)
   pin:
   authorization:
-                                   # authorization section is autofilled by the script
+                                                     # authorization section is autofilled by the script
     access_token:
     created_at:
     expires_in:
@@ -183,12 +196,12 @@ trakt:
     scope: public
     token_type:
 mal:
-  client_id:                       # Enter MyAnimeList Client ID (Optional)
-  client_secret:                   # Enter MyAnimeList Client Secret (Optional)
+  client_id:                                         # Enter MyAnimeList Client ID (Optional)
+  client_secret:                                     # Enter MyAnimeList Client Secret (Optional)
   cache_expiration: 60
   localhost_url:
   authorization:
-                                   # authorization section is autofilled by the script
+                                                     # authorization section is autofilled by the script
     access_token:
     expires_in:
     refresh_token:

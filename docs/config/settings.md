@@ -8,63 +8,63 @@ hide:
 
 ## Overview
 
-The `settings:` attribute and subsequent settings can be used to command various aspects of the functionality of Kometa.
+The `settings:` attribute controls global Kometa behavior such as run order, caching, assets, collection sync behavior, reports, logging, and network options.
 
-Examples of these settings include the ability to:
+Settings can be defined globally under the top-level `settings:` block. Many settings can also be overridden per library under `libraries: -> LIBRARY_NAME: -> settings:`. When a setting is present at both levels, the library-level value takes priority for that library.
 
-* Cache each Plex GUID and IDs to increase performance.
-* Create asset folders for collections so that custom posters can be stored for upload.
-* Use a custom repository as the base for all `git` Metadata files.
+Kometa accepts both the new grouped setting paths and the original flat setting names. New configs should use the grouped paths shown below.
 
-The settings attribute and attributes can be specified individually per library, or can be inherited from the global value if it has been set.
-If an attribute is specified at both the library and global level, then the library level attribute will take priority.
+## Setting Groups
 
-There are some attributes which can be specified at the collection level using [Settings](../files/settings.md).
+- [Run Settings](#run-settings)
+- [Cache Settings](#cache-settings)
+- [Asset Settings](#asset-settings)
+- [Collection Settings](#collection-settings)
+- [Playlist Settings](#playlist-settings)
+- [Metadata Settings](#metadata-settings)
+- [Missing Item Settings](#missing-item-settings)
+- [Overlay Settings](#overlay-settings)
+- [Report Settings](#report-settings)
+- [Logging Settings](#logging-settings)
+- [Network Settings](#network-settings)
 
-Attributes set at the collection level will take priority over any library or global-level attribute.
+### Run Settings
 
-## Attributes
+###### Run Order { #run-order }
 
-The available setting attributes which can be set at each level are outlined below:
+??? info "`order` - Controls which major Kometa phases run and in what order."
+    **Attribute:** `order`
 
+    **Original Attribute:** `run_order`
 
-??? blank "`asset_depth` - Used to control the depth of search in the asset directory.<a class="headerlink" href="#asset-depth" title="Permanent link">¶</a>"
+    **Levels:** Global/Library
 
-    <div id="asset-depth" />Specify how many folder levels to scan for an item within the asset directory.
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string containing `operations`, `metadata`, `collections`, and `overlays`.
 
-    At each asset level, Kometa will look for either `medianame.ext` [such as `Star Wars.png`] or a dedicated folder containing supported asset names such as `poster.ext`, `background.ext`, `logo.ext`, and `square.ext`.
+    **Default Value:** `operations, metadata, collections, overlays`
 
-    For example, if your asset directory is `/path/to/assets/`, and your `asset_depth` is 2, then Kometa will look for an asset match in any of these locations:
+    ???+ example "Example"
 
-    ```
-    /path/to/assets/level-0
-    /path/to/assets/level-0/level-1
-    /path/to/assets/level-0/level-1/level-2
-    ```
-    
-    The first match will be accepted.
+        ```yaml
+        settings:
+          run:
+            order:
+              - operations
+              - metadata
+              - collections
+              - overlays
+        ```
 
-    Specifically, if Kometa is looking for the asset name "Star Wars (1977)", then it would be found in any of:
-    
-    ```
-    /path/to/assets/Star Wars (1977)
-    /path/to/assets/Movies/Star Wars (1977)
-    /path/to/assets/Movies/Sci-fi/Star Wars (1977)
-    ```
+###### Rerun Delay { #run-again-delay }
 
-    ???+ tip
+??? info "`rerun_delay` - Sets the delay between repeat runs."
+    **Attribute:** `rerun_delay`
 
-        `asset_folders` must be set to `true` for this to take effect.
+    **Original Attribute:** `run_again_delay`
 
-        increasing the amount of levels to scan will reduce performance
+    **Levels:** Global
 
-    <hr style="margin: 0px;">
-
-    **Attribute:** `asset_depth`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** Any Integer 0 or greater.
+    **Accepted Values:** Integer number of minutes.
 
     **Default Value:** `0`
 
@@ -72,60 +72,22 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          asset_depth: 2
+          run:
+            rerun_delay: 2
         ```
 
+### Cache Settings
 
-??? blank "`asset_directory` - Used to define where local assets are located.<a class="headerlink" href="#asset-directory" title="Permanent link">¶</a>"
+###### Cache Enabled { #cache }
 
-    <div id="asset-directory" />Specify the directories where assets (posters, backgrounds, etc) are located.
+??? info "`enabled` - Enables Kometa's local cache database."
+    Kometa uses the cache to improve performance and to track applied overlays. Disabling the cache can cause overlays to be reapplied every run.
 
-    ???+ tip
+    **Attribute:** `enabled`
 
-        Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
+    **Original Attribute:** `cache`
 
-    ??? warning
-
-        Kometa will not create asset directories. Asset directories you specify here need to exist already.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `asset_directory`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** Any Directory or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Directories.
-
-    **Default Value:** `[Directory containing YAML config]/assets`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          asset_directory: config/movies
-        ```
-
-        ```yaml
-        settings:
-          asset_directory:
-            - config/assets/movies
-            - config/assets/collections
-        ```
-
-
-??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
-
-    <div id="asset-folders" />While `true`, Kometa will search the `asset_directory` for a dedicated folder per item vs while false will look for an image.
-
-    i.e. When `true` the example path would be `<asset_directory_path>/Star Wars/poster.png` instead of `<asset_directory_path>/Star Wars.png`.
-
-    See the [Image Asset Directory Guide](../kometa/guides/assets.md#asset-naming) for the full list of accepted poster, background, logo, and square art names, including Plex-compatible names such as `cover.ext`, `fanart.ext`, `clearlogo.ext`, and `backgroundSquare.ext`.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `asset_folders`
-
-    **Levels with this Attribute:** Global/Library
+    **Levels:** Global
 
     **Accepted Values:** `true` or `false`.
 
@@ -135,51 +97,20 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          asset_folders: true
+          cache:
+            enabled: true
         ```
 
+###### Cache Expiration Days { #cache-expiration }
 
-??? blank "`cache` - Used to control Kometa's cache database.<a class="headerlink" href="#cache" title="Permanent link">¶</a>"
+??? info "`expiration_days` - Sets how long cached values remain valid."
+    **Attribute:** `expiration_days`
 
-    <div id="cache" />Allow Kometa to create and maintain a local cache database for faster subsequent processing. The cache file is created in the same directory as the configuration file.
+    **Original Attribute:** `cache_expiration`
 
-    ???+ danger "Critical Warning"
+    **Levels:** Global
 
-         We **strongly** advise you leave this setting to `true`
-
-         If you set this to `false`, any Overlays set against your libraries will be reapplied on each and every run. Kometa stores information on which Overlays it has applied in the cache file.
-
-         You will suffer from [image bloat](../kometa/scripts/imagemaid.md) and your Kometa runs will be longer than needed if you do not use a cache file.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `cache`
-
-    **Levels with this Attribute:** Global
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          cache: true
-        ```
-
-
-??? blank "`cache_expiration` - Used to control how long data is cached for.<a class="headerlink" href="#cache-expiration" title="Permanent link">¶</a>"
-
-    <div id="cache-expiration" />Set the number of days before each cache mapping expires and has to be re-cached.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `cache_expiration`
-
-    **Levels with this Attribute:** Global
-
-    **Accepted Values:** Integer greater than 0.
+    **Accepted Values:** Integer number of days greater than `0`.
 
     **Default Value:** `60`
 
@@ -187,35 +118,47 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          cache_expiration: 30
+          cache:
+            expiration_days: 60
         ```
 
+### Asset Settings
 
-??? blank "`create_asset_folders` - Used to automatically create asset folders when none exist.<a class="headerlink" href="#create-asset-folders title="Permanent link">¶</a>"
+###### Asset Directories { #asset-directory }
 
-    <div id="create-asset-folders" />Whilst searching for assets, if an asset folder cannot be found within the `asset_directory` one will be created.
+??? info "`directories` - Defines where local assets are stored."
+    Asset directories can contain local posters, backgrounds, logos, and square art.
 
-    Asset Searches can happen in a number of ways.
+    **Attribute:** `directories`
 
-    * Any Collection specified under the `collections` header in a Collection File.
+    **Original Attribute:** `asset_directory`
 
-    * Any Item specified under the `metadata` header in a Collection File.
+    **Levels:** Global/Library
 
-    * Any Playlist specified under the `playlists` header in a Playlist File.
+    **Accepted Values:** Directory path or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of directory paths.
 
-    * Any Item in a library that is running the `assets_for_all` Library Operation.
+    **Default Value:** `[config directory]/assets`
 
-    * Any Collection in a library that is running the `assets_for_all_collections` Library Operation.
+    ???+ example "Example"
 
-    * Any Item that has an Overlay applied to it.
+        ```yaml
+        settings:
+          assets:
+            directories:
+              - config/assets/movies
+              - config/assets/collections
+        ```
 
-    * Any Item found by a Builder while the definition also has `item_assets: true` specified.
+###### Asset Folders { #asset-folders }
 
-    <hr style="margin: 0px;">
+??? info "`use_folders` - Controls whether assets are stored in dedicated folders."
+    When `true`, Kometa looks for item folders such as `Star Wars/poster.png`. When `false`, Kometa looks for direct image files such as `Star Wars.png`.
 
-    **Attribute:** `create_asset_folders`
+    **Attribute:** `use_folders`
 
-    **Levels with this Attribute:** Global/Library
+    **Original Attribute:** `asset_folders`
+
+    **Levels:** Global/Library
 
     **Accepted Values:** `true` or `false`.
 
@@ -225,263 +168,22 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          create_asset_folders: true
+          assets:
+            use_folders: true
         ```
 
+###### Asset Search Depth { #asset-depth }
 
-??? blank "`custom_repo` - Used to set up the custom `repo` [file block type](files.md#location-types-and-paths).<a class="headerlink" href="#custom-repo" title="Permanent link">¶</a>"
+??? info "`search_depth` - Controls how many nested folder levels are searched for assets."
+    `use_folders` must be `true` for this setting to affect folder matching. Higher values can reduce performance.
 
-    <div id="custom-repo" />Specify where the `repo` attribute's base is when defining `collection_files`, `metadata_files`, `playlist_file` and `overlay_files`.
+    **Attribute:** `search_depth`
 
-    ???+ note
+    **Original Attribute:** `asset_depth`
 
-        Ensure you are using the raw GitHub link (i.e.
-        https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12)
+    **Levels:** Global/Library
 
-    <hr style="margin: 0px;">
-
-    **Attribute:** `custom_repo`
-
-    **Levels with this Attribute:** Global
-
-    **Accepted Values:** Link to repository base.
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          custom_repo: https://github.com/Kometa-Team/Community-Configs/tree/master/meisnate12
-        ```
-
-
-??? blank "`default_collection_order` - Used to set the `collection_order` for every collection run.<a class="headerlink" href="#default-collection-order" title="Permanent link">¶</a>"
-
-    <div id="default-collection-order" />Set the `collection_order` for every collection run by Kometa unless the collection has a specific `collection_order`.
-
-    ???+ tip
-
-        `custom` cannot be used if more than one Builder is being used for the collection (such as `imdb_list` and `trakt_list` within the same collection).
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `default_collection_order`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`release`</td><td>Order Collection by Release Dates.</td></tr>
-      <tr><td>`alpha`</td><td>Order Collection Alphabetically.</td></tr>
-      <tr><td>`custom`</td><td>Order Collection Via the Builder Order.</td></tr>
-      <tr><td colspan="2">[Any `plex_search` sort option](../files/builders/plex/sort-options.md).</td></tr>
-    </table>
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          default_collection_order: release
-        ```
-
-
-??? blank "`delete_below_minimum` - Used to delete collections below `minimum_items`<a class="headerlink" href="#delete-below-minimum" title="Permanent link">¶</a>"
-
-    <div id="delete-below-minimum" />When a collection is run, delete the collection if it is below the minimum number specified by `minimum_items`.
-
-    ???+ tip
-
-        Relies on `minimum_items` being set to the desired integer.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `delete_below_minimum`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `false`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          delete_below_minimum: true
-        ```
-
-
-??? blank "`delete_not_scheduled` - Used to delete collections not scheduled.<a class="headerlink" href="#delete-not-scheduled" title="Permanent link">¶</a>"
-
-    <div id="delete-not-scheduled" />If a collection is skipped due to it not being scheduled, delete the collection.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `delete_not_scheduled`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `false`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-        settings:
-          delete_not_scheduled: true
-        ```
-
-
-??? blank "`auto_sort_hubs` - Used to sort Recommendation Hub rows on the Plex home screen.<a class="headerlink" href="#auto-sort-hubs" title="Permanent link">¶</a>"
-
-    <div id="auto-sort-hubs" />After all collections have been processed, sort the Recommendation Hub rows for this library on the Plex home screen and/or library Recommended tab. Only collections promoted to a hub (`visible_home` or `visible_shared`) are affected. Built-in Plex section hubs (Recently Added, Top Unwatched, Continue Watching, etc.) are not touched. Use `hub_priority` on individual collections to pin them to the front of the sorted list.
-
-    ???+ tip "Plex Pass Required"
-
-        Promoting collections to Recommendation Hubs requires an active [Plex Pass](https://www.plex.tv/plex-pass/) subscription.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `auto_sort_hubs`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, `random`
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          auto_sort_hubs: sort_title
-        ```
-
-
-??? blank "`dimensional_asset_rename` - Used to automatically rename asset files based on their dimensions.<a class="headerlink" href="#dimensional-asset-rename" title="Permanent link">¶</a>"
-
-    <div id="dimensional-asset-rename" />Whilst searching for assets, scan the folders within the `asset_directory` and if an asset poster (i.e. `/ASSET_NAME/poster.ext`) was not found,
-    rename the first image found that has a height greater than or equal to its width to `poster.ext`. If an asset background (i.e. `/ASSET_NAME/background.ext`),
-    rename the first image found that has a width greater than its height to `background.ext`.
-
-    ???+ tip
-
-        `asset_folders` must be set to `true` for this to take effect.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `dimensional_asset_rename`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          dimensional_asset_rename: true
-        ```
-
-
-??? blank "`download_url_assets` - Used to download url images into the asset directory.<a class="headerlink" href="#download-url-assets" title="Permanent link">¶</a>"
-
-    <div id="download-url-assets" />Whilst searching for assets, download images set within Collection/Metadata/Playlist
-    files( i.e. images set by `url_poster` or `url_background`) into the asset folder if none are already present.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `download_url_assets`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          download_url_assets: true
-        ```
-
-
-??? blank "`ignore_ids` - List of TMDb/TVDb IDs to ignore.<a class="headerlink" href="#ignore-ids" title="Permanent link">¶</a>"
-
-    <div id="ignore-ids" />Set a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of TMDb/TVDb IDs to ignore in all collections.
-
-    ???+ note
-
-        This does not apply to `smart_filter` Collections.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `ignore_ids`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of TMDb/TVDb IDs.
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          ignore_ids: 572802,695721
-        ```
-
-
-??? blank "`ignore_imdb_ids` - List of IMDb IDs to ignore.<a class="headerlink" href="#ignore-imdb-ids" title="Permanent link">¶</a>"
-
-    <div id="ignore-imdb-ids" />Set a List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of IMDb IDs to ignore in all collections.
-
-    ???+ note
-
-        Rhis does not apply to `smart_filter` Collections.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `ignore_imdb_ids`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of IMDb IDs.
-
-    **Default Value:** `None`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          ignore_imdb_ids: tt6710474,tt1630029
-        ```
-
-
-??? blank "`item_refresh_delay` - Time to wait between each `item_refresh`.<a class="headerlink" href="#item-refresh-delay" title="Permanent link">¶</a>"
-
-    <div id="item-refresh-delay" />Specify the number of seconds to wait between each `item_refresh` of every movie/show in a collection/playlist.
-
-    ???+ note
-
-        Useful if your Plex Media Server is having issues with high request levels.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `item_refresh_delay`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** Any Integer 0 or greater. (value is in seconds)
+    **Accepted Values:** Integer `0` or greater.
 
     **Default Value:** `0`
 
@@ -489,42 +191,18 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          item_refresh_delay: 5
+          assets:
+            search_depth: 2
         ```
 
+###### Create Asset Folders { #create-asset-folders }
 
-??? blank "`minimum_items` - Used to control minimum items requires to build a collection/playlist.<a class="headerlink" href="#minimum-items" title="Permanent link">¶</a>"
+??? info "`create_folders` - Creates missing asset folders when needed."
+    **Attribute:** `create_folders`
 
-    <div id="minimum-items" />Set the minimum number of items that must be found in order to build or update a collection/playlist.
+    **Original Attribute:** `create_asset_folders`
 
-    <hr style="margin: 0px;">
-
-    **Attribute:** `minimum_items`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** Integer greater than 0
-
-    **Default Value:** `1`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          minimum_items: 5
-        ```
-
-
-??? blank "`missing_only_released` - Used to filter unreleased items from missing lists.<a class="headerlink" href="#missing-only-released" title="Permanent link">¶</a>"
-
-    <div id="missing-only-released" />Whilst running a collection or playlist, when Kometa handles missing items to either report it to the user,
-    report it to a file, or send it to Radarr/Sonarr all unreleased items will be filtered out.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `missing_only_released`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
+    **Levels:** Global/Library
 
     **Accepted Values:** `true` or `false`.
 
@@ -534,23 +212,18 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          missing_only_released: true
+          assets:
+            create_folders: false
         ```
 
+###### Prioritize Assets { #prioritize-assets }
 
-??? blank "`only_filter_missing` - Used to have the `filter` only apply to missing items.<a class="headerlink" href="#only-filter-missing" title="Permanent link">¶</a>"
+??? info "`prioritize` - Prefers local assets over images from metadata sources."
+    **Attribute:** `prioritize`
 
-    <div id="only-filter-missing" />Only items missing from a collection will be filtered. **Only specific filters can filter missing. See [Filters](../files/filters.md) for more information.**
+    **Original Attribute:** `prioritize_assets`
 
-    ???+ note
-
-        This can be used to filter which missing media items get sent to Sonarr/Radarr.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `only_filter_missing`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
+    **Levels:** Global/Library
 
     **Accepted Values:** `true` or `false`.
 
@@ -560,70 +233,18 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          only_filter_missing: true
+          assets:
+            prioritize: false
         ```
 
+###### Dimensional Asset Rename { #dimensional-asset-rename }
 
-??? blank "`overlay_artwork_filetype` - Used to control the filetype used with overlay images.<a class="headerlink" href="#overlay-filetype" title="Permanent link">¶</a>"
+??? info "`dimensional_rename` - Renames downloaded assets with image dimensions."
+    **Attribute:** `dimensional_rename`
 
-    <div id="overlay-filetype" />Used to control the filetype used with overlay images. This setting will only be applied to images generated after the value is added to your config.
+    **Original Attribute:** `dimensional_asset_rename`
 
-    <hr style="margin: 0px;">
-
-    **Attribute:** `overlay_artwork_filetype`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:**
-
-    <table class="clearTable">
-      <tr><td>`jpg`</td><td>Use JPG files for saving Overlays.</td></tr>
-      <tr><td>`png`</td><td>Use PNG files for saving Overlays.</td></tr>
-      <tr><td>`webp_lossy`</td><td>Use Lossy WEBP files for saving Overlays.</td></tr>
-      <tr><td>`webp_lossless`</td><td>Use Lossless WEBP files for saving Overlays.</td></tr>
-    </table>
-
-    **Default Value:** `webp_lossy`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          overlay_artwork_filetype: png
-        ```
-
-
-??? blank "`overlay_artwork_quality` - Used to control the JPG or Lossy WEBP quality used with overlay images.<a class="headerlink" href="#overlay-quality" title="Permanent link">¶</a>"
-
-    <div id="overlay-quality" />Used to control the JPG or Lossy WEBP quality used with overlay images. This setting will only be applied to images generated after the value is added to your config.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `overlay_artwork_quality`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** Any Integer 1-100 [Values over 95 are not recommended and may result in excessive image size, perhaps too large to be uploaded to Plex.
-
-    **Default Value:** `None` [when no value is provided the standard 90 is used.]
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          overlay_artwork_quality: 90
-        ```
-
-
-??? blank "`playlist_report` - Used to print out a playlist report.<a class="headerlink" href="#playlist-report" title="Permanent link">¶</a>"
-
-    <div id="playlist-report" />Set `playlist_report` to true to print out a playlist report at the end of the log.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `playlist_report`
-
-    **Levels with this Attribute:** Global
+    **Levels:** Global/Library
 
     **Accepted Values:** `true` or `false`.
 
@@ -633,211 +254,18 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          playlist_report: true
+          assets:
+            dimensional_rename: false
         ```
 
+###### Download URL Assets { #download-url-assets }
 
-??? blank "`playlist_sync_to_users` - Set the default playlist `sync_to_users`.<a class="headerlink" href="#playlist-sync-to-users" title="Permanent link">¶</a>"
+??? info "`download_from_urls` - Downloads URL-based artwork into the asset directory."
+    **Attribute:** `download_from_urls`
 
-    <div id="playlist-sync-to-users" />Set the default playlist `sync_to_users`. To Sync a playlist to only yourself leave `playlist_sync_to_users` blank.
+    **Original Attribute:** `download_url_assets`
 
-    ???+ note
-
-        sharing playlists with other users will not share any posters associated with the playlist, this is a Plex limitation.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `playlist_sync_to_users`
-
-    **Levels with this Attribute:** Global/Playlist
-
-    **Accepted Values:** `all`, list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of users, or comma-separated string of users. Leave blank to not sync playlists to other users.
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          playlist_sync_to_users:
-            - user1
-            - user2
-        ```
-
-
-??? blank "`prioritize_assets` - Used to prioritize `asset_directory` images over all other images types.<a class="headerlink" href="#prioritize-assets" title="Permanent link">¶</a>"
-
-    <div id="prioritize-assets" />When determining which image to use on an item prioritize the `asset_directory` over all other image sources.
-
-    Standard priority is as follows:
-
-    1. `url_poster`
-
-    2. `file_poster`
-
-    3. `tmdb_poster`
-
-    4. `tvdb_poster`
-
-    5. Asset directory
-
-    6. `tmdb_person`
-
-    7. `tmdb_collection_details`
-
-    8+. all other `_details` methods
-
-    So if you have a poster for "Some Collection" specified as a `url_poster` and *also* as an asset, the `url_poster` will win and the asset will be ignored.
-
-    This setting pushes `asset_directory` to the top of the list, so the asset would win over teh `url_poster`.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `prioritize_assets`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          prioritize_assets: true
-        ```
-
-
-??? blank "`report_path` - Used to specify the location of `save_report`.<a class="headerlink" href="#report-path" title="Permanent link">¶</a>"
-
-    <div id="report-path" />Specify the location where `save_report` is saved.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `report_path`
-
-    **Levels with this Attribute:** Library
-
-    **Accepted Values:** YAML file path location.
-
-    **Default Value:** `[Directory containing YAML config]/[Library Mapping Name]_report.yml`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          report_path: config/TV_missing_report.yml
-        ```
-
-
-??? blank "`run_again_delay` - Used to control the number of minutes to delay running `run_again` collections.<a class="headerlink" href="#run-again-delay" title="Permanent link">¶</a>"
-
-    <div id="run-again-delay" />Set the number of minutes to delay running `run_again` collections after daily run is finished.
-
-    For example, if a collection adds items to Sonarr/Radarr, the library can automatically re-run "X" amount of time later so that any downloaded items are processed.
-
-    ???+ tip
-
-        A collection is a `run_again` collection if it has the `run_again` [Setting](../files/settings.md) attribute set to true.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `run_again_delay`
-
-    **Levels with this Attribute:** Global
-
-    **Accepted Values:** Any Integer 0 or greater.
-
-    **Default Value:** `0`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          run_again_delay: 5
-        ```
-
-
-??? blank "`run_order` - Used to specify the run order of the library components.<a class="headerlink" href="#run-order" title="Permanent link">¶</a>"
-
-    <div id="run-order" />Specify the run order of the library components [Library Operations, Collection Files and Overlay Files]
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `run_order`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string which must include `operations`, `metadata` and `overlays` in any order.
-
-    **Default Value:** `operations,metadata,collections,overlays`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          run_order:
-          - collections
-          - overlays
-          - operations
-          - metadata
-        ```
-
-
-??? blank "`save_report` - Used to save a report YAML file.<a class="headerlink" href="#save-report" title="Permanent link">¶</a>"
-
-    <div id="save-report" />Save a report of the items added, removed, filtered, or missing from collections to a YAML file in the same directory as the file run.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `save_report`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          save_report: false
-        ```
-
-
-??? blank "`show_asset_not_needed` - Used to show/hide the `update not needed` messages.<a class="headerlink" href="#show-asset-not-needed" title="Permanent link">¶</a>"
-
-    <div id="show-asset-not-needed" />Whilst searching for assets, show or hide the `update not needed` messages.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_asset_not_needed`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_asset_not_needed: true
-        ```
-
-
-??? blank "`show_filtered` - Used to show items filtered out.<a class="headerlink" href="#show-filtered" title="Permanent link">¶</a>"
-
-    <div id="show-filtered" />List all items which have been filtered out of a collection or playlist. (i.e. if it doesn't meet the filter criteria)
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_filtered`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
+    **Levels:** Global/Library
 
     **Accepted Values:** `true` or `false`.
 
@@ -847,224 +275,22 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          show_filtered: true
+          assets:
+            download_from_urls: false
         ```
 
+### Collection Settings
 
-??? blank "`show_missing` - Used to show missing items from collections or playlists.<a class="headerlink" href="#show-missing" title="Permanent link">¶</a>"
+###### Collection Sync Mode { #sync-mode }
 
-    <div id="show-missing" />While `show_missing` is true items missing from collections or playlists will be displayed.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_missing`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    **Important:** Identifying these missing items can be extremely expensive in terms of runtime.
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_missing: false
-        ```
-
-
-??? blank "`show_missing_assets` - Used to print a message when assets are missing.<a class="headerlink" href="#show-missing-assets" title="Permanent link">¶</a>"
-
-    <div id="show-missing-assets" />Display missing asset warnings for items, collections, and playlists.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_missing_assets`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_missing_assets: false
-        ```
-
-
-??? blank "`show_missing_episode_assets` - Used to show any missing episode assets.<a class="headerlink" href="#show-missing-episode-assets" title="Permanent link">¶</a>"
-
-    <div id="show-missing-episode-assets" />Whilst searching for assets, when scanning for assets for a TV Show, if an Episode Title Card is found
-    (i.e. `/ASSET_NAME/S##E##.ext`), notify the user of any episodes which do not have an asset image.
-
-    ???+ tip "Shows/Hides messages like these for episodes"
-
-      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"
-
-      "Asset Warning: No poster '{name}' found in the assets folders"
-
-      "\nMissing S##E## Title Card"
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_missing_episode_assets`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_missing_episode_assets: true
-        ```
-
-
-??? blank "`show_missing_season_assets` - Used to show any missing season assets.<a class="headerlink" href="#show-missing-season-assets" title="Permanent link">¶</a>"
-
-    <div id="show-missing-season-assets" />Whilst searching for assets, when scanning for assets for a TV Show, if Season posters are found
-    (i.e. `/ASSET_NAME/Season##.ext`), notify the user of any seasons which do not have an asset image.
-
-    ???+ tip "Shows/Hides messages like these for seasons/albums"
-
-      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"
-
-      "Asset Warning: No poster '{name}' found in the assets folders"
-
-      "Missing Season {season_number} Poster"
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_missing_season_assets`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_missing_season_assets: true
-        ```
-
-
-??? blank "`show_options` - Used to show attribute options from plex.<a class="headerlink" href="#show-options" title="Permanent link">¶</a>"
-
-    <div id="show-options" />While `show_options` is true the available options for an attribute when using `plex_search`, `smart_filter` or `filters` will be shown.
-
-    i.e. a `smart_filter` on the `genre` attribute will return all of the attributes within the specified library.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_options`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `false`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_options: true
-        ```
-
-
-??? blank "`show_unconfigured` - Used to show collections not in the current run.<a class="headerlink" href="#show-unconfigured" title="Permanent link">¶</a>"
-
-    <div id="show-unconfigured" />List all collections not configured in the current Kometa run at the end of each run.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_unconfigured`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_unconfigured: false
-        ```
-
-
-??? blank "`show_unfiltered` - Used to show items which make it through filters.<a class="headerlink" href="#show-unfiltered" title="Permanent link">¶</a>"
-
-    <div id="show-unfiltered" />List all items which have made it through the filters INTO a collection or playlist. (i.e. if it meets the filter criteria)
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_unfiltered`
-
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `false`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_unfiltered: true
-        ```
-
-
-??? blank "`show_unmanaged` - Used to show collections not managed by Kometa.<a class="headerlink" href="#show-unmanaged" title="Permanent link">¶</a>"
-
-    <div id="show-unmanaged" />List all collections not managed by Kometa at the end of each run.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `show_unmanaged`
-
-    **Levels with this Attribute:** Global/Library
-
-    **Accepted Values:** `true` or `false`.
-
-    **Default Value:** `true`
-
-    ???+ example "Example"
-
-        ```yaml
-        settings:
-          show_unmanaged: false
-        ```
-
-
-??? blank "`sync_mode` - Used to set the `sync_mode` for collections and playlists.<a class="headerlink" href="#sync-mode" title="Permanent link">¶</a>"
-
-    <div id="sync-mode" />Sets the `sync_mode` for collections and playlists. Setting the `sync_mode` directly in a collection or playlist definition will override the `sync_mode` for that definition.
-
-    <hr style="margin: 0px;">
-
+??? info "`sync_mode` - Controls whether Kometa only adds items or also removes missing items."
     **Attribute:** `sync_mode`
 
-    **Levels with this Attribute:** Global/Library/Collection/Playlist
+    **Original Attribute:** `sync_mode`
 
-    **Accepted Values:**
+    **Levels:** Global/Library/Definition
 
-    <table class="clearTable">
-      <tr><td>`sync`</td><td>Will add and remove any items that are added/removed from the source Builder.</td></tr>
-      <tr><td>`append`</td><td>Will only add items that are added from the source Builder, but will not remove anything even if it is removed from the source Builder.</td></tr>
-    </table>
+    **Accepted Values:** `append` or `sync`.
 
     **Default Value:** `append`
 
@@ -1072,62 +298,587 @@ The available setting attributes which can be set at each level are outlined bel
 
         ```yaml
         settings:
-          sync_mode: sync
+          collections:
+            sync_mode: append
         ```
 
-    ???+ tip "What does this mean?"
+###### Collection Minimum Items { #minimum-items }
 
-        You have a Trakt list of ten movies. You run Kometa and create a collection from the list. The collection contains those ten movies.
+??? info "`minimum_items` - Sets the minimum item count required for a collection."
+    **Attribute:** `minimum_items`
 
-        Tomorrow the list contains a different ten movies. You run Kometa.
+    **Original Attribute:** `minimum_items`
 
-        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, but they are the ones that are in the Trakt list today.
-        The original ten have been removed from the collection.
+    **Levels:** Global/Library/Definition
 
-        `sync_mode: append` - Kometa appends the ten new movies to the collection, which now has twenty movies in it.
+    **Accepted Values:** Integer `1` or greater.
 
-        The next day five movies change in the list. You run Kometa.
-
-        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, the ones that are in the Trakt list today.
-        The five that are no longer in the Trakt list are removed from the collection.
-
-        `sync_mode: append` - Kometa appends the five new movies to the collection, which now has twenty-five movies in it.
-
-
-
-??? blank "`tvdb_language` - Specify the language to query TVDb in.<a class="headerlink" href="#tvdb-language" title="Permanent link">¶</a>"
-
-    <div id="tvdb-language" />Specify the language to query TVDb in.
-
-    ???+ note
-
-        If no language is specified or the specified language is not found then the original language is used.
-
-    <hr style="margin: 0px;">
-
-    **Attribute:** `tvdb_language`
-
-    **Levels with this Attribute:** Global
-
-    **Accepted Values:** [Any ISO 639-2 Language Code.](https://en.wikipedia.org/wiki/List_of_ISO_639-2_codes)
-
-    **Default Value:** `None`
+    **Default Value:** `1`
 
     ???+ example "Example"
 
         ```yaml
         settings:
-          tvdb_language: eng
+          collections:
+            minimum_items: 1
+        ```
+
+###### Default Collection Order { #default-collection-order }
+
+??? info "`default_order` - Sets the default Plex sort order for collections."
+    **Attribute:** `default_order`
+
+    **Original Attribute:** `default_collection_order`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** Any valid Plex collection sort value.
+
+    **Default Value:** No default.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          collections:
+            default_order: release
+        ```
+
+###### Delete Below Minimum { #delete-below-minimum }
+
+??? info "`delete_below_minimum` - Deletes collections below the minimum item count."
+    **Attribute:** `delete_below_minimum`
+
+    **Original Attribute:** `delete_below_minimum`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          collections:
+            delete_below_minimum: false
+        ```
+
+###### Delete Not Scheduled { #delete-not-scheduled }
+
+??? info "`delete_not_scheduled` - Deletes collections skipped because they are not scheduled."
+    **Attribute:** `delete_not_scheduled`
+
+    **Original Attribute:** `delete_not_scheduled`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          collections:
+            delete_not_scheduled: false
+        ```
+
+###### Auto Sort Hubs { #auto-sort-hubs }
+
+??? info "`auto_sort_hubs` - Sorts Plex recommendation hubs created from collections."
+    **Attribute:** `auto_sort_hubs`
+
+    **Original Attribute:** `auto_sort_hubs`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `sort_title`, `sort_title.desc`, `alpha`, `alpha.desc`, `configured`, `configured.desc`, or `random`.
+
+    **Default Value:** No default.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          collections:
+            auto_sort_hubs: sort_title
+        ```
+
+### Playlist Settings
+
+###### Playlist Sync To Users { #playlist-sync-to-users }
+
+??? info "`sync_to_users` - Sets which Plex users receive synced playlists."
+    **Attribute:** `sync_to_users`
+
+    **Original Attribute:** `playlist_sync_to_users`
+
+    **Levels:** Global
+
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" }, comma-separated string of users, `all`, or blank for the server owner.
+
+    **Default Value:** Blank.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          playlists:
+            sync_to_users: all
+        ```
+
+###### Playlist Exclude Users { #playlist-exclude-users }
+
+??? info "`exclude_users` - Excludes Plex users from playlist syncing."
+    **Attribute:** `exclude_users`
+
+    **Original Attribute:** `playlist_exclude_users`
+
+    **Levels:** Global
+
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" }, comma-separated string of users, or `all`.
+
+    **Default Value:** Blank.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          playlists:
+            exclude_users: Managed User
+        ```
+
+###### Playlist Report { #playlist-report }
+
+??? info "`show_report` - Includes playlist processing details in reports."
+    **Attribute:** `show_report`
+
+    **Original Attribute:** `playlist_report`
+
+    **Levels:** Global
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          playlists:
+            show_report: true
+        ```
+
+### Metadata Settings
+
+###### TVDb Language { #tvdb-language }
+
+??? info "`tvdb_language` - Sets the TVDb language used for metadata lookups."
+    **Attribute:** `tvdb_language`
+
+    **Original Attribute:** `tvdb_language`
+
+    **Levels:** Global
+
+    **Accepted Values:** TVDb language code or `default`.
+
+    **Default Value:** `default`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          metadata:
+            tvdb_language: eng
+        ```
+
+###### Metadata Refresh Delay { #item-refresh-delay }
+
+??? info "`refresh_delay` - Waits after refreshing item metadata."
+    **Attribute:** `refresh_delay`
+
+    **Original Attribute:** `item_refresh_delay`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** Integer number of seconds.
+
+    **Default Value:** `0`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          metadata:
+            refresh_delay: 0
+        ```
+
+###### Ignore IDs { #ignore-ids }
+
+??? info "`ignore_ids` - Ignores specific TMDb or TVDb IDs in missing item processing."
+    **Attribute:** `ignore_ids`
+
+    **Original Attribute:** `ignore_ids`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of TMDb/TVDb IDs.
+
+    **Default Value:** Blank.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          metadata:
+            ignore_ids:
+              - 572802
+        ```
+
+###### Ignore IMDb IDs { #ignore-imdb-ids }
+
+??? info "`ignore_imdb_ids` - Ignores specific IMDb IDs in missing item processing."
+    **Attribute:** `ignore_imdb_ids`
+
+    **Original Attribute:** `ignore_imdb_ids`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of IMDb IDs.
+
+    **Default Value:** Blank.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          metadata:
+            ignore_imdb_ids:
+              - tt6710474
+        ```
+
+### Missing Item Settings
+
+###### Filter Unreleased Missing Items { #missing-only-released }
+
+??? info "`filter_unreleased` - Filters unreleased items out of missing item results."
+    **Attribute:** `filter_unreleased`
+
+    **Original Attribute:** `missing_only_released`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          missing:
+            filter_unreleased: false
+        ```
+
+###### Only Filter Missing { #only-filter-missing }
+
+??? info "`only_filter_missing` - Applies collection filters only to missing item checks."
+    **Attribute:** `only_filter_missing`
+
+    **Original Attribute:** `only_filter_missing`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          missing:
+            only_filter_missing: false
+        ```
+
+### Overlay Settings
+
+###### Overlay Filetype { #overlay-artwork-filetype }
+
+??? info "`filetype` - Sets the file type used for generated overlay artwork."
+    **Attribute:** `filetype`
+
+    **Original Attribute:** `overlay_artwork_filetype`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `jpg`, `png`, `webp_lossy`, or `webp_lossless`.
+
+    **Default Value:** `webp_lossy`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          overlays:
+            filetype: webp_lossy
+        ```
+
+###### Overlay Quality { #overlay-artwork-quality }
+
+??? info "`quality` - Sets image quality for generated overlay artwork."
+    **Attribute:** `quality`
+
+    **Original Attribute:** `overlay_artwork_quality`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** Integer from `1` to `100`.
+
+    **Default Value:** `90`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          overlays:
+            quality: 90
+        ```
+
+### Report Settings
+
+###### Save Report { #save-report }
+
+??? info "`save` - Saves YAML report files for processed libraries."
+    **Attribute:** `save`
+
+    **Original Attribute:** `save_report`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          reports:
+            save: false
+        ```
+
+###### Report Path { #report-path }
+
+??? info "`path` - Overrides the default report file path."
+    **Attribute:** `path`
+
+    **Original Attribute:** `report_path`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** File path.
+
+    **Default Value:** `[config directory]/[library name]_report.yml`
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          reports:
+            path: config/reports/movies.yml
+        ```
+
+### Logging Settings
+
+###### Show Options { #show-options }
+
+??? info "`options` - Shows available options when invalid values are used."
+    **Attribute:** `options`
+
+    **Original Attribute:** `show_options`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+###### Show Unmanaged { #show-unmanaged }
+
+??? info "`unmanaged` - Logs Plex collections that Kometa does not manage."
+    **Attribute:** `unmanaged`
+
+    **Original Attribute:** `show_unmanaged`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+###### Show Unconfigured { #show-unconfigured }
+
+??? info "`unconfigured` - Logs Plex collections not configured in Kometa files."
+    **Attribute:** `unconfigured`
+
+    **Original Attribute:** `show_unconfigured`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+###### Show Filtered { #show-filtered }
+
+??? info "`filtered` - Logs items excluded by collection filters."
+    **Attribute:** `filtered`
+
+    **Original Attribute:** `show_filtered`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+###### Show Unfiltered { #show-unfiltered }
+
+??? info "`unfiltered` - Logs items kept after collection filters."
+    **Attribute:** `unfiltered`
+
+    **Original Attribute:** `show_unfiltered`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+###### Show Missing { #show-missing }
+
+??? info "`missing` - Logs missing items found during collection processing."
+    **Attribute:** `missing`
+
+    **Original Attribute:** `show_missing`
+
+    **Levels:** Global/Library/Definition
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+###### Show Missing Assets { #show-missing-assets }
+
+??? info "`missing_assets` - Logs missing collection and item assets."
+    **Attribute:** `missing_assets`
+
+    **Original Attribute:** `show_missing_assets`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+###### Show Missing Season Assets { #show-missing-season-assets }
+
+??? info "`missing_seasons` - Logs missing season assets."
+    **Attribute:** `missing_seasons`
+
+    **Original Attribute:** `show_missing_season_assets`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+###### Show Missing Episode Assets { #show-missing-episode-assets }
+
+??? info "`missing_episodes` - Logs missing episode assets."
+    **Attribute:** `missing_episodes`
+
+    **Original Attribute:** `show_missing_episode_assets`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `false`
+
+###### Show Unused Assets { #show-asset-not-needed }
+
+??? info "`unused_assets` - Logs assets not needed by configured libraries."
+    **Attribute:** `unused_assets`
+
+    **Original Attribute:** `show_asset_not_needed`
+
+    **Levels:** Global/Library
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+### Network Settings
+
+###### Verify SSL { #verify-ssl }
+
+??? info "`verify_ssl` - Verifies SSL certificates for outbound network requests."
+    **Attribute:** `verify_ssl`
+
+    **Original Attribute:** `verify_ssl`
+
+    **Levels:** Global
+
+    **Accepted Values:** `true` or `false`.
+
+    **Default Value:** `true`
+
+    ???+ warning
+
+        Disabling SSL verification is not recommended unless you understand the security tradeoff.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          network:
+            verify_ssl: true
+        ```
+
+###### Custom Repo { #custom-repo }
+
+??? info "`custom_repo` - Overrides the default Kometa defaults repository."
+    **Attribute:** `custom_repo`
+
+    **Original Attribute:** `custom_repo`
+
+    **Levels:** Global
+
+    **Accepted Values:** GitHub repository URL, raw GitHub URL, or blank.
+
+    **Default Value:** Blank.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          network:
+            custom_repo: https://github.com/Kometa-Team/Defaults/tree/nightly/
         ```
 
 ## Default Values
 
-The below in an extract of the `config.yml.template` and is the initial values that are set if you follow any of the installation guides.
+The following excerpt from `config.yml.template` shows the default grouped settings block used by new configs.
 
 ???+ tip
 
-    We suggest users review each of these settings and amend as necessary, these are just default values to get you
-    started.
+    Review these settings before running Kometa. They are starting values, not recommendations for every setup.
 
 ~~~yaml
 settings: {%
@@ -1141,47 +892,31 @@ settings: {%
 
 ## Example Library-Level Settings
 
-The below showcases how to set a library-level setting, assuming that the attribute is listed as a library-level compatible attribute in the above table.
-
-If no library-level attribute is set, then the global attribute is used.
-
-???+ tip
-
-    Press the :fontawesome-solid-circle-plus: icon to learn more.
+Library-level settings use the same grouped structure and override global settings only for that library.
 
 ```yaml
 libraries:
   Movies:
     settings:
-      run_order: #(1)!
-      - collections
-      - metadata
+      run:
+        order:
+          - collections
+          - metadata
+          - operations
+          - overlays
+      collections:
+        minimum_items: 3
+    collection_files:
+      - default: imdb
+    overlay_files:
+      - default: ribbon
+settings:
+  run:
+    order:
       - operations
       - overlays
-      minimum_items: 3 #(2)!
-    collection_files:
-      # stuff here
-    overlay_files:
-      # stuff here
-    operations:
-      # stuff here
-  TV Shows:
-    collection_files:
-      # stuff here
-    overlay_files:
-      # stuff here
-    operations:
-      # stuff here
-settings:
-  run_order: #(3)!
-  - operations
-  - overlays
-  - collections
-  - metadata
-  minimum_items: 1 #(4)!
+      - collections
+      - metadata
+  collections:
+    minimum_items: 1
 ```
-
-1. Sets the `run_order` specifically for the Movies library.
-2. Sets the `minimum_items` attribute specifically for the Movies library.
-3. Sets the global `run_order` which will apply to all libraries unless a library-level `run_order` is found, as showcased in the above example.
-4. Sets the global `minimum_items` which will apply to all libraries unless a library-level `minimum_items` is found, as showcased in the above example.

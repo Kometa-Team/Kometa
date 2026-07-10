@@ -132,34 +132,44 @@ data:
         collection_files:
           - file: config/tv.yaml
     settings:
-      cache: true
-      cache_expiration: 60
-      asset_directory: config/assets
-      asset_folders: true
-      asset_depth: 0
-      create_asset_folders: false
-      dimensional_asset_rename: false
-      download_url_assets: false
-      show_missing_season_assets: false
-      sync_mode: append
-      minimum_items: 1
-      default_collection_order:
-      delete_below_minimum: true
-      delete_not_scheduled: false
-      run_again_delay: 2
-      missing_only_released: false
-      only_filter_missing: false
-      show_unmanaged: true
-      show_filtered: false
-      show_options: false
-      show_missing: true
-      show_missing_assets: true
-      save_report: true
-      tvdb_language: eng
-      ignore_ids:
-      ignore_imdb_ids:
-      playlist_sync_to_users: all
-      verify_ssl: true
+      run:
+        rerun_delay: 2
+      cache:
+        enabled: true
+        expiration_days: 60
+      assets:
+        directories: config/assets
+        use_folders: true
+        search_depth: 0
+        create_folders: false
+        dimensional_rename: false
+        download_from_urls: false
+      collections:
+        sync_mode: append
+        minimum_items: 1
+        default_order:
+        delete_below_minimum: true
+        delete_not_scheduled: false
+      playlists:
+        sync_to_users: all
+      metadata:
+        tvdb_language: eng
+        ignore_ids:
+        ignore_imdb_ids:
+      missing:
+        filter_unreleased: false
+        only_filter_missing: false
+      reports:
+        save: true
+      logging:
+        unmanaged: true
+        filtered: false
+        options: false
+        missing: true
+        missing_assets: true
+        missing_seasons: false
+      network:
+        verify_ssl: true
     plex:
       url: http://PLEX_IP_HERE:32400
       token: YOUR_TOKEN_HERE
