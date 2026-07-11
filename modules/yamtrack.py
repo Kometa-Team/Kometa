@@ -10,6 +10,7 @@ logger = util.logger
 
 builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
+mal_details_pattern = re.compile(r"^/details/mal/anime/(?P<mal_id>\d+)(?:/|$)")
 tracked_statuses = {
     "dropped": ("text-red", "Dropped"),
     "planning": ("text-sky", "Planning"),
@@ -20,6 +21,7 @@ tracked_statuses = {
 tracked_types = {
     "movies": ("movie", "tmdb"),
     "tv_shows": ("tv", "tmdb_show"),
+    "anime": ("anime", "mal"),
 }
 
 
@@ -104,11 +106,13 @@ class YamTrack:
         tracked = {}
         for media_type in tracked_types:
             if is_movie is True and media_type != "movies":
-                tracked[media_type] = {status: False for status in tracked_statuses}
-                continue
+                if media_type != "anime":
+                    tracked[media_type] = {status: False for status in tracked_statuses}
+                    continue
             if is_movie is False and media_type != "tv_shows":
-                tracked[media_type] = {status: False for status in tracked_statuses}
-                continue
+                if media_type != "anime":
+                    tracked[media_type] = {status: False for status in tracked_statuses}
+                    continue
             if media_type not in methods:
                 tracked[media_type] = {status: False for status in tracked_statuses}
                 continue
@@ -155,13 +159,23 @@ class YamTrack:
         return ids
 
     def get_tracked_tmdb_ids(self, tracked, is_movie=None):
+        ids, _ = self.get_tracked_ids(tracked, is_movie=is_movie)
+        if not ids:
+            raise Failed("YamTrack Error: No TMDb IDs found in tracked items")
+        return ids
+
+    def get_tracked_ids(self, tracked, is_movie=None):
         ids = []
+        mal_ids = []
         seen = set()
+        seen_mal = set()
         for media_type, (url_type, id_type) in tracked_types.items():
             if is_movie is True and media_type != "movies":
-                continue
+                if media_type != "anime":
+                    continue
             if is_movie is False and media_type != "tv_shows":
-                continue
+                if media_type != "anime":
+                    continue
             enabled_statuses = {status for status, enabled in tracked[media_type].items() if enabled}
             if not enabled_statuses:
                 continue
@@ -169,16 +183,23 @@ class YamTrack:
             if logger:
                 logger.info(f"Processing YamTrack Tracked: {tracked_url}")
             page = self._html(tracked_url)
-            for tmdb_id, found_id_type, status in self._tracked_items(page):
-                if found_id_type != id_type or status not in enabled_statuses:
-                    continue
-                key = (tmdb_id, found_id_type)
-                if key not in seen:
-                    ids.append(key)
-                    seen.add(key)
-        if not ids:
-            raise Failed("YamTrack Error: No TMDb IDs found in tracked items")
-        return ids
+            if id_type == "mal":
+                for mal_id, status in self._tracked_anime_items(page):
+                    if status not in enabled_statuses or mal_id in seen_mal:
+                        continue
+                    mal_ids.append(mal_id)
+                    seen_mal.add(mal_id)
+            else:
+                for tmdb_id, found_id_type, status in self._tracked_items(page):
+                    if found_id_type != id_type or status not in enabled_statuses:
+                        continue
+                    key = (tmdb_id, found_id_type)
+                    if key not in seen:
+                        ids.append(key)
+                        seen.add(key)
+        if not ids and not mal_ids:
+            raise Failed("YamTrack Error: No IDs found in tracked items")
+        return ids, mal_ids
 
     def _tracked_items(self, page):
         for link in page.xpath("//a[@href]"):
@@ -193,10 +214,30 @@ class YamTrack:
                 id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
                 yield int(match.group("tmdb_id")), id_type, status
 
+    def _tracked_anime_items(self, page):
+        for link in page.xpath("//a[@href]"):
+            href = link.get("href")
+            parsed = urlparse(href if href.startswith("http") else urljoin(self.url, href))
+            match = mal_details_pattern.match(parsed.path)
+            if not match:
+                continue
+            row = link.xpath("ancestor::tr[1]")
+            status = self._row_status(row[0] if row else link)
+            if status:
+                yield int(match.group("mal_id")), status
+
     @staticmethod
     def _card_status(card):
         for class_name in card.xpath(".//div[contains(@class, 'w-4') and contains(@class, 'h-4')]/@class"):
             for status, (color, _) in tracked_statuses.items():
                 if color in class_name:
                     return status
+        return None
+
+    @staticmethod
+    def _row_status(row):
+        row_text = [text.strip() for text in row.xpath(".//td/text()[normalize-space()]")]
+        for status, (_, pretty) in tracked_statuses.items():
+            if pretty in row_text:
+                return status
         return None

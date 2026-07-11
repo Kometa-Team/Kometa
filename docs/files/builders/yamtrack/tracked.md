@@ -28,6 +28,12 @@ collections:
         in_progress: true
         paused: false
         completed: false
+      anime:
+        dropped: false
+        planning: true
+        in_progress: true
+        paused: false
+        completed: false
 ```
 
 In this example, Kometa adds only items marked `Planning` or `In Progress`.
@@ -38,8 +44,9 @@ In this example, Kometa adds only items marked `Planning` or `In Progress`.
 |:--------------|:----------------------------------------|:---------------|
 | `movies`      | Movie statuses to include. Optional.    | Status block   |
 | `tv_shows`    | TV show statuses to include. Optional.  | Status block   |
+| `anime`       | Anime statuses to include. Optional. MyAnimeList IDs are resolved through Kometa's anime mappings, so both anime shows and anime movies can be found from the same YamTrack anime page. | Status block |
 
-Status blocks support these boolean attributes. When a status attribute is omitted from a present `movies` or `tv_shows` block, it defaults to `true`.
+Status blocks support these boolean attributes. When a status attribute is omitted from a present `movies`, `tv_shows`, or `anime` block, it defaults to `true`.
 
 | Attribute     | YamTrack Status | Accepted Values | Default |
 |:--------------|:----------------|:----------------|:--------|

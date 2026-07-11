@@ -69,7 +69,7 @@ Builders use third-party services to source items to be added to the collection.
     ??? quicklink "Popular Builders"
 
         - [:octicons-list-ordered-16: YamTrack List](../yamtrack/list) - Gets every movie/show in a YamTrack List.
-        - [:octicons-list-ordered-16: YamTrack Tracked](../yamtrack/tracked) - Gets tracked movies/shows by YamTrack status.
+        - [:octicons-list-ordered-16: YamTrack Tracked](../yamtrack/tracked) - Gets tracked movies/shows/anime by YamTrack status.
 
 !!! builder
 

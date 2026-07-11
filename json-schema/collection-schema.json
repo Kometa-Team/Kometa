@@ -1091,7 +1091,8 @@
             "type": "object", "additionalProperties": false,
             "properties": {
                 "movies": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "Movie statuses to include." },
-                "tv_shows": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "TV show statuses to include." }
+                "tv_shows": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "TV show statuses to include." },
+                "anime": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "Anime statuses to include. MyAnimeList IDs are resolved through Kometa's anime mappings." }
             }
         },
 

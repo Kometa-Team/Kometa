@@ -3534,7 +3534,9 @@ class CollectionBuilder:
             ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
         elif "yamtrack" in method:
             if method == "yamtrack_tracked":
-                ids = self.config.YamTrack.get_tracked_tmdb_ids(value, self.library.is_movie if not self.playlist else None)
+                ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                if mal_ids:
+                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
