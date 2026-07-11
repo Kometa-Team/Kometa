@@ -23,6 +23,7 @@ tracked_types = {
     "tv_shows": ("tv", "tmdb_show"),
     "anime": ("anime", "mal"),
 }
+cross_library_tracked_types = ["anime"]
 
 
 class YamTrack:
@@ -72,7 +73,7 @@ class YamTrack:
             raise Failed("YamTrack Error: Login failed")
 
     def _html(self, list_url):
-        if not list_url.startswith(self.url):
+        if not self._is_yamtrack_url(list_url):
             raise Failed(f"YamTrack Error: {list_url} must start with {self.url}")
         response = self._request_html(list_url)
         if urlparse(getattr(response, "url", list_url)).path.rstrip("/") == "/accounts/login":
@@ -82,6 +83,11 @@ class YamTrack:
             return html.fromstring(response.content)
         except Exception as e:
             raise Failed(f"YamTrack Error: Failed to parse {list_url}: {e}") from e
+
+    def _is_yamtrack_url(self, url):
+        parsed = urlparse(url)
+        expected = urlparse(self.url)
+        return parsed.scheme == expected.scheme and parsed.netloc == expected.netloc
 
     def test_connection(self):
         self._html(f"{self.url}/")
@@ -105,21 +111,19 @@ class YamTrack:
         methods = {m.lower(): m for m in yamtrack_tracked}
         tracked = {}
         for media_type in tracked_types:
-            if is_movie is True and media_type != "movies":
-                if media_type != "anime":
-                    tracked[media_type] = {status: False for status in tracked_statuses}
-                    continue
-            if is_movie is False and media_type != "tv_shows":
-                if media_type != "anime":
-                    tracked[media_type] = {status: False for status in tracked_statuses}
-                    continue
-            if media_type not in methods:
-                tracked[media_type] = {status: False for status in tracked_statuses}
+            if not self._tracked_type_applies(media_type, is_movie):
+                tracked[media_type] = self._default_statuses(False)
                 continue
-            media_methods = {m.lower(): m for m in yamtrack_tracked[methods[media_type]]} if media_type in methods and isinstance(yamtrack_tracked[methods[media_type]], dict) else {}
+            if media_type not in methods:
+                tracked[media_type] = self._default_statuses(False)
+                continue
+            media_data = yamtrack_tracked[methods[media_type]]
+            if not isinstance(media_data, dict):
+                raise Failed(f"{err_type} Error: yamtrack_tracked {media_type} must be a dictionary")
+            media_methods = {m.lower(): m for m in media_data}
             tracked[media_type] = {}
             for status in tracked_statuses:
-                tracked[media_type][status] = util.parse(err_type, status, yamtrack_tracked[methods[media_type]], methods=media_methods, parent=f"yamtrack_tracked {media_type}", datatype="bool", default=True)
+                tracked[media_type][status] = util.parse(err_type, status, media_data, methods=media_methods, parent=f"yamtrack_tracked {media_type}", datatype="bool", default=True)
 
         if not any(enabled for statuses in tracked.values() for enabled in statuses.values()):
             raise Failed(f"{err_type} Error: yamtrack_tracked must have at least one status set to true")
@@ -140,7 +144,7 @@ class YamTrack:
         ids = []
         seen = set()
         for href in page.xpath("//a/@href"):
-            parsed = urlparse(href if href.startswith("http") else urljoin(self.url, href))
+            parsed = self._parse_href(href)
             match = details_pattern.match(parsed.path)
             if not match:
                 continue
@@ -170,12 +174,8 @@ class YamTrack:
         seen = set()
         seen_mal = set()
         for media_type, (url_type, id_type) in tracked_types.items():
-            if is_movie is True and media_type != "movies":
-                if media_type != "anime":
-                    continue
-            if is_movie is False and media_type != "tv_shows":
-                if media_type != "anime":
-                    continue
+            if not self._tracked_type_applies(media_type, is_movie):
+                continue
             enabled_statuses = {status for status, enabled in tracked[media_type].items() if enabled}
             if not enabled_statuses:
                 continue
@@ -201,10 +201,20 @@ class YamTrack:
             raise Failed("YamTrack Error: No IDs found in tracked items")
         return ids, mal_ids
 
+    @staticmethod
+    def _default_statuses(enabled):
+        return {status: enabled for status in tracked_statuses}
+
+    @staticmethod
+    def _tracked_type_applies(media_type, is_movie):
+        if media_type in cross_library_tracked_types or is_movie is None:
+            return True
+        return (is_movie is True and media_type == "movies") or (is_movie is False and media_type == "tv_shows")
+
     def _tracked_items(self, page):
         for link in page.xpath("//a[@href]"):
             href = link.get("href")
-            parsed = urlparse(href if href.startswith("http") else urljoin(self.url, href))
+            parsed = self._parse_href(href)
             match = details_pattern.match(parsed.path)
             if not match:
                 continue
@@ -217,7 +227,7 @@ class YamTrack:
     def _tracked_anime_items(self, page):
         for link in page.xpath("//a[@href]"):
             href = link.get("href")
-            parsed = urlparse(href if href.startswith("http") else urljoin(self.url, href))
+            parsed = self._parse_href(href)
             match = mal_details_pattern.match(parsed.path)
             if not match:
                 continue
@@ -233,6 +243,9 @@ class YamTrack:
                 if color in class_name:
                     return status
         return None
+
+    def _parse_href(self, href):
+        return urlparse(href if href.startswith("http") else urljoin(self.url, href))
 
     @staticmethod
     def _row_status(row):

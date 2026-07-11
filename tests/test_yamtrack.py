@@ -1,4 +1,7 @@
+import pytest
+
 from modules.yamtrack import YamTrack
+from modules.util import Failed
 
 
 class FakeResponse:
@@ -46,6 +49,11 @@ def test_yamtrack_list_filters_by_library_type():
 
     assert yamtrack.get_tmdb_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=True) == [(550, "tmdb")]
     assert yamtrack.get_tmdb_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=False) == [(1396, "tmdb_show")]
+
+
+def test_yamtrack_rejects_lookalike_hosts():
+    with pytest.raises(Failed, match="must start with https://yamtrack.example"):
+        get_yamtrack("").get_tmdb_ids("yamtrack_list", "https://yamtrack.example.evil/list/1")
 
 
 def test_yamtrack_list_details_extracts_description():
@@ -222,3 +230,10 @@ def test_yamtrack_tracked_validation_is_limited_to_library_type():
     assert show_tracked["tv_shows"]["planning"] is True
     assert all(enabled is False for enabled in show_tracked["movies"].values())
     assert all(enabled is False for enabled in show_tracked["anime"].values())
+
+
+def test_yamtrack_tracked_present_section_must_be_dictionary():
+    yamtrack = get_yamtrack("")
+
+    with pytest.raises(Failed, match="yamtrack_tracked anime must be a dictionary"):
+        yamtrack.validate_tracked("Collection", {"anime": True}, is_movie=True)
