@@ -506,6 +506,7 @@ custom_sort_builders = [
     "tmdb_airing_today",
     "tmdb_on_the_air",
     "trakt_list",
+    "yamtrack_list",
     "trakt_watchlist",
     "trakt_collection",
     "trakt_trending",
