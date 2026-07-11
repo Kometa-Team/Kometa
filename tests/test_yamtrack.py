@@ -11,9 +11,11 @@ class FakeResponse:
 class FakeRequests:
     def __init__(self, html):
         self.html = html
+        self.gets = []
         self.posts = []
 
     def get(self, url, **kwargs):
+        self.gets.append((url, kwargs))
         return FakeResponse(self.html, url=url)
 
     def post(self, url, **kwargs):
@@ -74,3 +76,107 @@ def test_yamtrack_login_posts_django_allauth_fields():
         "next": "/list/1",
         "csrfmiddlewaretoken": "token",
     }
+
+
+def test_yamtrack_tracked_extracts_enabled_statuses():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+      <div class="w-4 h-4 text-red-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/tv/80350/new-amsterdam">New Amsterdam</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/tv/60574/peaky-blinders"
+         class="text-sm font-semibold text-white hover:text-indigo-400">Peaky Blinders</a>
+      <div class="w-4 h-4 text-indigo-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/tv/93405/squid-game">Squid Game</a>
+      <div class="w-4 h-4 text-orange-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/tv/48866/the-100">The 100</a>
+      <div class="w-4 h-4 text-emerald-400"></div>
+    </div>
+    """
+    requests = FakeRequests(html)
+    yamtrack = YamTrack(requests, {"url": "https://yamtrack.example", "username": "user", "password": "pass"})
+    tracked = yamtrack.validate_tracked(
+        "Collection",
+        {
+            "movies": {"dropped": False, "planning": True, "in_progress": True, "paused": False, "completed": False},
+            "tv_shows": {"dropped": False, "planning": True, "in_progress": True, "paused": False, "completed": False},
+        },
+    )
+
+    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(80350, "tmdb_show"), (60574, "tmdb_show")]
+    assert requests.gets[0][0] == "https://yamtrack.example/user/movie"
+    assert requests.gets[1][0] == "https://yamtrack.example/user/tv"
+
+
+def test_yamtrack_tracked_filters_by_library_type():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/tv/80350/new-amsterdam">New Amsterdam</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    """
+    yamtrack = get_yamtrack(html)
+    tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}, "tv_shows": {"planning": True}})
+
+    assert yamtrack.get_tracked_tmdb_ids(tracked, is_movie=True) == [(550, "tmdb")]
+    assert yamtrack.get_tracked_tmdb_ids(tracked, is_movie=False) == [(80350, "tmdb_show")]
+
+
+def test_yamtrack_tracked_sections_are_optional():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    """
+    requests = FakeRequests(html)
+    yamtrack = YamTrack(requests, {"url": "https://yamtrack.example", "username": "user", "password": "pass"})
+    tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}})
+
+    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(550, "tmdb")]
+    assert [get[0] for get in requests.gets] == ["https://yamtrack.example/user/movie"]
+
+
+def test_yamtrack_tracked_statuses_default_true_when_section_exists():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+      <div class="w-4 h-4 text-red-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/551/another-movie">Another Movie</a>
+      <div class="w-4 h-4 text-emerald-400"></div>
+    </div>
+    """
+    requests = FakeRequests(html)
+    yamtrack = YamTrack(requests, {"url": "https://yamtrack.example", "username": "user", "password": "pass"})
+    tracked = yamtrack.validate_tracked("Collection", {"movies": {}})
+
+    assert all(enabled is True for enabled in tracked["movies"].values())
+    assert all(enabled is False for enabled in tracked["tv_shows"].values())
+    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(550, "tmdb"), (551, "tmdb")]
+
+
+def test_yamtrack_tracked_validation_is_limited_to_library_type():
+    yamtrack = get_yamtrack("")
+
+    movie_tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}, "tv_shows": {"planning": "bad"}}, is_movie=True)
+    show_tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": "bad"}, "tv_shows": {"planning": True}}, is_movie=False)
+
+    assert movie_tracked["movies"]["planning"] is True
+    assert all(enabled is False for enabled in movie_tracked["tv_shows"].values())
+    assert show_tracked["tv_shows"]["planning"] is True
+    assert all(enabled is False for enabled in show_tracked["movies"].values())

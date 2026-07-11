@@ -8,8 +8,19 @@ from modules.util import Failed
 
 logger = util.logger
 
-builders = ["yamtrack_list", "yamtrack_list_details"]
+builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
+tracked_statuses = {
+    "dropped": ("text-red", "Dropped"),
+    "planning": ("text-sky", "Planning"),
+    "in_progress": ("text-indigo", "In Progress"),
+    "paused": ("text-orange", "Paused"),
+    "completed": ("text-emerald", "Completed"),
+}
+tracked_types = {
+    "movies": ("movie", "tmdb"),
+    "tv_shows": ("tv", "tmdb_show"),
+}
 
 
 class YamTrack:
@@ -85,6 +96,31 @@ class YamTrack:
             raise Failed(f"{err_type} Error: No valid YamTrack Lists")
         return valid_lists
 
+    def validate_tracked(self, err_type, yamtrack_tracked, is_movie=None):
+        if not isinstance(yamtrack_tracked, dict):
+            raise Failed(f"{err_type} Error: yamtrack_tracked must be a dictionary")
+
+        methods = {m.lower(): m for m in yamtrack_tracked}
+        tracked = {}
+        for media_type in tracked_types:
+            if is_movie is True and media_type != "movies":
+                tracked[media_type] = {status: False for status in tracked_statuses}
+                continue
+            if is_movie is False and media_type != "tv_shows":
+                tracked[media_type] = {status: False for status in tracked_statuses}
+                continue
+            if media_type not in methods:
+                tracked[media_type] = {status: False for status in tracked_statuses}
+                continue
+            media_methods = {m.lower(): m for m in yamtrack_tracked[methods[media_type]]} if media_type in methods and isinstance(yamtrack_tracked[methods[media_type]], dict) else {}
+            tracked[media_type] = {}
+            for status in tracked_statuses:
+                tracked[media_type][status] = util.parse(err_type, status, yamtrack_tracked[methods[media_type]], methods=media_methods, parent=f"yamtrack_tracked {media_type}", datatype="bool", default=True)
+
+        if not any(enabled for statuses in tracked.values() for enabled in statuses.values()):
+            raise Failed(f"{err_type} Error: yamtrack_tracked must have at least one status set to true")
+        return tracked
+
     def list_description(self, list_url):
         page = self._html(list_url)
         description = page.xpath("string(//textarea[@name='description'])").strip()
@@ -117,3 +153,50 @@ class YamTrack:
         if not ids:
             raise Failed(f"YamTrack Error: No TMDb IDs found in {list_url}")
         return ids
+
+    def get_tracked_tmdb_ids(self, tracked, is_movie=None):
+        ids = []
+        seen = set()
+        for media_type, (url_type, id_type) in tracked_types.items():
+            if is_movie is True and media_type != "movies":
+                continue
+            if is_movie is False and media_type != "tv_shows":
+                continue
+            enabled_statuses = {status for status, enabled in tracked[media_type].items() if enabled}
+            if not enabled_statuses:
+                continue
+            tracked_url = f"{self.url}/{self.username}/{url_type}"
+            if logger:
+                logger.info(f"Processing YamTrack Tracked: {tracked_url}")
+            page = self._html(tracked_url)
+            for tmdb_id, found_id_type, status in self._tracked_items(page):
+                if found_id_type != id_type or status not in enabled_statuses:
+                    continue
+                key = (tmdb_id, found_id_type)
+                if key not in seen:
+                    ids.append(key)
+                    seen.add(key)
+        if not ids:
+            raise Failed("YamTrack Error: No TMDb IDs found in tracked items")
+        return ids
+
+    def _tracked_items(self, page):
+        for link in page.xpath("//a[@href]"):
+            href = link.get("href")
+            parsed = urlparse(href if href.startswith("http") else urljoin(self.url, href))
+            match = details_pattern.match(parsed.path)
+            if not match:
+                continue
+            card = link.xpath("ancestor::div[@x-data][1]")
+            status = self._card_status(card[0] if card else link)
+            if status:
+                id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+                yield int(match.group("tmdb_id")), id_type, status
+
+    @staticmethod
+    def _card_status(card):
+        for class_name in card.xpath(".//div[contains(@class, 'w-4') and contains(@class, 'h-4')]/@class"):
+            for status, (color, _) in tracked_statuses.items():
+                if color in class_name:
+                    return status
+        return None

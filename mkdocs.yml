@@ -398,6 +398,7 @@ nav:
       - YamTrack:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
+        - Tracked: files/builders/yamtrack/tracked.md
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md

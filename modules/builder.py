@@ -507,6 +507,7 @@ custom_sort_builders = [
     "tmdb_on_the_air",
     "trakt_list",
     "yamtrack_list",
+    "yamtrack_tracked",
     "trakt_watchlist",
     "trakt_collection",
     "trakt_trending",
@@ -3385,6 +3386,9 @@ class CollectionBuilder:
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:
             raise BuilderValidationError(f"{self.Type} Error: yamtrack attribute not found in config")
+        if method_name == "yamtrack_tracked":
+            self.builders.append((method_name, self.config.YamTrack.validate_tracked(self.Type, method_data, self.library.is_movie if not self.playlist else None)))
+            return
         yamtrack_lists = self.config.YamTrack.validate_lists(self.Type, method_data)
         for yamtrack_list in yamtrack_lists:
             self.builders.append(("yamtrack_list", yamtrack_list))
@@ -3529,7 +3533,10 @@ class CollectionBuilder:
         elif "trakt" in method:
             ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
         elif "yamtrack" in method:
-            ids = self.config.YamTrack.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+            if method == "yamtrack_tracked":
+                ids = self.config.YamTrack.get_tracked_tmdb_ids(value, self.library.is_movie if not self.playlist else None)
+            else:
+                ids = self.config.YamTrack.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:

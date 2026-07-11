@@ -562,6 +562,10 @@
                     "description": "YamTrack List URL(s). Also fetches description.",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
+                "yamtrack_tracked": {
+                    "description": "YamTrack tracked movies and shows filtered by status.",
+                    "$ref": "#/definitions/yamtrack-tracked"
+                },
 
                 "icheckmovies_list": {
                     "description": "ICheckMovies List URL(s).",
@@ -1079,6 +1083,27 @@
                 "sort_by": { "type": "string" },
                 "incremental": { "type": "boolean" },
                 "note": { "type": "string" }
+            }
+        },
+
+        "yamtrack-tracked": {
+            "description": "YamTrack tracked status filters. movies and tv_shows are optional blocks.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "movies": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "Movie statuses to include." },
+                "tv_shows": { "$ref": "#/definitions/yamtrack-tracked-statuses", "description": "TV show statuses to include." }
+            }
+        },
+
+        "yamtrack-tracked-statuses": {
+            "description": "Boolean YamTrack statuses to include.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "dropped": { "type": "boolean", "default": true },
+                "planning": { "type": "boolean", "default": true },
+                "in_progress": { "type": "boolean", "default": true },
+                "paused": { "type": "boolean", "default": true },
+                "completed": { "type": "boolean", "default": true }
             }
         },
 
