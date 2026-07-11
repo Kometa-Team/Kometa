@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Update the Sight & Sound Letterboxd default collection to use the correct `sightsoundmag` owner for the list.
 - Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
 - Fix asset-directory logos being ignored during metadata image updates.
 - Skip episode rating operations for movie libraries.
