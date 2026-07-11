@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -41,6 +41,7 @@ all_builders = (
     + tmdb.builders
     + trakt.builders
     + tvdb.builders
+    + yamtrack.builders
     + mdblist.builders
     + simkl.builders
     + radarr.builders
@@ -97,6 +98,7 @@ summary_details = [
     "tvdb_summary",
     "tvdb_description",
     "trakt_description",
+    "yamtrack_description",
     "letterboxd_description",
     "icheckmovies_description",
 ]
@@ -1622,6 +1624,8 @@ class CollectionBuilder:
                     "sync_missing_to_trakt_list",
                 ]:
                     self._trakt(method_name, method_data)
+                elif method_name in yamtrack.builders:
+                    self._yamtrack(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
                 elif method_name in mdblist.builders:
@@ -3377,6 +3381,17 @@ class CollectionBuilder:
             for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
                 self.builders.append((final_method, trakt_dict))
 
+    def _yamtrack(self, method_name, method_data):
+        if self.config.YamTrack is None:
+            raise BuilderValidationError(f"{self.Type} Error: yamtrack attribute not found in config")
+        yamtrack_lists = self.config.YamTrack.validate_lists(self.Type, method_data)
+        for yamtrack_list in yamtrack_lists:
+            self.builders.append(("yamtrack_list", yamtrack_list))
+        if method_name.endswith("_details"):
+            description = self.config.YamTrack.list_description(yamtrack_lists[0])
+            if description:
+                self.summaries[method_name] = description
+
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
@@ -3512,6 +3527,8 @@ class CollectionBuilder:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
         elif "trakt" in method:
             ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+        elif "yamtrack" in method:
+            ids = self.config.YamTrack.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:
@@ -4870,6 +4887,8 @@ class CollectionBuilder:
             summary = ("tmdb_collection_details", self.summaries["tmdb_collection_details"])
         elif "trakt_list_details" in self.summaries:
             summary = ("trakt_list_details", self.summaries["trakt_list_details"])
+        elif "yamtrack_list_details" in self.summaries:
+            summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
         elif "tmdb_list_details" in self.summaries:
             summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
         elif "tvdb_list_details" in self.summaries:

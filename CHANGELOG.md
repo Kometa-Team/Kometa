@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `trakt` as a source for posters, backgrounds, and logos. Square art remains unsupported.
 - Add `tvdb` as a source for posters, backgrounds, logos and square art.
 - Add `mass_metadata_update`, a grouped Library Operation for genre, content rating, title, studio, date, rating, artwork, mapper, and backup updates. Existing mass metadata operations move under their matching sub-attributes..
+- Add YamTrack connector support with `yamtrack_list` and `yamtrack_list_details` builders.
 
 ### Fixed
 

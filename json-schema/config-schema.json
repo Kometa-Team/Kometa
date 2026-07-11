@@ -49,6 +49,9 @@
     "trakt": {
       "$ref": "#/definitions/trakt-api"
     },
+    "yamtrack": {
+      "$ref": "#/definitions/yamtrack-api"
+    },
     "github": {
       "$ref": "#/definitions/github-api"
     },
@@ -1018,6 +1021,24 @@
       },
       "required": [],
       "title": "notifiarr"
+    },
+    "yamtrack-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "username": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "yamtrack"
     },
     "gotify-api": {
       "type": "object",
@@ -4378,7 +4399,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
