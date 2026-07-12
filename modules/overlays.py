@@ -74,7 +74,7 @@ class Overlays:
             logger.info("")
 
             total_keys = len(key_to_overlays)
-            # Items freshly composed this run - their "Overlay" label add is batched once after the loop.
+            # Items freshly composed this run - flushed every plex_bulk_edit_batch_size items (if set), else once at the end.
             overlay_label_items = []
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
@@ -418,6 +418,9 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags)
                                 self.library.upload_poster(item, temp)
                                 overlay_label_items.append(item)
+                                if self.library.plex_bulk_edit_batch_size and len(overlay_label_items) >= self.library.plex_bulk_edit_batch_size:
+                                    self.library.batch_add_label(overlay_label_items, "Overlay")
+                                    overlay_label_items = []
                                 poster_compare = poster.compare if poster else item.thumb
                                 logger.info(f"  Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:

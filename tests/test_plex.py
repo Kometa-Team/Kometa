@@ -575,6 +575,37 @@ class TestBatchEditTags:
         assert plex._save_multi_edits_with_retry.call_count == 2
 
 
+class TestBatchAddLabel:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_add_label([], "Overlay")
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_adds_label_to_all_items_in_one_batch(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_add_label(items, "Overlay")
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.addLabel.assert_called_once_with("Overlay")
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_add_label(items, "Overlay")
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
+
+
 class TestBatchEditField:
     def test_noop_when_no_items(self):
         plex = make_plex()
