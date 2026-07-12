@@ -1424,6 +1424,58 @@ class Plex(Library):
                 total_sent += len(chunk)
             logger.exorcise()
 
+    def batch_add_label(self, items, label):
+        # Batches an additive-only label across items via batchMultiEdits, same mechanism as alter_collection.
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for i in range(0, len(items), batch_size):
+            chunk = items[i : i + batch_size]
+            logger.ghost(f"Adding label '{label}' to {len(chunk)} items [{total_sent} so far]")
+            self.Plex.batchMultiEdits(chunk)
+            self.Plex.addLabel(label)
+            self._save_multi_edits_with_retry()
+            total_sent += len(chunk)
+        logger.exorcise()
+
+    @staticmethod
+    def tag_diff(current_tags, add_tags=None, remove_tags=None, sync_tags=None):
+        # Same diffing logic edit_tags() uses per-item, extracted so callers can batch the result across items.
+        _add_tags = add_tags if add_tags else []
+        _remove_tags = remove_tags if remove_tags else []
+        _sync_tags = sync_tags if sync_tags else []
+        _add = [t for t in _add_tags + _sync_tags if t not in current_tags]
+        _remove = [t for t in current_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
+        return _add, _remove
+
+    def batch_edit_tags(self, items, attr, add_tags=None, remove_tags=None, locked=True):
+        # Batches label/genre add+remove across items; safe for a heterogeneous batch since Plex's batch edit is additive-per-item on add and targeted on remove.
+        if not items or (not add_tags and not remove_tags):
+            return
+        if attr not in ("label", "genre"):
+            raise NotImplementedError(f"batch_edit_tags: unsupported attr '{attr}' (only 'label'/'genre' verified so far)")
+        batch_size = 100
+        total_sent = 0
+        for i in range(0, len(items), batch_size):
+            chunk = items[i : i + batch_size]
+            logger.ghost(f"Batch editing {attr} for {len(chunk)} items [{total_sent} so far]")
+            # addLabel/addGenre are only accessible after batchMultiEdits() is called, so access them inline here, not cached earlier.
+            self.Plex.batchMultiEdits(chunk)
+            if add_tags:
+                if attr == "label":
+                    self.Plex.addLabel(list(add_tags), locked=locked)
+                else:
+                    self.Plex.addGenre(list(add_tags), locked=locked)
+            if remove_tags:
+                if attr == "label":
+                    self.Plex.removeLabel(list(remove_tags), locked=locked)
+                else:
+                    self.Plex.removeGenre(list(remove_tags), locked=locked)
+            self._save_multi_edits_with_retry()
+            total_sent += len(chunk)
+        logger.exorcise()
+
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
         if after:
