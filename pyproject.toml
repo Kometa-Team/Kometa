@@ -96,6 +96,7 @@ stubPath = "stubs"
 exclude = [
     "**/__pycache__",
     "**/.*",
+    "**/node_modules",
     ".venv",
     "test_venv",
     ".direnv",
@@ -109,6 +110,7 @@ exclude = [
     "tests",
 ]
 pythonVersion = "3.12"
+pythonPlatform = "Linux"
 typeCheckingMode = "basic"
 
 # Third-party packages without type stubs would otherwise generate hundreds
