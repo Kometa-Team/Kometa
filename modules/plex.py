@@ -2619,13 +2619,17 @@ class Plex(Library):
         return attribute, modifier, final
 
     def check_filters(self, item, filters_in, current_time):
+        already_reloaded = False  # Same item can't change genre/label/collection mid-call, so only the first such filter needs to force a network reload.
         for filter_method, filter_data in filters_in:
             filter_attr, modifier, filter_final = self.split(filter_method)
-            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time) is False:
+            tag_filter = filter_attr in ["genre", "label", "collection"]
+            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=tag_filter and not already_reloaded) is False:
                 return False
+            if tag_filter:
+                already_reloaded = True
         return True
 
-    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
+    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=None):
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"
@@ -2645,7 +2649,8 @@ class Plex(Library):
             return True
         if filter_attr not in builder.filters[item_type]:
             return True
-        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        force = filter_attr in ["genre", "label", "collection"] if force_reload is None else force_reload  # Fallback preserves old always-force behavior for any future direct caller that skips check_filters.
+        item = self.reload(item, force=force)
         if filter_attr in builder.date_filters:
             if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
