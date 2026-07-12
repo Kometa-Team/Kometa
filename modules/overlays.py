@@ -74,6 +74,8 @@ class Overlays:
             logger.info("")
 
             total_keys = len(key_to_overlays)
+            # Items freshly composed this run - their "Overlay" label add is batched once after the loop.
+            overlay_label_items = []
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
@@ -415,7 +417,7 @@ class Overlays:
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
                                 self.library.upload_poster(item, temp)
-                                self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
+                                overlay_label_items.append(item)
                                 poster_compare = poster.compare if poster else item.thumb
                                 logger.info(f"  Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
@@ -441,6 +443,8 @@ class Overlays:
                     logger.stacktrace()
                     logger.info("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
+            if overlay_label_items:
+                self.library.batch_add_label(overlay_label_items, "Overlay")
         logger.exorcise()
         for _, over in properties.items():
             if over.image:
