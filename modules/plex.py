@@ -1998,9 +1998,9 @@ class Plex(Library):
         if not item_asset_directory:
             if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
                 if isinstance(item, (Episode, Season)):
-                    starting = item.show()
-                elif isinstance(item, (Album, Track)):
-                    starting = item.artist()
+                    starting = getattr(item, "show")()
+                elif isinstance(item, Album):
+                    starting = getattr(item, "artist")()
                 else:
                     starting = item
                 if not starting.locations:  # type: ignore[union-attr]
