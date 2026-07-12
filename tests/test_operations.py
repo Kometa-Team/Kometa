@@ -8,6 +8,7 @@ so every managed collection appeared "unconfigured" and was deleted.
 Fix: use self.library.collection_names (pre-populated from YAML before the run_order loop).
 """
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
@@ -248,6 +249,143 @@ def test_collection_names_used_not_collections():
     # If it correctly uses library.collection_names: is_configured=True → configured_check=False → KEEP
     result = ops._should_be_deleted(col, ["Kometa"], configured_in=False, managed_in=True, less_in=None)
     assert result is False, "_should_be_deleted is reading library.collections instead of library.collection_names"
+
+
+# ---------------------------------------------------------------------------
+# remove_title_parentheses batching (run_operations / items_library_operation)
+# ---------------------------------------------------------------------------
+
+
+def make_item(rating_key, title, title_locked=False):
+    """Return a minimal fake Plex item for run_operations()'s per-item loop."""
+    return SimpleNamespace(
+        ratingKey=rating_key,
+        title=title,
+        fields=[SimpleNamespace(name="title", locked=True)] if title_locked else [],
+        locations=[],
+    )
+
+
+def make_title_test_library(items):
+    """Return a MagicMock library that only exercises remove_title_parentheses inside
+    run_operations() - every other items_library_operation feature is stubbed off,
+    since a bare MagicMock returns truthy MagicMocks for anything not set explicitly
+    and would otherwise fire unrelated code paths (Radarr/Sonarr, mass rating/genre
+    updates, IMDb parental labels, delete_collections, etc.)."""
+    library = MagicMock()
+    items_by_key = {item.ratingKey: item for item in items}
+
+    library.items_library_operation = True
+    library.remove_title_parentheses = True
+    library.is_movie = True
+    library.is_show = False
+    library.plex_bulk_edit_batch_size = None
+    library.Radarr = None
+    library.Sonarr = None
+    library.delete_collections = None
+    library.mass_collection_mode = None
+    # These three are checked with "is not None", not truthiness, so False won't skip them.
+    library.mass_episode_audience_rating_update = None
+    library.mass_episode_critic_rating_update = None
+    library.mass_episode_user_rating_update = None
+
+    for flag in [
+        "split_duplicates",
+        "update_blank_track_titles",
+        "assets_for_all",
+        "respect_ignore_ids",
+        "mass_imdb_parental_labels",
+        "mass_audience_rating_update",
+        "mass_critic_rating_update",
+        "mass_user_rating_update",
+        "radarr_add_all_existing",
+        "sonarr_add_all_existing",
+        "mass_genre_update",
+        "genre_mapper",
+        "mass_content_rating_update",
+        "content_rating_mapper",
+        "mass_original_title_update",
+        "mass_studio_update",
+        "mass_poster_update",
+        "mass_background_update",
+        "mass_logo_update",
+        "mass_square_art_update",
+        "mass_originally_available_update",
+        "mass_added_at_update",
+        "radarr_remove_by_tag",
+        "sonarr_remove_by_tag",
+        "show_unmanaged",
+        "show_unconfigured",
+        "metadata_backup",
+        "label_operations",
+    ]:
+        setattr(library, flag, False)
+
+    library.get_all.return_value = items
+    library.reload.side_effect = lambda item: item
+    library.item_has_ignore_label.return_value = False
+    library.get_ids.return_value = (None, None, None)
+    library.load_list_from_cache.side_effect = lambda keys: [items_by_key[k] for k in keys]
+    return library
+
+
+class TestRemoveTitleParenthesesBatching:
+    def test_batches_by_distinct_new_title(self):
+        """Two items with different target titles - one editField call per distinct value."""
+        item_a = make_item(1, "Movie A (2020)")
+        item_b = make_item(2, "Movie B (2021)")
+        library = make_title_test_library([item_a, item_b])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_any_call("title", "Movie A")
+        library.Plex.editField.assert_any_call("title", "Movie B")
+        assert library.Plex.batchMultiEdits.call_count == 2
+        assert library._save_multi_edits_with_retry.call_count == 2
+
+    def test_groups_shared_new_title_into_one_batch(self):
+        """Two items whose parenthetical strip lands on the same title - one batched call
+        covering both items, not two separate editTitle-per-item calls."""
+        item_a = make_item(1, "Same Title (2020)")
+        item_b = make_item(2, "Same Title (2021)")
+        library = make_title_test_library([item_a, item_b])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_called_once_with("title", "Same Title")
+        library.Plex.batchMultiEdits.assert_called_once_with([item_a, item_b])
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_skips_locked_title(self):
+        item = make_item(1, "Movie A (2020)", title_locked=True)
+        library = make_title_test_library([item])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_not_called()
+        library.Plex.batchMultiEdits.assert_not_called()
+
+    def test_skips_title_without_trailing_parentheses(self):
+        item = make_item(1, "Movie A")
+        library = make_title_test_library([item])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_not_called()
+
+    def test_disabled_flag_does_nothing(self):
+        item = make_item(1, "Movie A (2020)")
+        library = make_title_test_library([item])
+        library.remove_title_parentheses = False
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
