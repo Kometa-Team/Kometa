@@ -361,6 +361,123 @@ class TestReload:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# check_filters / check_filter reload dedup
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFiltersReloadDedup:
+    def test_first_tag_filter_forces_reload_second_does_not(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("genre", ["Action"]), ("label", ["Test"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        first_call, second_call = plex.check_filter.call_args_list
+        assert first_call.kwargs["force_reload"] is True
+        assert second_call.kwargs["force_reload"] is False
+
+    def test_non_tag_filter_never_forces_reload(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("title", ["Something"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        assert plex.check_filter.call_args_list[0].kwargs["force_reload"] is False
+
+    def test_mixed_filters_only_first_tag_filter_forces(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("title", ["Something"]), ("genre", ["Action"]), ("collection", ["Marvel"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        calls = plex.check_filter.call_args_list
+        assert calls[0].kwargs["force_reload"] is False  # title - never a tag filter
+        assert calls[1].kwargs["force_reload"] is True  # genre - first tag filter this call
+        assert calls[2].kwargs["force_reload"] is False  # collection - already reloaded this call
+
+    def test_dedup_state_does_not_leak_across_separate_calls(self):
+        """Each check_filters call is for a distinct item, so a fresh call must force again."""
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item_a = make_plex_item(rating_key=1)
+        item_b = make_plex_item(rating_key=2)
+        filters_in = [("genre", ["Action"])]
+
+        plex.check_filters(item_a, filters_in, None)
+        plex.check_filters(item_b, filters_in, None)
+
+        assert plex.check_filter.call_args_list[0].kwargs["force_reload"] is True
+        assert plex.check_filter.call_args_list[1].kwargs["force_reload"] is True
+
+    def test_short_circuits_on_first_failing_filter(self):
+        """A failing filter still short-circuits check_filters (dedup change must not affect this)."""
+        plex = make_plex()
+        plex.check_filter = MagicMock(side_effect=[False, True])
+        item = make_plex_item()
+        filters_in = [("genre", ["Action"]), ("label", ["Test"])]
+
+        result = plex.check_filters(item, filters_in, None)
+
+        assert result is False
+        assert plex.check_filter.call_count == 1
+
+
+class TestCheckFilterForceReloadParam:
+    def _movie_item(self, genres=None, labels=None):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        item.genres = genres if genres is not None else [MagicMock(tag="Action")]
+        item.labels = labels if labels is not None else [MagicMock(tag="Test")]
+        return item
+
+    def test_force_reload_true_passed_through_to_reload(self):
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=True)
+
+        plex.reload.assert_called_once_with(item, force=True)
+
+    def test_force_reload_false_passed_through_to_reload(self):
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=False)
+
+        plex.reload.assert_called_once_with(item, force=False)
+
+    def test_force_reload_none_falls_back_to_old_always_force_behavior(self):
+        """Only a direct caller that bypasses check_filters would hit this - kept for safety."""
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=None)
+
+        plex.reload.assert_called_once_with(item, force=True)
+
+    def test_force_reload_none_for_non_tag_filter_does_not_force(self):
+        plex = make_plex()
+        item = self._movie_item()
+        item.title = "Something"
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "title", "", "title", ["Something"], None, force_reload=None)
+
+        plex.reload.assert_called_once_with(item, force=False)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # tag_diff / batch_edit_tags
 # ═══════════════════════════════════════════════════════════════════════
 
