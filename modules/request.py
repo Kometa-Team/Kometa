@@ -76,6 +76,7 @@ class Requests:
         self.env_branch = env_branch
         self.git_branch = git_branch
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]
+        self._image_url_cache = {}  # Run-scoped memoization for get_image() - same URL within one run is always the same asset, no staleness risk.
         self._nightly = None
         self._develop = None
         self._master = None
@@ -135,6 +136,11 @@ class Requests:
         return YAML(input_data=response.content, check_empty=check_empty)
 
     def get_image(self, url, session=None, validate_only=False):
+        # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content.
+        # (nightly's leaked version of this cache only ever wrote to _image_url_cache, never read from it - restoring the actual shortcut here.)
+        cache_key = (url, validate_only)
+        if cache_key in self._image_url_cache:
+            return self._image_url_cache[cache_key]
         active_session = session if session is not None else self.session
         request_headers = get_header(None, True, None)
         if validate_only:
@@ -147,6 +153,7 @@ class Requests:
             raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
         if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.image_content_types:
             raise Failed("Image Not PNG, JPG, or WEBP")
+        self._image_url_cache[cache_key] = response
         return response
 
     def get_stream(self, url, location, info="Item"):
