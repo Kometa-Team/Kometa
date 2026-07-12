@@ -185,6 +185,7 @@ class Operations:
             genre_edits = {"add": {}, "remove": {}}
             content_edits = {}
             studio_edits = {}
+            title_edits = {}
             date_edits = {"originallyAvailableAt": {}, "addedAt": {}}
             remove_edits = {}
             reset_edits = {}
@@ -232,8 +233,8 @@ class Operations:
                 if self.library.remove_title_parentheses:
                     if not any([f.name == "title" and f.locked for f in item.fields]) and item.title.endswith(")"):
                         new_title = re.sub(" \\(\\w+\\)$", "", item.title)
-                        item.editTitle(new_title)
-                        item_edits += f"\nUpdated Title: {item.title[:25]:<25} | {new_title}"
+                        title_edits.setdefault(new_title, []).append(item.ratingKey)
+                        item_edits += f"\nUpdated Title (Batched): {item.title[:25]:<25} | {new_title}"
 
                 if self.library.mass_imdb_parental_labels:
                     try:
@@ -1374,6 +1375,7 @@ class Operations:
                 plex_update_in_batches(rt_edits, display_attr=item_attr, evict_cache=True)
             plex_update_in_batches(content_edits, display_attr="contentRating", evict_cache=True)
             plex_update_in_batches(studio_edits, display_attr="studio", evict_cache=True)
+            plex_update_in_batches(title_edits, display_attr="title", evict_cache=True)
             plex_update_in_batches(date_edits["originallyAvailableAt"], display_attr="originallyAvailableAt", evict_cache=True)
             plex_update_in_batches(date_edits["addedAt"], display_attr="addedAt", evict_cache=True)
             plex_update_in_batches(remove_edits, out_type="remove", evict_cache=True)
