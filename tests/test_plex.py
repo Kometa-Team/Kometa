@@ -8,6 +8,7 @@ manually-set attributes.
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -608,6 +609,104 @@ class TestReload:
         result = plex.reload(item)
         assert result is item
         plex.item_reload.assert_called_once_with(item)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# tag_diff / batch_edit_tags
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTagDiff:
+    def test_add_only(self):
+        add, remove = Plex.tag_diff(["Action"], add_tags=["Drama"])
+        assert add == ["Drama"]
+        assert remove == []
+
+    def test_add_skips_already_present(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], add_tags=["Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_remove_only(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], remove_tags=["Drama"])
+        assert add == []
+        assert remove == ["Drama"]
+
+    def test_remove_absent_tag_is_noop(self):
+        add, remove = Plex.tag_diff(["Action"], remove_tags=["Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_sync_removes_extraneous_and_adds_missing(self):
+        add, remove = Plex.tag_diff(["Action", "Horror"], sync_tags=["Action", "Drama"])
+        assert add == ["Drama"]
+        assert remove == ["Horror"]
+
+    def test_sync_with_nothing_to_change(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], sync_tags=["Action", "Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_no_args_is_noop(self):
+        add, remove = Plex.tag_diff(["Action"])
+        assert add == []
+        assert remove == []
+
+
+class TestBatchEditTags:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_edit_tags([], "label", add_tags=["Overlay"])
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_noop_when_no_tags(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        item = make_plex_item()
+        plex.batch_edit_tags([item], "label")
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_rejects_unsupported_attr(self):
+        plex = make_plex()
+        item = make_plex_item()
+        with pytest.raises(NotImplementedError):
+            plex.batch_edit_tags([item], "director", add_tags=["Someone"])
+
+    def test_add_and_remove_labels_batched_once(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_edit_tags(items, "label", add_tags={"Overlay"}, remove_tags={"Stale"})
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.addLabel.assert_called_once_with(["Overlay"], locked=True)
+        mock_section.removeLabel.assert_called_once_with(["Stale"], locked=True)
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_add_only_does_not_call_remove_method(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item()]
+
+        plex.batch_edit_tags(items, "genre", add_tags={"Drama"})
+
+        mock_section.addGenre.assert_called_once_with(["Drama"], locked=True)
+        mock_section.removeGenre.assert_not_called()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_edit_tags(items, "label", add_tags={"Overlay"})
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
 
 
 # ═══════════════════════════════════════════════════════════════════════
