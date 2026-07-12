@@ -121,8 +121,8 @@ class Requests:
             handler.write(response.content)
         return ImageData("asset_directory", new_image, prefix=f"{title}'s ", image_type=image_type, is_url=False)
 
-    def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False):
-        return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty)
+    def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False, read_only=False):
+        return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty, read_only=read_only)
 
     def get_yaml(self, url, headers=None, params=None, check_empty=False):
         response = self.get(url, headers=headers, params=params)
@@ -134,7 +134,8 @@ class Requests:
             raise Failed(f"URL Error: Too many requests -  {url}")
         if response.status_code >= 400:
             raise Failed(f"URL Error: {response.status_code} on {url}")
-        return YAML(input_data=response.content, check_empty=check_empty)
+        # get_yaml never sets a path, so save() was already a no-op here - read_only=True is a pure speed win (safe loader) plus a defensive guard against future misuse.
+        return YAML(input_data=response.content, check_empty=check_empty, read_only=True)
 
     def get_image(self, url, session=None, validate_only=False):
         # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content.
@@ -297,12 +298,15 @@ class Requests:
 
 
 class YAML:
-    def __init__(self, path=None, input_data=None, check_empty=False, create=False, start_empty=False):
+    def __init__(self, path=None, input_data=None, check_empty=False, create=False, start_empty=False, read_only=False):
         self.path = path
         self.input_data = input_data
-        self.yaml = ruamel.yaml.YAML()
-        self.yaml.width = 100000
-        self.yaml.indent(mapping=2, sequence=2)
+        self.read_only = read_only
+        # read_only loads use ruamel's safe loader instead of the default round-trip loader - skips comment/formatting-preservation bookkeeping that's pure overhead for files we never save() back out.
+        self.yaml = ruamel.yaml.YAML(typ="safe") if read_only else ruamel.yaml.YAML()
+        if not read_only:
+            self.yaml.width = 100000
+            self.yaml.indent(mapping=2, sequence=2)
         try:
             if input_data:
                 self.data = self.yaml.load(input_data)
@@ -333,6 +337,8 @@ class YAML:
             self.data = {}
 
     def save(self):
+        if self.read_only:
+            raise Failed("YAML Error: save() called on a read_only YAML object")
         if self.path:
             with open(self.path, "w", encoding="utf-8") as fp:
                 self.yaml.dump(self.data, fp)
