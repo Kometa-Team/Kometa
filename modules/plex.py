@@ -1252,7 +1252,12 @@ class Plex(Library):
     def users(self):
         if not self._users:
             users = []
-            for user in self.account.users():
+            account = self.account
+            if account is None:
+                return users
+            for user in account.users():
+                if user is None:
+                    continue
                 if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
                     users.append(user.title)
             self._users = users
