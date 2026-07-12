@@ -167,6 +167,7 @@ show_translation = {
     "addedAt": "show.addedAt",
     "viewCount": "show.viewCount",
     "lastViewedAt": "show.lastViewedAt",
+    "editionTitle": "show.editionTitle",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
     "dovi": "episode.dovi",
@@ -388,12 +389,7 @@ movie_only_searches = [
     "duration.gt",
     "duration.gte",
     "duration.lt",
-    "duration.lte" "edition",
-    "edition.not",
-    "edition.is",
-    "edition.isnot",
-    "edition.begins",
-    "edition.ends",
+    "duration.lte",
 ]
 show_only_searches = [
     "network",

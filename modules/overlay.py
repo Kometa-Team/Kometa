@@ -82,7 +82,7 @@ types_for_var = {
     "movie_episode": ["bitrate", "versions"],
     "season_episode": ["season_number", "show_title"],
     "show_season": ["episode_count"],
-    "movie": ["edition"],
+    "movie_show": ["edition"],
     "episode": ["episode_number", "season_title"],
 }
 var_mods = {

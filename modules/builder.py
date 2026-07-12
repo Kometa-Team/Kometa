@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from arrapi import ArrException
 from dateutil.relativedelta import relativedelta
 from plexapi.audio import Album, Artist, Track
-from plexapi.exceptions import NotFound
+from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
@@ -75,7 +75,6 @@ movie_only_builders = [
     "tmdb_movie",
     "tmdb_movie_details",
     "tmdb_now_playing",
-    "item_edition",
     "tvdb_movie",
     "tvdb_movie_details",
     "tmdb_upcoming",
@@ -322,7 +321,8 @@ filters_by_type = {
     "show_season": ["episodes"],
     "season_episode": ["show_title"],
     "artist_album": ["tracks"],
-    "movie": ["edition", "has_edition", "stinger_rating", "has_stinger"],
+    "movie_show": ["edition", "has_edition"],
+    "movie": ["stinger_rating", "has_stinger"],
     "show": [
         "seasons",
         "tmdb_status",
@@ -1933,7 +1933,10 @@ class CollectionBuilder:
                 raise BuilderValidationError(f"{self.Type} Error: Cannot use item_genre.remove and item_genre.sync together")
             self.item_details[method_final] = util.get_list(method_data) if method_data else []
         elif method_name == "item_edition":
-            self.item_details[method_final] = str(method_data) if method_data else ""  # noqa
+            if not self.library.plex_pass:
+                logger.warning("Plex Warning: Plex Pass is required to edit Edition")
+            else:
+                self.item_details[method_final] = str(method_data) if method_data else ""  # noqa
         elif method_name in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
             self.item_details[method_final] = util.parse(self.Type, method_name, method_data, datatype="float", minimum=0, maximum=10) if method_data is not None else None
         elif method_name == "non_item_remove_label":
@@ -4737,9 +4740,15 @@ class CollectionBuilder:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
             self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
             self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
-            if "item_edition" in self.item_details and item.editionTitle != self.item_details["item_edition"]:
-                self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
-                logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
+            if "item_edition" in self.item_details and getattr(item, "editionTitle", None) != self.item_details["item_edition"]:
+                if hasattr(item, "editEditionTitle"):
+                    try:
+                        self.library.query_data(item.editEditionTitle, self.item_details["item_edition"])
+                        logger.info(f"{item.title[:25]:<25} | Edition | {self.item_details['item_edition']}")
+                    except BadRequest as e:
+                        logger.error(f"Plex Error: Edition update failed for {item.title}: {e}")
+                else:
+                    logger.error(f"Plex Error: Edition cannot be edited on {item.title}")
             for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
                 if _rating in self.item_details:
                     plex_attr = plex.attribute_translation[_rating[5:]]
