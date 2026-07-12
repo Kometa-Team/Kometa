@@ -20,7 +20,15 @@ from tests.conftest import FakeLogger, FakeRequests
 
 
 def make_datafile(**attrs) -> DataFile:
-    """Create a minimal DataFile via ``DataFile.__new__``."""
+    """Create a minimal DataFile via ``DataFile.__new__``.
+
+    Also patches ``modules.meta.logger`` to a ``FakeLogger`` - meta.py captures
+    ``logger = util.logger`` at import time, so the autouse ``patch_util_logger``
+    fixture (which only patches ``modules.util.logger``) doesn't reach it.
+    """
+    import modules.meta as meta_module
+
+    meta_module.logger = FakeLogger()
     df = DataFile.__new__(DataFile)
     defaults = {
         "config": MagicMock(),
@@ -106,6 +114,69 @@ class TestApplyTemplate:
 
         with pytest.raises(Failed, match="not found"):
             df.apply_template("test", "test", {}, [{"name": "missing"}], {})
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# apply_template — nested <<var>> resolution (check_for_var early-exit fix)
+#
+# check_for_var resolves nested "<<var>>" chains over a handful of passes,
+# now stopping early once a pass makes no changes instead of always running
+# a fixed 8. These tests exercise multi-level chains to confirm the early
+# exit doesn't cut resolution off before it's actually done - correctness
+# here matters more than measuring the iteration count directly, since
+# check_for_var/scan_text are closures with no seam to hook a counter into.
+# Iteration-count behavior itself is covered separately by a standalone
+# before/after harness (see perf-results-log.md 2026-07-10 entry).
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestApplyTemplateNestedVarResolution:
+    def test_two_level_chain_fully_resolves(self):
+        """var1 references var2, which is a plain value - needs 2 passes to fully resolve."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "<<var2>>-suffix", "var2": "final"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "final-suffix"
+
+    def test_three_level_chain_fully_resolves(self):
+        """var1 -> var2 -> var3 -> literal, needs 3 passes - well within the early-exit budget."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "<<var2>>", "var2": "<<var3>>", "var3": "literal"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "literal"
+
+    def test_single_pass_value_unaffected(self):
+        """A plain value with no nested vars must still resolve correctly in one pass."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "plain value"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "plain value"
+
+    def test_unresolvable_var_left_as_literal_placeholder(self):
+        """A variable that never resolves must stop (not error) and keep the literal placeholder,
+        same as the old always-8-passes behavior - proves early exit doesn't mistake 'no progress'
+        for a crash or an infinite loop."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<never_defined>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "irrelevant"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "<<never_defined>>"
+
+    def test_arithmetic_suffix_var_plus_n_still_resolves(self):
+        """<<var+N>> arithmetic relies on the loop's second=True pass - must still work post-fix."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1+3>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "5"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "8"
 
 
 # ═══════════════════════════════════════════════════════════════════════

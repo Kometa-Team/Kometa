@@ -537,6 +537,7 @@ class DataFile:
                         with timings.track("check_for_var", library=self.library.name if self.library else None, collection=mapping_name):
                             try:
                                 for i_check in range(8):
+                                    pass_start = _data  # Unchanged after a full pass means no nested vars are left to resolve, so stop early instead of burning the remaining passes.
                                     for option in optional:
                                         if option not in variables and f"<<{option}>>" in str(_data):
                                             raise Failed
@@ -553,6 +554,8 @@ class DataFile:
                                             continue
                                         elif _method not in ["name", "summary"] or dm != "key_name":
                                             _data = scan_text(_data, dm, dd)
+                                    if _data == pass_start:
+                                        break
                             except Failed:
                                 if _debug:
                                     logger.trace(f"Failed {_method}: {_data}")
