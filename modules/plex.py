@@ -1405,6 +1405,21 @@ class Plex(Library):
             total_sent += len(chunk)
         logger.exorcise()
 
+    def batch_edit_field(self, items, field, value, locked=True):
+        # Batches a single scalar field to the same value across items via batchMultiEdits; only safe when every item in the batch shares one target value (e.g. item_critic/audience/user_rating, which set one value for a whole collection).
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for i in range(0, len(items), batch_size):
+            chunk = items[i : i + batch_size]
+            logger.ghost(f"Batch editing '{field}' for {len(chunk)} items [{total_sent} so far]")
+            self.Plex.batchMultiEdits(chunk)
+            self.Plex.editField(field, value, locked=locked)
+            self._save_multi_edits_with_retry()
+            total_sent += len(chunk)
+        logger.exorcise()
+
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
         if after:

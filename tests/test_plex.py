@@ -575,6 +575,37 @@ class TestBatchEditTags:
         assert plex._save_multi_edits_with_retry.call_count == 2
 
 
+class TestBatchEditField:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_edit_field([], "rating", 5.5)
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_sets_same_value_for_whole_batch(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_edit_field(items, "rating", 5.5)
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.editField.assert_called_once_with("rating", 5.5, locked=True)
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_edit_field(items, "rating", 5.5)
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Edge cases
 # ═══════════════════════════════════════════════════════════════════════
