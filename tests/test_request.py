@@ -89,6 +89,10 @@ class RecordingSession:
         self.calls.append(("post", url, kwargs))
         return self._response
 
+    def head(self, url, **kwargs):
+        self.calls.append(("head", url, kwargs))
+        return self._response
+
 
 class FakeStreamResponse:
     def __init__(self, chunks):
@@ -156,6 +160,13 @@ class TestRetryPolicy:
 
         assert isinstance(Requests.post.retry.wait, wait_exponential)
 
+    def test_head_uses_exponential_backoff(self):
+        from tenacity import wait_exponential
+
+        from modules.request import Requests
+
+        assert isinstance(Requests.head.retry.wait, wait_exponential)
+
 
 class TestGetStream:
     def test_progress_logging_is_throttled(self, monkeypatch, tmp_path):
@@ -194,19 +205,20 @@ class _FakeImageResponse:
 
 
 def make_image_requests():
-    """Bare Requests instance with just the attributes get_image() touches, plus its get() cast to MagicMock for mock-attribute access (same cast pattern test_plex.py uses for this pyright gotcha)."""
+    """Bare Requests instance with just the attributes get_image() touches, plus its get()/head() cast to MagicMock for mock-attribute access (same cast pattern test_plex.py uses for this pyright gotcha)."""
     req = make_requests()
     req._image_url_cache = {}
     req.image_content_types = ["image/png", "image/jpeg", "image/webp"]
     req.get = MagicMock()
-    return req, cast(MagicMock, req.get)
+    req.head = MagicMock()
+    return req, cast(MagicMock, req.get), cast(MagicMock, req.head)
 
 
 class TestGetImageMemoization:
     """get_image() used to hit the network on every call, even for a URL already fetched this run."""
 
     def test_repeat_url_does_not_refetch(self):
-        req, mock_get = make_image_requests()
+        req, mock_get, _ = make_image_requests()
         mock_get.return_value = _FakeImageResponse()
         first = req.get_image("https://example.com/badge.png")
         second = req.get_image("https://example.com/badge.png")
@@ -214,7 +226,7 @@ class TestGetImageMemoization:
         assert mock_get.call_count == 1  # second call must be served from the memo, not a second fetch
 
     def test_different_urls_both_fetch(self):
-        req, mock_get = make_image_requests()
+        req, mock_get, _ = make_image_requests()
         mock_get.return_value = _FakeImageResponse()
         req.get_image("https://example.com/a.png")
         req.get_image("https://example.com/b.png")
@@ -223,7 +235,7 @@ class TestGetImageMemoization:
     def test_failure_is_not_cached_and_retries_next_call(self):
         from modules.util import Failed
 
-        req, mock_get = make_image_requests()
+        req, mock_get, _ = make_image_requests()
         mock_get.side_effect = [_FakeImageResponse(status_code=404), _FakeImageResponse(status_code=200)]
         with pytest.raises(Failed):
             req.get_image("https://example.com/missing.png")
@@ -234,7 +246,7 @@ class TestGetImageMemoization:
     def test_non_image_content_type_not_cached(self):
         from modules.util import Failed
 
-        req, mock_get = make_image_requests()
+        req, mock_get, _ = make_image_requests()
         mock_get.return_value = _FakeImageResponse(content_type="text/html")
         with pytest.raises(Failed):
             req.get_image("https://example.com/not-an-image")
@@ -243,7 +255,7 @@ class TestGetImageMemoization:
         assert mock_get.call_count == 2
 
     def test_cached_response_content_unchanged(self):
-        req, mock_get = make_image_requests()
+        req, mock_get, _ = make_image_requests()
         mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
         first = req.get_image("https://example.com/badge.png")
         second = req.get_image("https://example.com/badge.png")
@@ -251,12 +263,84 @@ class TestGetImageMemoization:
         assert second.content == b"real-bytes"
 
     def test_session_argument_path_also_memoizes(self):
-        req, _ = make_image_requests()
+        req, _, _unused_head = make_image_requests()
         session = MagicMock()
         session.get.return_value = _FakeImageResponse()
         req.get_image("https://example.com/badge.png", session=session)
         req.get_image("https://example.com/badge.png", session=session)
         assert session.get.call_count == 1
+
+
+class TestGetImageValidateOnly:
+    """validate_only=True (builder.py's url_poster/url_background/url_logo/url_square_art checks) uses HEAD instead of GET - same status/Content-Type validation, without downloading the body."""
+
+    def test_validate_only_uses_head_not_get(self):
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", validate_only=True)
+        assert mock_head.call_count == 1
+        assert mock_get.call_count == 0
+
+    def test_default_still_uses_get(self):
+        req, mock_get, mock_head = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png")
+        assert mock_get.call_count == 1
+        assert mock_head.call_count == 0
+
+    def test_validate_only_repeat_url_does_not_refetch(self):
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        first = req.get_image("https://example.com/badge.png", validate_only=True)
+        second = req.get_image("https://example.com/badge.png", validate_only=True)
+        assert first is second
+        assert mock_head.call_count == 1
+
+    def test_validate_only_raises_failed_on_404(self):
+        from modules.util import Failed
+
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse(status_code=404)
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/missing.png", validate_only=True)
+
+    def test_validate_only_raises_failed_on_non_image_content_type(self):
+        from modules.util import Failed
+
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse(content_type="text/html")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image", validate_only=True)
+
+    def test_head_and_get_cache_entries_are_independent(self):
+        """A validate_only HEAD response (no body) must never be served back to a caller that needs real content, or vice versa."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        head_result = req.get_image("https://example.com/badge.png", validate_only=True)
+        get_result = req.get_image("https://example.com/badge.png")
+        assert head_result is not get_result
+        assert mock_head.call_count == 1
+        assert mock_get.call_count == 1
+
+    def test_session_argument_path_uses_head_when_validate_only(self):
+        req, _, _unused_head = make_image_requests()
+        session = MagicMock()
+        session.head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", session=session, validate_only=True)
+        assert session.head.call_count == 1
+        assert session.head.call_args.kwargs.get("allow_redirects") is True
+        assert session.get.call_count == 0
+
+
+class TestHeadFollowsRedirects:
+    """requests defaults HEAD to not following redirects (unlike GET) - Requests.head() must override that so validate_only behaves the same as GET for a redirected URL."""
+
+    def test_head_passes_allow_redirects_true(self):
+        req = make_requests()
+        req.session = RecordingSession()  # pyright: ignore[reportAttributeAccessIssue]
+        req.head("http://example.com")
+        assert req.session.calls[0][2].get("allow_redirects") is True  # pyright: ignore[reportAttributeAccessIssue]
 
 
 class TestNoVerifySSL:
