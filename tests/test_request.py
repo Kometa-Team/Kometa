@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import cast
+from unittest.mock import MagicMock
+
 import pytest
 
 import modules.builder  # noqa: F401
@@ -181,6 +184,79 @@ class TestGetStream:
         req.session = RecordingSession(response=FakeStreamResponse([b"data"]))
         req.get_stream("http://example.com/file", str(tmp_path / "out.bin"))
         assert req.session.calls[0][2].get("timeout") == request_module.DEFAULT_TIMEOUT
+
+
+class _FakeImageResponse:
+    def __init__(self, status_code=200, content_type="image/png", content=b"fake-png-bytes"):
+        self.status_code = status_code
+        self.headers = {"Content-Type": content_type}
+        self.content = content
+
+
+def make_image_requests():
+    """Bare Requests instance with just the attributes get_image() touches, plus its get() cast to MagicMock for mock-attribute access (same cast pattern test_plex.py uses for this pyright gotcha)."""
+    req = make_requests()
+    req._image_url_cache = {}
+    req.image_content_types = ["image/png", "image/jpeg", "image/webp"]
+    req.get = MagicMock()
+    return req, cast(MagicMock, req.get)
+
+
+class TestGetImageMemoization:
+    """get_image() used to hit the network on every call, even for a URL already fetched this run."""
+
+    def test_repeat_url_does_not_refetch(self):
+        req, mock_get = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        first = req.get_image("https://example.com/badge.png")
+        second = req.get_image("https://example.com/badge.png")
+        assert first is second
+        assert mock_get.call_count == 1  # second call must be served from the memo, not a second fetch
+
+    def test_different_urls_both_fetch(self):
+        req, mock_get = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/a.png")
+        req.get_image("https://example.com/b.png")
+        assert mock_get.call_count == 2
+
+    def test_failure_is_not_cached_and_retries_next_call(self):
+        from modules.util import Failed
+
+        req, mock_get = make_image_requests()
+        mock_get.side_effect = [_FakeImageResponse(status_code=404), _FakeImageResponse(status_code=200)]
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/missing.png")
+        second = req.get_image("https://example.com/missing.png")
+        assert second.status_code == 200
+        assert mock_get.call_count == 2  # a failed lookup must not poison the cache - retried fresh next call
+
+    def test_non_image_content_type_not_cached(self):
+        from modules.util import Failed
+
+        req, mock_get = make_image_requests()
+        mock_get.return_value = _FakeImageResponse(content_type="text/html")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image")
+        assert mock_get.call_count == 2
+
+    def test_cached_response_content_unchanged(self):
+        req, mock_get = make_image_requests()
+        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        first = req.get_image("https://example.com/badge.png")
+        second = req.get_image("https://example.com/badge.png")
+        assert first.content == b"real-bytes"
+        assert second.content == b"real-bytes"
+
+    def test_session_argument_path_also_memoizes(self):
+        req, _ = make_image_requests()
+        session = MagicMock()
+        session.get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", session=session)
+        req.get_image("https://example.com/badge.png", session=session)
+        assert session.get.call_count == 1
 
 
 class TestNoVerifySSL:
