@@ -314,6 +314,8 @@ filters_by_type = {
         "tmdb_title",
         "tmdb_keyword",
         "imdb_keyword",
+        "edition",
+        "has_edition",
     ],
     "movie_episode": ["director", "producer", "writer"],
     "movie_artist": ["country"],
@@ -321,7 +323,6 @@ filters_by_type = {
     "show_season": ["episodes"],
     "season_episode": ["show_title"],
     "artist_album": ["tracks"],
-    "movie_show": ["edition", "has_edition"],
     "movie": ["stinger_rating", "has_stinger"],
     "show": [
         "seasons",
