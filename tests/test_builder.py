@@ -552,6 +552,80 @@ class TestTvdbOutageResilience:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# update_item_details — rating batching
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRatingBatching:
+    @staticmethod
+    def _library(batch_edit_field):
+        return SimpleNamespace(
+            name="Test Library",
+            reload=lambda item: item,
+            item_labels=lambda item: [],
+            show_rating_key_map={},
+            movie_rating_key_map={},
+            is_movie=True,
+            is_show=False,
+            Radarr=None,
+            Sonarr=None,
+            batch_edit_field=batch_edit_field,
+        )
+
+    def test_only_items_needing_change_are_batched(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        batch_edit_field = MagicMock()
+        library = self._library(batch_edit_field)
+        needs_change = SimpleNamespace(ratingKey=1, title="Needs Change", rating=None)
+        already_set = SimpleNamespace(ratingKey=2, title="Already Set", rating=5.5)
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[needs_change, already_set],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        batch_edit_field.assert_called_once_with([needs_change], "rating", 5.5)
+
+    def test_multiple_rating_attrs_batched_separately(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        batch_edit_field = MagicMock()
+        library = self._library(batch_edit_field)
+        item = SimpleNamespace(ratingKey=1, title="Example", rating=None, userRating=None)
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5, "item_user_rating": 7.0},
+        )
+
+        builder.update_item_details()
+
+        assert batch_edit_field.call_args_list == [
+            (([item], "rating", 5.5), {}),
+            (([item], "userRating", 7.0), {}),
+        ]
+
+    def test_no_items_need_change_skips_batch_call(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        batch_edit_field = MagicMock()
+        library = self._library(batch_edit_field)
+        item = SimpleNamespace(ratingKey=1, title="Already Set", rating=5.5)
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        batch_edit_field.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
