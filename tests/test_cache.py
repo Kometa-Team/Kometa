@@ -1019,3 +1019,89 @@ class TestSqlIdentifierValidation:
         cache = make_cache(tmp_path)
         cache._update_map("letterboxd_map", "letterboxd_id", 9, "tmdb_id", 99, False)
         assert cache._query_map("letterboxd_map", 9, "letterboxd_id", "tmdb_id")[0] == 99
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _query_map / _update_map in-process memoization
+#
+# query_tmdb_to_tvdb_map and its siblings hit SQLite fresh on every call with no
+# in-process memoization, despite a high hit rate against the same handful of IDs
+# in a typical run. These tests cover the memoization layer added to
+# _query_map/_update_map: repeat reads must skip SQLite, and writes must
+# invalidate anything memoized that the write makes stale.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def _select_count(cache, fn):
+    """Runs fn() and counts real SELECTs via set_trace_callback, since sqlite3.Connection can't be mocked directly."""
+    statements = []
+    cache.connection.set_trace_callback(lambda stmt: statements.append(stmt))
+    try:
+        result = fn()
+    finally:
+        cache.connection.set_trace_callback(None)
+    return result, sum(1 for s in statements if s.strip().upper().startswith("SELECT"))
+
+
+class TestQueryMapMemoization:
+    def test_repeat_lookup_does_not_hit_sqlite_again(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "100", "tvdb_id", "200", False)
+        first, selects_1 = _select_count(cache, lambda: cache._query_map("tmdb_to_tvdb_map2", "100", "tmdb_id", "tvdb_id"))
+        second, selects_2 = _select_count(cache, lambda: cache._query_map("tmdb_to_tvdb_map2", "100", "tmdb_id", "tvdb_id"))
+        assert first == second == (200, False)  # expired=False - the write above was just made, so it's fresh
+        assert selects_1 == 1, "first lookup of an uncached ID must hit SQLite"
+        assert selects_2 == 0, "second lookup of the same ID must be served from the in-process memo, not a second SQLite query"
+
+    def test_first_lookup_of_new_map_still_hits_sqlite(self, tmp_path):
+        cache = make_cache(tmp_path)
+        _, selects = _select_count(cache, lambda: cache._query_map("tmdb_to_tvdb_map2", "999", "tmdb_id", "tvdb_id"))
+        assert selects == 1
+
+    def test_write_invalidates_stale_cached_miss(self, tmp_path):
+        # A write after a cached miss must be visible on the next query, not masked by the stale miss.
+        cache = make_cache(tmp_path)
+        first, _ = cache._query_map("tmdb_to_tvdb_map2", "300", "tmdb_id", "tvdb_id")  # pyright: ignore[reportAssignmentType]
+        assert first is None
+        cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "300", "tvdb_id", "400", False)
+        second, _ = cache._query_map("tmdb_to_tvdb_map2", "300", "tmdb_id", "tvdb_id")  # pyright: ignore[reportAssignmentType]
+        assert second == 400
+
+    def test_write_invalidates_reverse_direction_lookup_too(self, tmp_path):
+        # A cached miss in the reverse lookup direction must also be invalidated by the write.
+        cache = make_cache(tmp_path)
+        first, _ = cache._query_map("tmdb_to_tvdb_map2", "500", "tvdb_id", "tmdb_id")  # pyright: ignore[reportAssignmentType]
+        assert first is None
+        cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "600", "tvdb_id", "500", False)
+        second, _ = cache._query_map("tmdb_to_tvdb_map2", "500", "tvdb_id", "tmdb_id")  # pyright: ignore[reportAssignmentType]
+        assert second == 600
+
+    def test_media_type_filter_produces_distinct_cache_entries(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache._update_map("imdb_to_tmdb_map", "imdb_id", "tt1", "tmdb_id", "111", False, media_type="movie")
+        with_type = cache._query_map("imdb_to_tmdb_map", "tt1", "imdb_id", "tmdb_id", media_type="movie")
+        without_type = cache._query_map("imdb_to_tmdb_map", "tt1", "imdb_id", "tmdb_id", media_type=None)
+        assert with_type[0] == without_type[0] == 111
+        table_cache = cache._map_cache["imdb_to_tmdb_map"]
+        assert ("imdb_id", "tmdb_id", "tt1", "movie") in table_cache
+        assert ("imdb_id", "tmdb_id", "tt1", None) in table_cache
+
+    def test_different_maps_do_not_share_cache_entries(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache._update_map("tmdb_to_tvdb_map2", "tmdb_id", "1", "tvdb_id", "2", False)
+        cache._update_map("imdb_to_tvdb_map2", "imdb_id", "1", "tvdb_id", "9", False)
+        tmdb_result = cache._query_map("tmdb_to_tvdb_map2", "1", "tmdb_id", "tvdb_id")
+        imdb_result = cache._query_map("imdb_to_tvdb_map2", "1", "imdb_id", "tvdb_id")
+        assert tmdb_result[0] == 2
+        assert imdb_result[0] == 9
+        assert "tmdb_to_tvdb_map2" in cache._map_cache
+        assert "imdb_to_tvdb_map2" in cache._map_cache
+
+    def test_public_wrapper_methods_still_return_correct_values_through_the_memo(self, tmp_path):
+        # End-to-end through the public query_*/update_* wrappers, not just the internal helpers.
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_to_tvdb_map(False, "50", "60")
+        first, expired1 = cache.query_tmdb_to_tvdb_map("50", tmdb=True)  # pyright: ignore[reportAssignmentType]
+        second, expired2 = cache.query_tmdb_to_tvdb_map("50", tmdb=True)  # pyright: ignore[reportAssignmentType]
+        assert first == second == 60
+        assert expired1 is expired2 is False
