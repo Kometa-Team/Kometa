@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Prevent Kometa from creating duplicate collections when Plex search misses an existing same-named collection by falling back to the full collection inventory before creating.
 - Refine the run summary output: group repeated overlay, Letterboxd/TMDb, Plex resolution-regex, and Trakt TVDb-miss messages; normalize logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
@@ -61,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip Recommendation Hub sorting on a targeted `--run-collections` run instead of resorting every pinned collection; a partial run only knows the `hub_priority` values of the collections it rebuilt, so treating the rest as unprioritised pushed them out of position. Also log the configured `hub_priority` value during attribute validation, matching other methods like `collection_order`.
 - Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
+- Fix the pyright CI baseline comparing file paths inconsistently across platforms.
 
 ### Changed
 
@@ -70,6 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
 - Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
 - Update requirements
+- Speed up large collection and library operations by batching per-item Plex label, genre, rating, and title writes into single requests instead of one per item.
+- Reduce redundant Plex reloads, template variable resolution passes, and log flushes during large runs.
+- Cache TMDb/TVDb/IMDb ID lookups and overlay images in memory for the life of a run instead of re-fetching them repeatedly.
 
 ### Security
 
