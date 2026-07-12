@@ -1084,9 +1084,13 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
-                    if library.hub_priorities or library.auto_sort_hubs:
+                    # Skip hub sorting on a targeted -rc run: only the requested collections are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
+                    if not config.requested_collections and (library.hub_priorities or library.auto_sort_hubs):
                         library.sort_collection_hubs(library.hub_priorities, library.auto_sort_hubs, library.hub_config_order, library.hub_title_sorts)
                         library.hub_priorities = {}
+                    elif config.requested_collections and (library.hub_priorities or library.auto_sort_hubs):
+                        logger.info("")
+                        logger.info("Skipping Hub Sorting because a targeted Collection run (-rc) does not have the full set of hub_priority values")
                 elif run_type == "metadata" and runs[run_type]:
                     time_start = datetime.now()
                     for images in library.images_files:

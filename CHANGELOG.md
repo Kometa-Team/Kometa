@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create the per-library `_backgrounds` and `_logos` image-map tables unconditionally so caches created before those tables existed self-heal on the next run, instead of raising `no such table: image_map_<n>_logos` and failing every collection that sets a logo.
 - Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
 - Asset folder would be reported as `None` when `asset_folders` was set to false
+- Skip Recommendation Hub sorting on a targeted `--run-collections` run instead of resorting every pinned collection; a partial run only knows the `hub_priority` values of the collections it rebuilt, so treating the rest as unprioritised pushed them out of position. Also log the configured `hub_priority` value during attribute validation, matching other methods like `collection_order`.
 
 ### Changed
 
