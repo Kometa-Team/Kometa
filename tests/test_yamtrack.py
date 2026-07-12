@@ -1,7 +1,7 @@
 import pytest
 
-from modules.yamtrack import YamTrack
 from modules.util import Failed
+from modules.yamtrack import YamTrack
 
 
 class FakeResponse:

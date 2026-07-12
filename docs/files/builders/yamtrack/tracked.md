@@ -36,15 +36,17 @@ collections:
         completed: false
 ```
 
-In this example, Kometa adds only items marked `Planning` or `In Progress`.
+In the above example, Kometa adds only items marked `Planning` or `In Progress`.
 
 ### Attributes
 
-| Attribute     | Description                             | Values         |
-|:--------------|:----------------------------------------|:---------------|
-| `movies`      | Movie statuses to include. Optional.    | Status block   |
-| `tv_shows`    | TV show statuses to include. Optional.  | Status block   |
-| `anime`       | Anime statuses to include. Optional. MyAnimeList IDs are resolved through Kometa's anime mappings, so both anime shows and anime movies can be found from the same YamTrack anime page. | Status block |
+| Attribute     | Description                            | Values        |
+|:--------------|:---------------------------------------|:--------------|
+| `movies`      | Movie statuses to include. Optional.   | Status block  |
+| `tv_shows`    | TV show statuses to include. Optional. | Status block  |
+| `anime`       | Anime statuses to include. Optional.   | Status block  |
+
+Note that `anime` can have both Movies and TV Shows in YamTrack. Kometa will filter only the media type that correlates with the library that is being run.
 
 Status blocks support these boolean attributes. When a status attribute is omitted from a present `movies`, `tv_shows`, or `anime` block, it defaults to `true`.
 
