@@ -166,7 +166,8 @@ class DataFile:
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
                     raise Failed(f"File Error: File does not exist {content_path}")
-            yaml = self.config.Requests.file_yaml(content_path, check_empty=True)
+            # This branch is a local, never-saved file load (Default/Repo-sourced collection/overlay/playlist content) - safe to use the faster read_only loader.
+            yaml = self.config.Requests.file_yaml(content_path, check_empty=True, read_only=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
             return yaml.data
@@ -182,7 +183,8 @@ class DataFile:
             if url:
                 yaml_content = self.config.Requests.get_yaml(yaml_path, check_empty=True)
             else:
-                yaml_content = self.config.Requests.file_yaml(yaml_path, check_empty=True)
+                # Local translation file load, never saved - safe to use the faster read_only loader.
+                yaml_content = self.config.Requests.file_yaml(yaml_path, check_empty=True, read_only=True)
             if "variables" in yaml_content.data and yaml_content.data["variables"]:
                 for var_key, var_value in yaml_content.data["variables"].items():
                     if lib_type in var_value:

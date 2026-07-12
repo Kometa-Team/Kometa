@@ -65,6 +65,49 @@ class TestYAML:
             YAML()
 
 
+class TestYAMLReadOnly:
+    """read_only=True swaps in ruamel's safe loader for files Kometa never save()s back out."""
+
+    def test_read_only_still_parses_content_correctly(self, tmp_path):
+        from modules.request import YAML
+
+        path = tmp_path / "data.yml"
+        path.write_text("collections:\n  Test:\n    key: value\n")
+        yaml = YAML(path=str(path), read_only=True)
+        assert yaml.data == {"collections": {"Test": {"key": "value"}}}
+
+    def test_read_only_save_raises_failed(self, tmp_path):
+        from modules.request import YAML
+        from modules.util import Failed
+
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        yaml = YAML(path=str(path), read_only=True)
+        with pytest.raises(Failed, match="read_only"):
+            yaml.save()
+
+    def test_read_only_input_data_save_raises_failed(self):
+        """input_data (no path) already can't write anywhere - read_only=True still guards it explicitly."""
+        from modules.request import YAML
+        from modules.util import Failed
+
+        yaml = YAML(input_data=b"a: 1\n", read_only=True)
+        with pytest.raises(Failed, match="read_only"):
+            yaml.save()
+
+    def test_default_not_read_only_can_still_save(self, tmp_path):
+        """Regression: the read_only change must not affect any existing read-write caller."""
+        from modules.request import YAML
+
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        yaml = YAML(path=str(path))
+        assert yaml.read_only is False
+        yaml.data["a"] = 2
+        yaml.save()
+        assert path.read_text() == "a: 2\n"
+
+
 def make_requests():
     """Bare Requests instance without hitting the network or cloudscraper."""
     from modules.request import Requests
@@ -358,6 +401,50 @@ class TestNoVerifySSL:
         scoped = req.create_session(verify_ssl=False)
         assert scoped.verify is False
         assert calls == []
+
+
+class _FakeYamlResponse:
+    def __init__(self, status_code=200, content=b"a: 1\n"):
+        self.status_code = status_code
+        self.content = content
+
+
+class TestGetYamlReadOnly:
+    """Requests.get_yaml() never sets a path (save() was already a no-op), so it always requests the fast read_only loader."""
+
+    def test_result_is_read_only(self):
+        req = make_requests()
+        req.get = MagicMock(return_value=_FakeYamlResponse())
+        result = req.get_yaml("https://example.com/data.yml")
+        assert result.read_only is True
+        assert result.data == {"a": 1}
+
+    def test_result_save_raises_failed(self):
+        from modules.util import Failed
+
+        req = make_requests()
+        req.get = MagicMock(return_value=_FakeYamlResponse())
+        result = req.get_yaml("https://example.com/data.yml")
+        with pytest.raises(Failed, match="read_only"):
+            result.save()
+
+
+class TestFileYamlReadOnlyPassthrough:
+    """Requests.file_yaml()'s read_only kwarg must reach the underlying YAML object unchanged in both directions."""
+
+    def test_read_only_true_passes_through(self, tmp_path):
+        req = make_requests()
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        result = req.file_yaml(str(path), read_only=True)
+        assert result.read_only is True
+
+    def test_default_is_not_read_only(self, tmp_path):
+        req = make_requests()
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        result = req.file_yaml(str(path))
+        assert result.read_only is False
 
     def test_global_opt_out_disables_warnings(self, monkeypatch):
         import urllib3
