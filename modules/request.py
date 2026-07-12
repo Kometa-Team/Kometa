@@ -202,6 +202,10 @@ class Requests:
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
         return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
 
+    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    def head(self, url, headers=None, header=None, language=None):
+        return self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode("utf-8")
 
