@@ -817,9 +817,7 @@ def start(attrs):
             logger.error(f"Report Error: {e}")
 
         if timings.registry.enabled:
-            # Silent by design - export() never calls logger, so meta.log is identical whether
-            # KOMETA_TIMINGS is set or not. Placed here (after Error Summary, before Finished Run)
-            # so the run is fully accounted for before diagnostics are flushed to their own files.
+            # Silent by design (export() never calls logger) and placed after Error Summary/before Finished Run so the run is fully accounted for first.
             timings.registry.export(logger.log_dir)
 
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
