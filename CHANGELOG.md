@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
 - Fix the pyright CI baseline comparing file paths inconsistently across platforms.
+- Fix `batchMultiEdits()` raising `BadRequest: Cannot mix items of different type` when a batched label/tag/rating write spanned more than one Plex object type (e.g. shows and seasons in the same overlay run).
 
 ### Changed
 

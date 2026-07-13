@@ -574,6 +574,20 @@ class TestBatchEditTags:
         assert mock_section.batchMultiEdits.call_count == 2
         assert plex._save_multi_edits_with_retry.call_count == 2
 
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: batchMultiEdits() raises BadRequest("Cannot mix items of different type") if a chunk isn't homogeneous.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_edit_tags(shows + seasons, "label", add_tags={"Overlay"})
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
+
 
 class TestBatchAddLabel:
     def test_noop_when_no_items(self):
@@ -605,6 +619,20 @@ class TestBatchAddLabel:
         assert mock_section.batchMultiEdits.call_count == 2
         assert plex._save_multi_edits_with_retry.call_count == 2
 
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: overlays.py accumulates overlay_label_items across a whole library run, which can span shows and seasons.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_add_label(shows + seasons, "Overlay")
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
+
 
 class TestBatchEditField:
     def test_noop_when_no_items(self):
@@ -635,6 +663,20 @@ class TestBatchEditField:
 
         assert mock_section.batchMultiEdits.call_count == 2
         assert plex._save_multi_edits_with_retry.call_count == 2
+
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: item_critic/audience/user_rating batches can span shows and seasons in the same library run.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_edit_field(shows + seasons, "rating", 5.5)
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
 
 
 # ═══════════════════════════════════════════════════════════════════════
