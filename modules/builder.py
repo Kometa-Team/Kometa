@@ -4753,54 +4753,20 @@ class CollectionBuilder:
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
         if "non_item_remove_label" in self.item_details:
-            remove_label = self.item_details["non_item_remove_label"]
             rk_compare = [item.ratingKey for item in self.items]
-            non_items = [ni for ni in self.library.search(label=remove_label, libtype=self.builder_level) if ni.ratingKey not in rk_compare]
-            for non_item in non_items:
-                logger.info(f"{non_item.title[:25]:<25} | Label | -{', -'.join(remove_label)}")
-            if non_items:
-                self.library.batch_edit_tags(non_items, "label", remove_tags=set(remove_label))
+            for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
+                if non_item.ratingKey not in rk_compare:
+                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
 
         tmdb_paths = []
         tvdb_paths = []
-        # Label/genre edits for every item are deferred and batched once after the loop instead of one edit_tags() call per item.
-        label_batch_items, label_add_union, label_remove_union = [], set(), set()
-        genre_batch_items, genre_add_union, genre_remove_union = [], set(), set()
-        # item_critic/audience/user_rating each set one fixed value for the whole collection, so items needing the change can be batched the same way.
-        rating_targets = {}
-        for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
-            if _rating in self.item_details:
-                rating_targets[plex.attribute_translation[_rating[5:]]] = (_rating, self.item_details[_rating])
-        rating_batch_items = {}
         for item in self.items:
             item = self.library.reload(item)
             current_labels = [la.tag for la in self.library.item_labels(item)]
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
-
-            if add_tags or remove_tags or sync_tags is not None:
-                _add, _remove = self.library.tag_diff(current_labels, add_tags, remove_tags, sync_tags)
-                if _add or _remove:
-                    label_batch_items.append(item)
-                    label_add_union.update(_add)
-                    label_remove_union.update(_remove)
-                    display = f"+{', +'.join(_add)}" if _add else ""
-                    display += ", " if _add and _remove else ""
-                    display += f"-{', -'.join(_remove)}" if _remove else ""
-                    logger.info(f"{item.title[:25]:<25} | Label | {display}")
-
-            if add_genres or remove_genres or sync_genres is not None:
-                current_genres = [ge.tag for ge in getattr(item, "genres", [])]
-                _add, _remove = self.library.tag_diff(current_genres, add_genres, remove_genres, sync_genres)
-                if _add or _remove:
-                    genre_batch_items.append(item)
-                    genre_add_union.update(_add)
-                    genre_remove_union.update(_remove)
-                    display = f"+{', +'.join(_add)}" if _add else ""
-                    display += ", " if _add and _remove else ""
-                    display += f"-{', -'.join(_remove)}" if _remove else ""
-                    logger.info(f"{item.title[:25]:<25} | Genre | {display}")
-
+            self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
             if "item_edition" in self.item_details and getattr(item, "editionTitle", None) != self.item_details["item_edition"]:
                 if hasattr(item, "editEditionTitle"):
                     try:
@@ -4810,13 +4776,13 @@ class CollectionBuilder:
                         logger.error(f"Plex Error: Edition update failed for {item.title}: {e}")
                 else:
                     logger.error(f"Plex Error: Edition cannot be edited on {item.title}")
-
-            for plex_attr, (_rating, target_rating) in rating_targets.items():
-                current_rating = getattr(item, plex_attr)
-                if current_rating != target_rating:
-                    rating_batch_items.setdefault(plex_attr, []).append(item)
-                    logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {target_rating}")
-
+            for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+                if _rating in self.item_details:
+                    plex_attr = plex.attribute_translation[_rating[5:]]
+                    current_rating = getattr(item, plex_attr)
+                    if current_rating != self.item_details[_rating]:
+                        item.editField(plex_attr, self.item_details[_rating])
+                        logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
             path = None
             if (
                 "item_radarr_tag" in self.item_details
@@ -4886,14 +4852,6 @@ class CollectionBuilder:
             if "item_analyze" in self.item_details:
                 logger.info(f"Executing Analyze on {item.title}")
                 item.analyze()
-
-        if label_batch_items:
-            self.library.batch_edit_tags(label_batch_items, "label", add_tags=label_add_union, remove_tags=label_remove_union)
-        if genre_batch_items:
-            self.library.batch_edit_tags(genre_batch_items, "genre", add_tags=genre_add_union, remove_tags=genre_remove_union)
-        for plex_attr, batch_items in rating_batch_items.items():
-            if batch_items:
-                self.library.batch_edit_field(batch_items, plex_attr, rating_targets[plex_attr][1])
 
         if self.library.Radarr and tmdb_paths:
             try:
