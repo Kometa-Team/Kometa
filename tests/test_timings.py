@@ -239,10 +239,11 @@ def test_export_writes_json_and_csv_that_round_trip(enabled_registry, tmp_path):
     enabled_registry.record("network", 0.75, source="trakt", num_bytes=100)
     enabled_registry.set_meta(kometa_version="2.4.4-build35", git_sha="abc123")
 
-    json_path, csv_path = enabled_registry.export(str(tmp_path))
+    json_path, csv_path, summary_path = enabled_registry.export(str(tmp_path))
 
     assert os.path.exists(json_path)
     assert os.path.exists(csv_path)
+    assert os.path.exists(summary_path)
 
     with open(json_path, encoding="utf-8") as fp:
         payload = json.load(fp)
@@ -258,11 +259,17 @@ def test_export_writes_json_and_csv_that_round_trip(enabled_registry, tmp_path):
     assert csv_lines[0] == "library,collection,phase,source,seconds,calls,bytes,mean_seconds"
     assert len(csv_lines) == 1 + len(payload["buckets"])
 
+    with open(summary_path, encoding="utf-8") as fp:
+        summary_text = fp.read()
+    assert "kometa_version: 2.4.4-build35" in summary_text
+    assert "Timings Summary" in summary_text
+
 
 def test_export_is_noop_when_disabled(disabled_registry, tmp_path):
-    json_path, csv_path = disabled_registry.export(str(tmp_path))
+    json_path, csv_path, summary_path = disabled_registry.export(str(tmp_path))
     assert json_path is None
     assert csv_path is None
+    assert summary_path is None
     assert os.listdir(tmp_path) == []
 
 

@@ -191,13 +191,17 @@ class TimingRegistry:
         return rates
 
     def export(self, logs_dir):
-        """Write logs/timings-<timestamp>.json and .csv. Returns (json_path, csv_path), or (None, None) if disabled."""
+        """Write logs/timings-<timestamp>.json, .csv, and a plain-text -summary.log. Returns
+        (json_path, csv_path, summary_path), or (None, None, None) if disabled. Deliberately never
+        touches meta.log/logger - these are the only files instrumentation is allowed to write to,
+        so a normal run's meta.log is byte-for-byte identical whether KOMETA_TIMINGS is set or not."""
         if not self.enabled:
-            return None, None
+            return None, None, None
         os.makedirs(logs_dir, exist_ok=True)
         stamp = time.strftime("%Y%m%d-%H%M%S")
         json_path = os.path.join(logs_dir, f"timings-{stamp}.json")
         csv_path = os.path.join(logs_dir, f"timings-{stamp}.csv")
+        summary_path = os.path.join(logs_dir, f"timings-{stamp}-summary.log")
 
         buckets_out = []
         for (library, collection, phase, source), data in self.buckets.items():
@@ -230,10 +234,22 @@ class TimingRegistry:
             for row in buckets_out:
                 writer.writerow([row["library"], row["collection"], row["phase"], row["source"], row["seconds"], row["calls"], row["bytes"], row["mean_seconds"]])
 
-        return json_path, csv_path
+        with open(summary_path, "w", encoding="utf-8") as fp:
+            fp.write(f"Kometa timings summary - {stamp}\n")
+            for key, value in self.meta.items():
+                fp.write(f"{key}: {value}\n")
+            fp.write(f"total_wall_seconds: {round(self.total_wall_time(), 3)}\n")
+            fp.write(f"timings_json: {json_path}\n")
+            fp.write(f"timings_csv: {csv_path}\n")
+            fp.write("\n")
+            for line in self.summary_lines():
+                fp.write(f"{line}\n")
+
+        return json_path, csv_path, summary_path
 
     def summary_lines(self, top_n=10):
-        """Compact human-readable summary for the end-of-run log Summary block."""
+        """Compact human-readable summary written to the standalone timings-*-summary.log file
+        (never to meta.log/logger - see export())."""
         lines = ["Timings Summary (top buckets by total time):"]
         for library, collection, phase, source, seconds, calls, num_bytes in self.top_buckets(top_n):
             label = " / ".join(str(v) for v in (library, collection, phase, source) if v)
