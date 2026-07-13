@@ -16,7 +16,7 @@ all_auto = ["genre", "number", "custom"]
 ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio", "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
-    "Show": ["network", "origin_country", "episode_year"] + all_auto + ms_auto,
+    "Show": ["edition", "network", "origin_country", "episode_year"] + all_auto + ms_auto,
     "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
     "Video": ["country", "content_rating"] + all_auto,
 }
@@ -1708,7 +1708,7 @@ class MetadataFile(DataFile):
                 blank_edition = False
                 edition_titles = []
                 edition_contains = []
-                if self.library.is_movie:
+                if self.library.is_movie or self.library.is_show:
                     if "blank_edition" in match_methods or "blank_edition" in methods:
                         logger.debug("")
                         logger.debug("Validating Method: blank_edition")
@@ -1923,7 +1923,7 @@ class MetadataFile(DataFile):
 
         add_edit("title", item, meta, methods)
         add_edit("sort_title", item, meta, methods, key="titleSort")
-        if self.library.is_movie:
+        if self.library.is_movie or self.library.is_show:
             if "edition" in methods and not self.library.plex_pass:
                 logger.error("Plex Error: Plex Pass is Required to edit Edition")
             else:

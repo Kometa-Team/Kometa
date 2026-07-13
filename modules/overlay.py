@@ -78,11 +78,10 @@ types_for_var = {
     "movie_show_season": ["original_title", "trakt_user_rating"],
     "show_season_artist_album": ["total_runtime"],
     "movie_show_episode": ["audience_rating", "content_rating"],
-    "movie_show": ["anidb_average_rating", "anidb_rating", "anidb_score_rating", "mal_rating"],
+    "movie_show": ["anidb_average_rating", "anidb_rating", "anidb_score_rating", "mal_rating", "edition"],
     "movie_episode": ["bitrate", "versions"],
     "season_episode": ["season_number", "show_title"],
     "show_season": ["episode_count"],
-    "movie": ["edition"],
     "episode": ["episode_number", "season_title"],
 }
 var_mods = {

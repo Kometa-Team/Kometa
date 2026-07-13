@@ -167,6 +167,7 @@ show_translation = {
     "addedAt": "show.addedAt",
     "viewCount": "show.viewCount",
     "lastViewedAt": "show.lastViewedAt",
+    "editionTitle": "show.editionTitle",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
     "dovi": "episode.dovi",
@@ -388,12 +389,7 @@ movie_only_searches = [
     "duration.gt",
     "duration.gte",
     "duration.lt",
-    "duration.lte" "edition",
-    "edition.not",
-    "edition.is",
-    "edition.isnot",
-    "edition.begins",
-    "edition.ends",
+    "duration.lte",
 ]
 show_only_searches = [
     "network",
@@ -1256,7 +1252,12 @@ class Plex(Library):
     def users(self):
         if not self._users:
             users = []
-            for user in self.account.users():
+            account = self.account
+            if account is None:
+                return users
+            for user in account.users():
+                if user is None:
+                    continue
                 if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
                     users.append(user.title)
             self._users = users
@@ -2002,9 +2003,9 @@ class Plex(Library):
         if not item_asset_directory:
             if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
                 if isinstance(item, (Episode, Season)):
-                    starting = item.show()
-                elif isinstance(item, (Album, Track)):
-                    starting = item.artist()
+                    starting = getattr(item, "show")()
+                elif isinstance(item, Album):
+                    starting = getattr(item, "artist")()
                 else:
                     starting = item
                 if not starting.locations:  # type: ignore[union-attr]

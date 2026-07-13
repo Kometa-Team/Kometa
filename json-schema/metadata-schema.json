@@ -237,21 +237,21 @@
                     ]
                 },
                 "edition": {
-                    "description": "Match by exact edition string (Movies only, requires Plex Pass).",
+                    "description": "Match by exact edition string (Movies/Shows, requires Plex Pass).",
                     "oneOf": [
                         { "type": "string" },
                         { "type": "array", "items": { "type": "string" } }
                     ]
                 },
                 "edition_contains": {
-                    "description": "Match where edition contains the given string (Movies only, requires Plex Pass).",
+                    "description": "Match where edition contains the given string (Movies/Shows, requires Plex Pass).",
                     "oneOf": [
                         { "type": "string" },
                         { "type": "array", "items": { "type": "string" } }
                     ]
                 },
                 "blank_edition": {
-                    "description": "Match movies that have no edition (requires Plex Pass).",
+                    "description": "Match items that have no edition (requires Plex Pass).",
                     "type": "boolean"
                 }
             }
