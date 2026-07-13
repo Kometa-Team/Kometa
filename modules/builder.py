@@ -4853,7 +4853,6 @@ class CollectionBuilder:
                 logger.info(f"Executing Analyze on {item.title}")
                 item.analyze()
 
-
         if self.library.Radarr and tmdb_paths:
             try:
                 if "item_radarr_tag" in self.item_details:
