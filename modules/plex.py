@@ -1424,19 +1424,33 @@ class Plex(Library):
                 total_sent += len(chunk)
             logger.exorcise()
 
+    @staticmethod
+    def _group_items_by_type(items):
+        # batchMultiEdits() requires every item in one call to share the same Plex object type (mixed show/season raises BadRequest), so group before chunking.
+        groups = {}
+        order = []
+        for item in items:
+            item_type = getattr(item, "type", None)
+            if item_type not in groups:
+                groups[item_type] = []
+                order.append(item_type)
+            groups[item_type].append(item)
+        return [groups[t] for t in order]
+
     def batch_add_label(self, items, label):
         # Batches an additive-only label across items via batchMultiEdits, same mechanism as alter_collection.
         if not items:
             return
         batch_size = 100
         total_sent = 0
-        for i in range(0, len(items), batch_size):
-            chunk = items[i : i + batch_size]
-            logger.ghost(f"Adding label '{label}' to {len(chunk)} items [{total_sent} so far]")
-            self.Plex.batchMultiEdits(chunk)
-            self.Plex.addLabel(label)
-            self._save_multi_edits_with_retry()
-            total_sent += len(chunk)
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Adding label '{label}' to {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.addLabel(label)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
         logger.exorcise()
 
     @staticmethod
@@ -1457,23 +1471,24 @@ class Plex(Library):
             raise NotImplementedError(f"batch_edit_tags: unsupported attr '{attr}' (only 'label'/'genre' verified so far)")
         batch_size = 100
         total_sent = 0
-        for i in range(0, len(items), batch_size):
-            chunk = items[i : i + batch_size]
-            logger.ghost(f"Batch editing {attr} for {len(chunk)} items [{total_sent} so far]")
-            # addLabel/addGenre are only accessible after batchMultiEdits() is called, so access them inline here, not cached earlier.
-            self.Plex.batchMultiEdits(chunk)
-            if add_tags:
-                if attr == "label":
-                    self.Plex.addLabel(list(add_tags), locked=locked)
-                else:
-                    self.Plex.addGenre(list(add_tags), locked=locked)
-            if remove_tags:
-                if attr == "label":
-                    self.Plex.removeLabel(list(remove_tags), locked=locked)
-                else:
-                    self.Plex.removeGenre(list(remove_tags), locked=locked)
-            self._save_multi_edits_with_retry()
-            total_sent += len(chunk)
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing {attr} for {len(chunk)} items [{total_sent} so far]")
+                # addLabel/addGenre are only accessible after batchMultiEdits() is called, so access them inline here, not cached earlier.
+                self.Plex.batchMultiEdits(chunk)
+                if add_tags:
+                    if attr == "label":
+                        self.Plex.addLabel(list(add_tags), locked=locked)
+                    else:
+                        self.Plex.addGenre(list(add_tags), locked=locked)
+                if remove_tags:
+                    if attr == "label":
+                        self.Plex.removeLabel(list(remove_tags), locked=locked)
+                    else:
+                        self.Plex.removeGenre(list(remove_tags), locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
         logger.exorcise()
 
     def batch_edit_field(self, items, field, value, locked=True):
@@ -1482,13 +1497,14 @@ class Plex(Library):
             return
         batch_size = 100
         total_sent = 0
-        for i in range(0, len(items), batch_size):
-            chunk = items[i : i + batch_size]
-            logger.ghost(f"Batch editing '{field}' for {len(chunk)} items [{total_sent} so far]")
-            self.Plex.batchMultiEdits(chunk)
-            self.Plex.editField(field, value, locked=locked)
-            self._save_multi_edits_with_retry()
-            total_sent += len(chunk)
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing '{field}' for {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.editField(field, value, locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
         logger.exorcise()
 
     def move_item(self, collection, item, after=None):

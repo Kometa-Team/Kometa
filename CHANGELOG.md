@@ -92,6 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
 - Fix the default AU content-rating overlay so the MA15+ badge matches both Plex rating spellings: canonical `au/MA 15+` from explicit TMDb Australian certifications and Plex-derived `au/MA15+` for titles without an AU certification.
 - Fix "Movies Added" report entries missing release year; titles now match the "Movies Missing"/"Movies Removed" format e.g. `The Grapes of Wrath (1939)`.
+- Fix `batchMultiEdits()` raising `BadRequest: Cannot mix items of different type` when a batched label/tag/rating write spanned more than one Plex object type (e.g. shows and seasons in the same overlay run).
 
 ### Changed
 
