@@ -1765,7 +1765,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_biography":
             self.summaries[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
         elif method_name == "tvdb_summary":
-            self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
+            try:
+                self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "tvdb_description":
             summary, _ = self.config.TVDb.get_list_description(method_data)
             if summary:
@@ -1799,7 +1804,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_profile":
             self.posters[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).profile_url
         elif method_name == "tvdb_poster":
-            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
+            try:
+                self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "file_poster":
             if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
@@ -1816,7 +1826,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, "TMDb ID"), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
-            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
+            try:
+                self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "file_background":
             if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
@@ -3406,13 +3421,18 @@ class CollectionBuilder:
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
-                item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
-                if item.summary:
-                    self.summaries[method_name] = item.summary
-                if item.background_url:
-                    self.backgrounds[method_name] = item.background_url
-                if item.poster_url:
-                    self.posters[method_name] = item.poster_url
+                try:
+                    item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
+                    if item.summary:
+                        self.summaries[method_name] = item.summary
+                    if item.background_url:
+                        self.backgrounds[method_name] = item.background_url
+                    if item.poster_url:
+                        self.posters[method_name] = item.poster_url
+                except tvdb.NotFound as e:
+                    logger.debug(e)
+                except tvdb.Unavailable as e:
+                    logger.warning(e)
             elif method_name.startswith("tvdb_list"):
                 description, poster = self.config.TVDb.get_list_description(values[0])
                 if description:
@@ -4493,6 +4513,9 @@ class CollectionBuilder:
                             except tvdb.NotFound as e:
                                 logger.debug(e)
                                 or_result = False
+                            except tvdb.Unavailable as e:
+                                logger.warning(e)
+                                or_result = False
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
@@ -4633,10 +4656,12 @@ class CollectionBuilder:
                 try:
                     title = self.config.TVDb.get_tvdb_obj(missing_id).title
                 except tvdb.NotFound as e:
-                    # TVDb ID is stale (e.g. TMDb still references a series that no
-                    # longer exists on TVDb). Not user-actionable; log at debug to
-                    # avoid spamming logs / triggering webhook error notifications.
+                    # TVDb ID is stale (e.g. TMDb still points at a series TVDb no longer has); not user-actionable, log quietly
                     logger.debug(e)
+                    continue
+                except tvdb.Unavailable as e:
+                    # TVDb didn't return usable content in time; not a confirmed absence, may resolve on a later run
+                    logger.warning(e)
                     continue
                 except Failed as e:
                     logger.error(e)
@@ -5409,6 +5434,9 @@ class CollectionBuilder:
                         title = self.config.TVDb.get_tvdb_obj(missing_id).title
                     except tvdb.NotFound as e:
                         logger.debug(e)
+                        continue
+                    except tvdb.Unavailable as e:
+                        logger.warning(e)
                         continue
                     except Failed as e:
                         logger.error(e)
