@@ -618,15 +618,6 @@ def start(attrs):
             except OSError as e:
                 logger.error(f"Timings Error: Could not hash config file: {e}")
             timings.registry.set_meta(start_time=str(start_time), end_time=str(end_time), run_time=run_time)
-            timings_json, timings_csv = timings.registry.export(logger.log_dir)
-            if timings_json:
-                logger.info("")
-                logger.separator("Timings", space=False, border=False)
-                logger.info("")
-                logger.info(f"Timings JSON: {timings_json}")
-                logger.info(f"Timings CSV: {timings_csv}")
-                for summary_line in timings.registry.summary_lines():
-                    logger.info(summary_line)
         if config:
             try:
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
@@ -836,6 +827,12 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
+
+        if timings.registry.enabled:
+            # Silent by design - export() never calls logger, so meta.log is identical whether
+            # KOMETA_TIMINGS is set or not. Placed here (after Error Summary, before Finished Run)
+            # so the run is fully accounted for before diagnostics are flushed to their own files.
+            timings.registry.export(logger.log_dir)
 
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
         end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
