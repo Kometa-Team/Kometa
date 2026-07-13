@@ -143,14 +143,14 @@ class Requests:
         cache_key = (url, validate_only)
         if cache_key in self._image_url_cache:
             return self._image_url_cache[cache_key]
-        active_session = session if session is not None else self.session
-        request_headers = get_header(None, True, None)
+        # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
         with timings.tag_context("image"):
             try:
                 if validate_only:
-                    response = active_session.head(url, headers=request_headers, timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+                    # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
+                    response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
                 else:
-                    response = active_session.get(url, headers=request_headers, timeout=DEFAULT_TIMEOUT)
+                    response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
             except RequestException as e:
                 # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
                 raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
