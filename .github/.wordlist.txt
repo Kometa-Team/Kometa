@@ -30,6 +30,7 @@ AST
 atmos
 atres
 avenir
+Babygirl
 backoff
 bafta
 bambara
@@ -54,6 +55,7 @@ burkasaurusrex
 bw
 cappella
 cd
+césar
 changelog
 chazlarson
 CLI
@@ -83,10 +85,9 @@ crunchyroll
 CSM
 customizable
 customizations
-césar
 d'or
-DBRepair
 dbader
+DBRepair
 de
 death
 deathday
@@ -102,6 +103,7 @@ dir
 diskstation
 disneytoon
 dk
+DNS
 dockerfile
 dockerfiles
 dockerhub
@@ -213,6 +215,7 @@ kometautils
 kubernetes
 kuesel
 launchd
+Lavagirl
 letterboxd
 letterboxdpy
 LF
@@ -384,6 +387,7 @@ sdtv
 semver
 setuptools
 sha
+Sharkboy
 shawshank
 shoutout
 Simkl

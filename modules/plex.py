@@ -1268,6 +1268,9 @@ class Plex(Library):
             self.delete(self.PlexServer.switchUser(user).playlist(title))
         except NotFound as e:
             raise Failed(e)
+        except (ConnectionError, ConnectTimeout, ReadTimeout) as e:
+            # switchUser() calls plex.tv directly; a transient DNS/network blip there shouldn't crash the whole playlist sync
+            raise Failed(f"Plex Error: Unable to reach plex.tv to sync playlist for user {user}: {e}")
 
     @property
     def account(self):
