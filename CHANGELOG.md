@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
-
 - `modules/tvdb.py`: add a distinct `Unavailable` exception for TVDb requests that exhaust their retry budget without ever returning usable content (e.g. repeated HTTP 202/empty-body "still generating" responses), separate from `NotFound`'s definitive 4xx. Previously both were re-raised with the identical "No Series/Movie found" message, so a confirmed-dead TVDb ID and a transient TVDb hiccup were indistinguishable in the log. All `get_tvdb_obj()` call sites (`modules/builder.py`, `modules/operations.py`) now log `NotFound` at debug (unchanged), `Unavailable` at warning (previously logged at error via the generic `Failed` handler), and any other `Failed` at error (unchanged).
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Prevent Kometa from creating duplicate collections when Plex search misses an existing same-named collection by falling back to the full collection inventory before creating.
@@ -64,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skip Recommendation Hub sorting on a targeted `--run-collections` run instead of resorting every pinned collection; a partial run only knows the `hub_priority` values of the collections it rebuilt, so treating the rest as unprioritised pushed them out of position. Also log the configured `hub_priority` value during attribute validation, matching other methods like `collection_order`.
 - Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
+- Fix the default AU content-rating overlay so the MA15+ badge matches both Plex rating spellings: canonical `au/MA 15+` from explicit TMDb Australian certifications and Plex-derived `au/MA15+` for titles without an AU certification.
 
 ### Changed
 

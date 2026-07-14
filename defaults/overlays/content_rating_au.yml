@@ -64,17 +64,17 @@ overlays:
   ma:
     template:
       - name: standard
-      - {name: cr_au, rating: "au/MA15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
+      - {name: cr_au, rating: "au/MA15+, au/MA 15+, de/16, no/16, A-17, TVMA, TV-MA, R, 16, 17, M/PG"}
 
   r:
     template:
       - name: standard
-      - {name: cr_au, rating: "au/R 18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
+      - {name: cr_au, rating: "au/R 18+, au/R18+, de/18, gb/18, M, 18, R - 17+ (violence & profanity), no/18, R18, gb/X, X, NC-17, R+ - Mild Nudity, Rx - Hentai"}
 
   x:
     template:
       - name: standard
-      - {name: cr_au, rating: "au/X 18+, de/BPjM Restricted, BPjM Restricted, gb/R18"}
+      - {name: cr_au, rating: "au/X 18+, au/X18+, de/BPjM Restricted, BPjM Restricted, gb/R18"}
   nr:
     template:
       - {name: standard, key: nr}
