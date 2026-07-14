@@ -186,8 +186,8 @@ playlists:
 
 One playlist with a name and a [Builder](../../files/builders/overview.md) that produces the list of items to put in the playlist.
 
-Kometa defaults to pulling items for the playlist from two libraries with specific names: `Movies` and `TV Shows`. 
-If you want to pull from different libraries [if, for example your libraries are *not* named `Movies` and `TV Shows`], you can specify that in the playlist file.
+If `libraries` is not specified, Kometa pulls items for the playlist from every library processed as part of the run.
+If you want to pull from only specific libraries, you can specify them in the playlist file.
 
 ```yaml
 playlists: 

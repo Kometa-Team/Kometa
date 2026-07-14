@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.exceptions import BadRequest
 from requests.exceptions import ReadTimeout
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
@@ -291,6 +292,31 @@ class TestSaveMultiEditsRetry:
         sleep_mock.assert_any_call(5)
         assert any("attempt 1 timed out" in message for message in plex_module.logger.info_messages)
         assert any("attempt 2 timed out" in message for message in plex_module.logger.info_messages)
+
+    def test_restores_batch_state_between_timeouts(self, monkeypatch):
+        import modules.plex as plex_module
+
+        plex = make_plex()
+        plex.Plex._edits = {"items": [MagicMock()], "title.value": "New Title"}
+        call_count = 0
+
+        def save_multi_edits():
+            nonlocal call_count
+            call_count += 1
+            if plex.Plex._edits is None:
+                raise BadRequest("Batch multi-editing mode not enabled. Must call `batchMultiEdits()` first.")
+            plex.Plex._edits = None
+            if call_count == 1:
+                raise ReadTimeout("timeout-1")
+
+        plex.Plex.saveMultiEdits.side_effect = save_multi_edits
+        sleep_mock = MagicMock()
+        monkeypatch.setattr(plex_module.time, "sleep", sleep_mock)
+
+        plex._save_multi_edits_with_retry()
+
+        assert call_count == 2
+        assert plex.Plex._edits is None
 
     def test_raises_after_third_timeout(self, monkeypatch):
         import modules.plex as plex_module

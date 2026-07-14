@@ -34,6 +34,7 @@ from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
+from modules.yamtrack import YamTrack
 
 logger = util.logger
 
@@ -1205,6 +1206,28 @@ class ConfigFile:
             self.Simkl = Simkl(self.Requests, self.Cache)
             self.TextFile = TextFile(self.Requests)
             self.Ergast = Ergast(self.Requests, self.Cache)
+            self.YamTrack = None
+            if "yamtrack" in self.data:
+                logger.info("Connecting to YamTrack...")
+                try:
+                    yamtrack_obj = YamTrack(
+                        self.Requests,
+                        {
+                            "url": check_for_attribute(self.data, "url", parent="yamtrack", throw=True),
+                            "username": check_for_attribute(self.data, "username", parent="yamtrack", throw=True),
+                            "password": check_for_attribute(self.data, "password", parent="yamtrack", throw=True),
+                        },
+                    )
+                    yamtrack_obj.test_connection()
+                    self.YamTrack = yamtrack_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"YamTrack Connection {'Failed' if self.YamTrack is None else 'Successful'}")
+            else:
+                logger.info("yamtrack attribute not found")
 
             logger.separator()
 
@@ -1281,6 +1304,7 @@ class ConfigFile:
             }
 
             self.libraries = []
+            self.run_libraries = []
             libs = check_for_attribute(self.data, "libraries", throw=True)
 
             for library_name, lib in libs.items():

@@ -1200,7 +1200,7 @@ requirements of creating the collection.
 
     **`data` Value:** Not Used
 
-    **Valid Library Types:** Movies
+    **Valid Library Types:** Movies/Shows
     
     **Key Values:** Edition
 

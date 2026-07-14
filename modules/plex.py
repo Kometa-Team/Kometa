@@ -167,6 +167,7 @@ show_translation = {
     "addedAt": "show.addedAt",
     "viewCount": "show.viewCount",
     "lastViewedAt": "show.lastViewedAt",
+    "editionTitle": "show.editionTitle",
     "resolution": "episode.resolution",
     "hdr": "episode.hdr",
     "dovi": "episode.dovi",
@@ -388,12 +389,7 @@ movie_only_searches = [
     "duration.gt",
     "duration.gte",
     "duration.lt",
-    "duration.lte" "edition",
-    "edition.not",
-    "edition.is",
-    "edition.isnot",
-    "edition.begins",
-    "edition.ends",
+    "duration.lte",
 ]
 show_only_searches = [
     "network",
@@ -1256,7 +1252,12 @@ class Plex(Library):
     def users(self):
         if not self._users:
             users = []
-            for user in self.account.users():
+            account = self.account
+            if account is None:
+                return users
+            for user in account.users():
+                if user is None:
+                    continue
                 if self.PlexServer.machineIdentifier in [s.machineIdentifier for s in user.servers]:
                     users.append(user.title)
             self._users = users
@@ -1267,6 +1268,9 @@ class Plex(Library):
             self.delete(self.PlexServer.switchUser(user).playlist(title))
         except NotFound as e:
             raise Failed(e)
+        except (ConnectionError, ConnectTimeout, ReadTimeout) as e:
+            # switchUser() calls plex.tv directly; a transient DNS/network blip there shouldn't crash the whole playlist sync
+            raise Failed(f"Plex Error: Unable to reach plex.tv to sync playlist for user {user}: {e}")
 
     @property
     def account(self):
@@ -1307,7 +1311,16 @@ class Plex(Library):
         sleep=_plex_timeout_sleep,
     )
     def _save_multi_edits_with_retry(self):
-        self.Plex.saveMultiEdits()
+        pending_edits = getattr(self.Plex, "_edits", None)
+        edits = pending_edits.copy() if isinstance(pending_edits, dict) else None
+        try:
+            self.Plex.saveMultiEdits()
+        except (ConnectTimeout, ReadTimeout):
+            # PlexAPI clears its internal batch state before the request is sent.
+            # If the save times out, restore the pending edits so a retry can reuse them.
+            if edits is not None:
+                self.Plex._edits = edits
+            raise
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
         maintain_status = True
@@ -1635,7 +1648,7 @@ class Plex(Library):
                 ids.extend([(t_id, "tmdb") for t_id in tmdb_id])
         return ids
 
-    def get_rating_keys(self, method, data, is_playlist=False):
+    def get_rating_keys(self, method, data, is_playlist=False, display=True):
         items = []
         if method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
@@ -1652,7 +1665,8 @@ class Plex(Library):
                 except NotFound:
                     logger.warning(f"Plex Warning: {item.title} has no Season 1 Episode 1 ")
         elif method == "plex_search":
-            logger.info(f"Processing {data[1]}")
+            if display:
+                logger.info(f"Processing {data[1]}")
             logger.trace(data[2])
             items = self.fetchItems(data[2])
         elif method == "plex_collectionless":
@@ -1878,6 +1892,8 @@ class Plex(Library):
                 posters["asset_directory"] = asset_poster
             if asset_background:
                 backgrounds["asset_directory"] = asset_background
+            if asset_logo:
+                logos["asset_directory"] = asset_logo
             if asset_square_art:
                 square_arts["asset_directory"] = asset_square_art
             if asset_location is None or initial:
@@ -1909,7 +1925,7 @@ class Plex(Library):
                 logger.info(f"Item: {name} has an Overlay and will be updated when overlays are run")
             elif not poster and not background and not logo and not square_art and self.show_missing_assets:
                 searched_directory = item_dir or "', '".join(os.path.abspath(ad) for ad in configured_asset_directories)
-                logger.warning(f"Asset Warning: No poster or background found in the assets folder '{searched_directory}'")
+                logger.warning(f"Asset Warning: No supported artwork found in the assets folder '{searched_directory}'")
         except Failed as e:
             if self.show_missing_assets:
                 logger.warning(e)
@@ -1990,9 +2006,9 @@ class Plex(Library):
         if not item_asset_directory:
             if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
                 if isinstance(item, (Episode, Season)):
-                    starting = item.show()
-                elif isinstance(item, (Album, Track)):
-                    starting = item.artist()
+                    starting = getattr(item, "show")()
+                elif isinstance(item, Album):
+                    starting = getattr(item, "artist")()
                 else:
                     starting = item
                 if not starting.locations:  # type: ignore[union-attr]
