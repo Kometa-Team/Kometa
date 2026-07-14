@@ -71,7 +71,7 @@ collections:
       key: sight_sound
     template:
       - name: letterboxd_list
-        user: bfi
+        user: sightsoundmag
         list: sight-and-sounds-greatest-films-of-all-time
       - name: shared
         translation_key: sight_and_sound_greatest_films

@@ -6,8 +6,6 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import modules.builder  # noqa: F401
-
 
 class TestMyLogger:
     @pytest.fixture
@@ -72,3 +70,14 @@ class TestSecretRedaction:
         logger.secret("abc123")
         logger.secret("abc123")
         assert logger.secrets.count("abc123") == 1
+
+
+class TestTracebackSuppression:
+    def test_known_not_found_error_is_suppressed(self, capsys):
+        from modules.logs import _suppress_traceback_hook
+
+        _suppress_traceback_hook(RuntimeError, RuntimeError("Plex Error: No Items found in Plex"), None)
+
+        captured = capsys.readouterr()
+        assert "[WARNING] RuntimeError: Plex Error: No Items found in Plex" in captured.err
+        assert "Traceback" not in captured.err

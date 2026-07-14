@@ -45,7 +45,7 @@ location mapped as `config` in my setup.
     ```
 
     1. This must appear once and **only once** in any Playlist file
-    2. These libraries must exist in your Plex library
+    2. These libraries must exist in your Plex library. If `libraries` is not specified, the playlist uses every library processed as part of the run.
     3. Leave this blank if you only only want the Playlist to sync to the server owner's account
 
 This file would then be defined in my `config.yml` file as a `playlist_files` item:
@@ -121,7 +121,7 @@ NOTE: these lists are references for collections and playlists, not everything a
 |:------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|
 | `delete_playlist` | Will delete this playlist for the users defined by sync_to_users.<br>**Options:** `true` or `false`                                                                                                                                                                                                                                                                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `exclude_users`   | Determine which Users will be excluded from having the playlist synced.<br>This will override the global [`playlist_excude_users` Setting](../config/settings.md).<br>**Options:** Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of users, `all` for every user who has server access, or leave blank for just the server owner. |  :fontawesome-solid-circle-xmark:{ .red }  |
-| `libraries`       | Determine which libraries the playlist will be built from.<br>**Options:** Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/overview.md).                                                                          | :fontawesome-solid-circle-check:{ .green } |
+| `libraries`       | Determine which libraries the playlist will be built from.<br>**Default:** All libraries processed as part of the run.<br>**Options:** Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of library mapping names defined in the `libraries` attribute in the base of your [Configuration File](../config/overview.md).                                                                          |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `sync_to_users`   | Determine which Users have the playlist synced.<br>This will override the global [`playlist_sync_to_users` Setting](../config/settings.md).<br>**Options:** Comma-separated string or list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of users, `all` for every user who has server access, or leave blank for just the server owner.                        |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 * Any defined playlist will be always be visible by The Plex Media Server owner, so it doesn't need to be defined within `sync_to_users`.
@@ -145,3 +145,5 @@ playlists:
     libraries: Movies, TV Shows
     trakt_list: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
 ``` 
+
+If `libraries` is omitted from a playlist, Kometa uses every library processed as part of the run. Defining `libraries` on the playlist overrides that default for that playlist only.

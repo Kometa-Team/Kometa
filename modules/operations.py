@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
-from modules import anidb, plex, util
+from modules import anidb, plex, tvdb, util
 from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
@@ -357,6 +357,10 @@ class Operations:
                         if item_tvdb_id:
                             try:
                                 _tvdb_obj = self.config.TVDb.get_tvdb_obj(item_tvdb_id, is_movie=self.library.is_movie)
+                            except tvdb.NotFound as err:
+                                logger.debug(str(err))
+                            except tvdb.Unavailable as err:
+                                logger.warning(str(err))
                             except Failed as err:
                                 logger.error(str(err))
                         else:

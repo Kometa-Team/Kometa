@@ -453,7 +453,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | Variable         | Description                | Item Types                                  |
 |:-----------------|:---------------------------|:--------------------------------------------|
 | `content_rating` | Item's Content Rating      | `Movies`, `Shows`, or `Episodes`            |
-| `edition`        | Item's Edition             | `Movies`                                    |
+| `edition`        | Item's Edition             | `Movies` or `Shows`                        |
 | `original_title` | Item's Original Title      | `Movies` or `Shows`                         |
 | `season_title`   | Item's Parent Season Title | `Episodes`                                  |
 | `show_title`     | Item's Parent Show Title   | `Seasons` or `Episodes`                     |

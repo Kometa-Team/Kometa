@@ -157,8 +157,8 @@ Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the 
     |:---------------------------------|:-----------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME/poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME/background.ext`, `art.ext`, `backdrop.ext`, or `fanart.ext` |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext` or `clearlogo.ext` |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext`, `square_art.ext`, `squareArt.ext`, or `backgroundSquare.ext` |
+    | Collection/Playlist/Movie/Show logo       | `<path_to_assets>/ASSET_NAME/logo.ext` or `clearlogo.ext` |
+    | Collection/Playlist/Movie/Show square art | `<path_to_assets>/ASSET_NAME/square.ext`, `square_art.ext`, `squareArt.ext`, or `backgroundSquare.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME/Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME/Season##_background.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME/S##E##.ext`                   |
@@ -170,8 +170,8 @@ Numbered variants such as `poster-2.png` or `fanart-2.tbn` are accepted for the 
     |:---------------------------------|:-----------------------------------------------------------|
     | Collection/Movie/Show poster     | `<path_to_assets>/ASSET_NAME.ext`                         |
     | Collection/Movie/Show background | `<path_to_assets>/ASSET_NAME_background.ext`, `ASSET_NAME-art.ext`, `ASSET_NAME-backdrop.ext`, `ASSET_NAME-background.ext`, or `ASSET_NAME-fanart.ext` |
-    | Collection/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`, `ASSET_NAME-clearlogo.ext`, or `ASSET_NAME-logo.ext` |
-    | Collection/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext`, `ASSET_NAME_square_art.ext`, `ASSET_NAME-square.ext`, `ASSET_NAME-squareArt.ext`, or `ASSET_NAME-backgroundSquare.ext` |
+    | Collection/Playlist/Movie/Show logo       | `<path_to_assets>/ASSET_NAME_logo.ext`, `ASSET_NAME-clearlogo.ext`, or `ASSET_NAME-logo.ext` |
+    | Collection/Playlist/Movie/Show square art | `<path_to_assets>/ASSET_NAME_square.ext`, `ASSET_NAME_square_art.ext`, `ASSET_NAME-square.ext`, `ASSET_NAME-squareArt.ext`, or `ASSET_NAME-backgroundSquare.ext` |
     | Season poster                    | `<path_to_assets>/ASSET_NAME_Season##.ext`                 |
     | Season background                | `<path_to_assets>/ASSET_NAME_Season##_background.ext`      |
     | Episode poster                   | `<path_to_assets>/ASSET_NAME_S##E##.ext`                   |
