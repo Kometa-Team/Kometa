@@ -1765,7 +1765,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_biography":
             self.summaries[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).biography
         elif method_name == "tvdb_summary":
-            self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
+            try:
+                self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "tvdb_description":
             summary, _ = self.config.TVDb.get_list_description(method_data)
             if summary:
@@ -1799,7 +1804,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_profile":
             self.posters[method_name] = self.config.TMDb.get_person(util.regex_first_int(method_data, "TMDb Person ID")).profile_url
         elif method_name == "tvdb_poster":
-            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
+            try:
+                self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "file_poster":
             if os.path.exists(os.path.abspath(method_data)):
                 self.posters[method_name] = os.path.abspath(method_data)
@@ -1816,7 +1826,12 @@ class CollectionBuilder:
         elif method_name == "tmdb_background":
             self.backgrounds[method_name] = self.config.TMDb.get_movie_show_or_collection(util.regex_first_int(method_data, "TMDb ID"), self.library.is_movie).backdrop_url
         elif method_name == "tvdb_background":
-            self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
+            try:
+                self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
+            except tvdb.NotFound as e:
+                logger.debug(e)
+            except tvdb.Unavailable as e:
+                logger.warning(e)
         elif method_name == "file_background":
             if os.path.exists(os.path.abspath(method_data)):
                 self.backgrounds[method_name] = os.path.abspath(method_data)
@@ -3406,13 +3421,18 @@ class CollectionBuilder:
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
             if method_name.startswith(("tvdb_movie", "tvdb_show")):
-                item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
-                if item.summary:
-                    self.summaries[method_name] = item.summary
-                if item.background_url:
-                    self.backgrounds[method_name] = item.background_url
-                if item.poster_url:
-                    self.posters[method_name] = item.poster_url
+                try:
+                    item = self.config.TVDb.get_tvdb_obj(values[0], is_movie=method_name.startswith("tvdb_movie"))
+                    if item.summary:
+                        self.summaries[method_name] = item.summary
+                    if item.background_url:
+                        self.backgrounds[method_name] = item.background_url
+                    if item.poster_url:
+                        self.posters[method_name] = item.poster_url
+                except tvdb.NotFound as e:
+                    logger.debug(e)
+                except tvdb.Unavailable as e:
+                    logger.warning(e)
             elif method_name.startswith("tvdb_list"):
                 description, poster = self.config.TVDb.get_list_description(values[0])
                 if description:
@@ -4493,6 +4513,9 @@ class CollectionBuilder:
                             except tvdb.NotFound as e:
                                 logger.debug(e)
                                 or_result = False
+                            except tvdb.Unavailable as e:
+                                logger.warning(e)
+                                or_result = False
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
@@ -4633,10 +4656,12 @@ class CollectionBuilder:
                 try:
                     title = self.config.TVDb.get_tvdb_obj(missing_id).title
                 except tvdb.NotFound as e:
-                    # TVDb ID is stale (e.g. TMDb still references a series that no
-                    # longer exists on TVDb). Not user-actionable; log at debug to
-                    # avoid spamming logs / triggering webhook error notifications.
+                    # TVDb ID is stale (e.g. TMDb still points at a series TVDb no longer has); not user-actionable, log quietly
                     logger.debug(e)
+                    continue
+                except tvdb.Unavailable as e:
+                    # TVDb didn't return usable content in time; not a confirmed absence, may resolve on a later run
+                    logger.warning(e)
                     continue
                 except Failed as e:
                     logger.error(e)
@@ -4728,54 +4753,20 @@ class CollectionBuilder:
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
         if "non_item_remove_label" in self.item_details:
-            remove_label = self.item_details["non_item_remove_label"]
             rk_compare = [item.ratingKey for item in self.items]
-            non_items = [ni for ni in self.library.search(label=remove_label, libtype=self.builder_level) if ni.ratingKey not in rk_compare]
-            for non_item in non_items:
-                logger.info(f"{non_item.title[:25]:<25} | Label | -{', -'.join(remove_label)}")
-            if non_items:
-                self.library.batch_edit_tags(non_items, "label", remove_tags=set(remove_label))
+            for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
+                if non_item.ratingKey not in rk_compare:
+                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
 
         tmdb_paths = []
         tvdb_paths = []
-        # Label/genre edits for every item are deferred and batched once after the loop instead of one edit_tags() call per item.
-        label_batch_items, label_add_union, label_remove_union = [], set(), set()
-        genre_batch_items, genre_add_union, genre_remove_union = [], set(), set()
-        # item_critic/audience/user_rating each set one fixed value for the whole collection, so items needing the change can be batched the same way.
-        rating_targets = {}
-        for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
-            if _rating in self.item_details:
-                rating_targets[plex.attribute_translation[_rating[5:]]] = (_rating, self.item_details[_rating])
-        rating_batch_items = {}
         for item in self.items:
             item = self.library.reload(item)
             current_labels = [la.tag for la in self.library.item_labels(item)]
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
-
-            if add_tags or remove_tags or sync_tags is not None:
-                _add, _remove = self.library.tag_diff(current_labels, add_tags, remove_tags, sync_tags)
-                if _add or _remove:
-                    label_batch_items.append(item)
-                    label_add_union.update(_add)
-                    label_remove_union.update(_remove)
-                    display = f"+{', +'.join(_add)}" if _add else ""
-                    display += ", " if _add and _remove else ""
-                    display += f"-{', -'.join(_remove)}" if _remove else ""
-                    logger.info(f"{item.title[:25]:<25} | Label | {display}")
-
-            if add_genres or remove_genres or sync_genres is not None:
-                current_genres = [ge.tag for ge in getattr(item, "genres", [])]
-                _add, _remove = self.library.tag_diff(current_genres, add_genres, remove_genres, sync_genres)
-                if _add or _remove:
-                    genre_batch_items.append(item)
-                    genre_add_union.update(_add)
-                    genre_remove_union.update(_remove)
-                    display = f"+{', +'.join(_add)}" if _add else ""
-                    display += ", " if _add and _remove else ""
-                    display += f"-{', -'.join(_remove)}" if _remove else ""
-                    logger.info(f"{item.title[:25]:<25} | Genre | {display}")
-
+            self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
             if "item_edition" in self.item_details and getattr(item, "editionTitle", None) != self.item_details["item_edition"]:
                 if hasattr(item, "editEditionTitle"):
                     try:
@@ -4785,13 +4776,13 @@ class CollectionBuilder:
                         logger.error(f"Plex Error: Edition update failed for {item.title}: {e}")
                 else:
                     logger.error(f"Plex Error: Edition cannot be edited on {item.title}")
-
-            for plex_attr, (_rating, target_rating) in rating_targets.items():
-                current_rating = getattr(item, plex_attr)
-                if current_rating != target_rating:
-                    rating_batch_items.setdefault(plex_attr, []).append(item)
-                    logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {target_rating}")
-
+            for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+                if _rating in self.item_details:
+                    plex_attr = plex.attribute_translation[_rating[5:]]
+                    current_rating = getattr(item, plex_attr)
+                    if current_rating != self.item_details[_rating]:
+                        item.editField(plex_attr, self.item_details[_rating])
+                        logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
             path = None
             if (
                 "item_radarr_tag" in self.item_details
@@ -4861,14 +4852,6 @@ class CollectionBuilder:
             if "item_analyze" in self.item_details:
                 logger.info(f"Executing Analyze on {item.title}")
                 item.analyze()
-
-        if label_batch_items:
-            self.library.batch_edit_tags(label_batch_items, "label", add_tags=label_add_union, remove_tags=label_remove_union)
-        if genre_batch_items:
-            self.library.batch_edit_tags(genre_batch_items, "genre", add_tags=genre_add_union, remove_tags=genre_remove_union)
-        for plex_attr, batch_items in rating_batch_items.items():
-            if batch_items:
-                self.library.batch_edit_field(batch_items, plex_attr, rating_targets[plex_attr][1])
 
         if self.library.Radarr and tmdb_paths:
             try:
@@ -5409,6 +5392,9 @@ class CollectionBuilder:
                         title = self.config.TVDb.get_tvdb_obj(missing_id).title
                     except tvdb.NotFound as e:
                         logger.debug(e)
+                        continue
+                    except tvdb.Unavailable as e:
+                        logger.warning(e)
                         continue
                     except Failed as e:
                         logger.error(e)
