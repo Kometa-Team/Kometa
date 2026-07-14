@@ -7,7 +7,7 @@ import cloudscraper
 import requests
 import ruamel.yaml
 from lxml import html
-from requests.exceptions import ConnectionError
+from requests.exceptions import ConnectionError, RequestException
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from modules import util
@@ -137,10 +137,14 @@ class Requests:
     def get_image(self, url, session=None, validate_only=False):
         active_session = session if session is not None else self.session
         request_headers = get_header(None, True, None)
-        if validate_only:
-            response = active_session.head(url, headers=request_headers, timeout=DEFAULT_TIMEOUT, allow_redirects=True)
-        else:
-            response = active_session.get(url, headers=request_headers, timeout=DEFAULT_TIMEOUT)
+        try:
+            if validate_only:
+                response = active_session.head(url, headers=request_headers, timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+            else:
+                response = active_session.get(url, headers=request_headers, timeout=DEFAULT_TIMEOUT)
+        except RequestException as e:
+            # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
+            raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
         if response.status_code == 404:
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
