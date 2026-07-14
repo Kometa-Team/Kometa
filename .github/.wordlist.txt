@@ -102,6 +102,7 @@ dir
 diskstation
 disneytoon
 dk
+DNS
 dockerfile
 dockerfiles
 dockerhub
