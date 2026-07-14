@@ -1988,7 +1988,9 @@ class Plex(Library):
             file_name = "poster"
 
         if not item_asset_directory:
-            if isinstance(item, (Movie, Artist, Album, Show, Episode, Season)):
+            if isinstance(item, str):
+                folder_name = item
+            elif isinstance(item, (Movie, Artist, Album, Track, Show, Episode, Season)):
                 if isinstance(item, (Episode, Season)):
                     starting = item.show()
                 elif isinstance(item, (Album, Track)):
