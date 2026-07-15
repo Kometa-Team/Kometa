@@ -376,6 +376,53 @@ class TestGetImageValidateOnly:
         assert session.get.call_count == 0
 
 
+class TestGetImageStableAssetSkip:
+    """validate_only checks against Kometa's own shipped assets (Default-Images, People-Images-*) skip the network round-trip entirely - only arbitrary user url_poster/url_background/url_logo/url_square_art values need live validation."""
+
+    def test_kometa_team_url_skips_network_when_validate_only(self):
+        req, mock_get, mock_head = make_image_requests()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png", validate_only=True)
+        assert result is None
+        assert mock_head.call_count == 0
+        assert mock_get.call_count == 0
+
+    def test_kometa_team_people_images_url_skips_network_when_validate_only(self):
+        req, mock_get, mock_head = make_image_requests()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/People-Images-Portrait/master/A/Images/Actor.jpg", validate_only=True)
+        assert result is None
+        assert mock_head.call_count == 0
+        assert mock_get.call_count == 0
+
+    def test_kometa_team_url_still_fetches_when_not_validate_only(self):
+        """The skip is scoped to validate_only - a real poster/background/logo download must still hit the network."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png")
+        assert result is not None
+        assert mock_get.call_count == 1
+        assert mock_head.call_count == 0
+
+    def test_arbitrary_user_url_still_validated(self):
+        """The staleness risk this validation exists to catch is arbitrary/user-supplied URLs - those must never be skipped."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/my-custom-poster.jpg", validate_only=True)
+        assert mock_head.call_count == 1
+
+    def test_other_github_org_url_still_validated(self):
+        """Only the Kometa-Team org prefix is trusted - a different GitHub org/user is not Kometa's own maintained content."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://raw.githubusercontent.com/some-other-user/posters/master/poster.jpg", validate_only=True)
+        assert mock_head.call_count == 1
+
+    def test_kometa_team_url_skip_not_cached(self):
+        """Skipped calls return None without touching _image_url_cache - nothing to memoize since no network call was made."""
+        req, mock_get, mock_head = make_image_requests()
+        req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png", validate_only=True)
+        assert req._image_url_cache == {}
+
+
 class TestHeadFollowsRedirects:
     """requests defaults HEAD to not following redirects (unlike GET) - Requests.head() must override that so validate_only behaves the same as GET for a redirected URL."""
 

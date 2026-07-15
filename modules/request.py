@@ -71,6 +71,9 @@ class Version:
 
 
 class Requests:
+    # Kometa's own shipped assets (Default-Images, People-Images-*) don't need a per-run liveness check - unlike arbitrary user url_poster/url_background/url_logo/url_square_art values, the real staleness risk.
+    stable_asset_prefixes = ("https://raw.githubusercontent.com/Kometa-Team/",)
+
     def __init__(self, local, part, env_branch, git_branch, verify_ssl=True):
         self.local = Version(local, part)
         self.env_branch = env_branch
@@ -146,6 +149,9 @@ class Requests:
         cache_key = (url, validate_only)
         if cache_key in self._image_url_cache:
             return self._image_url_cache[cache_key]
+        # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
+        if validate_only and url.startswith(self.stable_asset_prefixes):
+            return None
         # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
         with timings.tag_context("image"):
             if validate_only:
