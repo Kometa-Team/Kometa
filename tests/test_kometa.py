@@ -10,6 +10,7 @@ other test had a chance to fire.
 from __future__ import annotations
 
 import ast
+import re
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -19,6 +20,21 @@ KOMETA_PY = REPO_ROOT / "kometa.py"
 def _module_ast() -> ast.Module:
     """Parse kometa.py once and return its AST."""
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
+
+
+def _summary_log_groups() -> list[tuple[str, str]]:
+    """Extract the summary grouping rules without importing kometa.py."""
+    for node in ast.walk(_module_ast()):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "summary_log_groups" for target in node.targets):
+            return ast.literal_eval(node.value)
+    raise AssertionError("summary_log_groups was not found in kometa.py")
+
+
+def _summarize_log_message(message: str) -> str:
+    for pattern, replacement in _summary_log_groups():
+        if re.match(pattern, message):
+            return replacement
+    return message
 
 
 def test_issue_3244_resource_import_is_guarded() -> None:
@@ -148,6 +164,21 @@ def test_letterboxd_tmdb_failures_are_summarized() -> None:
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert 'r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\\."' in text
     assert 'r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\\."' in text
+
+
+def test_asset_paths_and_warnings_are_summarized() -> None:
+    """Variable asset paths should not produce one summary row per file."""
+    cases = {
+        "Asset Warning: Asset Directory Not Found and Created: /config/assets": "Asset Warning: Asset Directory Not Found and Created",
+        "Asset Warning: No supported artwork found in the assets folder '/config/assets'": "Asset Warning: No supported artwork found in the assets folder",
+        "Collection Error: Background Path Does Not Exist: /config/background.jpg": "Error: Background Path Does Not Exist",
+        "Overlay Error: Logo Path Does Not Exist: /config/logo.png": "Error: Logo Path Does Not Exist",
+        "Playlist Error: Poster Path Does Not Exist: /config/poster.jpg": "Error: Poster Path Does Not Exist",
+        "Collection Error: Square Art Path Does Not Exist: /config/square.jpg": "Error: Square Art Path Does Not Exist",
+        "Collection Error: Theme Path Does Not Exist: /config/theme.mp3": "Error: Theme Path Does Not Exist",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
 
 
 def test_status_summary_skips_empty_tables() -> None:
