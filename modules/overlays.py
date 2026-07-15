@@ -21,12 +21,22 @@ class Overlays:
         self.library = library
         self.overlays = []
 
+    def _scan_overlay_backup_extensions(self):
+        # Snapshots the backup folder once instead of up to 3 os.path.exists() calls per item in run_overlays - exact-case match, not lower()'d, to match os.path.exists()'s behavior on a case-sensitive filesystem.
+        extensions_by_ratingkey = {}
+        for fname in os.listdir(self.library.overlay_backup):
+            stem, ext = os.path.splitext(fname)
+            if ext in (".png", ".jpg", ".webp"):
+                extensions_by_ratingkey.setdefault(stem, set()).add(ext)
+        return extensions_by_ratingkey
+
     def run_overlays(self):
         overlay_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")
         logger.info("")
         os.makedirs(self.library.overlay_backup, exist_ok=True)
+        self._overlay_backup_extensions = self._scan_overlay_backup_extensions()
 
         key_to_overlays = {}
         properties = {}
@@ -189,18 +199,15 @@ class Overlays:
                     if poster:
                         if image_compare and str(poster.compare) != str(image_compare):
                             changed_image = True
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png"))
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg"))
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
-                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp"))
+                        for ext in self._overlay_backup_extensions.pop(str(item.ratingKey), set()):
+                            os.remove(os.path.join(self.library.overlay_backup, f"{item.ratingKey}{ext}"))
                     elif has_overlay:
-                        if os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")):
+                        existing_exts = self._overlay_backup_extensions.get(str(item.ratingKey), set())
+                        if ".png" in existing_exts:
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.png")
-                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")):
+                        elif ".jpg" in existing_exts:
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.jpg")
-                        elif os.path.exists(os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")):
+                        elif ".webp" in existing_exts:
                             has_original = os.path.join(self.library.overlay_backup, f"{item.ratingKey}.webp")
                         if self.library.reset_overlays:
                             reset_list = self.library.reset_overlays
