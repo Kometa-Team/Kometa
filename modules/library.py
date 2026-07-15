@@ -46,6 +46,8 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
+        self.filter_attr_cache = {}
         self.run_again = []
         self.type = ""
         self.config = config

@@ -1109,10 +1109,20 @@ class Plex(Library):
             if not is_full or force:
                 self.item_reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
+                # A real reload means this item's data may have changed - drop any cached_item_attr() reads for it so check_filter re-reads fresh values.
+                for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                    del self.filter_attr_cache[key]
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
         return item
+
+    def cached_item_attr(self, item, attr):
+        # Memoizes a plain item.<attr> read for the rest of the run - safe because reload() above already clears this item's entries the moment a real reload happens, so a cached value is exactly as fresh as reading the attribute directly would be.
+        cache_key = (item.ratingKey, attr)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = getattr(item, attr)
+        return self.filter_attr_cache[cache_key]
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def edit_query(self, item, edits, advanced=False):
@@ -2582,7 +2592,7 @@ class Plex(Library):
         force = filter_attr in ["genre", "label", "collection"] if force_reload is None else force_reload  # Fallback preserves old always-force behavior for any future direct caller that skips check_filters.
         item = self.reload(item, force=force)
         if filter_attr in builder.date_filters:
-            if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
+            if util.is_date_filter(self.cached_item_attr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
             values = []
@@ -2600,21 +2610,23 @@ class Plex(Library):
                     if attr and attr not in values:
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
-                values = [loc for loc in item.locations if loc]
+                values = [loc for loc in self.cached_item_attr(item, "locations") if loc]
             elif filter_attr == "season_title":
                 values = [item.season().title]
             elif filter_attr == "show_title":
                 values = [item.show().title]
             else:
-                test_value = getattr(item, filter_actual)
+                # summary/editionTitle can be written by update_details with no cache eviction anywhere (unlike title/studio/content_rating's operations.py path, which does evict) - read live, not cached, for these two specifically.
+                test_value = getattr(item, filter_actual) if filter_actual in ("summary", "editionTitle") else self.cached_item_attr(item, filter_actual)
                 values = [test_value] if test_value else []
             if util.is_string_filter(values, modifier, filter_data):
                 return False
         elif filter_attr in builder.boolean_filters:
             filter_check = False
             if filter_attr == "has_collection":
-                filter_check = len(item.collections) > 0
+                filter_check = len(self.cached_item_attr(item, "collections")) > 0
             elif filter_attr == "has_edition":
+                # editionTitle can be written by update_details with no cache eviction anywhere - read live, not cached.
                 filter_check = True if item.editionTitle else False
             elif filter_attr == "has_stinger":
                 filter_check = False
@@ -2635,7 +2647,7 @@ class Plex(Library):
             if util.is_boolean_filter(filter_data, filter_check):
                 return False
         elif filter_attr == "history":
-            item_date = item.originallyAvailableAt
+            item_date = self.cached_item_attr(item, "originallyAvailableAt")
             if item_date is None:
                 return False
             elif filter_data == "day":
@@ -2737,7 +2749,8 @@ class Plex(Library):
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
-                attrs = [attr.tag for attr in getattr(item, filter_actual)]
+                # genre/label/collection are covered by check_filters' force-reload above; the other 6 here are never written by Kometa anywhere, so caching is safe for the whole set.
+                attrs = [attr.tag for attr in self.cached_item_attr(item, filter_actual)]
             else:
                 raise Failed(f"Filter Error: filter: {filter_final} not supported")
             if modifier == ".regex":
