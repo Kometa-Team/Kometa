@@ -28,6 +28,8 @@ class Cache:
         self._connection = None
         # In-process memoization for _query_map/_update_map's ID lookups, keyed per map_name - avoids repeat SQLite round-trips for the same ID within one run.
         self._map_cache = {}
+        # Same idea for query_guid_map/update_guid_map, which use their own SQL, not _query_map - keyed by plex_guid, caches the raw row so expiration still recomputes fresh each call.
+        self._guid_map_cache = {}
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
@@ -417,16 +419,22 @@ class Cache:
         imdb_id = None
         media_type = None
         expired = None
-        with self.connection as connection:
-            with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
-                row = cursor.fetchone()
-                if row:
-                    time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    id_to_return = util.get_list(row["t_id"], int_list=True)
-                    imdb_id = util.get_list(row["imdb_id"])
-                    media_type = row["media_type"]
-                    expired = time_between_insertion.days > self.expiration
+        if plex_guid in self._guid_map_cache:
+            row = self._guid_map_cache[plex_guid]
+        else:
+            with self.connection as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
+                    fetched = cursor.fetchone()
+                    # Copy to a plain dict so it survives after the cursor/connection context closes.
+                    row = dict(fetched) if fetched else None
+            self._guid_map_cache[plex_guid] = row
+        if row:
+            time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            id_to_return = util.get_list(row["t_id"], int_list=True)
+            imdb_id = util.get_list(row["imdb_id"])
+            media_type = row["media_type"]
+            expired = time_between_insertion.days > self.expiration
         return id_to_return, imdb_id, media_type, expired
 
     def update_guid_map(self, plex_guid, t_id, imdb_id, expired, media_type):
@@ -440,6 +448,8 @@ class Cache:
                 else:
                     sql = "UPDATE guids_map SET t_id = ?, imdb_id = ?, expiration_date = ?, media_type = ? WHERE plex_guid = ?"
                     cursor.execute(sql, (t_id, imdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
+        # Invalidate any memoized query_guid_map read this write could have made stale.
+        self._guid_map_cache.pop(plex_guid, None)
 
     def query_imdb_to_tmdb_map(self, _id, imdb=True, media_type=None, return_type=False):
         from_id = "imdb_id" if imdb else "tmdb_id"

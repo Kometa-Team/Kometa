@@ -1105,3 +1105,62 @@ class TestQueryMapMemoization:
         second, expired2 = cache.query_tmdb_to_tvdb_map("50", tmdb=True)  # pyright: ignore[reportAssignmentType]
         assert first == second == 60
         assert expired1 is expired2 is False
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# query_guid_map / update_guid_map in-process memoization
+#
+# query_guid_map uses its own hand-written SQL (not _query_map/_update_map), and was explicitly
+# left out of the fix above. A real Discord user's steady-run timings JSON showed it as the
+# single highest-volume cache method (6,684 hits in one run) - these tests cover the same
+# memoization idea applied to it directly.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestQueryGuidMapMemoization:
+    def test_repeat_lookup_does_not_hit_sqlite_again(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_guid_map("plex://movie/abc", "123", "tt0000123", False, "movie")
+        first, selects_1 = _select_count(cache, lambda: cache.query_guid_map("plex://movie/abc"))
+        second, selects_2 = _select_count(cache, lambda: cache.query_guid_map("plex://movie/abc"))
+        assert first == second
+        assert first[0] == [123]
+        assert first[1] == ["tt0000123"]
+        assert first[2] == "movie"
+        assert first[3] is False
+        assert selects_1 == 1, "first lookup of an uncached guid must hit SQLite"
+        assert selects_2 == 0, "second lookup of the same guid must be served from the in-process memo"
+
+    def test_first_lookup_of_new_guid_still_hits_sqlite(self, tmp_path):
+        cache = make_cache(tmp_path)
+        _, selects = _select_count(cache, lambda: cache.query_guid_map("plex://movie/never-seen"))
+        assert selects == 1
+
+    def test_cache_miss_is_also_memoized(self, tmp_path):
+        # A confirmed miss (guid not in the table at all) should also skip SQLite on a repeat call.
+        cache = make_cache(tmp_path)
+        first, selects_1 = _select_count(cache, lambda: cache.query_guid_map("plex://movie/missing"))
+        second, selects_2 = _select_count(cache, lambda: cache.query_guid_map("plex://movie/missing"))
+        assert first == second == (None, None, None, None)
+        assert selects_1 == 1
+        assert selects_2 == 0
+
+    def test_write_invalidates_stale_cached_miss(self, tmp_path):
+        cache = make_cache(tmp_path)
+        first, _, _, _ = cache.query_guid_map("plex://movie/xyz")
+        assert first is None
+        cache.update_guid_map("plex://movie/xyz", "456", "tt0000456", False, "movie")
+        second, imdb, media_type, expired = cache.query_guid_map("plex://movie/xyz")
+        assert second == [456]
+        assert imdb == ["tt0000456"]
+        assert media_type == "movie"
+        assert expired is False
+
+    def test_different_guids_do_not_share_cache_entries(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_guid_map("plex://movie/one", "1", "tt0000001", False, "movie")
+        cache.update_guid_map("plex://movie/two", "2", "tt0000002", False, "movie")
+        one, _, _, _ = cache.query_guid_map("plex://movie/one")
+        two, _, _, _ = cache.query_guid_map("plex://movie/two")
+        assert one == [1]
+        assert two == [2]
