@@ -850,7 +850,8 @@ def run_config(config, stats):
     if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["metadata-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
         # logger.add_playlists_handler()
         if config.playlist_files:
-            playlist_status, playlist_stats = run_playlists(config)
+            with timings.overlay_context(False):
+                playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
             ran = []
             for library in config.libraries:
@@ -1138,7 +1139,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.info("")
                             logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
                             # logger.remove_library_handler(library.mapping_name)
-                            run_collection(config, library, metadata, collections_to_run)
+                            with timings.overlay_context(False):
+                                run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.

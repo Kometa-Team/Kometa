@@ -470,58 +470,59 @@ class Overlays:
         overlay_groups = {}
         key_to_overlays = {}
 
-        for overlay_file in self.library.overlay_files:
-            for k, v in overlay_file.overlays.items():
-                try:
-                    builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
-                    logger.info("")
-
-                    logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
-
-                    prop_name = builder.overlay.mapping_name
-                    properties[prop_name] = builder.overlay
-
-                    builder.display_filters()
-
-                    for method, value in builder.builders:
-                        logger.debug("")
-                        logger.debug(f"Builder: {method}: {value}")
+        with timings.overlay_context(True):
+            for overlay_file in self.library.overlay_files:
+                for k, v in overlay_file.overlays.items():
+                    try:
+                        builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
                         logger.info("")
-                        try:
-                            builder.filter_and_save_items(builder.gather_ids(method, value))
-                        except Failed as e:
-                            if builder.ignore_blank_results:
-                                logger.info("")
-                                logger.warning(e)
-                            else:
-                                raise Failed(e)
 
-                    added_titles = []
-                    if builder.found_items:
-                        for item in builder.found_items:
-                            if builder.limit and len(added_titles) >= builder.limit:
-                                break
-                            key_to_item[item.ratingKey] = item
-                            added_titles.append(item)
-                            if item.ratingKey not in properties[prop_name].keys:
-                                properties[prop_name].keys.append(item.ratingKey)
-                    if added_titles:
-                        logger.info(f"{len(added_titles)} Items found for {prop_name}")
-                        logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
-                    else:
-                        logger.warning(f"No Items found for {prop_name}")
-                    logger.info("")
-                except NotScheduled as e:
-                    logger.info(e)
-                except FilterFailed:
-                    pass
-                except Failed as e:
-                    logger.error(e)
-                    logger.info("")
-                except Exception as e:
-                    logger.stacktrace()
-                    logger.error(f"Unknown Error: {e}")
-                    logger.info("")
+                        logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
+
+                        prop_name = builder.overlay.mapping_name
+                        properties[prop_name] = builder.overlay
+
+                        builder.display_filters()
+
+                        for method, value in builder.builders:
+                            logger.debug("")
+                            logger.debug(f"Builder: {method}: {value}")
+                            logger.info("")
+                            try:
+                                builder.filter_and_save_items(builder.gather_ids(method, value))
+                            except Failed as e:
+                                if builder.ignore_blank_results:
+                                    logger.info("")
+                                    logger.warning(e)
+                                else:
+                                    raise Failed(e)
+
+                        added_titles = []
+                        if builder.found_items:
+                            for item in builder.found_items:
+                                if builder.limit and len(added_titles) >= builder.limit:
+                                    break
+                                key_to_item[item.ratingKey] = item
+                                added_titles.append(item)
+                                if item.ratingKey not in properties[prop_name].keys:
+                                    properties[prop_name].keys.append(item.ratingKey)
+                        if added_titles:
+                            logger.info(f"{len(added_titles)} Items found for {prop_name}")
+                            logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
+                        else:
+                            logger.warning(f"No Items found for {prop_name}")
+                        logger.info("")
+                    except NotScheduled as e:
+                        logger.info(e)
+                    except FilterFailed:
+                        pass
+                    except Failed as e:
+                        logger.error(e)
+                        logger.info("")
+                    except Exception as e:
+                        logger.stacktrace()
+                        logger.error(f"Unknown Error: {e}")
+                        logger.info("")
 
         logger.separator(f"Overlay Operation for the {self.library.name} Library")
         logger.debug("")

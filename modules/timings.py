@@ -121,6 +121,8 @@ class TimingRegistry:
         # Single-threaded call-scoped tag so instrument_session's network buckets can be split by
         # library, not just source - set via library_context(), read in instrument_session().
         self.library_ctx = None
+        # Single-threaded call-scoped tag so every bucket can be split overlay-loop vs collection-loop work - set via overlay_context(), read in record()/timed()/instrument_session().
+        self.overlay_ctx = None
         # Populated once each service connects - see set_plex_hostname()/register_arr_host().
         self.plex_hostname = None
         self.arr_hosts = {}
@@ -133,10 +135,12 @@ class TimingRegistry:
         if hostname:
             self.arr_hosts[hostname.lower()] = source
 
-    def record(self, phase, seconds, library=None, collection=None, source=None, num_bytes=0):
+    def record(self, phase, seconds, library=None, collection=None, source=None, num_bytes=0, overlay=None):
         if not self.enabled:
             return
-        bucket = self.buckets[(library, collection, phase, source)]
+        if overlay is None:
+            overlay = self.overlay_ctx
+        bucket = self.buckets[(library, collection, phase, source, overlay)]
         bucket["seconds"] += seconds
         bucket["calls"] += 1
         bucket["bytes"] += num_bytes
@@ -165,15 +169,15 @@ class TimingRegistry:
 
     def top_buckets(self, n=10):
         rows = []
-        for (library, collection, phase, source), data in self.buckets.items():
-            rows.append((library, collection, phase, source, data["seconds"], data["calls"], data["bytes"]))
-        rows.sort(key=lambda r: r[4], reverse=True)
+        for (library, collection, phase, source, overlay), data in self.buckets.items():
+            rows.append((library, collection, phase, source, overlay, data["seconds"], data["calls"], data["bytes"]))
+        rows.sort(key=lambda r: r[5], reverse=True)
         return rows[:n]
 
     def network_summary(self):
         """(source -> {seconds, calls, bytes}) rolled up across all libraries/collections/phases."""
         summary = defaultdict(lambda: {"seconds": 0.0, "calls": 0, "bytes": 0})
-        for (_, _, phase, source), data in self.buckets.items():
+        for (_, _, phase, source, _), data in self.buckets.items():
             if phase != "network":
                 continue
             summary[source]["seconds"] += data["seconds"]
@@ -204,7 +208,7 @@ class TimingRegistry:
         summary_path = os.path.join(logs_dir, f"timings-{stamp}-summary.log")
 
         buckets_out = []
-        for (library, collection, phase, source), data in self.buckets.items():
+        for (library, collection, phase, source, overlay), data in self.buckets.items():
             calls = data["calls"]
             buckets_out.append(
                 {
@@ -212,6 +216,7 @@ class TimingRegistry:
                     "collection": collection,
                     "phase": phase,
                     "source": source,
+                    "overlay": overlay,
                     "seconds": round(data["seconds"], 6),
                     "calls": calls,
                     "bytes": data["bytes"],
@@ -230,9 +235,9 @@ class TimingRegistry:
 
         with open(csv_path, "w", newline="", encoding="utf-8") as fp:
             writer = csv.writer(fp)
-            writer.writerow(["library", "collection", "phase", "source", "seconds", "calls", "bytes", "mean_seconds"])
+            writer.writerow(["library", "collection", "phase", "source", "overlay", "seconds", "calls", "bytes", "mean_seconds"])
             for row in buckets_out:
-                writer.writerow([row["library"], row["collection"], row["phase"], row["source"], row["seconds"], row["calls"], row["bytes"], row["mean_seconds"]])
+                writer.writerow([row["library"], row["collection"], row["phase"], row["source"], row["overlay"], row["seconds"], row["calls"], row["bytes"], row["mean_seconds"]])
 
         with open(summary_path, "w", encoding="utf-8") as fp:
             fp.write(f"Kometa timings summary - {stamp}\n")
@@ -251,8 +256,9 @@ class TimingRegistry:
         """Compact human-readable summary written to the standalone timings-*-summary.log file
         (never to meta.log/logger - see export())."""
         lines = ["Timings Summary (top buckets by total time):"]
-        for library, collection, phase, source, seconds, calls, num_bytes in self.top_buckets(top_n):
-            label = " / ".join(str(v) for v in (library, collection, phase, source) if v)
+        for library, collection, phase, source, overlay, seconds, calls, num_bytes in self.top_buckets(top_n):
+            tag = "overlay" if overlay else ("collection" if overlay is False else None)
+            label = " / ".join(str(v) for v in (library, collection, phase, source, tag) if v)
             lines.append(f"  {label:<60} | {seconds:>8.2f}s | {calls:>6} calls")
         net = self.network_summary()
         if net:
@@ -304,7 +310,24 @@ def library_context(name):
 
 
 @contextmanager
-def track(phase, library=None, collection=None, source=None):
+def overlay_context(is_overlay):
+    """Tags every bucket recorded while inside this block as overlay-loop (True) or
+    collection-loop (False) work, so gather_ids/filter_and_save_items/network/etc buckets -
+    shared by both call paths - can be split cleanly instead of double-counted against
+    compile_overlays. Wraps compile_overlays' per-overlay-file loop in overlays.py."""
+    if not registry.enabled:
+        yield
+        return
+    previous = registry.overlay_ctx
+    registry.overlay_ctx = is_overlay
+    try:
+        yield
+    finally:
+        registry.overlay_ctx = previous
+
+
+@contextmanager
+def track(phase, library=None, collection=None, source=None, overlay=None):
     if not registry.enabled:
         yield
         return
@@ -312,7 +335,7 @@ def track(phase, library=None, collection=None, source=None):
     try:
         yield
     finally:
-        registry.record(phase, time.perf_counter() - start, library=library, collection=collection, source=source)
+        registry.record(phase, time.perf_counter() - start, library=library, collection=collection, source=source, overlay=overlay)
 
 
 def timed(phase, source_arg=None):
@@ -388,7 +411,7 @@ def instrument_session(session):
             num_bytes = int(response.headers.get("Content-Length", 0) or 0)
         except (ValueError, AttributeError):
             pass
-        registry.record("network", elapsed, library=registry.library_ctx, source=source, num_bytes=num_bytes)
+        registry.record("network", elapsed, library=registry.library_ctx, source=source, num_bytes=num_bytes, overlay=registry.overlay_ctx)
         return response
 
     session.request = wrapped_request
