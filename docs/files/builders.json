@@ -391,6 +391,72 @@
             "works_with_playlists_and_custom_sort": "Yes"
         }
     ],
+    "Tracearr": [
+        {
+            "builder": "tracearr_popular",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets items watched by the most unique Tracearr users",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_watched",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets items with the most completed Tracearr sessions",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_trending",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets the most active items from recent Tracearr watch history",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_rewatched",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets items repeatedly played by the same Tracearr user",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_completed",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets the most recently completed items from the Tracearr watch history",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_binged",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets shows ranked by distinct completed episodes watched by one Tracearr user",
+            "works_with_movies": "No",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_transcoded",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets items with the most Tracearr sessions requiring transcoding",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_history",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets the Tracearr watch history items",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        }
+    ],
     "TMDb": [
         {
             "builder": "tmdb_actor",

@@ -79,3 +79,12 @@ def test_default_file_is_valid_yaml(yaml_path: Path) -> None:
 def test_at_least_one_default_exists() -> None:
     """Defensive: catch a layout change that hides all defaults from us."""
     assert DEFAULT_YAML_FILES, f"no YAML files found under {DEFAULTS_DIR}"
+
+
+def test_tracearr_default_uses_short_trending_window_without_raw_history() -> None:
+    with (DEFAULTS_DIR / "chart" / "tracearr.yml").open(encoding="utf-8") as fh:
+        tracearr_default = yaml.safe_load(fh)
+
+    collections = tracearr_default["collections"]
+    assert collections["Tracearr Trending"]["variables"]["list_days"] == 7
+    assert "Tracearr History" not in collections

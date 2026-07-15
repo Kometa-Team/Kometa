@@ -30,6 +30,7 @@ from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
+from modules.tracearr import Tracearr
 from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
@@ -450,6 +451,8 @@ class ConfigFile:
             self.data["tmdb"] = self.data.pop("tmdb")
         if "tautulli" in self.data:
             self.data["tautulli"] = self.data.pop("tautulli")
+        if "tracearr" in self.data:
+            self.data["tracearr"] = self.data.pop("tracearr")
         if "omdb" in self.data:
             self.data["omdb"] = self.data.pop("omdb")
         if "mdblist" in self.data:
@@ -1301,6 +1304,11 @@ class ConfigFile:
             self.general["tautulli"] = {
                 "url": check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True),
                 "apikey": check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True),
+            }
+            self.general["tracearr"] = {
+                "url": check_for_attribute(self.data, "url", parent="tracearr", var_type="url", default_is_none=True),
+                "apikey": check_for_attribute(self.data, "apikey", parent="tracearr", default_is_none=True),
+                "server_id": check_for_attribute(self.data, "server_id", parent="tracearr", default_is_none=True),
             }
 
             self.libraries = []
@@ -2451,6 +2459,14 @@ class ConfigFile:
                                     req_default=True,
                                     save=False,
                                 ),
+                                "server_id": check_for_attribute(
+                                    lib,
+                                    "server_id",
+                                    parent="tracearr",
+                                    default=self.general["tracearr"]["server_id"],
+                                    default_is_none=True,
+                                    save=False,
+                                ),
                             },
                         )
                     except Failed as e:
@@ -2458,6 +2474,42 @@ class ConfigFile:
                         logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Tautulli Connection {'Failed' if library.Tautulli is None else 'Successful'}")
+
+                if self.general["tracearr"]["url"] or (lib and "tracearr" in lib):
+                    logger.info("")
+                    logger.separator("Tracearr Configuration", space=False, border=False)
+                    logger.info("")
+                    logger.info(f"Connecting to {display_name} library's Tracearr...")
+                    logger.info("")
+                    try:
+                        library.Tracearr = Tracearr(
+                            self.Requests,
+                            library,
+                            {
+                                "url": check_for_attribute(
+                                    lib,
+                                    "url",
+                                    parent="tracearr",
+                                    var_type="url",
+                                    default=self.general["tracearr"]["url"],
+                                    req_default=True,
+                                    save=False,
+                                ),
+                                "apikey": check_for_attribute(
+                                    lib,
+                                    "apikey",
+                                    parent="tracearr",
+                                    default=self.general["tracearr"]["apikey"],
+                                    req_default=True,
+                                    save=False,
+                                ),
+                            },
+                        )
+                    except Failed as e:
+                        logger.stacktrace()
+                        logger.error(e)
+                        logger.info("")
+                    logger.info(f"{display_name} library's Tracearr Connection {'Failed' if library.Tracearr is None else 'Successful'}")
 
                 library.Webhooks = Webhooks(self, {}, library=library, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory, apprise=self.AppriseFactory)
                 library.Overlays = Overlays(self, library)

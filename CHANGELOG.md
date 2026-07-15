@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views. The connector uses Tracearr's authenticated Public API, resolves its internal Plex server UUID safely, ranks recent activity and per-user repeat plays distinctly, aggregates episode activity to shows, and fails contextually on invalid API responses so sync mode cannot mistake an API error for empty history.
+
 ### Fixed
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.

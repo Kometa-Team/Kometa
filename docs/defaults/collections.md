@@ -66,6 +66,7 @@ This is the default Kometa collection ordering:
 | `myanimelist`        | `020`              |
 | `other_chart`        | `020`              |
 | `tautulli`           | `020`              |
+| `tracearr`           | `020`              |
 | `tmdb`               | `020`              |
 | `trakt`              | `020`              |
 | `streaming`          | `030`              |

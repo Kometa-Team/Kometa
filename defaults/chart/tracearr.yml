@@ -1,0 +1,109 @@
+##############################################################################
+#                        Tracearr Charts Collections                        #
+#                         Created by Kometa Team                            #
+#           https://kometa.wiki/en/latest/defaults/chart/tracearr           #
+##############################################################################
+
+external_templates:
+  default: templates
+  template_variables:
+    collection_section: "020"
+    image: chart/<<style>>/<<mapping_name_encoded>>
+
+templates:
+  tracearr:
+    default:
+      list_days: 30
+      list_size: 20
+      list_days_<<key>>: <<list_days>>
+      list_size_<<key>>: <<list_size>>
+    tracearr_<<type>>:
+      list_days: <<list_days_<<key>>>>
+      list_size: <<list_size_<<key>>>>
+
+collections:
+  Tracearr Popular:
+    variables:
+      style: color
+      key: popular
+    template:
+      - name: tracearr
+        type: popular
+      - name: shared
+        translation_key: tracearr_popular
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Watched:
+    variables:
+      style: color
+      key: watched
+    template:
+      - name: tracearr
+        type: watched
+      - name: shared
+        translation_key: tracearr_watched
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Trending:
+    variables:
+      style: color
+      key: trending
+      list_days: 7
+    template:
+      - name: tracearr
+        type: trending
+      - name: shared
+        translation_key: tracearr_trending
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Rewatched:
+    variables:
+      style: color
+      key: rewatched
+    template:
+      - name: tracearr
+        type: rewatched
+      - name: shared
+        translation_key: tracearr_rewatched
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Completed:
+    variables:
+      style: color
+      key: completed
+    template:
+      - name: tracearr
+        type: completed
+      - name: shared
+        translation_key: tracearr_completed
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Binged:
+    variables:
+      style: color
+      key: binged
+    template:
+      - name: tracearr
+        type: binged
+      - name: shared
+        allowed_libraries: show
+        translation_key: tracearr_binged
+      - name: custom
+        cache_builders: 0
+
+  Tracearr Most Transcoded:
+    variables:
+      style: color
+      key: transcoded
+    template:
+      - name: tracearr
+        type: transcoded
+      - name: shared
+        translation_key: tracearr_transcoded
+      - name: custom
+        cache_builders: 0
