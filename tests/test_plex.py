@@ -44,6 +44,7 @@ def make_plex(**attrs) -> Plex:
     plex.is_show = attrs.pop("is_show", False)
     plex.type = attrs.pop("type", "Movie")
     plex.cached_items = attrs.pop("cached_items", {})
+    plex.filter_attr_cache = attrs.pop("filter_attr_cache", {})
     plex.collection_names = attrs.pop("collection_names", [])
     plex.collection_files = attrs.pop("collection_files", [])
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
@@ -610,6 +611,22 @@ class TestReload:
         assert result is item
         plex.item_reload.assert_called_once_with(item)
 
+    def test_real_reload_clears_filter_attr_cache_for_that_item(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(filter_attr_cache={(101, "genres"): ["stale"], (202, "genres"): ["untouched"]})
+        plex.item_reload = MagicMock()
+        plex.reload(item, force=True)
+        assert (101, "genres") not in plex.filter_attr_cache
+        assert (202, "genres") in plex.filter_attr_cache, "a different item's cached entries must not be touched"
+
+    def test_cache_hit_reload_does_not_clear_filter_attr_cache(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, True)}, filter_attr_cache={(101, "genres"): ["Action"]})
+        plex.item_reload = MagicMock()
+        plex.reload(item)
+        plex.item_reload.assert_not_called()
+        assert plex.filter_attr_cache[(101, "genres")] == ["Action"]
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # check_filters / check_filter reload dedup
@@ -726,6 +743,99 @@ class TestCheckFilterForceReloadParam:
         plex.check_filter(item, "title", "", "title", ["Something"], None, force_reload=None)
 
         plex.reload.assert_called_once_with(item, force=False)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# cached_item_attr - the per-run memo for check_filter's plain attribute reads
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCachedItemAttr:
+    def test_first_read_hits_the_real_attribute(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, genres=["Action"])
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+
+    def test_repeat_read_returns_memoized_value_without_touching_the_item_again(self):
+        plex = make_plex()
+        item = MagicMock()
+        item.ratingKey = 1
+        item.genres = ["Action"]
+        plex.cached_item_attr(item, "genres")
+        item.genres = ["Changed"]  # if the memo weren't working, the second read would see this
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+
+    def test_different_items_get_independent_cache_entries(self):
+        plex = make_plex()
+        item_a = make_plex_item(rating_key=1, genres=["Action"])
+        item_b = make_plex_item(rating_key=2, genres=["Comedy"])
+        assert plex.cached_item_attr(item_a, "genres") == ["Action"]
+        assert plex.cached_item_attr(item_b, "genres") == ["Comedy"]
+
+    def test_different_attributes_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, genres=["Action"], labels=["Test"])
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+        assert plex.cached_item_attr(item, "labels") == ["Test"]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# check_filter - which attribute reads are cached vs. always read live
+#
+# genre/label/collection are protected by check_filters' own force-reload dedup above; every other
+# cached attribute here is never written by Kometa anywhere, so a per-run memo changes nothing about
+# the value ever returned. summary/editionTitle are the one pair confirmed writable by update_details
+# with no cache eviction anywhere - these must stay live, not cached, and this must not silently
+# regress if someone "helpfully" converts them later.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFilterCachingScope:
+    def _movie_item(self, **extras):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        for key, value in extras.items():
+            setattr(item, key, value)
+        return item
+
+    def test_has_collection_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(collections=[MagicMock(tag="Marvel")])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "has_collection", "", "has_collection", True, None, force_reload=False)
+        item.collections = []  # if cached correctly, this change must not be seen on the next call
+        result = plex.check_filter(item, "has_collection", "", "has_collection", True, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) collections list"
+
+    def test_has_edition_is_never_cached(self):
+        # editionTitle is writable by update_details with no cache eviction - must always read live.
+        plex = make_plex()
+        item = self._movie_item(editionTitle="Director's Cut")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "has_edition", "", "has_edition", True, None, force_reload=False)
+        item.editionTitle = None
+        result = plex.check_filter(item, "has_edition", "", "has_edition", True, None, force_reload=False)
+        assert result is False, "has_edition must see the live value, not a stale cached one"
+        assert (1, "editionTitle") not in plex.filter_attr_cache
+
+    def test_summary_string_filter_is_never_cached(self):
+        plex = make_plex()
+        item = self._movie_item(summary="Original summary")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "summary", "", "summary", ["Original summary"], None, force_reload=False)
+        item.summary = "Changed summary"
+        plex.check_filter(item, "summary", "", "summary", ["Changed summary"], None, force_reload=False)
+        assert (1, "summary") not in plex.filter_attr_cache
+
+    def test_title_string_filter_is_cached(self):
+        # title is written only via operations.py's mass-edit path, which explicitly evicts cached_items - safe to cache here.
+        plex = make_plex()
+        item = self._movie_item(title="Original Title")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "title", "", "title", ["Original Title"], None, force_reload=False)
+        assert (1, "title") in plex.filter_attr_cache
 
 
 # ═══════════════════════════════════════════════════════════════════════
