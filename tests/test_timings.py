@@ -15,7 +15,7 @@ from unittest.mock import MagicMock
 import pytest
 
 import modules.timings as timings_module
-from modules.timings import TimingRegistry, hostname_to_source, tag_context, timed, track, wrap_cache_methods
+from modules.timings import TimingRegistry, hostname_to_source, overlay_context, tag_context, timed, track, wrap_cache_methods
 
 # ═══════════════════════════════════════════════════════════════════════
 # Fixtures
@@ -48,7 +48,7 @@ def disabled_registry(monkeypatch):
 def test_record_accumulates_seconds_and_calls(enabled_registry):
     enabled_registry.record("gather_ids", 1.5, library="Movies", collection="Marvel", source="tmdb")
     enabled_registry.record("gather_ids", 0.5, library="Movies", collection="Marvel", source="tmdb")
-    bucket = enabled_registry.buckets[("Movies", "Marvel", "gather_ids", "tmdb")]
+    bucket = enabled_registry.buckets[("Movies", "Marvel", "gather_ids", "tmdb", None)]
     assert bucket["seconds"] == pytest.approx(2.0)
     assert bucket["calls"] == 2
 
@@ -67,7 +67,7 @@ def test_record_is_noop_when_disabled(disabled_registry):
 def test_track_context_manager_records_elapsed_time(enabled_registry):
     with track("build_filter", library="TV Shows"):
         time.sleep(0.01)
-    bucket = enabled_registry.buckets[("TV Shows", None, "build_filter", None)]
+    bucket = enabled_registry.buckets[("TV Shows", None, "build_filter", None, None)]
     assert bucket["calls"] == 1
     assert bucket["seconds"] > 0
 
@@ -91,7 +91,7 @@ def test_timed_decorator_tags_library_and_collection_from_self(enabled_registry)
 
     result = FakeBuilder().gather_ids("tmdb_list", "12345")
     assert result == "tmdb_list:12345"
-    bucket = enabled_registry.buckets[("Movies", "Marvel Collection", "gather_ids", "tmdb_list")]
+    bucket = enabled_registry.buckets[("Movies", "Marvel Collection", "gather_ids", "tmdb_list", None)]
     assert bucket["calls"] == 1
 
 
@@ -130,7 +130,7 @@ def test_wrap_cache_methods_records_hit_and_miss(enabled_registry, monkeypatch):
     rates = enabled_registry.cache_hit_rates()
     assert rates["query_thing"]["hits"] == 1
     assert rates["query_thing"]["misses"] == 1
-    update_bucket = enabled_registry.buckets[(None, None, "cache", "update_thing")]
+    update_bucket = enabled_registry.buckets[(None, None, "cache", "update_thing", None)]
     assert update_bucket["calls"] == 1
 
 
@@ -172,7 +172,7 @@ def test_instrument_session_wraps_request_and_tags_by_hostname(enabled_registry,
     assert result is fake_response
     assert session.calls == [("GET", "https://api.themoviedb.org/3/movie/1")]
 
-    bucket = enabled_registry.buckets[(None, None, "network", "tmdb")]
+    bucket = enabled_registry.buckets[(None, None, "network", "tmdb", None)]
     assert bucket["calls"] == 1
     assert bucket["bytes"] == 42
 
@@ -205,7 +205,7 @@ def test_tag_context_adds_suffix_to_network_source(enabled_registry, monkeypatch
     with tag_context("image"):
         wrapped.request("GET", "https://api.themoviedb.org/3/image/1.jpg")
 
-    assert (None, None, "network", "tmdb:image") in enabled_registry.buckets
+    assert (None, None, "network", "tmdb:image", None) in enabled_registry.buckets
 
 
 @pytest.mark.parametrize(
@@ -220,6 +220,50 @@ def test_tag_context_adds_suffix_to_network_source(enabled_registry, monkeypatch
 )
 def test_hostname_to_source_mapping(url, expected):
     assert hostname_to_source(url) == expected
+
+
+def test_overlay_context_tags_track_calls_inside_the_block(enabled_registry):
+    with overlay_context(True):
+        with track("gather_ids", library="Movies", collection="Best Overlay"):
+            pass
+    assert (
+        "Movies",
+        "Best Overlay",
+        "gather_ids",
+        None,
+        True,
+    ) in enabled_registry.buckets
+
+
+def test_overlay_context_false_tags_collection_loop_work(enabled_registry):
+    with overlay_context(False):
+        with track("filter_and_save_items", library="Movies", collection="IMDb Popular"):
+            pass
+    assert ("Movies", "IMDb Popular", "filter_and_save_items", None, False) in enabled_registry.buckets
+
+
+def test_overlay_context_restores_previous_value_on_exit(enabled_registry):
+    with overlay_context(True):
+        with overlay_context(False):
+            pass
+        assert enabled_registry.overlay_ctx is True
+    assert enabled_registry.overlay_ctx is None
+
+
+def test_overlay_context_tags_network_calls_via_instrument_session(enabled_registry, monkeypatch):
+    monkeypatch.setattr(timings_module, "ENABLED", True)
+    fake_response = MagicMock()
+    fake_response.headers = {}
+
+    class FakeSession:
+        def request(self, method, url, *args, **kwargs):
+            return fake_response
+
+    wrapped = timings_module.instrument_session(FakeSession())
+    with overlay_context(True):
+        wrapped.request("GET", "https://api.themoviedb.org/3/movie/1")
+
+    assert (None, None, "network", "tmdb", True) in enabled_registry.buckets
 
 
 def test_hostname_to_source_recognises_registered_plex_and_arr_hosts(enabled_registry):
@@ -256,7 +300,7 @@ def test_export_writes_json_and_csv_that_round_trip(enabled_registry, tmp_path):
 
     with open(csv_path, encoding="utf-8") as fp:
         csv_lines = fp.read().splitlines()
-    assert csv_lines[0] == "library,collection,phase,source,seconds,calls,bytes,mean_seconds"
+    assert csv_lines[0] == "library,collection,phase,source,overlay,seconds,calls,bytes,mean_seconds"
     assert len(csv_lines) == 1 + len(payload["buckets"])
 
     with open(summary_path, encoding="utf-8") as fp:
