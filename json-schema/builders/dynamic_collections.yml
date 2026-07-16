@@ -176,7 +176,7 @@ dynamic_collections:
         - Cinemax
 
   # ---------------------------------------------------------------------------
-  # edition — one collection per movie edition tag (movie libraries only).
+  # edition — one collection per movie/show edition tag.
   # Demonstrates: type, title_format.
   # ---------------------------------------------------------------------------
   Edition Collections:
