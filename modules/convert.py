@@ -191,22 +191,27 @@ class Convert:
         expired = False
         if self.cache:
             cache_id, expired = self.cache.query_tmdb_to_tvdb_map(tmdb_id, tmdb=True)
-            if cache_id and not expired:
+            if expired is False:  # a cached row exists and hasn't expired, whether it's a real ID or a confirmed no-mapping result
                 return cache_id
+        tvdb_id = None
+        lookup_failed = False
         try:
             tvdb_id = self.tmdb.convert_from(tmdb_id, "tvdb_id", False)
-            if tvdb_id:
-                if self.cache:
-                    self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
-                return tvdb_id
         except Failed:
-            pass
+            lookup_failed = True  # a real API/network error, not a confirmed miss - don't cache this as "no mapping"
+        if tvdb_id:
+            if self.cache:
+                self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
+            return tvdb_id
+        if self.cache and not lookup_failed:
+            self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, None, is_negative=True)
         if fail:
             raise MappingConvertError(f"Convert Warning: No TVDb ID found for TMDb ID '{tmdb_id}'")
         else:
             return None
 
     def tvdb_to_tmdb(self, tvdb_id, fail=False):
+        # No negative-cache write here: tmdb_to_tvdb_map2 is unique-keyed on tmdb_id, and a failed lookup in this direction never produces one to key against.
         expired = False
         if self.cache:
             cache_id, expired = self.cache.query_tmdb_to_tvdb_map(tvdb_id, tmdb=False)

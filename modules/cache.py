@@ -21,6 +21,9 @@ def sql_identifier(name):
 
 
 class Cache:
+    # Confirmed-no-mapping results (e.g. no TVDb ID exists for a given TMDb ID) get cached this many times longer than a normal hit, since a real non-match rarely resolves quickly but shouldn't be assumed permanent either.
+    NEGATIVE_MAP_TTL_MULTIPLIER = 3
+
     def __init__(self, config_path, expiration):
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
@@ -459,8 +462,8 @@ class Cache:
         to_id = "tvdb_id" if tmdb else "tmdb_id"
         return self._query_map("tmdb_to_tvdb_map2", _id, from_id, to_id)
 
-    def update_tmdb_to_tvdb_map(self, expired, tmdb_id, tvdb_id):
-        self._update_map("tmdb_to_tvdb_map2", "tmdb_id", tmdb_id, "tvdb_id", tvdb_id, expired)
+    def update_tmdb_to_tvdb_map(self, expired, tmdb_id, tvdb_id, is_negative=False):
+        self._update_map("tmdb_to_tvdb_map2", "tmdb_id", tmdb_id, "tvdb_id", tvdb_id, expired, is_negative=is_negative)
 
     def query_letterboxd_map(self, letterboxd_id):
         return self._query_map("letterboxd_map", letterboxd_id, "letterboxd_id", "tmdb_id")
@@ -475,6 +478,7 @@ class Cache:
         self._update_map("mojo_map", "mojo_url", mojo_url, "imdb_id", imdb_id, expired)
 
     def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
+        # A row with a NULL to_id is a cached "confirmed no mapping" result (see _update_map's is_negative), not a missing entry - it still counts as a cache hit, just on a longer TTL.
         map_name, from_id = sql_identifier(map_name), sql_identifier(from_id)
         id_to_return = None
         expired = None
@@ -486,26 +490,30 @@ class Cache:
                 else:
                     cursor.execute(f"SELECT * FROM {map_name} WHERE {from_id} = ? AND media_type = ?", (_id, media_type))  # nosec B608 - identifiers validated by sql_identifier()
                 row = cursor.fetchone()
-                if row and row[to_id]:
+                if row and row["expiration_date"]:
+                    is_negative_row = not row[to_id]
+                    ttl_days = self.expiration * self.NEGATIVE_MAP_TTL_MULTIPLIER if is_negative_row else self.expiration
                     datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                     time_between_insertion = datetime.now() - datetime_object
-                    if "_" in row[to_id]:
-                        id_to_return = row[to_id]
-                    else:
-                        try:
-                            id_to_return = int(row[to_id])
-                        except ValueError:
+                    if not is_negative_row:
+                        if "_" in row[to_id]:
                             id_to_return = row[to_id]
-                    expired = time_between_insertion.days > self.expiration
+                        else:
+                            try:
+                                id_to_return = int(row[to_id])
+                            except ValueError:
+                                id_to_return = row[to_id]
+                    expired = time_between_insertion.days > ttl_days
                     out_type = row["media_type"] if return_type else None
         if return_type:
             return id_to_return, out_type, expired
         else:
             return id_to_return, expired
 
-    def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None):
+    def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None, is_negative=False):
         map_name, val1_name, val2_name = sql_identifier(map_name), sql_identifier(val1_name), sql_identifier(val2_name)
-        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
+        ttl_days = self.expiration * self.NEGATIVE_MAP_TTL_MULTIPLIER if is_negative else self.expiration
+        expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, ttl_days)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute(f"INSERT OR IGNORE INTO {map_name}({val1_name}) VALUES(?)", (val1,))

@@ -169,6 +169,48 @@ class TestLetterboxdMap:
         assert expired is None
 
 
+class TestTmdbToTvdbNegativeCaching:
+    """Confirmed "no TVDb mapping for this TMDb ID" results are cached (NULL tvdb_id) on a longer TTL than normal hits."""
+
+    def test_negative_write_is_queryable_as_hit(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=30)
+        cache.update_tmdb_to_tvdb_map(False, "9999", None, is_negative=True)
+        result, expired = cache.query_tmdb_to_tvdb_map("9999", tmdb=True)
+        assert result is None
+        assert expired is False
+
+    def test_negative_entry_uses_longer_ttl_than_positive(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_tmdb_to_tvdb_map(False, "8888", None, is_negative=True)
+        # Past the normal 10-day TTL but well within the negative TTL (10 * NEGATIVE_MAP_TTL_MULTIPLIER).
+        stale_for_positive_only = (datetime.now() - timedelta(days=15)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.execute("UPDATE tmdb_to_tvdb_map2 SET expiration_date = ? WHERE tmdb_id = ?", (stale_for_positive_only, "8888"))
+        result, expired = cache.query_tmdb_to_tvdb_map("8888", tmdb=True)
+        assert result is None
+        assert expired is False
+
+    def test_negative_entry_eventually_expires(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_tmdb_to_tvdb_map(False, "7777", None, is_negative=True)
+        long_ago = (datetime.now() - timedelta(days=999)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.execute("UPDATE tmdb_to_tvdb_map2 SET expiration_date = ? WHERE tmdb_id = ?", (long_ago, "7777"))
+        result, expired = cache.query_tmdb_to_tvdb_map("7777", tmdb=True)
+        assert result is None
+        assert expired is True
+
+    def test_positive_entry_still_uses_normal_ttl(self, tmp_path):
+        cache = make_cache(tmp_path, expiration=10)
+        cache.update_tmdb_to_tvdb_map(False, "6666", "12345")
+        stale_for_positive = (datetime.now() - timedelta(days=15)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as conn:
+            conn.execute("UPDATE tmdb_to_tvdb_map2 SET expiration_date = ? WHERE tmdb_id = ?", (stale_for_positive, "6666"))
+        result, expired = cache.query_tmdb_to_tvdb_map("6666", tmdb=True)
+        assert result == 12345
+        assert expired is True
+
+
 class TestImdbToTmdbMap:
     def test_round_trip(self, tmp_path):
         cache = make_cache(tmp_path)

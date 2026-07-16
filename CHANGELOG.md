@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+- Fix `tmdb_to_tvdb` re-attempting a live TMDb lookup on every run for TMDb IDs with no TVDb mapping; confirmed misses are now cached (at 3x `cache_expiration`) instead of being rechecked every time, cutting redundant network calls for tmdb_discover-driven TV overlays.
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Prevent Kometa from creating duplicate collections when Plex search misses an existing same-named collection by falling back to the full collection inventory before creating.
 - Refine the run summary output: group repeated overlay, Letterboxd/TMDb, Plex resolution-regex, and Trakt TVDb-miss messages; normalize logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
