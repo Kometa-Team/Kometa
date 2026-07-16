@@ -1226,7 +1226,7 @@ class Operations:
                     if any(["imdb" in x for x, _ in episode_ops if x]) and not imdb_id:
                         logger.info(f"No IMDb ID for Guid: {item.guid}")
 
-                    for ep in item.episodes():
+                    for ep in self.library.cached_item_subitems(item, "episodes"):
                         ep = self.library.reload(ep)
                         item_title = self.library.get_item_display_title(ep)
                         logger.info("")
