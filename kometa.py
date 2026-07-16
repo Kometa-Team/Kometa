@@ -675,6 +675,10 @@ def start(attrs):
                 (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
                 (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
                 (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
+                (
+                    r"TMDb Error: Collection ID \d+ missing on TMDb; add '\d+' to the franchise exclude list if this is auto-built\.",
+                    "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built",
+                ),
                 (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
                 (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),

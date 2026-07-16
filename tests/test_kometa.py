@@ -181,6 +181,13 @@ def test_asset_paths_and_warnings_are_summarized() -> None:
         assert _summarize_log_message(message) == expected
 
 
+def test_missing_tmdb_collections_are_summarized() -> None:
+    """Variable collection IDs should collapse into one summary row."""
+    message = "TMDb Error: Collection ID 1698578 missing on TMDb; add '1698578' to the franchise exclude list if this is auto-built."
+    expected = "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built"
+    assert _summarize_log_message(message) == expected
+
+
 def test_status_summary_skips_empty_tables() -> None:
     """Regression for the run-status table header.
 
