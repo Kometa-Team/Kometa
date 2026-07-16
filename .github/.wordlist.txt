@@ -225,6 +225,7 @@ linuxserver
 linuxserver's
 localhost
 looper
+lookups
 lossy
 lsio
 luxembourgish
@@ -449,6 +450,7 @@ truehd
 TrueNAS
 tt
 ttf
+tsv
 tubi
 tutin
 tv

@@ -1,11 +1,6 @@
-import csv
-import gzip
 import json
 import math
-import os
 import re
-import shutil
-from typing import Literal, overload
 
 from modules import util
 from modules.util import Failed
@@ -467,6 +462,7 @@ event_options = {
     "razzie": {"eventId": "ev0000558"},
 }
 base_url = "https://www.imdb.com"
+service_url = "https://utilities.kometa.wiki/imdb-service"
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
@@ -480,9 +476,8 @@ class IMDb:
         self.requests = requests
         self.cache = cache
         self.default_dir = default_dir
-        self._ratings = None
-        self._genres = None
-        self._episode_ratings = None
+        self._title_cache = {}
+        self._episode_ratings_cache = {}
         self._git_events = {}
         self._git_events_validation = None
         self._web_events = {}
@@ -505,6 +500,17 @@ class IMDb:
 
     def _graph_request(self, json_data):
         return self.requests.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
+
+    def _service_request(self, endpoint):
+        url = f"{service_url}/{endpoint}"
+        response = self.requests.get(url)
+        if response.status_code >= 400:
+            raise Failed(f"IMDb Service Error: {response.status_code} - {response.text}")
+        try:
+            return response.json()
+        except ValueError:
+            logger.error(str(response.content))
+            raise
 
     @property
     def search_hash(self):
@@ -901,85 +907,33 @@ class IMDb:
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
-    @overload
-    def _interface(self, interface: Literal["ratings"]) -> dict[str, str]: ...
-    @overload
-    def _interface(self, interface: Literal["basics"]) -> dict[str, list[str]]: ...
-    @overload
-    def _interface(self, interface: Literal["episode"]) -> list[list[str]]: ...
-
-    def _interface(self, interface):
-        gz = os.path.join(self.default_dir, f"title.{interface}.tsv.gz")
-        tsv = os.path.join(self.default_dir, f"title.{interface}.tsv")
-
-        if os.path.exists(gz):
-            os.remove(gz)
-        if os.path.exists(tsv):
-            os.remove(tsv)
-
-        self.requests.get_stream(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", gz, "IMDb Interface")
-
-        with open(tsv, "wb") as f_out:
-            with gzip.open(gz, "rb") as f_in:
-                shutil.copyfileobj(f_in, f_out)
-
-        with open(tsv, "r", encoding="utf-8") as t:
-            if interface == "ratings":
-                data = {line[0]: line[1] for line in csv.reader(t, delimiter="\t")}
-            elif interface == "basics":
-                data = {line[0]: str(line[-1]).split(",") for line in csv.reader(t, delimiter="\t") if str(line[-1]) != "\\N"}
-            else:
-                data = [line for line in csv.reader(t, delimiter="\t")]
-
-        if os.path.exists(gz):
-            os.remove(gz)
-        if os.path.exists(tsv):
-            os.remove(tsv)
-
-        return data
-
-    @property
-    def ratings(self):
-        if self._ratings is None:
-            self._ratings = self._interface("ratings")
-        return self._ratings
-
-    @property
-    def genres(self):
-        if self._genres is None:
-            self._genres = self._interface("basics")
-        return self._genres
-
-    @property
-    def episode_ratings(self):
-        if self._episode_ratings is None:
-            self._episode_ratings = {}
-            logger.info("Processing IMDb rating for episodes. This may take a while...")
-            all_eps = self._interface("episode")
-            for i, (imdb_id, parent_id, season_num, episode_num) in enumerate(all_eps):
-                if imdb_id not in self.ratings:
-                    continue
-                if parent_id not in self._episode_ratings:
-                    self._episode_ratings[parent_id] = {}
-                if season_num not in self._episode_ratings[parent_id]:
-                    self._episode_ratings[parent_id][season_num] = {}
-                self._episode_ratings[parent_id][season_num][episode_num] = self.ratings[imdb_id]
-                logger.ghost(f"Processing IMDb rating for episodes: {i / len(all_eps) * 100:6.2f}%")
-            logger.exorcise()
-        return self._episode_ratings
+    def _service_title(self, imdb_id):
+        if imdb_id not in self._title_cache:
+            self._title_cache[imdb_id] = self._service_request(f"title/{imdb_id}")
+        return self._title_cache[imdb_id]
 
     def get_rating(self, imdb_id):
-        return self.ratings[imdb_id] if imdb_id in self.ratings else None
+        if not imdb_id:
+            return None
+        return self._service_title(imdb_id).get("averageRating")
 
     def get_genres(self, imdb_id):
-        return self.genres[imdb_id] if imdb_id in self.genres else []
+        if not imdb_id:
+            return []
+        genres = self._service_title(imdb_id).get("genres")
+        return genres.split(",") if genres else []
 
     def get_episode_rating(self, imdb_id, season_num, episode_num):
+        if not imdb_id:
+            return None
         season_num = str(season_num)
         episode_num = str(episode_num)
-        if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
-            return None
-        return self.episode_ratings[imdb_id][season_num][episode_num]
+        if imdb_id not in self._episode_ratings_cache:
+            self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}")
+        seasons = self._episode_ratings_cache[imdb_id].get("seasons", {})
+        season = seasons.get(season_num, {})
+        episode = season.get(episode_num, {})
+        return episode.get("averageRating")
 
     def item_filter(self, imdb_info, filter_attr, modifier, filter_final, filter_data):
         if filter_attr == "imdb_keyword":
