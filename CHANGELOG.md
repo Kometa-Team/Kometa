@@ -22,45 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `mass_metadata_update`, a grouped Library Operation for genre, content rating, title, studio, date, rating, artwork, mapper, and backup updates. Existing mass metadata operations move under their matching sub-attributes..
 - Add YamTrack connector support with `yamtrack_list` and `yamtrack_list_details` builders.
 - Add `yamtrack_tracked` builder to collect YamTrack profile movie, TV, and anime items by tracked status.
+- Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
-
-- Update the Sight & Sound Letterboxd default collection to use the correct `sightsoundmag` owner for the list.
-- Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
-- Fix asset-directory logos being ignored during metadata image updates.
-- Skip episode rating operations for movie libraries.
-- Show the configured assets directory in missing-asset warnings instead of `'None'` when no matching flat asset file is found.
-- Suppress full stack traces for a small set of known, non-critical logger patterns so expected Plex not-found noise prints as a warning instead of a stack trace.
-- Preserve Plex batch multi-edit state across timeout retries so a transient `saveMultiEdits()` timeout no longer raises `Batch multi-editing mode not enabled` on retry.
-- Create the per-library `_backgrounds` and `_logos` image-map tables unconditionally so caches created before those tables existed self-heal on the next run, instead of raising `no such table: image_map_<n>_logos` and failing every collection that sets a logo.
-- Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
-- Asset folder would be reported as `None` when `asset_folders` was set to false
-- Skip Recommendation Hub sorting on a targeted `--run-collections` run instead of resorting every pinned collection; a partial run only knows the `hub_priority` values of the collections it rebuilt, so treating the rest as unprioritised pushed them out of position. Also log the configured `hub_priority` value during attribute validation, matching other methods like `collection_order`.
-- Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
-
-### Changed
-
-- `modules/imdb.py`: IMDb-backed mass rating, genre, and episode-rating lookups now use the Kometa IMDb Service (`utilities.kometa.wiki/imdb-service`) instead of downloading the public IMDb TSV datasets (`title.ratings.tsv.gz`, `title.basics.tsv.gz`, `title.episode.tsv.gz`). This eliminates ~286 MB of compressed downloads per run.
-- Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
-- `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
-- `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
-- `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
-- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
-
-### Security
-
-- `modules/cache.py`: dynamic table/column names interpolated into SQL are now validated by a `sql_identifier()` guard at every method that accepts them. All current callers pass internal identifiers, so this hardens against future misuse rather than fixing an exploitable path (and addresses bandit B608).
-- `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
-- `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
-- `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
-
-- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
-
-### Fixed
-
+- `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
+- `modules/tvdb.py`: add a distinct `Unavailable` exception for TVDb requests that exhaust their retry budget without ever returning usable content (e.g. repeated HTTP 202/empty-body "still generating" responses), separate from `NotFound`'s definitive 4xx. Previously both were re-raised with the identical "No Series/Movie found" message, so a confirmed-dead TVDb ID and a transient TVDb hiccup were indistinguishable in the log. All `get_tvdb_obj()` call sites (`modules/builder.py`, `modules/operations.py`) now log `NotFound` at debug (unchanged), `Unavailable` at warning (previously logged at error via the generic `Failed` handler), and any other `Failed` at error (unchanged).
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Prevent Kometa from creating duplicate collections when Plex search misses an existing same-named collection by falling back to the full collection inventory before creating.
-- Refine the run summary output: group repeated overlay, Letterboxd/TMDb, Plex resolution-regex, and Trakt TVDb-miss messages; normalize logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
+- Refine the run summary output: group repeated overlay, Letterboxd/TMDb, Plex resolution-regex, Trakt TVDb-miss, and missing local artwork/theme path messages; update the supported-artwork summary wording; normalize asset-directory and logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
 - Fix overlay cache poisoning where application state was written for unresolved overlays (e.g. no IMDb rating), causing the item to be permanently skipped even after a rating became available.
 - Fix duplicate rows accumulating in `overlay_special_text2` on every run due to a missing `UNIQUE(rating_key, type)` constraint.
 - Ignore episode logo and square-art files during asset-directory discovery because Plex episodes only support poster and background artwork.
@@ -81,6 +50,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/radarr.py` + `modules/sonarr.py` + `stubs/arrapi/`: eliminate 108 pyright errors across `radarr.py` and `sonarr.py` (54 each) with a **local stub package** for `arrapi`. Root cause and fix are identical to the `tmdbapis` stubs in the same PR: `BaseObj._parse()` in the `arrapi` library (also Kometa-maintained, `Kometa-Team/ArrAPI`) has no return-type annotation, producing the same ~N-member union explosion on every attribute of every `Movie`, `Series`, and `Tag` object. Stub files created: `stubs/arrapi/{__init__,exceptions}.pyi`, `stubs/arrapi/apis/{__init__,base,radarr,sonarr}.pyi`, `stubs/arrapi/objs/{__init__,base,reload,simple}.pyi`. `RadarrAPI.add_multiple_movies` and `SonarrAPI.add_multiple_series` are fully annotated with their actual positional parameter lists (they had 8 and 11 positional params respectively); `_raw: Any` is declared as an instance attribute on `SonarrAPI` (it's an internal raw-API object with `.v3`/`.v4`/`.new_codebase` attributes, not a method). Four remaining `Optional.id/name` errors in each file (`qp: QualityProfile | None` loop-assigned variable used without a None guard) are pre-existing real bugs and left for a separate PR. Baseline drops 397 → 297 (`radarr.py` and `sonarr.py` each drop 54 → 4).
 - `modules/tmdb.py` + `stubs/tmdbapis/`: eliminate all 670 pyright errors in `modules/tmdb.py` with a **local stub package** for `tmdbapis`. The root cause: `TMDbObj._parse()` in the `tmdbapis` library has no return-type annotation, so pyright infers a ~49-member union from all its `elif` branches (every TMDb object type — `Movie`, `TVShow`, `Credit`, `Episode`, `int`, `float`, `str`, `datetime`, etc.). Every attribute assigned via `self._parse(...)` then carries that union, and any subscript or iteration on such an attribute emits one error *per union member* — hence 49 errors on a single `results.tv_results[0]` subscript and 40 errors on each `for i in person.movie_cast` comprehension. Fix: `stubs/tmdbapis/` directory (new) with `pyproject.toml: stubPath = "stubs"`. The stub declares `_parse() -> Any` on `TMDbObj`, which collapses all attribute union explosions. Critical attributes that Kometa actually uses are typed precisely — `FindResults.{movie_results,tv_results,tv_episode_results}: list[Movie|TVShow|Episode]`, `Person.{movie_cast,tv_cast,movie_crew,tv_crew}: list[Credit]`, `Credit.{movie,tv_show}: Movie|TVShow`, `TMDbPagination.total_results: int` + `__iter__` — so code that reads those attributes gets the right narrow type. `__getattr__ -> Any` on every class serves as the safe fallback for the hundreds of other attributes Kometa doesn't use. One small code fix in `modules/tmdb.py`: added `self.tvdb_id: None = None` to `TMDbMovie.__init__` (the attribute is only meaningful on `TMDbShow`, but `convert_from()` accesses `item.tvdb_id` on the union type — pyright correctly flagged the missing attribute on the movie branch). Baseline drops 1067 → 397 (`modules/tmdb.py` falls off the per-file table entirely). `tmdbapis` is maintained by the Kometa team; a follow-up PR to add `py.typed` + inline annotations upstream would eliminate the need for these stubs.
 - Add a 3-strike retry around Plex `saveMultiEdits()` read/connect timeouts: retry after 2 seconds on attempt 1, retry after 5 seconds on attempt 2, and fail gracefully on attempt 3 while preserving the traceback in `meta.log`.
+- Update the Sight & Sound Letterboxd default collection to use the correct `sightsoundmag` owner for the list.
+- Fix mixed-library playlist `plex_search` by building the Plex search per library type while logging the criteria once.
+- Fix asset-directory logos being ignored during metadata image updates.
+- Skip episode rating operations for movie libraries.
+- Show the configured assets directory in missing-asset warnings instead of `'None'` when no matching flat asset file is found.
+- Suppress full stack traces for a small set of known, non-critical logger patterns so expected Plex not-found noise prints as a warning instead of a stack trace.
+- Preserve Plex batch multi-edit state across timeout retries so a transient `saveMultiEdits()` timeout no longer raises `Batch multi-editing mode not enabled` on retry.
+- Create the per-library `_backgrounds` and `_logos` image-map tables unconditionally so caches created before those tables existed self-heal on the next run, instead of raising `no such table: image_map_<n>_logos` and failing every collection that sets a logo.
+- Report transient TMDb network failures as a warning and a timeout-style error instead of dumping the raw connection traceback into the run summary.
+- Asset folder would be reported as `None` when `asset_folders` was set to false
+- Skip Recommendation Hub sorting on a targeted `--run-collections` run instead of resorting every pinned collection; a partial run only knows the `hub_priority` values of the collections it rebuilt, so treating the rest as unprioritised pushed them out of position. Also log the configured `hub_priority` value during attribute validation, matching other methods like `collection_order`.
+- Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
+- Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
+- Fix the default AU content-rating overlay so the MA15+ badge matches both Plex rating spellings: canonical `au/MA 15+` from explicit TMDb Australian certifications and Plex-derived `au/MA15+` for titles without an AU certification.
+
+### Changed
+
+- `modules/imdb.py`: IMDb-backed mass rating, genre, and episode-rating lookups now use the Kometa IMDb Service (`utilities.kometa.wiki/imdb-service`) instead of downloading the public IMDb TSV datasets (`title.ratings.tsv.gz`, `title.basics.tsv.gz`, `title.episode.tsv.gz`). This eliminates ~286 MB of compressed downloads per run.
+- Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
+- `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
+- `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
+- `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
+- Update requirements
+
+### Security
+
+- `modules/cache.py`: dynamic table/column names interpolated into SQL are now validated by a `sql_identifier()` guard at every method that accepts them. All current callers pass internal identifiers, so this hardens against future misuse rather than fixing an exploitable path (and addresses bandit B608).
+- `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
+- `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
+- `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
+- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
+
+### Changed
+
+- `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
+- `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
+- `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
+- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
+
+### Security
+
+- `modules/cache.py`: dynamic table/column names interpolated into SQL are now validated by a `sql_identifier()` guard at every method that accepts them. All current callers pass internal identifiers, so this hardens against future misuse rather than fixing an exploitable path (and addresses bandit B608).
+- `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
+- `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
+- `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
 
 ## [v2.4.4] - 2026-06-25
 
