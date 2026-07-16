@@ -6,7 +6,7 @@ from datetime import datetime
 
 from plexapi.exceptions import BadRequest, NotFound
 
-from modules import ergast, letterboxd, plex, util
+from modules import ergast, letterboxd, plex, timings, util
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
@@ -536,31 +536,40 @@ class DataFile:
 
                         if _debug:
                             logger.trace(f"Start {_method}: {_data}")
-                        try:
-                            for i_check in range(8):
-                                pass_start = _data  # Unchanged after a full pass means no nested vars are left to resolve, so stop early instead of burning the remaining passes.
-                                for option in optional:
-                                    if option not in variables and f"<<{option}>>" in str(_data):
-                                        raise Failed
-                                for option in [False, True]:
+                        with timings.track("check_for_var", library=self.library.name if self.library else None, collection=mapping_name):
+                            try:
+                                for i_check in range(8):
+                                    pass_start = _data  # Unchanged after a full pass means no nested vars are left to resolve, so stop early instead of burning the remaining passes.
+                                    for option in optional:
+                                        if option not in variables and f"<<{option}>>" in str(_data):
+                                            raise Failed
                                     for variable, variable_data in variables.items():
                                         if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=option)
+                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=False)
                                         elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
                                             continue
                                         elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
-                                            _data = scan_text(_data, variable, variable_data, second=option)
-                                for dm, dd in default.items():
-                                    if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
-                                        continue
-                                    elif _method not in ["name", "summary"] or dm != "key_name":
-                                        _data = scan_text(_data, dm, dd)
-                                if _data == pass_start:
-                                    break
-                        except Failed:
-                            if _debug:
-                                logger.trace(f"Failed {_method}: {_data}")
-                            raise
+                                            _data = scan_text(_data, variable, variable_data, second=False)
+                                    # second=True only matters for surviving <<var+N>>/<<var-N>> syntax - skip re-scanning every variable when it's not there; checked fresh so a substitution just introduced this pass still gets caught.
+                                    if re.search(r"<<\w+[+-]\d+>>", str(_data)):
+                                        for variable, variable_data in variables.items():
+                                            if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                                _data = scan_text(_data, variable, variable_data.replace(",", ""), second=True)
+                                            elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                                continue
+                                            elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
+                                                _data = scan_text(_data, variable, variable_data, second=True)
+                                    for dm, dd in default.items():
+                                        if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
+                                            continue
+                                        elif _method not in ["name", "summary"] or dm != "key_name":
+                                            _data = scan_text(_data, dm, dd)
+                                    if _data == pass_start:
+                                        break
+                            except Failed:
+                                if _debug:
+                                    logger.trace(f"Failed {_method}: {_data}")
+                                raise
                         if _debug:
                             logger.trace(f"End {_method}: {_data}")
                         return _data
