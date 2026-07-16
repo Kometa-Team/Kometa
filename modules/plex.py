@@ -1124,6 +1124,13 @@ class Plex(Library):
             self.filter_attr_cache[cache_key] = getattr(item, attr)
         return self.filter_attr_cache[cache_key]
 
+    def cached_item_subitems(self, item, method_name):
+        # Memoizes item.<method_name>() (seasons/episodes/albums/tracks) - same cache/purge contract as cached_item_attr() above. Kometa never adds/removes these itself, so a cached listing is exactly as fresh as a live re-fetch within one run.
+        cache_key = (item.ratingKey, method_name)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = list(getattr(item, method_name)())
+        return self.filter_attr_cache[cache_key]
+
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def edit_query(self, item, edits, advanced=False):
         if advanced:
@@ -2666,13 +2673,13 @@ class Plex(Library):
                     return False
         elif filter_attr in ["seasons", "episodes", "albums", "tracks"]:
             if filter_attr == "seasons":
-                sub_items = item.seasons()
+                sub_items = self.cached_item_subitems(item, "seasons")
             elif filter_attr == "albums":
-                sub_items = item.albums()
+                sub_items = self.cached_item_subitems(item, "albums")
             elif filter_attr == "tracks":
-                sub_items = item.tracks()
+                sub_items = self.cached_item_subitems(item, "tracks")
             else:
-                sub_items = item.episodes()
+                sub_items = self.cached_item_subitems(item, "episodes")
             filters_in = []
             percentage = 60
             count = None
