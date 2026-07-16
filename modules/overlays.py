@@ -151,7 +151,7 @@ class Overlays:
                                             continue
                                     elif actual == "total_runtime":
                                         with timings.track("overlay_runtime_lookup", library=self.library.name):
-                                            sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
+                                            sub_items = self.library.cached_item_subitems(item, "episodes") if current_overlay.level in ["show", "season"] else self.library.cached_item_subitems(item, "tracks")
                                             sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                         real_value = sum(sub_items)
                                     else:
@@ -298,12 +298,12 @@ class Overlays:
                                                 actual_value = item.duration
                                             else:
                                                 with timings.track("overlay_runtime_lookup", library=self.library.name):
-                                                    sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                    sub_items = self.library.cached_item_subitems(item, "episodes") if text_overlay.level in ["show", "season"] else self.library.cached_item_subitems(item, "tracks")
                                                     sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                                 actual_value = sum(sub_items) / len(sub_items)
                                         elif format_var == "total_runtime":
                                             with timings.track("overlay_runtime_lookup", library=self.library.name):
-                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                sub_items = self.library.cached_item_subitems(item, "episodes") if text_overlay.level in ["show", "season"] else self.library.cached_item_subitems(item, "tracks")
                                                 sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                             actual_value = sum(sub_items)
                                         else:
