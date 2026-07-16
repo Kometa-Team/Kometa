@@ -220,3 +220,95 @@ class TestValidateImdbWatchlist:
         """
         result = self._imdb().validate_imdb("Test", "imdb_watchlist", [{"user_id": "ur64054558"}])
         assert result[0]["user_id"] == "ur64054558"
+
+
+# ---------------------------------------------------------------------------
+# Service-backed rating / genre / episode-rating lookups
+# ---------------------------------------------------------------------------
+
+
+def make_imdb_service(service_responses):
+    """Return an IMDb instance with _service_request mocked to return responses
+    looked up by endpoint path (e.g. 'title/tt0111161')."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb._service_request = MagicMock(side_effect=lambda endpoint: service_responses.get(endpoint, {}))
+    return imdb
+
+
+def test_get_rating_returns_average_rating():
+    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3, "genres": "Drama"}})
+    assert imdb.get_rating("tt0111161") == 9.3
+
+
+def test_get_rating_blank_id_returns_none():
+    imdb = make_imdb_service({})
+    assert imdb.get_rating("") is None
+    assert imdb.get_rating(None) is None
+
+
+def test_get_genres_splits_comma_string():
+    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3, "genres": "Drama,Crime"}})
+    assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+
+
+def test_get_genres_blank_id_returns_empty_list():
+    imdb = make_imdb_service({})
+    assert imdb.get_genres("") == []
+    assert imdb.get_genres(None) == []
+
+
+def test_get_genres_missing_genres_returns_empty_list():
+    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3}})
+    assert imdb.get_genres("tt0111161") == []
+
+
+def test_get_episode_rating_returns_rating():
+    imdb = make_imdb_service(
+        {
+            "episode-ratings/tt0096697": {
+                "parentTconst": "tt0096697",
+                "total_episodes": 760,
+                "seasons": {"5": {"12": {"tconst": "tt0701055", "averageRating": 8.1, "numVotes": 3826}}},
+            }
+        }
+    )
+    assert imdb.get_episode_rating("tt0096697", 5, 12) == 8.1
+
+
+def test_get_episode_rating_caches_batch_result():
+    imdb = make_imdb_service(
+        {
+            "episode-ratings/tt0096697": {
+                "parentTconst": "tt0096697",
+                "total_episodes": 760,
+                "seasons": {
+                    "5": {
+                        "12": {"tconst": "tt0701055", "averageRating": 8.1, "numVotes": 3826},
+                        "13": {"tconst": "tt0701173", "averageRating": 9.1, "numVotes": 6598},
+                    }
+                },
+            }
+        }
+    )
+    imdb.get_episode_rating("tt0096697", 5, 12)
+    imdb.get_episode_rating("tt0096697", 5, 13)
+    imdb._service_request.assert_called_once_with("episode-ratings/tt0096697")
+
+
+def test_get_episode_rating_missing_episode_returns_none():
+    imdb = make_imdb_service(
+        {
+            "episode-ratings/tt0096697": {
+                "parentTconst": "tt0096697",
+                "total_episodes": 760,
+                "seasons": {"5": {"12": {"tconst": "tt0701055", "averageRating": 8.1, "numVotes": 3826}}},
+            }
+        }
+    )
+    assert imdb.get_episode_rating("tt0096697", 99, 99) is None
+
+
+def test_get_episode_rating_blank_id_returns_none():
+    imdb = make_imdb_service({})
+    assert imdb.get_episode_rating("", 1, 1) is None
+    assert imdb.get_episode_rating(None, 1, 1) is None
