@@ -496,8 +496,9 @@ class IMDb:
         self._watchlist_hash = None
 
     def _request(self, url, language=None, xpath=None, params=None, page_props=False):
-        logger.trace(f"URL: {url}")
-        if params:
+        if logger:
+            logger.trace(f"URL: {url}")
+        if params and logger:
             logger.trace(f"Params: {params}")
         try:
             response = self.requests.get_cloudscrape_html(url, params=params, language=language)
@@ -882,6 +883,16 @@ class IMDb:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
 
+    def _service_chart(self, chart, limit=None):
+        """Fetch chart IMDb IDs from the Kometa IMDb Service."""
+        params = {}
+        if limit:
+            params["limit"] = limit
+        data = self._service_request(f"chart/{chart}", not_found_ok=True)
+        if not data:
+            return []
+        return [item["tconst"] for item in data.get("results", []) if item.get("tconst")]
+
     def _chart_graphql(self, chart):
         """Fetch chart IMDb IDs directly via the GraphQL API (no HTML scraping needed)."""
         cfg = chart_graphql_map[chart]
@@ -907,16 +918,31 @@ class IMDb:
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        # Primary: use direct GraphQL API (bypasses HTML scraping issues)
+        # Primary: Kometa IMDb Service
+        if self._service_available:
+            try:
+                ids = self._service_chart(chart)
+                if ids:
+                    if logger:
+                        logger.debug(f"IMDb Service chart query returned {len(ids)} IDs for {chart}")
+                    return ids
+            except Failed as e:
+                self._service_unavailable(e)
+            except Exception as e:
+                if logger:
+                    logger.debug(f"IMDb Service chart query error for {chart}: {e}")
+        # Fallback: direct GraphQL API
         if chart in chart_graphql_map:
             try:
                 ids = self._chart_graphql(chart)
                 if ids:
-                    logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
+                    if logger:
+                        logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
                     return ids
             except Exception as e:
-                logger.debug(f"GraphQL chart query error for {chart}: {e}")
-        # Fallback: HTML scraping via original xpath method
+                if logger:
+                    logger.debug(f"GraphQL chart query error for {chart}: {e}")
+        # Final fallback: HTML scraping via original xpath method
         script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
         return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
 

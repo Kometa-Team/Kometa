@@ -289,13 +289,14 @@ class TestValidateImdbWatchlist:
 # ---------------------------------------------------------------------------
 
 
-def make_imdb_service(service_responses, raise_failed=None):
+def make_imdb_service(service_responses, raise_failed=None, graph_response=None):
     """Return an IMDb instance with _service_request mocked to return responses
     looked up by endpoint path (e.g. 'title/tt0111161').
 
     Args:
         service_responses: dict mapping endpoint path to JSON response.
         raise_failed: optional endpoint path that will raise Failed when requested.
+        graph_response: optional response for _graph_request.
     """
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
 
@@ -305,6 +306,7 @@ def make_imdb_service(service_responses, raise_failed=None):
         return service_responses.get(endpoint, {})
 
     imdb._service_request = MagicMock(side_effect=_fake_service_request)
+    imdb._graph_request = MagicMock(return_value=graph_response)
     return imdb
 
 
@@ -442,3 +444,55 @@ def test_get_genres_falls_back_on_invalid_json():
     imdb._genres = {"tt0111161": ["Drama"]}
     assert imdb.get_genres("tt0111161") == ["Drama"]
     assert imdb._service_available is False
+
+
+# ---------------------------------------------------------------------------
+# Service-backed chart lookups
+# ---------------------------------------------------------------------------
+
+
+def test_ids_from_chart_prefers_service():
+    """When the service returns chart data, use it and skip GraphQL/scraping."""
+    imdb = make_imdb_service(
+        {
+            "chart/top_movies": {
+                "chart": "top_movies",
+                "results": [
+                    {"tconst": "tt0111161", "rank": 1},
+                    {"tconst": "tt0068646", "rank": 2},
+                ],
+            }
+        }
+    )
+    ids = imdb._ids_from_chart("top_movies", "en")
+    assert ids == ["tt0111161", "tt0068646"]
+    imdb._graph_request.assert_not_called()
+
+
+def test_ids_from_chart_falls_back_to_graphql_on_service_failure():
+    """When the service fails, fall back to the GraphQL chart query."""
+    graph_response = {
+        "data": {
+            "chartTitles": {
+                "edges": [
+                    {"node": {"id": "tt0111161"}},
+                    {"node": {"id": "tt0068646"}},
+                ]
+            }
+        }
+    }
+    imdb = make_imdb_service({}, raise_failed="chart/top_movies", graph_response=graph_response)
+    ids = imdb._ids_from_chart("top_movies", "en")
+    assert ids == ["tt0111161", "tt0068646"]
+    assert imdb._service_available is False
+
+
+def test_ids_from_chart_falls_back_to_scraping_when_service_and_graphql_fail():
+    """When both service and GraphQL fail, fall back to HTML scraping."""
+    imdb = make_imdb_service({}, raise_failed="chart/top_movies")
+    html_response = MagicMock()
+    html_response.xpath.return_value = ['{"props":{"pageProps":{"chartModel":{"chartItems":[{"titleItemId":"tt0111161"},{"titleItemId":"tt0068646"}]}}}}']
+    imdb.requests.get_cloudscrape_html.return_value = html_response
+    ids = imdb._ids_from_chart("top_movies", "en")
+    assert "tt0111161" in ids
+    assert "tt0068646" in ids
