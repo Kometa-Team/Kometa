@@ -780,6 +780,75 @@ class TestCachedItemAttr:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# cached_item_subitems - the per-run memo for check_filter's seasons/episodes/albums/tracks
+# filter branch (plex.py:2667-2675). Shares filter_attr_cache and reload()'s purge-on-force-reload
+# with cached_item_attr above - Kometa never adds/removes seasons/episodes/albums/tracks from an
+# item as part of its own writes, so this container listing carries no extra staleness risk beyond
+# what cached_item_attr already covers.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCachedItemSubitems:
+    def test_first_read_calls_the_real_method(self):
+        plex = make_plex()
+        ep1, ep2 = MagicMock(), MagicMock()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=[ep1, ep2]))
+        assert plex.cached_item_subitems(item, "episodes") == [ep1, ep2]
+        item.episodes.assert_called_once()
+
+    def test_repeat_read_returns_memoized_value_without_refetching(self):
+        plex = make_plex()
+        ep1 = MagicMock()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=[ep1]))
+        first = plex.cached_item_subitems(item, "episodes")
+        second = plex.cached_item_subitems(item, "episodes")
+        assert first == second == [ep1]
+        item.episodes.assert_called_once()  # second call must be served from the memo, not a refetch
+
+    def test_different_items_get_independent_cache_entries(self):
+        plex = make_plex()
+        item_a = make_plex_item(rating_key=1, seasons=MagicMock(return_value=["A"]))
+        item_b = make_plex_item(rating_key=2, seasons=MagicMock(return_value=["B"]))
+        assert plex.cached_item_subitems(item_a, "seasons") == ["A"]
+        assert plex.cached_item_subitems(item_b, "seasons") == ["B"]
+
+    def test_different_methods_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, seasons=MagicMock(return_value=["S1"]), episodes=MagicMock(return_value=["E1"]))
+        assert plex.cached_item_subitems(item, "seasons") == ["S1"]
+        assert plex.cached_item_subitems(item, "episodes") == ["E1"]
+
+    def test_covers_all_four_sub_item_methods(self):
+        plex = make_plex()
+        for method_name in ("seasons", "episodes", "albums", "tracks"):
+            item = make_plex_item(rating_key=1, **{method_name: MagicMock(return_value=["x"])})
+            assert plex.cached_item_subitems(item, method_name) == ["x"]
+
+    def test_reload_with_force_purges_subitems_cache_entry(self):
+        # Same purge mechanism cached_item_attr relies on - reload(force=True) must drop stale sub-item listings too.
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=["stale"]))
+        plex.cached_item_subitems(item, "episodes")
+        assert (1, "episodes") in plex.filter_attr_cache
+        plex.item_reload = MagicMock()
+        plex.reload(item, force=True)
+        assert (1, "episodes") not in plex.filter_attr_cache
+
+    def test_check_filter_seasons_branch_uses_the_cache(self):
+        """End-to-end: the actual seasons/episodes/albums/tracks filter branch in check_filter goes through the memo, not a live call each time."""
+        from plexapi.video import Show
+
+        plex = make_plex()
+        item = MagicMock(spec=Show)
+        item.ratingKey = 1
+        item.seasons = MagicMock(return_value=[])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "seasons", "", "seasons", {"count": 0}, None, force_reload=False)
+        plex.check_filter(item, "seasons", "", "seasons", {"count": 0}, None, force_reload=False)
+        item.seasons.assert_called_once()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # check_filter - which attribute reads are cached vs. always read live
 #
 # genre/label/collection are protected by check_filters' own force-reload dedup above; every other
