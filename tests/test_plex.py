@@ -839,6 +839,88 @@ class TestCheckFilterCachingScope:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# check_filter's number_filters branch (plex.py:2710-2745) - media-file-derived
+# properties (channels/height/width/aspect/versions/audio_language/subtitle_language/
+# duration) are cached under a "media_number:" key, since Kometa never writes them.
+# critic_rating/audience_rating/user_rating/tmdb_* share this branch's generic getattr
+# fallback and must stay live, since update_item_details can write those mid-run.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFilterNumberCache:
+    def _movie_item(self, **extras):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        for key, value in extras.items():
+            setattr(item, key, value)
+        return item
+
+    def test_versions_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(media=[MagicMock(), MagicMock()])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "versions", "", "versions", 2, None, force_reload=False)
+        item.media = [MagicMock()]  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "versions", "", "versions", 2, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) versions count"
+        assert (1, "media_number:versions") in plex.filter_attr_cache
+
+    def test_duration_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(duration=120000)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "duration", "", "duration", 2.0, None, force_reload=False)
+        item.duration = 60000  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "duration", "", "duration", 2.0, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) duration"
+
+    def test_channels_is_cached(self):
+        plex = make_plex()
+        media = MagicMock(audioChannels=6)
+        item = self._movie_item(media=[media])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "channels", "", "channels", 6, None, force_reload=False)
+        media.audioChannels = 2  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "channels", "", "channels", 6, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) channel count"
+
+    def test_audio_language_is_cached(self):
+        plex = make_plex()
+        stream = MagicMock(language="English")
+        part = MagicMock(audioStreams=MagicMock(return_value=[stream]))
+        media = MagicMock(parts=[part])
+        item = self._movie_item(media=[media])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "audio_language", ".count_gte", "audio_language.count_gte", 1, None, force_reload=False)
+        part.audioStreams = MagicMock(return_value=[])  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "audio_language", ".count_gte", "audio_language.count_gte", 1, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) audio_language list"
+
+    def test_different_number_filters_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = self._movie_item(media=[MagicMock()], duration=60000)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "versions", "", "versions", 1, None, force_reload=False)
+        plex.check_filter(item, "duration", "", "duration", 1.0, None, force_reload=False)
+        assert (1, "media_number:versions") in plex.filter_attr_cache
+        assert (1, "media_number:duration") in plex.filter_attr_cache
+
+    def test_critic_rating_is_never_cached(self):
+        # critic_rating shares this branch's generic getattr fallback but is written mid-run by
+        # update_item_details/batch_edit_field with no cache eviction - must always read live.
+        plex = make_plex()
+        item = self._movie_item(rating=9.0)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "critic_rating", "", "critic_rating", 9.0, None, force_reload=False)
+        item.rating = 5.0
+        result = plex.check_filter(item, "critic_rating", "", "critic_rating", 5.0, None, force_reload=False)
+        assert result is True, "second call must see the live (changed) critic_rating, not a stale cached one"
+        assert (1, "media_number:critic_rating") not in plex.filter_attr_cache
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # tag_diff / batch_edit_tags
 # ═══════════════════════════════════════════════════════════════════════
 

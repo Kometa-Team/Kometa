@@ -2802,33 +2802,41 @@ class Plex(Library):
                     if failures > failure_threshold:
                         return False
         elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-            test_number = []
-            if filter_attr in ["channels", "height", "width", "aspect"]:
-                test_number = 0
-                for media in item.media:
-                    attr = getattr(media, filter_actual)
-                    if attr and attr > test_number:
-                        test_number = attr
-            elif filter_attr == "stinger_rating":
-                test_number = None
-                if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
-                    test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
-            elif filter_attr == "versions":
-                test_number = len(item.media)
-            elif filter_attr == "audio_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([a.language for a in part.audioStreams()])
-            elif filter_attr == "subtitle_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([s.language for s in part.subtitleStreams()])
-            elif filter_attr == "duration":
-                test_number = getattr(item, filter_actual)
-                if test_number:
-                    test_number /= 60000
+            # channels/height/width/aspect/versions/audio_language/subtitle_language/duration are media-file properties Kometa never writes - cache them; ratings/tmdb_* stay uncached since update_item_details can write those mid-run.
+            cacheable = filter_attr in ("channels", "height", "width", "aspect", "versions", "audio_language", "subtitle_language", "duration")
+            cache_key = (item.ratingKey, f"media_number:{filter_attr}")
+            if cacheable and cache_key in self.filter_attr_cache:
+                test_number = self.filter_attr_cache[cache_key]
             else:
-                test_number = getattr(item, filter_actual)
+                test_number = []
+                if filter_attr in ["channels", "height", "width", "aspect"]:
+                    test_number = 0
+                    for media in item.media:
+                        attr = getattr(media, filter_actual)
+                        if attr and attr > test_number:
+                            test_number = attr
+                elif filter_attr == "stinger_rating":
+                    test_number = None
+                    if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
+                        test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
+                elif filter_attr == "versions":
+                    test_number = len(item.media)
+                elif filter_attr == "audio_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([a.language for a in part.audioStreams()])
+                elif filter_attr == "subtitle_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([s.language for s in part.subtitleStreams()])
+                elif filter_attr == "duration":
+                    test_number = getattr(item, filter_actual)
+                    if test_number:
+                        test_number /= 60000
+                else:
+                    test_number = getattr(item, filter_actual)
+                if cacheable:
+                    self.filter_attr_cache[cache_key] = test_number
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                 test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
