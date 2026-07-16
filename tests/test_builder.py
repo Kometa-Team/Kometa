@@ -77,6 +77,10 @@ class FakeTVDbLibrary:
             raise AssertionError(f"Unexpected rating key: {rating_key}")
         return self._show_item
 
+    def cached_item_subitems(self, item, method_name):
+        # Mirrors the real Plex.cached_item_subitems() contract (modules/plex.py) without the memoization - these tests don't depend on cache identity, just the same seasons()/episodes() results.
+        return list(getattr(item, method_name)())
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers

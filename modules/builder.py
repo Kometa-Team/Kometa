@@ -3733,7 +3733,7 @@ class CollectionBuilder:
                                 try:
                                     season_obj = show_item.season(season=int(season_num))
                                     if self.playlist or self.builder_level == "episode":
-                                        items.extend(season_obj.episodes())
+                                        items.extend(pl_library.cached_item_subitems(season_obj, "episodes"))
                                     else:
                                         items.append(season_obj)
                                 except NotFound:
@@ -3789,9 +3789,9 @@ class CollectionBuilder:
                                             if self.builder_level == "episode" and isinstance(item, Show):
                                                 if tvdb_season is not None:
                                                     item = item.season(season=tvdb_season)
-                                                rating_keys.extend([k.ratingKey for k in item.episodes()])  # type: ignore[union-attr]
+                                                rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "episodes")])
                                             elif self.builder_level == "season" and isinstance(item, Show):
-                                                rating_keys.extend([k.ratingKey for k in item.seasons()])  # type: ignore[union-attr]
+                                                rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "seasons")])
                                         except Failed as e:
                                             logger.error(e)
                                 else:
@@ -3806,7 +3806,7 @@ class CollectionBuilder:
                         try:
                             item = self.library.fetch_item(rk)
                             if self.playlist and isinstance(item, (Show, Season)):
-                                items.extend(item.episodes())
+                                items.extend(self.library.cached_item_subitems(item, "episodes"))
                             elif self.builder_level == "movie" and not isinstance(item, Movie):
                                 logger.info(f"Item: {item} is not an Movie")
                             elif self.builder_level == "show" and not isinstance(item, Show):

@@ -116,6 +116,9 @@ class Requests:
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
         response = self.get_image(image_url, session=session)
+        if response is None:
+            # get_image() only returns None for validate_only stable-asset-prefix skips, which download_image() never requests - unreachable in practice, guarded so pyright can narrow response below.
+            raise Failed(f"Image Error: No response for Image URL: {image_url}")
         new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
         if response.headers["Content-Type"] == "image/jpeg":
             new_image += ".jpg"

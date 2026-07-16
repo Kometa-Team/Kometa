@@ -2020,7 +2020,7 @@ class MetadataFile(DataFile):
                 logger.error(f"{self.type_str} Error: seasons attribute must be a dictionary")
             else:
                 seasons = {}
-                for season in item.seasons():
+                for season in self.library.cached_item_subitems(item, "seasons"):
                     seasons[season.title] = season
                     seasons[int(season.index)] = season
                 for season_id, season_dict in meta[methods["seasons"]].items():
@@ -2087,7 +2087,7 @@ class MetadataFile(DataFile):
                             logger.error(f"{self.type_str} Error: episodes attribute must be a dictionary")
                         else:
                             episodes = {}
-                            for episode in season.episodes():
+                            for episode in self.library.cached_item_subitems(season, "episodes"):
                                 episodes[episode.title] = episode
                                 if episode.index:
                                     episodes[int(episode.index)] = episode
@@ -2183,7 +2183,7 @@ class MetadataFile(DataFile):
             elif not isinstance(meta[methods["albums"]], dict):
                 logger.error(f"{self.type_str} Error: albums attribute must be a dictionary")
             else:
-                albums = {album.title: album for album in item.albums()}
+                albums = {album.title: album for album in self.library.cached_item_subitems(item, "albums")}
                 for album_name, album_dict in meta[methods["albums"]].items():
                     updated = False
                     title = None
@@ -2223,7 +2223,7 @@ class MetadataFile(DataFile):
                             logger.error(f"{self.type_str} Error: tracks attribute must be a dictionary")
                         else:
                             tracks = {}
-                            for track in album.tracks():
+                            for track in self.library.cached_item_subitems(album, "tracks"):
                                 tracks[track.title] = track
                                 tracks[int(track.index)] = track
                             for track_num, track_dict in album_dict[album_methods["tracks"]].items():
@@ -2289,11 +2289,11 @@ class MetadataFile(DataFile):
             races = self.config.Ergast.get_races(f1_season, f1_language, round_prefix, shorten_gp)
             race_lookup = {r.round: r for r in races}
             logger.trace(race_lookup)
-            for season in item.seasons():
+            for season in self.library.cached_item_subitems(item, "seasons"):
                 if not season.seasonNumber:
                     continue
                 sprint_weekend = False
-                for episode in season.episodes():
+                for episode in self.library.cached_item_subitems(season, "episodes"):
                     if "sprint" in episode.locations[0].lower():
                         sprint_weekend = True
                         break
@@ -2306,7 +2306,7 @@ class MetadataFile(DataFile):
                     if ups:
                         updated = True
                     logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Metadata Update {'Complete' if updated else 'Not Needed'}")
-                    for episode in season.episodes():
+                    for episode in self.library.cached_item_subitems(season, "episodes"):
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
                             add_edit("title", episode, value=ep_title)
