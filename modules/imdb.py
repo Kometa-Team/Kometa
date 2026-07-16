@@ -512,7 +512,10 @@ class IMDb:
 
     def _service_request(self, endpoint, not_found_ok=False):
         url = f"{service_url}/{endpoint}"
-        response = self.requests.get(url)
+        try:
+            response = self.requests.get(url)
+        except Exception as e:
+            raise Failed(f"IMDb Service Error: {e}")
         if response.status_code == 404 and not_found_ok:
             return None
         if response.status_code >= 400:
@@ -520,8 +523,9 @@ class IMDb:
         try:
             return response.json()
         except ValueError:
-            logger.error(str(response.content))
-            raise
+            if logger:
+                logger.error(str(response.content))
+            raise Failed("IMDb Service Error: invalid JSON response")
 
     @property
     def search_hash(self):
@@ -959,8 +963,9 @@ class IMDb:
         if self._service_available:
             try:
                 if imdb_id not in self._episode_ratings_cache:
-                    self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}")
-                seasons = self._episode_ratings_cache[imdb_id].get("seasons", {})
+                    self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}", not_found_ok=True)
+                data = self._episode_ratings_cache[imdb_id]
+                seasons = data.get("seasons", {}) if data else {}
                 season = seasons.get(season_num, {})
                 episode = season.get(episode_num, {})
                 return episode.get("averageRating")

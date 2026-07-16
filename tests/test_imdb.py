@@ -326,7 +326,12 @@ def test_get_episode_rating_caches_batch_result():
     )
     imdb.get_episode_rating("tt0096697", 5, 12)
     imdb.get_episode_rating("tt0096697", 5, 13)
-    imdb._service_request.assert_called_once_with("episode-ratings/tt0096697")
+    imdb._service_request.assert_called_once_with("episode-ratings/tt0096697", not_found_ok=True)
+
+
+def test_get_episode_rating_missing_show_returns_none():
+    imdb = make_imdb_service({"episode-ratings/tt0000000": None})
+    assert imdb.get_episode_rating("tt0000000", 1, 1) is None
 
 
 def test_get_episode_rating_missing_episode_returns_none():
@@ -352,4 +357,26 @@ def test_get_episode_rating_falls_back_to_tsv_on_service_failure():
     imdb = make_imdb_service({}, raise_failed="episode-ratings/tt0096697")
     imdb._episode_ratings = {"tt0096697": {"5": {"12": "8.1"}}}
     assert imdb.get_episode_rating("tt0096697", 5, 12) == "8.1"
+    assert imdb._service_available is False
+
+
+def test_get_rating_falls_back_on_non_http_failure():
+    """Non-HTTP failures (connection errors, timeouts) should also trigger TSV fallback."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.get.side_effect = ConnectionError("Connection refused")
+    imdb._ratings = {"tt0111161": "8.7"}
+    assert imdb.get_rating("tt0111161") == "8.7"
+    assert imdb._service_available is False
+
+
+def test_get_genres_falls_back_on_invalid_json():
+    """An invalid JSON response should be treated as a service outage and fall back."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    response = MagicMock()
+    response.status_code = 200
+    response.content = b"not json"
+    response.json.side_effect = ValueError("No JSON")
+    imdb.requests.get.return_value = response
+    imdb._genres = {"tt0111161": ["Drama"]}
+    assert imdb.get_genres("tt0111161") == ["Drama"]
     assert imdb._service_available is False
