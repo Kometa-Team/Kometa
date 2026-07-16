@@ -227,11 +227,22 @@ class TestValidateImdbWatchlist:
 # ---------------------------------------------------------------------------
 
 
-def make_imdb_service(service_responses):
+def make_imdb_service(service_responses, raise_failed=None):
     """Return an IMDb instance with _service_request mocked to return responses
-    looked up by endpoint path (e.g. 'title/tt0111161')."""
+    looked up by endpoint path (e.g. 'title/tt0111161').
+
+    Args:
+        service_responses: dict mapping endpoint path to JSON response.
+        raise_failed: optional endpoint path that will raise Failed when requested.
+    """
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
-    imdb._service_request = MagicMock(side_effect=lambda endpoint: service_responses.get(endpoint, {}))
+
+    def _fake_service_request(endpoint, not_found_ok=False):
+        if raise_failed and endpoint == raise_failed:
+            raise Failed("IMDb Service Error: 503")
+        return service_responses.get(endpoint, {})
+
+    imdb._service_request = MagicMock(side_effect=_fake_service_request)
     return imdb
 
 
@@ -244,6 +255,22 @@ def test_get_rating_blank_id_returns_none():
     imdb = make_imdb_service({})
     assert imdb.get_rating("") is None
     assert imdb.get_rating(None) is None
+
+
+def test_get_rating_falls_back_to_tsv_on_service_failure():
+    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb._ratings = {"tt0111161": "8.7"}
+    assert imdb.get_rating("tt0111161") == "8.7"
+    assert imdb._service_available is False
+
+
+def test_get_rating_service_failure_uses_tsv_for_later_calls():
+    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb._ratings = {"tt0111161": "8.7", "tt0068646": "9.2"}
+    imdb.get_rating("tt0111161")
+    # After first failure, service flag is False; second call should skip service entirely.
+    assert imdb.get_rating("tt0068646") == "9.2"
+    assert imdb._service_request.call_count == 1
 
 
 def test_get_genres_splits_comma_string():
@@ -260,6 +287,13 @@ def test_get_genres_blank_id_returns_empty_list():
 def test_get_genres_missing_genres_returns_empty_list():
     imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3}})
     assert imdb.get_genres("tt0111161") == []
+
+
+def test_get_genres_falls_back_to_tsv_on_service_failure():
+    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb._genres = {"tt0111161": ["Drama", "Crime"]}
+    assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+    assert imdb._service_available is False
 
 
 def test_get_episode_rating_returns_rating():
@@ -312,3 +346,10 @@ def test_get_episode_rating_blank_id_returns_none():
     imdb = make_imdb_service({})
     assert imdb.get_episode_rating("", 1, 1) is None
     assert imdb.get_episode_rating(None, 1, 1) is None
+
+
+def test_get_episode_rating_falls_back_to_tsv_on_service_failure():
+    imdb = make_imdb_service({}, raise_failed="episode-ratings/tt0096697")
+    imdb._episode_ratings = {"tt0096697": {"5": {"12": "8.1"}}}
+    assert imdb.get_episode_rating("tt0096697", 5, 12) == "8.1"
+    assert imdb._service_available is False
