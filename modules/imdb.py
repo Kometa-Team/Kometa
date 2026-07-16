@@ -800,13 +800,17 @@ class IMDb:
             raise Failed("IMDb Error: No IMDb IDs Found")
         return imdb_ids
 
-    def keywords(self, imdb_id, language, ignore_cache=False):
+    def _service_keywords(self, imdb_id):
+        """Fetch keyword relevance data from the Kometa IMDb Service."""
+        data = self._service_request(f"keywords/{imdb_id}", not_found_ok=True)
+        if not data:
+            return {}
+        keywords = data.get("keywords") or {}
+        return {k: tuple(v) if isinstance(v, list) else (0, 0) for k, v in keywords.items()}
+
+    def _scrape_keywords(self, imdb_id, language):
+        """Fallback: scrape keyword relevance data from IMDb's keywords page."""
         imdb_keywords = {}
-        expired = None
-        if self.cache and not ignore_cache:
-            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
-            if imdb_keywords and expired is False:
-                return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
             raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
@@ -821,6 +825,29 @@ class IMDb:
                     imdb_keywords[name] = (0, 0)
             else:
                 imdb_keywords[name] = (0, 0)
+        return imdb_keywords
+
+    def keywords(self, imdb_id, language, ignore_cache=False):
+        imdb_keywords = {}
+        expired = None
+        if self.cache and not ignore_cache:
+            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
+            if imdb_keywords and expired is False:
+                return imdb_keywords
+
+        if self._service_available:
+            try:
+                imdb_keywords = self._service_keywords(imdb_id)
+                if imdb_keywords and logger:
+                    logger.debug(f"IMDb keywords for {imdb_id} retrieved from Kometa IMDb Service")
+            except Failed as e:
+                self._service_unavailable(e)
+
+        if not imdb_keywords:
+            if logger:
+                logger.debug(f"IMDb keywords for {imdb_id} falling back to scraping")
+            imdb_keywords = self._scrape_keywords(imdb_id, language)
+
         if self.cache and not ignore_cache:
             self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords

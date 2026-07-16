@@ -496,3 +496,47 @@ def test_ids_from_chart_falls_back_to_scraping_when_service_and_graphql_fail():
     ids = imdb._ids_from_chart("top_movies", "en")
     assert "tt0111161" in ids
     assert "tt0068646" in ids
+
+
+# ---------------------------------------------------------------------------
+# Service-backed keyword lookups
+# ---------------------------------------------------------------------------
+
+
+def test_keywords_prefers_service():
+    """When the service returns keywords, use them and skip scraping."""
+    imdb = make_imdb_service(
+        {
+            "keywords/tt0111161": {
+                "imdb_id": "tt0111161",
+                "keywords": {
+                    "prison": [31, 32],
+                    "escape from prison": [22, 23],
+                },
+            }
+        }
+    )
+    imdb._scrape_keywords = MagicMock(return_value={"should": (0, 0), "not": (0, 0), "call": (0, 0)})
+    result = imdb.keywords("tt0111161", "en")
+    assert result.get("prison") == (31, 32)
+    assert result.get("escape from prison") == (22, 23)
+    imdb._scrape_keywords.assert_not_called()
+
+
+def test_keywords_falls_back_to_scraping_when_service_empty():
+    """When the service returns no keywords, fall back to scraping."""
+    imdb = make_imdb_service({"keywords/tt0111161": {"imdb_id": "tt0111161", "keywords": {}}})
+    imdb._scrape_keywords = MagicMock(return_value={"scraped": (5, 10)})
+    result = imdb.keywords("tt0111161", "en")
+    assert result.get("scraped") == (5, 10)
+    imdb._scrape_keywords.assert_called_once_with("tt0111161", "en")
+
+
+def test_keywords_falls_back_to_scraping_when_service_fails():
+    """When the service fails, fall back to scraping and mark service unavailable."""
+    imdb = make_imdb_service({}, raise_failed="keywords/tt0111161")
+    imdb._scrape_keywords = MagicMock(return_value={"scraped": (3, 7)})
+    result = imdb.keywords("tt0111161", "en")
+    assert result.get("scraped") == (3, 7)
+    assert imdb._service_available is False
+    imdb._scrape_keywords.assert_called_once_with("tt0111161", "en")
