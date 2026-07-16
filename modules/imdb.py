@@ -824,6 +824,38 @@ class IMDb:
             self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
 
+    def _service_parental(self, imdb_id):
+        data = self._service_request(f"parental/{imdb_id}", not_found_ok=True)
+        if not data:
+            return {}
+        guide = data.get("parental_guide") or {}
+        if not guide:
+            return {}
+        return {k: v for k, v in guide.items() if k in util.parental_types.values() and v}
+
+    def _graphql_parental(self, imdb_id):
+        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
+        response = self._graph_request({"query": gql}) or {}
+        data = response.get("data") or {}
+        title = data.get("title") or {}
+        parents_guide = title.get("parentsGuide") or {}
+        categories = parents_guide.get("categories") or []
+        parental_dict = {}
+        for cat in categories:
+            cat_text = ((cat or {}).get("category") or {}).get("text", "")
+            sev_text = ((cat or {}).get("severity") or {}).get("text", "")
+            if cat_text in util.parental_types and sev_text:
+                parental_dict[util.parental_types[cat_text]] = sev_text
+        return parental_dict
+
+    def _normalize_parental(self, parental_dict, imdb_id):
+        if parental_dict:
+            for _, v in util.parental_types.items():
+                if v not in parental_dict:
+                    parental_dict[v] = None
+            return parental_dict
+        raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
+
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
         expired = None
@@ -831,23 +863,21 @@ class IMDb:
             parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
-        response = self._graph_request({"query": gql}) or {}
-        data = response.get("data") or {}
-        title = data.get("title") or {}
-        parents_guide = title.get("parentsGuide") or {}
-        categories = parents_guide.get("categories") or []
-        for cat in categories:
-            cat_text = ((cat or {}).get("category") or {}).get("text", "")
-            sev_text = ((cat or {}).get("severity") or {}).get("text", "")
-            if cat_text in util.parental_types and sev_text:
-                parental_dict[util.parental_types[cat_text]] = sev_text
-        if parental_dict:
-            for _, v in util.parental_types.items():
-                if v not in parental_dict:
-                    parental_dict[v] = None
-        else:
-            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
+
+        if self._service_available:
+            try:
+                parental_dict = self._service_parental(imdb_id)
+                if parental_dict and logger:
+                    logger.debug(f"IMDb parental guide for {imdb_id} retrieved from Kometa IMDb Service")
+            except Failed as e:
+                self._service_unavailable(e)
+
+        if not parental_dict:
+            if logger:
+                logger.debug(f"IMDb parental guide for {imdb_id} falling back to GraphQL")
+            parental_dict = self._graphql_parental(imdb_id)
+
+        parental_dict = self._normalize_parental(parental_dict, imdb_id)
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict

@@ -8,10 +8,14 @@ from modules.imdb import IMDb
 from modules.util import Failed
 
 
-def make_imdb(graph_response):
-    """Return a minimal IMDb instance with _graph_request mocked to return graph_response."""
+def make_imdb(graph_response, service_response=None):
+    """Return a minimal IMDb instance with _graph_request mocked to return graph_response.
+
+    By default the service response is empty so existing tests exercise the GraphQL fallback.
+    """
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb._graph_request = MagicMock(return_value=graph_response)
+    imdb._service_request = MagicMock(return_value=service_response)
     return imdb
 
 
@@ -142,6 +146,64 @@ def test_parental_guide_empty_categories_raises_failed():
     imdb = make_imdb(graph_response=graph_response)
     with pytest.raises(Failed, match="No Parental Guide Found"):
         imdb.parental_guide("tt0000000")
+
+
+# ---------------------------------------------------------------------------
+# Service-backed parental guide
+# ---------------------------------------------------------------------------
+
+
+def test_parental_guide_prefers_service():
+    """When the Kometa IMDb Service returns parental guide data, use it."""
+    service_response = {
+        "imdb_id": "tt1234567",
+        "parental_guide": {
+            "Nudity": "Mild",
+            "Violence": "Moderate",
+            "Profanity": "Severe",
+            "Alcohol": "Mild",
+            "Frightening": "Moderate",
+        },
+    }
+    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": {"categories": []}}}}, service_response=service_response)
+    result = imdb.parental_guide("tt1234567")
+    assert result.get("Nudity") == "Mild"
+    assert result.get("Violence") == "Moderate"
+    assert result.get("Profanity") == "Severe"
+    assert result.get("Alcohol") == "Mild"
+    assert result.get("Frightening") == "Moderate"
+    imdb._graph_request.assert_not_called()
+
+
+def test_parental_guide_fills_missing_service_categories_with_none():
+    """The service only returns categories that have values; missing ones are filled with None."""
+    service_response = {"imdb_id": "tt1234567", "parental_guide": {"Violence": "Severe"}}
+    imdb = make_imdb(graph_response=None, service_response=service_response)
+    result = imdb.parental_guide("tt1234567")
+    assert result.get("Violence") == "Severe"
+    assert result.get("Nudity") is None
+    assert result.get("Profanity") is None
+    assert result.get("Alcohol") is None
+    assert result.get("Frightening") is None
+
+
+def test_parental_guide_falls_back_to_graphql_when_service_empty():
+    """When the service returns no parental guide data, fall back to GraphQL."""
+    graph_response = {"data": {"title": {"parentsGuide": {"categories": [{"category": {"text": "Violence & Gore"}, "severity": {"text": "Moderate"}}]}}}}
+    imdb = make_imdb(graph_response=graph_response, service_response={"imdb_id": "tt1234567", "parental_guide": {}})
+    result = imdb.parental_guide("tt1234567")
+    assert result.get("Violence") == "Moderate"
+    imdb._graph_request.assert_called_once()
+
+
+def test_parental_guide_falls_back_to_graphql_when_service_unavailable():
+    """When the service raises Failed, fall back to GraphQL."""
+    graph_response = {"data": {"title": {"parentsGuide": {"categories": [{"category": {"text": "Profanity"}, "severity": {"text": "Mild"}}]}}}}
+    imdb = make_imdb(graph_response=graph_response)
+    imdb._service_request = MagicMock(side_effect=Failed("IMDb Service Error: 503"))
+    result = imdb.parental_guide("tt1234567")
+    assert result.get("Profanity") == "Mild"
+    assert imdb._service_available is False
 
 
 # ---------------------------------------------------------------------------
