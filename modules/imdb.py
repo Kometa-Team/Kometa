@@ -833,21 +833,6 @@ class IMDb:
             return {}
         return {k: v for k, v in guide.items() if k in util.parental_types.values() and v}
 
-    def _graphql_parental(self, imdb_id):
-        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
-        response = self._graph_request({"query": gql}) or {}
-        data = response.get("data") or {}
-        title = data.get("title") or {}
-        parents_guide = title.get("parentsGuide") or {}
-        categories = parents_guide.get("categories") or []
-        parental_dict = {}
-        for cat in categories:
-            cat_text = ((cat or {}).get("category") or {}).get("text", "")
-            sev_text = ((cat or {}).get("severity") or {}).get("text", "")
-            if cat_text in util.parental_types and sev_text:
-                parental_dict[util.parental_types[cat_text]] = sev_text
-        return parental_dict
-
     def _normalize_parental(self, parental_dict, imdb_id):
         if parental_dict:
             for _, v in util.parental_types.items():
@@ -864,18 +849,12 @@ class IMDb:
             if parental_dict and expired is False:
                 return parental_dict
 
-        if self._service_available:
-            try:
-                parental_dict = self._service_parental(imdb_id)
-                if parental_dict and logger:
-                    logger.debug(f"IMDb parental guide for {imdb_id} retrieved from Kometa IMDb Service")
-            except Failed as e:
-                self._service_unavailable(e)
+        if not self._service_available:
+            raise Failed("IMDb Error: Kometa IMDb Service is unavailable for parental guide lookups")
 
-        if not parental_dict:
-            if logger:
-                logger.debug(f"IMDb parental guide for {imdb_id} falling back to GraphQL")
-            parental_dict = self._graphql_parental(imdb_id)
+        parental_dict = self._service_parental(imdb_id)
+        if parental_dict and logger:
+            logger.debug(f"IMDb parental guide for {imdb_id} retrieved from Kometa IMDb Service")
 
         parental_dict = self._normalize_parental(parental_dict, imdb_id)
         if self.cache and not ignore_cache:

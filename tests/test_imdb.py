@@ -7,14 +7,28 @@ import pytest
 from modules.imdb import IMDb
 from modules.util import Failed
 
+_UNSET = object()
 
-def make_imdb(graph_response, service_response=None):
+
+def make_imdb(graph_response, service_response=_UNSET):
     """Return a minimal IMDb instance with _graph_request mocked to return graph_response.
 
-    By default the service response is empty so existing tests exercise the GraphQL fallback.
+    By default the service request returns a valid parental guide response so tests exercise
+    the service-only path. Pass service_response to override the service payload.
     """
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb._graph_request = MagicMock(return_value=graph_response)
+    if service_response is _UNSET:
+        service_response = {
+            "imdb_id": "tt1234567",
+            "parental_guide": {
+                "Nudity": "Mild",
+                "Violence": "Moderate",
+                "Profanity": "None",
+                "Alcohol": "None",
+                "Frightening": "None",
+            },
+        }
     imdb._service_request = MagicMock(return_value=service_response)
     return imdb
 
@@ -49,136 +63,30 @@ def test_parental_guide_null_title_pre_fix_raises_attribute_error():
 
 
 # ---------------------------------------------------------------------------
-# Fix: _graph_request returns None (network/auth failure or empty response)
+# Service-only parental guide lookups
 # ---------------------------------------------------------------------------
 
 
-def test_parental_guide_none_response_raises_failed():
-    """When _graph_request returns None, parental_guide raises Failed (not AttributeError)
-    so operations.py can catch it and skip the item gracefully."""
-    imdb = make_imdb(graph_response=None)
-    with pytest.raises(Failed, match="No Parental Guide Found"):
-        imdb.parental_guide("tt9999999")
-
-
-def test_parental_guide_none_response_does_not_raise_attribute_error():
-    """The fix must not let AttributeError escape when _graph_request returns None."""
-    imdb = make_imdb(graph_response=None)
-    with pytest.raises(Exception) as exc_info:
-        imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the None guard is missing"
-
-
-# ---------------------------------------------------------------------------
-# Fix: IMDb returns {"data": {"title": null}} for unknown IDs
-# ---------------------------------------------------------------------------
-
-
-def test_parental_guide_null_title_raises_failed():
-    """When IMDb returns null for the title (ID not in their DB), parental_guide
-    raises Failed so operations.py skips the item gracefully."""
-    imdb = make_imdb(graph_response={"data": {"title": None}})
-    with pytest.raises(Failed, match="No Parental Guide Found"):
-        imdb.parental_guide("tt9999999")
-
-
-def test_parental_guide_null_title_does_not_raise_attribute_error():
-    """The fix must not let AttributeError escape for a null title response."""
-    imdb = make_imdb(graph_response={"data": {"title": None}})
-    with pytest.raises(Exception) as exc_info:
-        imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the null title guard is missing"
-
-
-# ---------------------------------------------------------------------------
-# Fix: IMDb returns {"data": {"title": {"parentsGuide": null}}}
-# ---------------------------------------------------------------------------
-
-
-def test_parental_guide_null_parents_guide_raises_failed():
-    """When the title exists but parentsGuide is null, parental_guide raises Failed."""
-    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": None}}})
-    with pytest.raises(Failed, match="No Parental Guide Found"):
-        imdb.parental_guide("tt9999999")
-
-
-def test_parental_guide_null_parents_guide_does_not_raise_attribute_error():
-    """The fix must not let AttributeError escape for a null parentsGuide response."""
-    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": None}}})
-    with pytest.raises(Exception) as exc_info:
-        imdb.parental_guide("tt9999999")
-    assert not isinstance(exc_info.value, AttributeError), "AttributeError escaped -- the null parentsGuide guard is missing"
-
-
-# ---------------------------------------------------------------------------
-# Happy path: valid response with parental guide data
-# ---------------------------------------------------------------------------
-
-
-def test_parental_guide_valid_response():
-    """A well-formed GraphQL response returns the expected parental dict."""
-    graph_response = {
-        "data": {
-            "title": {
-                "parentsGuide": {
-                    "categories": [
-                        {"category": {"text": "Violence & Gore"}, "severity": {"text": "Moderate"}},
-                        {"category": {"text": "Profanity"}, "severity": {"text": "Mild"}},
-                    ]
-                }
-            }
-        }
-    }
-    imdb = make_imdb(graph_response=graph_response)
-    result = imdb.parental_guide("tt1234567")
-    assert result.get("Violence") == "Moderate"
-    assert result.get("Profanity") == "Mild"
-
-
-# ---------------------------------------------------------------------------
-# Edge case: empty categories list
-# ---------------------------------------------------------------------------
-
-
-def test_parental_guide_empty_categories_raises_failed():
-    """An empty categories list (title exists but no guide data) raises Failed."""
-    graph_response = {"data": {"title": {"parentsGuide": {"categories": []}}}}
-    imdb = make_imdb(graph_response=graph_response)
-    with pytest.raises(Failed, match="No Parental Guide Found"):
-        imdb.parental_guide("tt0000000")
-
-
-# ---------------------------------------------------------------------------
-# Service-backed parental guide
-# ---------------------------------------------------------------------------
-
-
-def test_parental_guide_prefers_service():
-    """When the Kometa IMDb Service returns parental guide data, use it."""
+def test_parental_guide_valid_service_response():
+    """A well-formed service response returns the expected parental dict."""
     service_response = {
         "imdb_id": "tt1234567",
         "parental_guide": {
-            "Nudity": "Mild",
             "Violence": "Moderate",
-            "Profanity": "Severe",
-            "Alcohol": "Mild",
-            "Frightening": "Moderate",
+            "Profanity": "Mild",
         },
     }
-    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": {"categories": []}}}}, service_response=service_response)
+    imdb = make_imdb(graph_response={}, service_response=service_response)
     result = imdb.parental_guide("tt1234567")
-    assert result.get("Nudity") == "Mild"
     assert result.get("Violence") == "Moderate"
-    assert result.get("Profanity") == "Severe"
-    assert result.get("Alcohol") == "Mild"
-    assert result.get("Frightening") == "Moderate"
+    assert result.get("Profanity") == "Mild"
     imdb._graph_request.assert_not_called()
 
 
 def test_parental_guide_fills_missing_service_categories_with_none():
     """The service only returns categories that have values; missing ones are filled with None."""
     service_response = {"imdb_id": "tt1234567", "parental_guide": {"Violence": "Severe"}}
-    imdb = make_imdb(graph_response=None, service_response=service_response)
+    imdb = make_imdb(graph_response={}, service_response=service_response)
     result = imdb.parental_guide("tt1234567")
     assert result.get("Violence") == "Severe"
     assert result.get("Nudity") is None
@@ -187,23 +95,41 @@ def test_parental_guide_fills_missing_service_categories_with_none():
     assert result.get("Frightening") is None
 
 
-def test_parental_guide_falls_back_to_graphql_when_service_empty():
-    """When the service returns no parental guide data, fall back to GraphQL."""
-    graph_response = {"data": {"title": {"parentsGuide": {"categories": [{"category": {"text": "Violence & Gore"}, "severity": {"text": "Moderate"}}]}}}}
-    imdb = make_imdb(graph_response=graph_response, service_response={"imdb_id": "tt1234567", "parental_guide": {}})
-    result = imdb.parental_guide("tt1234567")
-    assert result.get("Violence") == "Moderate"
-    imdb._graph_request.assert_called_once()
+def test_parental_guide_empty_service_response_raises_failed():
+    """When the service returns an empty guide, treat it as no guide data and raise Failed.
+
+    The service fetches uncached IDs from IMDb and caches them, so an empty response means
+    IMDb has no parental guide data for this title.
+    """
+    imdb = make_imdb(graph_response={}, service_response={"imdb_id": "tt1234567", "parental_guide": {}})
+    with pytest.raises(Failed, match="No Parental Guide Found"):
+        imdb.parental_guide("tt1234567")
+    imdb._graph_request.assert_not_called()
 
 
-def test_parental_guide_falls_back_to_graphql_when_service_unavailable():
-    """When the service raises Failed, fall back to GraphQL."""
-    graph_response = {"data": {"title": {"parentsGuide": {"categories": [{"category": {"text": "Profanity"}, "severity": {"text": "Mild"}}]}}}}
-    imdb = make_imdb(graph_response=graph_response)
+def test_parental_guide_service_returns_none_raises_failed():
+    """When the service returns None (e.g. 404), raise Failed instead of AttributeError."""
+    imdb = make_imdb(graph_response={}, service_response=None)
+    with pytest.raises(Failed, match="No Parental Guide Found"):
+        imdb.parental_guide("tt9999999")
+
+
+def test_parental_guide_service_unavailable_flag_raises_failed():
+    """When the service has been marked unavailable, fail fast without calling it."""
+    imdb = make_imdb(graph_response={})
+    imdb._service_available = False
+    with pytest.raises(Failed, match="Kometa IMDb Service is unavailable"):
+        imdb.parental_guide("tt1234567")
+    imdb._service_request.assert_not_called()
+
+
+def test_parental_guide_service_failure_raises_failed():
+    """When the service raises Failed, propagate the error instead of falling back to GraphQL."""
+    imdb = make_imdb(graph_response={"data": {"title": {"parentsGuide": {"categories": [{"category": {"text": "Profanity"}, "severity": {"text": "Mild"}}]}}}})
     imdb._service_request = MagicMock(side_effect=Failed("IMDb Service Error: 503"))
-    result = imdb.parental_guide("tt1234567")
-    assert result.get("Profanity") == "Mild"
-    assert imdb._service_available is False
+    with pytest.raises(Failed, match="IMDb Service Error: 503"):
+        imdb.parental_guide("tt1234567")
+    imdb._graph_request.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
