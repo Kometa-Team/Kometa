@@ -191,6 +191,7 @@ class Operations:
             reset_edits = {}
             lock_edits = {}
             unlock_edits = {}
+            combinable_edits = {}  # per-item {ratingKey: {"fields": {attr: value}, "genre": (add, remove)}} for flush_combined_edits()
             ep_rating_edits = {"audienceRating": {}, "rating": {}, "userRating": {}}
             ep_remove_edits = {}
             ep_reset_edits = {}
@@ -565,6 +566,7 @@ class Operations:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)
+                                        combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = found_rating
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
                                     break
                                 except Failed:
@@ -616,6 +618,8 @@ class Operations:
                         new_genres = mapped_genres
                     _add = sorted(set(new_genres) - set(item_genres))
                     _remove = sorted(set(item_genres) - set(new_genres))
+                    if _add or _remove:
+                        combinable_edits.setdefault(item.ratingKey, {})["genre"] = (_add, _remove)
                     for genre_list, edit_type in [(_add, "add"), (_remove, "remove")]:
                         if genre_list:
                             for g in genre_list:
@@ -724,6 +728,7 @@ class Operations:
                         if new_rating not in content_edits:
                             content_edits[new_rating] = []
                         content_edits[new_rating].append(item.ratingKey)
+                        combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})["contentRating"] = new_rating
                         item_edits += f"\nContent Rating (Batched) | {new_rating}"
                         do_lock = False
 
@@ -896,6 +901,7 @@ class Operations:
                                         if new_date not in date_edits[item_attr]:
                                             date_edits[item_attr][new_date] = []
                                         date_edits[item_attr][new_date].append(item.ratingKey)
+                                        combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = new_date
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {new_date}"
                                     break
                                 except Failed:
@@ -1367,6 +1373,48 @@ class Operations:
                         if evict_cache:
                             for batch_item in batch_items:
                                 cache_evictions.add(batch_item.ratingKey)
+
+            def flush_combined_edits():
+                # perf checklist item 17: merges items needing 2+ rating/genre/contentRating/date changes into one PUT instead of one per attribute type.
+                merge_keys = [rk for rk, edit in combinable_edits.items() if len(edit.get("fields", {})) + (1 if "genre" in edit else 0) >= 2]
+                if not merge_keys:
+                    return
+                merge_items = self.library.load_list_from_cache(merge_keys)
+                if not merge_items:
+                    return
+                item_type_name = f"{'Movie' if self.library.is_movie else 'Show'}{'s' if len(merge_items) > 1 else ''}"
+                logger.info(f"Plex Combined Update: {len(merge_items)} {item_type_name} with 2+ attribute types changed this run")
+                for group in self.library._group_items_by_type(merge_items):
+                    for item in group:
+                        edit = combinable_edits[item.ratingKey]
+                        self.library.Plex.batchMultiEdits([item])
+                        for field, value in edit.get("fields", {}).items():
+                            if field == "addedAt":
+                                update_date = datetime.strptime(value, "%Y-%m-%d")
+                                try:
+                                    value = int(round(update_date.timestamp()))
+                                except (TypeError, OSError):
+                                    offset = int(datetime(2000, 1, 1, tzinfo=timezone.utc).timestamp() - datetime(2000, 1, 1).timestamp())
+                                    value = int((update_date - epoch).total_seconds()) - offset
+                            self.library.Plex.editField(field, value)
+                        if "genre" in edit:
+                            genre_add, genre_remove = edit["genre"]
+                            if genre_add:
+                                self.library.Plex.editTags("genre", genre_add, remove=False)
+                            if genre_remove:
+                                self.library.Plex.editTags("genre", genre_remove, remove=True)
+                        self.library._save_multi_edits_with_retry()
+                        cache_evictions.add(item.ratingKey)
+                # Purge merged items from the value-keyed dicts below so they aren't written twice.
+                merge_key_set = set(merge_keys)
+                purge_targets = [*rating_edits.values(), content_edits, date_edits["originallyAvailableAt"], date_edits["addedAt"], genre_edits["add"], genre_edits["remove"]]
+                for edit_dict in purge_targets:
+                    for value_key in list(edit_dict.keys()):
+                        edit_dict[value_key] = [rk for rk in edit_dict[value_key] if rk not in merge_key_set]
+                        if not edit_dict[value_key]:
+                            del edit_dict[value_key]
+
+            flush_combined_edits()
 
             for tag_attribute, edit_dict in [("label", label_edits), ("genre", genre_edits)]:
                 for tag_operation, batch_edits in edit_dict.items():

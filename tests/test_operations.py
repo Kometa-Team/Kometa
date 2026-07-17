@@ -408,6 +408,164 @@ class TestRemoveTitleParenthesesBatching:
 
 
 # ---------------------------------------------------------------------------
+# flush_combined_edits (checklist item 17)
+# ---------------------------------------------------------------------------
+
+
+def make_mass_edit_item(rating_key, title, rating=None, audience_rating=None, content_rating=None, genres=None):
+    """Return a minimal fake Plex item for the mass_*_update branches of run_operations()."""
+    return SimpleNamespace(
+        ratingKey=rating_key,
+        title=title,
+        fields=[],
+        locations=[],
+        rating=rating,
+        audienceRating=audience_rating,
+        userRating=None,
+        contentRating=content_rating,
+        genres=genres if genres is not None else [],
+        originalTitle=None,
+        studio=None,
+        originallyAvailableAt=None,
+        addedAt=None,
+    )
+
+
+def make_mass_edit_library(items, **mass_update_overrides):
+    """Return a MagicMock library exercising only the mass_*_update branches of
+    run_operations() - everything else stubbed off, same convention as
+    make_title_test_library(). mass_*_update options are set to literal values
+    (e.g. "7.5") rather than provider names ("tmdb") so no TMDb/IMDb/etc. mocking
+    is needed - operations.py falls through to using the option itself as the
+    value when it doesn't match a known provider keyword."""
+    library = MagicMock()
+    items_by_key = {item.ratingKey: item for item in items}
+
+    library.items_library_operation = True
+    library.remove_title_parentheses = False
+    library.is_movie = True
+    library.is_show = False
+    library.plex_bulk_edit_batch_size = None
+    library.Radarr = None
+    library.Sonarr = None
+    library.delete_collections = None
+    library.mass_collection_mode = None
+    library.mass_episode_audience_rating_update = None
+    library.mass_episode_critic_rating_update = None
+    library.mass_episode_user_rating_update = None
+
+    for flag in [
+        "split_duplicates",
+        "update_blank_track_titles",
+        "assets_for_all",
+        "respect_ignore_ids",
+        "mass_imdb_parental_labels",
+        "mass_audience_rating_update",
+        "mass_critic_rating_update",
+        "mass_user_rating_update",
+        "radarr_add_all_existing",
+        "sonarr_add_all_existing",
+        "mass_genre_update",
+        "genre_mapper",
+        "mass_content_rating_update",
+        "content_rating_mapper",
+        "mass_original_title_update",
+        "mass_studio_update",
+        "mass_poster_update",
+        "mass_background_update",
+        "mass_logo_update",
+        "mass_square_art_update",
+        "mass_originally_available_update",
+        "mass_added_at_update",
+        "radarr_remove_by_tag",
+        "sonarr_remove_by_tag",
+        "show_unmanaged",
+        "show_unconfigured",
+        "metadata_backup",
+        "label_operations",
+    ]:
+        setattr(library, flag, False)
+
+    for key, value in mass_update_overrides.items():
+        setattr(library, key, value)
+
+    library.get_all.return_value = items
+    library.reload.side_effect = lambda item: item
+    library.item_has_ignore_label.return_value = False
+    library.get_ids.return_value = (None, None, None)
+    library.load_list_from_cache.side_effect = lambda keys: [items_by_key[k] for k in keys if k in items_by_key]
+    library._group_items_by_type.side_effect = lambda items_: [items_]
+    return library
+
+
+class TestFlushCombinedEdits:
+    def test_merges_multiple_attribute_types_into_one_put(self):
+        """An item needing rating + audience rating + genre + content rating all changed in
+        the same run gets ONE batchMultiEdits()/saveMultiEdits() PUT, not four."""
+        item = make_mass_edit_item(1, "Movie A")
+        library = make_mass_edit_library(
+            [item],
+            mass_critic_rating_update=["7.5"],
+            mass_audience_rating_update=["8.0"],
+            mass_genre_update=[["Action"]],
+            mass_content_rating_update=["PG-13"],
+        )
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([item])
+        library._save_multi_edits_with_retry.assert_called_once()
+        library.Plex.editField.assert_any_call("rating", "7.5")
+        library.Plex.editField.assert_any_call("audienceRating", "8.0")
+        library.Plex.editField.assert_any_call("contentRating", "PG-13")
+        library.Plex.editTags.assert_any_call("genre", ["Action"], remove=False)
+
+    def test_single_attribute_type_item_not_merged(self):
+        """An item needing only ONE attribute type changed still goes through the normal
+        per-attribute flush path, unaffected by the merge logic."""
+        item = make_mass_edit_item(1, "Movie A")
+        library = make_mass_edit_library([item], mass_genre_update=[["Action"]])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([item])
+        library._save_multi_edits_with_retry.assert_called_once()
+        # Not merged (one attribute type only), so this is the pre-existing per-value-keyed flush path.
+        library.Plex.editTags.assert_any_call("genre", "Action", remove=False)
+
+    def test_mixed_run_only_merges_multi_attribute_items(self):
+        """Two items in the same run - one needs 2 attribute types (merged into 1 PUT), the
+        other needs only 1 (goes through the normal path) - total 2 PUTs, not 3."""
+        merged_item = make_mass_edit_item(1, "Merged Movie")
+        single_item = make_mass_edit_item(2, "Single Movie")
+        library = make_mass_edit_library(
+            [merged_item, single_item],
+            mass_critic_rating_update=["7.5"],
+            mass_genre_update=[["Action"]],
+        )
+        # Both items share the same config, so both get rating + genre and both should merge.
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        assert library.Plex.batchMultiEdits.call_count == 2  # one merged PUT per item, not per attribute type
+        assert library._save_multi_edits_with_retry.call_count == 2
+
+    def test_no_mass_update_flags_does_nothing(self):
+        item = make_mass_edit_item(1, "Movie A")
+        library = make_mass_edit_library([item])
+        ops = Operations(config=MagicMock(), library=library)
+
+        ops.run_operations()
+
+        library.Plex.editField.assert_not_called()
+        library.Plex.editTags.assert_not_called()
+        library.Plex.batchMultiEdits.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # Module-level pure functions
 # ---------------------------------------------------------------------------
 
