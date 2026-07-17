@@ -772,7 +772,7 @@ class IMDb:
         else:
             return "WatchListPageRefiner", self.watchlist_hash
 
-    def _graphql_json(self, data, list_type):
+    def _graphql_variables(self, data, list_type):
         page_limit = 250 if list_type == "search" else 100
         out = {
             "locale": "en-US",
@@ -886,6 +886,10 @@ class IMDb:
             out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)
+        return out
+
+    def _graphql_json(self, data, list_type):
+        out = self._graphql_variables(data, list_type)
         op, sha = self._json_operation(list_type)
         return {"operationName": op, "variables": out, "extensions": {"persistedQuery": {"version": 1, "sha256Hash": sha}}}
 
@@ -906,8 +910,7 @@ class IMDb:
             data = {**data, "user_id": self._resolve_profile_id(data["user_id"])}
         is_list = list_type != "search"
         if not is_list:
-            json_obj = self._graphql_json(data, "search")
-            out = json_obj["variables"]
+            out = self._graphql_variables(data, "search")
             constraints = {k: v for k, v in out.items() if k not in ("locale", "first", "sortBy", "sortOrder")}
             sort = {"sortBy": out["sortBy"], "sortOrder": out["sortOrder"]}
             body = {"constraints": constraints, "sort": sort}
