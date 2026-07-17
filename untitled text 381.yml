@@ -1,0 +1,11 @@
+  taran-postgres:
+    volumes:
+      - ${TARAN_SILO_DB_ROOT:-/opt/silo-t-postgres}/postgres:/var/lib/postgresql
+
+  taran-redis:
+    volumes:
+      - ${TARAN_SILO_REDIS_ROOT:-/opt/silo-t-redis
+
+  taran-silo:
+    volumes:
+      - ${MEDIA_ROOT:-/mnt/unionfs}:/mnt/unionfs:ro
