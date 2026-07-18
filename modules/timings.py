@@ -1,4 +1,4 @@
-"""Lightweight always-on timing instrumentation, gated by KOMETA_TIMINGS=1.
+"""Lightweight always-on timing instrumentation, gated by KOMETA_TIMINGS/--timings.
 
 Design:
 - A single process-wide TimingRegistry accumulates (library, collection, phase, source) -> seconds/calls/bytes.
@@ -109,7 +109,7 @@ class TimingRegistry:
         self.start_time = time.perf_counter()
         self.meta = {}
         self._banner_logged = False
-        # Single-threaded call-scoped tag (e.g. "image") that instrument_session's request hook appends to the source.
+        # Single-threaded call-scoped tag (e.g. "image" for get_image/download_image) that instrument_session's request hook appends to the source.
         self.context_tag = None
         # Single-threaded call-scoped tag so network buckets can be split by library, not just source - set via library_context(), read in instrument_session().
         self.library_ctx = None

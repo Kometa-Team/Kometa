@@ -144,8 +144,7 @@ class Requests:
         return YAML(input_data=response.content, check_empty=check_empty, read_only=True)
 
     def get_image(self, url, session=None, validate_only=False):
-        # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content.
-        # (nightly's leaked version of this cache only ever wrote to _image_url_cache, never read from it - restoring the actual shortcut here.)
+        # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content (nightly's leaked version wrote this cache but never read it back).
         cache_key = (url, validate_only)
         if cache_key in self._image_url_cache:
             return self._image_url_cache[cache_key]
