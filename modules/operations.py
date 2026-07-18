@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
-from modules import anidb, plex, tvdb, util
+from modules import anidb, plex, timings, tvdb, util
 from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
@@ -94,6 +94,7 @@ class Operations:
 
         return all((less_check, managed_check, configured_check))
 
+    @timings.timed("operations")
     def run_operations(self):
         operation_start = datetime.now()
         logger.info("")
