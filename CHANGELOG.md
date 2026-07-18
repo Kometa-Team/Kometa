@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+
 - Allow all semantic Letterboxd discovery builders to use `collection_order: custom`, preserving Letterboxd's returned order in Plex collections.
 - Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
@@ -83,7 +84,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
-- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per <https://support.plex.tv/articles/200220677-local-media-assets-movies/>
 - Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
 ### Security
