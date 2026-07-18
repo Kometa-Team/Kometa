@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add YamTrack connector support with `yamtrack_list` and `yamtrack_list_details` builders.
 - Add `yamtrack_tracked` builder to collect YamTrack profile movie, TV, and anime items by tracked status.
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
+- Add `--dry`/`--dry-run` (`DRY=true`/`DRY_RUN=true`) runtime support to process a full Kometa run without writing changes to Plex or external services. Dry runs still perform initial authorization checks, log INFO lines as `[DRY]`, mark section headings with `(DRY)`, and skip Plex writes, Trakt list syncing, Sonarr/Radarr mutations, and webhook delivery. Also updates the runtime flags documentation with direct admonition anchors matching the Library Operations page.
 
 ### Fixed
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.

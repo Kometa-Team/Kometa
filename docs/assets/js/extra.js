@@ -40,37 +40,37 @@ document$.subscribe(function() {
   }
 });
 
-// Open operation details when navigating directly to an operation hash.
+// Open linked details when navigating directly to an admonition hash.
 document$.subscribe(function() {
-  if (window.operationAdmonitionHashHandler) {
-    window.removeEventListener("hashchange", window.operationAdmonitionHashHandler);
-    window.operationAdmonitionHashHandler = null;
+  if (window.admonitionAnchorHashHandler) {
+    window.removeEventListener("hashchange", window.admonitionAnchorHashHandler);
+    window.admonitionAnchorHashHandler = null;
   }
 
-  const operationsPath = /\/config\/operations\/?$/;
-  if (!operationsPath.test(window.location.pathname)) {
+  const supportedPath = /\/(?:config\/operations|kometa\/environmental)\/?$/;
+  if (!supportedPath.test(window.location.pathname)) {
     return;
   }
 
-  const operationHeadings = document.querySelectorAll("article h6[id]");
+  const admonitionHeadings = document.querySelectorAll("article h6[id]");
 
-  operationHeadings.forEach(function(heading) {
+  admonitionHeadings.forEach(function(heading) {
     const details = heading.nextElementSibling;
     if (!details || details.tagName.toLowerCase() !== "details") {
       return;
     }
 
-    details.dataset.operationAnchor = heading.id;
+    details.dataset.admonitionAnchor = heading.id;
 
     const summary = details.querySelector(":scope > summary");
-    if (!summary || summary.querySelector(".operation-admonition-link")) {
+    if (!summary || summary.querySelector(".admonition-anchor-link")) {
       return;
     }
 
     const link = document.createElement("a");
-    link.className = "operation-admonition-link";
+    link.className = "admonition-anchor-link";
     link.href = "#" + heading.id;
-    link.setAttribute("aria-label", "Link to this operation");
+    link.setAttribute("aria-label", "Link to this section");
     link.textContent = "#";
     link.addEventListener("click", function(event) {
       event.stopPropagation();
@@ -79,7 +79,7 @@ document$.subscribe(function() {
     summary.appendChild(link);
   });
 
-  function openOperationFromHash() {
+  function openAdmonitionFromHash() {
     const hash = decodeURIComponent(window.location.hash.slice(1));
     if (!hash) {
       return;
@@ -101,9 +101,9 @@ document$.subscribe(function() {
     });
   }
 
-  openOperationFromHash();
-  window.operationAdmonitionHashHandler = openOperationFromHash;
-  window.addEventListener("hashchange", window.operationAdmonitionHashHandler);
+  openAdmonitionFromHash();
+  window.admonitionAnchorHashHandler = openAdmonitionFromHash;
+  window.addEventListener("hashchange", window.admonitionAnchorHashHandler);
 });
 
 document.addEventListener("DOMContentLoaded", () => {

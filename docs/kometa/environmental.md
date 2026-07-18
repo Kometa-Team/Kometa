@@ -129,9 +129,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ## All Available Runtime Flags/Environment Variables
 
-??? blank "Config Location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-c`/`--config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_CONFIG`<a class="headerlink" href="#config" title="Permanent link">¶</a>"
+###### Config Location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-c`/`--config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_CONFIG` { #config }
 
-    <div id="config" />Kometa looks for its config file at `config/config.yml`. If you want to change that, perhaps to use a special-purpose `config.yml` or the like,
+??? info "Config Location&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-c`/`--config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_CONFIG`"
+
+    Kometa looks for its config file at `config/config.yml`. If you want to change that, perhaps to use a special-purpose `config.yml` or the like,
     you can use this flag to specify the location of the configuration YAML file.
 
     <hr style="margin: 0px;">
@@ -152,9 +154,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" -v "Z:\some\path:/data:rw" kometateam/kometa --config /data/your-config-file.yml
             ```
 
-??? blank "Time to Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-t`/`--times`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMES`<a class="headerlink" href="#times" title="Permanent link">¶</a>"
+###### Time to Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-t`/`--times`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMES` { #times }
 
-    <div id="times" />Kometa wakes up at 5:00 AM to process the config file. If you want to change that time, or tell Kometa to wake up at multiple times, use this flag.
+??? info "Time to Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-t`/`--times`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMES`"
+
+    Kometa wakes up at 5:00 AM to process the config file. If you want to change that time, or tell Kometa to wake up at multiple times, use this flag.
 
     <hr style="margin: 0px;">
 
@@ -174,9 +178,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --times "22:00|03:00"
             ```
 
-??? blank "Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN`<a class="headerlink" href="#run" title="Permanent link">¶</a>"
+###### Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN` { #run }
 
-    <div id="run" />If you want Kometa to run immediately rather than waiting until 5AM, set this flag to `true`.
+??? info "Run Immediately&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-r`/`--run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN`"
+
+    If you want Kometa to run immediately rather than waiting until 5AM, set this flag to `true`.
 
     <hr style="margin: 0px;">
 
@@ -194,9 +200,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run
             ```
 
-??? blank "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`<a class="headerlink" href="#tests" title="Permanent link">¶</a>"
+###### Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS` { #tests }
 
-    <div id="tests" />If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).
+??? info "Run Tests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ts`/`--tests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TESTS`"
+
+    If you set this flag to `true`, Kometa will run only collections that you have marked as `test` immediately, as [KOMETA_RUN](#run).
 
     **NOTE: This will only run collections with `test: true` in the definition.**
 
@@ -227,9 +235,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
                 smart_label: release.desc
             ```
 
-??? blank "Debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-db`/`--debug`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DEBUG`<a class="headerlink" href="#debug" title="Permanent link">¶</a>"
+###### Debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-db`/`--debug`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DEBUG` { #debug }
 
-    <div id="debug" />To increase the verbosity of the logs, set this flag to `true`.
+??? info "Debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-db`/`--debug`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DEBUG`"
+
+    To increase the verbosity of the logs, set this flag to `true`.
 
     <hr style="margin: 0px;">
 
@@ -247,9 +257,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --debug
             ```
 
-??? blank "Trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-tr`/`--trace`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TRACE`<a class="headerlink" href="#trace" title="Permanent link">¶</a>"
+###### Trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-tr`/`--trace`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TRACE` { #trace }
 
-    <div id="trace" />To increase the verbosity of the logs even more than [debug](#debug), set this flag to `true`.
+??? info "Trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-tr`/`--trace`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TRACE`"
+
+    To increase the verbosity of the logs even more than [debug](#debug), set this flag to `true`.
 
     <hr style="margin: 0px;">
 
@@ -267,9 +279,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --trace
             ```
 
-??? blank "Log Requests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lr`/`--log-requests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_REQUESTS`<a class="headerlink" href="#log-requests" title="Permanent link">¶</a>"
+###### Log Requests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lr`/`--log-requests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_REQUESTS` { #log-requests }
 
-    <div id="log-requests" />If you enable this, every external network request made by Kometa will be logged, along with the data that is returned.
+??? info "Log Requests&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lr`/`--log-requests`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOG_REQUESTS`"
+
+    If you enable this, every external network request made by Kometa will be logged, along with the data that is returned.
     This will add a lot of data to the logs, and will probably contain things like tokens, since the auto-redaction of such things is not generalized
     enough to catch any token that may be in any URL.
 
@@ -291,9 +305,35 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --log-requests
             ```
 
-??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
+###### Dry Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--dry`/`--dry-run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`DRY`/`DRY_RUN` { #dry-run }
 
-    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).
+??? info "Dry Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--dry`/`--dry-run`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`DRY`/`DRY_RUN`"
+
+    Run Kometa normally, but do not send changes to Plex or external services.
+
+    Initial authorization checks still happen as usual. Kometa still processes collections, metadata, overlays, playlists, operations, and reports what it would do, but it skips writes such as Plex edits/uploads/deletes, Trakt list syncing, Sonarr/Radarr adds or edits, and webhook delivery.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `--dry`, `--dry-run`, or `--dryrun` (ex. `--dry-run`)
+
+    **Environment Variable:** `DRY`, `DRY_RUN`, `KOMETA_DRY`, or `KOMETA_DRY_RUN` (ex. `DRY_RUN=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --run --dry-run
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" -e DRY_RUN=true kometateam/kometa --run
+            ```
+
+###### Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT` { #timeout }
+
+??? info "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`"
+
+    Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).
     This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
@@ -314,9 +354,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --timeout 360
             ```
 
-??? blank "No Verify SSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nv`/`--no-verify-ssl`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_VERIFY_SSL`<a class="headerlink" href="#no-verify-ssl" title="Permanent link">¶</a>"
+###### No Verify SSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nv`/`--no-verify-ssl`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_VERIFY_SSL` { #no-verify-ssl }
 
-    <div id="no-verify-ssl" />Turn SSL Verification off.
+??? info "No Verify SSL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nv`/`--no-verify-ssl`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_VERIFY_SSL`"
+
+    Turn SSL Verification off.
 
     ???+ note
 
@@ -340,9 +382,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --no-verify-ssl
             ```
 
-??? blank "Collections Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-co`/`--collections-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_COLLECTIONS_ONLY`<a class="headerlink" href="#collections-only" title="Permanent link">¶</a>"
+###### Collections Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-co`/`--collections-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_COLLECTIONS_ONLY` { #collections-only }
 
-    <div id="collections-only" />Only run collection YAML files, skip library operations, metadata, overlays, and playlists.
+??? info "Collections Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-co`/`--collections-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_COLLECTIONS_ONLY`"
+
+    Only run collection YAML files, skip library operations, metadata, overlays, and playlists.
 
     <hr style="margin: 0px;">
 
@@ -361,9 +405,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
     **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
-??? blank "Metadata Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-mo`/`--metadata-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_METADATA_ONLY`<a class="headerlink" href="#metadata-only" title="Permanent link">¶</a>"
+###### Metadata Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-mo`/`--metadata-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_METADATA_ONLY` { #metadata-only }
 
-    <div id="metadata-only" />Only run metadata files, skip library operations, collections, overlays, and playlists.
+??? info "Metadata Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-mo`/`--metadata-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_METADATA_ONLY`"
+
+    Only run metadata files, skip library operations, collections, overlays, and playlists.
 
     <hr style="margin: 0px;">
 
@@ -382,9 +428,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
     **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
-??? blank "Playlists Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-po`/`--playlists-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PLAYLISTS_ONLY`<a class="headerlink" href="#playlists-only" title="Permanent link">¶</a>"
+###### Playlists Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-po`/`--playlists-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PLAYLISTS_ONLY` { #playlists-only }
 
-    <div id="playlists-only" />Only run playlist YAML files, skip library operations, overlays, collections, and metadata.
+??? info "Playlists Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-po`/`--playlists-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PLAYLISTS_ONLY`"
+
+    Only run playlist YAML files, skip library operations, overlays, collections, and metadata.
 
     <hr style="margin: 0px;">
 
@@ -403,9 +451,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
     **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
-??? blank "Operations Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-op`/`--operations-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OPERATIONS_ONLY`<a class="headerlink" href="#operations-only" title="Permanent link">¶</a>"
+###### Operations Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-op`/`--operations-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OPERATIONS_ONLY` { #operations-only }
 
-    <div id="operations-only" />Only run library operations skipping collections, metadata, playlists, and overlays.
+??? info "Operations Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-op`/`--operations-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OPERATIONS_ONLY`"
+
+    Only run library operations skipping collections, metadata, playlists, and overlays.
 
     <hr style="margin: 0px;">
 
@@ -424,9 +474,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
     **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
-??? blank "Overlays Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ov`/`--overlays-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OVERLAYS_ONLY`<a class="headerlink" href="#overlays-only" title="Permanent link">¶</a>"
+###### Overlays Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ov`/`--overlays-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OVERLAYS_ONLY` { #overlays-only }
 
-    <div id="overlays-only" />Only run library overlay files skipping collections, metadata, playlists, and operations.
+??? info "Overlays Only&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ov`/`--overlays-only`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_OVERLAYS_ONLY`"
+
+    Only run library overlay files skipping collections, metadata, playlists, and operations.
 
     <hr style="margin: 0px;">
 
@@ -445,9 +497,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
     **IMPORTANT:** only **one** of these `--SOMETHING-only` flags can be active at one time.  If you enable more than one, like perhaps one as an env var and one as a runtime flag, Kometa will exit early with an error.
 
-??? blank "Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS`<a class="headerlink" href="#run-collections" title="Permanent link">¶</a>"
+###### Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS` { #run-collections }
 
-    <div id="run-collections" />Perform an [immediate run](#run) to run only the named collections, bypassing the time to run flag.
+??? info "Run Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rc`/`--run-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_COLLECTIONS`"
+
+    Perform an [immediate run](#run) to run only the named collections, bypassing the time to run flag.
 
     <hr style="margin: 0px;">
 
@@ -467,9 +521,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-collections "Harry Potter|Star Wars"
             ```
 
-??? blank "Run Libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rl`/`--run-libraries`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_LIBRARIES`<a class="headerlink" href="#run-libraries" title="Permanent link">¶</a>"
+###### Run Libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rl`/`--run-libraries`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_LIBRARIES` { #run-libraries }
 
-    <div id="run-libraries" />Perform an [immediate run](#run) to run only the named libraries, bypassing the time to run flag.
+??? info "Run Libraries&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rl`/`--run-libraries`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_LIBRARIES`"
+
+    Perform an [immediate run](#run) to run only the named libraries, bypassing the time to run flag.
 
     <hr style="margin: 0px;">
 
@@ -489,9 +545,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-libraries "Movies - 4K|TV Shows - 4K"
             ```
 
-??? blank "Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES`<a class="headerlink" href="#run-files" title="Permanent link">¶</a>"
+###### Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES` { #run-files }
 
-    <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files,
+??? info "Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES`"
+
+    Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files,
     bypassing the time to run flag. This works for all different paths i.e. `default`, `git`, `url`, `file`, or `repo`.
 
     ???+ warning
@@ -516,9 +574,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-files "Movies.yml|MovieCharts"
             ```
 
-??? blank "Ignore Schedules&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-is`/`--ignore-schedules`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_SCHEDULES`<a class="headerlink" href="#ignore-schedules" title="Permanent link">¶</a>"
+###### Ignore Schedules&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-is`/`--ignore-schedules`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_SCHEDULES` { #ignore-schedules }
 
-    <div id="ignore-schedules" />Ignore all schedules for the run. Range Scheduled collections (such as Christmas movies) will still be ignored.
+??? info "Ignore Schedules&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-is`/`--ignore-schedules`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_SCHEDULES`"
+
+    Ignore all schedules for the run. Range Scheduled collections (such as Christmas movies) will still be ignored.
 
     <hr style="margin: 0px;">
 
@@ -536,9 +596,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --ignore-schedules
             ```
 
-??? blank "Ignore Ghost&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ig`/`--ignore-ghost`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_GHOST`<a class="headerlink" href="#ignore-ghost" title="Permanent link">¶</a>"
+###### Ignore Ghost&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ig`/`--ignore-ghost`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_GHOST` { #ignore-ghost }
 
-    <div id="ignore-ghost" />Kometa prints some things to the log that don't actually go into the log file on disk.
+??? info "Ignore Ghost&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ig`/`--ignore-ghost`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_IGNORE_GHOST`"
+
+    Kometa prints some things to the log that don't actually go into the log file on disk.
     Typically these are things like status messages while loading and/or filtering. If you want to hide all ghost logging for the run, use this flag.
 
     <hr style="margin: 0px;">
@@ -557,9 +619,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --ignore-ghost
             ```
 
-??? blank "Delete Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dc`/`--delete-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS`<a class="headerlink" href="#delete-collections" title="Permanent link">¶</a>"
+###### Delete Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dc`/`--delete-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS` { #delete-collections }
 
-    <div id="delete-collections" />Delete all collections in each library as the first step in the run.
+??? info "Delete Collections&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dc`/`--delete-collections`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS`"
+
+    Delete all collections in each library as the first step in the run.
 
     ???+ warning
 
@@ -581,9 +645,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-collections
             ```
 
-??? blank "Delete Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dl`/`--delete-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_LABELS`<a class="headerlink" href="#delete-labels" title="Permanent link">¶</a>"
+###### Delete Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dl`/`--delete-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_LABELS` { #delete-labels }
 
-    <div id="delete-labels" />Delete all labels [save one, see below] on every item in a Library prior to running collections/operations.
+??? info "Delete Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dl`/`--delete-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_LABELS`"
+
+    Delete all labels [save one, see below] on every item in a Library prior to running collections/operations.
 
     ???+ warning
 
@@ -609,9 +675,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-labels
             ```
 
-??? blank "Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME`<a class="headerlink" href="#resume" title="Permanent link">¶</a>"
+###### Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME` { #resume }
 
-    <div id="resume" />Perform an [immediate run](#run) starting from the first instance of the specified collection, bypassing the time to run flag.
+??? info "Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME`"
+
+    Perform an [immediate run](#run) starting from the first instance of the specified collection, bypassing the time to run flag.
 
     <hr style="margin: 0px;">
 
@@ -629,9 +697,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --resume "Star Wars"
             ```
 
-??? blank "No Countdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nc`/`--no-countdown`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_COUNTDOWN`<a class="headerlink" href="#no-countdown" title="Permanent link">¶</a>"
+###### No Countdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nc`/`--no-countdown`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_COUNTDOWN` { #no-countdown }
 
-    <div id="no-countdown" />Typically, when **not** doing an [immediate run](#run), Kometa displays a countdown in the terminal where it's running.
+??? info "No Countdown&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nc`/`--no-countdown`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_COUNTDOWN`"
+
+    Typically, when **not** doing an [immediate run](#run), Kometa displays a countdown in the terminal where it's running.
     If you want to hide this countdown, use this flag.
 
     <hr style="margin: 0px;">
@@ -650,9 +720,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --no-countdown
             ```
 
-??? blank "No Missing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nm`/`--no-missing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_MISSING`<a class="headerlink" href="#no-missing" title="Permanent link">¶</a>"
+###### No Missing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nm`/`--no-missing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_MISSING` { #no-missing }
 
-    <div id="no-missing" />Kometa can take various actions on missing items, such as sending them to Radarr, listing them in the log, or saving a report.
+??? info "No Missing&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nm`/`--no-missing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_MISSING`"
+
+    Kometa can take various actions on missing items, such as sending them to Radarr, listing them in the log, or saving a report.
     If you want to disable all of these actions, use this flag.
 
     <hr style="margin: 0px;">
@@ -671,9 +743,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --no-missing
             ```
 
-??? blank "No Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nr`/`--no-report`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_REPORT`<a class="headerlink" href="#no-report" title="Permanent link">¶</a>"
+###### No Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nr`/`--no-report`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_REPORT` { #no-report }
 
-    <div id="no-report" />Kometa can produce a report of missing items, collections, and other information.
+??? info "No Report&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-nr`/`--no-report`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_NO_REPORT`"
+
+    Kometa can produce a report of missing items, collections, and other information.
     If you have this report enabled but want to disable it for a specific run, use this flag.
 
     <hr style="margin: 0px;">
@@ -692,9 +766,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --no-report
             ```
 
-??? blank "Read Only Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ro`/`--read-only-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_READ_ONLY_CONFIG`<a class="headerlink" href="#read-only-config" title="Permanent link">¶</a>"
+###### Read Only Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ro`/`--read-only-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_READ_ONLY_CONFIG` { #read-only-config }
 
-    <div id="read-only-config" />Kometa reads in and then writes out a properly formatted version of your `config.yml` on each run;this makes the formatting consistent and ensures
+??? info "Read Only Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ro`/`--read-only-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_READ_ONLY_CONFIG`"
+
+    Kometa reads in and then writes out a properly formatted version of your `config.yml` on each run;this makes the formatting consistent and ensures
     that you have visibility into new settings that get added. If you want to disable this behavior and tell Kometa to leave your `config.yml` as-is, use this flag.
 
     <hr style="margin: 0px;">
@@ -713,9 +789,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --read-only-config
             ```
 
-??? blank "Divider Character&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-d`/`--divider`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DIVIDER`<a class="headerlink" href="#divider" title="Permanent link">¶</a>"
+###### Divider Character&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-d`/`--divider`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DIVIDER` { #divider }
 
-    <div id="divider" />The log is split into sections with lines of `=`. If you wish to change that character to a different one, you can do that with this flag.
+??? info "Divider Character&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-d`/`--divider`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DIVIDER`"
+
+    The log is split into sections with lines of `=`. If you wish to change that character to a different one, you can do that with this flag.
 
     <hr style="margin: 0px;">
 
@@ -735,9 +813,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             ```
             ```
 
-??? blank "Screen Width&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-w`/`--width`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_WIDTH`<a class="headerlink" href="#width" title="Permanent link">¶</a>"
+###### Screen Width&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-w`/`--width`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_WIDTH` { #width }
 
-    <div id="width" />The log is formatted to fit within a certain width. If you wish to change that width, you can do that with this flag.
+??? info "Screen Width&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-w`/`--width`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_WIDTH`"
+
+    The log is formatted to fit within a certain width. If you wish to change that width, you can do that with this flag.
     Not that long lines are not wrapped or truncated to this width; this controls the minimum width of the log.
 
     <hr style="margin: 0px;">
@@ -758,9 +838,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --width 150
             ```
 
-??? blank "Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lp`/`--low-priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOW_PRIORITY`<a class="headerlink" href="#priority" title="Permanent link">¶</a>"
+###### Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lp`/`--low-priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOW_PRIORITY` { #priority }
 
-    <div id="priority" />Run the Kometa process at a lower priority. Will default to normal priority if not specified.
+??? info "Priority&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-lp`/`--low-priority`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_LOW_PRIORITY`"
+
+    Run the Kometa process at a lower priority. Will default to normal priority if not specified.
 
     <hr style="margin: 0px;">
 
@@ -778,9 +860,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --low-priority
             ```
 
-??? blank "Validate Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-va`/`--validate-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE`<a class="headerlink" href="#validate" title="Permanent link">¶</a>"
+###### Validate Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-va`/`--validate-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE` { #validate }
 
-    <div id="validate" />Parse and validate `config.yml` and all YAML files linked from it, print a structured report, then exit — without performing a normal run.
+??? info "Validate Config&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-va`/`--validate-config`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE`"
+
+    Parse and validate `config.yml` and all YAML files linked from it, print a structured report, then exit — without performing a normal run.
 
     Exits with code `0` if validation passes, `1` if there are any errors. Warnings do not affect the exit code.
 
@@ -802,9 +886,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate
             ```
 
-??? blank "Validate Level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vl`/`--validate-level`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_LEVEL`<a class="headerlink" href="#validate-level" title="Permanent link">¶</a>"
+###### Validate Level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vl`/`--validate-level`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_LEVEL` { #validate-level }
 
-    <div id="validate-level" />Controls how deep the validation goes when [`--validate`](#validate) is set. Default is `structure`.
+??? info "Validate Level&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vl`/`--validate-level`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_LEVEL`"
+
+    Controls how deep the validation goes when [`--validate`](#validate) is set. Default is `structure`.
 
     | Level | What it checks |
     |-------|----------------|
@@ -830,9 +916,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-level syntax
             ```
 
-??? blank "Validate Schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vs`/`--validate-schemas`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_SCHEMA`<a class="headerlink" href="#validate-schema" title="Permanent link">¶</a>"
+###### Validate Schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vs`/`--validate-schemas`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_SCHEMA` { #validate-schema }
 
-    <div id="validate-schema" />When set alongside [`--validate`](#validate), each YAML file is also checked against its corresponding JSON schema in the `json-schema/` directory.
+??? info "Validate Schema&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vs`/`--validate-schemas`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_SCHEMA`"
+
+    When set alongside [`--validate`](#validate), each YAML file is also checked against its corresponding JSON schema in the `json-schema/` directory.
 
     Schema violations are split into two categories:
 
@@ -855,9 +943,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-schema
             ```
 
-??? blank "Schema Path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-sp`/`--schema-path`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_SCHEMA_PATH`<a class="headerlink" href="#schema-path" title="Permanent link">¶</a>"
+###### Schema Path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-sp`/`--schema-path`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_SCHEMA_PATH` { #schema-path }
 
-    <div id="schema-path" />Override the path to the `json-schema/` directory used by [`--validate-schema`](#validate-schema). Defaults to the `json-schema/` folder next to `kometa.py`.
+??? info "Schema Path&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-sp`/`--schema-path`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_SCHEMA_PATH`"
+
+    Override the path to the `json-schema/` directory used by [`--validate-schema`](#validate-schema). Defaults to the `json-schema/` folder next to `kometa.py`.
 
     <hr style="margin: 0px;">
 
@@ -877,9 +967,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --validate --validate-schema --schema-path /some/path/to/json-schema
             ```
 
-??? blank "Validate File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vf`/`--validate-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_FILE`<a class="headerlink" href="#validate-file" title="Permanent link">¶</a>"
+###### Validate File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vf`/`--validate-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_FILE` { #validate-file }
 
-    <div id="validate-file" />Validate a single YAML file against its auto-detected JSON schema and print a gap report. The schema is inferred from the file's root keys: `collections:` → collection schema, `overlays:` → overlay schema, `playlists:` → playlist schema, `metadata:` → metadata schema, `libraries:`/`plex:`/`tmdb:` → config schema.
+??? info "Validate File&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vf`/`--validate-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_FILE`"
+
+    Validate a single YAML file against its auto-detected JSON schema and print a gap report. The schema is inferred from the file's root keys: `collections:` → collection schema, `overlays:` → overlay schema, `playlists:` → playlist schema, `metadata:` → metadata schema, `libraries:`/`plex:`/`tmdb:` → config schema.
 
     Exits with code `0` if no errors, `1` if any errors. Use [`--schema-path`](#schema-path) to override the schema directory.
 
@@ -901,9 +993,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" -v "/path/to/files:/files:ro" kometateam/kometa --validate-file /files/collections.yml
             ```
 
-??? blank "Validate Directory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vd`/`--validate-directory`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_DIR`<a class="headerlink" href="#validate-dir" title="Permanent link">¶</a>"
+###### Validate Directory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vd`/`--validate-directory`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_DIR` { #validate-dir }
 
-    <div id="validate-dir" />Walk a directory recursively, validate every `.yml` and `.yaml` file found against its auto-detected JSON schema, and print a combined report. Files with an unrecognised structure are skipped with a warning (not an error). Clean files are silent; only files with errors are reported individually.
+??? info "Validate Directory&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-vd`/`--validate-directory`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_VALIDATE_DIR`"
+
+    Walk a directory recursively, validate every `.yml` and `.yaml` file found against its auto-detected JSON schema, and print a combined report. Files with an unrecognised structure are skipped with a warning (not an error). Clean files are silent; only files with errors are reported individually.
 
     After all files, a single aggregate gap report is printed showing keys present in your files but missing from the schemas, ranked by how many files contain each key. This is the primary tool for improving the `json-schema/` files.
 
@@ -927,9 +1021,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" -v "/path/to/configs:/data:ro" kometateam/kometa --validate-dir /data
             ```
 
-??? blank "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`<a class="headerlink" href="#kometa-vars" title="Permanent link">¶</a>"
+###### Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***` { #kometa-vars }
 
-    <div id="kometa-vars" />All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the
+??? info "Config Secrets&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--kometa-***`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_***`"
+
+    All Run Commands that are in the format `--kometa-***` and Environment Variables that are in the
     format `KOMETA_***`, where `***` is the name you want to call the variable, will be loaded in as Config Secrets.
 
     These Config Secrets can be loaded into the config by placing `<<***>>` in any field in the config, where `***` is whatever name you called the variable.

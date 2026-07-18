@@ -34,6 +34,8 @@ if TYPE_CHECKING:
 else:
     logger = None
 
+dry_run = False
+
 
 class TimeoutExpired(Exception):
     pass

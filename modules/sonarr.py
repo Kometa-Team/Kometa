@@ -152,11 +152,14 @@ class Sonarr:
                 pass
             if shows and (len(shows) == 100 or len(tvdb_ids) == i):
                 try:
-                    _a, _e, _i, _x = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series_type, tags, per_request=100)
-                    added.extend(_a)
-                    exists.extend(_e)
-                    invalid.extend(_i)
-                    excluded.extend(_x)
+                    if util.dry_run:
+                        added.extend([s[0] if isinstance(s, tuple) else s for s in shows])
+                    else:
+                        _a, _e, _i, _x = self.api.add_multiple_series(shows, folder, quality_profile, language_profile, monitor, season, search, cutoff_search, series_type, tags, per_request=100)
+                        added.extend(_a)
+                        exists.extend(_e)
+                        invalid.extend(_i)
+                        excluded.extend(_x)
                     shows = []
                 except ArrException as e:
                     logger.stacktrace()
@@ -191,11 +194,17 @@ class Sonarr:
                     if self.cache:
                         self.cache.update_sonarr_adds(series.tvdbId, self.library.original_mapping_name)
                 if upgrade_qp and qp is not None:
-                    self.api.edit_multiple_series([s.tvdbId for s in upgrade_qp], quality_profile=qp.id)
+                    if util.dry_run:
+                        pass
+                    else:
+                        self.api.edit_multiple_series([s.tvdbId for s in upgrade_qp], quality_profile=qp.id)
                     for series in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {series.tvdbId:<7} | {series.title}")
                 if remonitor:
-                    self.api.edit_multiple_series([s.tvdbId for s in remonitor], monitor=monitor)
+                    if util.dry_run:
+                        pass
+                    else:
+                        self.api.edit_multiple_series([s.tvdbId for s in remonitor], monitor=monitor)
                     for series in remonitor:
                         logger.info(f"Monitored: {monitor} in Sonarr | {series.tvdbId:<7} | {series.title}")
             if len(skipped) > 0:
@@ -244,6 +253,9 @@ class Sonarr:
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Sonarr Tags: {tags}")
 
+        if util.dry_run:
+            return None
+
         edited, not_exists = self.api.edit_multiple_series(tvdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags], per_request=100)
 
         if len(edited) > 0:
@@ -270,6 +282,8 @@ class Sonarr:
             if remove:
                 remove_items.append(series)
         if remove_items:
+            if util.dry_run:
+                return None
             self.api.delete_multiple_series(remove_items)
 
     def get_tvdb_ids(self, method, data):

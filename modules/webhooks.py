@@ -99,6 +99,8 @@ class Webhooks:
         logger.trace("")
         json["library_mapping_name"] = self.library.mapping_name if self.library else ""
         logger.trace(f"JSON: {json}")
+        if util.dry_run:
+            return None
         for webhook in list(set(webhooks)):
             response = None
             logger.trace(f"Webhook: {webhook}")

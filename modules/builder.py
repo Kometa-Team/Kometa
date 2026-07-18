@@ -4345,11 +4345,17 @@ class CollectionBuilder:
                 if self.details["changes_webhooks"]:
                     self.notification_additions.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
         if self.playlist and items_added and not self.obj:
-            self.obj = self.library.create_playlist(self.name, items_added)
-            logger.info("")
-            logger.info(f"Playlist: {self.name} created")
+            if util.dry_run:
+                pass
+            else:
+                self.obj = self.library.create_playlist(self.name, items_added)
+                logger.info("")
+                logger.info(f"Playlist: {self.name} created")
         elif self.playlist and items_added:
-            self.obj.addItems(items_added)  # type: ignore[union-attr]
+            if util.dry_run:
+                pass
+            else:
+                self.obj.addItems(items_added)  # type: ignore[union-attr]
         elif items_added:
             self.library.alter_collection(items_added, name, smart_label_collection=self.smart_label_collection)
         if self.do_report and items_added:
@@ -4382,8 +4388,11 @@ class CollectionBuilder:
                 if self.details["changes_webhooks"]:
                     self.notification_removals.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
             if self.playlist and items_removed:
-                self.library.item_reload(self.obj)
-                self.obj.removeItems(items_removed)  # type: ignore[union-attr]
+                if util.dry_run:
+                    pass
+                else:
+                    self.library.item_reload(self.obj)
+                    self.obj.removeItems(items_removed)  # type: ignore[union-attr]
             elif items_removed:
                 self.library.alter_collection(items_removed, self.name, smart_label_collection=self.smart_label_collection, add=False)
             if self.do_report and items_removed:
@@ -4968,7 +4977,10 @@ class CollectionBuilder:
             if summary[1]:
                 if str(summary[1]) != str(self.obj.summary):  # type: ignore[union-attr]
                     try:
-                        self.obj.editSummary(str(summary[1]))  # type: ignore[union-attr]
+                        if util.dry_run:
+                            pass
+                        else:
+                            self.obj.editSummary(str(summary[1]))  # type: ignore[union-attr]
                         logger.info(f"Summary ({summary[0]}) | {summary[1]:<25}")
                         logger.info("Metadata: Update Completed")
                         updated_details.append("Metadata")
@@ -4980,7 +4992,10 @@ class CollectionBuilder:
             # self.obj.batchEdits()
             batch_display = "Collection Metadata Edits"
             if summary[1] and str(summary[1]) != str(self.obj.summary):  # type: ignore[union-attr]
-                self.obj.editSummary(summary[1])  # type: ignore[union-attr]
+                if util.dry_run:
+                    pass
+                else:
+                    self.obj.editSummary(summary[1])  # type: ignore[union-attr]
                 batch_display += f"\nSummary ({summary[0]}) | {summary[1]:<25}"
 
             if "sort_title" in self.details:
@@ -5297,6 +5312,8 @@ class CollectionBuilder:
                 except Failed:
                     pass
                 if user != self.library.account.username:
+                    if util.dry_run:
+                        continue
                     self.obj.copyToUser(user).editSummary(summary=self.obj.summary).reload()
                     logger.info(f"Playlist: {self.name} synced to {user}")
 

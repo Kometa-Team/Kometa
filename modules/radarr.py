@@ -135,11 +135,14 @@ class Radarr:
                 pass
             if movies and (len(movies) == 100 or len(tmdb_ids) == i):
                 try:
-                    _a, _e, _i, _x = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search, availability, tags, per_request=100)
-                    added.extend(_a)
-                    exists.extend(_e)
-                    invalid.extend(_i)
-                    excluded.extend(_x)
+                    if util.dry_run:
+                        added.extend([m[0] if isinstance(m, tuple) else m for m in movies])
+                    else:
+                        _a, _e, _i, _x = self.api.add_multiple_movies(movies, folder, quality_profile, monitor, search, availability, tags, per_request=100)
+                        added.extend(_a)
+                        exists.extend(_e)
+                        invalid.extend(_i)
+                        excluded.extend(_x)
                     movies = []
                 except ArrException as e:
                     logger.stacktrace()
@@ -174,11 +177,17 @@ class Radarr:
                     if self.cache:
                         self.cache.update_radarr_adds(movie.tmdbId, self.library.original_mapping_name)
                 if upgrade_qp and qp is not None:
-                    self.api.edit_multiple_movies([m.tmdbId for m in upgrade_qp], quality_profile=qp.id)
+                    if util.dry_run:
+                        pass
+                    else:
+                        self.api.edit_multiple_movies([m.tmdbId for m in upgrade_qp], quality_profile=qp.id)
                     for movie in upgrade_qp:
                         logger.info(f"Quality Upgraded To {qp.name} | {movie.tmdbId:<7} | {movie.title}")
                 if remonitor:
-                    self.api.edit_multiple_movies([m.tmdbId for m in remonitor], monitored=monitor)
+                    if util.dry_run:
+                        pass
+                    else:
+                        self.api.edit_multiple_movies([m.tmdbId for m in remonitor], monitored=monitor)
                     for movie in remonitor:
                         logger.info(f"Monitored: {monitor} in Radarr | {movie.tmdbId:<7} | {movie.title}")
             if len(skipped) > 0:
@@ -227,6 +236,9 @@ class Radarr:
         logger.info("")
         logger.info(f"{apply_tags_translation[apply_tags].capitalize()} Radarr Tags: {tags}")
 
+        if util.dry_run:
+            return None
+
         edited, not_exists = self.api.edit_multiple_movies(tmdb_ids, tags=tags, apply_tags=apply_tags_translation[apply_tags], per_request=100)
 
         if len(edited) > 0:
@@ -253,6 +265,8 @@ class Radarr:
             if remove:
                 remove_items.append(movie)
         if remove_items:
+            if util.dry_run:
+                return None
             self.api.delete_multiple_movies(remove_items)
 
     def get_tmdb_ids(self, method, data):

@@ -413,25 +413,34 @@ class Trakt:
         add_ids = [id_set for id_set in ids if id_set not in current_ids]
         if add_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items", json_data=self._build_item_json(add_ids))
-            for object_type in ["movies", "shows", "seasons", "episodes"]:
-                read_result(results, object_type, "added")
-            read_not_found(results, "Add")
-            time.sleep(1)
+            if util.dry_run:
+                pass
+            else:
+                results = self._request(f"/users/me/lists/{slug}/items", json_data=self._build_item_json(add_ids))
+                for object_type in ["movies", "shows", "seasons", "episodes"]:
+                    read_result(results, object_type, "added")
+                read_not_found(results, "Add")
+                time.sleep(1)
 
         remove_ids = [id_set for id_set in current_ids if id_set not in ids]
         if remove_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items/remove", json_data=self._build_item_json(remove_ids))
-            for object_type in ["movies", "shows", "seasons", "episodes"]:
-                read_result(results, object_type, "deleted", "Removed")
-            read_not_found(results, "Remove")
-            time.sleep(1)
+            if util.dry_run:
+                pass
+            else:
+                results = self._request(f"/users/me/lists/{slug}/items/remove", json_data=self._build_item_json(remove_ids))
+                for object_type in ["movies", "shows", "seasons", "episodes"]:
+                    read_result(results, object_type, "deleted", "Removed")
+                read_not_found(results, "Remove")
+                time.sleep(1)
 
-        trakt_ids = self._list(slug, parse=False, trakt_ids=True)
-        trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
-        rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
-        self._request(f"/users/me/lists/{slug}/items/reorder", json_data={"rank": rank_ids})
+        if util.dry_run:
+            pass
+        else:
+            trakt_ids = self._list(slug, parse=False, trakt_ids=True)
+            trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
+            rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
+            self._request(f"/users/me/lists/{slug}/items/reorder", json_data={"rank": rank_ids})
         logger.info("")
         logger.info("Trakt List Ordered Successfully")
 

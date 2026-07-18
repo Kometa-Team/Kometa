@@ -93,6 +93,7 @@ arguments = {
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
+    "dry-run": {"args": ["dry", "dryrun"], "type": "bool", "help": "Run without sending changes to Plex or external services"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -183,6 +184,7 @@ for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
+run_args["dry-run"] = get_env(["DRY_RUN", "DRY"], run_args["dry-run"], arg_bool=True)
 
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
@@ -266,11 +268,12 @@ elif not os.path.exists(os.path.join(default_dir, "config.yml")):
         sys.exit(1)
 
 
-logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"], run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"])
+logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][0], run_args["ignore-ghost"], run_args["tests"] or run_args["debug"], run_args["trace"], run_args["log-requests"], dry_run=run_args["dry-run"])
 
 from modules import util  # noqa: E402
 
 util.logger = logger
+util.dry_run = run_args["dry-run"]
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -451,6 +454,8 @@ def start(attrs):
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
         logger.info(f"    Process Priority: {'low' if run_args['low-priority'] else 'normal'}")
+        if run_args["dry-run"]:
+            logger.info("    Dry Run: Enabled")
 
         if not is_docker and not is_linuxserver:
             try:

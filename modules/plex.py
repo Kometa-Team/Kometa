@@ -937,6 +937,8 @@ class Plex(Library):
         return results
 
     def upload_theme(self, collection, url=None, filepath=None):
+        if util.dry_run:
+            return None
         key = f"/library/metadata/{collection.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
@@ -945,11 +947,15 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def create_playlist(self, name, items):
+        if util.dry_run:
+            return None
         return self.PlexServer.createPlaylist(name, items=items)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def moveItem(self, obj, item, after):
         try:
+            if util.dry_run:
+                return None
             obj.moveItem(item, after=after)
         except (BadRequest, NotFound, Unauthorized) as e:
             logger.error(e)
@@ -957,6 +963,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def query(self, method):
+        if util.dry_run:
+            return None
         return method()
 
     def delete(self, obj):
@@ -968,14 +976,20 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def query_data(self, method, data):
+        if util.dry_run:
+            return None
         return method(data)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def tag_edit(self, item, attribute, data, locked=True, remove=False):
+        if util.dry_run:
+            return None
         return item.editTags(attribute, data, locked=locked, remove=remove)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def query_collection(self, item, collection, locked=True, add=True):
+        if util.dry_run:
+            return None
         if add:
             item.addCollection(collection, locked=locked)
         else:
@@ -983,10 +997,14 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def collection_mode_query(self, collection, data):
+        if util.dry_run:
+            return None
         collection.modeUpdate(mode=data)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def collection_order_query(self, collection, data):
+        if util.dry_run:
+            return None
         collection.sortUpdate(sort=data)
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
@@ -1115,6 +1133,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def edit_query(self, item, edits, advanced=False):
+        if util.dry_run:
+            return None
         if advanced:
             item.editAdvanced(**edits)
         else:
@@ -1124,6 +1144,8 @@ class Plex(Library):
     def _upload_image(self, item, image):
         upload_success = True
         try:
+            if util.dry_run:
+                return upload_success
             if image.is_url and "theposterdb.com" in image.location:
                 now = datetime.now()
                 if self.config.tpdb_timer is not None:
@@ -1161,6 +1183,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
+        if util.dry_run:
+            return None
         if url:
             item.uploadPoster(url=image)
         else:
@@ -1168,6 +1192,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
+        if util.dry_run:
+            return None
         if url:
             item.uploadArt(url=image)
         else:
@@ -1175,6 +1201,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
+        if util.dry_run:
+            return None
         if url:
             item.uploadLogo(url=image)
         else:
@@ -1182,6 +1210,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_square_art(self, item, image, url=False):
+        if util.dry_run:
+            return None
         if url:
             item.uploadSquareArt(url=image)
         else:
@@ -1240,6 +1270,8 @@ class Plex(Library):
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def _query(self, key, post=False, put=False):
+        if util.dry_run and (post or put):
+            return None
         if post:
             method = self.Plex._server._session.post
         elif put:
@@ -1323,6 +1355,8 @@ class Plex(Library):
             raise
 
     def alter_collection(self, items, collection, smart_label_collection=False, add=True):
+        if util.dry_run:
+            return None
         maintain_status = True
         locked_items = []
         unlocked_items = []
@@ -1409,6 +1443,8 @@ class Plex(Library):
 
     def update_smart_collection(self, collection, uri_args):
         self.test_smart_filter(uri_args)
+        if util.dry_run:
+            return None
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart_filter(self, collection):

@@ -25,6 +25,7 @@ WARN = WARNING
 INFO = 20
 DEBUG = 10
 TRACE = 0
+DRY_RUN = False
 
 SUPPRESS_STACKTRACE_PATTERNS = [
     r"Plex Error: .* not found",
@@ -47,8 +48,9 @@ sys.excepthook = _suppress_traceback_hook
 
 
 def fmt_filter(record):
+    record.levelname = "DRY" if DRY_RUN and record.levelno == INFO else logging.getLevelName(record.levelno)
     record.levelname = f"[{record.levelname}]"
-    record.filename = f"[{record.filename}:{record.lineno}]"
+    record.filename = f"[{os.path.basename(record.pathname)}:{record.lineno}]"
     return True
 
 
@@ -63,7 +65,9 @@ def log_namer(default_name):
 
 
 class MyLogger:
-    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests):
+    def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests, dry_run=False):
+        global DRY_RUN
+        DRY_RUN = dry_run
         self.logger_name = logger_name
         self.default_dir = default_dir
         self.screen_width = screen_width
@@ -92,6 +96,7 @@ class MyLogger:
 
         cmd_handler = logging.StreamHandler()
         cmd_handler.setLevel(logging.DEBUG if self.debug else logging.INFO)
+        cmd_handler.addFilter(fmt_filter)
 
         self._logger.addHandler(cmd_handler)
 
@@ -101,6 +106,7 @@ class MyLogger:
     def _get_handler(self, log_file, count=3):
         _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
         _handler.namer = log_namer
+        _handler.addFilter(fmt_filter)
         self._formatter(handler=_handler)
         if os.path.isfile(log_file):
             self._logger.removeHandler(_handler)
@@ -118,7 +124,6 @@ class MyLogger:
 
     def add_main_handler(self):
         self.main_handler = self._get_handler(self.main_log, count=9)
-        self.main_handler.addFilter(fmt_filter)
         self._logger.addHandler(self.main_handler)
 
     def remove_main_handler(self):
@@ -184,6 +189,8 @@ class MyLogger:
     def separator(self, text=None, space=True, border=True, debug=False, trace=False, side_space=True, left=False):
         if trace and not self.is_trace:
             return None
+        if DRY_RUN and text:
+            text = f"{text} (DRY)"
         sep = " " if space else self.separating_character
         border_text = f"|{self.separating_character * self.screen_width}|"
         if border:
