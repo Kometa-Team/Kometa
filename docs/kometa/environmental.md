@@ -291,6 +291,46 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --log-requests
             ```
 
+??? blank "Timing Instrumentation&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--timings`/`--timing`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMINGS`<a class="headerlink" href="#timings" title="Permanent link">¶</a>"
+
+    <div id="timings" />Run with lightweight timing instrumentation enabled. Kometa times network calls, cache lookups, and major per-collection/per-library phases, then prints a summary to the log at the end of the run and exports a full per-source/per-library breakdown as JSON and CSV files to the logs directory.
+
+    Disabled by default, with negligible overhead when off.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `--timings` or `--timing` (ex. `--timings`)
+
+    **Environment Variable:** `KOMETA_TIMINGS` or `KOMETA_TIMING` (ex. `KOMETA_TIMINGS=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --run --timings
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" -e KOMETA_TIMINGS=true kometateam/kometa --run
+            ```
+
+??? blank "Deep Profiling&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PROFILE`<a class="headerlink" href="#deep-profiling" title="Permanent link">¶</a>"
+
+    <div id="deep-profiling" />Run a single Kometa run under [`pyinstrument`](https://github.com/joerick/pyinstrument), writing an HTML profile report to the logs directory. Intended for maintainers diagnosing a specific slow run in more depth than Timing Instrumentation's summary provides; requires the `pyinstrument` package (a dev dependency, not installed in a normal Kometa install).
+
+    <hr style="margin: 0px;">
+
+    **Environment Variable:** `KOMETA_PROFILE` set to `pyinstrument` (ex. `KOMETA_PROFILE=pyinstrument`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            KOMETA_PROFILE=pyinstrument python kometa.py --run
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" -e KOMETA_PROFILE=pyinstrument kometateam/kometa --run
+            ```
+
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
     <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).

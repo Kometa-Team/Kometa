@@ -74,10 +74,7 @@ class Overlays:
             logger.info("")
 
             total_keys = len(key_to_overlays)
-            # Plain attribute set/cleared around the whole per-item loop (not a `with` block, to
-            # avoid re-indenting ~370 lines) - tags every network call made anywhere in this loop
-            # (reload, episodes() lookups, poster upload) with this library so timings-*.json can
-            # show per-library network cost, not just per-source.
+            # Plain attribute (not a `with` block, to avoid re-indenting ~370 lines) tagging every network call in this loop with this library, for per-library cost in timings-*.json.
             timings.registry.library_ctx = self.library.name
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)

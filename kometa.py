@@ -94,6 +94,7 @@ arguments = {
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
+    "timings": {"args": ["timing"], "type": "bool", "help": "Run with Timing Instrumentation Enabled (writes a timings summary and JSON/CSV breakdown to the logs directory)"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -273,6 +274,11 @@ from modules import util  # noqa: E402
 
 util.logger = logger
 from modules import timings  # noqa: E402
+
+# Must be set before modules.cache/modules.request are imported below - both read this at import/decoration time, not per-call.
+timings.ENABLED = run_args["timings"]
+timings.registry.enabled = run_args["timings"]
+
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -442,8 +448,7 @@ def start(attrs):
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
-        # Startup banner doubles as a mount-verification tripwire: if this line is missing from the log
-        # despite KOMETA_TIMINGS=1, the mounted /modules code was silently ignored (see the Docker mount gotcha).
+        # Startup banner doubles as a mount-verification tripwire - missing despite --timings/KOMETA_TIMINGS means the mounted /modules code was silently ignored.
         timings.registry.banner()
         timings.registry.set_meta(
             kometa_version=str(my_requests.local),
@@ -829,9 +834,7 @@ def start(attrs):
             logger.error(f"Report Error: {e}")
 
         if timings.registry.enabled:
-            # Silent by design - export() never calls logger, so meta.log is identical whether
-            # KOMETA_TIMINGS is set or not. Placed here (after Error Summary, before Finished Run)
-            # so the run is fully accounted for before diagnostics are flushed to their own files.
+            # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
             timings.registry.export(logger.log_dir)
 
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")

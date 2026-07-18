@@ -92,10 +92,7 @@ class Requests:
         session = requests.Session()
         if not verify_ssl:
             self.no_verify_ssl(session)
-        # Every consumer of this session (plexapi, tmdbapis, arrapi, and this module's own
-        # get/post) rides through session.request, so one hook here times all HTTP traffic.
-        # Plex/Radarr/Sonarr hostnames aren't known yet at this point - they're registered later,
-        # once connected, via timings.registry.set_plex_hostname()/register_arr_host().
+        # Every consumer (plexapi/tmdbapis/arrapi/this module's get/post) rides through session.request, so one hook here times all HTTP traffic.
         return timings.instrument_session(session)
 
     def no_verify_ssl(self, session=None):

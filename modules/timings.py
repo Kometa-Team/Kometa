@@ -25,14 +25,10 @@ from modules import util
 logger = util.logger
 
 
-def _env_flag(name):
-    return str(os.environ.get(name, "")).strip().lower() in ("1", "true", "t", "yes")
+# Set by kometa.py from run_args["timings"] before any import-time reader of this flag runs; defaults False so a bare `import modules.timings` stays inert.
+ENABLED = False
 
-
-ENABLED = _env_flag("KOMETA_TIMINGS")
-
-# Hostname substring -> source tag. Checked in order; first match wins. Unknown hosts are
-# tagged "other:<hostname>" so new/unmapped traffic is still visible instead of silently dropped.
+# Hostname substring -> source tag, first match wins; unknown hosts fall back to "other:<hostname>" so new traffic is still visible.
 HOST_SOURCE_MAP = [
     ("themoviedb.org", "tmdb"),
     ("trakt.tv", "trakt"),
@@ -74,9 +70,7 @@ def hostname_to_source(url):
 
 
 def git_sha():
-    # Docker runs only mount kometa.py/modules/ (never .git), so GitPython can't resolve anything
-    # from inside the container. KOMETA_GIT_SHA lets the host (which does have .git) pass its own
-    # `git rev-parse HEAD` in - checked first since it's the only reliable source for Docker runs.
+    # Docker mounts never include .git, so KOMETA_GIT_SHA lets the host pass its own `git rev-parse HEAD` in - checked first as the only reliable source in a container.
     env_sha = os.environ.get("KOMETA_GIT_SHA")
     if env_sha:
         return env_sha
@@ -115,11 +109,9 @@ class TimingRegistry:
         self.start_time = time.perf_counter()
         self.meta = {}
         self._banner_logged = False
-        # Single-threaded, so a plain attribute is safe as a call-scoped tag (e.g. "image" for
-        # get_image/download_image) that instrument_session's request hook appends to the source.
+        # Single-threaded call-scoped tag (e.g. "image") that instrument_session's request hook appends to the source.
         self.context_tag = None
-        # Single-threaded call-scoped tag so instrument_session's network buckets can be split by
-        # library, not just source - set via library_context(), read in instrument_session().
+        # Single-threaded call-scoped tag so network buckets can be split by library, not just source - set via library_context(), read in instrument_session().
         self.library_ctx = None
         # Single-threaded call-scoped tag so every bucket can be split overlay-loop vs collection-loop work - set via overlay_context(), read in record()/timed()/instrument_session().
         self.overlay_ctx = None
