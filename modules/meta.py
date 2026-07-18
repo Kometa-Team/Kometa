@@ -541,14 +541,22 @@ class DataFile:
                                     for option in optional:
                                         if option not in variables and f"<<{option}>>" in str(_data):
                                             raise Failed
-                                    for option in [False, True]:
+                                    for variable, variable_data in variables.items():
+                                        if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=False)
+                                        elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                            continue
+                                        elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
+                                            _data = scan_text(_data, variable, variable_data, second=False)
+                                    # second=True only matters for surviving <<var+N>>/<<var-N>> syntax - skip re-scanning every variable when it's not there; checked fresh so a substitution just introduced this pass still gets caught.
+                                    if re.search(r"<<\w+[+-]\d+>>", str(_data)):
                                         for variable, variable_data in variables.items():
                                             if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                                _data = scan_text(_data, variable, variable_data.replace(",", ""), second=option)
+                                                _data = scan_text(_data, variable, variable_data.replace(",", ""), second=True)
                                             elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
                                                 continue
                                             elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
-                                                _data = scan_text(_data, variable, variable_data, second=option)
+                                                _data = scan_text(_data, variable, variable_data, second=True)
                                     for dm, dd in default.items():
                                         if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
                                             continue
