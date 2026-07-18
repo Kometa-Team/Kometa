@@ -88,6 +88,7 @@ cronjob
 crontab
 crunchyroll
 CSM
+CSV
 customizable
 customizations
 d'or
