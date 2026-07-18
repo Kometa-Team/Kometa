@@ -1,6 +1,6 @@
 """Lightweight always-on timing instrumentation, gated by KOMETA_TIMINGS=1.
 
-Design (see KOMETA-PERFORMANCE-PROFILING-PLAN.md Phase 2 for the full rationale):
+Design:
 - A single process-wide TimingRegistry accumulates (library, collection, phase, source) -> seconds/calls/bytes.
 - Kometa is single-threaded (no `threading` usage anywhere in the codebase), so no locking is needed.
 - When KOMETA_TIMINGS is unset/false every entry point below is a guarded early return - near-zero overhead.
