@@ -120,9 +120,9 @@ class Operations:
         - keywords CSV keywords column matches the packed imdb_keywords cache format
           ('name:relevant:votes' entries joined by '|').
 
-        Keywords are fetched with language 'default' (-> 'eng' Accept-Language) so the seeded cache
-        matches the English keyword configs that real runs expect; localization can be handled later
-        in the consuming service."""
+        Both parental guide and keywords are pulled directly from IMDb (GraphQL), not the Kometa
+        service, so the output is suitable for seeding that service. Keywords come back as canonical
+        English from IMDb GraphQL regardless of library language."""
         import csv
 
         parental_path = os.path.join(self.config.default_dir, f"imdb_parental_export_{self.library.name}.csv")
@@ -131,6 +131,8 @@ class Operations:
         keywords_ids = self._existing_export_ids(keywords_path)
         parental_exists = os.path.exists(parental_path)
         keywords_exists = os.path.exists(keywords_path)
+        # keywords() now fetches directly from IMDb's GraphQL API (canonical English), so this
+        # language arg is unused by the fetch; kept only to satisfy the signature.
         keywords_language = "default"
 
         logger.separator(f"Exporting IMDb Parental Guide to {parental_path}")

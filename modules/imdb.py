@@ -778,6 +778,40 @@ class IMDb:
             raise Failed("IMDb Error: No IMDb IDs Found")
         return imdb_ids
 
+    def _graphql_keywords(self, imdb_id):
+        """Fetch keyword relevance data directly from IMDb's GraphQL API, paginating through all pages.
+
+        Returns {keyword_name: (usersInterested, usersVoted)} matching the imdb_keywords cache format.
+        Data comes straight from IMDb (not the Kometa service), suitable for seeding that service."""
+        imdb_keywords = {}
+        after = None
+        while True:
+            after_arg = f', after: "{after}"' if after else ""
+            gql = (
+                f'{{ title(id: "{imdb_id}") {{ keywords(first: 250{after_arg}) {{ '
+                f"total pageInfo {{ hasNextPage endCursor }} "
+                f"edges {{ node {{ keyword {{ text {{ text }} }} interestScore {{ usersInterested usersVoted }} }} }} }} }} }}"
+            )
+            response = self._graph_request({"query": gql}) or {}
+            data = response.get("data") or {}
+            title = data.get("title") or {}
+            keywords_obj = title.get("keywords") or {}
+            for edge in keywords_obj.get("edges") or []:
+                node = edge.get("node") or {}
+                name = (((node.get("keyword") or {}).get("text") or {}).get("text")) or ""
+                if not name:
+                    continue
+                score = node.get("interestScore") or {}
+                relevant = score.get("usersInterested") or 0
+                votes = score.get("usersVoted") or 0
+                imdb_keywords[name] = (int(relevant), int(votes))
+            page_info = keywords_obj.get("pageInfo") or {}
+            if page_info.get("hasNextPage") and page_info.get("endCursor"):
+                after = page_info["endCursor"]
+            else:
+                break
+        return imdb_keywords
+
     def keywords(self, imdb_id, language, ignore_cache=False):
         imdb_keywords = {}
         expired = None
@@ -785,20 +819,9 @@ class IMDb:
             imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
             if imdb_keywords and expired is False:
                 return imdb_keywords
-        keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
-        if not keywords:
-            raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
-        for k in keywords:
-            name = k.xpath("div[@class='sodatext']/a/text()")[0]
-            relevant = k.xpath("div[@class='did-you-know-actions']/div/a/text()")[0].strip()
-            if "of" in relevant:
-                result = re.search(r"(\d+) of (\d+).*", relevant)
-                if result is not None:
-                    imdb_keywords[name] = (int(result.group(1)), int(result.group(2)))
-                else:
-                    imdb_keywords[name] = (0, 0)
-            else:
-                imdb_keywords[name] = (0, 0)
+        imdb_keywords = self._graphql_keywords(imdb_id)
+        if not imdb_keywords:
+            raise Failed(f"IMDb Error: No Keywords Found for IMDb ID: {imdb_id}")
         if self.cache and not ignore_cache:
             self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
