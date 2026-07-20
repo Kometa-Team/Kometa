@@ -168,7 +168,10 @@ class Operations:
         the export file and appends new rows."""
         import csv
 
-        language = self.library.Plex.language
+        # Force English keyword strings ("default" -> "eng" Accept-Language) rather than the library
+        # language, so the seeded cache matches the English keyword configs that real runs expect.
+        # The consuming service may need to handle localization separately later.
+        language = "default"
         export_path = os.path.join(self.config.default_dir, f"imdb_keywords_export_{self.library.name}.csv")
         existing_ids = self._existing_export_ids(export_path)
         logger.separator(f"Exporting IMDb Keywords to {export_path}")
