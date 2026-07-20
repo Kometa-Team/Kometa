@@ -32,20 +32,23 @@ collections:
 
 ## Other Discovery Builders
 
-The string form accepts the slug directly. Use the object form to add `limit`, `year`, or `sort_by`.
+Pass the slug directly in the string form, such as `letterboxd_studio: a24`. In the object form, use the named slug attribute shown below and add `limit`, `year`, or `sort_by` as needed.
 
-| Builder | Slug attribute | Example source URL |
-|:--------|:---------------|:-------------------|
-| `letterboxd_studio` | `studio` | `/studio/a24/` |
-| `letterboxd_country` | `country` | `/films/country/usa/` |
-| `letterboxd_language` | `language` | `/films/language/english/` |
-| `letterboxd_genre` | `genre` | `/films/genre/crime/` |
-| `letterboxd_theme` | `theme` | `/films/theme/crime-drugs-and-gangsters/` |
-| `letterboxd_similar` | `film` | `/film/the-godfather/similar/` |
-| `letterboxd_collection` | `collection` | `/films/in/beetlejuice-collection-2/` |
+| Builder | Slug attribute | Example values |
+|:--------|:---------------|:---------------|
+| `letterboxd_studio` | `studio` | `/studio/a24/` → `a24` |
+| `letterboxd_country` | `country` | `/films/country/usa/` → `usa` |
+| `letterboxd_language` | `language` | `/films/language/english/` → `english` |
+| `letterboxd_genre` | `genre` | `/films/genre/crime/` → `crime` |
+| `letterboxd_theme` | `theme` | `/films/theme/crime-drugs-and-gangsters/` → `crime-drugs-and-gangsters` |
+| `letterboxd_similar` | `film` | `/film/the-godfather/similar/` → `the-godfather` |
+| `letterboxd_collection` | `collection` | `/films/in/beetlejuice-collection-2/` → `beetlejuice-collection-2` |
 
 ```yaml
 collections:
+  A24:
+    letterboxd_studio: a24
+
   A24 by Release:
     letterboxd_studio:
       studio: a24
