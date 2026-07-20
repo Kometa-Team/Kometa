@@ -125,11 +125,11 @@ class Operations:
         English from IMDb GraphQL regardless of library language."""
         import csv
 
-        # Split exports by media type (not per library) so all movie libraries share one set of files
-        # and all show libraries share another.
-        media_type = "movies" if self.library.is_movie else "shows" if self.library.is_show else "other"
-        parental_path = os.path.join(self.config.default_dir, f"imdb_parental_export_{media_type}.csv")
-        keywords_path = os.path.join(self.config.default_dir, f"imdb_keywords_export_{media_type}.csv")
+        # Single shared export per data type (not per library or media type): the seeded service keys
+        # only on IMDb ID, so every library appends to the same files and seeds from multiple users
+        # can be merged freely.
+        parental_path = os.path.join(self.config.default_dir, "imdb_parental_export.csv")
+        keywords_path = os.path.join(self.config.default_dir, "imdb_keywords_export.csv")
         parental_ids = self._existing_export_ids(parental_path)
         keywords_ids = self._existing_export_ids(keywords_path)
         parental_exists = os.path.exists(parental_path)
