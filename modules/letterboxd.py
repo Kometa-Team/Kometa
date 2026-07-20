@@ -40,8 +40,20 @@ user_sort_options = {
     "length_shortest": "by/shortest/",
     "length_longest": "by/longest/",
 }
+discovery_sort_options = {"best_match": "by/best-match/", **user_sort_options}
 
-builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
+semantic_builders = ["letterboxd_crew", "letterboxd_studio", "letterboxd_country", "letterboxd_language", "letterboxd_genre", "letterboxd_theme", "letterboxd_similar", "letterboxd_collection"]
+builders = ["letterboxd_list", "letterboxd_list_details", *semantic_builders, "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
+crew_roles = ["actor", "director", "writer", "casting", "editor", "cinematography", "composer"]
+semantic_paths = {
+    "letterboxd_studio": ("studio", "studio/{slug}/", True),
+    "letterboxd_country": ("country", "films/country/{slug}/", True),
+    "letterboxd_language": ("language", "films/language/{slug}/", True),
+    "letterboxd_genre": ("genre", "films/genre/{slug}/", True),
+    "letterboxd_theme": ("theme", "films/theme/{slug}/", True),
+    "letterboxd_similar": ("film", "film/{slug}/similar/", False),
+    "letterboxd_collection": ("collection", "films/in/{slug}/", True),
+}
 base_url = "https://letterboxd.com"
 boxd_short_url = "https://boxd.it"
 
@@ -758,6 +770,50 @@ class Letterboxd:
             valid_lists.append(final)
         return valid_lists
 
+    def validate_letterboxd_builder(self, err_type, method, method_data, language):
+        valid_lists = []
+        for entry in util.get_list(method_data, split=False, return_none=False) or []:
+            if method == "letterboxd_crew":
+                if not isinstance(entry, dict):
+                    raise Failed(f"{err_type} Error: {method} must be a dictionary with role and person attributes")
+                methods = {key.lower(): key for key in entry}
+                role = util.parse(err_type, "role", entry, methods=methods, parent=method, options=crew_roles)
+                field = "person"
+                path = f"{role}/{{slug}}/"
+                allows_sort = True
+            else:
+                field, path, allows_sort = semantic_paths[method]
+                if not isinstance(entry, dict):
+                    entry = {field: entry}
+                methods = {key.lower(): key for key in entry}
+
+            supported = {field, "limit", "year"}
+            if method == "letterboxd_crew":
+                supported.add("role")
+            if allows_sort:
+                supported.add("sort_by")
+            unsupported = [key for key in methods if key not in supported]
+            if unsupported:
+                raise Failed(f"{err_type} Error: {method} {unsupported[0]} attribute not supported")
+
+            slug = util.parse(err_type, field, entry, methods=methods, parent=method).strip().strip("/")
+            if not slug or "/" in slug:
+                raise Failed(f"{err_type} Error: {method} {field} must be a Letterboxd slug, not a URL or path")
+
+            url = f"{base_url}/{path.format(slug=slug)}"
+            if "sort_by" in methods:
+                if not allows_sort:
+                    raise Failed(f"{err_type} Error: {method} sort_by attribute not supported")
+                sort_by = util.parse(err_type, "sort_by", entry, methods=methods, parent=method, options=discovery_sort_options)
+                url = f"{url}{discovery_sort_options[sort_by]}"
+
+            normalized = {"url": url}
+            for attribute in ["limit", "year"]:
+                if attribute in methods:
+                    normalized[attribute] = entry[methods[attribute]]
+            valid_lists.extend(self.validate_letterboxd_lists(err_type, normalized, language))
+        return valid_lists
+
     def validate_letterboxd_user_pages(self, err_type, letterboxd_user_pages, page_type, language):
         valid_pages = []
         shared_params = {}
@@ -822,8 +878,8 @@ class Letterboxd:
         return final
 
     def get_tmdb_ids(self, method, data, language):
-        if method == "letterboxd_list":
-            logger.info(f"Processing Letterboxd List: {data}")
+        if method == "letterboxd_list" or method in semantic_builders:
+            logger.info(f"Processing {method}: {data}")
             items = self._get_list_items(data["url"], data["limit"], language)
             total_items = len(items)
             if total_items <= 0:

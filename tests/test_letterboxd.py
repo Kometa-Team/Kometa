@@ -4,6 +4,7 @@ from lxml import html
 
 import modules.letterboxd as letterboxd_module
 from modules.letterboxd import Letterboxd
+from modules.util import Failed
 
 
 class FakeLogger:
@@ -375,6 +376,41 @@ def test_validate_global_letterboxd_films_page_samples_single_item(adapter):
         }
     ]
     assert FakeFilms.calls == [("https://letterboxd.com/films/popular/", 1)]
+
+
+@pytest.mark.parametrize(
+    ("method", "data", "expected_url"),
+    [
+        ("letterboxd_crew", {"role": "actor", "person": "marlon-brando"}, "https://letterboxd.com/actor/marlon-brando/"),
+        ("letterboxd_crew", {"role": "director", "person": "francis-ford-coppola"}, "https://letterboxd.com/director/francis-ford-coppola/"),
+        ("letterboxd_crew", {"role": "writer", "person": "mario-puzo"}, "https://letterboxd.com/writer/mario-puzo/"),
+        ("letterboxd_crew", {"role": "casting", "person": "fred-roos"}, "https://letterboxd.com/casting/fred-roos/"),
+        ("letterboxd_crew", {"role": "editor", "person": "william-reynolds-1"}, "https://letterboxd.com/editor/william-reynolds-1/"),
+        ("letterboxd_crew", {"role": "cinematography", "person": "gordon-willis"}, "https://letterboxd.com/cinematography/gordon-willis/"),
+        ("letterboxd_crew", {"role": "composer", "person": "nino-rota"}, "https://letterboxd.com/composer/nino-rota/"),
+        ("letterboxd_studio", {"studio": "a24", "sort_by": "release_date_newest"}, "https://letterboxd.com/studio/a24/by/release/"),
+        ("letterboxd_country", {"country": "usa", "limit": 10}, "https://letterboxd.com/films/country/usa/"),
+        ("letterboxd_language", {"language": "english", "limit": 10}, "https://letterboxd.com/films/language/english/"),
+        ("letterboxd_genre", {"genre": "crime", "limit": 20}, "https://letterboxd.com/films/genre/crime/"),
+        ("letterboxd_theme", {"theme": "crime-drugs-and-gangsters", "sort_by": "best_match", "limit": 20}, "https://letterboxd.com/films/theme/crime-drugs-and-gangsters/by/best-match/"),
+        ("letterboxd_similar", "the-godfather", "https://letterboxd.com/film/the-godfather/similar/"),
+        ("letterboxd_collection", {"collection": "beetlejuice-collection-2", "sort_by": "release_date_earliest"}, "https://letterboxd.com/films/in/beetlejuice-collection-2/by/release-earliest/"),
+    ],
+)
+def test_semantic_builders_normalize_reported_letterboxd_pages(adapter, method, data, expected_url):
+    calls = []
+    adapter._get_list_items = lambda url, limit, language: calls.append((url, limit, language)) or []
+
+    lists = adapter.validate_letterboxd_builder("Collection", method, data, "en")
+
+    assert lists[0]["url"] == expected_url
+    assert lists[0]["limit"] == (data.get("limit", 0) if isinstance(data, dict) else 0)
+    assert calls == [(expected_url, 1, "en")]
+
+
+def test_semantic_builder_rejects_url_instead_of_slug(adapter):
+    with pytest.raises(Failed, match="must be a Letterboxd slug"):
+        adapter.validate_letterboxd_builder("Collection", "letterboxd_genre", "https://letterboxd.com/films/genre/crime/", "en")
 
 
 @pytest.mark.parametrize(
