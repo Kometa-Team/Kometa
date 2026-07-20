@@ -110,22 +110,44 @@ class Operations:
             logger.info(f"Found existing export with {len(existing)} entries: {export_path}")
         return existing
 
-    def _export_parental_guide(self, items, total_items):
-        """HARDCODED helper: export IMDb parental guide for all items to a CSV that matches the
-        imdb_parental cache table columns. Writes no changes to Plex. Throwaway; not operationalized.
-        Resumable: skips imdb_ids already present in the export file and appends new rows."""
+    def _export_imdb_data(self, items, total_items):
+        """HARDCODED helper: export IMDb parental guide and keywords for all items in a single pass,
+        writing both CSVs as it goes so they grow together. Writes no changes to Plex. Throwaway; not
+        operationalized. Resumable: each file independently skips imdb_ids it already contains.
+
+        - parental CSV columns match the imdb_parental cache table (imdb_id, nudity, violence,
+          profanity, alcohol, frightening).
+        - keywords CSV keywords column matches the packed imdb_keywords cache format
+          ('name:relevant:votes' entries joined by '|').
+
+        Keywords are fetched with language 'default' (-> 'eng' Accept-Language) so the seeded cache
+        matches the English keyword configs that real runs expect; localization can be handled later
+        in the consuming service."""
         import csv
 
-        export_path = os.path.join(self.config.default_dir, f"imdb_parental_export_{self.library.name}.csv")
-        existing_ids = self._existing_export_ids(export_path)
-        logger.separator(f"Exporting IMDb Parental Guide to {export_path}")
-        written = 0
+        parental_path = os.path.join(self.config.default_dir, f"imdb_parental_export_{self.library.name}.csv")
+        keywords_path = os.path.join(self.config.default_dir, f"imdb_keywords_export_{self.library.name}.csv")
+        parental_ids = self._existing_export_ids(parental_path)
+        keywords_ids = self._existing_export_ids(keywords_path)
+        parental_exists = os.path.exists(parental_path)
+        keywords_exists = os.path.exists(keywords_path)
+        keywords_language = "default"
+
+        logger.separator(f"Exporting IMDb Parental Guide to {parental_path}")
+        logger.separator(f"Exporting IMDb Keywords to {keywords_path}")
+
+        parental_written = 0
+        keywords_written = 0
         skipped = 0
-        file_exists = os.path.exists(export_path)
-        with open(export_path, "a", newline="", encoding="utf-8") as export_file:
-            writer = csv.writer(export_file)
-            if not file_exists:
-                writer.writerow(["imdb_id", "nudity", "violence", "profanity", "alcohol", "frightening"])
+
+        with open(parental_path, "a", newline="", encoding="utf-8") as parental_file, open(keywords_path, "a", newline="", encoding="utf-8") as keywords_file:
+            parental_writer = csv.writer(parental_file)
+            keywords_writer = csv.writer(keywords_file)
+            if not parental_exists:
+                parental_writer.writerow(["imdb_id", "nudity", "violence", "profanity", "alcohol", "frightening"])
+            if not keywords_exists:
+                keywords_writer.writerow(["imdb_id", "keywords"])
+
             for i, item in enumerate(items, 1):
                 try:
                     item = self.library.reload(item)
@@ -138,78 +160,48 @@ class Operations:
                     logger.info(f"({i}/{total_items}) {item.title} | Skipped: No IMDb ID")
                     skipped += 1
                     continue
-                if imdb_id in existing_ids:
-                    logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Skipped: Already Exported")
-                    skipped += 1
-                    continue
-                try:
-                    parental_guide = self.config.IMDb.parental_guide(imdb_id)
-                except Failed as e:
-                    logger.info(f"({i}/{total_items}) {item.title} | Skipped: {e}")
-                    skipped += 1
-                    continue
-                writer.writerow([
-                    imdb_id,
-                    parental_guide.get("Nudity") or "",
-                    parental_guide.get("Violence") or "",
-                    parental_guide.get("Profanity") or "",
-                    parental_guide.get("Alcohol") or "",
-                    parental_guide.get("Frightening") or "",
-                ])
-                existing_ids.add(imdb_id)
-                written += 1
-                logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Exported")
-        logger.separator(f"IMDb Parental Guide Export Complete: {written} written, {skipped} skipped")
 
-    def _export_keywords(self, items, total_items):
-        """HARDCODED helper: export IMDb keywords for all items to a CSV. The keywords column matches
-        the packed imdb_keywords cache format ('name:relevant:votes' entries joined by '|'). Writes no
-        changes to Plex. Throwaway; not operationalized. Resumable: skips imdb_ids already present in
-        the export file and appends new rows."""
-        import csv
+                did_parental = False
+                did_keywords = False
 
-        # Force English keyword strings ("default" -> "eng" Accept-Language) rather than the library
-        # language, so the seeded cache matches the English keyword configs that real runs expect.
-        # The consuming service may need to handle localization separately later.
-        language = "default"
-        export_path = os.path.join(self.config.default_dir, f"imdb_keywords_export_{self.library.name}.csv")
-        existing_ids = self._existing_export_ids(export_path)
-        logger.separator(f"Exporting IMDb Keywords to {export_path}")
-        written = 0
-        skipped = 0
-        file_exists = os.path.exists(export_path)
-        with open(export_path, "a", newline="", encoding="utf-8") as export_file:
-            writer = csv.writer(export_file)
-            if not file_exists:
-                writer.writerow(["imdb_id", "keywords"])
-            for i, item in enumerate(items, 1):
-                try:
-                    item = self.library.reload(item)
-                except Failed as e:
-                    logger.error(e)
+                if imdb_id in parental_ids:
+                    logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Parental: Already Exported")
+                else:
+                    try:
+                        parental_guide = self.config.IMDb.parental_guide(imdb_id)
+                        parental_writer.writerow([
+                            imdb_id,
+                            parental_guide.get("Nudity") or "",
+                            parental_guide.get("Violence") or "",
+                            parental_guide.get("Profanity") or "",
+                            parental_guide.get("Alcohol") or "",
+                            parental_guide.get("Frightening") or "",
+                        ])
+                        parental_ids.add(imdb_id)
+                        parental_written += 1
+                        did_parental = True
+                        logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Parental: Exported")
+                    except Failed as e:
+                        logger.info(f"({i}/{total_items}) {item.title} | Parental Skipped: {e}")
+
+                if imdb_id in keywords_ids:
+                    logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Keywords: Already Exported")
+                else:
+                    try:
+                        imdb_keywords = self.config.IMDb.keywords(imdb_id, keywords_language)
+                        packed = "|".join(f"{k}:{u}:{v}" for k, (u, v) in imdb_keywords.items())
+                        keywords_writer.writerow([imdb_id, packed])
+                        keywords_ids.add(imdb_id)
+                        keywords_written += 1
+                        did_keywords = True
+                        logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Keywords: Exported")
+                    except Failed as e:
+                        logger.info(f"({i}/{total_items}) {item.title} | Keywords Skipped: {e}")
+
+                if not did_parental and not did_keywords:
                     skipped += 1
-                    continue
-                _, _, imdb_id = self.library.get_ids(item)
-                if not imdb_id:
-                    logger.info(f"({i}/{total_items}) {item.title} | Skipped: No IMDb ID")
-                    skipped += 1
-                    continue
-                if imdb_id in existing_ids:
-                    logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Skipped: Already Exported")
-                    skipped += 1
-                    continue
-                try:
-                    imdb_keywords = self.config.IMDb.keywords(imdb_id, language)
-                except Failed as e:
-                    logger.info(f"({i}/{total_items}) {item.title} | Skipped: {e}")
-                    skipped += 1
-                    continue
-                packed = "|".join(f"{k}:{u}:{v}" for k, (u, v) in imdb_keywords.items())
-                writer.writerow([imdb_id, packed])
-                existing_ids.add(imdb_id)
-                written += 1
-                logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Exported")
-        logger.separator(f"IMDb Keywords Export Complete: {written} written, {skipped} skipped")
+
+        logger.separator(f"IMDb Export Complete: {parental_written} parental written, {keywords_written} keywords written, {skipped} items with nothing new")
 
     def run_operations(self):
         operation_start = datetime.now()
@@ -283,14 +275,14 @@ class Operations:
             items = self.library.get_all()
             total_items = len(items)
 
-            # HARDCODED: Export-only mode. Fetch IMDb parental guide and keywords for every item
-            # and write them to CSVs matching the imdb_parental / imdb_keywords cache formats, without
-            # touching Plex or running any other mass-update work. Both exports are resumable (skip
-            # imdb_ids already present in the file). Remove this block (and the _export_parental_guide,
-            # _export_keywords, and _existing_export_ids helpers) to restore normal operation behavior.
+            # HARDCODED: Export-only mode. Fetch IMDb parental guide and keywords for every item in a
+            # single pass and write them to CSVs matching the imdb_parental / imdb_keywords cache
+            # formats, without touching Plex or running any other mass-update work. Both files grow
+            # together and each is independently resumable (skips imdb_ids it already contains). Remove
+            # this block (and the _export_imdb_data / _existing_export_ids helpers) to restore normal
+            # operation behavior.
             if self.library.mass_imdb_parental_labels and self.library.mass_imdb_parental_labels != "remove":
-                self._export_parental_guide(items, total_items)
-                self._export_keywords(items, total_items)
+                self._export_imdb_data(items, total_items)
                 return
 
             radarr_adds = []
