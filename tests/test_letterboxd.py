@@ -377,6 +377,50 @@ def test_validate_global_letterboxd_films_page_samples_single_item(adapter):
     assert FakeFilms.calls == [("https://letterboxd.com/films/popular/", 1)]
 
 
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://letterboxd.com/studio/a24/by/release/",
+        "https://letterboxd.com/actor/marlon-brando/",
+        "https://letterboxd.com/director/francis-ford-coppola/",
+        "https://letterboxd.com/writer/mario-puzo/",
+        "https://letterboxd.com/casting/fred-roos/",
+        "https://letterboxd.com/editor/william-reynolds-1/",
+        "https://letterboxd.com/cinematography/gordon-willis/",
+        "https://letterboxd.com/composer/nino-rota/",
+    ],
+)
+def test_filmography_urls_use_fallback_parser(monkeypatch, patch_logger, url):
+    monkeypatch.setattr(letterboxd_module, "Films", FakeFilms)
+    FakeFilms.calls = []
+    requests = FakeRequests({url: """
+                <html><body>
+                    <div class="react-component poster" data-item-link="/film/the-godfather/" data-item-name="The Godfather (1972)" data-postered-identifier="{&quot;uid&quot;:&quot;film:51818&quot;}"></div>
+                </body></html>
+            """})
+    adapter = Letterboxd(requests, FakeCache())
+
+    items = adapter._get_list_items(url, 0, "en")
+
+    assert items == [("51818", "/film/the-godfather/", 1972, None, None)]
+    assert FakeFilms.calls == []
+    assert any("using Kometa fallback parsing" in message for message in patch_logger.warning_messages)
+
+
+def test_similar_url_uses_letterboxdpy_films(adapter):
+    url = "https://letterboxd.com/film/the-godfather/similar/"
+    FakeFilms.payloads = {
+        url: {
+            "51816": {"slug": "the-godfather-part-ii", "year": 1974, "rating": 4.6, "url": "https://letterboxd.com/film/the-godfather-part-ii/"},
+        }
+    }
+
+    items = adapter._get_list_items(url, 0, "en")
+
+    assert items == [("51816", "/film/the-godfather-part-ii/", 1974, None, 9)]
+    assert FakeFilms.calls == [(url, None)]
+
+
 def test_user_scoped_films_url_uses_fallback_not_letterboxdpy(monkeypatch, patch_logger):
     monkeypatch.setattr(letterboxd_module, "Films", FakeFilms)
     monkeypatch.setattr(letterboxd_module, "LetterboxdList", FakeList)
@@ -400,7 +444,7 @@ def test_user_scoped_films_url_uses_fallback_not_letterboxdpy(monkeypatch, patch
 
     assert items == [("501", "/film/half-star-one/", 1999, None, 1)]
     assert FakeFilms.calls == []
-    assert any("user-scoped films URLs" in message for message in patch_logger.warning_messages)
+    assert any("using Kometa fallback parsing" in message for message in patch_logger.warning_messages)
 
 
 def test_user_scoped_films_fallback_extracts_direct_react_components(monkeypatch):

@@ -48,6 +48,8 @@ boxd_short_url = "https://boxd.it"
 list_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)" r"(?:/share/(?P<share>[^/]+))?" r"(?:/detail)?" r"(?:/by/(?P<sort>[^/]+))?" r"/?$")
 watchlist_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/watchlist/?$")
 film_path_pattern = re.compile(r"^/film/(?P<slug>[^/]+)/?$")
+filmography_path_pattern = re.compile(r"^/(?:actor|casting|cinematography|composer|director|editor|studio|writer)/[^/]+(?:/.*)?$")
+similar_path_pattern = re.compile(r"^/film/[^/]+/similar/?$")
 film_identifier_pattern = re.compile(r"film:(?P<id>\d+)")
 page_path_pattern = re.compile(r"/page/\d+/?$")
 year_pattern = re.compile(r"\((\d{4})\)")
@@ -77,8 +79,10 @@ class Letterboxd:
 
     def _url_type(self, url):
         parsed = urlparse(url)
-        if "/films/" in parsed.path:
+        if "/films/" in parsed.path or similar_path_pattern.match(parsed.path):
             return "films"
+        if filmography_path_pattern.match(parsed.path):
+            return "filmography"
         if parsed.path.rstrip("/").endswith("/watchlist"):
             return "watchlist"
         return "list"
@@ -86,7 +90,7 @@ class Letterboxd:
     @staticmethod
     def _uses_letterboxdpy_films(url):
         parsed = urlparse(url)
-        return parsed.path.startswith("/films/")
+        return parsed.path.startswith("/films/") or bool(similar_path_pattern.match(parsed.path))
 
     @staticmethod
     def _resolve_boxd_url(url):
@@ -528,8 +532,9 @@ class Letterboxd:
     def _get_list_items(self, list_url, limit, language):
         list_url = self._normalize_url(list_url)
         items = []
-        if self._url_type(list_url) == "films":
-            if self._uses_letterboxdpy_films(list_url):
+        url_type = self._url_type(list_url)
+        if url_type in ["films", "filmography"]:
+            if url_type == "films" and self._uses_letterboxdpy_films(list_url):
                 try:
                     film_results = self._films_cls(list_url, max=limit or None)
                 except Exception as e:
@@ -538,9 +543,9 @@ class Letterboxd:
                     slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                     items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, self._coerce_rating_10(item.get("rating"))))
             else:
-                self._warn_once(("films_user_fallback", list_url), f"Letterboxd Warning: letterboxdpy does not reliably support user-scoped films URLs like {list_url}; using Kometa fallback parsing.")
+                self._warn_once(("films_fallback", list_url), f"Letterboxd Warning: letterboxdpy does not reliably support films page {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_films_page)
-        elif self._url_type(list_url) == "watchlist":
+        elif url_type == "watchlist":
             watchlist_obj = self._get_list_object(list_url)
             try:
                 movies = watchlist_obj.movies
@@ -745,7 +750,7 @@ class Letterboxd:
             final["url"] = self._normalize_url(final["url"])
 
             try:
-                validation_limit = 1 if self._url_type(final["url"]) == "films" else final["limit"]
+                validation_limit = 1 if self._url_type(final["url"]) in ["films", "filmography"] else final["limit"]
                 if not self._get_list_items(final["url"], validation_limit, language)[0:1]:
                     logger.warning(f"{err_type} Warning: {final['url']} returned no items during validation")
             except Failed as e:

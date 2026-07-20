@@ -4,9 +4,9 @@ hide:
 ---
 # Letterboxd List
 
-Finds every movie in the Letterboxd list or [Letterboxd Films Search](https://letterboxd.com/films/).
+Finds every movie in a Letterboxd list, [Letterboxd Films Search](https://letterboxd.com/films/), similar-films page, or filmography page for a studio, actor, director, writer, casting director, editor, cinematographer, or composer.
 
-The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
+The expected input is a supported Letterboxd URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
 Private links (which start with the URL `https://boxd.it/`) are also supported.
 
