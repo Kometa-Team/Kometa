@@ -94,6 +94,48 @@ class Operations:
 
         return all((less_check, managed_check, configured_check))
 
+    def _export_parental_guide(self, items, total_items):
+        """HARDCODED helper: export IMDb parental guide for all items to a CSV that matches the
+        imdb_parental cache table columns. Writes no changes to Plex. Throwaway; not operationalized."""
+        import csv
+
+        export_path = os.path.join(self.config.default_dir, f"imdb_parental_export_{self.library.name}.csv")
+        logger.separator(f"Exporting IMDb Parental Guide to {export_path}")
+        written = 0
+        skipped = 0
+        with open(export_path, "w", newline="", encoding="utf-8") as export_file:
+            writer = csv.writer(export_file)
+            writer.writerow(["imdb_id", "nudity", "violence", "profanity", "alcohol", "frightening"])
+            for i, item in enumerate(items, 1):
+                try:
+                    item = self.library.reload(item)
+                except Failed as e:
+                    logger.error(e)
+                    skipped += 1
+                    continue
+                _, _, imdb_id = self.library.get_ids(item)
+                if not imdb_id:
+                    logger.info(f"({i}/{total_items}) {item.title} | Skipped: No IMDb ID")
+                    skipped += 1
+                    continue
+                try:
+                    parental_guide = self.config.IMDb.parental_guide(imdb_id)
+                except Failed as e:
+                    logger.info(f"({i}/{total_items}) {item.title} | Skipped: {e}")
+                    skipped += 1
+                    continue
+                writer.writerow([
+                    imdb_id,
+                    parental_guide.get("Nudity") or "",
+                    parental_guide.get("Violence") or "",
+                    parental_guide.get("Profanity") or "",
+                    parental_guide.get("Alcohol") or "",
+                    parental_guide.get("Frightening") or "",
+                ])
+                written += 1
+                logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Exported")
+        logger.separator(f"IMDb Parental Guide Export Complete: {written} written, {skipped} skipped")
+
     def run_operations(self):
         operation_start = datetime.now()
         logger.info("")
@@ -165,6 +207,14 @@ class Operations:
 
             items = self.library.get_all()
             total_items = len(items)
+
+            # HARDCODED: Parental-only export mode. Fetch IMDb parental guide for every item
+            # and write it to a CSV matching the imdb_parental cache table columns, without
+            # touching Plex or running any other mass-update work. Remove this block (and the
+            # _export_parental_guide helper) to restore normal operation behavior.
+            if self.library.mass_imdb_parental_labels and self.library.mass_imdb_parental_labels != "remove":
+                self._export_parental_guide(items, total_items)
+                return
 
             radarr_adds = []
             sonarr_adds = []
