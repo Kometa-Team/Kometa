@@ -947,13 +947,13 @@ class Plex(Library):
     def create_playlist(self, name, items):
         return self.PlexServer.createPlaylist(name, items=items)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
     def moveItem(self, obj, item, after):
         try:
             obj.moveItem(item, after=after)
         except (BadRequest, NotFound, Unauthorized) as e:
             logger.error(e)
-            raise Failed("Move Failed")
+            raise Failed(f"Plex Error: Failed to move {util.item_title(item)}: {e}") from e
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def query(self, method):

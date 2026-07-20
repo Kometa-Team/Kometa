@@ -272,6 +272,26 @@ class TestDelete:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# moveItem retry behavior
+# ═════════════════════════════════════════════════════════════════════
+
+
+class TestMoveItemRetry:
+    def test_bad_request_raises_failed_without_retry_error(self):
+        import modules.util as util
+
+        plex = make_plex()
+        collection = MagicMock()
+        collection.moveItem.side_effect = BadRequest("400 Bad Request")
+        item = make_plex_item(title="Test Movie")
+
+        with pytest.raises(util.Failed, match="Plex Error: Failed to move Test Movie: 400 Bad Request"):
+            plex.moveItem(collection, item, None)
+
+        collection.moveItem.assert_called_once_with(item, after=None)
+
+
+# ════════════════════════════════════════════════════════════════════
 # saveMultiEdits retry behavior
 # ═══════════════════════════════════════════════════════════════════════
 
