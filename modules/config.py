@@ -248,6 +248,7 @@ class ConfigFile:
     def __init__(self, in_request, default_dir, attrs, secrets):
         logger.info("Locating config...")
         config_file = attrs["config_file"]
+        self.cache_path = attrs.get("cache_file")
         if config_file and os.path.exists(config_file):
             self.config_path = os.path.abspath(config_file)
         elif config_file and not os.path.exists(config_file):
@@ -925,7 +926,7 @@ class ConfigFile:
 
         if self.general["cache"]:
             logger.separator()
-            self.Cache = Cache(self.config_path, self.general["cache_expiration"])
+            self.Cache = Cache(self.config_path, self.general["cache_expiration"], cache_path=self.cache_path)
         else:
             self.Cache = None
 

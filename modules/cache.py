@@ -21,8 +21,8 @@ def sql_identifier(name):
 
 
 class Cache:
-    def __init__(self, config_path, expiration):
-        self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
+    def __init__(self, config_path, expiration, cache_path=None):
+        self.cache_path = cache_path or f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
         self._connection = None
         with self.connection as connection:

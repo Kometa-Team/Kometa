@@ -95,6 +95,7 @@ arguments = {
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "dry-run": {"args": ["dry", "dryrun"], "type": "bool", "help": "Run without sending changes to Plex or external services"},
     "update-cache": {"args": "uc", "type": "bool", "help": "When used with dry-run, write cache updates for changes that are not sent to Plex"},
+    "create-dry-cache": {"args": "cdc", "type": "bool", "help": "Use a separate cache file ending in -dry.cache and write dry-run cache updates"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -275,6 +276,8 @@ from modules import util  # noqa: E402
 
 util.logger = logger
 util.dry_run = run_args["dry-run"]
+if run_args["create-dry-cache"]:
+    run_args["update-cache"] = True
 util.update_cache = run_args["update-cache"]
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
@@ -509,6 +512,10 @@ def start(attrs):
             attrs["time"] = start_time.strftime("%H:%M")
         attrs["time_obj"] = start_time
         attrs["config_file"] = run_args["config"]
+        if run_args["create-dry-cache"]:
+            config_file = attrs["config_file"] or os.path.join(default_dir, "config.yml")
+            attrs["cache_file"] = f"{os.path.splitext(os.path.abspath(config_file))[0]}-dry.cache"
+            logger.info(f"    Create Dry Cache: {attrs['cache_file']}")
         attrs["ignore_schedules"] = run_args["ignore-schedules"]
         attrs["read_only"] = run_args["read-only-config"]
         attrs["no_missing"] = run_args["no-missing"]
