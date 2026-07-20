@@ -1145,7 +1145,7 @@ class Plex(Library):
         upload_success = True
         try:
             if util.dry_run:
-                return upload_success
+                return util.dry_run_cache_allowed()
             if image.is_url and "theposterdb.com" in image.location:
                 now = datetime.now()
                 if self.config.tpdb_timer is not None:
@@ -1184,38 +1184,42 @@ class Plex(Library):
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_poster(self, item, image, url=False):
         if util.dry_run:
-            return None
+            return util.dry_run_cache_allowed()
         if url:
             item.uploadPoster(url=image)
         else:
             item.uploadPoster(filepath=image)
+        return True
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_background(self, item, image, url=False):
         if util.dry_run:
-            return None
+            return util.dry_run_cache_allowed()
         if url:
             item.uploadArt(url=image)
         else:
             item.uploadArt(filepath=image)
+        return True
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_logo(self, item, image, url=False):
         if util.dry_run:
-            return None
+            return util.dry_run_cache_allowed()
         if url:
             item.uploadLogo(url=image)
         else:
             item.uploadLogo(filepath=image)
+        return True
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
     def upload_square_art(self, item, image, url=False):
         if util.dry_run:
-            return None
+            return util.dry_run_cache_allowed()
         if url:
             item.uploadSquareArt(url=image)
         else:
             item.uploadSquareArt(filepath=image)
+        return True
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_actor_id(self, name):

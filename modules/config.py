@@ -227,6 +227,7 @@ library_operations = {
     "mass_user_rating_update": mass_rating_options,
     "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options,
+    "mass_label_reset": "bool",
     "mass_imdb_parental_labels": imdb_label_options,
     "mass_originally_available_update": mass_available_options,
     "mass_added_at_update": mass_available_options,
@@ -766,6 +767,8 @@ class ConfigFile:
                 labels_config = input_dict["labels"]
                 labels_schedule = get_schedule(labels_config)
                 if isinstance(labels_config, dict):
+                    if "reset" in labels_config:
+                        add_operation("labels.reset", {"mass_label_reset": labels_config["reset"]}, schedule=labels_schedule)
                     if "severity" in labels_config:
                         add_operation("labels.severity", {"mass_imdb_parental_labels": labels_config["severity"]}, schedule=labels_schedule)
                 else:

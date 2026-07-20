@@ -35,6 +35,11 @@ else:
     logger = None
 
 dry_run = False
+update_cache = False
+
+
+def dry_run_cache_allowed():
+    return dry_run and update_cache
 
 
 class TimeoutExpired(Exception):

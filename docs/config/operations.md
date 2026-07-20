@@ -494,14 +494,22 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         `severity` updates every item's labels in the library to match the IMDb Parental Guide.
 
+        `reset` removes all labels except `Overlay` from each processed item. When used with `severity`, Kometa removes existing labels first and then applies the IMDb Parental Guide labels for the selected severity.
+
         ??? example "Example Labels Operation"
 
             ```yaml
             operations:
               mass_metadata_update:
                 labels:
+                  reset: true
                   severity: severe
             ```
+
+        | Label Option | Description | Values |
+        | --- | --- | --- |
+        | `reset` | Remove all labels except `Overlay` from each processed item. | `true` or `false` |
+        | `severity` | Apply IMDb Parental Guide labels by minimum severity. | See table below. |
 
         | Severity | Description |
         | --- | --- |

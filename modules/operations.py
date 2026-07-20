@@ -114,6 +114,7 @@ class Operations:
         logger.debug(f"Mass Original Title Update: {self.library.mass_original_title_update}")
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
+        logger.debug(f"Mass Label Reset: {self.library.mass_label_reset}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
@@ -168,7 +169,7 @@ class Operations:
 
             radarr_adds = []
             sonarr_adds = []
-            label_edits = {"add": {}, "remove": {}}
+            label_edits = {"remove": {}, "add": {}}
             rating_edits = {"audienceRating": {}, "rating": {}, "userRating": {}}
             genre_edits = {"add": {}, "remove": {}}
             content_edits = {}
@@ -216,6 +217,15 @@ class Operations:
                         item.editTitle(new_title)
                         item_edits += f"\nUpdated Title: {item.title[:25]:<25} | {new_title}"
 
+                if self.library.mass_label_reset and current_labels:
+                    reset_labels = [label for label in current_labels if label != "Overlay"]
+                    for label in reset_labels:
+                        if label not in label_edits["remove"]:
+                            label_edits["remove"][label] = []
+                        label_edits["remove"][label].append(item.ratingKey)
+                    if reset_labels:
+                        item_edits += f"\nReset Labels (Batched) | {', '.join(reset_labels)}"
+
                 if self.library.mass_imdb_parental_labels:
                     try:
                         if self.library.mass_imdb_parental_labels == "remove":
@@ -225,8 +235,9 @@ class Operations:
                         else:
                             parental_guide = self.config.IMDb.parental_guide(imdb_id)
                             parental_labels = [f"{k}:{v}" for k, v in parental_guide.items() if v and v not in util.parental_levels[self.library.mass_imdb_parental_labels]]
-                        add_labels = [la for la in parental_labels if la not in current_labels]
-                        remove_labels = [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
+                        compare_labels = [] if self.library.mass_label_reset else current_labels
+                        add_labels = [la for la in parental_labels if la not in compare_labels]
+                        remove_labels = [] if self.library.mass_label_reset else [la for la in current_labels if la in util.parental_labels and la not in parental_labels]
                         for label_list, edit_type in [(add_labels, "add"), (remove_labels, "remove")]:
                             if label_list:
                                 for label in label_list:

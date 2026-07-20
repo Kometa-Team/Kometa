@@ -414,9 +414,10 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags, lossless=True)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
-                                self.library.upload_poster(item, temp)
+                                upload_success = self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
-                                poster_compare = poster.compare if poster else item.thumb
+                                if upload_success:
+                                    poster_compare = poster.compare if poster else item.thumb
                                 logger.info(f"  Overlays Applied: {', '.join(over_names)}")
                         except (OSError, BadRequest, SyntaxError) as e:
                             logger.stacktrace()

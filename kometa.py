@@ -94,6 +94,7 @@ arguments = {
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "dry-run": {"args": ["dry", "dryrun"], "type": "bool", "help": "Run without sending changes to Plex or external services"},
+    "update-cache": {"args": "uc", "type": "bool", "help": "When used with dry-run, write cache updates for changes that are not sent to Plex"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -274,6 +275,7 @@ from modules import util  # noqa: E402
 
 util.logger = logger
 util.dry_run = run_args["dry-run"]
+util.update_cache = run_args["update-cache"]
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -456,6 +458,8 @@ def start(attrs):
         logger.info(f"    Process Priority: {'low' if run_args['low-priority'] else 'normal'}")
         if run_args["dry-run"]:
             logger.info("    Dry Run: Enabled")
+            if run_args["update-cache"]:
+                logger.info("    Update Cache: Enabled")
 
         if not is_docker and not is_linuxserver:
             try:

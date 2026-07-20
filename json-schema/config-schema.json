@@ -171,10 +171,14 @@
                 "moderate",
                 "severe"
               ]
+            },
+            "reset": {
+              "type": "boolean"
             }
           },
-          "required": [
-            "severity"
+          "anyOf": [
+            { "required": ["severity"] },
+            { "required": ["reset"] }
           ],
           "additionalProperties": false
         }
@@ -5987,6 +5991,9 @@
                 }
               },
               "additionalProperties": false
+            },
+            "mass_label_reset": {
+              "type": "boolean"
             },
             "mass_imdb_parental_labels": {
               "type": "string",
