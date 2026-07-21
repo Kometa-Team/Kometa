@@ -40,14 +40,28 @@ user_sort_options = {
     "length_shortest": "by/shortest/",
     "length_longest": "by/longest/",
 }
+discovery_sort_options = {"best_match": "by/best-match/", **user_sort_options}
 
-builders = ["letterboxd_list", "letterboxd_list_details", "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
+semantic_builders = ["letterboxd_crew", "letterboxd_studio", "letterboxd_country", "letterboxd_language", "letterboxd_genre", "letterboxd_theme", "letterboxd_similar", "letterboxd_collection"]
+builders = ["letterboxd_list", "letterboxd_list_details", *semantic_builders, "letterboxd_user_films", "letterboxd_user_films_details", "letterboxd_user_reviews", "letterboxd_user_reviews_details"]
+crew_roles = ["actor", "director", "writer", "casting", "editor", "cinematography", "composer"]
+semantic_paths = {
+    "letterboxd_studio": ("studio", "studio/{slug}/", True),
+    "letterboxd_country": ("country", "films/country/{slug}/", True),
+    "letterboxd_language": ("language", "films/language/{slug}/", True),
+    "letterboxd_genre": ("genre", "films/genre/{slug}/", True),
+    "letterboxd_theme": ("theme", "films/theme/{slug}/", True),
+    "letterboxd_similar": ("film", "film/{slug}/similar/", False),
+    "letterboxd_collection": ("collection", "films/in/{slug}/", True),
+}
 base_url = "https://letterboxd.com"
 boxd_short_url = "https://boxd.it"
 
 list_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/list/(?P<slug>[^/]+)" r"(?:/share/(?P<share>[^/]+))?" r"(?:/detail)?" r"(?:/by/(?P<sort>[^/]+))?" r"/?$")
 watchlist_url_pattern = re.compile(r"^https://letterboxd\.com/(?P<username>[^/]+)/watchlist/?$")
 film_path_pattern = re.compile(r"^/film/(?P<slug>[^/]+)/?$")
+filmography_path_pattern = re.compile(r"^/(?:actor|casting|cinematography|composer|director|editor|studio|writer)/[^/]+(?:/.*)?$")
+similar_path_pattern = re.compile(r"^/film/[^/]+/similar/?$")
 film_identifier_pattern = re.compile(r"film:(?P<id>\d+)")
 page_path_pattern = re.compile(r"/page/\d+/?$")
 year_pattern = re.compile(r"\((\d{4})\)")
@@ -77,8 +91,10 @@ class Letterboxd:
 
     def _url_type(self, url):
         parsed = urlparse(url)
-        if "/films/" in parsed.path:
+        if "/films/" in parsed.path or similar_path_pattern.match(parsed.path):
             return "films"
+        if filmography_path_pattern.match(parsed.path):
+            return "filmography"
         if parsed.path.rstrip("/").endswith("/watchlist"):
             return "watchlist"
         return "list"
@@ -86,7 +102,7 @@ class Letterboxd:
     @staticmethod
     def _uses_letterboxdpy_films(url):
         parsed = urlparse(url)
-        return parsed.path.startswith("/films/")
+        return parsed.path.startswith("/films/") or bool(similar_path_pattern.match(parsed.path))
 
     @staticmethod
     def _resolve_boxd_url(url):
@@ -528,8 +544,9 @@ class Letterboxd:
     def _get_list_items(self, list_url, limit, language):
         list_url = self._normalize_url(list_url)
         items = []
-        if self._url_type(list_url) == "films":
-            if self._uses_letterboxdpy_films(list_url):
+        url_type = self._url_type(list_url)
+        if url_type in ["films", "filmography"]:
+            if url_type == "films" and self._uses_letterboxdpy_films(list_url):
                 try:
                     film_results = self._films_cls(list_url, max=limit or None)
                 except Exception as e:
@@ -538,9 +555,9 @@ class Letterboxd:
                     slug_path = self._slug_path(item.get("url", f"{base_url}/film/{item.get('slug')}/"))
                     items.append((str(item_id), slug_path, self._coerce_year(item.get("year")), None, self._coerce_rating_10(item.get("rating"))))
             else:
-                self._warn_once(("films_user_fallback", list_url), f"Letterboxd Warning: letterboxdpy does not reliably support user-scoped films URLs like {list_url}; using Kometa fallback parsing.")
+                self._warn_once(("films_fallback", list_url), f"Letterboxd Warning: letterboxdpy does not reliably support films page {list_url}; using Kometa fallback parsing.")
                 items = self._get_list_items_fallback(list_url, limit, language, extractor=self._extract_fallback_films_page)
-        elif self._url_type(list_url) == "watchlist":
+        elif url_type == "watchlist":
             watchlist_obj = self._get_list_object(list_url)
             try:
                 movies = watchlist_obj.movies
@@ -745,12 +762,56 @@ class Letterboxd:
             final["url"] = self._normalize_url(final["url"])
 
             try:
-                validation_limit = 1 if self._url_type(final["url"]) == "films" else final["limit"]
+                validation_limit = 1 if self._url_type(final["url"]) in ["films", "filmography"] else final["limit"]
                 if not self._get_list_items(final["url"], validation_limit, language)[0:1]:
                     logger.warning(f"{err_type} Warning: {final['url']} returned no items during validation")
             except Failed as e:
                 logger.warning(f"{err_type} Warning: Could not validate {final['url']}: {e}")
             valid_lists.append(final)
+        return valid_lists
+
+    def validate_letterboxd_builder(self, err_type, method, method_data, language):
+        valid_lists = []
+        for entry in util.get_list(method_data, split=False, return_none=False) or []:
+            if method == "letterboxd_crew":
+                if not isinstance(entry, dict):
+                    raise Failed(f"{err_type} Error: {method} must be a dictionary with role and person attributes")
+                methods = {key.lower(): key for key in entry}
+                role = util.parse(err_type, "role", entry, methods=methods, parent=method, options=crew_roles)
+                field = "person"
+                path = f"{role}/{{slug}}/"
+                allows_sort = True
+            else:
+                field, path, allows_sort = semantic_paths[method]
+                if not isinstance(entry, dict):
+                    entry = {field: entry}
+                methods = {key.lower(): key for key in entry}
+
+            supported = {field, "limit", "year"}
+            if method == "letterboxd_crew":
+                supported.add("role")
+            if allows_sort:
+                supported.add("sort_by")
+            unsupported = [key for key in methods if key not in supported]
+            if unsupported:
+                raise Failed(f"{err_type} Error: {method} {unsupported[0]} attribute not supported")
+
+            slug = util.parse(err_type, field, entry, methods=methods, parent=method).strip().strip("/")
+            if not slug or "/" in slug:
+                raise Failed(f"{err_type} Error: {method} {field} must be a Letterboxd slug, not a URL or path")
+
+            url = f"{base_url}/{path.format(slug=slug)}"
+            if "sort_by" in methods:
+                if not allows_sort:
+                    raise Failed(f"{err_type} Error: {method} sort_by attribute not supported")
+                sort_by = util.parse(err_type, "sort_by", entry, methods=methods, parent=method, options=discovery_sort_options)
+                url = f"{url}{discovery_sort_options[sort_by]}"
+
+            normalized = {"url": url}
+            for attribute in ["limit", "year"]:
+                if attribute in methods:
+                    normalized[attribute] = entry[methods[attribute]]
+            valid_lists.extend(self.validate_letterboxd_lists(err_type, normalized, language))
         return valid_lists
 
     def validate_letterboxd_user_pages(self, err_type, letterboxd_user_pages, page_type, language):
@@ -817,8 +878,8 @@ class Letterboxd:
         return final
 
     def get_tmdb_ids(self, method, data, language):
-        if method == "letterboxd_list":
-            logger.info(f"Processing Letterboxd List: {data}")
+        if method == "letterboxd_list" or method in semantic_builders:
+            logger.info(f"Processing {method}: {data}")
             items = self._get_list_items(data["url"], data["limit"], language)
             total_items = len(items)
             if total_items <= 0:

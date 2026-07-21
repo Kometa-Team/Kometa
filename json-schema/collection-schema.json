@@ -522,6 +522,20 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
                     ]
                 },
+                "letterboxd_crew": {
+                    "description": "Movies credited to a Letterboxd person in a selected role.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/letterboxd-crew-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/letterboxd-crew-entry" } }
+                    ]
+                },
+                "letterboxd_studio": { "$ref": "#/definitions/letterboxd-studio-builder" },
+                "letterboxd_country": { "$ref": "#/definitions/letterboxd-country-builder" },
+                "letterboxd_language": { "$ref": "#/definitions/letterboxd-language-builder" },
+                "letterboxd_genre": { "$ref": "#/definitions/letterboxd-genre-builder" },
+                "letterboxd_theme": { "$ref": "#/definitions/letterboxd-theme-builder" },
+                "letterboxd_similar": { "$ref": "#/definitions/letterboxd-similar-builder" },
+                "letterboxd_collection": { "$ref": "#/definitions/letterboxd-collection-builder" },
                 "letterboxd_user_films": {
                     "description": "Letterboxd user films page(s).",
                     "oneOf": [
@@ -1070,6 +1084,80 @@
                 "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
                 "rating": {}
             }
+        },
+
+        "letterboxd-crew-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["role", "person"],
+            "properties": {
+                "role": { "type": "string", "enum": ["actor", "director", "writer", "casting", "editor", "cinematography", "composer"] },
+                "person": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] },
+                "sort_by": { "$ref": "#/definitions/letterboxd-sort" }
+            }
+        },
+        "letterboxd-studio-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-studio-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-studio-entry" }] } }]
+        },
+        "letterboxd-country-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-country-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-country-entry" }] } }]
+        },
+        "letterboxd-language-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-language-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-language-entry" }] } }]
+        },
+        "letterboxd-genre-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-genre-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-genre-entry" }] } }]
+        },
+        "letterboxd-theme-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-theme-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-theme-entry" }] } }]
+        },
+        "letterboxd-collection-builder": {
+            "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-collection-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-collection-entry" }] } }]
+        },
+        "letterboxd-similar-builder": {
+            "oneOf": [
+                { "type": "string" },
+                { "$ref": "#/definitions/letterboxd-similar-entry" },
+                { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-similar-entry" }] } }
+            ]
+        },
+        "letterboxd-studio-entry": {
+            "type": "object", "additionalProperties": false, "required": ["studio"],
+            "properties": { "studio": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-country-entry": {
+            "type": "object", "additionalProperties": false, "required": ["country"],
+            "properties": { "country": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-language-entry": {
+            "type": "object", "additionalProperties": false, "required": ["language"],
+            "properties": { "language": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-genre-entry": {
+            "type": "object", "additionalProperties": false, "required": ["genre"],
+            "properties": { "genre": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-theme-entry": {
+            "type": "object", "additionalProperties": false, "required": ["theme"],
+            "properties": { "theme": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-collection-entry": {
+            "type": "object", "additionalProperties": false, "required": ["collection"],
+            "properties": { "collection": { "type": "string" }, "limit": { "type": "integer", "minimum": 1 }, "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }, "sort_by": { "$ref": "#/definitions/letterboxd-sort" } }
+        },
+        "letterboxd-similar-entry": {
+            "type": "object", "additionalProperties": false,
+            "required": ["film"],
+            "properties": {
+                "film": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 },
+                "year": { "oneOf": [{ "type": "integer" }, { "type": "string" }] }
+            }
+        },
+        "letterboxd-sort": {
+            "type": "string",
+            "enum": ["best_match", "release_date_newest", "release_date_earliest", "name", "popularity", "when_added_newest", "when_added_earliest", "when_rated_newest", "when_rated_earliest", "average_rating_highest", "average_rating_lowest", "user_rating_highest", "user_rating_lowest", "length_shortest", "length_longest"]
         },
 
         "letterboxd-user-page-entry": {

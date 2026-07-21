@@ -4,13 +4,15 @@ hide:
 ---
 # Letterboxd List
 
-Finds every movie in the Letterboxd list or [Letterboxd Films Search](https://letterboxd.com/films/).
+Finds every movie in a Letterboxd list or [Letterboxd Films Search](https://letterboxd.com/films/).
 
-The expected input is a Letterboxd List URL or Letterboxd Film Search URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
+The expected input is a supported Letterboxd URL. Multiple values are supported as either a list :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or a comma-separated string.
 
 Private links (which start with the URL `https://boxd.it/`) are also supported.
 
 Kometa now uses `letterboxdpy` for Letterboxd access. Standard list URLs continue to work, and `/films/...` URLs remain supported.
+
+Use the [Letterboxd Discovery Builders](discovery.md) for people, studios, genres, themes, countries, languages, film collections, and similar movies.
 
 You can add different filters directly to this Builder.
 

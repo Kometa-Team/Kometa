@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add semantic `letterboxd_crew`, `letterboxd_studio`, `letterboxd_country`, `letterboxd_language`, `letterboxd_genre`, `letterboxd_theme`, `letterboxd_similar`, and `letterboxd_collection` builders for Letterboxd discovery pages.
 - Add `value_filter` overlay-file attribute to filter items at selection time based on a runtime-fetched numeric value; supports comparators `gte`, `gt`, `lt`, `lte` on any `rating_sources` variable using the normalised 0–10 scale.
 - Add `overlay_value_cache` table (replaces `overlay_special_text2`) with a `UNIQUE(rating_key, type)` constraint and an `expiration_date` column; values refresh automatically after `cache_expiration` days.
 - Add `_overlay_state` and `_overlay_images` per-library tables replacing the dual-use `overlay TEXT` column in `_overlays`; one row per overlay per item, written only on successful resolution.

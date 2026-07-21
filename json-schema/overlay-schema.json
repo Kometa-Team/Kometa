@@ -116,6 +116,14 @@
 
                 "mdblist_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
                 "letterboxd_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
+                "letterboxd_crew": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
+                "letterboxd_studio": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_country": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_language": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_genre": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_theme": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_similar": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
+                "letterboxd_collection": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
 
                 "anilist_top_rated": { "type": "integer", "minimum": 1 },
                 "anilist_popular": { "type": "integer", "minimum": 1 },
