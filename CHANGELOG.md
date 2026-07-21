@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add semantic `letterboxd_crew`, `letterboxd_studio`, `letterboxd_country`, `letterboxd_language`, `letterboxd_genre`, `letterboxd_theme`, `letterboxd_similar`, and `letterboxd_collection` builders for Letterboxd discovery pages.
 - Add `value_filter` overlay-file attribute to filter items at selection time based on a runtime-fetched numeric value; supports comparators `gte`, `gt`, `lt`, `lte` on any `rating_sources` variable using the normalised 0–10 scale.
 - Add `overlay_value_cache` table (replaces `overlay_special_text2`) with a `UNIQUE(rating_key, type)` constraint and an `expiration_date` column; values refresh automatically after `cache_expiration` days.
 - Add `_overlay_state` and `_overlay_images` per-library tables replacing the dual-use `overlay TEXT` column in `_overlays`; one row per overlay per item, written only on successful resolution.
@@ -25,11 +26,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+- Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
 - `modules/tvdb.py`: add a distinct `Unavailable` exception for TVDb requests that exhaust their retry budget without ever returning usable content (e.g. repeated HTTP 202/empty-body "still generating" responses), separate from `NotFound`'s definitive 4xx. Previously both were re-raised with the identical "No Series/Movie found" message, so a confirmed-dead TVDb ID and a transient TVDb hiccup were indistinguishable in the log. All `get_tvdb_obj()` call sites (`modules/builder.py`, `modules/operations.py`) now log `NotFound` at debug (unchanged), `Unavailable` at warning (previously logged at error via the generic `Failed` handler), and any other `Failed` at error (unchanged).
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
 - Prevent Kometa from creating duplicate collections when Plex search misses an existing same-named collection by falling back to the full collection inventory before creating.
-- Refine the run summary output: group repeated overlay, Letterboxd/TMDb, Plex resolution-regex, Trakt TVDb-miss, and missing local artwork/theme path messages; update the supported-artwork summary wording; normalize asset-directory and logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
+- Refine the run summary output: group repeated overlay, Letterboxd/TMDb, missing TVDb season/episode and IMDb episode, Plex resolution-regex, Trakt TVDb-miss, and missing local artwork/theme path messages; update the supported-artwork summary wording; normalize asset-directory and logo warning summaries; print overlay and convert summaries in the same `Count | Message` format as warning/error summaries; add a visual divider before the summary intro text; rename the overlay section to `Overlay Summary`; and keep the run-status table hidden when there is no status data to show.
+- Group missing TMDb collection errors into a single end-of-run summary row while preserving each collection ID in the main log.
 - Fix overlay cache poisoning where application state was written for unresolved overlays (e.g. no IMDb rating), causing the item to be permanently skipped even after a rating became available.
 - Fix duplicate rows accumulating in `overlay_special_text2` on every run due to a missing `UNIQUE(rating_key, type)` constraint.
 - Ignore episode logo and square-art files during asset-directory discovery because Plex episodes only support poster and background artwork.
@@ -64,6 +67,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extend the `--run-collections` Recommendation Hub sort skip to also cover `--run-files`, which has the same partial-run limitation.
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
 - Fix the default AU content-rating overlay so the MA15+ badge matches both Plex rating spellings: canonical `au/MA 15+` from explicit TMDb Australian certifications and Plex-derived `au/MA15+` for titles without an AU certification.
+- Fix "Movies Added" report entries missing release year; titles now match the "Movies Missing"/"Movies Removed" format e.g. `The Grapes of Wrath (1939)`.
 
 ### Changed
 

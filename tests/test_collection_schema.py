@@ -19,6 +19,26 @@ def _collection_with_discover(discover_block):
     return {"collections": {"Test": {"tmdb_discover": discover_block}}}
 
 
+def _collection_with_builder(builder, value):
+    return {"collections": {"Test": {builder: value}}}
+
+
+def test_letterboxd_semantic_builders_pass(collection_schema):
+    validate(_collection_with_builder("letterboxd_crew", {"role": "actor", "person": "marlon-brando"}), collection_schema)
+    validate(_collection_with_builder("letterboxd_studio", {"studio": "a24", "sort_by": "release_date_newest"}), collection_schema)
+    validate(_collection_with_builder("letterboxd_similar", "the-godfather"), collection_schema)
+
+
+def test_letterboxd_crew_requires_supported_role(collection_schema):
+    with pytest.raises(ValidationError):
+        validate(_collection_with_builder("letterboxd_crew", {"role": "producer", "person": "albert-s-ruddy"}), collection_schema)
+
+
+def test_letterboxd_semantic_builder_rejects_wrong_slug_attribute(collection_schema):
+    with pytest.raises(ValidationError):
+        validate(_collection_with_builder("letterboxd_genre", {"url": "https://letterboxd.com/films/genre/crime/"}), collection_schema)
+
+
 # ── Property validation ────────────────────────────────────────────────────────
 
 

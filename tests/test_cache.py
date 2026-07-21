@@ -43,6 +43,23 @@ def table_exists(cache: Cache, table_name: str) -> bool:
             return cur.fetchone()[0] > 0
 
 
+def make_tmdb_episode(show_id=209867, episode_id=6855841, season_number=1, episode_number=28, vote_average=9.5, imdb_id=None, tvdb_id=None):
+    return SimpleNamespace(
+        tmdb_id=show_id,
+        episode_id=episode_id,
+        season_number=season_number,
+        episode_number=episode_number,
+        title="The Measure of a Hero",
+        air_date=None,
+        overview="",
+        still_url="https://image.tmdb.org/episode.jpg",
+        vote_count=10,
+        vote_average=vote_average,
+        imdb_id=imdb_id,
+        tvdb_id=tvdb_id,
+    )
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Init
 # ═══════════════════════════════════════════════════════════════════════
@@ -93,6 +110,91 @@ class TestInit:
     def test_expiration_stored(self, tmp_path):
         cache = make_cache(tmp_path, expiration=90)
         assert cache.expiration == 90
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TMDb episode cache
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTMDbEpisodeCache:
+    def test_episode_is_queryable_by_position_and_direct_id(self, tmp_path):
+        cache = make_cache(tmp_path)
+        episode = make_tmdb_episode()
+
+        cache.update_tmdb_episode(False, episode, "en", 30)
+
+        positional, positional_expired = cache.query_tmdb_episode(209867, 1, 28, "en", 30)
+        direct, direct_expired = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+        assert positional["episode_id"] == 6855841
+        assert direct["tmdb_id"] == 209867
+        assert direct["season_number"] == 1
+        assert direct["episode_number"] == 28
+        assert positional_expired is False
+        assert direct_expired is False
+
+    def test_direct_id_entry_expires_with_positional_entry(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(), "en", 30)
+        stale = (datetime.now() - timedelta(days=31)).strftime("%Y-%m-%d")
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("UPDATE tmdb_episode_data2 SET expiration_date = ? WHERE episode_id = ?", (stale, 6855841))
+
+        _, expired = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+
+        assert expired is True
+
+    def test_repeated_writes_do_not_duplicate_episode(self, tmp_path):
+        cache = make_cache(tmp_path)
+        episode = make_tmdb_episode()
+        cache.update_tmdb_episode(False, episode, "en", 30)
+        cache.update_tmdb_episode(False, episode, "en", 30)
+        with sqlite3.connect(cache.cache_path) as connection:
+            count = connection.execute("SELECT COUNT(*) FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (6855841, "en")).fetchone()[0]
+
+        assert count == 1
+
+    def test_partial_season_write_preserves_richer_external_ids(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(imdb_id="tt1234567", tvdb_id=7654321), "en", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(imdb_id=None, tvdb_id=None), "en", 30)
+
+        direct, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+
+        assert direct["imdb_id"] == "tt1234567"
+        assert direct["tvdb_id"] == 7654321
+
+    def test_legacy_table_adds_nullable_episode_id(self, tmp_path):
+        cache_path = tmp_path / "config.cache"
+        with sqlite3.connect(cache_path) as connection:
+            connection.execute("""CREATE TABLE tmdb_episode_data2 (
+                    key INTEGER PRIMARY KEY,
+                    tmdb_id INTEGER,
+                    season_number INTEGER,
+                    episode_number INTEGER,
+                    language TEXT,
+                    title TEXT,
+                    air_date TEXT,
+                    overview TEXT,
+                    still_url TEXT,
+                    vote_count INTEGER,
+                    vote_average REAL,
+                    imdb_id TEXT,
+                    tvdb_id INTEGER,
+                    expiration_date TEXT,
+                    UNIQUE(tmdb_id, season_number, episode_number, language))""")
+            connection.execute(
+                "INSERT INTO tmdb_episode_data2(tmdb_id, season_number, episode_number, language, title, expiration_date) VALUES(?, ?, ?, ?, ?, ?)",
+                (209867, 1, 28, "en", "Legacy Episode", datetime.now().strftime("%Y-%m-%d")),
+            )
+
+        cache = make_cache(tmp_path)
+        with sqlite3.connect(cache.cache_path) as connection:
+            columns = [row[1] for row in connection.execute("PRAGMA table_info(tmdb_episode_data2)").fetchall()]
+            episode_id = connection.execute("SELECT episode_id FROM tmdb_episode_data2 WHERE tmdb_id = ?", (209867,)).fetchone()[0]
+
+        assert "episode_id" in columns
+        assert episode_id is None
 
 
 # ═══════════════════════════════════════════════════════════════════════

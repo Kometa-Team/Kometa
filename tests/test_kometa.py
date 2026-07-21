@@ -181,6 +181,27 @@ def test_asset_paths_and_warnings_are_summarized() -> None:
         assert _summarize_log_message(message) == expected
 
 
+def test_missing_tmdb_collections_are_summarized() -> None:
+    """Variable collection IDs should collapse into one summary row."""
+    message = "TMDb Error: Collection ID 1698578 missing on TMDb; add '1698578' to the franchise exclude list if this is auto-built."
+    expected = "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built"
+    assert _summarize_log_message(message) == expected
+
+
+def test_missing_builder_parts_are_summarized() -> None:
+    """Variable IDs and item data should collapse for collections and playlists."""
+    cases = {
+        "Collection Warning: tvdb_episode:75710_1_1 -> Criminal Minds Season: 1 Episode: 1 Missing": "TVDb Episode Missing",
+        "Playlist Warning: tvdb_episode:75710_1_2 -> Criminal Minds Season: 1 Episode: 2 Missing": "TVDb Episode Missing",
+        "Collection Warning: tvdb_season:75710_1 -> Criminal Minds Season: 1 Missing": "TVDb Season Missing",
+        "Playlist Warning: tvdb_season:75710_2 -> Criminal Minds Season: 2 Missing": "TVDb Season Missing",
+        "Collection Warning: imdb:tt0452812 -> Criminal Minds Season: 1 Episode: 1 Missing": "IMDb Episode Missing",
+        "Playlist Warning: imdb:tt0452813 -> Criminal Minds Season: 1 Episode: 2 Missing": "IMDb Episode Missing",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
+
+
 def test_status_summary_skips_empty_tables() -> None:
     """Regression for the run-status table header.
 

@@ -402,6 +402,7 @@ nav:
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md
+        - Discovery: files/builders/letterboxd/discovery.md
         - User Films: files/builders/letterboxd/user_films.md
         - User Reviews: files/builders/letterboxd/user_reviews.md
       - ICheckMovies:
