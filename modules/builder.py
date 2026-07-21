@@ -2498,15 +2498,16 @@ class CollectionBuilder:
                             new_dictionary[lower_method] = events
                     elif search_attr == "interests":
                         interests = []
+                        interest_options = self.config.IMDb.interest_options
                         for interest in util.parse(self.Type, search_method, search_data, datatype="lowerlist", parent=method_name):
-                            if interest in imdb.interest_options:
+                            if interest in interest_options:
                                 interests.append(interest)
                             else:
                                 res = re.search(r"(in\d+)", interest)
                                 if res:
                                     interests.append(res.group(1))
                                 else:
-                                    raise BuilderValidationError(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. in0000092 or be one of {', '.join([e for e in imdb.interest_options])}")
+                                    raise BuilderValidationError(f"{method_name} {search_method} attribute: {search_data} must match pattern ev\\d+ e.g. in0000092 or be one of {', '.join([e for e in interest_options])}")
                         if interests:
                             new_dictionary[lower_method] = interests
                     elif search_attr == "company":

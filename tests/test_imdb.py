@@ -633,3 +633,46 @@ class TestIdsFromChart:
 
         with pytest.raises(Failed, match="No IMDb IDs found in HTML fallback for Top 250 Movies"):
             imdb._ids_from_chart("top_movies", "en")
+
+
+# interest_options: runtime fetch with static-map fallback
+# ---------------------------------------------------------------------------
+
+
+def test_interest_options_uses_fetched_catalog():
+    """When the remote catalog fetches cleanly, interest_options uses it (not the fallback)."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.get_json = MagicMock(return_value={"hindi": "in0000222", "dc": "in0000244"})
+    options = imdb.interest_options
+    assert options["hindi"] == "in0000222"
+    assert options["dc"] == "in0000244"
+    imdb.requests.get_json.assert_called_once()
+
+
+def test_interest_options_is_cached_after_first_fetch():
+    """The catalog is fetched once and memoized on the instance."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.get_json = MagicMock(return_value={"action": "in0000001"})
+    imdb.interest_options  # noqa: B018 - trigger fetch
+    imdb.interest_options  # noqa: B018 - should hit the cache
+    imdb.requests.get_json.assert_called_once()
+
+
+def test_interest_options_falls_back_on_fetch_failure():
+    """A network/HTTP failure falls back to the bundled snapshot instead of raising."""
+    from modules.imdb import interest_options_fallback
+
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.get_json = MagicMock(side_effect=ConnectionError("boom"))
+    options = imdb.interest_options
+    assert options == interest_options_fallback
+    assert options["action"] == "in0000001"
+
+
+def test_interest_options_falls_back_on_empty_response():
+    """An empty or malformed response also triggers the fallback."""
+    from modules.imdb import interest_options_fallback
+
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.get_json = MagicMock(return_value={})
+    assert imdb.interest_options == interest_options_fallback
