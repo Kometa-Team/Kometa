@@ -2159,6 +2159,30 @@ class Plex(Library):
                     ratings["plex_tomatoesaudience"] = rating.value
         return ratings
 
+    @staticmethod
+    def get_tmdb_episode_id(item):
+        try:
+            guids = item.guids
+        except (AttributeError, ConnectionError, TypeError):
+            return None
+        for guid_tag in guids:
+            try:
+                guid = urlparse(guid_tag.id)
+                if guid.scheme == "tmdb":
+                    return int(guid.netloc)
+            except (AttributeError, TypeError, ValueError):
+                continue
+        return None
+
+    def get_tmdb_episode(self, item, show_tmdb_id):
+        episode_id = self.get_tmdb_episode_id(item)
+        if episode_id:
+            try:
+                return self.config.TMDb.get_episode_by_id(show_tmdb_id, episode_id)
+            except Failed:
+                logger.debug(f"TMDb Episode ID {episode_id} was not found for show {show_tmdb_id}; using positional lookup")
+        return self.config.TMDb.get_episode(show_tmdb_id, item.seasonNumber, item.episodeNumber)
+
     def fetch_overlay_value(self, item, variable_name):
         # Shared rating fetch for overlay text and value_filter. Returns a normalized 0-10 float or None.
         # Reads overlay_value_cache first and returns the cached value if warm, only fetching live on a miss/expiry.
@@ -2173,7 +2197,7 @@ class Plex(Library):
             _item = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=self.is_movie)
             if _item:
                 if isinstance(item, Episode):
-                    found_rating = self.config.TMDb.get_episode(_item.tmdb_id, item.seasonNumber, item.episodeNumber).vote_average
+                    found_rating = self.get_tmdb_episode(item, _item.tmdb_id).vote_average
                 elif isinstance(item, Season):
                     for season in _item.seasons:
                         if item.seasonNumber == season.season_number:

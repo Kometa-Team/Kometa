@@ -1241,7 +1241,7 @@ class Operations:
                                                     found_rating = None
                                             if tmdb_item and option == "tmdb":
                                                 try:
-                                                    found_rating = self.config.TMDb.get_episode(tmdb_item.tmdb_id, ep.seasonNumber, ep.episodeNumber).vote_average  # noqa
+                                                    found_rating = self.library.get_tmdb_episode(ep, tmdb_item.tmdb_id).vote_average  # noqa
                                                 except Failed as er:
                                                     logger.error(er)
                                             elif imdb_id and option == "imdb":
