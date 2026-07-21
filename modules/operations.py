@@ -119,10 +119,12 @@ class Operations:
           profanity, alcohol, frightening).
         - keywords CSV keywords column matches the packed imdb_keywords cache format
           ('name:relevant:votes' entries joined by '|').
+        - interests CSV interests column is packed as 'in<id>:<name>' entries joined by '|', in IMDb's
+          own order.
 
-        Both parental guide and keywords are pulled directly from IMDb (GraphQL), not the Kometa
-        service, so the output is suitable for seeding that service. Keywords come back as canonical
-        English from IMDb GraphQL regardless of library language."""
+        Parental guide, keywords, and interests are all pulled directly from IMDb (GraphQL), not the
+        Kometa service, so the output is suitable for seeding that service. Keywords/interests come back
+        as canonical English from IMDb GraphQL regardless of library language."""
         import csv
 
         # Single shared export per data type (not per library or media type): the seeded service keys
@@ -130,28 +132,36 @@ class Operations:
         # can be merged freely.
         parental_path = os.path.join(self.config.default_dir, "imdb_parental_export.csv")
         keywords_path = os.path.join(self.config.default_dir, "imdb_keywords_export.csv")
+        interests_path = os.path.join(self.config.default_dir, "imdb_interests_export.csv")
         parental_ids = self._existing_export_ids(parental_path)
         keywords_ids = self._existing_export_ids(keywords_path)
+        interests_ids = self._existing_export_ids(interests_path)
         parental_exists = os.path.exists(parental_path)
         keywords_exists = os.path.exists(keywords_path)
+        interests_exists = os.path.exists(interests_path)
         # keywords() now fetches directly from IMDb's GraphQL API (canonical English), so this
         # language arg is unused by the fetch; kept only to satisfy the signature.
         keywords_language = "default"
 
         logger.separator(f"Exporting IMDb Parental Guide to {parental_path}")
         logger.separator(f"Exporting IMDb Keywords to {keywords_path}")
+        logger.separator(f"Exporting IMDb Interests to {interests_path}")
 
         parental_written = 0
         keywords_written = 0
+        interests_written = 0
         skipped = 0
 
-        with open(parental_path, "a", newline="", encoding="utf-8") as parental_file, open(keywords_path, "a", newline="", encoding="utf-8") as keywords_file:
+        with open(parental_path, "a", newline="", encoding="utf-8") as parental_file, open(keywords_path, "a", newline="", encoding="utf-8") as keywords_file, open(interests_path, "a", newline="", encoding="utf-8") as interests_file:
             parental_writer = csv.writer(parental_file)
             keywords_writer = csv.writer(keywords_file)
+            interests_writer = csv.writer(interests_file)
             if not parental_exists:
                 parental_writer.writerow(["imdb_id", "nudity", "violence", "profanity", "alcohol", "frightening"])
             if not keywords_exists:
                 keywords_writer.writerow(["imdb_id", "keywords"])
+            if not interests_exists:
+                interests_writer.writerow(["imdb_id", "interests"])
 
             for i, item in enumerate(items, 1):
                 try:
@@ -168,6 +178,7 @@ class Operations:
 
                 did_parental = False
                 did_keywords = False
+                did_interests = False
 
                 if imdb_id in parental_ids:
                     logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Parental: Already Exported")
@@ -203,10 +214,26 @@ class Operations:
                     except Failed as e:
                         logger.info(f"({i}/{total_items}) {item.title} | Keywords Skipped: {e}")
 
-                if not did_parental and not did_keywords:
+                if imdb_id in interests_ids:
+                    logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Interests: Already Exported")
+                else:
+                    try:
+                        imdb_interests = self.config.IMDb.interests(imdb_id)
+                        if not imdb_interests:
+                            raise Failed(f"IMDb Error: No Interests Found for IMDb ID: {imdb_id}")
+                        packed = "|".join(f"{iid}:{name}" for iid, name in imdb_interests)
+                        interests_writer.writerow([imdb_id, packed])
+                        interests_ids.add(imdb_id)
+                        interests_written += 1
+                        did_interests = True
+                        logger.info(f"({i}/{total_items}) {item.title} | {imdb_id} | Interests: Exported")
+                    except Failed as e:
+                        logger.info(f"({i}/{total_items}) {item.title} | Interests Skipped: {e}")
+
+                if not did_parental and not did_keywords and not did_interests:
                     skipped += 1
 
-        logger.separator(f"IMDb Export Complete: {parental_written} parental written, {keywords_written} keywords written, {skipped} items with nothing new")
+        logger.separator(f"IMDb Export Complete: {parental_written} parental written, {keywords_written} keywords written, {interests_written} interests written, {skipped} items with nothing new")
 
     def run_operations(self):
         operation_start = datetime.now()

@@ -826,6 +826,41 @@ class IMDb:
             self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
 
+    def interests(self, imdb_id):
+        """Fetch a title's interests directly from IMDb's GraphQL API, paginating through all pages.
+
+        Returns an ordered list of (interest_id, interest_name) tuples, e.g.
+        [("in0000077", "Epic"), ("in0000076", "Drama")]. Data comes straight from IMDb (not the
+        Kometa service), suitable for seeding that service. Not cached (throwaway export helper)."""
+        results = []
+        seen = set()
+        after = None
+        while True:
+            after_arg = f', after: "{after}"' if after else ""
+            gql = (
+                f'{{ title(id: "{imdb_id}") {{ interests(first: 250{after_arg}) {{ '
+                f"pageInfo {{ hasNextPage endCursor }} "
+                f"edges {{ node {{ id primaryText {{ text }} }} }} }} }} }}"
+            )
+            response = self._graph_request({"query": gql}) or {}
+            data = response.get("data") or {}
+            title = data.get("title") or {}
+            interests_obj = title.get("interests") or {}
+            for edge in interests_obj.get("edges") or []:
+                node = edge.get("node") or {}
+                interest_id = node.get("id") or ""
+                name = ((node.get("primaryText") or {}).get("text")) or ""
+                if not interest_id or interest_id in seen:
+                    continue
+                seen.add(interest_id)
+                results.append((interest_id, name))
+            page_info = interests_obj.get("pageInfo") or {}
+            if page_info.get("hasNextPage") and page_info.get("endCursor"):
+                after = page_info["endCursor"]
+            else:
+                break
+        return results
+
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
         expired = None
