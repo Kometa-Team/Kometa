@@ -13,7 +13,10 @@ fetch_overlay_value lives in modules/plex.py. It:
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
+import modules.plex as plex_module
 from modules.plex import Plex
+from modules.util import Failed
 
 
 def _make_plex(cache=None, get_ids=None, get_ratings=None):
@@ -30,6 +33,75 @@ def _make_plex(cache=None, get_ids=None, get_ratings=None):
 
 def _item(rating_key=5173):
     return SimpleNamespace(ratingKey=rating_key, title="Test Movie", guid="plex://movie/abc")
+
+
+def _episode(guids=None, season=2, episode=8):
+    return SimpleNamespace(guids=guids or [], seasonNumber=season, episodeNumber=episode)
+
+
+def test_tmdb_episode_guid_is_used_before_plex_position():
+    plx = Plex.__new__(Plex)
+    direct_episode = SimpleNamespace(vote_average=9.5)
+    tmdb_client = MagicMock()
+    tmdb_client.get_episode_by_id.return_value = direct_episode
+    plx.config = SimpleNamespace(TMDb=tmdb_client)
+    episode = _episode([SimpleNamespace(id="tmdb://6855841")])
+
+    assert plx.get_tmdb_episode(episode, 209867) is direct_episode
+    tmdb_client.get_episode_by_id.assert_called_once_with(209867, 6855841)
+    tmdb_client.get_episode.assert_not_called()
+
+
+def test_tmdb_episode_stale_guid_falls_back_to_plex_position(monkeypatch):
+    monkeypatch.setattr(plex_module, "logger", MagicMock())
+    plx = Plex.__new__(Plex)
+    positional_episode = SimpleNamespace(vote_average=8.0)
+    tmdb_client = MagicMock()
+    tmdb_client.get_episode_by_id.side_effect = Failed("not found")
+    tmdb_client.get_episode.return_value = positional_episode
+    plx.config = SimpleNamespace(TMDb=tmdb_client)
+    episode = _episode([SimpleNamespace(id="tmdb://999999")])
+
+    assert plx.get_tmdb_episode(episode, 209867) is positional_episode
+    tmdb_client.get_episode.assert_called_once_with(209867, 2, 8)
+
+
+def test_tmdb_episode_without_guid_uses_plex_position():
+    plx = Plex.__new__(Plex)
+    positional_episode = SimpleNamespace(vote_average=8.0)
+    tmdb_client = MagicMock()
+    tmdb_client.get_episode.return_value = positional_episode
+    plx.config = SimpleNamespace(TMDb=tmdb_client)
+
+    assert plx.get_tmdb_episode(_episode(), 209867) is positional_episode
+    tmdb_client.get_episode_by_id.assert_not_called()
+    tmdb_client.get_episode.assert_called_once_with(209867, 2, 8)
+
+
+def test_tmdb_episode_malformed_guid_does_not_hide_later_valid_guid():
+    plx = Plex.__new__(Plex)
+    direct_episode = SimpleNamespace(vote_average=9.5)
+    tmdb_client = MagicMock()
+    tmdb_client.get_episode_by_id.return_value = direct_episode
+    plx.config = SimpleNamespace(TMDb=tmdb_client)
+    episode = _episode([SimpleNamespace(id="tmdb://not-a-number"), SimpleNamespace(id="tmdb://6855841")])
+
+    assert plx.get_tmdb_episode(episode, 209867) is direct_episode
+    tmdb_client.get_episode_by_id.assert_called_once_with(209867, 6855841)
+    tmdb_client.get_episode.assert_not_called()
+
+
+def test_tmdb_episode_only_malformed_guid_uses_plex_position():
+    plx = Plex.__new__(Plex)
+    positional_episode = SimpleNamespace(vote_average=8.0)
+    tmdb_client = MagicMock()
+    tmdb_client.get_episode.return_value = positional_episode
+    plx.config = SimpleNamespace(TMDb=tmdb_client)
+    episode = _episode([SimpleNamespace(id="tmdb://not-a-number")])
+
+    assert plx.get_tmdb_episode(episode, 209867) is positional_episode
+    tmdb_client.get_episode_by_id.assert_not_called()
+    tmdb_client.get_episode.assert_called_once_with(209867, 2, 8)
 
 
 # ── Cache-first logic ──────────────────────────────────────────────────────────

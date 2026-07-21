@@ -283,6 +283,7 @@ class TMDb:
         self.language = params["language"]
         self.region = None
         self.expiration = params["expiration"]
+        self._episode_id_maps = {}
         logger.secret(self.apikey)
         try:
             self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
@@ -359,6 +360,23 @@ class TMDb:
 
     def get_episode(self, tmdb_id, season_number, episode_number, ignore_cache=False):
         return TMDbEpisode(self, tmdb_id, season_number, episode_number, ignore_cache=ignore_cache)
+
+    def get_episode_by_id(self, tmdb_id, episode_id):
+        cache_key = (int(tmdb_id), self.language)
+        if cache_key not in self._episode_id_maps:
+            episode_map = {}
+            show = self.get_show(tmdb_id)
+            for season in show.seasons:
+                try:
+                    tmdb_season = self.get_season(tmdb_id, season.season_number)
+                except Failed:
+                    continue
+                for episode in tmdb_season.episodes:
+                    episode_map[episode.id] = episode
+            self._episode_id_maps[cache_key] = episode_map
+        if int(episode_id) not in self._episode_id_maps[cache_key]:
+            raise Failed(f"TMDb Error: No Episode found for TMDb Episode ID {episode_id}")
+        return self._episode_id_maps[cache_key][int(episode_id)]
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def get_collection(self, tmdb_id, partial=None):
