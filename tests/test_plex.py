@@ -313,6 +313,27 @@ class TestPlexRetryPolicy:
 
         plex.item_reload.assert_called_once_with(item)
 
+    def test_query_collection_wraps_bad_request_without_retrying(self, monkeypatch):
+        plex = make_plex()
+        item = make_plex_item(title="Test Movie")
+        item.addCollection.side_effect = BadRequest("400 Bad Request")
+        monkeypatch.setattr(Plex.query_collection.retry, "wait", wait_none())
+
+        with pytest.raises(Failed, match="Plex Error: Failed to add collection 'Favorites' to Test Movie: 400 Bad Request"):
+            plex.query_collection(item, "Favorites")
+
+        item.addCollection.assert_called_once_with("Favorites", locked=True)
+
+    def test_get_actor_id_wraps_bad_request_without_retrying(self, monkeypatch):
+        plex = make_plex()
+        plex.Plex.hubSearch.side_effect = BadRequest("400 Bad Request")
+        monkeypatch.setattr(Plex.get_actor_id.retry, "wait", wait_none())
+
+        with pytest.raises(Failed, match="Plex Error: Failed to find person ID for 'Example Person': 400 Bad Request"):
+            plex.get_actor_id("Example Person")
+
+        plex.Plex.hubSearch.assert_called_once_with("Example Person")
+
     def test_exhausted_transient_error_reraises_underlying_exception(self, monkeypatch):
         plex = make_plex()
         plex.Plex.search.side_effect = ConnectionError("connection lost")

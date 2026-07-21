@@ -977,10 +977,15 @@ class Plex(Library):
 
     @PLEX_RETRY
     def query_collection(self, item, collection, locked=True, add=True):
-        if add:
-            item.addCollection(collection, locked=locked)
-        else:
-            item.removeCollection(collection, locked=locked)
+        try:
+            if add:
+                item.addCollection(collection, locked=locked)
+            else:
+                item.removeCollection(collection, locked=locked)
+        except (BadRequest, NotFound, Unauthorized) as e:
+            action = "add" if add else "remove"
+            preposition = "to" if add else "from"
+            raise Failed(f"Plex Error: Failed to {action} collection '{collection}' {preposition} {util.item_title(item)}: {e}") from e
 
     @PLEX_RETRY
     def collection_mode_query(self, collection, data):
@@ -1190,10 +1195,13 @@ class Plex(Library):
 
     @PLEX_RETRY
     def get_actor_id(self, name):
-        results = self.Plex.hubSearch(name)
-        for result in results:
-            if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
-                return result.id
+        try:
+            results = self.Plex.hubSearch(name)
+            for result in results:
+                if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
+                    return result.id
+        except (BadRequest, NotFound, Unauthorized) as e:
+            raise Failed(f"Plex Error: Failed to find person ID for '{name}': {e}") from e
 
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
