@@ -15,6 +15,22 @@ def _bare_tmdb(monkeypatch):
     return tmdb.TMDb.__new__(tmdb.TMDb)
 
 
+def _episode(episode_id, season_number, episode_number, vote_average):
+    return SimpleNamespace(
+        id=episode_id,
+        season_number=season_number,
+        episode_number=episode_number,
+        title=f"Episode {episode_number}",
+        air_date=None,
+        overview="",
+        still_url="",
+        vote_count=1,
+        vote_average=vote_average,
+        imdb_id=None,
+        tvdb_id=None,
+    )
+
+
 def test_notfound_is_failed_subclass():
     # Callers that keep catching every TMDb failure as Failed must still work.
     assert issubclass(tmdb.NotFound, Failed)
@@ -71,11 +87,13 @@ def test_validate_tmdb_ids_returns_valid_ids(monkeypatch):
 def test_get_episode_by_id_builds_and_reuses_show_map(monkeypatch):
     t = _bare_tmdb(monkeypatch)
     t.language = "en"
+    t.cache = None
     t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
     t.get_show = MagicMock(return_value=SimpleNamespace(seasons=[SimpleNamespace(season_number=1), SimpleNamespace(season_number=2)]))
     episodes = {
-        1: [SimpleNamespace(id=101, vote_average=7.1), SimpleNamespace(id=102, vote_average=7.2)],
-        2: [SimpleNamespace(id=201, vote_average=8.1)],
+        1: [_episode(101, 1, 1, 7.1), _episode(102, 1, 2, 7.2)],
+        2: [_episode(201, 2, 1, 8.1)],
     }
     t.get_season = MagicMock(side_effect=lambda _, season_number: SimpleNamespace(episodes=episodes[season_number]))
 
@@ -85,12 +103,61 @@ def test_get_episode_by_id_builds_and_reuses_show_map(monkeypatch):
     assert t.get_season.call_count == 2
 
 
+def test_get_episode_by_id_bulk_writes_season_map_to_cache(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    t.language = "en"
+    t.expiration = 30
+    t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
+    t.cache = MagicMock()
+    t.cache.query_tmdb_episode_by_id.return_value = ({}, None)
+    t.get_show = MagicMock(return_value=SimpleNamespace(seasons=[SimpleNamespace(season_number=1)]))
+    t.get_season = MagicMock(return_value=SimpleNamespace(episodes=[_episode(101, 1, 1, 7.1), _episode(102, 1, 2, 7.2)]))
+
+    assert t.get_episode_by_id(500, 102).vote_average == 7.2
+    assert t.cache.update_tmdb_episode.call_count == 2
+
+
+def test_get_episode_by_id_uses_warm_persistent_cache(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    t.language = "en"
+    t.expiration = 30
+    t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
+    t.cache = MagicMock()
+    t.cache.query_tmdb_episode_by_id.return_value = (
+        {
+            "tmdb_id": 500,
+            "season_number": 1,
+            "episode_number": 28,
+            "episode_id": 201,
+            "title": "Cached Episode",
+            "air_date": None,
+            "overview": "",
+            "still_url": "",
+            "vote_count": 10,
+            "vote_average": 8.1,
+            "imdb_id": "",
+            "tvdb_id": None,
+        },
+        False,
+    )
+    t.get_show = MagicMock()
+    t.get_season = MagicMock()
+
+    assert t.get_episode_by_id(500, 201).vote_average == 8.1
+    t.get_show.assert_not_called()
+    t.get_season.assert_not_called()
+
+
 def test_get_episode_by_id_reports_unmatched_guid(monkeypatch):
     t = _bare_tmdb(monkeypatch)
     t.language = "en"
+    t.cache = None
     t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
     t.get_show = MagicMock(return_value=SimpleNamespace(seasons=[SimpleNamespace(season_number=1)]))
-    t.get_season = MagicMock(return_value=SimpleNamespace(episodes=[SimpleNamespace(id=101)]))
+    t.get_season = MagicMock(return_value=SimpleNamespace(episodes=[_episode(101, 1, 1, 7.1)]))
 
     with pytest.raises(Failed, match="TMDb Episode ID 999"):
         t.get_episode_by_id(500, 999)
