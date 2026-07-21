@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from tmdbapis import NotFound as TMDbApiNotFound
+from tenacity import RetryError
 
 from modules import tmdb
 from modules.util import Failed
@@ -193,6 +194,31 @@ def test_get_episode_by_id_reports_unmatched_guid(monkeypatch):
 
     with pytest.raises(Failed, match="TMDb Episode ID 999"):
         t.get_episode_by_id(500, 999)
+
+
+def test_get_episode_by_id_normalizes_show_retry_error(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    t.language = "en"
+    t.cache = None
+    t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
+    t.get_show = MagicMock(side_effect=RetryError(MagicMock()))
+
+    with pytest.raises(Failed, match="Failed to build Episode ID map for TMDb ID 500"):
+        t.get_episode_by_id(500, 101)
+
+
+def test_get_episode_by_id_normalizes_season_tmdb_exception(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    t.language = "en"
+    t.cache = None
+    t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
+    t.get_show = MagicMock(return_value=SimpleNamespace(seasons=[SimpleNamespace(season_number=1)]))
+    t.get_season = MagicMock(side_effect=tmdb.TMDbException("network failure"))
+
+    with pytest.raises(Failed, match="TMDb ID 500 Season 1"):
+        t.get_episode_by_id(500, 101)
 
 
 # ═══════════════════════════════════════════════════════════════════════

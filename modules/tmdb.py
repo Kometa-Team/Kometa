@@ -2,7 +2,7 @@ import re
 
 from requests.exceptions import ConnectionError as RequestsConnectionError
 from requests.exceptions import ConnectTimeout, ReadTimeout, Timeout
-from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+from tenacity import RetryError, retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
@@ -376,12 +376,17 @@ class TMDb:
         elif episode_id in episode_map:
             return episode_map[episode_id]
         if self.cache or cache_key not in self._complete_episode_id_maps:
-            show = self.get_show(tmdb_id)
+            try:
+                show = self.get_show(tmdb_id)
+            except (TMDbException, RetryError) as e:
+                raise Failed(f"TMDb Error: Failed to build Episode ID map for TMDb ID {tmdb_id}: {e}") from e
             for season in show.seasons:
                 try:
                     tmdb_season = self.get_season(tmdb_id, season.season_number)
                 except Failed:
                     continue
+                except (TMDbException, RetryError) as e:
+                    raise Failed(f"TMDb Error: Failed to build Episode ID map for TMDb ID {tmdb_id} Season {season.season_number}: {e}") from e
                 for episode in tmdb_season.episodes:
                     cached_episode = TMDbEpisode(self, tmdb_id, episode.season_number, episode.episode_number, data=episode)
                     episode_map[cached_episode.episode_id] = cached_episode
