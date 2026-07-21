@@ -2,8 +2,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from tmdbapis import NotFound as TMDbApiNotFound
 from tenacity import RetryError
+from tmdbapis import NotFound as TMDbApiNotFound
 
 from modules import tmdb
 from modules.util import Failed
