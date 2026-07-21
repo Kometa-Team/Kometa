@@ -12,10 +12,12 @@ from unittest.mock import MagicMock
 
 import pytest
 from plexapi.exceptions import BadRequest
-from requests.exceptions import ReadTimeout
+from requests.exceptions import ConnectionError, ReadTimeout
+from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import Plex
+from modules.util import Failed
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -289,6 +291,37 @@ class TestMoveItemRetry:
             plex.moveItem(collection, item, None)
 
         collection.moveItem.assert_called_once_with(item, after=None)
+
+
+class TestPlexRetryPolicy:
+    def test_failed_is_terminal_for_generic_query(self):
+        plex = make_plex()
+        method = MagicMock(side_effect=Failed("terminal failure"))
+
+        with pytest.raises(Failed, match="terminal failure"):
+            plex.query(method)
+
+        method.assert_called_once_with()
+
+    def test_reload_wrapped_failed_is_terminal(self):
+        plex = make_plex()
+        plex.item_reload = MagicMock(side_effect=BadRequest("400 Bad Request"))
+        item = make_plex_item(title="Test Movie")
+
+        with pytest.raises(Failed, match="Item Failed to Load: 400 Bad Request"):
+            plex.reload(item)
+
+        plex.item_reload.assert_called_once_with(item)
+
+    def test_exhausted_transient_error_reraises_underlying_exception(self, monkeypatch):
+        plex = make_plex()
+        plex.Plex.search.side_effect = ConnectionError("connection lost")
+        monkeypatch.setattr(Plex.search.retry, "wait", wait_none())
+
+        with pytest.raises(ConnectionError, match="connection lost"):
+            plex.search(title="Test")
+
+        assert plex.Plex.search.call_count == 6
 
 
 # ════════════════════════════════════════════════════════════════════

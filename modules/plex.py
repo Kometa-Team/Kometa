@@ -25,6 +25,7 @@ from modules.util import Failed, LimitReached, MappingConvertError, OverlayError
 
 logger = util.logger
 
+PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
 SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
 SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_MULTI_EDITS_RETRY_DELAYS])
 
@@ -869,11 +870,11 @@ class Plex(Library):
                 return []
         return self.fetchItems(args)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
         return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def exact_search(self, title, libtype=None, year=None):
         terms = {"title=": title}
         if year:
@@ -894,11 +895,11 @@ class Plex(Library):
             logger.trace(e)
         raise Failed(f"Plex Error: Item {item} not found")
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def fetchItems(self, uri_args):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
@@ -943,11 +944,11 @@ class Plex(Library):
         elif filepath:
             self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def create_playlist(self, name, items):
         return self.PlexServer.createPlaylist(name, items=items)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
+    @PLEX_RETRY
     def moveItem(self, obj, item, after):
         try:
             obj.moveItem(item, after=after)
@@ -955,7 +956,7 @@ class Plex(Library):
             logger.error(e)
             raise Failed(f"Plex Error: Failed to move {util.item_title(item)}: {e}") from e
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def query(self, method):
         return method()
 
@@ -966,30 +967,30 @@ class Plex(Library):
             logger.stacktrace()
             raise Failed(f"Plex Error: Failed to delete {obj.title}")
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def query_data(self, method, data):
         return method(data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def tag_edit(self, item, attribute, data, locked=True, remove=False):
         return item.editTags(attribute, data, locked=locked, remove=remove)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    @PLEX_RETRY
     def query_collection(self, item, collection, locked=True, add=True):
         if add:
             item.addCollection(collection, locked=locked)
         else:
             item.removeCollection(collection, locked=locked)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def collection_mode_query(self, collection, data):
         collection.modeUpdate(mode=data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def collection_order_query(self, collection, data):
         collection.sortUpdate(sort=data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def item_labels(self, item):
         try:
             return item.labels
@@ -1099,7 +1100,7 @@ class Plex(Library):
             logger.error(f"Image too large: {image.location}, bytes {image_size}, MAX {MAX_IMAGE_SIZE}")
             return False
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def reload(self, item, force=False):
         is_full = False
         if not force and item.ratingKey in self.cached_items:
@@ -1113,14 +1114,14 @@ class Plex(Library):
             raise Failed(f"Item Failed to Load: {e}")
         return item
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def edit_query(self, item, edits, advanced=False):
         if advanced:
             item.editAdvanced(**edits)
         else:
             item.edit(**edits)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def _upload_image(self, item, image):
         upload_success = True
         try:
@@ -1159,35 +1160,35 @@ class Plex(Library):
             item.refresh()
             raise Failed(e)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
         if url:
             item.uploadPoster(url=image)
         else:
             item.uploadPoster(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_background(self, item, image, url=False):
         if url:
             item.uploadArt(url=image)
         else:
             item.uploadArt(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
         if url:
             item.uploadLogo(url=image)
         else:
             item.uploadLogo(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_square_art(self, item, image, url=False):
         if url:
             item.uploadSquareArt(url=image)
         else:
             item.uploadSquareArt(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    @PLEX_RETRY
     def get_actor_id(self, name):
         results = self.Plex.hubSearch(name)
         for result in results:
@@ -1218,7 +1219,7 @@ class Plex(Library):
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def get_tags(self, tag):
         if isinstance(tag, str):
             match = re.match(r"(?:([a-zA-Z]*)\.)?([a-zA-Z]+)", tag)
@@ -1238,7 +1239,7 @@ class Plex(Library):
             items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]  # type: ignore[union-attr]
         return items
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def _query(self, key, post=False, put=False):
         if post:
             method = self.Plex._server._session.post
