@@ -150,6 +150,38 @@ def test_get_episode_by_id_uses_warm_persistent_cache(monkeypatch):
     t.get_season.assert_not_called()
 
 
+def test_get_episode_by_id_rejects_warm_cache_entry_from_another_show(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    t.language = "en"
+    t.expiration = 30
+    t._episode_id_maps = {}
+    t._complete_episode_id_maps = set()
+    t.cache = MagicMock()
+    t.cache.query_tmdb_episode_by_id.return_value = (
+        {
+            "tmdb_id": 999,
+            "season_number": 1,
+            "episode_number": 1,
+            "episode_id": 201,
+            "title": "Wrong Show",
+            "air_date": None,
+            "overview": "",
+            "still_url": "",
+            "vote_count": 10,
+            "vote_average": 9.9,
+            "imdb_id": "",
+            "tvdb_id": None,
+        },
+        False,
+    )
+    t.get_show = MagicMock(return_value=SimpleNamespace(seasons=[SimpleNamespace(season_number=1)]))
+    t.get_season = MagicMock(return_value=SimpleNamespace(episodes=[_episode(101, 1, 1, 7.1)]))
+
+    with pytest.raises(Failed, match="TMDb Episode ID 201"):
+        t.get_episode_by_id(500, 201)
+    t.get_show.assert_called_once_with(500)
+
+
 def test_get_episode_by_id_reports_unmatched_guid(monkeypatch):
     t = _bare_tmdb(monkeypatch)
     t.language = "en"

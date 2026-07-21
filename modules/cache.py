@@ -952,7 +952,7 @@ class Cache:
                 cursor.execute("INSERT OR IGNORE INTO tmdb_episode_data2(tmdb_id, season_number, episode_number, language) VALUES(?, ?, ?, ?)", (obj.tmdb_id, obj.season_number, obj.episode_number, language))
                 update_sql = (
                     "UPDATE tmdb_episode_data2 SET episode_id = ?, title = ?, air_date = ?, overview = ?, still_url = ?, "
-                    "vote_count = ?, vote_average = ?, imdb_id = ?, tvdb_id = ?, "
+                    "vote_count = ?, vote_average = ?, imdb_id = COALESCE(?, imdb_id), tvdb_id = COALESCE(?, tvdb_id), "
                     "expiration_date = ? WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ?"
                 )
                 cursor.execute(

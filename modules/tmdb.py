@@ -367,7 +367,7 @@ class TMDb:
         episode_id = int(episode_id)
         if self.cache:
             data, expired = self.cache.query_tmdb_episode_by_id(episode_id, self.language, self.expiration)
-            if data and not expired:
+            if data and not expired and int(data["tmdb_id"]) == int(tmdb_id):
                 episode = TMDbEpisode(self, data["tmdb_id"], data["season_number"], data["episode_number"], data=data, expired=expired)
                 episode_map[episode_id] = episode
                 return episode

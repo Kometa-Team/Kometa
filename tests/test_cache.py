@@ -43,7 +43,7 @@ def table_exists(cache: Cache, table_name: str) -> bool:
             return cur.fetchone()[0] > 0
 
 
-def make_tmdb_episode(show_id=209867, episode_id=6855841, season_number=1, episode_number=28, vote_average=9.5):
+def make_tmdb_episode(show_id=209867, episode_id=6855841, season_number=1, episode_number=28, vote_average=9.5, imdb_id=None, tvdb_id=None):
     return SimpleNamespace(
         tmdb_id=show_id,
         episode_id=episode_id,
@@ -55,8 +55,8 @@ def make_tmdb_episode(show_id=209867, episode_id=6855841, season_number=1, episo
         still_url="https://image.tmdb.org/episode.jpg",
         vote_count=10,
         vote_average=vote_average,
-        imdb_id=None,
-        tvdb_id=None,
+        imdb_id=imdb_id,
+        tvdb_id=tvdb_id,
     )
 
 
@@ -153,6 +153,16 @@ class TestTMDbEpisodeCache:
             count = connection.execute("SELECT COUNT(*) FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (6855841, "en")).fetchone()[0]
 
         assert count == 1
+
+    def test_partial_season_write_preserves_richer_external_ids(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_tmdb_episode(False, make_tmdb_episode(imdb_id="tt1234567", tvdb_id=7654321), "en", 30)
+        cache.update_tmdb_episode(False, make_tmdb_episode(imdb_id=None, tvdb_id=None), "en", 30)
+
+        direct, _ = cache.query_tmdb_episode_by_id(6855841, "en", 30)
+
+        assert direct["imdb_id"] == "tt1234567"
+        assert direct["tvdb_id"] == 7654321
 
     def test_legacy_table_adds_nullable_episode_id(self, tmp_path):
         cache_path = tmp_path / "config.cache"
