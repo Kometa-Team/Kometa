@@ -74,6 +74,7 @@ comparators
 config
 configs
 cov
+cour
 cpp
 cpt
 cpus
@@ -227,6 +228,7 @@ linux
 linuxserver
 linuxserver's
 localhost
+lookups
 looper
 lossy
 lsio
