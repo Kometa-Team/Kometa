@@ -8,6 +8,8 @@ These builders use Letterboxd slugs instead of treating discovery and filmograph
 
 All discovery builders support `limit` and `year`. All except `letterboxd_similar` also support `sort_by`.
 
+The `sync_mode: sync` and `collection_order: custom` settings are recommended when the collection should remain synchronized and preserve Letterboxd's returned order. Custom ordering requires a single discovery builder value per collection.
+
 ## Crew
 
 `letterboxd_crew` requires a `role` and `person`.
