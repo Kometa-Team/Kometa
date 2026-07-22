@@ -1,5 +1,5 @@
 # NOTE: This workflow is staged inside the Kometa repo for convenience but is intended to live in the
-# Kometa-Team/IMDb-Hash repository (as .github/workflows/update-interests.yml). It regenerates
+# Kometa-Team/IMDb-Interests repository (as .github/workflows/update-interests.yml). It regenerates
 # INTERESTS.json from IMDb's GraphQL interest catalog on a schedule and commits it when it changes.
 # Kometa fetches that file at runtime (modules/imdb.py: interests_url), falling back to a bundled
 # snapshot if the fetch fails.
@@ -38,11 +38,12 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          if git diff --quiet -- INTERESTS.json; then
+          git add INTERESTS.json
+          # --cached catches both a brand-new (untracked) file and modifications to an existing one.
+          if git diff --cached --quiet -- INTERESTS.json; then
             echo "No interest catalog changes."
           else
             count=$(python -c "import json;print(len(json.load(open('INTERESTS.json'))))")
-            git add INTERESTS.json
             git commit -m "chore: refresh IMDb interests catalog (${count} interests)"
             git push
           fi
