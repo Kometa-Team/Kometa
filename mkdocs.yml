@@ -190,7 +190,6 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
-      - Trakt: config/trakt.md
       - YamTrack: config/yamtrack.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
@@ -233,7 +232,6 @@ nav:
       - Simkl Charts: defaults/chart/simkl.md
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
-      - Trakt Charts: defaults/chart/trakt.md
       - Other Charts: defaults/chart/other.md
     - Content:
       - Genres: defaults/both/genre.md
@@ -373,13 +371,6 @@ nav:
         - List: files/builders/imdb/list.md
         - Search: files/builders/imdb/search.md
         - Watchlist: files/builders/imdb/watchlist.md
-      - Trakt:
-        - Overview: files/builders/trakt/overview.md
-        - Box Office: files/builders/trakt/box-office.md
-        - Chart: files/builders/trakt/chart.md
-        - List: files/builders/trakt/list.md
-        - Recommendations: files/builders/trakt/recommendations.md
-        - UserList: files/builders/trakt/userlist.md
       - Tautulli:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md

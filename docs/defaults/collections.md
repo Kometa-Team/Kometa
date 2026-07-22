@@ -67,7 +67,6 @@ This is the default Kometa collection ordering:
 | `other_chart`        | `020`              |
 | `tautulli`           | `020`              |
 | `tmdb`               | `020`              |
-| `trakt`              | `020`              |
 | `streaming`          | `030`              |
 | `universe`           | `040`              |
 | `network`            | `050`              |

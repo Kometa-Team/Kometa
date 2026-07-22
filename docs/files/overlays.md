@@ -48,7 +48,6 @@ tags:
   - mdb_tmdb_rating
   - mdb_tomatoes_rating
   - mdb_tomatoesaudience_rating
-  - mdb_trakt_rating
   - name
   - omdb_rating
   - omdb_imdb_rating
@@ -80,7 +79,6 @@ tags:
   - total_runtime
   - total_runtimeH
   - total_runtimeM
-  - trakt_user_rating
   - url
   - user_rating
   - versions
@@ -422,7 +420,6 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `mdb_tmdb_rating`              | MDBList TMDb Rating                     | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `mdb_tomatoes_rating`          | MDBList Rotten Tomatoes Rating          | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `mdb_tomatoesaudience_rating`  | MDBList Rotten Tomatoes Audience Rating | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
-| `mdb_trakt_rating`             | MDBList Trakt Rating                    | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `omdb_imdb_rating`             | OMDb IMDb Rating                        | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `omdb_metascore_rating`        | OMDb Metascore Rating                   | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `omdb_tomatoes_rating`         | OMDb Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
@@ -431,8 +428,6 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 | `plex_tomatoes_rating`         | Plex Rotten Tomatoes Rating             | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }                                                                                               |
 | `plex_tomatoesaudience_rating` | Plex Rotten Tomatoes Audience Rating    | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }                                                                                               |
 | `tmdb_rating`                  | TMDb Rating                             | `Movies`, `Shows`, `Seasons`, or `Episodes`                                                                                                                                                               |
-| `trakt_rating`                 | Trakt Rating                            | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
-| `trakt_user_rating`            | Trakt User Rating                       | `Movies`, `Shows`, `Seasons` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" } or `Episodes` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-overlays-1" }  |
 | `user_rating`                  | Plex User Rating                        | `Movies`, `Shows`, `Seasons`, or `Episodes`                                                                                                                                                               |
 
 ???+ tip "Special Rating Text Modifiers"
@@ -446,7 +441,7 @@ Each Special Text Variables has multiple modifiers that can be used to format th
 
 ???+ tip "Note on `mdb` sources"
 
-     MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
+     MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa applies using `mdb_` operations applies may not be the same as you see if you visit those third-party sources directly.
 
 ##### Special String Text
 
@@ -806,7 +801,7 @@ value_filter:
 
 All values use Kometa's normalised **0–10 scale** regardless of source (e.g. a Rotten Tomatoes score of 79% is `7.9`). The default Fresh threshold used by the `ratings` defaults file is `6.0` (equivalent to 60%).
 
-Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `mdb_trakt_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `tmdb_rating`, `trakt_rating`, `trakt_user_rating`.
+Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `tmdb_rating`.
 
 ### Caching
 

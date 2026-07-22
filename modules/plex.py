@@ -279,13 +279,9 @@ method_alias = {
     "anilist_season": "anilist_search",
     "mal_producer": "mal_studio",
     "mal_licensor": "mal_studio",
-    "trakt_recommended": "trakt_recommended_weekly",
-    "trakt_watched": "trakt_watched_weekly",
-    "trakt_collected": "trakt_collected_weekly",
     "collection_changes_webhooks": "changes_webhooks",
     "radarr_add": "radarr_add_missing",
     "sonarr_add": "sonarr_add_missing",
-    "trakt_recommended_personal": "trakt_recommendations",
     "collection_level": "builder_level",
     "overlay_level": "builder_level",
 }
@@ -1834,11 +1830,11 @@ class Plex(Library):
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
+                if attr in ["tmdb", "tvdb"] and tmdb:
                     image = tmdb
-                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source_name = {"tmdb": "TMDb", "tvdb": "TVDb"}[attr]
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
-                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
+                if not image and attr not in ["tmdb", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
@@ -2221,21 +2217,6 @@ class Plex(Library):
                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
             else:
                 found_rating = self.config.IMDb.get_rating(imdb_id)
-        elif variable_name == "trakt_user_rating":
-            if getattr(self, "_trakt_user_ratings", None) is None:
-                self._trakt_user_ratings = self.config.Trakt.user_ratings(self.is_movie)
-            if not self._trakt_user_ratings:
-                raise Failed
-            _id = tmdb_id if self.is_movie else tvdb_id
-            if _id in self._trakt_user_ratings:
-                found_rating = self._trakt_user_ratings[_id]
-            else:
-                raise OverlayError("Overlay Error: No Trakt user rating found")
-        elif variable_name == "trakt_rating":
-            if self.config.Trakt:
-                found_rating = self.config.Trakt.get_rating(imdb_id, self.is_movie)
-            else:
-                raise OverlayError("Overlay Error: No Trakt rating found")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
             if self.config.MDBList.limit is False:
@@ -2280,8 +2261,6 @@ class Plex(Library):
                     found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
                 elif variable_name == "mdb_metacriticuser_rating":
                     found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
-                elif variable_name == "mdb_trakt_rating":
-                    found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
                 elif variable_name == "mdb_tomatoes_rating":
                     found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
                 elif variable_name == "mdb_tomatoesaudience_rating":

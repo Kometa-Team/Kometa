@@ -7,8 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Removed
+- Removed all Trakt functionality from Kometa due to changes introduced by Trakt that have resulted in a broken authorization workflow. See https://kometa.wiki/en/nightly/kometa/faqs/#knowledge-base for more information.
 
+### Fixed
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 
 ## [v2.4.5] - 2026-07-22

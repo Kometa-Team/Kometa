@@ -36,20 +36,6 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Trakt logo](../../assets/images/files/builders/trakt.png){ align=right }
-
-    **[Trakt](../trakt/overview)** builders grab items based on metadata and lists on Trakt.tv
-
-    [:octicons-home-16: View Builder](../trakt/overview){ .md-button .md-button--primary }
-
-    ??? quicklink "Popular Builders"
-
-        - [:simple-trakt: Trakt List](../trakt/list) - Gets  every movie/show in the Trakt List
-        - [:simple-trakt: Trakt Chart](../trakt/chart) - Gets every movie/show in the Trakt Chart
-        - [:simple-trakt: Trakt Recommendations](../trakt/recommendations) - Gets every movie/show in Trakt's Personal Recommendations for your User
-
-!!! builder
-
     ![MDBList logo](../../assets/images/files/builders/mdblist.png){ align=right }
 
     **[MDBList](../mdblist/overview)** builders grab items based on lists on MDBList.com

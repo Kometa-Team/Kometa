@@ -12,9 +12,7 @@
 #   IMDb award type       — imdb_awards
 #   Numeric range type    — number
 #   Custom mapping type   — custom
-#   External list types   — trakt_liked_lists, trakt_user_lists,
-#                           trakt_people_list, letterboxd_user_lists,
-#                           tmdb_popular_people
+#   External list types   — letterboxd_user_lists, tmdb_popular_people
 
 templates:
   # Reusable template referenced by several dynamic definitions below
@@ -349,41 +347,6 @@ dynamic_collections:
     remove_prefix: "Era: "
     template:
       name: GenreTemplate
-
-  # ---------------------------------------------------------------------------
-  # trakt_liked_lists — one collection per list the authenticated Trakt user
-  # has liked. No data needed. Requires Trakt to be configured.
-  # Demonstrates: type, title_format.
-  # ---------------------------------------------------------------------------
-  Trakt Liked Lists:
-    type: trakt_liked_lists
-    title_format: "<<key_name>>"
-    sync: true
-
-  # ---------------------------------------------------------------------------
-  # trakt_user_lists — one collection per public list belonging to specific
-  # Trakt users.
-  # data = list of Trakt usernames.
-  # Demonstrates: type, data (strlist), title_format.
-  # ---------------------------------------------------------------------------
-  Trakt User Collections:
-    type: trakt_user_lists
-    data:
-      - garycrawfordgc
-      - movistapp
-    title_format: "<<key_name>>"
-    limit: 10
-
-  # ---------------------------------------------------------------------------
-  # trakt_people_list — one collection per person found in Trakt people lists.
-  # data = list of Trakt people list URLs.
-  # Demonstrates: type, data (list of URLs).
-  # ---------------------------------------------------------------------------
-  Trakt People:
-    type: trakt_people_list
-    data:
-      - https://trakt.tv/users/movistapp/lists/best-directors
-    title_format: "<<key_name>>"
 
   # ---------------------------------------------------------------------------
   # letterboxd_user_lists — one collection per public Letterboxd list from

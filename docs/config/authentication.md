@@ -4,7 +4,7 @@ hide:
 ---
 # Online Authentication
 
-When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code.
+When trying to authorize MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code.
 
 This is problematic on some setups [primarily docker] where entering interactive mode is not always simple.
 
@@ -33,28 +33,6 @@ There is no logging, but if you feel more comfortable running these things local
         ![Step 2](./../assets/images/utilities/plex-oauth-03.png)
 
     4. Copy that token to your Kometa `config.yml`
-
-=== "Trakt Authentication"
-
-    1. Click the top-level button, enter your Trakt client ID and Secret.
-
-        ![Step 1](./../assets/images/utilities/trakt-oauth-01.png)
-
-    2. Click "Get Authentication URL".  This will fill in the auth URL:
-
-        ![Step 2](./../assets/images/utilities/trakt-oauth-02.png)
-
-        Click "Open URL" and follow any instructions given.  You will be given a PIN on the Trakt site.
-
-    3. Paste that PIN into the field and click "Submit":
-
-        ![Step 3](./../assets/images/utilities/trakt-oauth-03.png)
-
-    4. A Kometa Trakt authentication block will be displayed.
-
-        ![Step 4](./../assets/images/utilities/trakt-oauth-04.png)
-
-        Copy that block to your Kometa `config.yml`
 
 === "MyAnimeList Authentication"
 

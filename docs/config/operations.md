@@ -113,7 +113,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 original_title: mal_english
                 originally_available: tmdb
                 poster:
-                  source: trakt
+                  source: tmdb
                   seasons: true
                   episodes: false
                 ratings:
@@ -268,7 +268,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Content Rating & Mapping Operations"
 
@@ -340,7 +340,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Originally Available & Added At Operations"
 
@@ -440,12 +440,11 @@ Several of these operations perform **mass** updates; these are just that, **mas
             operations:
               mass_metadata_update:
                 poster:
-                  source: trakt
+                  source: tmdb
                   seasons: true
                   episodes: true
                 background:
                   source:
-                    - trakt
                     - tmdb
                 logo:
                   source: tmdb
@@ -462,7 +461,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Poster Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
@@ -471,16 +470,16 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Background Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
 
         | Logo Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
         | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
 
@@ -521,7 +520,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Rating & Episode Rating Operations"
     
@@ -538,7 +537,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                     - omdb
                     - 2.0
                   user:
-                    - trakt_user
+                    - tmdb
                     - 2.0
                   episode_audience:
                     - tmdb
@@ -565,7 +564,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `mdb_tmdb` | Use TMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `mdb_tomatoes` | Use Rotten Tomatoes rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `mdb_tomatoesaudience` | Use Rotten Tomatoes audience rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_trakt` | Use Trakt rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `omdb` | Use IMDb rating through OMDb. Requires [OMDB key](../config/omdb.md). |
         | `omdb_metascore` | Use Metacritic metascore through OMDb. Requires [OMDB key](../config/omdb.md). |
         | `omdb_tomatoes` | Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](../config/omdb.md). |
@@ -574,8 +572,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_tomatoes` | Use Rotten Tomatoes rating through Plex. |
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
-        | `trakt_user` | Use Trakt user's personal rating. Requires [Trakt authentication](../config/trakt.md). |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -588,7 +584,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_imdb` | Use IMDb rating through Plex. |
         | `plex_tmdb` | Use TMDb rating through Plex. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |

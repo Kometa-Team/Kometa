@@ -134,13 +134,6 @@ This table details examples of the most commonly-seen `[ERROR]` events and what 
 	</tr>
 	<tr>
 		<td><code>ERROR</code></td>
-		<td><code>Trakt Error: No TVDb ID found for Nightfall (2022)</code></td>
-	</tr>
-	<tr>
-		<td colspan="2"><strong>Description:</strong> Online sources are missing information<br><strong>Recommendation:</strong> These sorts of errors indicate that the thing can't be cross-referenced between sites.</br>For example, at the time of that error, the Trakt record for "Nightfall (2022)" didn't contain a TVDb ID.</br>This could be because the record just hasn't been updated, or because "Nightfall (2022)" is not listed on TVDb.</br>The fix is for someone [like you, perhaps] to go to the relevant site and fill in the missing data.</td>
-	</tr>
-	<tr>
-		<td><code>ERROR</code></td>
 		<td><code>MDBList Error: Not Found</code></td>
 	</tr>
 	<tr>
@@ -159,13 +152,6 @@ This table details examples of the most commonly-seen `[ERROR]` events and what 
 	</tr>
 	<tr>
 		<td colspan="2"><strong>Description:</strong> A token or password is no longer valid for an online source of information<br><strong>Recommendation:</strong> Review the meta.log for more information</td>
-	</tr>
-	<tr>
-		<td><code>ERROR</code></td>
-		<td><code>Collection Error: trakt_list requires Trakt to be configured</code></td>
-	</tr>
-	<tr>
-		<td colspan="2"><strong>Description:</strong> You are using a builder that has not been configured yet.<br><strong>Recommendation:</strong> Review the meta.log for more information on what went wrong. Refer to the wiki for details on how to set this up (in this case Trakt)</td>
 	</tr>
 </table>
 
@@ -251,8 +237,8 @@ collections:   <<< THIS LINE WAS MISSING
   Cached for 30 Days:
     template: {name: Collection, source: Looper}
     summary: ""
-    trakt_list:
-      - https://trakt.tv/users/kesleyalfa/lists/year-2011
+    imdb_list:
+      - https://www.imdb.com/list/ls025976544/
 ```
 
 YAML doesn't allow duplicate keys:
@@ -285,8 +271,8 @@ collections:   <<< THIS LINE WAS MISSING
     collection_order: custom                         <<<<  THIS KEY
     summary: ""
     collection_order: custom                         <<<<  DUPLICATED HERE
-    trakt_list:
-      - https://trakt.tv/users/kesleyalfa/lists/year-2011
+    imdb_list:
+      - https://www.imdb.com/list/ls025976544/
 ```
 
 File is not where Kometa expects it:

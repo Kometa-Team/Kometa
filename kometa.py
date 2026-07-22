@@ -617,7 +617,6 @@ def start(attrs):
                 ("Overlay Warning: No 'mdb_tmdb_rating' found", r"Overlay Warning: No 'mdb_tmdb_rating' found for (.*)"),
                 ("Overlay Warning: No 'mdb_tomatoesaudience_rating' found", r"Overlay Warning: No 'mdb_tomatoesaudience_rating' found for (.*)"),
                 ("Overlay Warning: No 'mdb_tomatoes_rating' found", r"Overlay Warning: No 'mdb_tomatoes_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_trakt_rating' found", r"Overlay Warning: No 'mdb_trakt_rating' found for (.*)"),
                 ("Overlay Warning: No 'omdb_imdb_rating' found", r"Overlay Warning: No 'omdb_imdb_rating' found for (.*)"),
                 ("Overlay Warning: No 'omdb_metascore_rating' found", r"Overlay Warning: No 'omdb_metascore_rating' found for (.*)"),
                 ("Overlay Warning: No 'omdb_rating' found", r"Overlay Warning: No 'omdb_rating' found for (.*)"),
@@ -628,8 +627,6 @@ def start(attrs):
                 ("Overlay Warning: No 'plex_tomatoes_rating' found", r"Overlay Warning: No 'plex_tomatoes_rating' found for (.*)"),
                 ("Overlay Warning: No 'plex_user_rating' found", r"Overlay Warning: No 'plex_user_rating' found for (.*)"),
                 ("Overlay Warning: No 'tmdb_rating' found", r"Overlay Warning: No 'tmdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'trakt_rating' found", r"Overlay Warning: No 'trakt_rating' found for (.*)"),
-                ("Overlay Warning: No 'trakt_user_rating' found", r"Overlay Warning: No 'trakt_user_rating' found for (.*)"),
                 ("Overlay Warning: No 'user_rating' found", r"Overlay Warning: No 'user_rating' found for (.*)"),
                 ("Overlays Attempted on", r"Overlays Attempted on (.*): .+"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
@@ -683,8 +680,6 @@ def start(attrs):
                     "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built",
                 ),
                 (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
-                (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
-                (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
                 (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
@@ -1298,7 +1293,7 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list):
+            if valid and run_item_details and (builder.item_details or builder.custom_sort):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1309,8 +1304,6 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.update_item_details()
                     if builder.custom_sort:
                         builder.sort_collection()
-                    if builder.sync_to_trakt_list:
-                        builder.sync_trakt_list()
 
             builder.send_notifications()
 

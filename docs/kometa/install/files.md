@@ -181,7 +181,7 @@ The simplest playlist file would look like this:
 ```yaml
 playlists: 
   Marvel Cinematic Universe Chronological Order:
-    trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+    imdb_list: https://www.imdb.com/list/ls539646485/
 ```
 
 One playlist with a name and a [Builder](../../files/builders/overview.md) that produces the list of items to put in the playlist.
@@ -193,7 +193,7 @@ If you want to pull from only specific libraries, you can specify them in the pl
 playlists: 
   Marvel Cinematic Universe Chronological Order:
     libraries: My Movie Library, My TV Library, My 4K Library  
-    trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+    imdb_list: https://www.imdb.com/list/ls539646485/
 ```
 
 This would go in a file like `config/my-neat-playlist.yml` and be referenced in the `config.yml` file like this:

@@ -25,7 +25,6 @@ def _make_plex(cache=None, get_ids=None, get_ratings=None):
     plx.config = SimpleNamespace(Cache=cache)
     plx.is_movie = True
     plx.is_show = False
-    plx._trakt_user_ratings = None
     plx.get_ids = get_ids or MagicMock(return_value=(None, None, None))
     plx.get_ratings = get_ratings or MagicMock(return_value={})
     return plx

@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -39,7 +39,6 @@ all_builders = (
     + tautulli.builders
     + textfile.builders
     + tmdb.builders
-    + trakt.builders
     + tvdb.builders
     + yamtrack.builders
     + mdblist.builders
@@ -79,7 +78,6 @@ movie_only_builders = [
     "tvdb_movie",
     "tvdb_movie_details",
     "tmdb_upcoming",
-    "trakt_boxoffice",
     "radarr_all",
     "radarr_taglist",
     "mojo_world",
@@ -97,7 +95,6 @@ summary_details = [
     "tmdb_biography",
     "tvdb_summary",
     "tvdb_description",
-    "trakt_description",
     "yamtrack_description",
     "letterboxd_description",
     "icheckmovies_description",
@@ -495,8 +492,6 @@ custom_sort_builders = [
     "tmdb_trending_weekly",
     "tmdb_discover",
     "text_file",
-    "trakt_chart",
-    "trakt_userlist",
     "tvdb_list",
     "imdb_chart",
     "imdb_list",
@@ -507,31 +502,8 @@ custom_sort_builders = [
     "tmdb_upcoming",
     "tmdb_airing_today",
     "tmdb_on_the_air",
-    "trakt_list",
     "yamtrack_list",
     "yamtrack_tracked",
-    "trakt_watchlist",
-    "trakt_collection",
-    "trakt_trending",
-    "trakt_popular",
-    "trakt_boxoffice",
-    "trakt_collected_daily",
-    "trakt_collected_weekly",
-    "trakt_collected_monthly",
-    "trakt_collected_yearly",
-    "trakt_collected_all",
-    "trakt_recommendations",
-    "trakt_recommended_personal",
-    "trakt_recommended_daily",
-    "trakt_recommended_weekly",
-    "trakt_recommended_monthly",
-    "trakt_recommended_yearly",
-    "trakt_recommended_all",
-    "trakt_watched_daily",
-    "trakt_watched_weekly",
-    "trakt_watched_monthly",
-    "trakt_watched_yearly",
-    "trakt_watched_all",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -592,8 +564,6 @@ parts_collection_valid = (
         "plex_all",
         "plex_search",
         "text_file",
-        "trakt_list",
-        "trakt_list_details",
         "collection_filtering",
         "collection_mode",
         "label",
@@ -621,7 +591,6 @@ parts_collection_valid = (
         "default_percent",
         "non_item_remove_label",
         "item_analyze",
-        "sync_to_trakt_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1144,8 +1113,6 @@ class CollectionBuilder:
         self.current_year = self.current_time.year
         self.url_theme = None
         self.file_theme = None
-        self.sync_to_trakt_list = None
-        self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
         self.collection_logo = None
@@ -1543,8 +1510,8 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: '{method_final}' attribute is blank")
                 elif self.playlist and method_name not in playlist_attributes:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
-                elif not self.config.Trakt and "trakt" in method_name:
-                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Trakt to be configured")
+                elif "trakt" in method_name:
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' is no longer supported because Kometa no longer supports Trakt")
                 elif not self.library.Radarr and "radarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
@@ -1625,11 +1592,6 @@ class CollectionBuilder:
                     self._tautulli(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders or method_name in [
-                    "sync_to_trakt_list",
-                    "sync_missing_to_trakt_list",
-                ]:
-                    self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
                 elif method_name in tvdb.builders:
@@ -1777,11 +1739,6 @@ class CollectionBuilder:
             summary, _ = self.config.TVDb.get_list_description(method_data)
             if summary:
                 self.summaries[method_name] = summary
-        elif method_name == "trakt_description":
-            try:
-                self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
-            except Failed as e:
-                logger.error(f"Trakt Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -3363,51 +3320,6 @@ class CollectionBuilder:
             for value in values:
                 self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
-    def _trakt(self, method_name, method_data):
-        if method_name.startswith("trakt_list"):
-            trakt_lists = self.config.Trakt.validate_list(method_data)
-            for trakt_list in trakt_lists:
-                self.builders.append(("trakt_list", trakt_list))
-            if method_name.endswith("_details"):
-                try:
-                    self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-                except Failed as e:
-                    logger.error(f"Trakt Error: List description not found: {e}")
-        elif method_name == "trakt_boxoffice":
-            if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
-                self.builders.append((method_name, 10))
-            else:
-                raise BuilderValidationError(f"{self.Type} Error: {method_name} must be set to true")
-        elif method_name == "trakt_recommendations":
-            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
-        elif method_name == "sync_to_trakt_list":
-            if method_data not in self.config.Trakt.slugs:
-                raise BuilderValidationError(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
-            self.sync_to_trakt_list = method_data
-        elif method_name == "sync_missing_to_trakt_list":
-            self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
-        elif method_name in trakt.builders:
-            if method_name in ["trakt_chart", "trakt_userlist"]:
-                trakt_dicts = method_data
-                final_method = method_name
-            elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                trakt_dicts = []
-                for trakt_user in util.get_list(method_data, split=False) or []:
-                    trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
-                final_method = "trakt_userlist"
-            else:
-                terms = method_name.split("_")
-                trakt_dicts = {
-                    "chart": terms[1],
-                    "limit": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
-                    "time_period": terms[2] if len(terms) > 2 else None,
-                }
-                final_method = "trakt_chart"
-            if method_name != final_method:
-                logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
-            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
-                self.builders.append((final_method, trakt_dict))
-
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:
             raise BuilderValidationError(f"{self.Type} Error: yamtrack attribute not found in config")
@@ -3560,8 +3472,6 @@ class CollectionBuilder:
             ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "tmdb" in method:
             ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
-        elif "trakt" in method:
-            ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
         elif "yamtrack" in method:
             if method == "yamtrack_tracked":
                 ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
@@ -4936,8 +4846,6 @@ class CollectionBuilder:
             summary = ("tmdb_person", self.summaries["tmdb_person"])
         elif "tmdb_collection_details" in self.summaries:
             summary = ("tmdb_collection_details", self.summaries["tmdb_collection_details"])
-        elif "trakt_list_details" in self.summaries:
-            summary = ("trakt_list_details", self.summaries["trakt_list_details"])
         elif "yamtrack_list_details" in self.summaries:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
         elif "tmdb_list_details" in self.summaries:
@@ -5225,39 +5133,6 @@ class CollectionBuilder:
                 sort_edit = True
         if not sort_edit:
             logger.info("No Sorting Required")
-
-    def sync_trakt_list(self):
-        logger.info("")
-        logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
-        logger.info("")
-        if self.obj:
-            self.library.item_reload(self.obj)
-        self.load_collection_items()
-        current_ids = []
-        for item in self.items:
-            for pl_library in self.libraries:
-                new_id = None
-                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
-                    new_id = (pl_library.movie_rating_key_map[item.ratingKey], "tmdb")
-                elif isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
-                    new_id = (pl_library.show_rating_key_map[item.ratingKey], "tvdb")
-                elif isinstance(item, Season) and item.parentRatingKey in pl_library.show_rating_key_map:
-                    new_id = (
-                        f"{pl_library.show_rating_key_map[item.parentRatingKey]}_{item.seasonNumber}",
-                        "tvdb_season",
-                    )
-                elif isinstance(item, Episode) and item.grandparentRatingKey in pl_library.show_rating_key_map:
-                    new_id = (
-                        f"{pl_library.show_rating_key_map[item.grandparentRatingKey]}_{item.seasonNumber}_{item.episodeNumber}",
-                        "tvdb_episode",
-                    )
-                if new_id:
-                    current_ids.append(new_id)
-                    break
-        if self.sync_missing_to_trakt_list:
-            current_ids.extend([(mm, "tmdb") for mm in self.missing_movies])
-            current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
-        self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def delete(self):
         title = self.obj.title if self.obj else self.name

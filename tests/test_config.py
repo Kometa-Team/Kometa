@@ -58,7 +58,6 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
         "modules.cache",
         "modules.plex",
         "modules.tmdb",
-        "modules.trakt",
         "modules.anidb",
         "modules.tvdb",
         "modules.letterboxd",
@@ -112,7 +111,6 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
     config_names = {
         "Plex": lambda *a, **kw: fake_plex,
         "TMDb": lambda *a, **kw: MagicMock(),
-        "Trakt": lambda *a, **kw: MagicMock(),
         "AniDB": lambda *a, **kw: MagicMock(),
         "TVDb": lambda *a, **kw: MagicMock(),
         "Letterboxd": lambda *a, **kw: MagicMock(),

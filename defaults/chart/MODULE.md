@@ -14,7 +14,6 @@
     - simkl.yml
     - tautulli.yml
     - tmdb.yml
-    - trakt.yml
 - Public API / entry points (best-effort): (none — YAML collection/overlay definitions)
 - Depends on (internal): defaults/templates.yml; runtime data from modules/imdb.py, modules/mojo.py, and other source modules
 - Depends on (external): none (static YAML)
@@ -31,7 +30,7 @@
 <!-- narrative:start -->
 ## Notes (human-owned)
 <!-- business-critical path (overlay: defaults/) — document what chart sources are supported
-     (IMDb, Trakt, TMDb, AniList, etc.), refresh cadence, and user override patterns.
+     (IMDb, TMDb, AniList, etc.), refresh cadence, and user override patterns.
      Fill in intent, gotchas, and cross-repo couplings detection can't see.
      Leave this stub if not yet written; module-mapping will not overwrite it. -->
 <!-- narrative:end -->

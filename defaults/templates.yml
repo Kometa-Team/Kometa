@@ -114,7 +114,6 @@ templates:
       - visible_shared
       - item_radarr_tag
       - item_sonarr_tag
-      - trakt_list
       - image
       - ignore_ids
       - ignore_imdb_ids
@@ -147,7 +146,6 @@ templates:
     limit: <<limit>>
     ignore_ids: <<ignore_ids>>
     ignore_imdb_ids: <<ignore_imdb_ids>>
-    trakt_list: <<trakt_list>>
     ignore_blank_results: true
     collection_mode: <<collection_mode>>
     visible_library: <<visible_library_<<key>>>>
@@ -168,11 +166,6 @@ templates:
     hub_priority: <<hub_priority_<<key>>>>
     delete_collections_named: <<delete_collections_named>>
     schedule: <<schedule_<<key>>>>
-
-  trakt:
-    optional:
-      - trakt_list
-    trakt_list: <<trakt_list>>
 
   imdb:
     optional:

@@ -84,7 +84,6 @@ playlists:
     tmdb_description: 527774
     tmdb_biography: 287
     tmdb_summary: 603
-    trakt_description: https://trakt.tv/users/movistapp/lists/best-of-2024
     tvdb_description: https://thetvdb.com/lists/top-series
     tvdb_summary: 81189
     letterboxd_description: https://letterboxd.com/dave/list/official-top-250/
@@ -307,47 +306,6 @@ playlists:
       release.after: "2015-01-01"
       sort_by: rating.desc
       limit: 100
-    sync_mode: sync
-
-  # ---------------------------------------------------------------------------
-  # BUILDERS — Trakt
-  # ---------------------------------------------------------------------------
-  Trakt List:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_list: https://trakt.tv/users/garycrawfordgc/lists/letterboxd-top-250
-    sync_mode: sync
-
-  Trakt Userlist Watchlist:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_userlist:
-      userlist: watchlist
-      user: me
-      sort_by: rank
-    sync_mode: sync
-
-  Trakt Userlist Favorites:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_userlist:
-      userlist: favorites
-      sort_by: added
-    sync_mode: sync
-
-  Trakt Recommendations:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_recommendations: 40
-    sync_mode: sync
-
-  Trakt Boxoffice:
-    libraries: Movies
-    trakt_boxoffice: true
     sync_mode: sync
 
   # ---------------------------------------------------------------------------

@@ -223,7 +223,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             collections:
               Marvel Cinematic Universe:
                 test: true                  # HERE
-                trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+                imdb_list: https://www.imdb.com/list/ls539646485/
                 smart_label: release.desc
             ```
 
@@ -293,7 +293,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
-    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).
+    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and MDBList).
     This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
@@ -322,7 +322,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
         set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 
-        IMPORTANT: This will disable TLS checks for all outbound services (TMDb, Trakt, MAL, etc.). Only flip this switch if you are comfortable with this.
+        IMPORTANT: This will disable TLS checks for all outbound services (TMDb, MAL, MDBList, etc.). Only flip this switch if you are comfortable with this.
 
     <hr style="margin: 0px;">
 

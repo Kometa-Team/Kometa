@@ -39,7 +39,6 @@
     - tautulli.py
     - textfile.py
     - tmdb.py
-    - trakt.py
     - tvdb.py
     - util.py
     - validator.py
@@ -78,7 +77,6 @@
     - class Simkl
     - class StevenLu / Tautulli
     - class TMDb / TMDbCountry / TMDbEpisode / TMDbMovie / TMDBObj / TMDbSeason / TMDbShow
-    - class Trakt
     - class TVDb / TVDbObj
     - class Version / YAML
 - Depends on (internal): none (self-contained package; imported by kometa.py and tests/)

@@ -47,7 +47,13 @@
       "$ref": "#/definitions/mal-api"
     },
     "trakt": {
-      "$ref": "#/definitions/trakt-api"
+      "deprecated": true,
+      "description": "Deprecated in Kometa 2.5.6. Kometa no longer supports Trakt, and all Trakt-based functionality has been removed.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/trakt-api"
+        }
+      ]
     },
     "yamtrack": {
       "$ref": "#/definitions/yamtrack-api"
@@ -2334,9 +2340,13 @@
     },
     "trakt-api": {
       "type": "object",
+      "deprecated": true,
+      "description": "Deprecated in Kometa 2.5.6. Kometa no longer supports Trakt, and all Trakt-based functionality has been removed.",
       "additionalProperties": true,
       "properties": {
         "client_id": {
+          "deprecated": true,
+          "description": "Deprecated in Kometa 2.5.6. Trakt authorization is no longer supported.",
           "anyOf": [
             {
               "type": "string"
@@ -2347,6 +2357,8 @@
           ]
         },
         "client_secret": {
+          "deprecated": true,
+          "description": "Deprecated in Kometa 2.5.6. Trakt authorization is no longer supported.",
           "anyOf": [
             {
               "type": "string"
@@ -2357,6 +2369,8 @@
           ]
         },
         "pin": {
+          "deprecated": true,
+          "description": "Deprecated in Kometa 2.5.6. Trakt authorization is no longer supported.",
           "type": [
             "string",
             "null"

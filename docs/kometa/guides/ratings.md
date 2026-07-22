@@ -9,7 +9,7 @@ hide:
 As of Kometa v2.4.5, there are two methods for placing ratings on posters using the `ratings` Defaults file:
 
 1. **Direct Rating Overlays** (preferred method) fetches ratings directly from the configured source during the overlay run.
-2. **Plex Rating Slots Overlays** (legacy method) reads Plex's `critic`, `audience`, and `user` rating fields. If you want those fields to contain ratings from IMDb, TMDb, Trakt, MDBList, or similar sources, you must first use Library Operations to write those values into Plex.
+2. **Plex Rating Slots Overlays** (legacy method) reads Plex's `critic`, `audience`, and `user` rating fields. If you want those fields to contain ratings from IMDb, TMDb, MDBList, or similar sources, you must first use Library Operations to write those values into Plex.
 
 We recommend the first method. It keeps Plex's own rating fields intact and skips Library Operations entirely, which means faster runs and ratings that always match the source.
 
@@ -27,10 +27,10 @@ The `ratings` default overlay now accepts source names directly in `rating1`, `r
             template_variables:
               rating1: plex_tomatoes
               rating2: mdb_metacritic
-              rating3: trakt
+              rating3: imdb
     ```
 
-Kometa fetches Rotten Tomatoes (from Plex), Metacritic (via MDBList), and Trakt, and picks matching icons for each automatically.
+Kometa fetches Rotten Tomatoes (from Plex), Metacritic (via MDBList), and IMDb, and picks matching icons for each automatically.
 
 No `operations` block is required for those three ratings. Kometa fetches the values at overlay time and places them on the image. Fetched values are cached and reused for a while rather than pulled fresh every run — see [Caching](#caching) below.
 
@@ -46,14 +46,11 @@ All other supported values are fetched directly from their source or integration
 |-------------------------|--------------------------------------------------------------------|
 | `imdb`                  | IMDb rating                                                        |
 | `tmdb`                  | TMDb rating                                                        |
-| `trakt`                 | Trakt public rating                                                |
-| `trakt_user`            | Your Trakt user rating                                             |
 | `mdb`                   | MDBList score                                                      |
 | `mdb_average`           | MDBList average                                                    |
 | `mdb_imdb`              | IMDb rating through MDBList                                        |
 | `mdb_metacritic`        | Metacritic rating through MDBList                                  |
 | `mdb_metacriticuser`    | Metacritic user rating through MDBList                             |
-| `mdb_trakt`             | Trakt rating through MDBList                                       |
 | `mdb_tomatoes`          | Rotten Tomatoes critic rating through MDBList                      |
 | `mdb_tomatoesaudience`  | Rotten Tomatoes audience rating through MDBList                    |
 | `mdb_tmdb`              | TMDb rating through MDBList                                        |
@@ -74,7 +71,7 @@ All other supported values are fetched directly from their source or integration
 
 Most of these source keys are also used by the Mass Rating Update operations, but in the new setup they are used directly by the overlay instead of being written into Plex first. Two exceptions: the operations equivalent of `anidb` is named `anidb_rating`, and `omdb_imdb` has no operations equivalent — it's only available as a direct overlay source.
 
-Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, and `imdb` — anything else (`mdb_*`, `omdb_*`, `trakt`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
+Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, and `imdb` — anything else (`mdb_*`, `omdb_*`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
 
 ### Images
 
@@ -105,8 +102,8 @@ You can still override the image when you want a different display style:
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: mdb_trakt
-              rating1_image: trakt
+              rating1: mdb_tomatoes
+              rating1_image: rt_tomato
               rating2: tmdb
               rating3: imdb
     ```
@@ -135,7 +132,7 @@ By default, a rating at or above `6.0` (on Kometa's normalized 0–10 scale, so 
             template_variables:
               rating1: plex_tomatoes
               rating2: mdb_metacritic
-              rating3: trakt
+              rating3: imdb
               fresh_rating: 7.0
     ```
 
@@ -163,7 +160,7 @@ Fetched rating values aren't pulled fresh on every run. Kometa writes them to a 
 
 ### Direct Ratings and Plex Ratings
 
-Direct-source overlays do not change the ratings shown in the Plex UI. Plex may still show Rotten Tomatoes icons and values while the poster overlay shows IMDb, TMDb, Trakt, or MDBList values.
+Direct-source overlays do not change the ratings shown in the Plex UI. Plex may still show Rotten Tomatoes icons and values while the poster overlay shows IMDb, TMDb, or MDBList values.
 
 That is expected. The overlay is drawn onto the poster image by Kometa; Plex's rating fields are not modified unless you configure Library Operations.
 
@@ -183,18 +180,18 @@ You still need Library Operations when your overlay uses `critic`, `audience`, o
               rating2: audience
               rating3: user
         operations:
-          mass_critic_rating_update: mdb_trakt
+          mass_critic_rating_update: mdb_tomatoes
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
-In that config, `rating1`, `rating2`, and `rating3` are not fetching Trakt, TMDb, or IMDb directly. They are reading Plex's critic, audience, and user rating slots. The `operations` block is what puts the selected external ratings into those Plex slots.
+In that config, `rating1`, `rating2`, and `rating3` are not fetching Rotten Tomatoes, TMDb, or IMDb directly. They are reading Plex's critic, audience, and user rating slots. The `operations` block is what puts the selected external ratings into those Plex slots.
 
-This is **not** a recommended approach, as using Library Operations will increase runtimes. Instead, you should put the `mdb_trakt`, `tmdb` and `imdb` data into the `ratingX` values.
+This is **not** a recommended approach, as using Library Operations will increase runtimes. Instead, you should put the `mdb_tomatoes`, `tmdb` and `imdb` data into the `ratingX` values.
 
 ### Examples
 
-??? example "IMDb, TMDb, and Trakt without changing Plex"
+??? example "IMDb, TMDb, and Rotten Tomatoes without changing Plex"
 
     ```yaml
     libraries:
@@ -204,7 +201,7 @@ This is **not** a recommended approach, as using Library Operations will increas
             template_variables:
               rating1: imdb
               rating2: tmdb
-              rating3: mdb_trakt
+              rating3: mdb_tomatoes
     ```
 
 ??? example "Use Plex's current rating slots"
@@ -385,19 +382,19 @@ Now let's update the critic and audience ratings to some different ratings:
               rating3: user
               rating3_image: imdb
         operations:
-          mass_critic_rating_update: trakt_user
+          mass_critic_rating_update: imdb
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
-    * under `operations` the attribute `mass_critic_rating_update` set to `trakt_user` and `mass_audience_rating_update` set to `tmdb` are added.
+    * under `operations` the attribute `mass_critic_rating_update` set to `imdb` and `mass_audience_rating_update` set to `tmdb` are added.
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason. Make sure to switch this back to `false` when finished.
 
-Running the above will put the Trakt user's personal rating into the critic box and the TMDb rating into the audience box. Note that we haven't changed the rating images yet.
+Running the above will put the IMDb rating into the critic box and the TMDb rating into the audience box. Note that we haven't changed the rating images yet.
 
 ![](./../../assets/images/kometa/guides/ratings/08.png)
 
-* Critic rating matches the Trakt personal user rating of `6`, which is displayed as `60%`.
+* Critic rating matches the IMDb rating.
 * Audience rating matches the TMDb rating of `82%`.
 * Note how the values have changed dramatically and all match between the overlay, Plex ratings, and external sites.
 
@@ -413,9 +410,9 @@ The log will show Kometa updating those values.
 * And the poster reflects those numbers, though with the wrong icons, since that's what **Kometa has been told to do**.
 * The Plex UI still shows RT icons, and it always will, even though the numbers displayed are no longer RT ratings. Plex has no idea.
 
-### Use Trakt Rating
+### Use Rotten Tomatoes Rating
 
-Let's change the Trakt rating to that Trakt public rating of `85%` instead, which is available via MDBList:
+Let's change the critic rating to the Rotten Tomatoes critic rating instead, which is available via MDBList:
 
 ??? example "Updated config"
 
@@ -433,17 +430,17 @@ Let's change the Trakt rating to that Trakt public rating of `85%` instead, whic
               rating3: user
               rating3_image: imdb
         operations:
-          mass_critic_rating_update: mdb_trakt
+          mass_critic_rating_update: mdb_tomatoes
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
-    * under `operations` the attribute `mass_critic_rating_update` was changed to `mdb_trakt` from `trakt_user`. (This step requires MDBList to be configured)
+    * under `operations` the attribute `mass_critic_rating_update` was changed to `mdb_tomatoes` from `imdb`. (This step requires MDBList to be configured)
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason. Make sure to switch this back to `false` when finished.
 
     ???+ tip "Note on `mdb` sources"
 
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+        MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
         As such, the data that Kometa applies using `mdb_` operations may not be the same as you see if you visit those third-party sources directly.
 
 When the above is run you should get:
@@ -466,24 +463,24 @@ Now, finally, let's make the poster rating images match the numbers we put in th
           - default: ratings
             template_variables:
               rating1: critic
-              rating1_image: trakt
+              rating1_image: rt_tomato
               rating2: audience
               rating2_image: tmdb
               rating3: user
               rating3_image: imdb
         operations:
-          mass_critic_rating_update: mdb_trakt
+          mass_critic_rating_update: mdb_tomatoes
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
-    * `rating1_image` was changed to `trakt` from `rt_tomato`.
+    * `rating1_image` is set to `rt_tomato`.
     * `rating2_image` was changed to `tmdb` from `rt_popcorn`.
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason. Make sure to switch this back to `false` when finished.
 
     ???+ tip "Note on `mdb` sources"
 
-        MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+        MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
         As such, the data that Kometa applies using `mdb_` operations may not be the same as you see if you visit those third-party sources directly.
 
 When the above is run you should get:
@@ -492,7 +489,7 @@ When the above is run you should get:
 
 This config file is the **only linkage** between the ratings we are setting and the icons we want displayed, as we've seen above.
 
-You can see that the Plex UI still shows the RT icons with the Trakt and TMDb numbers we put into the relevant fields, since again, it has no idea those numbers got changed behind its back.
+You can see that the Plex UI still shows the RT icons with the Rotten Tomatoes and TMDb numbers we put into the relevant fields, since again, it has no idea those numbers got changed behind its back.
 
 The poster displays the correct icons because we told Kometa to do so in the config file.
 

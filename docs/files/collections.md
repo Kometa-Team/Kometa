@@ -77,7 +77,7 @@ an error when trying to run the file against your library.
 Whilst [Library Operations](../config/operations.md) are used to control library-wide operations, Collection Files can 
 be used as a method to perform more limited operations, such as:
 
-* Syncing collections with the source list if one is used (such as Trakt Lists, TMDb Lists, etc.)
+* Syncing collections with the source list if one is used (such as IMDb Lists, TMDb Lists, etc.)
 
 * Sending missing media to Sonarr/Radarr
 
@@ -99,15 +99,15 @@ Examples of these can be seen here
         ```yaml
         collections:
           Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
+            imdb_list: https://www.imdb.com/list/ls025976544/ #(1)!
             sync_mode: append #(2!)
             collection_order: custom #(3)!
         ```
 
-        1. This is a Trakt List Builder, telling Kometa to build a collection based on the items in this list
+        1. This is an IMDb List Builder, telling Kometa to build a collection based on the items in this list
         2. If items are removed from the source list, having sync mode set to `append` means they will not be removed 
         from the collection in Plex. Set this to `sync` if you want the items removed in the collection too
-        3. Sort the collection in the order that it is received from the Trakt list
+        3. Sort the collection in the order that it is received from the IMDb list
 
     === "Example 2 - Send to Arr"
     
@@ -142,7 +142,7 @@ Examples of these can be seen here
         ```yaml
         collections:
           Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
+            imdb_list: https://www.imdb.com/list/ls025976544/ #(1)!
             schedule: range(12/01-12/31) #(2)!
             delete_not_scheduled: true #(3)!
         ```
@@ -170,7 +170,6 @@ It will sync the collections to the source lists, order them randomly, and apply
 ```yaml
 collections:
   Trending:
-    trakt_trending: 10
     tmdb_trending_daily: 10
     tmdb_trending_weekly: 10
     sort_title: +1_Trending
@@ -198,7 +197,5 @@ create collections based on a variety of different criteria, such as
 * Collections for each decade represented in the library (Best of 1990s, Best of 2000s etc.)
 
 * Collections for each of the moods/styles within a Music library (A Cappella, Pop Rock etc.)
-
-* Collections for each of a Trakt Users Lists.
 
 A full list of the available options is available on the [Dynamic Collections](dynamic.md) page

@@ -211,13 +211,13 @@ Users aren't expected to understand what this does, but users can use the `sort_
       Movies:
         collection_files:
           - default: tmdb
-          - default: trakt
+          - default: imdb
             template_variables:
               sort_prefix: ":" #(1)!
     ```
 
     1. Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), 
-    this will place the Trakt collections at the top of the list ahead of all other collections.
+    this will place the TMDb collections at the top of the list ahead of all other collections.
 
     ![example3](../../assets/images/kometa/guides/order/example3.jpg)
 
@@ -274,7 +274,7 @@ You can re-order collections within each Defaults File using the `order_<<key>>`
     libraries:
       Movies:
         collection_files:
-          - default: trakt
+          - default: imdb
             template_variables:
               sort_prefix: ":" #(1)!
           - default: tmdb
@@ -287,7 +287,7 @@ You can re-order collections within each Defaults File using the `order_<<key>>`
     ```
 
     1. Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), 
-    this will place the Trakt collections at the top of the list ahead of all other collections.
+    this will place the TMDb collections at the top of the list ahead of all other collections.
     2. file has 5 collections, each with a defined key. I have reordered each of the collections to appear in the order that I specified.
 
     ![example](../../assets/images/kometa/guides/order/example4.jpg)
@@ -415,7 +415,7 @@ The Sort Orders available for "Manual" collections are outlined on the **[Plex S
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        imdb_list: https://www.imdb.com/list/ls539646485/
         collection_order: added.desc
     ```
 
@@ -440,7 +440,7 @@ if you have a Smart Label collection, you can pass the `sort_by` value you want 
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        imdb_list: https://www.imdb.com/list/ls539646485/
         smart_label: audience_rating.desc
     ```
 
@@ -453,14 +453,14 @@ The Sort Orders available for "Smart" collections are outlined on the **[Plex So
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        imdb_list: https://www.imdb.com/list/ls539646485/
         smart_label: audience_rating.desc
     ```
 
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        imdb_list: https://www.imdb.com/list/ls539646485/
         collection_order: added.desc
     ```
 

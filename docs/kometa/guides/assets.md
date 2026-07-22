@@ -236,7 +236,7 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
     ```yaml
     collections:
       A24 Movies:
-        trakt_list: https://trakt.tv/users/moonilism/lists/a24
+        imdb_list: https://www.imdb.com/list/ls560891045/
     ```
     `ASSET_NAME` is "A24 Movies"
 
@@ -244,7 +244,7 @@ For example, if the asset name is `Toy Story (1995)`, Kometa accepts the followi
     collections:
       /// < : ** : > \\\:
         name_mapping: crazy-punctuation-collection
-        trakt_list: https://trakt.tv/users/moonilism/lists/a24
+        imdb_list: https://www.imdb.com/list/ls560891045/
     ```
     `ASSET_NAME` is "crazy-punctuation-collection"
 

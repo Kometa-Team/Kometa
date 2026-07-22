@@ -26,7 +26,7 @@ requirements for setup that can be found by clicking the links within the table 
 
 ???+ tip "Connectors"
 
-    Although most connectors are not required for core Kometa functionality, some (such as Trakt and MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
+    Although most connectors are not required for core Kometa functionality, some (such as MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
     
     Hover over the numbered icons for additional information
 
@@ -49,7 +49,6 @@ requirements for setup that can be found by clicking the links within the table 
 | [`anidb`](anidb.md)                                                                                                                                                                                                   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`radarr`](radarr.md):material-numeric-1-circle:{ .aqua title="This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page." }      |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`sonarr`](sonarr.md):material-numeric-1-circle:{ .aqua title="This connector can be configured either at the root level of the Config File, or per-library – examples are available on the connector's page." }      |  :fontawesome-solid-circle-xmark:{ .red }  |
-| [`trakt`](trakt.md)                                                                                                                                                                                                   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`yamtrack`](yamtrack.md)                                                                                                                                                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`mal`](myanimelist.md)                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
 

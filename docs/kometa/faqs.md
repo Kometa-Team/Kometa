@@ -380,17 +380,17 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 ### Errors & Issues
 
-??? question "Why doesn't Kometa let me enter my authentication information for Trakt/MAL?"
+??? question "Why doesn't Kometa let me enter my authentication information for MyAnimeList?"
 
-    Kometa needs to run in an interactive mode which allows the user to enter information (such as the Trakt/MAL PIN) as part of the authentication process. 
+    Kometa needs to run in an interactive mode so that the user can enter information as part of the authentication process. 
     This can prove troublesome in some environments, particularly NAS.
     
-    Chazlarson has developed an online tool which will allow you to perform the authentication of both Trakt and MAL outside of Kometa, 
+    Chazlarson has developed an online tool which will allow you to perform MyAnimeList authentication outside of Kometa, 
     and will then provide you the completed code block to paste into your config.yml.
     
     The scripts can be found here. Click the green play button, wait a little bit, then follow the prompts. 
 
-    [Trakt & MyAnimeList Authentication](../../config/authentication)
+    [Online Authentication](../../config/authentication)
 
 ??? question "Why am I seeing "(500) Internal Server Error" in my log files?"
 
@@ -416,13 +416,23 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 This section aims to provide some insight as to articles/information that we feel is important to document as they may pop up infrequently but often enough to require entry here.
 
+###### Trakt Functionality Removed { #trakt-functionality-removed }
+
+??? warning "Trakt functionality was removed in Kometa 2.5.6"
+
+    Due to a trend in limitations placed on free Trakt users and the breakage of Kometa's authorization workflow, we have decided to remove all Trakt functionality from Kometa.
+
+    Trakt-based builders, defaults, overlays, operations, metadata fields, and authentication are no longer supported. If you previously used Trakt lists or ratings, we suggest looking into [MDBList](../config/mdblist.md) or another service supported by Kometa.
+
+    We are also looking at other alternatives for future releases.
+
 ### Kometa 1.20 Release Changes
 
 With the release of Kometa 1.20, several changes have been made. Please read the document below thoroughly!
 
-??? blank "`metadata_path` and `overlay_path` are now legacy attributes (Click to Expand).<a class="headerlink" href="#metadata-overlay-path" title="Permanent link">¶</a>"
+###### Metadata and Overlay Path Legacy Attributes { #metadata-overlay-path }
 
-    <div id="metadata-overlay-path" />
+??? blank "`metadata_path` and `overlay_path` are now legacy attributes (Click to Expand)."
 
     The attributes `metadata_path` and `overlay_path` are now legacy, and will likely produce an error `metadata attribute is required` when running Kometa.
 
@@ -465,9 +475,9 @@ With the release of Kometa 1.20, several changes have been made. Please read the
     5. This attribute used to be `overlay_path` and defines files that will relate to Overlays
     6. These files are placed within `overlay_files` because they define how Overlays are built/maintained.
 
-??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (Click to Expand).<a class="headerlink" href="#overlay-library-attributes" title="Permanent link">¶</a>"
+###### Overlay Library Attributes { #overlay-library-attributes }
 
-    <div id="overlay-library-attributes" />
+??? blank "`remove_` `reset_` `reapply_` and `schedule_` attributes for `overlays` are now Library Attributes (Click to Expand)."
 
     The attributes `remove_overlays`, `reset_overlays`, `reapply_overlays` and `schedule_overlays` are now Library Attributes
     and are called at the library level rather than within `overlay_path`.
@@ -490,9 +500,9 @@ With the release of Kometa 1.20, several changes have been made. Please read the
     1. We strongly advise never setting this to `true` as it can cause [Image Bloat](scripts/imagemaid.md)
     2. This is purely an example, you do not need to specify `reset_overlays` or any of these attributes unless you specifically need to use them.
 
-??? blank "`imdb_list` no longer works for Title or Keyword search URLs (Click to Expand).<a class="headerlink" href="#imdb-search" title="Permanent link">¶</a>"
+###### IMDb Search URLs { #imdb-search }
 
-    <div id="imdb-search" />
+??? blank "`imdb_list` no longer works for Title or Keyword search URLs (Click to Expand)."
 
     As a result of IMDb changing their back-end code, `imdb_list` can no longer be used for URLs which start with 
     `https://www.imdb.com/search/title/` or `https://www.imdb.com/search/keyword/`
@@ -522,16 +532,16 @@ With the release of Kometa 1.20, several changes have been made. Please read the
           keyword.any: spy, espionage
     ```
 
-??? blank "FlixPatrol Default Files and Builders have been removed (Click to Expand).<a class="headerlink" href="#flixpatrol" title="Permanent link">¶</a>"
+###### FlixPatrol Removed { #flixpatrol }
 
-    <div id="flixpatrol" />
+??? blank "FlixPatrol Default Files and Builders have been removed (Click to Expand)."
 
     Due to FlixPatrol moving a lot of their data behind a paywall and them reworking their pages to remove IMDb IDs and 
     TMDb IDs the flixpatrol builders and default files have been removed. There currently are no plans to re-add them.
 
-??? blank "Kometa Default `other_award` replaced with individual Award files (Click to Expand).<a class="headerlink" href="#awards" title="Permanent link">¶</a>"
+###### Other Award Default Replaced { #awards }
 
-    <div id="awards" />
+??? blank "Kometa Default `other_award` replaced with individual Award files (Click to Expand)."
 
     The Kometa Default file `other_award` is now deprecated and will no longer function.
 

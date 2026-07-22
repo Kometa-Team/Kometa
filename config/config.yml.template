@@ -170,9 +170,6 @@ sonarr:                            # Can be individually specified per library a
   sonarr_path:                     # This value is only needed in combination with the *_existing settings
   plex_path:                       # This value is only needed in combination with the *_existing settings
   ignore_cache: false
-trakt:
-  client_id:                       # Enter Trakt Client ID (Optional)
-  client_secret:                   # Enter Trakt Client Secret (Optional)
   pin:
   authorization:
                                    # authorization section is autofilled by the script

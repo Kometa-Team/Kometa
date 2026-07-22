@@ -30,7 +30,6 @@ from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
-from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
@@ -157,7 +156,6 @@ mass_image_options = {
     "unlock": "Unlock Image",
     "plex": "Use Plex Images",
     "tmdb": "Use TMDb Images",
-    "trakt": "Use Trakt Images",
     "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {
@@ -169,7 +167,6 @@ mass_episode_rating_options = {
     "plex_imdb": "Use IMDB Rating through Plex",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
 }
 mass_rating_options = {
     "lock": "Lock Rating",
@@ -178,8 +175,6 @@ mass_rating_options = {
     "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
-    "trakt_user": "Use Trakt User Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "omdb_metascore": "Use Metacritic Metascore through OMDb",
     "omdb_tomatoes": "Use Rotten Tomatoes Rating through OMDb",
@@ -192,7 +187,6 @@ mass_rating_options = {
     "mdb_imdb": "Use IMDb Rating through MDBList",
     "mdb_metacritic": "Use Metacritic Rating through MDBList",
     "mdb_metacriticuser": "Use Metacritic User Rating through MDBList",
-    "mdb_trakt": "Use Trakt Rating through MDBList",
     "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDBList",
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDBList",
     "mdb_tmdb": "Use TMDb Rating through MDBList",
@@ -1092,26 +1086,7 @@ class ConfigFile:
 
             self.Trakt = None
             if "trakt" in self.data:
-                logger.info("Connecting to Trakt...")
-                try:
-                    self.Trakt = Trakt(
-                        self.Requests,
-                        self.read_only,
-                        {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
-                            "pin": check_for_attribute(self.data, "pin", parent="trakt", default_is_none=True),
-                            "force_refresh": check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
-                            "config_path": self.config_path,
-                            "authorization": (self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None),
-                        },
-                    )
-                except Failed as e:
-                    if str(e).endswith("is blank"):
-                        logger.warning(e)
-                    else:
-                        logger.error(e)
-                logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
+                logger.warning("Config Warning: Kometa no longer supports Trakt; all Trakt-based functionality is now deprecated")
             else:
                 logger.info("trakt attribute not found")
 
@@ -1867,8 +1842,8 @@ class ConfigFile:
                                 raise Failed(f"{source} without a successful AniDB Connection")
                             if source and str(source).startswith("mal") and self.MyAnimeList is None:
                                 raise Failed(f"{source} without a successful MyAnimeList Connection")
-                            if source and str(source).startswith("trakt") and self.Trakt is None:
-                                raise Failed(f"{source} without a successful Trakt Connection")
+                            if source and "trakt" in str(source):
+                                raise Failed(f"{source} because Kometa no longer supports Trakt")
                     except Failed as e:
                         logger.error(f"Config Error: {mass_key} cannot use {e}")
                         params[mass_key] = None

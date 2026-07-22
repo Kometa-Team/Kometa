@@ -40,7 +40,7 @@ location mapped as `config` in my setup.
         sync_mode: sync
         libraries: Movies, TV Shows #(2)!
         sync_to_users: User1, someone@somewhere.com, User3 #(3)!
-        trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe
+        imdb_list: https://www.imdb.com/list/ls539646485/
         summary: Marvel Cinematic Universe In Chronological Order
     ```
 
@@ -137,13 +137,13 @@ playlists:
     sync_mode: sync
     libraries: Movies, TV Shows
     sync_to_users: User1, someone@somewhere.com, User3
-    trakt_list: https://trakt.tv/users/donxy/lists/marvel-cinematic-universe?sort=rank,asc
+    imdb_list: https://www.imdb.com/list/ls539646485/
     summary: Marvel Cinematic Universe In Chronological Order
   Star Wars Clone Wars Chronological Order:
     sync_to_users: all
     sync_mode: sync
     libraries: Movies, TV Shows
-    trakt_list: https://trakt.tv/users/tomfin46/lists/star-wars-the-clone-wars-chronological-episode-order
+    imdb_list: https://www.imdb.com/list/ls544963772/
 ``` 
 
 If `libraries` is omitted from a playlist, Kometa uses every library processed as part of the run. Defining `libraries` on the playlist overrides that default for that playlist only.

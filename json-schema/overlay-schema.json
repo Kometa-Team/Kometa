@@ -101,10 +101,6 @@
                 "imdb_list": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
                 "imdb_search": { "type": "object", "additionalProperties": true },
 
-                "trakt_list": { "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }] },
-                "trakt_chart": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
-                "trakt_userlist": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
-                "trakt_recommendations": { "type": "integer", "minimum": 1 },
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },

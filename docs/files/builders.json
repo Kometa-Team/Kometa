@@ -561,48 +561,6 @@
             "works_with_playlists_and_custom_sort": "No"
         }
     ],
-    "Trakt": [
-        {
-            "builder": "trakt_boxoffice",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-box-office",
-            "description": "Finds the 10 movies in Trakt's Top Box Office [Movies](https://trakt.tv/movies/boxoffice) list",
-            "works_with_movies": "Yes",
-            "works_with_shows": "No",
-            "works_with_playlists_and_custom_sort": "Yes"
-        },
-        {
-            "builder": "trakt_chart",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-chart",
-            "description": "Finds the movies/shows in the Trakt Chart",
-            "works_with_movies": "Yes",
-            "works_with_shows": "Yes",
-            "works_with_playlists_and_custom_sort": "Yes"
-        },
-        {
-            "builder": "trakt_list",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-list",
-            "description": "Finds every movie/show in the Trakt List",
-            "works_with_movies": "Yes",
-            "works_with_shows": "Yes",
-            "works_with_playlists_and_custom_sort": "Yes"
-        },
-        {
-            "builder": "trakt_recommendations",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-recommendations",
-            "description": "Finds the movies/shows in Trakt's Personal Recommendations for your User [Movies](https://trakt.docs.apiary.io/#reference/recommendations/movies/get-movie-recommendations)/[Shows](https://trakt.docs.apiary.io/#reference/recommendations/shows/get-show-recommendations)",
-            "works_with_movies": "Yes",
-            "works_with_shows": "Yes",
-            "works_with_playlists_and_custom_sort": "Yes"
-        },
-        {
-            "builder": "trakt_userlist",
-            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/trakt/#trakt-userlist",
-            "description": "Finds every movie/show in the Trakt UserList",
-            "works_with_movies": "Yes",
-            "works_with_shows": "Yes",
-            "works_with_playlists_and_custom_sort": "Yes"
-        }
-    ],
     "TVDb": [
         {
             "builder": "tvdb_list",

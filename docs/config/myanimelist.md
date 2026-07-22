@@ -151,5 +151,5 @@ Once you have the MyAnimeList authentication data saved into the YAML, you'll be
 
 {% 
   include-markdown "./authentication.md"
-  start="# Trakt and MyAnimeList Authentication"
+  start="# Online Authentication"
 %}

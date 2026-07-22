@@ -54,9 +54,7 @@ hide:
                 list.any:
                   - ls075298827
                   - ls000099714
-              trakt_list_mother: #(8)!
-                - https://trakt.tv/users/robertsnorlax/lists/arizona-westerns
-                - https://trakt.tv/users/pullsa/lists/the-96th-academy-awards-oscars-2024
+              imdb_list_mother: https://www.imdb.com/list/ls075298827/ #(8)!
               mdblist_list_memorial: https://mdblist.com/lists/rizreflects/world-war-related-movies #(9)!
               letterboxd_list_father: https://letterboxd.com/patrickb15/list/fathers-day/ #(10)!
               append_data:
@@ -73,7 +71,7 @@ hide:
     5. Add two movies to the "Valentine's Day" collection
     6. Replace the IMDb List for the "St. Patrick's Day" collection
     7. Add the contents of two IMDB lists to the "Easter" collection
-    8. Replace the lists for the "Mother's Day" collection with two Trakt lists
+    8. Replace the source list for the "Mother's Day" collection with an IMDb list
     9. Replace the source list for the "Memorial Day" collection with a MDBList
     10. Replace the source list for the "Father's Day" collection with a Letterboxd list
     11. Create a new Seasonal collection called "Planet of the Apes Day", and set the key for this collection to `apes`

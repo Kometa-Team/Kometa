@@ -488,9 +488,9 @@ class TestImdbParental:
 class TestListCache:
     def test_round_trip(self, tmp_path):
         cache = make_cache(tmp_path)
-        key = cache.update_list_cache("trakt_list", "https://trakt.tv/list/1", False, expiration=30)
+        key = cache.update_list_cache("tmdb_list", "https://example.com/list/1", False, expiration=30)
         assert key is not None
-        result_key, expired = cache.query_list_cache("trakt_list", "https://trakt.tv/list/1", expiration=30)
+        result_key, expired = cache.query_list_cache("tmdb_list", "https://example.com/list/1", expiration=30)
         assert result_key == key
         assert expired is False
 

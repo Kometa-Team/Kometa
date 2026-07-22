@@ -42,14 +42,14 @@ hide:
               radarr_add_missing: true #(3)!
               append_data:
                 monster: MonsterVerse #(4)!
-              trakt_list_monster: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies #(5)!
+              mdblist_list_monster: https://mdblist.com/lists/k0meta/monsterverse #(5)!
     ```
 
     1. Use the salmon [Separator Style](../separators.md#separator-styles)
     2. Sort the Universe collections by release date
     3. Send missing items in your library from the source lists to Radarr
     4. Create a new universe called "MonsterVerse", the key for this universe will be "monster"
-    5. Add a trakt list to the "monster" key
+    5. Add a MDBList list to the "monster" key
 
 {% include-markdown "./../../templates/defaults/base/collection/variables_header.md" rewrite-relative-urls=false %}
     {%
@@ -70,7 +70,7 @@ hide:
 
     === "Universe Collections"
         
-        The Universe collections are based on either Trakt lists or MDB lists.
+        The Universe collections are based on MDBList or IMDb lists.
 
     === "Default `data`"
     

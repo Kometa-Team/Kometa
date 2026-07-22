@@ -74,7 +74,6 @@ All the following attributes update the summary of the collection/playlist from 
 | `tmdb_biography`         | **Description:** Changes summary to the TMDb Person's biography<br>**Values:** TMDb Person ID                                                                                      |
 | `tmdb_description`       | **Description:** Changes summary to the TMDb List Description<br>**Values:** TMDb List ID                                                                                          |
 | `tmdb_summary`           | **Description:** Changes summary to the TMDb Movie/Collection summary for a movie library or the TMDb Show summary for a show library<br>**Values:** TMDb Movie/Show/Collection ID |
-| `trakt_description`      | **Description:** Changes summary to the Trakt List Description<br>**Values:** Trakt List URL                                                                                       |
 | `tvdb_description`       | **Description:** Changes summary to the TVDb List Description<br>**Values:** TVDb List URL                                                                                         |
 | `tvdb_summary`           | **Description:** Changes summary to the TVDb Movie summary for a movie library or the TVDb Show summary for a show library<br>**Values:** TVDb Movie/Show ID or URL                |
 

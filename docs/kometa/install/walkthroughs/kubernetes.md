@@ -118,8 +118,6 @@ minimum requirement is the Kometa config, but the example here assumes you have 
 
 Here's a config map for the `config.yml` file for Kometa. Note there are many placeholders that will need update based on your environment and needs.
 
-Follow the [Trakt Attributes](../../../config/trakt.md) directions for generating the OAuth authorization values.
-
 ```yaml
 apiVersion: v1
 data:
@@ -205,16 +203,6 @@ data:
       cutoff_search: false
       sonarr_path:
       plex_path:
-    trakt:
-      client_id: YOUR_CLIENT_ID_HERE
-      client_secret: YOUR_CLIENT_SECRET_HERE
-      authorization:
-          access_token: YOUR_ACCESS_TOKEN_HERE
-          token_type: Bearer
-          expires_in: 7889237
-          refresh_token: YOUR_REFERSH_TOKEN_HERE
-          scope: public
-          created_at: 1642462048
 kind: ConfigMap
 metadata:
   name: kometa-config
@@ -230,12 +218,12 @@ apiVersion: v1
 data:
   movies.yaml: |
     collections:
-      Trakt Popular:
-        trakt_popular: 200
+      TMDb Popular:
+        tmdb_popular: 200
         collection_order: custom
         sync_mode: sync
-        sort_title: Traktpopular
-        summary: The most popular movies for all time.
+        sort_title: TMDbpopular
+        summary: Popular movies from TMDb.
         radarr_add_missing: true
         radarr_search: true
         radarr_monitor: true

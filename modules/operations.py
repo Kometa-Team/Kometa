@@ -247,16 +247,6 @@ class Operations:
                         path = path[:-1] if path.endswith(("/", "\\")) else path
                         sonarr_adds.append((tvdb_id, path))
 
-                _trakt_ratings = None
-
-                def trakt_ratings():
-                    nonlocal _trakt_ratings
-                    if _trakt_ratings is None:
-                        _trakt_ratings = self.config.Trakt.user_ratings(self.library.is_movie)
-                    if not _trakt_ratings:
-                        raise Failed
-                    return _trakt_ratings
-
                 _tmdb_obj = None
 
                 def tmdb_obj():
@@ -478,15 +468,6 @@ class Operations:
                                         found_rating = tmdb_obj().vote_average  # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
-                                    elif option == "trakt":
-                                        found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
-                                    elif option == "trakt_user":
-                                        _ratings = trakt_ratings()
-                                        _id = tmdb_id if self.library.is_movie else tvdb_id
-                                        if _id in _ratings:
-                                            found_rating = _ratings[_id]
-                                        else:
-                                            raise Failed
                                     elif str(option).startswith("plex"):
                                         ratings = self.library.get_ratings(item)
                                         try:
@@ -511,8 +492,6 @@ class Operations:
                                             found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None  # noqa
                                         elif option == "mdb_metacriticuser":
                                             found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None  # noqa
-                                        elif option == "mdb_trakt":
-                                            found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None  # noqa
                                         elif option == "mdb_tomatoes":
                                             found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None  # noqa
                                         elif option == "mdb_tomatoesaudience":
@@ -963,50 +942,6 @@ class Operations:
                         except Failed:
                             return None
 
-                    def _trakt_image_url(images, keys):
-                        for key in keys:
-                            values = images.get(key) or []
-                            if isinstance(values, str):
-                                values = [values]
-                            for value in values:
-                                if value:
-                                    return value if str(value).startswith(("http://", "https://")) else f"https://{value}"
-                        return None
-
-                    def _get_trakt_image_url(is_poster=True, image_type=None, season=None, episode=None):
-                        if not self.config.Trakt:
-                            return None
-                        if image_type == "square_art":
-                            return None
-                        media_type = "movie" if self.library.is_movie else "show"
-                        ids = []
-                        if self.library.is_movie:
-                            if tmdb_id:
-                                ids.append(("tmdb", tmdb_id))
-                            if imdb_id:
-                                ids.append(("imdb", imdb_id))
-                        else:
-                            if tvdb_id:
-                                ids.append(("tvdb", tvdb_id))
-                            if imdb_id:
-                                ids.append(("imdb", imdb_id))
-                            if tmdb_id:
-                                ids.append(("tmdb", tmdb_id))
-                        for from_source, external_id in ids:
-                            try:
-                                images = self.config.Trakt.lookup_item_images(external_id, from_source, media_type, season=season, episode=episode)
-                            except Failed as err:
-                                logger.debug(str(err))
-                                continue
-                            if image_type == "logo":
-                                return _trakt_image_url(images, ["logo"])
-                            if is_poster:
-                                return _trakt_image_url(images, ["poster", "screenshot", "thumb"])
-                            if episode is not None:
-                                return None
-                            return _trakt_image_url(images, ["fanart", "background", "thumb", "screenshot"])
-                        return None
-
                     def _get_external_image(image_config, is_poster=True, image_type=None, season=None, episode=None):
                         last_source = None
                         for source in _image_sources(image_config):
@@ -1015,8 +950,6 @@ class Operations:
                                 image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
                             elif source == "tmdb":
                                 image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
-                            elif source == "trakt":
-                                image_url = _get_trakt_image_url(is_poster=is_poster, image_type=image_type, season=season, episode=episode)
                             elif source == "plex":
                                 return "plex", None
                             else:
@@ -1032,9 +965,7 @@ class Operations:
                         last_source = None
                         for source in _image_sources(image_config):
                             last_source = source
-                            if source == "trakt":
-                                image_url = _get_trakt_image_url(is_poster=is_poster, season=season, episode=episode)
-                            elif source == "tmdb":
+                            if source == "tmdb":
                                 image_url = tmdb_url if is_poster else None
                             elif source == "plex":
                                 return "plex", None
@@ -1246,8 +1177,6 @@ class Operations:
                                                     logger.error(er)
                                             elif imdb_id and option == "imdb":
                                                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
-                                            elif imdb_id and option == "trakt":
-                                                found_rating = self.config.Trakt.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
                                             else:
                                                 try:
                                                     found_rating = float(option)

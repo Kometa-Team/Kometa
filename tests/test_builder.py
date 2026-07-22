@@ -585,10 +585,9 @@ class TestDispatchTables:
         assert not overlap, f"Field names overlap between radarr_details and sonarr_details: {overlap}"
 
     def test_all_builders_contains_known_data_sources(self):
-        """Sanity: the master builder list mentions tmdb, trakt, imdb."""
+        """Sanity: the master builder list mentions tmdb and imdb."""
         all_builders = builder_module.all_builders
         # all_builders is a tuple of strings — at minimum some core sources
         text = " ".join(str(b) for b in all_builders)
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
-        assert "trakt" in text, "all_builders missing trakt-related entries"
         assert "imdb" in text, "all_builders missing imdb-related entries"
