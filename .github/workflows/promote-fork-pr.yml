@@ -1,0 +1,253 @@
+name: Promote Fork PR
+
+on:
+  pull_request_target:
+    types:
+      - labeled
+      - synchronize
+      - closed
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: promote-fork-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  promote:
+    name: Create or update internal PR
+
+    # Fork PRs only, gated on the approval label; this job never checks out or executes fork code, only git fetch/push of commit objects and GitHub API calls.
+    if: >-
+      github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name != github.repository &&
+      contains(github.event.pull_request.labels.*.name, 'internal-test')
+
+    runs-on: ubuntu-latest
+
+    steps:
+      # Do not use context.actor/sender here -- on synchronize that's the PR author, not the labeler -- so check the timeline for who last applied internal-test instead.
+      - name: Verify a maintainer applied the current internal-test label
+        id: permission
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            const events = await github.paginate(
+              github.rest.issues.listEvents,
+              { owner, repo, issue_number, per_page: 100 }
+            );
+
+            const labelEvents = events.filter(
+              e => e.event === 'labeled' && e.label && e.label.name === 'internal-test'
+            );
+
+            if (labelEvents.length === 0) {
+              core.setFailed('No "labeled: internal-test" event found in PR timeline.');
+              return;
+            }
+
+            const lastLabelEvent = labelEvents[labelEvents.length - 1];
+            const labeler = lastLabelEvent.actor && lastLabelEvent.actor.login;
+
+            if (!labeler) {
+              core.setFailed('Could not determine who applied the internal-test label.');
+              return;
+            }
+
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner,
+              repo,
+              username: labeler
+            });
+
+            const allowed = ['admin', 'maintain', 'write'];
+
+            if (!allowed.includes(data.permission)) {
+              core.setFailed(
+                `Most recent internal-test label was applied by ${labeler}, ` +
+                `who has '${data.permission}' permission; write permission is ` +
+                `required to promote a fork PR.`
+              );
+              return;
+            }
+
+            core.notice(`internal-test label was applied by ${labeler} (${data.permission}) -- OK to promote.`);
+
+      # Use the GitHub App token, not GITHUB_TOKEN, so the created PR/push actually triggers downstream workflows.
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
+
+      # This checks out only the trusted base repository/default branch.
+      - name: Check out trusted base repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Copy fork PR commit to internal branch
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          INTERNAL_BRANCH: automation/fork-pr-${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+
+          # Fetch via the base repo's own refs/pull/<N>/head -- no need to add the fork as a remote.
+          git fetch --no-tags origin \
+            "pull/${PR_NUMBER}/head:refs/remotes/origin/fork-pr-${PR_NUMBER}"
+
+          FETCHED_SHA="$(git rev-parse "refs/remotes/origin/fork-pr-${PR_NUMBER}")"
+
+          # Guard against the PR changing mid-flight: fetched SHA must match the SHA that triggered this run.
+          if [[ "${FETCHED_SHA}" != "${PR_HEAD_SHA}" ]]; then
+            echo "::error::PR changed while the promotion workflow was running."
+            echo "::error::Expected ${PR_HEAD_SHA}, fetched ${FETCHED_SHA}."
+            exit 1
+          fi
+
+          # Copy the commit object only -- never checked out or executed.
+          git push --force origin \
+            "${FETCHED_SHA}:refs/heads/${INTERNAL_BRANCH}"
+
+      - name: Create or update internal pull request
+        uses: actions/github-script@v9
+        env:
+          INTERNAL_BRANCH: automation/fork-pr-${{ github.event.pull_request.number }}
+          SOURCE_PR_NUMBER: ${{ github.event.pull_request.number }}
+          SOURCE_PR_TITLE: ${{ github.event.pull_request.title }}
+          SOURCE_PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          SOURCE_PR_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const head = process.env.INTERNAL_BRANCH;
+            const sourceNumber = process.env.SOURCE_PR_NUMBER;
+
+            const title = `[Promoted #${sourceNumber}] ${process.env.SOURCE_PR_TITLE}`;
+
+            const body = [
+              `Automated internal copy of #${sourceNumber}.`,
+              ``,
+              `Original author: @${process.env.SOURCE_PR_AUTHOR}`,
+              `Copied commit: \`${process.env.SOURCE_PR_SHA}\``,
+              ``,
+              `This branch is force-updated when the original fork PR changes`,
+              `and a maintainer keeps the \`internal-test\` label applied.`,
+              ``,
+              `The \`docker\`/\`tester\` label is NOT copied automatically --`,
+              `a maintainer must re-add it here after reviewing this exact`,
+              `commit before a build with secrets will run.`,
+              ``,
+              `Do not merge this PR instead of the original contributor PR.`
+            ].join("\n");
+
+            const { data: existing } = await github.rest.pulls.list({
+              owner, repo, state: "open",
+              head: `${owner}:${head}`, base: "nightly"
+            });
+
+            if (existing.length > 0) {
+              await github.rest.pulls.update({
+                owner, repo, pull_number: existing[0].number, title, body
+              });
+              core.notice(`Updated internal PR #${existing[0].number}`);
+            } else {
+              const { data: created } = await github.rest.pulls.create({
+                owner, repo, head, base: "nightly", title, body, draft: true
+              });
+              core.notice(`Created internal PR #${created.number}`);
+            }
+
+      - name: Comment on source pull request
+        uses: actions/github-script@v9
+        env:
+          INTERNAL_BRANCH: automation/fork-pr-${{ github.event.pull_request.number }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const { data: pulls } = await github.rest.pulls.list({
+              owner, repo, state: "open",
+              head: `${owner}:${process.env.INTERNAL_BRANCH}`, base: "nightly"
+            });
+
+            if (pulls.length === 0) {
+              core.setFailed("Internal pull request could not be located.");
+              return;
+            }
+
+            const marker = "<!-- kometa-internal-test-pr -->";
+            const body = [
+              marker,
+              `Internal testing PR: #${pulls[0].number}`,
+              ``,
+              `This PR tracks commit \`${context.payload.pull_request.head.sha}\`.`
+            ].join("\n");
+
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number: context.issue.number, per_page: 100 }
+            );
+
+            const existing = comments.find(
+              c => c.user?.type === "Bot" && c.body?.includes(marker)
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: context.issue.number, body });
+            }
+
+  cleanup:
+    name: Remove internal testing branch
+
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name != github.repository
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Create GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_TOKEN }}
+
+      - name: Delete internal branch
+        uses: actions/github-script@v9
+        env:
+          INTERNAL_BRANCH: automation/fork-pr-${{ github.event.pull_request.number }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            try {
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `heads/${process.env.INTERNAL_BRANCH}`
+              });
+            } catch (error) {
+              if (error.status === 422 || error.status === 404) {
+                core.notice("Internal branch did not exist or was already deleted.");
+              } else {
+                throw error;
+              }
+            }
