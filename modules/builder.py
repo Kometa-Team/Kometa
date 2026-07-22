@@ -536,6 +536,7 @@ custom_sort_builders = [
     "tautulli_watched",
     "mdblist_list",
     "letterboxd_list",
+    *letterboxd.semantic_builders,
     "icheckmovies_list",
     "anilist_top_rated",
     "anilist_popular",
