@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
+
 ## [v2.4.5] - 2026-07-22
 
 ### Added
@@ -30,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Allow all semantic Letterboxd discovery builders to use `collection_order: custom`, preserving Letterboxd's returned order in Plex collections.
 - Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
-- `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
 - `modules/tvdb.py`: add a distinct `Unavailable` exception for TVDb requests that exhaust their retry budget without ever returning usable content (e.g. repeated HTTP 202/empty-body "still generating" responses), separate from `NotFound`'s definitive 4xx. Previously both were re-raised with the identical "No Series/Movie found" message, so a confirmed-dead TVDb ID and a transient TVDb hiccup were indistinguishable in the log. All `get_tvdb_obj()` call sites (`modules/builder.py`, `modules/operations.py`) now log `NotFound` at debug (unchanged), `Unavailable` at warning (previously logged at error via the generic `Failed` handler), and any other `Failed` at error (unchanged).
 - Fix custom `rating<n>_file` (and `git`/`repo`/`url`) overlay images being silently replaced by a built-in `default`/`pmm` asset.
