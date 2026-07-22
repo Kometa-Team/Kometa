@@ -315,7 +315,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Deep Profiling&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PROFILE`<a class="headerlink" href="#deep-profiling" title="Permanent link">¶</a>"
 
-    <div id="deep-profiling" />Run a single Kometa run under [`pyinstrument`](https://github.com/joerick/pyinstrument), writing an HTML profile report to the logs directory. Intended for maintainers diagnosing a specific slow run in more depth than Timing Instrumentation's summary provides; requires the `pyinstrument` package (a dev dependency, not installed in a normal Kometa install).
+    <div id="deep-profiling" />Run a single Kometa run under [`pyinstrument`](https://github.com/joerick/pyinstrument), writing an HTML profile report to the logs directory. Intended for maintainers diagnosing a specific slow run in more depth than Timing Instrumentation's summary provides.
 
     <hr style="margin: 0px;">
 
