@@ -452,6 +452,8 @@ TomatoRotten
 tooltip
 tooltips
 traceback
+Trakt
+trakt
 transcoded
 transcoding
 trash
