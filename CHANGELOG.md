@@ -254,7 +254,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
 [unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...HEAD
-[v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.5
+[v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2
