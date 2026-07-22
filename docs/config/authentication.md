@@ -40,19 +40,15 @@ There is no logging, but if you feel more comfortable running these things local
 
         ![Step 1](./../assets/images/utilities/trakt-oauth-01.png)
 
-    2. Click "Get Authentication URL".  This will fill in the auth URL:
+    2. Click "Continue to Trakt".
 
-        ![Step 2](./../assets/images/utilities/trakt-oauth-02.png)
+        Follow any instructions you see on the Trakt site.
 
-        Click "Open URL" and follow any instructions given.  You will be given a PIN on the Trakt site.
+        You will be returned to the Kometa Utilities site.
 
-    3. Paste that PIN into the field and click "Submit":
+    3. A Kometa Trakt authentication block will be displayed.
 
-        ![Step 3](./../assets/images/utilities/trakt-oauth-03.png)
-
-    4. A Kometa Trakt authentication block will be displayed.
-
-        ![Step 4](./../assets/images/utilities/trakt-oauth-04.png)
+        ![Step 4](./../assets/images/utilities/trakt-oauth-03.png)
 
         Copy that block to your Kometa `config.yml`
 
