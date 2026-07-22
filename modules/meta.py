@@ -160,6 +160,9 @@ class DataFile:
                 elif content_path.endswith(".yaml") and os.path.exists(f"{content_path[:-5]}.yml"):
                     content_path = f"{content_path[:-5]}.yml"
                 elif file_type == "Default":
+                    default_name = os.path.splitext(os.path.basename(file_path))[0].lower()
+                    if default_name == "trakt":
+                        raise Failed("File Error: '- default: trakt' is not valid because Kometa no longer supports Trakt")
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
                     raise Failed(f"File Error: File does not exist {content_path}")
