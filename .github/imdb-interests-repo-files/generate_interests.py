@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Regenerate INTERESTS.json for the Kometa-Team/IMDb-Hash repo.
+"""Regenerate INTERESTS.json for the Kometa-Team/IMDb-Interests repo.
 
 NOTE: This file is staged inside the Kometa repo for convenience but is intended to live in the
-Kometa-Team/IMDb-Hash repository (alongside HASH / LIST_HASH / WATCHLIST_HASH). A scheduled GitHub
-Action in that repo runs it and commits INTERESTS.json when it changes; Kometa fetches that file at
-runtime (modules/imdb.py: interests_url) and falls back to its bundled snapshot if the fetch fails.
+Kometa-Team/IMDb-Interests repository. A scheduled GitHub Action in that repo runs it and commits
+INTERESTS.json when it changes; Kometa fetches that file at runtime (modules/imdb.py: interests_url)
+and falls back to its bundled snapshot if the fetch fails.
 
 It queries IMDb's public GraphQL `interestCategories` catalog and emits a flat
 {normalized_name: in-id} map matching the key format Kometa's imdb_search `interests:` filter expects

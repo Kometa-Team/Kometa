@@ -217,9 +217,9 @@ genre_options = {
     ]
 }
 # Fallback snapshot of IMDb's interest catalog (name -> in-id). Kometa prefers a live copy fetched
-# from interests_url at runtime (auto-refreshed by a scheduled Action in the IMDb-Hash repo); this
+# from interests_url at runtime (auto-refreshed by a scheduled Action in the IMDb-Interests repo); this
 # hardcoded map is only used when that fetch fails. Regenerate with the generator staged at
-# .github/imdb-hash-repo-files/generate_interests.py (which also produces the repo's INTERESTS.json).
+# .github/imdb-interests-repo-files/generate_interests.py (which also produces the repo's INTERESTS.json).
 interest_options_fallback = {
     "action": "in0000001",
     "action_epic": "in0000002",
@@ -578,7 +578,7 @@ git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
 watchlist_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/WATCHLIST_HASH"
-interests_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/INTERESTS.json"
+interests_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Interests/main/INTERESTS.json"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
@@ -670,7 +670,7 @@ class IMDb:
     @property
     def interest_options(self):
         """IMDb interest catalog (name -> in-id). Prefers a live copy fetched from interests_url
-        (auto-refreshed in the IMDb-Hash repo) and falls back to the bundled snapshot on any failure,
+        (auto-refreshed in the IMDb-Interests repo) and falls back to the bundled snapshot on any failure,
         so a network/rate-limit hiccup can never break interest validation or search building."""
         if self._interest_options is None:
             try:

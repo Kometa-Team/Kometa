@@ -1,8 +1,7 @@
-# IMDb-Hash repo files (staging)
+# IMDb-Interests repo files (staging)
 
 These files are **not part of Kometa's runtime**. They are staged here for convenience and are meant to
-be copied into the **`Kometa-Team/IMDb-Hash`** repository (which hosts `HASH`, `LIST_HASH`,
-`WATCHLIST_HASH` that Kometa already fetches at runtime).
+be copied into the **`Kometa-Team/IMDb-Interests`** repository.
 
 ## What they do
 
@@ -11,7 +10,7 @@ names into the `in########` IDs IMDb's GraphQL `advancedTitleSearch` expects. Th
 time (IMDb currently exposes 313 interests; Kometa's historical hardcoded map had 211). Rather than
 hand-maintain it, Kometa fetches a live copy at runtime from:
 
-    https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/INTERESTS.json
+    https://raw.githubusercontent.com/Kometa-Team/IMDb-Interests/main/INTERESTS.json
 
 (see `interests_url` in `modules/imdb.py`), falling back to the bundled `interest_options_fallback`
 snapshot if the fetch fails.
@@ -25,9 +24,10 @@ snapshot if the fetch fails.
 
 ## To wire it up
 
-1. Copy `generate_interests.py` to the root of `Kometa-Team/IMDb-Hash`.
-2. Copy `update-interests.yml` to `.github/workflows/update-interests.yml` in that repo.
-3. Run it once (manually via `workflow_dispatch`, or `python generate_interests.py`) to create the
+1. Create the `Kometa-Team/IMDb-Interests` repo (default branch `main`).
+2. Copy `generate_interests.py` to the repo root.
+3. Copy `update-interests.yml` to `.github/workflows/update-interests.yml`.
+4. Run it once (manually via `workflow_dispatch`, or `python generate_interests.py`) to create the
    initial `INTERESTS.json`.
 
 The same generator can be used to periodically refresh Kometa's bundled `interest_options_fallback`
