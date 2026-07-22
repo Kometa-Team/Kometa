@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.4.5] - 2026-07-22
+
 ### Added
 
 - Add semantic `letterboxd_crew`, `letterboxd_studio`, `letterboxd_country`, `letterboxd_language`, `letterboxd_genre`, `letterboxd_theme`, `letterboxd_similar`, and `letterboxd_collection` builders for Letterboxd discovery pages.
@@ -264,7 +266,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...HEAD
+[v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2
