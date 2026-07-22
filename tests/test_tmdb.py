@@ -2,11 +2,11 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from tenacity import RetryError
+from tenacity import RetryError, wait_none
 from tmdbapis import NotFound as TMDbApiNotFound
 
 from modules import tmdb
-from modules.util import Failed
+from modules.util import Failed, ServiceError
 
 
 def _bare_tmdb(monkeypatch):
@@ -35,6 +35,139 @@ def _episode(episode_id, season_number, episode_number, vote_average):
 def test_notfound_is_failed_subclass():
     # Callers that keep catching every TMDb failure as Failed must still work.
     assert issubclass(tmdb.NotFound, Failed)
+
+
+def test_unavailable_is_service_error_subclass():
+    assert issubclass(tmdb.Unavailable, ServiceError)
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "(502 [Bad Gateway]) {'status_code': 43, 'status_message': \"Couldn't connect to the backend server.\"}",
+        "(408 [Request Timeout]) {'status_code': 24}",
+        "(429 [Too Many Requests]) {'status_code': 25}",
+        "(503 [Service Unavailable]) {'status_code': 9}",
+        "{'status_code': 46, 'status_message': 'The API is undergoing maintenance.'}",
+    ],
+)
+def test_tmdb_service_failures_are_transient(message):
+    assert tmdb._is_transient_tmdb_exception(tmdb.TMDbException(message))
+
+
+def test_tmdb_404_is_not_transient():
+    assert not tmdb._is_transient_tmdb_exception(tmdb.TMDbException("(404 [Not Found]) {'status_code': 34}"))
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        tmdb.TMDbException("(502 [Bad Gateway]) {'status_code': 43}"),
+        tmdb.TMDbException("(429 [Too Many Requests]) {'status_code': 25}"),
+        tmdb.ReadTimeout("TMDb request timed out"),
+    ],
+)
+def test_discover_retries_transient_service_errors_without_traceback(monkeypatch, error):
+    t = _bare_tmdb(monkeypatch)
+    logger = tmdb.logger
+    results = SimpleNamespace(total_results=2, get_results=MagicMock(return_value=[SimpleNamespace(id=10), SimpleNamespace(id=20)]))
+    discover = MagicMock(side_effect=[error, results])
+    t.TMDb = SimpleNamespace(discover_tv_shows=discover)
+    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+
+    ids, amount = t._get_discover_ids({"watch_region": "US"}, False, "tmdb_show", 0)
+
+    assert ids == [(10, "tmdb_show"), (20, "tmdb_show")]
+    assert amount == 2
+    assert discover.call_count == 2
+    assert len(logger.warning_messages) == 1
+    assert "transient service error" in logger.warning_messages[0]
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        tmdb.TMDbException("(401 [Unauthorized]) {'status_code': 7}"),
+        tmdb.TMDbException("(404 [Not Found]) {'status_code': 34}"),
+        Failed("terminal Kometa failure"),
+        TypeError("programming error"),
+    ],
+)
+def test_discover_does_not_retry_terminal_errors(monkeypatch, error):
+    t = _bare_tmdb(monkeypatch)
+    discover = MagicMock(side_effect=error)
+    t.TMDb = SimpleNamespace(discover_tv_shows=discover)
+    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+
+    with pytest.raises(type(error)) as excinfo:
+        t._get_discover_ids({}, False, "tmdb_show", 0)
+
+    assert str(excinfo.value) == str(error)
+    discover.assert_called_once_with()
+
+
+def test_discover_exhaustion_becomes_service_unavailable(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    discover = MagicMock(side_effect=tmdb.TMDbException("(502 [Bad Gateway]) {'status_code': 43}"))
+    t.TMDb = SimpleNamespace(discover_tv_shows=discover)
+    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+
+    with pytest.raises(tmdb.Unavailable, match="Service unavailable after 6 attempts"):
+        t._get_discover_ids({}, False, "tmdb_show", 0)
+
+    assert discover.call_count == 6
+
+
+def test_show_hydration_retries_lazy_transient_502(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t.cache = None
+    t.language = "en"
+    t.expiration = 30
+
+    class FlakyShow:
+        title = "Test Show"
+        tagline = ""
+        overview = ""
+        imdb_id = "tt123"
+        poster_url = None
+        backdrop_url = None
+        logos = []
+        vote_average = 8.0
+        original_language = SimpleNamespace(iso_639_1="en", english_name="English")
+        genres = []
+        keywords = []
+        original_name = "Test Show"
+        first_air_date = None
+        last_air_date = None
+        status = "Returning Series"
+        type = "Scripted"
+        networks = []
+        tvdb_id = 123
+        origin_countries = []
+        seasons = []
+
+        def __init__(self):
+            self.vote_count_calls = 0
+
+        @property
+        def vote_count(self):
+            self.vote_count_calls += 1
+            if self.vote_count_calls == 1:
+                raise tmdb.TMDbException("(502 [Bad Gateway]) {'status_code': 43}")
+            return 10
+
+    data = FlakyShow()
+    t.TMDb = SimpleNamespace(tv_show=MagicMock(return_value=data))
+    monkeypatch.setattr(tmdb.TMDbShow._load_data.retry, "wait", wait_none())
+
+    show = tmdb.TMDbShow(t, 500)
+
+    assert show.vote_count == 10
+    assert data.vote_count_calls == 2
+    logger.warning.assert_called_once()
+    logger.stacktrace.assert_not_called()
 
 
 def test_get_collection_raises_notfound_for_deleted_collection(monkeypatch):
