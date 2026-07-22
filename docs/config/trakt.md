@@ -53,10 +53,12 @@ trakt:
 
 To connect to Trakt.tv you must create a Trakt application:
 
-1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
-2. Enter a `Name` for the application.
-3. Enter `https://utilities.kometa.wiki/trakt-oauth/callback` for `Redirect uri`.
-4. Click the `SAVE APP` button.
-5. Record the `Client ID` and `Client Secret`; you will need them in a moment.
+1. [Click here to create a Trakt API application.](https://app.trakt.tv/settings/apps/api)
+2. Click the "+" in the upper right.
+3. Enter a `Name` for the application.
+4. Enter `https://utilities.kometa.wiki/trakt-oauth/callback` for `Redirect uri`.
+5. You can leave "Description" and "JavaScript (CORS) origins" blank.
+6. Click the `Create` button.
+7. Record the `Client ID` and `Client Secret`; you will need them later, and you only need do this process once..
 
 Now authenticate against Trakt using the [Kometa Utilities](./authentication.md).
