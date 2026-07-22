@@ -221,6 +221,7 @@ kuesel
 launchd
 Lavagirl
 letterboxd
+Letterboxd's
 letterboxdpy
 LF
 lgbtq
