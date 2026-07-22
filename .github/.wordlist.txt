@@ -36,6 +36,8 @@ bafta
 bambara
 bbfc
 bearlikelion
+Beetlejuice
+beetlejuice
 berlinale
 bestest
 bing
@@ -135,6 +137,7 @@ fi
 filepath
 filetype
 filmin
+filmography
 flac
 flixpatrol
 fontawesome
