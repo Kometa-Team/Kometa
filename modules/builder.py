@@ -1771,6 +1771,8 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "tvdb_description":
@@ -1810,6 +1812,8 @@ class CollectionBuilder:
                 self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "file_poster":
@@ -1832,6 +1836,8 @@ class CollectionBuilder:
                 self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "file_background":
@@ -3436,6 +3442,8 @@ class CollectionBuilder:
                         self.posters[method_name] = item.poster_url
                 except tvdb.NotFound as e:
                     logger.debug(e)
+                except tvdb.CircuitOpen:
+                    pass
                 except tvdb.Unavailable as e:
                     logger.warning(e)
             elif method_name.startswith("tvdb_list"):
@@ -4518,6 +4526,8 @@ class CollectionBuilder:
                             except tvdb.NotFound as e:
                                 logger.debug(e)
                                 or_result = False
+                            except tvdb.CircuitOpen:
+                                or_result = False
                             except tvdb.Unavailable as e:
                                 logger.warning(e)
                                 or_result = False
@@ -4664,6 +4674,8 @@ class CollectionBuilder:
                     # TVDb ID is stale (e.g. TMDb still points at a series TVDb no longer has); not user-actionable, log quietly
                     logger.debug(e)
                     continue
+                except tvdb.CircuitOpen:
+                    break
                 except tvdb.Unavailable as e:
                     # TVDb didn't return usable content in time; not a confirmed absence, may resolve on a later run
                     logger.warning(e)
@@ -5398,6 +5410,8 @@ class CollectionBuilder:
                     except tvdb.NotFound as e:
                         logger.debug(e)
                         continue
+                    except tvdb.CircuitOpen:
+                        break
                     except tvdb.Unavailable as e:
                         logger.warning(e)
                         continue

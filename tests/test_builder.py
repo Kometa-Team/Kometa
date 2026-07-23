@@ -397,6 +397,32 @@ class TestTmdbLookupResilience:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# TVDb outage resilience
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTvdbOutageResilience:
+    def test_run_missing_stops_after_tvdb_circuit_opens(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
+        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
+            is_playlist=False,
+            missing_shows=[1, 2, 3],
+            details={"show_missing": False, "show_filtered": False, "missing_only_released": False},
+            run_again=False,
+        )
+
+        builder.run_missing()
+
+        get_tvdb_obj.assert_called_once_with(1)
+        assert logger.warning_messages == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
