@@ -142,6 +142,8 @@ def _is_transient_tmdb_exception(exception):
         exception_status = getattr(current, "status_code", None)
         structured_statuses = []
         for status in (response_status, exception_status):
+            if status is None:
+                continue
             try:
                 structured_statuses.append(int(status))
             except (TypeError, ValueError):
