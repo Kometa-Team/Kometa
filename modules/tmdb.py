@@ -140,13 +140,19 @@ def _is_transient_tmdb_exception(exception):
         response = getattr(current, "response", None)
         response_status = getattr(response, "status_code", None)
         exception_status = getattr(current, "status_code", None)
-        http_match = re.search(r"\((\d{3})\s+\[", message)
-        tmdb_match = re.search(r"['\"]?status_code['\"]?\s*:\s*(\d+)\b", message)
-        http_status = int(http_match.group(1)) if http_match else response_status
-        tmdb_status = int(tmdb_match.group(1)) if tmdb_match else exception_status
-        if isinstance(http_status, int) and (http_status in transient_http_status_codes or http_status >= 500):
-            return True
-        if isinstance(tmdb_status, int) and tmdb_status in transient_tmdb_status_codes:
+        structured_statuses = []
+        for status in (response_status, exception_status):
+            try:
+                structured_statuses.append(int(status))
+            except (TypeError, ValueError):
+                pass
+        if structured_statuses:
+            statuses = structured_statuses
+        else:
+            http_match = re.search(r"\((\d{3})\s+\[", message)
+            tmdb_match = re.search(r"['\"]?status_code['\"]?\s*:\s*(\d+)\b", message)
+            statuses = [int(match.group(1)) for match in (http_match, tmdb_match) if match]
+        if any(status in transient_http_status_codes or status >= 500 or status in transient_tmdb_status_codes for status in statuses):
             return True
         if any(pattern in message for pattern in ("Connection reset by peer", "Connection aborted", "Failed to Connect", "Read timed out", "timed out")):
             return True
@@ -565,11 +571,14 @@ class TMDb:
             results = self.TMDb.trending("movie" if is_movie else "tv", "day" if method == "tmdb_trending_daily" else "week")
         return [(i.id, result_type) for i in results.get_results(data)]
 
-    @TMDB_RETRY
     def _get_discover_ids(self, attrs, is_movie, result_type, limit):
         results = self.TMDb.discover_movies(**attrs) if is_movie else self.TMDb.discover_tv_shows(**attrs)
         amount = results.total_results if limit == 0 or results.total_results < limit else limit
-        return [(i.id, result_type) for i in results.get_results(amount)], amount
+        return self._get_discover_results(results, amount, result_type), amount
+
+    @TMDB_RETRY
+    def _get_discover_results(self, results, amount, result_type):
+        return [(i.id, result_type) for i in results.get_results(amount)]
 
     def get_tmdb_ids(self, method, data, is_movie, region):
         if not region and self.region:

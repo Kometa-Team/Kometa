@@ -59,6 +59,19 @@ def test_tmdb_404_is_not_transient():
     assert not tmdb._is_transient_tmdb_exception(tmdb.TMDbException("(404 [Not Found]) {'status_code': 34}"))
 
 
+def test_structured_status_takes_precedence_over_message_status():
+    response_error = Exception("(502 [Bad Gateway]) {'status_code': 43}")
+    response_error.response = SimpleNamespace(status_code=404)
+    exception_error = Exception("(502 [Bad Gateway]) {'status_code': 43}")
+    exception_error.status_code = 404
+    transient_error = Exception("(404 [Not Found]) {'status_code': 34}")
+    transient_error.response = SimpleNamespace(status_code=502)
+
+    assert not tmdb._is_transient_tmdb_exception(response_error)
+    assert not tmdb._is_transient_tmdb_exception(exception_error)
+    assert tmdb._is_transient_tmdb_exception(transient_error)
+
+
 @pytest.mark.parametrize(
     "error",
     [
@@ -70,16 +83,17 @@ def test_tmdb_404_is_not_transient():
 def test_discover_retries_transient_service_errors_without_traceback(monkeypatch, error):
     t = _bare_tmdb(monkeypatch)
     logger = tmdb.logger
-    results = SimpleNamespace(total_results=2, get_results=MagicMock(return_value=[SimpleNamespace(id=10), SimpleNamespace(id=20)]))
-    discover = MagicMock(side_effect=[error, results])
+    results = SimpleNamespace(total_results=2, get_results=MagicMock(side_effect=[error, [SimpleNamespace(id=10), SimpleNamespace(id=20)]]))
+    discover = MagicMock(return_value=results)
     t.TMDb = SimpleNamespace(discover_tv_shows=discover)
-    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+    monkeypatch.setattr(tmdb.TMDb._get_discover_results.retry, "wait", wait_none())
 
     ids, amount = t._get_discover_ids({"watch_region": "US"}, False, "tmdb_show", 0)
 
     assert ids == [(10, "tmdb_show"), (20, "tmdb_show")]
     assert amount == 2
-    assert discover.call_count == 2
+    discover.assert_called_once_with(watch_region="US")
+    assert results.get_results.call_count == 2
     assert len(logger.warning_messages) == 1
     assert "transient service error" in logger.warning_messages[0]
 
@@ -95,27 +109,31 @@ def test_discover_retries_transient_service_errors_without_traceback(monkeypatch
 )
 def test_discover_does_not_retry_terminal_errors(monkeypatch, error):
     t = _bare_tmdb(monkeypatch)
-    discover = MagicMock(side_effect=error)
+    results = SimpleNamespace(total_results=2, get_results=MagicMock(side_effect=error))
+    discover = MagicMock(return_value=results)
     t.TMDb = SimpleNamespace(discover_tv_shows=discover)
-    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+    monkeypatch.setattr(tmdb.TMDb._get_discover_results.retry, "wait", wait_none())
 
     with pytest.raises(type(error)) as excinfo:
         t._get_discover_ids({}, False, "tmdb_show", 0)
 
     assert str(excinfo.value) == str(error)
     discover.assert_called_once_with()
+    results.get_results.assert_called_once_with(2)
 
 
 def test_discover_exhaustion_becomes_service_unavailable(monkeypatch):
     t = _bare_tmdb(monkeypatch)
-    discover = MagicMock(side_effect=tmdb.TMDbException("(502 [Bad Gateway]) {'status_code': 43}"))
+    results = SimpleNamespace(total_results=2, get_results=MagicMock(side_effect=tmdb.TMDbException("(502 [Bad Gateway]) {'status_code': 43}")))
+    discover = MagicMock(return_value=results)
     t.TMDb = SimpleNamespace(discover_tv_shows=discover)
-    monkeypatch.setattr(tmdb.TMDb._get_discover_ids.retry, "wait", wait_none())
+    monkeypatch.setattr(tmdb.TMDb._get_discover_results.retry, "wait", wait_none())
 
     with pytest.raises(tmdb.Unavailable, match="Service unavailable after 6 attempts"):
         t._get_discover_ids({}, False, "tmdb_show", 0)
 
-    assert discover.call_count == 6
+    discover.assert_called_once_with()
+    assert results.get_results.call_count == 6
 
 
 def test_show_hydration_retries_lazy_transient_502(monkeypatch):
