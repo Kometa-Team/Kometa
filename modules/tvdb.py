@@ -5,7 +5,7 @@ from datetime import datetime
 from lxml import html
 from lxml.etree import ParserError
 from requests.exceptions import MissingSchema
-from tenacity import retry, retry_if_not_exception_type, wait_fixed
+from tenacity import retry, retry_if_not_exception_type, wait_exponential, wait_fixed
 
 from modules import util
 from modules.util import Failed
@@ -41,12 +41,20 @@ class TVDbEmptyResponse(Exception):
 empty_response_attempts = 3
 empty_response_circuit_threshold = 2
 default_attempts = 6
+empty_response_wait = wait_exponential(multiplier=1, min=1, max=8)
+default_wait = wait_fixed(10)
 
 
 def _tvdb_stop(retry_state):
     """Use a smaller retry budget for empty documents than other transient failures."""
     attempts = empty_response_attempts if isinstance(retry_state.outcome.exception(), TVDbEmptyResponse) else default_attempts
     return retry_state.attempt_number >= attempts
+
+
+def _tvdb_wait(retry_state):
+    """Back off quickly for empty documents while preserving the existing delay for other transient failures."""
+    wait = empty_response_wait if isinstance(retry_state.outcome.exception(), TVDbEmptyResponse) else default_wait
+    return wait(retry_state)
 
 
 def _tvdb_retry_exhausted(retry_state):
@@ -353,7 +361,7 @@ class TVDb:
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-    @retry(stop=_tvdb_stop, wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
+    @retry(stop=_tvdb_stop, wait=_tvdb_wait, retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
     def get_request(self, tvdb_url):
         if self._empty_response_circuit_open:
             raise CircuitOpen(f"TVDb Error: Skipping TVDb requests for the remainder of this run after {self._empty_response_failures} distinct URLs exhausted empty-response retries")

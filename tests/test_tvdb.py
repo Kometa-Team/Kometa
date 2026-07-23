@@ -24,6 +24,13 @@ def test_notfound_is_failed_subclass():
     assert issubclass(tvdb.NotFound, Failed)
 
 
+@pytest.mark.parametrize(("exception", "attempt_number", "expected_wait"), [(tvdb.TVDbEmptyResponse("https://example.com", 202), 1, 1), (tvdb.TVDbEmptyResponse("https://example.com", 202), 2, 2), (tvdb.TVDbServerError("(503) Mocked"), 1, 10)])
+def test_tvdb_wait_depends_on_failure_type(exception, attempt_number, expected_wait):
+    retry_state = SimpleNamespace(outcome=SimpleNamespace(exception=lambda: exception), attempt_number=attempt_number)
+
+    assert tvdb._tvdb_wait(retry_state) == expected_wait
+
+
 def test_get_request_raises_notfound_on_4xx():
     t = _make_tvdb(404)
     with pytest.raises(tvdb.NotFound):
