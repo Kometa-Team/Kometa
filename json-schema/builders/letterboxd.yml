@@ -62,6 +62,29 @@ collections:
       rating: 7-10
       limit: 20
 
+  # --- Semantic discovery builders use Letterboxd slugs, not page URLs ---
+  Marlon Brando Films:
+    collection_order: custom
+    letterboxd_crew:
+      role: actor
+      person: marlon-brando
+
+  A24 by Release:
+    collection_order: custom
+    letterboxd_studio:
+      studio: a24
+      sort_by: release_date_newest
+
+  Crime Films:
+    collection_order: custom
+    letterboxd_genre:
+      genre: crime
+      limit: 20
+
+  Films Similar to The Godfather:
+    collection_order: custom
+    letterboxd_similar: the-godfather
+
   # ---------------------------------------------------------------------------
   # letterboxd_user_films — every film a Letterboxd user has watched
   #

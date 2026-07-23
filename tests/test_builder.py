@@ -14,7 +14,7 @@ import pytest
 from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
-from modules.builder import CollectionBuilder, parts_collection_valid
+from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -135,6 +135,16 @@ def _episode_builder(library) -> CollectionBuilder:
         libraries=[library],
         details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# custom_sort_builders
+# ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.parametrize("method", builder_module.letterboxd.semantic_builders)
+def test_letterboxd_discovery_builders_support_custom_sort(method):
+    assert method in custom_sort_builders
 
 
 # ═══════════════════════════════════════════════════════════════════════

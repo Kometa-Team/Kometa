@@ -2,7 +2,7 @@ apprise>=1.9.0
 arrapi==1.4.14
 cloudscraper==1.2.71
 letterboxdpy==6.5.7
-GitPython==3.1.51
+gitpython==3.1.54
 jsonschema==4.26.0
 lxml==6.1.1
 num2words==0.5.14

@@ -63,6 +63,7 @@ show_only_builders = [
 movie_only_builders = [
     "letterboxd_list",
     "letterboxd_list_details",
+    *letterboxd.semantic_builders,
     "letterboxd_user_films",
     "letterboxd_user_films_details",
     "letterboxd_user_reviews",
@@ -535,6 +536,7 @@ custom_sort_builders = [
     "tautulli_watched",
     "mdblist_list",
     "letterboxd_list",
+    *letterboxd.semantic_builders,
     "icheckmovies_list",
     "anilist_top_rated",
     "anilist_popular",
@@ -2540,6 +2542,9 @@ class CollectionBuilder:
                 self.builders.append(("letterboxd_list", letterboxd_list))
             if method_name.endswith("_details"):
                 self.summaries[method_name] = self.config.Letterboxd.get_list_description(letterboxd_lists[0]["url"], self.language)
+        elif method_name in letterboxd.semantic_builders:
+            for letterboxd_list in self.config.Letterboxd.validate_letterboxd_builder(self.Type, method_name, method_data, self.language):
+                self.builders.append((method_name, letterboxd_list))
         elif method_name.startswith("letterboxd_user_films"):
             page_type = "films"
             # If method_data is a list, check for shared parameters at collection level
