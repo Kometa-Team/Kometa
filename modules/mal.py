@@ -61,7 +61,7 @@ search_ratings = ["g", "pg", "pg13", "r17", "r", "rx"]
 search_sorts = ["mal_id", "title", "type", "rating", "start_date", "end_date", "episodes", "score", "scored_by", "rank", "popularity", "members", "favorites"]
 search_combos = [f"{s}.{d}" for s in search_sorts for d in ["desc", "asc"]]
 base_url = "https://api.myanimelist.net/v2/"
-jikan_base_url = "https://api.jikan.moe/v4/"
+jikan_base_url = "https://malapi.animemap.dev/v4/"
 uni_code_verifier = "k_UHwN_eHAPQVXiceC-rYGkozKqrJmKxPUIUOBIKo1noq_4XGRVCViP_dGcwB-fkPql8f56mmWj5aWCa2HDeugf6sRvnc9Rjhbb1vKGYLY0IwWsDNXRqXdksaVGJthux"
 urls = {
     "oauth_token": "https://myanimelist.net/v1/oauth2/token",
