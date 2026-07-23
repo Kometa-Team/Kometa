@@ -93,6 +93,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "libraries": [],
         "ignore_imdb_ids": [],
         "ignore_ids": [],
+        "missing_movies": [],
         "missing_parts": [],
         "missing_shows": [],
         "do_missing": True,

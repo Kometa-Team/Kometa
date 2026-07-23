@@ -114,7 +114,8 @@ def test_usable_response_resets_empty_response_streak(monkeypatch):
     assert t._empty_response_circuit_open is False
 
 
-def test_circuit_open_propagates_from_url_lookup():
+def test_circuit_open_propagates_from_url_lookup(monkeypatch):
+    monkeypatch.setattr(tvdb, "logger", MagicMock())
     t = _make_tvdb(200)
     t._empty_response_failures = tvdb.empty_response_circuit_threshold
     t._empty_response_circuit_open = True
