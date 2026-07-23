@@ -5,7 +5,7 @@ from datetime import datetime
 from lxml import html
 from lxml.etree import ParserError
 from requests.exceptions import MissingSchema
-from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_exponential
 
 from modules import util
 from modules.util import Failed
@@ -26,13 +26,24 @@ class TVDbServerError(Exception):
 
 
 def _tvdb_retry_exhausted(retry_state):
-    """Convert an exhausted TVDb retry loop (5xx, or repeated unparsable 202/empty responses) into Unavailable."""
+    """Convert an exhausted TVDb retry loop (5xx, or repeated unparsable 202/empty responses) into Unavailable.
+
+    Also trips a per-run circuit breaker on the TVDb instance so that once TVDb is clearly degraded, the
+    remaining lookups this run fail fast instead of each burning the full retry budget."""
+    tvdb = retry_state.args[0] if retry_state.args else None
+    if tvdb is not None:
+        tvdb._degraded_failures += 1
+        if tvdb._degraded_failures >= TVDB_DEGRADED_THRESHOLD:
+            tvdb._degraded = True
     raise Unavailable(f"TVDb Error: No usable response from TVDb after {retry_state.attempt_number} attempt(s): {retry_state.outcome.exception()}") from retry_state.outcome.exception()
 
 
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
 base_url = "https://www.thetvdb.com"
 alt_url = "https://thetvdb.com"
+# After this many exhausted retry loops in one run, treat TVDb as degraded and fail fast for the rest
+# of the run instead of retrying every subsequent lookup (avoids ~50s per ID during a broad outage).
+TVDB_DEGRADED_THRESHOLD = 3
 urls = {
     "list": f"{base_url}/lists/",
     "alt_list": f"{alt_url}/lists/",
@@ -309,13 +320,19 @@ class TVDb:
         self.cache = cache
         self.language = tvdb_language
         self.expiration = expiration
+        # Per-run circuit breaker: trips after TVDB_DEGRADED_THRESHOLD exhausted retry loops so the rest
+        # of the run fails fast instead of retrying a clearly-degraded TVDb.
+        self._degraded = False
+        self._degraded_failures = 0
 
     def get_tvdb_obj(self, tvdb_url, is_movie=False):
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
+    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=1, max=8), retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
     def get_request(self, tvdb_url):
+        if self._degraded:
+            raise Unavailable("TVDb Error: TVDb marked unavailable for this run after repeated failures; skipping request")
         response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:
             # 4xx = definitive "gone" (NotFound); 5xx = transient (TVDbServerError, retried by tenacity)

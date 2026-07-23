@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `modules/tvdb.py`: stop wasting ~50s per TVDb ID when TVDb is degraded. The `get_request` retry loop is trimmed from 6 fixed 10s waits to 3 attempts with capped exponential backoff, and a per-run circuit breaker now trips after 3 exhausted loops so the remaining lookups fail fast (raise `Unavailable` without a network call) instead of each re-running the full retry budget. Empty-body 200 responses (lxml "Document is empty") are what triggered the prior behaviour, most visibly in the best-effort missing-shows report.
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 - Drop-in replacement for the jikan api
 
