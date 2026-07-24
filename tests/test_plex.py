@@ -82,6 +82,46 @@ def make_plex_item(
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# image_update
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestImageUpdate:
+    def test_tmdb_reset_returns_structured_result_and_logs_detail_at_trace(self):
+        import modules.plex as plex_module
+
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+        plex.upload_poster = MagicMock()
+        plex.item_labels = MagicMock(return_value=[])
+
+        result = plex.image_update(make_plex_item(), None, tmdb=("tmdb", "https://image.tmdb.org/poster.jpg"), title="S01E01")
+
+        assert result == ("Reset", "TMDb", "Updated")
+        plex.upload_poster.assert_called_once()
+        assert "S01E01 Poster | Reset from TMDb" in plex_module.logger.trace_messages
+        assert "S01E01 Poster | Reset from TMDb" not in plex_module.logger.info_messages
+
+    def test_missing_tmdb_reset_returns_missing_result_and_keeps_warning(self):
+        import modules.plex as plex_module
+
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+
+        result = plex.image_update(make_plex_item(), None, tmdb=("tmdb", None), title="S01E01")
+
+        assert result == ("Reset", "TMDb", "Missing")
+        assert "S01E01 Poster | No Reset Image Found" in plex_module.logger.warning_messages
+
+    def test_asset_reset_is_counted_under_actual_source(self):
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+        plex.upload_poster = MagicMock()
+        plex.item_labels = MagicMock(return_value=[])
+
+        result = plex.image_update(make_plex_item(), SimpleNamespace(location="/assets/poster.jpg"), tmdb=("tmdb", "https://image.tmdb.org/poster.jpg"))
+
+        assert result == ("Reset", "Assets", "Updated")
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # validate_image_size
 # ═══════════════════════════════════════════════════════════════════════
 

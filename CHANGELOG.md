@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
 - Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
 - Restore per-item label removal when deleting smart-label collections, preventing an `AttributeError` from the removed `batch_edit_tags` API.
+- Replace per-item mass image-operation success messages with a per-library summary grouped by operation, source, image type, media level, and result; preserve the detailed messages in trace logs, and collapse repeated `No Reset Image Found` warnings by image type in the end-of-run summary.
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 - Added Drop-in replacement for the jikan api as it is being deprecated
 
