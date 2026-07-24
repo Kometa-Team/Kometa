@@ -14,7 +14,8 @@ class Ntfy:
         logger.secret(self.url)
         logger.secret(self.token)
 
-        self._test_url()
+        if params.get("test_on_start", False):
+            self._test_url()
 
     def _test_url(self):
         try:

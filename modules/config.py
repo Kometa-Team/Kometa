@@ -976,6 +976,7 @@ class ConfigFile:
                         "url": check_for_attribute(self.data, "url", parent="ntfy", throw=True),
                         "token": check_for_attribute(self.data, "token", parent="ntfy", throw=True),
                         "topic": check_for_attribute(self.data, "topic", parent="ntfy", throw=True),
+                        "test_on_start": check_for_attribute(self.data, "test_on_start", parent="ntfy", var_type="bool", default=False),
                     },
                 )
             except Failed as e:
@@ -984,7 +985,7 @@ class ConfigFile:
                 else:
                     logger.stacktrace()
                     logger.error(e)
-            logger.info(f"ntfy Connection {'Failed' if self.NtfyFactory is None else 'Successful'}")
+            logger.info(f"ntfy Configuration {'Failed' if self.NtfyFactory is None else 'Successful'}")
         else:
             logger.info("ntfy attribute not found")
 

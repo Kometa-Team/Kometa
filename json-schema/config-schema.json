@@ -1095,6 +1095,10 @@
         },
         "topic": {
           "type": "string"
+        },
+        "test_on_start": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [
