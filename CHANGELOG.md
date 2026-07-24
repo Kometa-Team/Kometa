@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- updated Trakt authentication docs to reflect new callback based method and remove mentions of inline Kometa authentication method.
+
+### Fixed
+
+- Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
+- Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
+- Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
+- `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
+- Drop-in replacement for the jikan api
+
+## [v2.4.5] - 2026-07-22
+
+### Added
 
 - Add semantic `letterboxd_crew`, `letterboxd_studio`, `letterboxd_country`, `letterboxd_language`, `letterboxd_genre`, `letterboxd_theme`, `letterboxd_similar`, and `letterboxd_collection` builders for Letterboxd discovery pages.
 - Add `value_filter` overlay-file attribute to filter items at selection time based on a runtime-fetched numeric value; supports comparators `gte`, `gt`, `lt`, `lte` on any `rating_sources` variable using the normalised 0–10 scale.
@@ -26,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+- Allow all semantic Letterboxd discovery builders to use `collection_order: custom`, preserving Letterboxd's returned order in Plex collections.
 - Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
 - `modules/tvdb.py`: add a distinct `Unavailable` exception for TVDb requests that exhaust their retry budget without ever returning usable content (e.g. repeated HTTP 202/empty-body "still generating" responses), separate from `NotFound`'s definitive 4xx. Previously both were re-raised with the identical "No Series/Movie found" message, so a confirmed-dead TVDb ID and a transient TVDb hiccup were indistinguishable in the log. All `get_tvdb_obj()` call sites (`modules/builder.py`, `modules/operations.py`) now log `NotFound` at debug (unchanged), `Unavailable` at warning (previously logged at error via the generic `Failed` handler), and any other `Failed` at error (unchanged).
@@ -78,17 +92,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
 - Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
 - Update requirements
-
-### Security
-
-- `modules/cache.py`: dynamic table/column names interpolated into SQL are now validated by a `sql_identifier()` guard at every method that accepts them. All current callers pass internal identifiers, so this hardens against future misuse rather than fixing an exploitable path (and addresses bandit B608).
-- `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
-- `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
-- `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
-- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
-
-### Changed
-
+- Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
@@ -101,6 +105,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/request.py`: a per-library `verify_ssl: false` (e.g. on a Plex connection) no longer disables `InsecureRequestWarning` process-wide; only the config-level global SSL opt-out does.
 - `modules/letterboxd.py`: short `boxd.it` URLs must use http/https; other schemes now fail with a clear error before any network call.
 - `modules/logs.py`: registered secrets are also redacted in their URL-encoded (`quote`/`quote_plus`) forms, so tokens embedded in logged query strings no longer slip past redaction.
+- Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
 ## [v2.4.4] - 2026-06-25
 
@@ -265,7 +270,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...HEAD
+[v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
 [v2.4.2]: https://github.com/Kometa-Team/Kometa/compare/v2.3.1...v2.4.2

@@ -31,13 +31,18 @@ atmos
 atres
 avenir
 Babygirl
+backend
 backoff
 bafta
 bambara
 bbfc
 bearlikelion
+Beetlejuice
+beetlejuice
 berlinale
 bestest
+Beetlejuice
+beetlejuice
 bing
 bitrate
 bitrateh
@@ -73,6 +78,7 @@ comparator
 comparators
 config
 configs
+CORS
 cov
 cour
 cpp
@@ -135,6 +141,7 @@ fi
 filepath
 filetype
 filmin
+filmography
 flac
 flixpatrol
 fontawesome
@@ -192,6 +199,7 @@ itvx
 ja
 jd
 jfcherng
+jikan
 jinja
 jkirkcaldy
 johnfawkes
@@ -218,6 +226,7 @@ kuesel
 launchd
 Lavagirl
 letterboxd
+Letterboxd's
 letterboxdpy
 LF
 lgbtq
@@ -447,6 +456,7 @@ TomatoRotten
 tooltip
 tooltips
 traceback
+tracebacks
 trakt
 trakt's
 transcoded
@@ -476,6 +486,7 @@ unplayed
 unprioritised
 unraid
 unresolvable
+unreviewed
 untyped
 uri
 url

@@ -14,7 +14,7 @@ import pytest
 from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
-from modules.builder import CollectionBuilder, parts_collection_valid
+from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -93,6 +93,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "libraries": [],
         "ignore_imdb_ids": [],
         "ignore_ids": [],
+        "missing_movies": [],
         "missing_parts": [],
         "missing_shows": [],
         "do_missing": True,
@@ -135,6 +136,16 @@ def _episode_builder(library) -> CollectionBuilder:
         libraries=[library],
         details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
     )
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# custom_sort_builders
+# ═══════════════════════════════════════════════════════════════════════
+
+
+@pytest.mark.parametrize("method", builder_module.letterboxd.semantic_builders)
+def test_letterboxd_discovery_builders_support_custom_sort(method):
+    assert method in custom_sort_builders
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -384,6 +395,32 @@ class TestTmdbLookupResilience:
         builder.run_collections_again()
 
         assert any("unable to load movie TMDb ID 123" in message for message in logger.warning_messages)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# TVDb outage resilience
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTvdbOutageResilience:
+    def test_run_missing_stops_after_tvdb_circuit_opens(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
+        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
+            is_playlist=False,
+            missing_shows=[1, 2, 3],
+            details={"show_missing": False, "show_filtered": False, "missing_only_released": False},
+            run_again=False,
+        )
+
+        builder.run_missing()
+
+        get_tvdb_obj.assert_called_once_with(1)
+        assert logger.warning_messages == []
 
 
 # ═══════════════════════════════════════════════════════════════════════

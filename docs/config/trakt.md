@@ -8,7 +8,13 @@ hide:
 
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
-The `trakt` attribute is found at the root of the config file.  Some of these are filled in by you, others are filled in by Trakt:
+
+???+ warning
+
+    Using Trakt meaningfully with Kometa probably requires a Trakt VIP account, since Trakt has limited free accounts to having a single external application connected.  This means that if you connect Kometa to Trakt, you can't use Trakt with any other application like MDBList, and vice versa, if you connect Trakt to any other applicaiton, you can't connect it to Kometa.
+
+
+The `trakt` attribute is found at the root of the config file.
 
 Kometa will keep these credentials up-to-date; they expire in 24 hours and will need to be renewed.
 
@@ -41,58 +47,18 @@ trakt:
 | `pin`           | Trakt PIN.                        | PIN string or leave **blank**        |  :fontawesome-solid-circle-xmark:{ .red }  |
 | `force_refresh` | Refresh credentials on every run. | 'true' or 'false'                    |  :fontawesome-solid-circle-xmark:{ .red }  |
 
-*All other attributes will be filled in by Kometa as part of the authentication process*
+*All other attributes will be filled in as part of the authentication process*
 
-### Authenticating outside Kometa
+### Authenticating Trakt
 
-The simplest and preferred way to authenticate against Trakt is the [Kometa Utilities](./authentication.md).
+To connect to Trakt.tv you must create a Trakt application:
 
-If you want to do this manually, read on.
+1. [Click here to create a Trakt API application.](https://app.trakt.tv/settings/apps/api)
+2. Click the "+" in the upper right.
+3. Enter a `Name` for the application.
+4. Enter `https://utilities.kometa.wiki/trakt-oauth/callback` for `Redirect uri`.
+5. You can leave "Description" and "JavaScript (CORS) origins" blank.
+6. Click the `Create` button.
+7. Record the `Client ID` and `Client Secret`; you will need them later, and you only need do this process once..
 
-### Important Note on "Authentication Process":
-
-The Trakt authentication process is interactive; Kometa will display a URL in the console output and then wait for you to visit that URL in order to grant access and then paste in some additional information.  In order for this to happen you need to run Kometa in an interactive mode, which can be fussy in some contexts (e.g., running Kometa in a Docker container on a NAS).  For this reason, it is far simpler to use the form down below to perform these steps; it does all the same steps, but takes them out of the Kometa script execution.  The form will produce a complete authentication block as shown above ready for you to copy-paste into your `config.yml`.
-
-## Trakt Authentication
-
-You can complete the trakt authentication interactively during the config run, or you can complete it outside of Kometa and paste in the resulting `trakt` attribute.
-
-### Common activities:
-
-To connect to Trakt.tv you must create a Trakt application and supply Kometa the `client_id`,`client_secret`, and `pin` provided, please do the following:
-
-1. [Click here to create a Trakt API application.](https://trakt.tv/oauth/applications/new)
-2. Enter a `Name` for the application.
-3. Enter `urn:ietf:wg:oauth:2.0:oob` for `Redirect uri`.
-4. Click the `SAVE APP` button.
-5. Record the `Client ID` and `Client Secret`; you will need them in a moment.
-6. Click the Green Authorize Button next to the Redirect URI.
-
-    ![Trakt Authorize](../assets/images/config/trakt.png)
-
-7. Record the `PIN`; you will need it in a moment.
-
-???+ warning
-
-    Run Kometa shortly after obtaining your PIN; the PIN may expire at some point.
-
-### Authenticating during the Kometa run
-
-1. Add the `Client ID` and `Client Secret` as `client_id` and `client_secret` to your Configuration File.
-2. Add the `PIN` as `pin` in your Configuration File.
-
-    ```yaml title="config.yml Trakt sample"
-    trakt:
-      client_id: 1a2b3c4d5e6f7g8h9i     ## HERE
-      client_secret: 1a12b23c34d45e56f6 ## HERE
-      pin: 12345                        ## HERE
-      force_refresh: false
-      authorization:
-        access_token:
-        token_type:
-        expires_in:
-        refresh_token:
-        scope:
-        created_at:
-    ```
-3. Run Kometa within ten minutes of creating the PIN
+Now authenticate against Trakt using the [Kometa Utilities](./authentication.md).
