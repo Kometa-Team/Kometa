@@ -984,7 +984,7 @@ class ConfigFile:
                 else:
                     logger.stacktrace()
                     logger.error(e)
-            logger.info(f"ntfy Connection {'Failed' if self.NtfyFactory is None else 'Successful'}")
+            logger.info(f"ntfy Configuration {'Failed' if self.NtfyFactory is None else 'Successful'}")
         else:
             logger.info("ntfy attribute not found")
 

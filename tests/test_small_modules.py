@@ -78,6 +78,16 @@ class TestNtfy:
         adapter.notification({"event": "test"})
         adapter._request.assert_called_once()
 
+    def test_init_does_not_publish_access_test(self, monkeypatch):
+        from modules.ntfy import Ntfy
+
+        monkeypatch.setattr("modules.ntfy.logger", FakeLogger())
+        requests = MagicMock()
+
+        Ntfy(requests, {"url": "http://ntfy:8080", "token": "fake", "topic": "test"})
+
+        requests.post.assert_not_called()
+
 
 class TestNotifiarr:
     @pytest.fixture
