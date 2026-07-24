@@ -730,6 +730,10 @@ def start(attrs):
                 (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
+                (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
+                (r".*Background \| No Reset Image Found", "Background Warning: No Reset Image Found"),
+                (r".*Logo \| No Reset Image Found", "Logo Warning: No Reset Image Found"),
+                (r".*Square Art \| No Reset Image Found", "Square Art Warning: No Reset Image Found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
                 (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
                 (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
@@ -741,7 +745,7 @@ def start(attrs):
                 for log_line in f:
                     for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                         if f"[{err_type}]" in log_line:
-                            log_line = log_line.split("|")[1].strip()
+                            log_line = log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):

@@ -8,6 +8,7 @@ so every managed collection appeared "unconfigured" and was deleted.
 Fix: use self.library.collection_names (pre-populated from YAML before the run_order loop).
 """
 
+from collections import Counter
 from unittest.mock import MagicMock
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
@@ -16,7 +17,7 @@ import modules.operations as ops_module
 # util.logger is None until Kometa initialises its logger; patch it for tests.
 ops_module.logger = MagicMock()
 
-from modules.operations import Operations  # noqa: E402 -- must follow logger patch above
+from modules.operations import Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -39,6 +40,24 @@ def make_col(title, childCount=5, smart=False):
     col.childCount = childCount
     col.smart = smart
     return col
+
+
+def test_image_operation_summary_pivots_results_by_source_type_and_level():
+    counts = Counter(
+        {
+            ("Reset", "TMDb", "Poster", "Episode", "Updated"): 11077,
+            ("Reset", "TMDb", "Poster", "Episode", "Missing"): 318,
+            ("Reset", "TMDb", "Poster", "Season", "Updated"): 923,
+            ("Reset", "TMDb", "Poster", "Season", "Missing"): 6,
+            ("Lock", "Plex", "Poster", "Item", "Updated"): 2,
+        }
+    )
+
+    assert _image_operation_summary_rows(counts) == [
+        ("Lock", "Plex", "Poster", "Item", 2, 0, 0, 0),
+        ("Reset", "TMDb", "Poster", "Episode", 11077, 0, 318, 0),
+        ("Reset", "TMDb", "Poster", "Season", 923, 0, 6, 0),
+    ]
 
 
 # ---------------------------------------------------------------------------
