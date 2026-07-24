@@ -1802,12 +1802,7 @@ class Plex(Library):
         image_type = image_type or ("poster" if poster else "background")
         display_type = {"poster": "Poster", "background": "Background", "logo": "Logo", "square_art": "Square Art"}[image_type]
         text = f"{f'{title} ' if title else ''}{display_type}"
-        image_config = {
-            "poster": self.mass_poster_update,
-            "background": self.mass_background_update,
-            "logo": self.mass_logo_update,
-            "square_art": self.mass_square_art_update,
-        }[image_type]
+        image_config = getattr(self, f"mass_{image_type}_update")
         attr = image_config["source"]
         lang = image_config.get("language")
         resolved_attr = None
