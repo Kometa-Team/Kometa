@@ -7,7 +7,7 @@ from PIL import Image, ImageFilter
 from plexapi.exceptions import BadRequest
 from plexapi.video import Episode, Season
 
-from modules import overlay, plex, util
+from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder
 from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
@@ -74,6 +74,8 @@ class Overlays:
             logger.info("")
 
             total_keys = len(key_to_overlays)
+            # Plain attribute (not a `with` block, to avoid re-indenting ~370 lines) tagging every network call in this loop with this library, for per-library cost in timings-*.json.
+            timings.registry.library_ctx = self.library.name
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
@@ -85,7 +87,8 @@ class Overlays:
                     if self.cache:
                         _, image_compare = self.cache.query_overlay_poster(item.ratingKey, f"{self.library.image_table_name}_overlays")
                         cached_state = self.cache.query_overlay_state(item.ratingKey, f"{self.library.image_table_name}_overlay_state")
-                    self.library.reload(item, force=self.library.reapply_overlays)
+                    with timings.track("overlay_item_reload", library=self.library.name):
+                        self.library.reload(item, force=self.library.reapply_overlays)
                     has_overlay = any([item_tag.tag.lower() == "overlay" for item_tag in self.library.item_labels(item)])
 
                     current_hashes = {properties[ov].mapping_name: properties[ov].get_overlay_compare() for ov in over_names}
@@ -135,8 +138,9 @@ class Overlays:
                                         except Failed:
                                             continue
                                     elif actual == "total_runtime":
-                                        sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
-                                        sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
+                                        with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                            sub_items = item.episodes() if current_overlay.level in ["show", "season"] else item.tracks()
+                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]
                                         real_value = sum(sub_items)
                                     else:
                                         if not hasattr(item, actual):
@@ -200,7 +204,8 @@ class Overlays:
                         else:
                             reset_list = []
                         try:
-                            new_backup = self.library.item_posters(item, providers=reset_list)
+                            with timings.track("overlay_fetch", library=self.library.name):
+                                new_backup = self.library.item_posters(item, providers=reset_list)
                         except Failed as e:
                             if any(r in reset_list for r in ["plex", "tmdb"]):
                                 logger.error(e)
@@ -210,7 +215,8 @@ class Overlays:
                     logger.info(f"({i}/{len(key_to_overlays)}) {item_title}")
                     if new_backup:
                         try:
-                            has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
+                            with timings.track("overlay_fetch", library=self.library.name):
+                                has_original = self.library.check_image_for_overlay(new_backup, os.path.join(self.library.overlay_backup, f"{item.ratingKey}"))
                         except Failed as e:
                             raise Failed(f"  Overlay Error: {e}")
                     poster_compare = None
@@ -225,7 +231,7 @@ class Overlays:
                             elif not self.library.reapply_overlays and overlay_change:
                                 logger.trace(f"  Overlay Reason: Overlay changed {overlay_change}")
                             canvas_width, canvas_height = overlay.get_canvas_size(item)
-                            with Image.open(poster.location if poster else has_original) as new_poster:  # type: ignore[arg-type]
+                            with timings.track("overlay_compose", library=self.library.name), Image.open(poster.location if poster else has_original) as new_poster:  # type: ignore[arg-type]
                                 exif_tags = new_poster.getexif()
                                 exif_tags[0x04BC] = "overlay"
                                 new_poster = new_poster.convert("RGB").resize((canvas_width, canvas_height), Image.Resampling.LANCZOS)
@@ -282,12 +288,14 @@ class Overlays:
                                             if hasattr(item, "duration") and item.duration:
                                                 actual_value = item.duration
                                             else:
-                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
-                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
+                                                with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                                    sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                    sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                                 actual_value = sum(sub_items) / len(sub_items)
                                         elif format_var == "total_runtime":
-                                            sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
-                                            sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
+                                            with timings.track("overlay_runtime_lookup", library=self.library.name):
+                                                sub_items = item.episodes() if text_overlay.level in ["show", "season"] else item.tracks()  # type: ignore[union-attr]
+                                                sub_items = [ep.duration for ep in sub_items if hasattr(ep, "duration") and ep.duration]  # type: ignore[union-attr]
                                             actual_value = sum(sub_items)
                                         else:
                                             if not hasattr(item, actual_attr) or getattr(item, actual_attr) is None:
@@ -414,7 +422,8 @@ class Overlays:
                                     new_poster.save(temp, exif=exif_tags, lossless=True)
                                 else:
                                     new_poster.save(temp, exif=exif_tags)
-                                self.library.upload_poster(item, temp)
+                                with timings.track("overlay_plex_upload", library=self.library.name):
+                                    self.library.upload_poster(item, temp)
                                 self.library.edit_tags("label", item, add_tags=["Overlay"], do_print=False)
                                 poster_compare = poster.compare if poster else item.thumb
                                 logger.info(f"  Overlays Applied: {', '.join(over_names)}")
@@ -441,6 +450,7 @@ class Overlays:
                     logger.stacktrace()
                     logger.info("")
                     logger.error(f"Overlays Attempted on {item_title}: {', '.join(over_names)}")
+        timings.registry.library_ctx = None
         logger.exorcise()
         for _, over in properties.items():
             if over.image:
@@ -450,64 +460,66 @@ class Overlays:
         logger.separator(f"Finished {self.library.name} Library Overlays\nOverlays Run Time: {overlay_run_time}")
         return overlay_run_time
 
+    @timings.timed("compile_overlays")
     def compile_overlays(self):
         key_to_item = {}
         properties = {}
         overlay_groups = {}
         key_to_overlays = {}
 
-        for overlay_file in self.library.overlay_files:
-            for k, v in overlay_file.overlays.items():
-                try:
-                    builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
-                    logger.info("")
-
-                    logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
-
-                    prop_name = builder.overlay.mapping_name
-                    properties[prop_name] = builder.overlay
-
-                    builder.display_filters()
-
-                    for method, value in builder.builders:
-                        logger.debug("")
-                        logger.debug(f"Builder: {method}: {value}")
+        with timings.overlay_context(True):
+            for overlay_file in self.library.overlay_files:
+                for k, v in overlay_file.overlays.items():
+                    try:
+                        builder = CollectionBuilder(self.config, overlay_file, k, v, library=self.library, overlay=True)
                         logger.info("")
-                        try:
-                            builder.filter_and_save_items(builder.gather_ids(method, value))
-                        except Failed as e:
-                            if builder.ignore_blank_results:
-                                logger.info("")
-                                logger.warning(e)
-                            else:
-                                raise Failed(e)
 
-                    added_titles = []
-                    if builder.found_items:
-                        for item in builder.found_items:
-                            if builder.limit and len(added_titles) >= builder.limit:
-                                break
-                            key_to_item[item.ratingKey] = item
-                            added_titles.append(item)
-                            if item.ratingKey not in properties[prop_name].keys:
-                                properties[prop_name].keys.append(item.ratingKey)
-                    if added_titles:
-                        logger.info(f"{len(added_titles)} Items found for {prop_name}")
-                        logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
-                    else:
-                        logger.warning(f"No Items found for {prop_name}")
-                    logger.info("")
-                except NotScheduled as e:
-                    logger.info(e)
-                except FilterFailed:
-                    pass
-                except Failed as e:
-                    logger.error(e)
-                    logger.info("")
-                except Exception as e:
-                    logger.stacktrace()
-                    logger.error(f"Unknown Error: {e}")
-                    logger.info("")
+                        logger.separator(f"Gathering Items for {k} Overlay", space=False, border=False)
+
+                        prop_name = builder.overlay.mapping_name
+                        properties[prop_name] = builder.overlay
+
+                        builder.display_filters()
+
+                        for method, value in builder.builders:
+                            logger.debug("")
+                            logger.debug(f"Builder: {method}: {value}")
+                            logger.info("")
+                            try:
+                                builder.filter_and_save_items(builder.gather_ids(method, value))
+                            except Failed as e:
+                                if builder.ignore_blank_results:
+                                    logger.info("")
+                                    logger.warning(e)
+                                else:
+                                    raise Failed(e)
+
+                        added_titles = []
+                        if builder.found_items:
+                            for item in builder.found_items:
+                                if builder.limit and len(added_titles) >= builder.limit:
+                                    break
+                                key_to_item[item.ratingKey] = item
+                                added_titles.append(item)
+                                if item.ratingKey not in properties[prop_name].keys:
+                                    properties[prop_name].keys.append(item.ratingKey)
+                        if added_titles:
+                            logger.info(f"{len(added_titles)} Items found for {prop_name}")
+                            logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
+                        else:
+                            logger.warning(f"No Items found for {prop_name}")
+                        logger.info("")
+                    except NotScheduled as e:
+                        logger.info(e)
+                    except FilterFailed:
+                        pass
+                    except Failed as e:
+                        logger.error(e)
+                        logger.info("")
+                    except Exception as e:
+                        logger.stacktrace()
+                        logger.error(f"Unknown Error: {e}")
+                        logger.info("")
 
         logger.separator(f"Overlay Operation for the {self.library.name} Library")
         logger.debug("")

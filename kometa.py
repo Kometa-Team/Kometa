@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 import platform
 import re
@@ -93,6 +94,7 @@ arguments = {
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
+    "timings": {"args": ["timing"], "type": "bool", "help": "Run with Timing Instrumentation Enabled (writes a timings summary and JSON/CSV breakdown to the logs directory)"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -271,6 +273,12 @@ logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][
 from modules import util  # noqa: E402
 
 util.logger = logger
+from modules import timings  # noqa: E402
+
+# Must be set before modules.cache/modules.request are imported below - both read this at import/decoration time, not per-call.
+timings.ENABLED = run_args["timings"]
+timings.registry.enabled = run_args["timings"]
+
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -440,6 +448,15 @@ def start(attrs):
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        # Startup banner doubles as a mount-verification tripwire - missing despite --timings/KOMETA_TIMINGS means the mounted /modules code was silently ignored.
+        timings.registry.banner()
+        timings.registry.set_meta(
+            kometa_version=str(my_requests.local),
+            git_sha=timings.git_sha(),
+            image_digest=os.environ.get("KOMETA_IMAGE_DIGEST"),
+            run_label=os.environ.get("KOMETA_RUN_LABEL"),
+            config_file=run_args["config"],
+        )
         if is_linuxserver or is_docker:
             system_ver = f"{'Linuxserver' if is_linuxserver else 'Docker'}: {env_branch}"
         else:
@@ -572,14 +589,40 @@ def start(attrs):
             if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
                 logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
             else:
+                profiler = None
+                if os.environ.get("KOMETA_PROFILE") == "pyinstrument":
+                    try:
+                        from pyinstrument import Profiler  # noqa
+
+                        profiler = Profiler()
+                        profiler.start()
+                    except ImportError:
+                        logger.error("Timings Error: KOMETA_PROFILE=pyinstrument set but pyinstrument is not installed")
                 try:
                     stats = run_config(config, stats)
                 except Exception as e:
                     config.notify(get_critical_error_message(e))
                     log_critical_exception(e)
+                finally:
+                    if profiler is not None:
+                        profiler.stop()
+                        os.makedirs(logger.log_dir, exist_ok=True)
+                        profile_path = os.path.join(logger.log_dir, f"profile-{time.strftime('%Y%m%d-%H%M%S')}.html")
+                        with open(profile_path, "w", encoding="utf-8") as profile_fp:
+                            profile_fp.write(profiler.output_html())
+                        logger.info(f"pyinstrument profile written to {profile_path}")
         logger.info("")
         end_time = datetime.now()
         run_time = str(end_time - start_time).split(".")[0]
+        if timings.registry.enabled:
+            try:
+                config_path_for_hash = run_args["config"]
+                if config_path_for_hash and os.path.exists(config_path_for_hash):
+                    with open(config_path_for_hash, "rb") as config_fp:
+                        timings.registry.set_meta(config_hash=hashlib.sha256(config_fp.read()).hexdigest())
+            except OSError as e:
+                logger.error(f"Timings Error: Could not hash config file: {e}")
+            timings.registry.set_meta(start_time=str(start_time), end_time=str(end_time), run_time=run_time)
         if config:
             try:
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
@@ -790,6 +833,10 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
+        if timings.registry.enabled:
+            # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
+            timings.registry.export(logger.log_dir)
+
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
         end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
         logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
@@ -806,7 +853,8 @@ def run_config(config, stats):
     if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["metadata-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
         # logger.add_playlists_handler()
         if config.playlist_files:
-            playlist_status, playlist_stats = run_playlists(config)
+            with timings.overlay_context(False):
+                playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
             ran = []
             for library in config.libraries:
@@ -1047,6 +1095,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 temp_items = library.cache_items()
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
+            timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
@@ -1093,7 +1142,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.info("")
                             logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
                             # logger.remove_library_handler(library.mapping_name)
-                            run_collection(config, library, metadata, collections_to_run)
+                            with timings.overlay_context(False):
+                                run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
