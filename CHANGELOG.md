@@ -8,13 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
 - Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
 
 ### Fixed
-
+- Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
+- Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
+- Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
-- Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
+- Added Drop-in replacement for the jikan api as it is being deprecated
 
 ## [v2.4.5] - 2026-07-22
 

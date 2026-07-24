@@ -31,6 +31,7 @@ atmos
 atres
 avenir
 Babygirl
+backend
 backoff
 bafta
 bambara
@@ -77,6 +78,7 @@ comparator
 comparators
 config
 configs
+CORS
 cov
 cour
 cpp
@@ -198,6 +200,7 @@ itvx
 ja
 jd
 jfcherng
+jikan
 jinja
 jkirkcaldy
 johnfawkes
@@ -454,6 +457,7 @@ TomatoRotten
 tooltip
 tooltips
 traceback
+tracebacks
 trakt
 trakt's
 transcoded

@@ -5,7 +5,7 @@ from datetime import datetime
 from lxml import html
 from lxml.etree import ParserError
 from requests.exceptions import MissingSchema
-from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
+from tenacity import retry, retry_if_not_exception_type, wait_exponential, wait_fixed
 
 from modules import util
 from modules.util import Failed
@@ -21,13 +21,57 @@ class Unavailable(Failed):
     """Raised when TVDb never returned usable content after retries were exhausted (e.g. repeated 202/empty-body); not a confirmed absence like NotFound."""
 
 
+class CircuitOpen(Unavailable):
+    """Raised without making a request after repeated empty TVDb responses indicate a systemic outage."""
+
+
 class TVDbServerError(Exception):
     """Raised for 5xx responses from TVDb; not a Failed subclass so tenacity's retry_if_not_exception_type(Failed) will retry it."""
 
 
+class TVDbEmptyResponse(Exception):
+    """Raised when TVDb returns a successful HTTP status with no document to parse."""
+
+    def __init__(self, url, status_code):
+        self.url = url
+        self.status_code = status_code
+        super().__init__(f"empty document from {url} (HTTP {status_code})")
+
+
+empty_response_attempts = 3
+empty_response_circuit_threshold = 2
+default_attempts = 6
+empty_response_wait = wait_exponential(multiplier=1, min=1, max=8)
+default_wait = wait_fixed(10)
+
+
+def _tvdb_stop(retry_state):
+    """Use a smaller retry budget for empty documents than other transient failures."""
+    attempts = empty_response_attempts if isinstance(retry_state.outcome.exception(), TVDbEmptyResponse) else default_attempts
+    return retry_state.attempt_number >= attempts
+
+
+def _tvdb_wait(retry_state):
+    """Back off quickly for empty documents while preserving the existing delay for other transient failures."""
+    wait = empty_response_wait if isinstance(retry_state.outcome.exception(), TVDbEmptyResponse) else default_wait
+    return wait(retry_state)
+
+
 def _tvdb_retry_exhausted(retry_state):
     """Convert an exhausted TVDb retry loop (5xx, or repeated unparsable 202/empty responses) into Unavailable."""
-    raise Unavailable(f"TVDb Error: No usable response from TVDb after {retry_state.attempt_number} attempt(s): {retry_state.outcome.exception()}") from retry_state.outcome.exception()
+    exception = retry_state.outcome.exception()
+    tvdb = retry_state.args[0]
+    circuit_message = ""
+    if isinstance(exception, TVDbEmptyResponse):
+        tvdb._empty_response_urls.add(exception.url)
+        tvdb._empty_response_failures = len(tvdb._empty_response_urls)
+        if tvdb._empty_response_failures >= empty_response_circuit_threshold:
+            tvdb._empty_response_circuit_open = True
+            circuit_message = f"; circuit opened after {tvdb._empty_response_failures} distinct URLs exhausted empty-response retries"
+    else:
+        tvdb._empty_response_urls.clear()
+        tvdb._empty_response_failures = 0
+    raise Unavailable(f"TVDb Error: No usable response from TVDb after {retry_state.attempt_number} attempt(s): {exception}{circuit_message}") from exception
 
 
 builders = ["tvdb_list", "tvdb_list_details", "tvdb_movie", "tvdb_movie_details", "tvdb_show", "tvdb_show_details"]
@@ -309,19 +353,32 @@ class TVDb:
         self.cache = cache
         self.language = tvdb_language
         self.expiration = expiration
+        self._empty_response_failures = 0
+        self._empty_response_urls = set()
+        self._empty_response_circuit_open = False
 
     def get_tvdb_obj(self, tvdb_url, is_movie=False):
         tvdb_id, _, _ = self.get_id_from_url(tvdb_url, is_movie=is_movie)
         return TVDbObj(self, tvdb_id, is_movie=is_movie)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
+    @retry(stop=_tvdb_stop, wait=_tvdb_wait, retry=retry_if_not_exception_type(Failed), retry_error_callback=_tvdb_retry_exhausted)
     def get_request(self, tvdb_url):
+        if self._empty_response_circuit_open:
+            raise CircuitOpen(f"TVDb Error: Skipping TVDb requests for the remainder of this run after {self._empty_response_failures} distinct URLs exhausted empty-response retries")
+        if tvdb_url in self._empty_response_urls:
+            raise Unavailable(f"TVDb Error: Skipping {tvdb_url} because it already exhausted empty-response retries during this run")
         response = self.requests.get(tvdb_url, language=self.language)
         if response.status_code >= 400:
+            self._empty_response_urls.clear()
+            self._empty_response_failures = 0
             # 4xx = definitive "gone" (NotFound); 5xx = transient (TVDbServerError, retried by tenacity)
             if 400 <= response.status_code < 500:
                 raise NotFound(f"({response.status_code}) {response.reason}")
             raise TVDbServerError(f"({response.status_code}) {response.reason}")
+        if not response.content:
+            raise TVDbEmptyResponse(tvdb_url, response.status_code)
+        self._empty_response_urls.clear()
+        self._empty_response_failures = 0
         return html.fromstring(response.content)
 
     def get_id_from_url(self, tvdb_url, is_movie=False, ignore_cache=False):
@@ -347,6 +404,8 @@ class TVDb:
         logger.trace(f"URL: {tvdb_url}")
         try:
             response = self.get_request(tvdb_url)
+        except Unavailable:
+            raise
         except (ParserError, Failed, TVDbServerError):
             raise Failed(f"TVDb Error: Failed not parse {tvdb_url}")
         results = response.xpath(f"//*[text()='TheTVDB.com {media_type} ID']/parent::node()/span/text()")

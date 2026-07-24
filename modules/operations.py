@@ -340,6 +340,8 @@ class Operations:
                                 _tvdb_obj = self.config.TVDb.get_tvdb_obj(item_tvdb_id, is_movie=self.library.is_movie)
                             except tvdb.NotFound as err:
                                 logger.debug(str(err))
+                            except tvdb.CircuitOpen:
+                                pass
                             except tvdb.Unavailable as err:
                                 logger.warning(str(err))
                             except Failed as err:
