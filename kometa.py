@@ -486,20 +486,21 @@ def start(attrs):
                         pinned_versions = [spec.version for spec in requirement.specifier if spec.operator == "=="]
                         if pinned_versions:
                             required_versions[requirement.name] = pinned_versions[0]
-                v1 = parse("0")
-                v2 = parse("0")
+                required_versions_ci = {k.lower(): v for k, v in required_versions.items()}
+                required_specs_ci = {k.lower(): v for k, v in required_specs.items()}
                 for req_name, sys_ver in system_versions.items():
-                    if sys_ver:
-                        v1 = parse(sys_ver)
-                    if req_name in required_versions:
-                        v2 = parse(required_versions[req_name])
-                    if sys_ver:
+                    if not sys_ver:
+                        continue
+                    key = req_name.lower()
+                    v1 = parse(sys_ver)
+                    if key in required_versions_ci:
+                        v2 = parse(required_versions_ci[key])
                         if v1 < v2:
                             logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
-                        if v1 > v2:
+                        elif v1 > v2:
                             logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
-                        if req_name not in required_versions and req_name in required_specs and v1 not in required_specs[req_name]:
-                            logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs[req_name]}")
+                    elif key in required_specs_ci and v1 not in required_specs_ci[key]:
+                        logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs_ci[key]}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:
