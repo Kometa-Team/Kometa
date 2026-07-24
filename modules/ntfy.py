@@ -14,16 +14,6 @@ class Ntfy:
         logger.secret(self.url)
         logger.secret(self.token)
 
-        if params.get("test_on_start", False):
-            self._test_url()
-
-    def _test_url(self):
-        try:
-            self._request(message="Kometa - Testing ntfy Access", priority=1)
-        except Exception:
-            logger.stacktrace()
-            raise Failed("ntfy Error: Invalid details")
-
     def _request(self, message: str, title: str | None = None, priority: int = 3):
         headers = {"Authorization": f"Bearer {self.token}", "Icon": "https://kometa.wiki/en/latest/assets/icon.png", "Priority": str(priority)}
         if title:

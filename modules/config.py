@@ -976,7 +976,6 @@ class ConfigFile:
                         "url": check_for_attribute(self.data, "url", parent="ntfy", throw=True),
                         "token": check_for_attribute(self.data, "token", parent="ntfy", throw=True),
                         "topic": check_for_attribute(self.data, "topic", parent="ntfy", throw=True),
-                        "test_on_start": check_for_attribute(self.data, "test_on_start", parent="ntfy", var_type="bool", default=False),
                     },
                 )
             except Failed as e:

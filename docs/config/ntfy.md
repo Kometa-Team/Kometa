@@ -13,17 +13,15 @@ ntfy:
   url: https://ntfy.sh  # or a different ntfy server URL
   token: tk_thisismyaccesstoken
   topic: kometa  # or a different topic name
-  test_on_start: false
 ```
 
-| Attribute      | Description                                                                                  | Allowed Values (default in **bold**) |                  Required                  |
-|:---------------|:---------------------------------------------------------------------------------------------|:-------------------------------------|:------------------------------------------:|
-| `url`          | ntfy server URL.                                                                             | Any valid URL or leave **blank**     | :fontawesome-solid-circle-check:{ .green } |
-| `token`        | ntfy user access token.                                                                      | Any valid token or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
-| `topic`        | ntfy topic name.                                                                             | Any valid topic or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
-| `test_on_start` | Send a low-priority test notification when Kometa initializes the ntfy client.              | `true` or **`false`**                | :fontawesome-solid-circle-xmark:{ .red }   |
+| Attribute | Description             | Allowed Values (default in **bold**) |                  Required                  |
+|:----------|:------------------------|:-------------------------------------|:------------------------------------------:|
+| `url`     | ntfy server URL.        | Any valid URL or leave **blank**     | :fontawesome-solid-circle-check:{ .green } |
+| `token`   | ntfy user access token. | Any valid token or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
+| `topic`   | ntfy topic name.        | Any valid topic or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
 
-By default, Kometa does not publish a notification while loading the ntfy configuration. Network and write access are checked when the first configured ntfy webhook is sent. Set `test_on_start: true` to verify publishing during initialization; this intentionally sends one low-priority test notification on every Kometa run.
+Kometa does not publish a test notification while loading the ntfy configuration. Network and write access are checked when the first configured ntfy webhook is sent.
 
 ## Setup
 

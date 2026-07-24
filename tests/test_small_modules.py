@@ -78,7 +78,7 @@ class TestNtfy:
         adapter.notification({"event": "test"})
         adapter._request.assert_called_once()
 
-    def test_init_does_not_publish_access_test_by_default(self, monkeypatch):
+    def test_init_does_not_publish_access_test(self, monkeypatch):
         from modules.ntfy import Ntfy
 
         monkeypatch.setattr("modules.ntfy.logger", FakeLogger())
@@ -87,20 +87,6 @@ class TestNtfy:
         Ntfy(requests, {"url": "http://ntfy:8080", "token": "fake", "topic": "test"})
 
         requests.post.assert_not_called()
-
-    def test_init_publishes_access_test_when_enabled(self, monkeypatch):
-        from modules.ntfy import Ntfy
-
-        monkeypatch.setattr("modules.ntfy.logger", FakeLogger())
-        requests = MagicMock()
-
-        Ntfy(requests, {"url": "http://ntfy:8080", "token": "fake", "topic": "test", "test_on_start": True})
-
-        requests.post.assert_called_once_with(
-            "http://ntfy:8080/test",
-            headers={"Authorization": "Bearer fake", "Icon": "https://kometa.wiki/en/latest/assets/icon.png", "Priority": "1"},
-            data="Kometa - Testing ntfy Access",
-        )
 
 
 class TestNotifiarr:
