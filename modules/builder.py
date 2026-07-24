@@ -5287,11 +5287,8 @@ class CollectionBuilder:
         elif self.obj:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
-                smart_label_items = list(self.library.search(label=self.name, libtype=self.builder_level))
-                for smart_item in smart_label_items:
-                    logger.info(f"{smart_item.title[:25]:<25} | Label | -{self.name}")
-                if smart_label_items:
-                    self.library.batch_edit_tags(smart_label_items, "label", remove_tags={self.name})
+                for item in self.library.search(label=self.name, libtype=self.builder_level):
+                    self.library.edit_tags("label", item, remove_tags=self.name)
         else:
             output = ""
 
