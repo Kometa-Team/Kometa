@@ -1820,7 +1820,7 @@ class Plex(Library):
                 return "Lock", "Plex", "Failed"
             lock_method = getattr(item, lock_method)
             self.query(lock_method)
-            logger.trace(f"{text} | Locked")
+            logger.info(f"{text} | Locked")
             return "Lock", "Plex", "Updated"
         elif attr == "unlock":
             unlock_method = {"poster": "unlockPoster", "background": "unlockArt", "logo": "unlockLogo", "square_art": "unlockSquareArt"}[image_type]
@@ -1829,7 +1829,7 @@ class Plex(Library):
                 return "Unlock", "Plex", "Failed"
             unlock_method = getattr(item, unlock_method)
             self.query(unlock_method)
-            logger.trace(f"{text} | Unlocked")
+            logger.info(f"{text} | Unlocked")
             return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
@@ -1883,7 +1883,7 @@ class Plex(Library):
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
                         updated = False
                 if updated:
-                    logger.trace(f"{text} | Reset from {location}")
+                    logger.info(f"{text} | Reset from {location}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
                 return "Reset", source, "Updated" if updated else "Failed"

@@ -87,7 +87,7 @@ def make_plex_item(
 
 
 class TestImageUpdate:
-    def test_tmdb_reset_returns_structured_result_and_logs_detail_at_trace(self):
+    def test_tmdb_reset_returns_structured_result_and_logs_success(self):
         import modules.plex as plex_module
 
         plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
@@ -98,8 +98,7 @@ class TestImageUpdate:
 
         assert result == ("Reset", "TMDb", "Updated")
         plex.upload_poster.assert_called_once()
-        assert "S01E01 Poster | Reset from TMDb" in plex_module.logger.trace_messages
-        assert "S01E01 Poster | Reset from TMDb" not in plex_module.logger.info_messages
+        assert "S01E01 Poster | Reset from TMDb" in plex_module.logger.info_messages
 
     def test_missing_tmdb_reset_returns_missing_result_and_keeps_warning(self):
         import modules.plex as plex_module

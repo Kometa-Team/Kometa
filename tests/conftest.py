@@ -24,7 +24,7 @@ class FakeLogger:
     """Captures log output for assertions.
 
     Supports all methods that the real MyLogger exposes: info, warning,
-    error, debug, trace, separator, secret, and clear_errors.  Unknown methods
+    error, debug, separator, secret, and clear_errors.  Unknown methods
     return a no-op lambda so this can be monkeypatched onto any module
     without AttributeError.
     """
@@ -34,7 +34,6 @@ class FakeLogger:
         self.warning_messages: list[str] = []
         self.error_messages: list[str] = []
         self.debug_messages: list[str] = []
-        self.trace_messages: list[str] = []
         self.secrets: list[str] = []
         self.saved_errors: list[str] = []
         self.save_errors = False
@@ -52,9 +51,6 @@ class FakeLogger:
 
     def debug(self, message: str = "") -> None:
         self.debug_messages.append(str(message))
-
-    def trace(self, message: str = "") -> None:
-        self.trace_messages.append(str(message))
 
     def separator(self, *args: Any, **kwargs: Any) -> None:
         pass  # separator is cosmetic; never assert on it
