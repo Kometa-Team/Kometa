@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dispatch the configured `delete` webhook after every successful Kometa-managed collection or playlist deletion instead of only for `delete_not_scheduled` and `delete_playlist`; suppress the event for playlist sync's internal delete-and-recopy step. #3420
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 - Added Drop-in replacement for the jikan api as it is being deprecated
+- Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
 
 ## [v2.4.5] - 2026-07-22
 
