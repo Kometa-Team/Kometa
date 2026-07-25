@@ -5316,7 +5316,7 @@ class CollectionBuilder:
             logger.info("")
             for user in self.valid_users:
                 try:
-                    self.library.delete_user_playlist(self.obj.title, user)
+                    self.library.delete_user_playlist(self.obj.title, user, notify=False)
                 except Failed:
                     pass
                 if user != self.library.account.username:

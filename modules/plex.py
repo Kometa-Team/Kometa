@@ -854,8 +854,8 @@ class Plex(Library):
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
-    def notify_delete(self, message):
-        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+    def notify_delete(self, message, playlist=False):
+        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=None if playlist else self.name)
 
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get("cinemaTrailersPrerollID").set(preroll)
@@ -961,12 +961,16 @@ class Plex(Library):
     def query(self, method):
         return method()
 
-    def delete(self, obj):
+    def delete(self, obj, notify=True, delete_message=None):
         try:
-            return self.query(obj.delete)
+            result = self.query(obj.delete)
         except Exception:
             logger.stacktrace()
             raise Failed(f"Plex Error: Failed to delete {obj.title}")
+        if notify:
+            is_playlist = isinstance(obj, Playlist) or getattr(obj, "type", None) == "playlist"
+            self.notify_delete(delete_message or f"{'Playlist' if is_playlist else 'Collection'} {obj.title} deleted", playlist=is_playlist)
+        return result
 
     @PLEX_RETRY
     def query_data(self, method, data):
@@ -1273,9 +1277,9 @@ class Plex(Library):
             self._users = users
         return self._users
 
-    def delete_user_playlist(self, title, user):
+    def delete_user_playlist(self, title, user, notify=True):
         try:
-            self.delete(self.PlexServer.switchUser(user).playlist(title))
+            self.delete(self.PlexServer.switchUser(user).playlist(title), notify=notify, delete_message=f"Playlist {title} deleted on User {user}")
         except NotFound as e:
             raise Failed(e)
         except (ConnectionError, ConnectTimeout, ReadTimeout) as e:

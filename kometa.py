@@ -1373,7 +1373,6 @@ def run_collection(config, library, metadata, requested_collections):
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):
-                library.notify_delete(e)
                 library.stats["deleted"] += 1
                 library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
             elif str(e).startswith("Skipped because run_definition"):
@@ -1584,13 +1583,11 @@ def run_playlists(config):
             except Deleted as e:
                 logger.info(e)
                 status[mapping_name]["status"] = "Deleted"
-                config.notify_delete(e, server=server_name)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
                     stats["deleted"] += 1
                     status[mapping_name]["status"] = "Deleted Not Scheduled"
-                    config.notify_delete(e)
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
