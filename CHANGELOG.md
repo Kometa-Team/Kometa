@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
 - Added Drop-in replacement for the jikan api as it is being deprecated
 - Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
+- Resolve movie folder paths using the path style reported by the media server rather than the platform Kometa runs on. A Linux or Docker install pointed at a Plex server on Windows received paths such as `P:\Movies\Title\file.mkv`, which `os.path.dirname` reduced to an empty string, logging `Plex Error: No location found` for every movie and silently disabling `add_existing`, `upgrade_existing`, `monitor_existing`, `item_radarr_tag`, and `item_sonarr_tag`.
 
 ## [v2.4.5] - 2026-07-22
 

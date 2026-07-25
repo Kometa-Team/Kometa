@@ -1,4 +1,5 @@
 import glob
+import ntpath
 import os
 import re
 import signal
@@ -422,6 +423,27 @@ def item_title(item):
 
 def item_set(item, item_id):
     return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
+
+
+def media_dirname(path):
+    """Return the parent directory of a media path reported by the media server.
+
+    Plex reports library paths using the separator of the machine running the server, which is
+    not necessarily the machine running Kometa. A Kometa install on Linux (for example the
+    Docker image) talking to a Plex server on Windows receives paths like
+    ``P:\\Movies\\Title\\file.mkv``.
+
+    ``os.path.dirname`` only understands the separator of the platform Kometa is running on, so
+    on Linux it finds no ``/`` in that string and returns ``""``. Callers treat the empty result
+    as "no location found", which silently disables every Radarr/Sonarr path operation.
+
+    Picking the flavour from the path itself keeps both layouts working regardless of which
+    platform each side runs on.
+    """
+    path = str(path)
+    if ntpath.splitdrive(path)[0] or path.startswith("\\\\") or ("\\" in path and "/" not in path):
+        return ntpath.dirname(path)
+    return os.path.dirname(path)
 
 
 def is_locked(filepath):

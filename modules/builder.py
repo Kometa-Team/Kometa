@@ -4819,7 +4819,7 @@ class CollectionBuilder:
             ):
                 if item.locations:
                     if self.library.is_movie:
-                        path = os.path.dirname(str(item.locations[0]))
+                        path = util.media_dirname(item.locations[0])
                     elif self.library.is_show:
                         path = str(item.locations[0])
                 if not path:
