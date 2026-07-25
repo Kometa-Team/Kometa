@@ -442,6 +442,17 @@ def report_duplicate_collections(config):
             logger.warning("")
 
 
+def log_validate_footer(start_time, my_requests, label):
+    end_time = datetime.now()
+    run_time = str(end_time - start_time).split(".")[0]
+    version_line = f"Version: {my_requests.local}"
+    if my_requests.newest:
+        version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+    start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
+    end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
+    logger.separator(f"Finished {label}\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
+
+
 def start(attrs):
     try:
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -574,6 +585,7 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
+            log_validate_footer(start_time, my_requests, f"{level} Validation")
             sys.exit(0 if passed else 1)
 
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -587,6 +599,7 @@ def start(attrs):
                 sys.exit(1)
             validator = FileSetValidator(paths, schema_dir)
             passed, *_ = validator.validate()
+            log_validate_footer(start_time, my_requests, "File Validation")
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
