@@ -383,7 +383,18 @@ if run_args["low-priority"]:
 
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
-        executor.submit(start, *[attrs])
+        future = executor.submit(start, *[attrs])
+        try:
+            future.result()
+        except SystemExit as e:
+            # start() runs in a worker process; a bare sys.exit() there is otherwise
+            # swallowed, leaving the parent's exit code at 0. Propagate it so callers
+            # (e.g. CI running --validate) can detect validation failures.
+            code = e.code
+            if code is None:
+                return 0
+            return code if isinstance(code, int) else 1
+    return 0
 
 
 def should_sync_collection(builder):
@@ -1617,7 +1628,8 @@ def run_playlists(config):
 if __name__ == "__main__":
     try:
         if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
-            process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            sys.exit(exit_code)
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"]) or []
             valid_times = []
