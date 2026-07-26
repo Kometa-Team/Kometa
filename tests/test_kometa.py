@@ -181,6 +181,27 @@ def test_asset_paths_and_warnings_are_summarized() -> None:
         assert _summarize_log_message(message) == expected
 
 
+def test_reset_image_warnings_are_summarized() -> None:
+    """Reset misses with item labels should collapse by image type."""
+    cases = {
+        "Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "Season 06 Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "S03E02 Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "Example Background | No Reset Image Found": "Background Warning: No Reset Image Found",
+        "Example Logo | No Reset Image Found": "Logo Warning: No Reset Image Found",
+        "Example Square Art | No Reset Image Found": "Square Art Warning: No Reset Image Found",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
+
+
+def test_summary_parser_preserves_internal_pipe_delimiters() -> None:
+    """Messages such as ``S03E02 Poster | No Reset Image Found`` must not be truncated to the item label."""
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert 'log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()' in text
+    assert 'log_line.split("|")[1].strip()' not in text
+
+
 def test_missing_tmdb_collections_are_summarized() -> None:
     """Variable collection IDs should collapse into one summary row."""
     message = "TMDb Error: Collection ID 1698578 missing on TMDb; add '1698578' to the franchise exclude list if this is auto-built."
