@@ -383,7 +383,18 @@ if run_args["low-priority"]:
 
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
-        executor.submit(start, *[attrs])
+        future = executor.submit(start, *[attrs])
+        try:
+            future.result()
+        except SystemExit as e:
+            # start() runs in a worker process; a bare sys.exit() there is otherwise
+            # swallowed, leaving the parent's exit code at 0. Propagate it so callers
+            # (e.g. CI running --validate) can detect validation failures.
+            code = e.code
+            if code is None:
+                return 0
+            return code if isinstance(code, int) else 1
+    return 0
 
 
 def should_sync_collection(builder):
@@ -429,6 +440,17 @@ def report_duplicate_collections(config):
                 logger.warning(f"  {count} instances: {title}")
             logger.warning("If this is unexpected, consider checking Plex DBRepair.")
             logger.warning("")
+
+
+def log_validate_footer(start_time, my_requests, label):
+    end_time = datetime.now()
+    run_time = str(end_time - start_time).split(".")[0]
+    version_line = f"Version: {my_requests.local}"
+    if my_requests.newest:
+        version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+    start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
+    end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
+    logger.separator(f"Finished {label}\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
 
 
 def start(attrs):
@@ -564,6 +586,7 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
+            log_validate_footer(start_time, my_requests, f"{level} Validation")
             sys.exit(0 if passed else 1)
 
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -577,6 +600,7 @@ def start(attrs):
                 sys.exit(1)
             validator = FileSetValidator(paths, schema_dir)
             passed, *_ = validator.validate()
+            log_validate_footer(start_time, my_requests, "File Validation")
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
@@ -1619,7 +1643,8 @@ def run_playlists(config):
 if __name__ == "__main__":
     try:
         if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
-            process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            sys.exit(exit_code)
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"]) or []
             valid_times = []
