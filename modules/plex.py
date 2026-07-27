@@ -854,8 +854,8 @@ class Plex(Library):
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
-    def notify_delete(self, message):
-        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+    def notify_delete(self, message, playlist=False):
+        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=None if playlist else self.name)
 
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get("cinemaTrailersPrerollID").set(preroll)
@@ -961,12 +961,16 @@ class Plex(Library):
     def query(self, method):
         return method()
 
-    def delete(self, obj):
+    def delete(self, obj, notify=True, delete_message=None):
         try:
-            return self.query(obj.delete)
+            result = self.query(obj.delete)
         except Exception:
             logger.stacktrace()
             raise Failed(f"Plex Error: Failed to delete {obj.title}")
+        if notify:
+            is_playlist = isinstance(obj, Playlist) or getattr(obj, "type", None) == "playlist"
+            self.notify_delete(delete_message or f"{'Playlist' if is_playlist else 'Collection'} {obj.title} deleted", playlist=is_playlist)
+        return result
 
     @PLEX_RETRY
     def query_data(self, method, data):
@@ -1273,9 +1277,9 @@ class Plex(Library):
             self._users = users
         return self._users
 
-    def delete_user_playlist(self, title, user):
+    def delete_user_playlist(self, title, user, notify=True):
         try:
-            self.delete(self.PlexServer.switchUser(user).playlist(title))
+            self.delete(self.PlexServer.switchUser(user).playlist(title), notify=notify, delete_message=f"Playlist {title} deleted on User {user}")
         except NotFound as e:
             raise Failed(e)
         except (ConnectionError, ConnectTimeout, ReadTimeout) as e:
@@ -1802,12 +1806,7 @@ class Plex(Library):
         image_type = image_type or ("poster" if poster else "background")
         display_type = {"poster": "Poster", "background": "Background", "logo": "Logo", "square_art": "Square Art"}[image_type]
         text = f"{f'{title} ' if title else ''}{display_type}"
-        image_config = {
-            "poster": self.mass_poster_update,
-            "background": self.mass_background_update,
-            "logo": self.mass_logo_update,
-            "square_art": self.mass_square_art_update,
-        }[image_type]
+        image_config = getattr(self, f"mass_{image_type}_update")
         attr = image_config["source"]
         lang = image_config.get("language")
         resolved_attr = None
@@ -1818,32 +1817,36 @@ class Plex(Library):
             lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]
             if not hasattr(item, lock_method):
                 logger.warning(f"{text} | Lock Not Supported")
-                return
+                return "Lock", "Plex", "Failed"
             lock_method = getattr(item, lock_method)
             self.query(lock_method)
             logger.info(f"{text} | Locked")
+            return "Lock", "Plex", "Updated"
         elif attr == "unlock":
             unlock_method = {"poster": "unlockPoster", "background": "unlockArt", "logo": "unlockLogo", "square_art": "unlockSquareArt"}[image_type]
             if not hasattr(item, unlock_method):
                 logger.warning(f"{text} | Unlock Not Supported")
-                return
+                return "Unlock", "Plex", "Failed"
             unlock_method = getattr(item, unlock_method)
             self.query(unlock_method)
             logger.info(f"{text} | Unlocked")
+            return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
                 if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
                     image = tmdb
                     source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
                 if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
-                        return
+                        return "Reset", "Plex", "Failed"
                     images_method = getattr(item, images_method)
                     images = images_method()
                     temp_image = next((p for p in images), None)
@@ -1854,31 +1857,39 @@ class Plex(Library):
                             image = temp_image.key
                         location = "Plex"
             if image:
-                logger.info(f"{text} | Reset from {location}")
+                updated = True
                 if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
+                        updated = False
                 elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
+                        updated = False
                 elif image_type == "logo":
                     try:
                         self.upload_logo(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload logo: {e}")
+                        updated = False
                 else:
                     try:
                         self.upload_square_art(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
+                        updated = False
+                if updated:
+                    logger.info(f"{text} | Reset from {location}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+                return "Reset", source, "Updated" if updated else "Failed"
             else:
                 logger.warning(f"{text} | No Reset Image Found")
+                return "Reset", source, "Missing"
 
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, style_data=None):
         if title is None:

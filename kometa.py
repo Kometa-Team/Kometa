@@ -508,20 +508,21 @@ def start(attrs):
                         pinned_versions = [spec.version for spec in requirement.specifier if spec.operator == "=="]
                         if pinned_versions:
                             required_versions[requirement.name] = pinned_versions[0]
-                v1 = parse("0")
-                v2 = parse("0")
+                required_versions_ci = {k.lower(): v for k, v in required_versions.items()}
+                required_specs_ci = {k.lower(): v for k, v in required_specs.items()}
                 for req_name, sys_ver in system_versions.items():
-                    if sys_ver:
-                        v1 = parse(sys_ver)
-                    if req_name in required_versions:
-                        v2 = parse(required_versions[req_name])
-                    if sys_ver:
+                    if not sys_ver:
+                        continue
+                    key = req_name.lower()
+                    v1 = parse(sys_ver)
+                    if key in required_versions_ci:
+                        v2 = parse(required_versions_ci[key])
                         if v1 < v2:
                             logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
-                        if v1 > v2:
+                        elif v1 > v2:
                             logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
-                        if req_name not in required_versions and req_name in required_specs and v1 not in required_specs[req_name]:
-                            logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs[req_name]}")
+                    elif key in required_specs_ci and v1 not in required_specs_ci[key]:
+                        logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs_ci[key]}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:
@@ -753,6 +754,10 @@ def start(attrs):
                 (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
+                (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
+                (r".*Background \| No Reset Image Found", "Background Warning: No Reset Image Found"),
+                (r".*Logo \| No Reset Image Found", "Logo Warning: No Reset Image Found"),
+                (r".*Square Art \| No Reset Image Found", "Square Art Warning: No Reset Image Found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
                 (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
                 (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
@@ -764,7 +769,7 @@ def start(attrs):
                 for log_line in f:
                     for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                         if f"[{err_type}]" in log_line:
-                            log_line = log_line.split("|")[1].strip()
+                            log_line = log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
@@ -1397,7 +1402,6 @@ def run_collection(config, library, metadata, requested_collections):
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):
-                library.notify_delete(e)
                 library.stats["deleted"] += 1
                 library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
             elif str(e).startswith("Skipped because run_definition"):
@@ -1608,13 +1612,11 @@ def run_playlists(config):
             except Deleted as e:
                 logger.info(e)
                 status[mapping_name]["status"] = "Deleted"
-                config.notify_delete(e, server=server_name)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
                     stats["deleted"] += 1
                     status[mapping_name]["status"] = "Deleted Not Scheduled"
-                    config.notify_delete(e)
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:

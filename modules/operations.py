@@ -1,6 +1,7 @@
 import math
 import os
 import re
+from collections import Counter
 from datetime import datetime, timezone
 
 from plexapi.exceptions import NotFound
@@ -42,6 +43,16 @@ tmdb_release_types = {
 def _item_batches(items_iterable, batch_size):
     for batch_num in range(0, math.ceil(len(items_iterable) / batch_size)):
         yield items_iterable[batch_num * batch_size : (batch_num + 1) * batch_size]
+
+
+def _image_operation_summary_rows(counts):
+    rows = {}
+    for (operation, source, image_type, level, status), count in counts.items():
+        key = operation, source, image_type, level
+        if key not in rows:
+            rows[key] = {result: 0 for result in ("Updated", "Skipped", "Missing", "Failed")}
+        rows[key][status] += count
+    return [(*key, *(results[result] for result in ("Updated", "Skipped", "Missing", "Failed"))) for key, results in sorted(rows.items())]
 
 
 def _find_collection_trans_key(col_data):
@@ -184,6 +195,13 @@ class Operations:
             ep_reset_edits = {}
             ep_lock_edits = {}
             ep_unlock_edits = {}
+            image_operation_counts = Counter()
+
+            def record_image_operation(result, image_type, level):
+                if result:
+                    operation, source, status = result
+                    source = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
+                    image_operation_counts[(operation, source, image_type, level, status)] += 1
 
             for i, item in enumerate(items, 1):
                 logger.info("")
@@ -1061,15 +1079,17 @@ class Operations:
 
                         # Bypass ignore_locked and ignore_overlays checks if the source is "unlock" or "lock"
                         if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_poster_update)) == 1:
-                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
+                            result = self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
+                            record_image_operation(result, "Poster", "Item")
                         elif ignore_locked and thumb_locked:
                             # Skip processing if ignore_locked is True and thumb is locked
-                            pass
+                            record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         elif ignore_overlays and has_overlay_label:
                             # Skip processing if ignore_overlays is True and Overlay label is found
-                            pass
+                            record_image_operation(("Reset", resolved_source, "Skipped"), "Poster", "Item")
                         else:
-                            self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
+                            result = self.library.poster_update(item, new_poster, tmdb=(resolved_source, poster_url))
+                            record_image_operation(result, "Poster", "Item")
 
                     if self.library.mass_background_update:
                         source = self.library.mass_background_update["source"]
@@ -1079,10 +1099,14 @@ class Operations:
                         resolved_source, background_url = _get_external_image(self.library.mass_background_update, is_poster=False)
 
                         if source in ["unlock", "lock"] and len(_image_sources(self.library.mass_background_update)) == 1:
-                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
+                            result = self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
+                            record_image_operation(result, "Background", "Item")
 
                         elif not (ignore_locked and art_locked):
-                            self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
+                            result = self.library.background_update(item, new_background, tmdb=(resolved_source, background_url))
+                            record_image_operation(result, "Background", "Item")
+                        else:
+                            record_image_operation(("Reset", resolved_source, "Skipped"), "Background", "Item")
 
                     if self.library.mass_logo_update:
                         source = self.library.mass_logo_update["source"]
@@ -1090,7 +1114,10 @@ class Operations:
                         logo_locked = _field_locked("logo")
                         resolved_source, logo_url = _get_external_image(self.library.mass_logo_update, is_poster=False, image_type="logo")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_logo_update)) == 1) or not (ignore_locked and logo_locked):
-                            self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url))
+                            result = self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url))
+                            record_image_operation(result, "Logo", "Item")
+                        else:
+                            record_image_operation(("Reset", resolved_source, "Skipped"), "Logo", "Item")
 
                     if self.library.mass_square_art_update:
                         source = self.library.mass_square_art_update["source"]
@@ -1098,7 +1125,10 @@ class Operations:
                         square_art_locked = _field_locked("squareArt")
                         resolved_source, square_art_url = _get_external_image(self.library.mass_square_art_update, is_poster=False, image_type="square_art")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_square_art_update)) == 1) or not (ignore_locked and square_art_locked):
-                            self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
+                            result = self.library.square_art_update(item, new_square_art, tmdb=(resolved_source, square_art_url))
+                            record_image_operation(result, "Square Art", "Item")
+                        else:
+                            record_image_operation(("Reset", resolved_source, "Skipped"), "Square Art", "Item")
 
                     if self.library.is_show and (
                         _show_level_image_update_enabled(self.library.mass_poster_update, "seasons")
@@ -1142,10 +1172,12 @@ class Operations:
                                     tmdb_poster = tmdb_season.poster_url if tmdb_season else None
                                     if _show_level_image_update_enabled(self.library.mass_poster_update, "seasons"):
                                         resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber)
-                                        self.library.poster_update(season, season_poster, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        result = self.library.poster_update(season, season_poster, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        record_image_operation(result, "Poster", "Season")
                                     if _show_level_image_update_enabled(self.library.mass_background_update, "seasons"):
                                         resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber)
-                                        self.library.background_update(season, season_background, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        result = self.library.background_update(season, season_background, tmdb=(resolved_source, resolved_url), title=season_title if season else None)
+                                        record_image_operation(result, "Background", "Season")
 
                                 if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes") or _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                     tmdb_episodes = {}
@@ -1175,10 +1207,12 @@ class Operations:
                                         tmdb_poster = tmdb_episodes[episode.episodeNumber].still_url if episode.episodeNumber in tmdb_episodes else None
                                         if _show_level_image_update_enabled(self.library.mass_poster_update, "episodes"):
                                             resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_poster_update, tmdb_url=tmdb_poster, is_poster=True, season=season.seasonNumber, episode=episode.episodeNumber)
-                                            self.library.poster_update(episode, episode_poster, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            result = self.library.poster_update(episode, episode_poster, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            record_image_operation(result, "Poster", "Episode")
                                         if _show_level_image_update_enabled(self.library.mass_background_update, "episodes"):
                                             resolved_source, resolved_url = _get_show_level_external_image(self.library.mass_background_update, is_poster=False, season=season.seasonNumber, episode=episode.episodeNumber)
-                                            self.library.background_update(episode, episode_background, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            result = self.library.background_update(episode, episode_background, tmdb=(resolved_source, resolved_url), title=episode_title if episode else None)
+                                            record_image_operation(result, "Background", "Episode")
                         finally:
                             if _image_lang:
                                 self.config.TMDb.language = _orig_lang
@@ -1271,6 +1305,15 @@ class Operations:
 
                         if len(item_edits) > 0:
                             logger.info(f"{item_edits[1:]}")
+
+            if image_operation_counts:
+                logger.info("")
+                logger.separator("Image Operations Summary", space=False, border=False)
+                logger.info("")
+                logger.info("Operation | Source | Image      | Level   | Updated | Skipped | Missing | Failed")
+                logger.info("----------|--------|------------|---------|---------|---------|---------|-------")
+                for operation, source, image_type, level, updated, skipped, missing, failed in _image_operation_summary_rows(image_operation_counts):
+                    logger.info(f"{operation:<9} | {source:<6} | {image_type:<10} | {level:<7} | {updated:>7} | {skipped:>7} | {missing:>7} | {failed:>6}")
 
             logger.info("")
             logger.separator("Plex Updates", space=False, border=False)

@@ -82,6 +82,45 @@ def make_plex_item(
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# image_update
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestImageUpdate:
+    def test_tmdb_reset_returns_structured_result_and_logs_success(self):
+        import modules.plex as plex_module
+
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+        plex.upload_poster = MagicMock()
+        plex.item_labels = MagicMock(return_value=[])
+
+        result = plex.image_update(make_plex_item(), None, tmdb=("tmdb", "https://image.tmdb.org/poster.jpg"), title="S01E01")
+
+        assert result == ("Reset", "TMDb", "Updated")
+        plex.upload_poster.assert_called_once()
+        assert "S01E01 Poster | Reset from TMDb" in plex_module.logger.info_messages
+
+    def test_missing_tmdb_reset_returns_missing_result_and_keeps_warning(self):
+        import modules.plex as plex_module
+
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+
+        result = plex.image_update(make_plex_item(), None, tmdb=("tmdb", None), title="S01E01")
+
+        assert result == ("Reset", "TMDb", "Missing")
+        assert "S01E01 Poster | No Reset Image Found" in plex_module.logger.warning_messages
+
+    def test_asset_reset_is_counted_under_actual_source(self):
+        plex = make_plex(mass_poster_update={"source": "tmdb", "language": None})
+        plex.upload_poster = MagicMock()
+        plex.item_labels = MagicMock(return_value=[])
+
+        result = plex.image_update(make_plex_item(), SimpleNamespace(location="/assets/poster.jpg"), tmdb=("tmdb", "https://image.tmdb.org/poster.jpg"))
+
+        assert result == ("Reset", "Assets", "Updated")
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # validate_image_size
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -140,6 +179,13 @@ class TestNotify:
         mock_config.notify_delete.assert_called_once()
         args, kwargs = mock_config.notify_delete.call_args
         assert kwargs.get("server") == "MyServer"
+        assert kwargs.get("library") == "Test Library"
+
+    def test_notify_playlist_delete_omits_library(self):
+        mock_config = MagicMock()
+        plex = make_plex(config=mock_config, PlexServer=SimpleNamespace(friendlyName="MyServer"))
+        plex.notify_delete("Playlist removed", playlist=True)
+        mock_config.notify_delete.assert_called_once_with("Playlist removed", server="MyServer", library=None)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -266,11 +312,67 @@ class TestFetchItem:
 
 
 class TestDelete:
-    def test_delete_calls_server_delete(self):
-        item = make_plex_item()
-        plex = make_plex()
+    def test_delete_calls_server_delete_and_notifies_collection(self):
+        item = make_plex_item(type="collection")
+        mock_config = MagicMock()
+        plex = make_plex(config=mock_config, PlexServer=SimpleNamespace(friendlyName="MyServer"))
         plex.delete(item)
         item.delete.assert_called_once()
+        mock_config.notify_delete.assert_called_once_with("Collection Test Item deleted", server="MyServer", library="Test Library")
+
+    def test_delete_notifies_playlist_without_library(self):
+        item = make_plex_item(title="My Playlist", type="playlist")
+        mock_config = MagicMock()
+        plex = make_plex(config=mock_config, PlexServer=SimpleNamespace(friendlyName="MyServer"))
+
+        plex.delete(item)
+
+        mock_config.notify_delete.assert_called_once_with("Playlist My Playlist deleted", server="MyServer", library=None)
+
+    def test_delete_can_suppress_notification(self):
+        item = make_plex_item(type="playlist")
+        mock_config = MagicMock()
+        plex = make_plex(config=mock_config)
+
+        plex.delete(item, notify=False)
+
+        item.delete.assert_called_once()
+        mock_config.notify_delete.assert_not_called()
+
+    def test_failed_delete_does_not_notify(self):
+        item = make_plex_item(type="collection")
+        mock_config = MagicMock()
+        plex = make_plex(config=mock_config)
+        plex.query = MagicMock(side_effect=RuntimeError("delete failed"))
+
+        with pytest.raises(Failed, match="Plex Error: Failed to delete Test Item"):
+            plex.delete(item)
+
+        mock_config.notify_delete.assert_not_called()
+
+    def test_delete_user_playlist_includes_user(self):
+        item = make_plex_item(title="My Playlist", type="playlist")
+        mock_config = MagicMock()
+        server = MagicMock()
+        server.friendlyName = "MyServer"
+        server.switchUser.return_value.playlist.return_value = item
+        plex = make_plex(config=mock_config, PlexServer=server)
+
+        plex.delete_user_playlist("My Playlist", "Friend")
+
+        mock_config.notify_delete.assert_called_once_with("Playlist My Playlist deleted on User Friend", server="MyServer", library=None)
+
+    def test_delete_user_playlist_can_suppress_notification(self):
+        item = make_plex_item(title="My Playlist", type="playlist")
+        mock_config = MagicMock()
+        server = MagicMock()
+        server.switchUser.return_value.playlist.return_value = item
+        plex = make_plex(config=mock_config, PlexServer=server)
+
+        plex.delete_user_playlist("My Playlist", "Friend", notify=False)
+
+        item.delete.assert_called_once()
+        mock_config.notify_delete.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════
