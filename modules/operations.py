@@ -256,7 +256,7 @@ class Operations:
                     except Failed:
                         pass
                 if item.locations:
-                    path = os.path.dirname(str(item.locations[0])) if self.library.is_movie else str(item.locations[0])
+                    path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:
                         path = path.replace(self.library.Radarr.plex_path, self.library.Radarr.radarr_path)
                         path = path[:-1] if path.endswith(("/", "\\")) else path
