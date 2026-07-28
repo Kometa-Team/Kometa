@@ -12,9 +12,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from plexapi.exceptions import BadRequest
+from plexapi.video import Movie
 from requests.exceptions import ReadTimeout
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
+import modules.plex as plex_module
 from modules.plex import Plex
 from tests.conftest import FakeLogger
 
@@ -377,3 +379,196 @@ class TestEdgeCases:
         collection = MagicMock()
         plex.collection_order_query(collection, "release")
         collection.sortUpdate.assert_called_once_with(sort="release")
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# base_language_code
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestBaseLanguageCode:
+    @pytest.mark.parametrize(
+        "value,expected",
+        [
+            # BCP-47/POSIX locale tags -> base language, via langcodes
+            ("es-419", "es"),
+            ("en-US", "en"),
+            ("es-ES", "es"),
+            ("es-MX", "es"),
+            ("en_US", "en"),
+            ("zh-Hans-CN", "zh"),
+            ("sr-Latn-RS", "sr"),
+            ("pt-BR", "pt"),
+            # 3-letter ISO 639-2/3 codes -> ISO 639-1, including bibliographic vs
+            # terminological pairs that differ from the 2-letter code (langcodes only)
+            ("ita", "it"),
+            ("deu", "de"),
+            ("ger", "de"),
+            ("chi", "zh"),
+            ("fre", "fr"),
+            ("spa", "es"),
+            ("may", "ms"),
+            ("bur", "my"),
+            ("cze", "cs"),
+            # langcodes normalizes casing
+            ("EN", "en"),
+            # already a bare 2-letter code
+            ("es", "es"),
+            # no 2-letter ISO 639-1 equivalent exists, so it passes through unchanged
+            ("fil", "fil"),
+            # separators langcodes can't parse fall back to the leading letter run
+            ("en/USA", "en"),
+            # not a language tag at all (langcodes rejects it) -> leading letter run
+            ("PG-13", "PG"),
+        ],
+    )
+    def test_normalizes_to_base_language_code(self, value, expected):
+        assert plex_module.base_language_code(value) == expected
+
+    def test_none_is_unchanged(self):
+        assert plex_module.base_language_code(None) is None
+
+    def test_empty_string_is_unchanged(self):
+        assert plex_module.base_language_code("") == ""
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# get_search_choices — audio/subtitle language region-tag normalization
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def make_choice(title, key):
+    """A minimal stand-in for plexapi's FilterChoice (only .title/.key are read)."""
+    return SimpleNamespace(title=title, key=key)
+
+
+class TestGetSearchChoicesLanguage:
+    """Streams tagged with a full locale (e.g. "es-419", "en-US") must still be
+    matchable by their base ISO 639-1 code (e.g. "es", "en"), for both movie and
+    show libraries, since Plex may only expose the region-specific tag."""
+
+    def test_movie_audio_language_resolves_bare_code_from_region_variant(self):
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("Spanish (Latin America)", "es-419")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["es"] == "es-419"
+        assert choices["es-419"] == "es-419"
+
+    def test_movie_subtitle_language_resolves_bare_code_from_region_variant(self):
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("English (US)", "en-US")])
+        choices, _ = plex.get_search_choices("subtitle_language", title=False)
+        assert choices["en"] == "en-US"
+
+    def test_show_episode_audio_language_resolves_bare_code(self):
+        """TV show libraries route audio_language through episode.audioLanguage."""
+        plex = make_plex(is_show=True)
+        plex.get_tags = MagicMock(return_value=[make_choice("Spanish (Spain)", "es-ES")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["es"] == "es-ES"
+
+    def test_show_episode_subtitle_language_resolves_bare_code(self):
+        plex = make_plex(is_show=True)
+        plex.get_tags = MagicMock(return_value=[make_choice("Spanish (Mexico)", "es-MX")])
+        choices, _ = plex.get_search_choices("subtitle_language", title=False)
+        assert choices["es"] == "es-MX"
+
+    def test_exact_bare_code_choice_wins_over_region_variant(self):
+        """When Plex reports both a bare "es" tag and a region-specific "es-419" tag,
+        an "es" query must resolve to the exact match, not the regional fallback."""
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("Spanish (Latin America)", "es-419"), make_choice("Spanish", "es")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["es"] == "es"
+
+    def test_exact_bare_code_choice_wins_regardless_of_order(self):
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("Spanish", "es"), make_choice("Spanish (Latin America)", "es-419")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["es"] == "es"
+
+    def test_plain_code_untouched_when_no_region_variant(self):
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("English", "en")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["en"] == "en"
+
+    def test_non_language_field_is_not_stripped(self):
+        """Hyphenated values in unrelated tag fields (e.g. content_rating) must be left alone."""
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_choice("PG-13", "PG-13")])
+        choices, _ = plex.get_search_choices("content_rating", title=False)
+        assert choices["pg-13"] == "PG-13"
+        assert "pg" not in choices
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# check_filter — audio/subtitle language region-tag normalization
+# (the manual "filters:" attribute path, separate from plex_search)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def make_audio_stream(language=None, languageCode=None, languageTag=None):
+    return SimpleNamespace(language=language, languageCode=languageCode, languageTag=languageTag, extendedDisplayTitle=None)
+
+
+def make_movie_with_streams(audio_streams=None, subtitle_streams=None):
+    part = SimpleNamespace(audioStreams=lambda: audio_streams or [], subtitleStreams=lambda: subtitle_streams or [])
+    media = SimpleNamespace(parts=[part])
+    item = MagicMock(spec=Movie)
+    item.media = [media]
+    return item
+
+
+class TestCheckFilterLanguage:
+    def make_plex_for_filter(self):
+        plex = make_plex(is_show=False)
+        plex.reload = MagicMock(side_effect=lambda item, force=False: item)
+        return plex
+
+    def test_matches_region_tagged_audio_stream_on_base_code(self):
+        """A stream tagged "es-419" (no plain "es" anywhere) must still satisfy an
+        audio_language: es filter."""
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(audio_streams=[make_audio_stream(language="Spanish (Latin America)", languageCode="es-419", languageTag="es-419")])
+        assert plex.check_filter(item, "audio_language", "", "audio_language", ["es"], None) is True
+
+    def test_matches_underscore_tagged_subtitle_stream_on_base_code(self):
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(subtitle_streams=[make_audio_stream(language="English (US)", languageCode="en_US", languageTag="en_US")])
+        assert plex.check_filter(item, "subtitle_language", "", "subtitle_language", ["en"], None) is True
+
+    def test_does_not_match_unrelated_language(self):
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(audio_streams=[make_audio_stream(language="French", languageCode="fre", languageTag="fr")])
+        assert plex.check_filter(item, "audio_language", "", "audio_language", ["es"], None) is False
+
+    def test_plain_code_still_matches_without_region(self):
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(audio_streams=[make_audio_stream(language="English", languageCode="eng", languageTag="en")])
+        assert plex.check_filter(item, "audio_language", "", "audio_language", ["en"], None) is True
+
+    def test_matches_bibliographic_three_letter_code_with_no_language_tag(self):
+        """Plex/ffprobe commonly tag streams with a plain ISO 639-2 code and nothing else.
+        "ita"/"deu"/"chi" have no separator for a regex to split on, and some (like the
+        bibliographic "chi" for Chinese) aren't even a prefix of their ISO 639-1 code ("zh"),
+        so this only works via a real language-tag lookup (langcodes), not string splitting."""
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(audio_streams=[make_audio_stream(language="Italian", languageCode="ita", languageTag=None)])
+        assert plex.check_filter(item, "audio_language", "", "audio_language", ["it"], None) is True
+
+    def test_matches_chinese_bibliographic_code_despite_no_shared_prefix(self):
+        plex = self.make_plex_for_filter()
+        item = make_movie_with_streams(audio_streams=[make_audio_stream(language="Chinese", languageCode="chi", languageTag=None)])
+        assert plex.check_filter(item, "audio_language", "", "audio_language", ["zh"], None) is True
+
+    def test_different_locale_variants_all_match_the_same_single_filter(self):
+        """This is the scenario plex_search can't handle: Plex only exact-matches one locale key
+        per query, so a library mixing "es-419" and "es-MX" titles needs two separate plex_search
+        queries. Routed through plex_all + filters/check_filter instead, one ["es"] filter_data
+        list must match items carrying either variant."""
+        plex = self.make_plex_for_filter()
+        item_419 = make_movie_with_streams(audio_streams=[make_audio_stream(language="Spanish (Latin America)", languageCode="es-419", languageTag="es-419")])
+        item_mx = make_movie_with_streams(audio_streams=[make_audio_stream(language="Spanish (Mexico)", languageCode="es-MX", languageTag="es-MX")])
+        assert plex.check_filter(item_419, "audio_language", "", "audio_language", ["es"], None) is True
+        assert plex.check_filter(item_mx, "audio_language", "", "audio_language", ["es"], None) is True

@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 from xml.etree.ElementTree import ParseError
 
+import langcodes
 import plexapi
 from PIL import Image
 from plexapi import utils  # type: ignore[attr-defined]  # utils is not re-exported from plexapi.__init__
@@ -27,6 +28,25 @@ logger = util.logger
 
 SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
 SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_MULTI_EDITS_RETRY_DELAYS])
+
+
+def base_language_code(value):
+    """Reduce a language value in any common form down to its base ISO 639-1 code ("es", "en"):
+    a 3-letter ISO 639-2/3 code, including the bibliographic/terminological pairs that differ
+    from their ISO 639-1 equivalent (e.g. "chi" -> "zh", "deu"/"ger" -> "de"), or a BCP-47/POSIX
+    locale tag (e.g. "es-419", "en_US"). Falls back to the leading run of letters for separators
+    langcodes doesn't parse (e.g. "en/USA"), then to the value unchanged if nothing else applies."""
+    if not value:
+        return value
+    text = str(value)
+    try:
+        language = langcodes.Language.get(text).language
+        if language:
+            return language
+    except ValueError:
+        pass
+    match = re.match(r"[A-Za-z]+", text)
+    return match.group(0) if match and match.group(0) != text else value
 
 
 def _plex_timeout_sleep(seconds):
@@ -1202,17 +1222,23 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
+            is_language_field = final_search in ("audioLanguage", "subtitleLanguage", "episode.audioLanguage", "episode.subtitleLanguage")
             for choice in self.get_tags(final_search):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
-                # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
-                title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
+                # Reduce a locale-tagged language value (e.g. "es-419", "en_US") down to its base ISO 639
+                # code so language flags/filters match regardless of which locale variant Plex reports.
+                title_value = base_language_code(value) if (not use_title and is_language_field) else value
                 choices[choice.title] = title_value  # type: ignore[union-attr]
                 choices[choice.key] = value  # type: ignore[union-attr]
                 choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
                 choices[choice.key.lower()] = value  # type: ignore[union-attr]
+                # Also expose the bare code as its own choice (first variant wins) so a config value of
+                # "es" resolves to a real Plex key even when only region-specific tags (e.g. "es-419") exist.
+                if title_value != value:
+                    choices.setdefault(title_value, value)
+                    choices.setdefault(str(title_value).lower(), value)
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
@@ -2668,10 +2694,14 @@ class Plex(Library):
                     for part in media.parts:
                         if filter_attr == "audio_language":
                             for a in part.audioStreams():
-                                attrs.extend([a.language, a.languageCode])
+                                attrs.extend([a.language, a.languageCode, a.languageTag])
+                                # Also match on the base ISO 639 code (e.g. "es-419" -> "es") so
+                                # region/locale-tagged streams still match a plain language code.
+                                attrs.extend([base_language_code(a.languageCode), base_language_code(a.languageTag)])
                         if filter_attr == "subtitle_language":
                             for s in part.subtitleStreams():
-                                attrs.extend([s.language, s.languageCode])
+                                attrs.extend([s.language, s.languageCode, s.languageTag])
+                                attrs.extend([base_language_code(s.languageCode), base_language_code(s.languageTag)])
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:

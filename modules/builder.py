@@ -3471,7 +3471,10 @@ class CollectionBuilder:
                     try:
                         final_data = self.validate_attribute(filter_attr, modifier, f"{filter_final} filter", filter_data, validate)
                     except FilterFailed as e:
-                        raise Failed(e)
+                        if self.ignore_blank_results:
+                            raise
+                        else:
+                            raise Failed(str(e))
                     if self.builder_level in ["show", "season", "artist", "album"] and filter_attr in sub_filters:
                         current_filters.append(
                             (
@@ -4215,6 +4218,11 @@ class CollectionBuilder:
             for fvalue in final_values:
                 if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
+                    if not plex_search and attribute in ("audio_language", "subtitle_language"):
+                        # check_filter matches stream languages against their base ISO 639 code across every
+                        # locale variant a stream might carry, so keep that base code here rather than the one
+                        # specific Plex-reported locale key (e.g. "es-419") get_search_choices resolved "es" to.
+                        valid_value = plex.base_language_code(str(fvalue).lower())
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
                 else:
                     actor_id = None

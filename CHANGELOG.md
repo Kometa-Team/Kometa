@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Improve `audio_language`/`subtitle_language` matching (including the default `languages.yml` flag overlays) to recognize any locale- or region-tagged variant of a language (e.g. `es-419`, `en-US`) and any 3-letter ISO 639-2 code (e.g. `spa`, `deu`), not just a bare 2-letter match. A single `es`/`it`/`zh` filter now matches every variant Plex reports for that language, instead of silently skipping content it doesn't recognize.
+
 ## [v2.4.5] - 2026-07-22
 
 ### Added

@@ -469,6 +469,88 @@ class TestBuildFilter:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# validate_attribute — audio/subtitle language resolution
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeLangLibrary:
+    """A library whose only known Spanish tag is a region-specific one, mimicking a
+    Plex library where no bare "es" FilterChoice exists — only "es-419" (or similar)."""
+
+    def __init__(self, choices):
+        self._choices = choices
+
+    def get_search_choices(self, attribute, title=True, name_pairs=False):
+        return self._choices, list(self._choices.keys())
+
+    def split(self, text):
+        return str(text).lower(), "", str(text).lower()
+
+
+def make_lang_builder(library):
+    return make_builder(
+        library=library,
+        details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False, "show_options": False},
+        ignore_blank_results=False,
+    )
+
+
+class TestValidateAttributeLanguage:
+    def test_filters_path_resolves_to_base_code_not_locale_key(self):
+        """The client-side `filters:` attribute (plex_search=False) must resolve to the base ISO
+        code, not whichever one specific locale key get_search_choices happened to find — since
+        check_filter compares against every locale variant a stream might carry, not just one."""
+        library = FakeLangLibrary({"es": "es-419", "es-419": "es-419"})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language filter", "es", True, plex_search=False)
+        assert result == ["es"]
+
+    def test_plex_search_path_still_uses_the_real_plex_key(self):
+        """The native plex_search path must still send Plex's own exact key, since that's what
+        the server's filter query actually needs to match anything."""
+        library = FakeLangLibrary({"es": "es-419", "es-419": "es-419"})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language filter", "es", True, plex_search=True)
+        assert result == [("es", "es-419")]
+
+    def test_filters_path_is_case_insensitive(self):
+        library = FakeLangLibrary({"es": "es-419", "es-419": "es-419"})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language filter", "ES", True, plex_search=False)
+        assert result == ["es"]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _filters — ignore_blank_results should silence a "not found" the same way
+# plex_search already does, instead of always escalating to a hard Failed
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestFiltersIgnoreBlankResults:
+    def make_filters_builder(self, ignore_blank_results):
+        library = FakeLangLibrary({})  # no language tags exist in this library at all
+        builder = make_lang_builder(library)
+        builder.ignore_blank_results = ignore_blank_results
+        return builder
+
+    def test_raises_plain_filter_failed_when_ignoring_blank_results(self):
+        """A language absent from the whole library must stay a silent skip (like plex_search's
+        own FilterFailed-when-ignore_blank_results path), not get escalated into a hard Failed
+        that aborts the entire overlay/collection."""
+        builder = self.make_filters_builder(ignore_blank_results=True)
+        with pytest.raises(builder_module.FilterFailed):
+            builder._filters("filters", {"audio_language": "zh"})
+
+    def test_raises_hard_failed_when_not_ignoring_blank_results(self):
+        """Default behavior (ignore_blank_results unset) is unchanged: a "not found" filter
+        value is still a hard configuration error, not the silently-skippable FilterFailed."""
+        builder = self.make_filters_builder(ignore_blank_results=False)
+        with pytest.raises(builder_module.Failed) as exc_info:
+            builder._filters("filters", {"audio_language": "zh"})
+        assert not isinstance(exc_info.value, builder_module.FilterFailed)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # Dispatch table sanity tests
 # ═══════════════════════════════════════════════════════════════════════
 #

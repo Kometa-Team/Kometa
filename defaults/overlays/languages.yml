@@ -193,9 +193,9 @@ templates:
     ignore_blank_results: true
     run_definition:
       - <<use_<<key>>>>
-    plex_search:
-      all:
-        <<search_attribute>>: <<key>>
+    plex_all: true
+    filters:
+      <<search_attribute>>: <<key>>
 
 overlays:
 
