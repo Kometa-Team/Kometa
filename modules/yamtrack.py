@@ -10,6 +10,7 @@ logger = util.logger
 
 builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
+tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/|$)")
 mal_details_pattern = re.compile(r"^/details/mal/anime/(?P<mal_id>\d+)(?:/|$)")
 tracked_statuses = {
     "dropped": ("text-red", "Dropped"),
@@ -136,7 +137,7 @@ class YamTrack:
             description = page.xpath("string(//*[@id='id_description'])").strip()
         return description
 
-    def get_tmdb_ids(self, method, list_url, is_movie=None):
+    def get_ids(self, method, list_url, is_movie=None):
         pretty = method.replace("_", " ").title()
         if logger:
             logger.info(f"Processing {pretty}: {list_url}")
@@ -146,26 +147,31 @@ class YamTrack:
         for href in page.xpath("//a/@href"):
             parsed = self._parse_href(href)
             match = details_pattern.match(parsed.path)
-            if not match:
-                continue
-            tmdb_id = int(match.group("tmdb_id"))
-            id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+            if match:
+                item_id = int(match.group("tmdb_id"))
+                id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+            else:
+                match = tvdb_details_pattern.match(parsed.path)
+                if not match:
+                    continue
+                item_id = int(match.group("tvdb_id"))
+                id_type = "tvdb"
             if is_movie is True and id_type != "tmdb":
                 continue
-            if is_movie is False and id_type != "tmdb_show":
+            if is_movie is False and id_type not in ("tmdb_show", "tvdb"):
                 continue
-            key = (tmdb_id, id_type)
+            key = (item_id, id_type)
             if key not in seen:
                 ids.append(key)
                 seen.add(key)
         if not ids:
-            raise Failed(f"YamTrack Error: No TMDb IDs found in {list_url}")
+            raise Failed(f"YamTrack Error: No IDs found in {list_url}")
         return ids
 
-    def get_tracked_tmdb_ids(self, tracked, is_movie=None):
+    def get_tracked_ids_from_config(self, tracked, is_movie=None):
         ids, _ = self.get_tracked_ids(tracked, is_movie=is_movie)
         if not ids:
-            raise Failed("YamTrack Error: No TMDb IDs found in tracked items")
+            raise Failed("YamTrack Error: No IDs found in tracked items")
         return ids
 
     def get_tracked_ids(self, tracked, is_movie=None):
@@ -189,11 +195,13 @@ class YamTrack:
                         continue
                     mal_ids.append(mal_id)
                     seen_mal.add(mal_id)
-            else:
-                for tmdb_id, found_id_type, status in self._tracked_items(page):
-                    if found_id_type != id_type or status not in enabled_statuses:
+                for item_id, found_id_type, status in self._tracked_items(page):
+                    if id_type == "tmdb_show":
+                        if found_id_type not in ("tmdb_show", "tvdb") or status not in enabled_statuses:
+                            continue
+                    elif found_id_type != id_type or status not in enabled_statuses:
                         continue
-                    key = (tmdb_id, found_id_type)
+                    key = (item_id, found_id_type)
                     if key not in seen:
                         ids.append(key)
                         seen.add(key)
@@ -217,6 +225,13 @@ class YamTrack:
             parsed = self._parse_href(href)
             match = details_pattern.match(parsed.path)
             if not match:
+                match = tvdb_details_pattern.match(parsed.path)
+                if not match:
+                    continue
+                card = link.xpath("ancestor::div[@x-data][1]")
+                status = self._card_status(card[0] if card else link)
+                if status:
+                    yield int(match.group("tvdb_id")), "tvdb", status
                 continue
             card = link.xpath("ancestor::div[@x-data][1]")
             status = self._card_status(card[0] if card else link)
