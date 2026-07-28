@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Batch collection and playlist `item_label`, `item_label.remove`, and `item_label.sync` updates through Plex multi-edit requests, grouped by library and media type and split by `plex_bulk_edit_batch_size`, instead of sending one label request per item.
+- Fail Letterboxd collection validation when a configured list or watchlist cannot be loaded, preventing sync mode from emptying an existing collection after a blocked or unavailable source request.
 - Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
 - Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
 - Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
