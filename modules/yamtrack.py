@@ -195,6 +195,7 @@ class YamTrack:
                         continue
                     mal_ids.append(mal_id)
                     seen_mal.add(mal_id)
+            else:
                 for item_id, found_id_type, status in self._tracked_items(page):
                     if id_type == "tmdb_show":
                         if found_id_type not in ("tmdb_show", "tvdb") or status not in enabled_statuses:
