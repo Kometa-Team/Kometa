@@ -343,6 +343,7 @@ class BatchLabelLibrary:
         self._save_multi_edits_with_retry = MagicMock()
         self.edit_tags = MagicMock()
         self.tag_edit = MagicMock()
+        self.search = MagicMock(return_value=[])
         self.Radarr = None
         self.Sonarr = None
         self.is_movie = True
@@ -420,6 +421,26 @@ class TestBatchedItemLabels:
             (("label", "B"), {"remove": True}),
         ]
         assert library._save_multi_edits_with_retry.call_count == 3
+
+    def test_batches_non_item_label_removals_and_excludes_collection_items(self):
+        library = BatchLabelLibrary(1)
+        collection_item = label_item(1, ["Cleanup"])
+        non_item = label_item(2, ["Keep", "Cleanup"])
+        library.search.return_value = [collection_item, non_item]
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[collection_item],
+            item_details={"non_item_remove_label": ["Cleanup", "Not Present"]},
+        )
+
+        builder.update_item_details()
+
+        library.search.assert_called_once_with(label=["Cleanup", "Not Present"], libtype="movie")
+        library.Plex.batchMultiEdits.assert_called_once_with([non_item])
+        library.Plex.editTags.assert_called_once_with("label", "Cleanup", remove=True)
+        library._save_multi_edits_with_retry.assert_called_once()
+        assert all(call.args[0] == "genre" for call in library.edit_tags.call_args_list)
 
     def test_separates_playlist_libraries_and_item_types(self):
         first_library = BatchLabelLibrary(1)

@@ -4820,15 +4820,21 @@ class CollectionBuilder:
         remove_genres = self.item_details["item_genre.remove"] if "item_genre.remove" in self.item_details else None
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
+        label_edits = {"add": {}, "remove": {}}
         if "non_item_remove_label" in self.item_details:
-            rk_compare = [item.ratingKey for item in self.items]
+            rk_compare = {item.ratingKey for item in self.items}
             for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
                 if non_item.ratingKey not in rk_compare:
-                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
+                    non_item = self.library.reload(non_item)
+                    current_labels = [label.tag for label in self.library.item_labels(non_item)]
+                    non_item_remove_tags = [tag for tag in current_labels if tag in self.item_details["non_item_remove_label"]]
+                    for tag in non_item_remove_tags:
+                        label_edits["remove"].setdefault(tag, []).append(non_item)
+                    if non_item_remove_tags:
+                        logger.info(f"{non_item.title[:25]:<25} | Label | -{', -'.join(non_item_remove_tags)}")
 
         tmdb_paths = []
         tvdb_paths = []
-        label_edits = {"add": {}, "remove": {}}
         for item in self.items:
             item = self.library.reload(item)
             current_labels = [la.tag for la in self.library.item_labels(item)]
