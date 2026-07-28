@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
+- Add TVDB ID support to YamTrack builder, enabling import of TVDB show IDs from YamTrack lists and tracked pages alongside existing TMDb support.
 
 ### Fixed
 - Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
