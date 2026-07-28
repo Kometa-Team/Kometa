@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -1771,6 +1771,8 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).summary
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "tvdb_description":
@@ -1810,6 +1812,8 @@ class CollectionBuilder:
                 self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).poster_url}"
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "file_poster":
@@ -1832,6 +1836,8 @@ class CollectionBuilder:
                 self.posters[method_name] = f"{self.config.TVDb.get_tvdb_obj(method_data, is_movie=self.library.is_movie).background_url}"
             except tvdb.NotFound as e:
                 logger.debug(e)
+            except tvdb.CircuitOpen:
+                pass
             except tvdb.Unavailable as e:
                 logger.warning(e)
         elif method_name == "file_background":
@@ -3436,6 +3442,8 @@ class CollectionBuilder:
                         self.posters[method_name] = item.poster_url
                 except tvdb.NotFound as e:
                     logger.debug(e)
+                except tvdb.CircuitOpen:
+                    pass
                 except tvdb.Unavailable as e:
                     logger.warning(e)
             elif method_name.startswith("tvdb_list"):
@@ -3515,6 +3523,7 @@ class CollectionBuilder:
                 raise BuilderValidationError(f"{self.Type} Error: {method_name} threshold '{value}' for '{key}' must be a number")
             self.value_filters.append((variable_name, comparator, threshold))
 
+    @timings.timed("gather_ids", source_arg=0)
     def gather_ids(self, method, value):
         expired = None
         list_key = None
@@ -3630,6 +3639,7 @@ class CollectionBuilder:
                     return True
         return False
 
+    @timings.timed("filter_and_save_items")
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
@@ -3895,6 +3905,7 @@ class CollectionBuilder:
                 self.library.is_movie,
             )
 
+    @timings.timed("build_filter")
     def build_filter(self, method, plex_filter, display=False, default_sort=None):
         if display:
             logger.info("")
@@ -4330,6 +4341,7 @@ class CollectionBuilder:
         else:
             raise BuilderValidationError(f"{self.Type} Error: {final} attribute not supported")
 
+    @timings.timed("add_to_collection")
     def add_to_collection(self):
         logger.info("")
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
@@ -4377,6 +4389,7 @@ class CollectionBuilder:
         logger.info(f"{total} {item_label} Processed {amount_added} {item_label} Added")
         return amount_added, amount_unchanged
 
+    @timings.timed("sync_collection")
     def sync_collection(self):
         amount_removed = 0
         items_removed = []
@@ -4526,6 +4539,8 @@ class CollectionBuilder:
                             except tvdb.NotFound as e:
                                 logger.debug(e)
                                 or_result = False
+                            except tvdb.CircuitOpen:
+                                or_result = False
                             except tvdb.Unavailable as e:
                                 logger.warning(e)
                                 or_result = False
@@ -4672,6 +4687,8 @@ class CollectionBuilder:
                     # TVDb ID is stale (e.g. TMDb still points at a series TVDb no longer has); not user-actionable, log quietly
                     logger.debug(e)
                     continue
+                except tvdb.CircuitOpen:
+                    break
                 except tvdb.Unavailable as e:
                     # TVDb didn't return usable content in time; not a confirmed absence, may resolve on a later run
                     logger.warning(e)
@@ -4733,6 +4750,7 @@ class CollectionBuilder:
                 self.library.add_missing(self.name, self.missing_parts, False)
         return added_to_radarr, added_to_sonarr
 
+    @timings.timed("load_collection_items")
     def load_collection_items(self):
         if self.build_collection and self.obj:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
@@ -4809,7 +4827,7 @@ class CollectionBuilder:
             ):
                 if item.locations:
                     if self.library.is_movie:
-                        path = os.path.dirname(str(item.locations[0]))
+                        path = util.media_dirname(item.locations[0])
                     elif self.library.is_show:
                         path = str(item.locations[0])
                 if not path:
@@ -4900,6 +4918,7 @@ class CollectionBuilder:
                 logger.stacktrace()
                 logger.error(f"Arr Error: {e}")
 
+    @timings.timed("load_collection")
     def load_collection(self):
         if self.obj is None and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url, self.ignore_blank_results)
@@ -4919,6 +4938,7 @@ class CollectionBuilder:
         if not self.exists:
             self.created = True
 
+    @timings.timed("update_details")
     def update_details(self):
         updated_details = []
         logger.info("")
@@ -5194,6 +5214,7 @@ class CollectionBuilder:
             self.library.upload_theme(self.obj, filepath=self.file_theme)
         return updated_details
 
+    @timings.timed("sort_collection")
     def sort_collection(self):
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
@@ -5274,11 +5295,8 @@ class CollectionBuilder:
         elif self.obj:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
-                smart_label_items = list(self.library.search(label=self.name, libtype=self.builder_level))
-                for smart_item in smart_label_items:
-                    logger.info(f"{smart_item.title[:25]:<25} | Label | -{self.name}")
-                if smart_label_items:
-                    self.library.batch_edit_tags(smart_label_items, "label", remove_tags={self.name})
+                for item in self.library.search(label=self.name, libtype=self.builder_level):
+                    self.library.edit_tags("label", item, remove_tags=self.name)
         else:
             output = ""
 
@@ -5306,7 +5324,7 @@ class CollectionBuilder:
             logger.info("")
             for user in self.valid_users:
                 try:
-                    self.library.delete_user_playlist(self.obj.title, user)
+                    self.library.delete_user_playlist(self.obj.title, user, notify=False)
                 except Failed:
                     pass
                 if user != self.library.account.username:
@@ -5406,6 +5424,8 @@ class CollectionBuilder:
                     except tvdb.NotFound as e:
                         logger.debug(e)
                         continue
+                    except tvdb.CircuitOpen:
+                        break
                     except tvdb.Unavailable as e:
                         logger.warning(e)
                         continue

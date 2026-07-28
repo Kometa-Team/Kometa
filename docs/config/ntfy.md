@@ -21,6 +21,8 @@ ntfy:
 | `token`   | ntfy user access token. | Any valid token or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
 | `topic`   | ntfy topic name.        | Any valid topic or leave **blank**   | :fontawesome-solid-circle-check:{ .green } |
 
+Kometa does not publish a test notification while loading the ntfy configuration. Network and write access are checked when the first configured ntfy webhook is sent.
+
 ## Setup
 
 Users can either use the [public ntfy server](https://ntfy.sh), or [host their own ntfy server](https://docs.ntfy.sh/install/).

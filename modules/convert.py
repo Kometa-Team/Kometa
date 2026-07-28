@@ -3,7 +3,7 @@ import re
 from plexapi.exceptions import BadRequest
 from requests.exceptions import ConnectionError
 
-from modules import util
+from modules import timings, util
 from modules.request import urlparse
 from modules.util import Failed, MappingConvertError, NonExisting
 
@@ -148,6 +148,7 @@ class Convert:
                 logger.warning(f"Convert Warning: No AniDB ID Found for MyAnimeList ID '{mal_id}'")
         return ids
 
+    @timings.timed("convert_tmdb_to_imdb")
     def tmdb_to_imdb(self, tmdb_id, is_movie=True, fail=False):
         media_type = "movie" if is_movie else "show"
         expired = False
@@ -168,6 +169,7 @@ class Convert:
         else:
             return None
 
+    @timings.timed("convert_imdb_to_tmdb")
     def imdb_to_tmdb(self, imdb_id, fail=False):
         expired = False
         if self.cache:
@@ -187,6 +189,7 @@ class Convert:
         else:
             return None, None
 
+    @timings.timed("convert_tmdb_to_tvdb")
     def tmdb_to_tvdb(self, tmdb_id, fail=False):
         expired = False
         if self.cache:
@@ -206,6 +209,7 @@ class Convert:
         else:
             return None
 
+    @timings.timed("convert_tvdb_to_tmdb")
     def tvdb_to_tmdb(self, tvdb_id, fail=False):
         expired = False
         if self.cache:
@@ -225,6 +229,7 @@ class Convert:
         else:
             return None
 
+    @timings.timed("convert_tvdb_to_imdb")
     def tvdb_to_imdb(self, tvdb_id, fail=False):
         expired = False
         if self.cache:
@@ -244,6 +249,7 @@ class Convert:
         else:
             return None
 
+    @timings.timed("convert_imdb_to_tvdb")
     def imdb_to_tvdb(self, imdb_id, fail=False):
         expired = False
         if self.cache:

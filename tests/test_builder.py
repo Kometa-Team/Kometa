@@ -93,6 +93,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "libraries": [],
         "ignore_imdb_ids": [],
         "ignore_ids": [],
+        "missing_movies": [],
         "missing_parts": [],
         "missing_shows": [],
         "do_missing": True,
@@ -397,6 +398,32 @@ class TestTmdbLookupResilience:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# TVDb outage resilience
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTvdbOutageResilience:
+    def test_run_missing_stops_after_tvdb_circuit_opens(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
+        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
+            is_playlist=False,
+            missing_shows=[1, 2, 3],
+            details={"show_missing": False, "show_filtered": False, "missing_only_released": False},
+            run_again=False,
+        )
+
+        builder.run_missing()
+
+        get_tvdb_obj.assert_called_once_with(1)
+        assert logger.warning_messages == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -435,12 +462,26 @@ class TestDelete:
         assert builder.library.deleted_items == [builder.obj]
         assert builder.library.webhook_calls == 0
 
-    def test_smart_label_collection_does_not_delete(self):
-        """Smart label collections are not deleted from Plex."""
-        builder = make_builder(smart_label_collection=True, obj=SimpleNamespace(title="Smart"))
-        # delete() calls self.library.search — skip that path
-        # Smart label collections should not change deleted flag
-        assert builder.deleted is False
+    def test_smart_label_collection_removes_labels_before_delete(self):
+        items = [SimpleNamespace(title="First"), SimpleNamespace(title="Second")]
+        library = MagicMock()
+        library.search.return_value = items
+        builder = make_builder(
+            library=library,
+            name="Smart",
+            smart_label_collection=True,
+            obj=SimpleNamespace(title="Smart"),
+        )
+
+        assert builder.delete() == "Collection Smart deleted"
+
+        library.search.assert_called_once_with(label="Smart", libtype="movie")
+        assert library.edit_tags.call_args_list == [
+            (("label", items[0]), {"remove_tags": "Smart"}),
+            (("label", items[1]), {"remove_tags": "Smart"}),
+        ]
+        library.delete.assert_called_once_with(builder.obj)
+        assert builder.deleted is True
 
     def test_no_obj_returns_empty_string(self):
         builder = make_builder(obj=None)

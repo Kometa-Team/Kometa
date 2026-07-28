@@ -1,4 +1,5 @@
 import argparse
+import hashlib
 import os
 import platform
 import re
@@ -93,6 +94,7 @@ arguments = {
     "debug": {"args": "db", "type": "bool", "help": "Run with Debug Logs Reporting to the Command Window"},
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
+    "timings": {"args": ["timing"], "type": "bool", "help": "Run with Timing Instrumentation Enabled (writes a timings summary and JSON/CSV breakdown to the logs directory)"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -271,6 +273,12 @@ logger = MyLogger("Kometa", default_dir, run_args["width"], run_args["divider"][
 from modules import util  # noqa: E402
 
 util.logger = logger
+from modules import timings  # noqa: E402
+
+# Must be set before modules.cache/modules.request are imported below - both read this at import/decoration time, not per-call.
+timings.ENABLED = run_args["timings"]
+timings.registry.enabled = run_args["timings"]
+
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
@@ -375,7 +383,18 @@ if run_args["low-priority"]:
 
 def process(attrs):
     with ProcessPoolExecutor(max_workers=1) as executor:
-        executor.submit(start, *[attrs])
+        future = executor.submit(start, *[attrs])
+        try:
+            future.result()
+        except SystemExit as e:
+            # start() runs in a worker process; a bare sys.exit() there is otherwise
+            # swallowed, leaving the parent's exit code at 0. Propagate it so callers
+            # (e.g. CI running --validate) can detect validation failures.
+            code = e.code
+            if code is None:
+                return 0
+            return code if isinstance(code, int) else 1
+    return 0
 
 
 def should_sync_collection(builder):
@@ -423,6 +442,17 @@ def report_duplicate_collections(config):
             logger.warning("")
 
 
+def log_validate_footer(start_time, my_requests, label):
+    end_time = datetime.now()
+    run_time = str(end_time - start_time).split(".")[0]
+    version_line = f"Version: {my_requests.local}"
+    if my_requests.newest:
+        version_line = f"{version_line}        Newest Version: {my_requests.newest}"
+    start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
+    end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
+    logger.separator(f"Finished {label}\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
+
+
 def start(attrs):
     try:
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -440,6 +470,15 @@ def start(attrs):
         logger.info_center("|__|\\__\\ \\______/  |__|  |__| |_______|    |__|  /__/     \\__\\ ")
         logger.info("")
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
+        # Startup banner doubles as a mount-verification tripwire - missing despite --timings/KOMETA_TIMINGS means the mounted /modules code was silently ignored.
+        timings.registry.banner()
+        timings.registry.set_meta(
+            kometa_version=str(my_requests.local),
+            git_sha=timings.git_sha(),
+            image_digest=os.environ.get("KOMETA_IMAGE_DIGEST"),
+            run_label=os.environ.get("KOMETA_RUN_LABEL"),
+            config_file=run_args["config"],
+        )
         if is_linuxserver or is_docker:
             system_ver = f"{'Linuxserver' if is_linuxserver else 'Docker'}: {env_branch}"
         else:
@@ -469,20 +508,21 @@ def start(attrs):
                         pinned_versions = [spec.version for spec in requirement.specifier if spec.operator == "=="]
                         if pinned_versions:
                             required_versions[requirement.name] = pinned_versions[0]
-                v1 = parse("0")
-                v2 = parse("0")
+                required_versions_ci = {k.lower(): v for k, v in required_versions.items()}
+                required_specs_ci = {k.lower(): v for k, v in required_specs.items()}
                 for req_name, sys_ver in system_versions.items():
-                    if sys_ver:
-                        v1 = parse(sys_ver)
-                    if req_name in required_versions:
-                        v2 = parse(required_versions[req_name])
-                    if sys_ver:
+                    if not sys_ver:
+                        continue
+                    key = req_name.lower()
+                    v1 = parse(sys_ver)
+                    if key in required_versions_ci:
+                        v2 = parse(required_versions_ci[key])
                         if v1 < v2:
                             logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
-                        if v1 > v2:
+                        elif v1 > v2:
                             logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
-                        if req_name not in required_versions and req_name in required_specs and v1 not in required_specs[req_name]:
-                            logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs[req_name]}")
+                    elif key in required_specs_ci and v1 not in required_specs_ci[key]:
+                        logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs_ci[key]}")
             except FileNotFoundError:
                 logger.error("    File Error: requirements.txt not found")
         if "time" in attrs and attrs["time"]:
@@ -546,6 +586,7 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
+            log_validate_footer(start_time, my_requests, f"{level} Validation")
             sys.exit(0 if passed else 1)
 
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -559,6 +600,7 @@ def start(attrs):
                 sys.exit(1)
             validator = FileSetValidator(paths, schema_dir)
             passed, *_ = validator.validate()
+            log_validate_footer(start_time, my_requests, "File Validation")
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
@@ -572,14 +614,40 @@ def start(attrs):
             if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
                 logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
             else:
+                profiler = None
+                if os.environ.get("KOMETA_PROFILE") == "pyinstrument":
+                    try:
+                        from pyinstrument import Profiler  # noqa
+
+                        profiler = Profiler()
+                        profiler.start()
+                    except ImportError:
+                        logger.error("Timings Error: KOMETA_PROFILE=pyinstrument set but pyinstrument is not installed")
                 try:
                     stats = run_config(config, stats)
                 except Exception as e:
                     config.notify(get_critical_error_message(e))
                     log_critical_exception(e)
+                finally:
+                    if profiler is not None:
+                        profiler.stop()
+                        os.makedirs(logger.log_dir, exist_ok=True)
+                        profile_path = os.path.join(logger.log_dir, f"profile-{time.strftime('%Y%m%d-%H%M%S')}.html")
+                        with open(profile_path, "w", encoding="utf-8") as profile_fp:
+                            profile_fp.write(profiler.output_html())
+                        logger.info(f"pyinstrument profile written to {profile_path}")
         logger.info("")
         end_time = datetime.now()
         run_time = str(end_time - start_time).split(".")[0]
+        if timings.registry.enabled:
+            try:
+                config_path_for_hash = run_args["config"]
+                if config_path_for_hash and os.path.exists(config_path_for_hash):
+                    with open(config_path_for_hash, "rb") as config_fp:
+                        timings.registry.set_meta(config_hash=hashlib.sha256(config_fp.read()).hexdigest())
+            except OSError as e:
+                logger.error(f"Timings Error: Could not hash config file: {e}")
+            timings.registry.set_meta(start_time=str(start_time), end_time=str(end_time), run_time=run_time)
         if config:
             try:
                 config.Webhooks.end_time_hooks(start_time, end_time, run_time, stats)
@@ -686,6 +754,10 @@ def start(attrs):
                 (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
+                (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
+                (r".*Background \| No Reset Image Found", "Background Warning: No Reset Image Found"),
+                (r".*Logo \| No Reset Image Found", "Logo Warning: No Reset Image Found"),
+                (r".*Square Art \| No Reset Image Found", "Square Art Warning: No Reset Image Found"),
                 (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
                 (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
                 (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
@@ -697,7 +769,7 @@ def start(attrs):
                 for log_line in f:
                     for err_type in ["WARNING", "ERROR", "CRITICAL"]:
                         if f"[{err_type}]" in log_line:
-                            log_line = log_line.split("|")[1].strip()
+                            log_line = log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()
                             other = False
                             for key, reg in other_log_groups:
                                 if log_line.startswith(key):
@@ -790,6 +862,10 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
+        if timings.registry.enabled:
+            # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
+            timings.registry.export(logger.log_dir)
+
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
         end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
         logger.separator(f"Finished {start_type}Run\n{version_line}\nStart Time: {start_str}     Finished: {end_str}     Run Time: {run_time}")
@@ -806,7 +882,8 @@ def run_config(config, stats):
     if (config.playlist_files or config.general["playlist_report"]) and not run_args["overlays-only"] and not run_args["metadata-only"] and not run_args["operations-only"] and not run_args["collections-only"] and not config.requested_files:
         # logger.add_playlists_handler()
         if config.playlist_files:
-            playlist_status, playlist_stats = run_playlists(config)
+            with timings.overlay_context(False):
+                playlist_status, playlist_stats = run_playlists(config)
         if config.general["playlist_report"]:
             ran = []
             for library in config.libraries:
@@ -1047,6 +1124,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 temp_items = library.cache_items()
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
+            timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
                 logger.separator(f"Mapping {library.original_mapping_name} Library", space=False, border=False)
@@ -1093,7 +1171,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.info("")
                             logger.separator(f"{'Test ' if run_args['tests'] else ''}Collections")
                             # logger.remove_library_handler(library.mapping_name)
-                            run_collection(config, library, metadata, collections_to_run)
+                            with timings.overlay_context(False):
+                                run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
@@ -1323,7 +1402,6 @@ def run_collection(config, library, metadata, requested_collections):
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):
-                library.notify_delete(e)
                 library.stats["deleted"] += 1
                 library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
             elif str(e).startswith("Skipped because run_definition"):
@@ -1534,13 +1612,11 @@ def run_playlists(config):
             except Deleted as e:
                 logger.info(e)
                 status[mapping_name]["status"] = "Deleted"
-                config.notify_delete(e, server=server_name)
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
                     stats["deleted"] += 1
                     status[mapping_name]["status"] = "Deleted Not Scheduled"
-                    config.notify_delete(e)
                 else:
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
@@ -1567,7 +1643,8 @@ def run_playlists(config):
 if __name__ == "__main__":
     try:
         if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
-            process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
+            sys.exit(exit_code)
         else:
             times_to_run = util.get_list_bar_then_comma(run_args["times"]) or []
             valid_times = []

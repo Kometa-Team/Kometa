@@ -160,3 +160,41 @@ class TestParseValidatesOptionsList:
                 translation={"alpha": 1, "beta": 2},
                 options=None,
             )
+
+
+class TestMediaDirname:
+    """Plex reports paths using the separator of the machine running the server,
+    which need not match the machine running Kometa. os.path.dirname only knows
+    its own platform's separator, so a Linux Kometa talking to a Windows Plex
+    returned "" for every movie and callers reported "No location found".
+    """
+
+    def test_windows_path_on_any_platform(self):
+        from modules.util import media_dirname
+
+        assert media_dirname(r"P:\Movies\Title (2024)\Title (2024).mkv") == r"P:\Movies\Title (2024)"
+
+    def test_windows_unc_path(self):
+        from modules.util import media_dirname
+
+        assert media_dirname(r"\\server\share\Movies\Title\Title.mkv") == r"\\server\share\Movies\Title"
+
+    def test_posix_path(self):
+        from modules.util import media_dirname
+
+        assert media_dirname("/media/Movies/Title (2024)/Title (2024).mkv") == "/media/Movies/Title (2024)"
+
+    def test_windows_path_is_truthy(self):
+        """The bug was the empty return being treated as 'no location found'."""
+        from modules.util import media_dirname
+
+        assert media_dirname(r"P:\Movies\Title\file.mkv")
+
+    def test_accepts_non_str(self):
+        from modules.util import media_dirname
+
+        class FakePath:
+            def __str__(self):
+                return r"P:\Movies\Title\file.mkv"
+
+        assert media_dirname(FakePath()) == r"P:\Movies\Title"

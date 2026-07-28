@@ -1,4 +1,5 @@
 import glob
+import ntpath
 import os
 import re
 import signal
@@ -422,6 +423,19 @@ def item_title(item):
 
 def item_set(item, item_id):
     return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
+
+
+def media_dirname(path):
+    """Return the parent directory of a media path, using the path's own separator style.
+
+    Plex reports paths from the server's platform, which need not match Kometa's.
+    os.path.dirname returns "" for a Windows path on Linux, which callers read as
+    "no location found".
+    """
+    path = str(path)
+    if ntpath.splitdrive(path)[0] or path.startswith("\\\\") or ("\\" in path and "/" not in path):
+        return ntpath.dirname(path)
+    return os.path.dirname(path)
 
 
 def is_locked(filepath):

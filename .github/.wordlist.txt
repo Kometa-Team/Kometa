@@ -31,6 +31,7 @@ atmos
 atres
 avenir
 Babygirl
+backend
 backoff
 bafta
 bambara
@@ -40,6 +41,8 @@ Beetlejuice
 beetlejuice
 berlinale
 bestest
+Beetlejuice
+beetlejuice
 bing
 bitrate
 bitrateh
@@ -75,6 +78,7 @@ comparator
 comparators
 config
 configs
+CORS
 cov
 cour
 cpp
@@ -86,6 +90,7 @@ cronjob
 crontab
 crunchyroll
 CSM
+CSV
 customizable
 customizations
 d'or
@@ -195,6 +200,7 @@ itvx
 ja
 jd
 jfcherng
+jikan
 jinja
 jkirkcaldy
 johnfawkes
@@ -302,6 +308,7 @@ oauth
 octicons
 oderwat
 omdb
+opping
 oscar
 osx
 ozzy
@@ -450,6 +457,7 @@ TomatoRotten
 tooltip
 tooltips
 traceback
+tracebacks
 trakt
 trakt's
 transcoded

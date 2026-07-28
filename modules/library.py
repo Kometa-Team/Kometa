@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from PIL import Image
 
-from modules import util
+from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
@@ -289,6 +289,7 @@ class Library(ABC):
                     logger.info("")
                     logger.separator(f"Skipping {e} Image File")
 
+    @timings.timed("image_upload")
     def upload_images(self, item, poster=None, background=None, logo=None, square_art=None, overlay=False):
         poster_uploaded = False
         if poster is not None:

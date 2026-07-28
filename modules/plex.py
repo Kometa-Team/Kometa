@@ -18,7 +18,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
 
-from modules import builder, util
+from modules import builder, timings, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
@@ -26,6 +26,7 @@ from modules.util import Failed, LimitReached, MappingConvertError, OverlayError
 
 logger = util.logger
 
+PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
 SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
 SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_MULTI_EDITS_RETRY_DELAYS])
 
@@ -786,6 +787,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
+            timings.registry.set_plex_hostname(urlparse(self.url).hostname)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -872,8 +874,8 @@ class Plex(Library):
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
-    def notify_delete(self, message):
-        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+    def notify_delete(self, message, playlist=False):
+        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=None if playlist else self.name)
 
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get("cinemaTrailersPrerollID").set(preroll)
@@ -889,11 +891,11 @@ class Plex(Library):
                 return []
         return self.fetchItems(args)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
         return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def exact_search(self, title, libtype=None, year=None):
         terms = {"title=": title}
         if year:
@@ -914,11 +916,11 @@ class Plex(Library):
             logger.trace(e)
         raise Failed(f"Plex Error: Item {item} not found")
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def fetchItem(self, data):
         return self.PlexServer.fetchItem(data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def fetchItems(self, uri_args):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
@@ -963,53 +965,62 @@ class Plex(Library):
         elif filepath:
             self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def create_playlist(self, name, items):
         return self.PlexServer.createPlaylist(name, items=items)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def moveItem(self, obj, item, after):
         try:
             obj.moveItem(item, after=after)
         except (BadRequest, NotFound, Unauthorized) as e:
             logger.error(e)
-            raise Failed("Move Failed")
+            raise Failed(f"Plex Error: Failed to move {util.item_title(item)}: {e}") from e
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def query(self, method):
         return method()
 
-    def delete(self, obj):
+    def delete(self, obj, notify=True, delete_message=None):
         try:
-            return self.query(obj.delete)
+            result = self.query(obj.delete)
         except Exception:
             logger.stacktrace()
             raise Failed(f"Plex Error: Failed to delete {obj.title}")
+        if notify:
+            is_playlist = isinstance(obj, Playlist) or getattr(obj, "type", None) == "playlist"
+            self.notify_delete(delete_message or f"{'Playlist' if is_playlist else 'Collection'} {obj.title} deleted", playlist=is_playlist)
+        return result
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def query_data(self, method, data):
         return method(data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def tag_edit(self, item, attribute, data, locked=True, remove=False):
         return item.editTags(attribute, data, locked=locked, remove=remove)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    @PLEX_RETRY
     def query_collection(self, item, collection, locked=True, add=True):
-        if add:
-            item.addCollection(collection, locked=locked)
-        else:
-            item.removeCollection(collection, locked=locked)
+        try:
+            if add:
+                item.addCollection(collection, locked=locked)
+            else:
+                item.removeCollection(collection, locked=locked)
+        except (BadRequest, NotFound, Unauthorized) as e:
+            action = "add" if add else "remove"
+            preposition = "to" if add else "from"
+            raise Failed(f"Plex Error: Failed to {action} collection '{collection}' {preposition} {util.item_title(item)}: {e}") from e
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def collection_mode_query(self, collection, data):
         collection.modeUpdate(mode=data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def collection_order_query(self, collection, data):
         collection.sortUpdate(sort=data)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def item_labels(self, item):
         try:
             return item.labels
@@ -1119,7 +1130,7 @@ class Plex(Library):
             logger.error(f"Image too large: {image.location}, bytes {image_size}, MAX {MAX_IMAGE_SIZE}")
             return False
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def reload(self, item, force=False):
         is_full = False
         if not force and item.ratingKey in self.cached_items:
@@ -1133,14 +1144,14 @@ class Plex(Library):
             raise Failed(f"Item Failed to Load: {e}")
         return item
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def edit_query(self, item, edits, advanced=False):
         if advanced:
             item.editAdvanced(**edits)
         else:
             item.edit(**edits)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def _upload_image(self, item, image):
         upload_success = True
         try:
@@ -1179,40 +1190,43 @@ class Plex(Library):
             item.refresh()
             raise Failed(e)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
         if url:
             item.uploadPoster(url=image)
         else:
             item.uploadPoster(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_background(self, item, image, url=False):
         if url:
             item.uploadArt(url=image)
         else:
             item.uploadArt(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
         if url:
             item.uploadLogo(url=image)
         else:
             item.uploadLogo(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def upload_square_art(self, item, image, url=False):
         if url:
             item.uploadSquareArt(url=image)
         else:
             item.uploadSquareArt(filepath=image)
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    @PLEX_RETRY
     def get_actor_id(self, name):
-        results = self.Plex.hubSearch(name)
-        for result in results:
-            if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
-                return result.id
+        try:
+            results = self.Plex.hubSearch(name)
+            for result in results:
+                if isinstance(result, Role) and result.librarySectionID == self.Plex.key and result.tag == name:
+                    return result.id
+        except (BadRequest, NotFound, Unauthorized) as e:
+            raise Failed(f"Plex Error: Failed to find person ID for '{name}': {e}") from e
 
     def get_search_choices(self, search_name, title=True, name_pairs=False):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
@@ -1244,7 +1258,7 @@ class Plex(Library):
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def get_tags(self, tag):
         if isinstance(tag, str):
             match = re.match(r"(?:([a-zA-Z]*)\.)?([a-zA-Z]+)", tag)
@@ -1264,7 +1278,7 @@ class Plex(Library):
             items = [i for i in self.Plex.findItems(self.Plex._server.query(tag.key[:-7]), FilterChoice) if i.key not in keys]  # type: ignore[union-attr]
         return items
 
-    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized)))
+    @PLEX_RETRY
     def _query(self, key, post=False, put=False):
         if post:
             method = self.Plex._server._session.post
@@ -1289,9 +1303,9 @@ class Plex(Library):
             self._users = users
         return self._users
 
-    def delete_user_playlist(self, title, user):
+    def delete_user_playlist(self, title, user, notify=True):
         try:
-            self.delete(self.PlexServer.switchUser(user).playlist(title))
+            self.delete(self.PlexServer.switchUser(user).playlist(title), notify=notify, delete_message=f"Playlist {title} deleted on User {user}")
         except NotFound as e:
             raise Failed(e)
         except (ConnectionError, ConnectTimeout, ReadTimeout) as e:
@@ -1818,12 +1832,7 @@ class Plex(Library):
         image_type = image_type or ("poster" if poster else "background")
         display_type = {"poster": "Poster", "background": "Background", "logo": "Logo", "square_art": "Square Art"}[image_type]
         text = f"{f'{title} ' if title else ''}{display_type}"
-        image_config = {
-            "poster": self.mass_poster_update,
-            "background": self.mass_background_update,
-            "logo": self.mass_logo_update,
-            "square_art": self.mass_square_art_update,
-        }[image_type]
+        image_config = getattr(self, f"mass_{image_type}_update")
         attr = image_config["source"]
         lang = image_config.get("language")
         resolved_attr = None
@@ -1834,32 +1843,36 @@ class Plex(Library):
             lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]
             if not hasattr(item, lock_method):
                 logger.warning(f"{text} | Lock Not Supported")
-                return
+                return "Lock", "Plex", "Failed"
             lock_method = getattr(item, lock_method)
             self.query(lock_method)
             logger.info(f"{text} | Locked")
+            return "Lock", "Plex", "Updated"
         elif attr == "unlock":
             unlock_method = {"poster": "unlockPoster", "background": "unlockArt", "logo": "unlockLogo", "square_art": "unlockSquareArt"}[image_type]
             if not hasattr(item, unlock_method):
                 logger.warning(f"{text} | Unlock Not Supported")
-                return
+                return "Unlock", "Plex", "Failed"
             unlock_method = getattr(item, unlock_method)
             self.query(unlock_method)
             logger.info(f"{text} | Unlocked")
+            return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
                 if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
                     image = tmdb
                     source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
                 if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
-                        return
+                        return "Reset", "Plex", "Failed"
                     images_method = getattr(item, images_method)
                     images = images_method()
                     temp_image = next((p for p in images), None)
@@ -1870,31 +1883,39 @@ class Plex(Library):
                             image = temp_image.key
                         location = "Plex"
             if image:
-                logger.info(f"{text} | Reset from {location}")
+                updated = True
                 if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
+                        updated = False
                 elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
+                        updated = False
                 elif image_type == "logo":
                     try:
                         self.upload_logo(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload logo: {e}")
+                        updated = False
                 else:
                     try:
                         self.upload_square_art(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
+                        updated = False
+                if updated:
+                    logger.info(f"{text} | Reset from {location}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+                return "Reset", source, "Updated" if updated else "Failed"
             else:
                 logger.warning(f"{text} | No Reset Image Found")
+                return "Reset", source, "Missing"
 
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, style_data=None):
         if title is None:

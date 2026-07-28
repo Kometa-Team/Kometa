@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Improve `audio_language`/`subtitle_language` matching (including the default `languages.yml` flag overlays) to recognize any locale- or region-tagged variant of a language (e.g. `es-419`, `en-US`) and any 3-letter ISO 639-2 code (e.g. `spa`, `deu`), not just a bare 2-letter match. A single `es`/`it`/`zh` filter now matches every variant Plex reports for that language, instead of silently skipping content it doesn't recognize.
+- Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
+
+### Fixed
+- Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
+- Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
+- Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
+- Restore per-item label removal when deleting smart-label collections, preventing an `AttributeError` from the removed `batch_edit_tags` API.
+- Dispatch the configured `delete` webhook after every successful Kometa-managed collection or playlist deletion instead of only for `delete_not_scheduled` and `delete_playlist`; suppress the event for playlist sync's internal delete-and-recopy step. #3420
+- Add a per-library mass image-operation summary grouped by operation, source, image type, media level, and result while retaining per-item success messages, and collapse repeated `No Reset Image Found` warnings by image type in the end-of-run summary.
+- `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
+- Added Drop-in replacement for the jikan api as it is being deprecated
+- Propagate the exit code from the worker process so `--validate` (and other runs) return a non-zero status on failure. Previously `start()` ran inside a `ProcessPoolExecutor` whose result was never retrieved, so a `sys.exit(1)` from a failed validation was swallowed and the parent always exited `0`, breaking CI usage.
+- Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
+- Resolve movie folder paths using the path style reported by the media server rather than the platform Kometa runs on. A Linux or Docker install pointed at a Plex server on Windows received paths such as `P:\Movies\Title\file.mkv`, which `os.path.dirname` reduced to an empty string, logging `Plex Error: No location found` for every movie and silently disabling `add_existing`, `upgrade_existing`, `monitor_existing`, `item_radarr_tag`, and `item_sonarr_tag`.
 
 ## [v2.4.5] - 2026-07-22
 
@@ -32,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+
 - Allow all semantic Letterboxd discovery builders to use `collection_order: custom`, preserving Letterboxd's returned order in Plex collections.
 - Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
@@ -83,7 +98,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
-- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per <https://support.plex.tv/articles/200220677-local-media-assets-movies/>
 - Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
 ### Security
