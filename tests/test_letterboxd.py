@@ -331,6 +331,20 @@ def test_watchlist_url_is_supported_through_letterboxd_list(adapter):
     assert ids == [(4001, "tmdb"), (4002, "tmdb")]
 
 
+def test_watchlist_validation_failure_is_fatal(adapter):
+    class BlockedWatchlist:
+        def __init__(self, username):
+            raise RuntimeError("IP or VPN Blocked")
+
+    adapter._watchlist_cls = BlockedWatchlist
+
+    with pytest.raises(
+        Failed,
+        match=r"Collection Error: Could not validate https://letterboxd\.com/demo/watchlist/.*IP or VPN Blocked",
+    ):
+        adapter.validate_letterboxd_lists("Collection", "https://letterboxd.com/demo/watchlist/", "en")
+
+
 def test_watchlist_falls_back_when_letterboxdpy_returns_empty(monkeypatch, patch_logger):
     monkeypatch.setattr(letterboxd_module, "Films", FakeFilms)
     monkeypatch.setattr(letterboxd_module, "LetterboxdList", FakeList)

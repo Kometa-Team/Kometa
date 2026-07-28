@@ -766,7 +766,7 @@ class Letterboxd:
                 if not self._get_list_items(final["url"], validation_limit, language)[0:1]:
                     logger.warning(f"{err_type} Warning: {final['url']} returned no items during validation")
             except Failed as e:
-                logger.warning(f"{err_type} Warning: Could not validate {final['url']}: {e}")
+                raise Failed(f"{err_type} Error: Could not validate {final['url']}: {e}") from e
             valid_lists.append(final)
         return valid_lists
 
