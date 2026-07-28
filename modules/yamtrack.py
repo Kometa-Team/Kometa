@@ -10,7 +10,7 @@ logger = util.logger
 
 builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
-tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/[^/]+(?:/season/(?P<season>\d+)(?:/episode/(?P<episode>\d+))?)?)?(?:/|$)")
+tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/(?!(?:season|episode)/)[^/]+(?:/season/(?P<season>\d+)(?:/episode/(?P<episode>\d+))?)?)?(?:/|$)")
 mal_details_pattern = re.compile(r"^/details/mal/anime/(?P<mal_id>\d+)(?:/|$)")
 tracked_statuses = {
     "dropped": ("text-red", "Dropped"),
@@ -25,6 +25,19 @@ tracked_types = {
     "anime": ("anime", "mal"),
 }
 cross_library_tracked_types = ["anime"]
+
+
+@staticmethod
+def _tvdb_match_id(match):
+    """Extract (item_id, id_type) from a tvdb_details_pattern match."""
+    tvdb_id = int(match.group("tvdb_id"))
+    season = match.group("season")
+    if season is not None:
+        episode = match.group("episode")
+        if episode is not None:
+            return f"{tvdb_id}_{season}_{episode}", "tvdb_episode"
+        return f"{tvdb_id}_{season}", "tvdb_season"
+    return tvdb_id, "tvdb"
 
 
 class YamTrack:
@@ -168,18 +181,7 @@ class YamTrack:
                     match = tvdb_details_pattern.match(parsed.path)
                     if not match:
                         continue
-                    item_id = int(match.group("tvdb_id"))
-                    season = match.group("season")
-                    episode = match.group("episode")
-                    if season is not None:
-                        if episode is not None:
-                            id_type = "tvdb_episode"
-                            item_id = f"{item_id}_{season}_{episode}"
-                        else:
-                            id_type = "tvdb_season"
-                            item_id = f"{item_id}_{season}"
-                    else:
-                        id_type = "tvdb"
+                    item_id, id_type = _tvdb_match_id(match)
                 if is_movie is True and id_type != "tmdb":
                     continue
                 if is_movie is False and id_type not in ("tmdb_show", "tvdb", "tvdb_season", "tvdb_episode"):
@@ -260,17 +262,8 @@ class YamTrack:
                 card = link.xpath("ancestor::div[@x-data][1]")
                 status = self._card_status(card[0] if card else link)
                 if status:
-                    season = match.group("season")
-                    episode = match.group("episode")
-                    if season is not None:
-                        if episode is not None:
-                            item_id = f"{match.group('tvdb_id')}_{season}_{episode}"
-                            yield item_id, "tvdb_episode", status
-                        else:
-                            item_id = f"{match.group('tvdb_id')}_{season}"
-                            yield item_id, "tvdb_season", status
-                    else:
-                        yield int(match.group("tvdb_id")), "tvdb", status
+                    item_id, id_type = _tvdb_match_id(match)
+                    yield item_id, id_type, status
                 continue
             card = link.xpath("ancestor::div[@x-data][1]")
             status = self._card_status(card[0] if card else link)
