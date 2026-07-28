@@ -10,7 +10,7 @@ logger = util.logger
 
 builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
-tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/|$)")
+tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/[^/]+(?:/season/(?P<season>\d+)(?:/episode/(?P<episode>\d+))?)?)?(?:/|$)")
 mal_details_pattern = re.compile(r"^/details/mal/anime/(?P<mal_id>\d+)(?:/|$)")
 tracked_statuses = {
     "dropped": ("text-red", "Dropped"),
@@ -141,29 +141,57 @@ class YamTrack:
         pretty = method.replace("_", " ").title()
         if logger:
             logger.info(f"Processing {pretty}: {list_url}")
-        page = self._html(list_url)
         ids = []
         seen = set()
-        for href in page.xpath("//a/@href"):
-            parsed = self._parse_href(href)
-            match = details_pattern.match(parsed.path)
-            if match:
-                item_id = int(match.group("tmdb_id"))
-                id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+        page_num = 1
+        # YamTrack custom list order requires ?sort=custom
+        sep = "&" if "?" in list_url else "?"
+        list_url = f"{list_url}{sep}sort=custom"
+        while True:
+            page_sep = "&" if "?" in list_url else "?"
+            page_url = f"{list_url}{page_sep}page={page_num}" if page_num > 1 else list_url
+            if page_num == 1:
+                page = self._html(page_url)
             else:
-                match = tvdb_details_pattern.match(parsed.path)
-                if not match:
+                try:
+                    page = self._html(page_url)
+                except Failed:
+                    break
+            page_items = []
+            for href in page.xpath("//a/@href"):
+                parsed = self._parse_href(href)
+                match = details_pattern.match(parsed.path)
+                if match:
+                    item_id = int(match.group("tmdb_id"))
+                    id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+                else:
+                    match = tvdb_details_pattern.match(parsed.path)
+                    if not match:
+                        continue
+                    item_id = int(match.group("tvdb_id"))
+                    season = match.group("season")
+                    episode = match.group("episode")
+                    if season is not None:
+                        if episode is not None:
+                            id_type = "tvdb_episode"
+                            item_id = f"{item_id}_{season}_{episode}"
+                        else:
+                            id_type = "tvdb_season"
+                            item_id = f"{item_id}_{season}"
+                    else:
+                        id_type = "tvdb"
+                if is_movie is True and id_type != "tmdb":
                     continue
-                item_id = int(match.group("tvdb_id"))
-                id_type = "tvdb"
-            if is_movie is True and id_type != "tmdb":
-                continue
-            if is_movie is False and id_type not in ("tmdb_show", "tvdb"):
-                continue
-            key = (item_id, id_type)
-            if key not in seen:
-                ids.append(key)
-                seen.add(key)
+                if is_movie is False and id_type not in ("tmdb_show", "tvdb", "tvdb_season", "tvdb_episode"):
+                    continue
+                key = (item_id, id_type)
+                if key not in seen:
+                    page_items.append(key)
+                    seen.add(key)
+            if not page_items:
+                break
+            ids.extend(page_items)
+            page_num += 1
         if not ids:
             raise Failed(f"YamTrack Error: No IDs found in {list_url}")
         return ids
@@ -198,7 +226,7 @@ class YamTrack:
             else:
                 for item_id, found_id_type, status in self._tracked_items(page):
                     if id_type == "tmdb_show":
-                        if found_id_type not in ("tmdb_show", "tvdb") or status not in enabled_statuses:
+                        if found_id_type not in ("tmdb_show", "tvdb", "tvdb_season", "tvdb_episode") or status not in enabled_statuses:
                             continue
                     elif found_id_type != id_type or status not in enabled_statuses:
                         continue
@@ -232,7 +260,17 @@ class YamTrack:
                 card = link.xpath("ancestor::div[@x-data][1]")
                 status = self._card_status(card[0] if card else link)
                 if status:
-                    yield int(match.group("tvdb_id")), "tvdb", status
+                    season = match.group("season")
+                    episode = match.group("episode")
+                    if season is not None:
+                        if episode is not None:
+                            item_id = f"{match.group('tvdb_id')}_{season}_{episode}"
+                            yield item_id, "tvdb_episode", status
+                        else:
+                            item_id = f"{match.group('tvdb_id')}_{season}"
+                            yield item_id, "tvdb_season", status
+                    else:
+                        yield int(match.group("tvdb_id")), "tvdb", status
                 continue
             card = link.xpath("ancestor::div[@x-data][1]")
             status = self._card_status(card[0] if card else link)

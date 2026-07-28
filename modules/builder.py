@@ -3838,7 +3838,9 @@ class CollectionBuilder:
                             continue
                         try:
                             item = self.library.fetch_item(rk)
-                            if self.playlist and isinstance(item, (Show, Season)):
+                            if self.playlist and isinstance(item, Show):
+                                items.extend([ep for ep in item.episodes() if ep and ep.seasonNumber != 0])
+                            elif self.playlist and isinstance(item, Season):
                                 items.extend(item.episodes())
                             elif self.builder_level == "movie" and not isinstance(item, Movie):
                                 logger.info(f"Item: {item} is not an Movie")
