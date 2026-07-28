@@ -426,19 +426,11 @@ def item_set(item, item_id):
 
 
 def media_dirname(path):
-    """Return the parent directory of a media path reported by the media server.
+    """Return the parent directory of a media path, using the path's own separator style.
 
-    Plex reports library paths using the separator of the machine running the server, which is
-    not necessarily the machine running Kometa. A Kometa install on Linux (for example the
-    Docker image) talking to a Plex server on Windows receives paths like
-    ``P:\\Movies\\Title\\file.mkv``.
-
-    ``os.path.dirname`` only understands the separator of the platform Kometa is running on, so
-    on Linux it finds no ``/`` in that string and returns ``""``. Callers treat the empty result
-    as "no location found", which silently disables every Radarr/Sonarr path operation.
-
-    Picking the flavour from the path itself keeps both layouts working regardless of which
-    platform each side runs on.
+    Plex reports paths from the server's platform, which need not match Kometa's.
+    os.path.dirname returns "" for a Windows path on Linux, which callers read as
+    "no location found".
     """
     path = str(path)
     if ntpath.splitdrive(path)[0] or path.startswith("\\\\") or ("\\" in path and "/" not in path):
