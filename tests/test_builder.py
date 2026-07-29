@@ -636,6 +636,40 @@ class TestBuildFilter:
         with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
             builder.build_filter("tmdb", "not_a_dict")
 
+    @pytest.mark.parametrize(
+        ("attribute", "expected_filter"),
+        [
+            ("folder_location", "source=7"),
+            ("folder_location.not", "source!=7"),
+        ],
+    )
+    def test_builds_folder_location_smart_filter(self, attribute, expected_filter):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = True
+        library.is_show = False
+        library.is_music = False
+        library.Plex = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="source", title="Folder Location")],
+        )
+        library.get_search_choices = MagicMock(return_value=({"/media/movies": 7}, ["/media/movies"]))
+        builder = make_builder(
+            library=library,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {attribute: "/media/movies"}},
+            default_sort="random",
+        )
+
+        assert expected_filter in url
+        assert "Folder Location" in details
+        library.get_search_choices.assert_called_once_with("folder_location", title=False)
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Dispatch table sanity tests

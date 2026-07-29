@@ -58,6 +58,13 @@ collections:
 ```
 ```yaml
 collections:
+  Movies Outside Main Folder:
+    smart_filter:
+      all:
+        folder_location.not: /media/movies
+```
+```yaml
+collections:
   Top Action Movies:
     smart_filter:
       all:
