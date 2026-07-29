@@ -37,7 +37,7 @@ def test_yamtrack_list_extracts_tmdb_movie_and_show_ids():
     <a href="/details/tmdb/tv/1396/breaking-bad">Duplicate</a>
     """
 
-    assert get_yamtrack(html).get_tmdb_ids("yamtrack_list", "https://yamtrack.example/list/1") == [(550, "tmdb"), (1396, "tmdb_show")]
+    assert get_yamtrack(html).get_ids("yamtrack_list", "https://yamtrack.example/list/1") == [(550, "tmdb"), (1396, "tmdb_show")]
 
 
 def test_yamtrack_list_filters_by_library_type():
@@ -47,13 +47,13 @@ def test_yamtrack_list_filters_by_library_type():
     """
     yamtrack = get_yamtrack(html)
 
-    assert yamtrack.get_tmdb_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=True) == [(550, "tmdb")]
-    assert yamtrack.get_tmdb_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=False) == [(1396, "tmdb_show")]
+    assert yamtrack.get_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=True) == [(550, "tmdb")]
+    assert yamtrack.get_ids("yamtrack_list", "https://yamtrack.example/list/1", is_movie=False) == [(1396, "tmdb_show")]
 
 
 def test_yamtrack_rejects_lookalike_hosts():
     with pytest.raises(Failed, match="must start with https://yamtrack.example"):
-        get_yamtrack("").get_tmdb_ids("yamtrack_list", "https://yamtrack.example.evil/list/1")
+        get_yamtrack("").get_ids("yamtrack_list", "https://yamtrack.example.evil/list/1")
 
 
 def test_yamtrack_list_details_extracts_description():
@@ -120,7 +120,7 @@ def test_yamtrack_tracked_extracts_enabled_statuses():
         },
     )
 
-    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(80350, "tmdb_show"), (60574, "tmdb_show")]
+    assert yamtrack.get_tracked_ids_from_config(tracked) == [(80350, "tmdb_show"), (60574, "tmdb_show")]
     assert requests.gets[0][0] == "https://yamtrack.example/user/movie"
     assert requests.gets[1][0] == "https://yamtrack.example/user/tv"
 
@@ -139,8 +139,8 @@ def test_yamtrack_tracked_filters_by_library_type():
     yamtrack = get_yamtrack(html)
     tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}, "tv_shows": {"planning": True}})
 
-    assert yamtrack.get_tracked_tmdb_ids(tracked, is_movie=True) == [(550, "tmdb")]
-    assert yamtrack.get_tracked_tmdb_ids(tracked, is_movie=False) == [(80350, "tmdb_show")]
+    assert yamtrack.get_tracked_ids_from_config(tracked, is_movie=True) == [(550, "tmdb")]
+    assert yamtrack.get_tracked_ids_from_config(tracked, is_movie=False) == [(80350, "tmdb_show")]
 
 
 def test_yamtrack_tracked_sections_are_optional():
@@ -154,7 +154,7 @@ def test_yamtrack_tracked_sections_are_optional():
     yamtrack = YamTrack(requests, {"url": "https://yamtrack.example", "username": "user", "password": "pass"})
     tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}})
 
-    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(550, "tmdb")]
+    assert yamtrack.get_tracked_ids_from_config(tracked) == [(550, "tmdb")]
     assert [get[0] for get in requests.gets] == ["https://yamtrack.example/user/movie"]
     assert all(enabled is False for enabled in tracked["anime"].values())
 
@@ -177,7 +177,7 @@ def test_yamtrack_tracked_statuses_default_true_when_section_exists():
     assert all(enabled is True for enabled in tracked["movies"].values())
     assert all(enabled is False for enabled in tracked["tv_shows"].values())
     assert all(enabled is False for enabled in tracked["anime"].values())
-    assert yamtrack.get_tracked_tmdb_ids(tracked) == [(550, "tmdb"), (551, "tmdb")]
+    assert yamtrack.get_tracked_ids_from_config(tracked) == [(550, "tmdb"), (551, "tmdb")]
 
 
 def test_yamtrack_tracked_extracts_anime_mal_ids():
@@ -237,3 +237,64 @@ def test_yamtrack_tracked_present_section_must_be_dictionary():
 
     with pytest.raises(Failed, match="yamtrack_tracked anime must be a dictionary"):
         yamtrack.validate_tracked("Collection", {"anime": True}, is_movie=True)
+
+
+def test_yamtrack_list_extracts_tvdb_show_ids():
+    html = """
+    <a href="/details/tvdb/tv/85040/caprica">Caprica</a>
+    """
+
+    assert get_yamtrack(html).get_ids("yamtrack_list", "https://yamtrack.example/list/1") == [(85040, "tvdb")]
+
+
+def test_yamtrack_list_extracts_mixed_tmdb_and_tvdb_ids():
+    html = """
+    <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+    <a href="/details/tvdb/tv/85040/caprica">Caprica</a>
+    """
+
+    assert get_yamtrack(html).get_ids("yamtrack_list", "https://yamtrack.example/list/1") == [
+        (550, "tmdb"),
+        (85040, "tvdb"),
+    ]
+
+
+def test_yamtrack_tracked_extracts_tvdb_show_ids():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tvdb/tv/85040/caprica">Caprica</a>
+      <div class="w-4 h-4 text-emerald-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tvdb/tv/71663/the-expanse">The Expanse</a>
+      <div class="w-4 h-4 text-indigo-400"></div>
+    </div>
+    """
+    requests = FakeRequests(html)
+    yamtrack = YamTrack(requests, {"url": "https://yamtrack.example", "username": "user", "password": "pass"})
+    tracked = yamtrack.validate_tracked(
+        "Collection",
+        {
+            "tv_shows": {"completed": True, "in_progress": True},
+        },
+    )
+
+    assert yamtrack.get_tracked_ids_from_config(tracked) == [(85040, "tvdb"), (71663, "tvdb")]
+
+
+def test_yamtrack_tracked_filters_tvdb_by_library_type():
+    html = """
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tmdb/movie/550/fight-club">Fight Club</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    <div x-data="{ trackOpen: false }">
+      <a href="/details/tvdb/tv/85040/caprica">Caprica</a>
+      <div class="w-4 h-4 text-sky-400"></div>
+    </div>
+    """
+    yamtrack = get_yamtrack(html)
+    tracked = yamtrack.validate_tracked("Collection", {"movies": {"planning": True}, "tv_shows": {"planning": True}})
+
+    assert yamtrack.get_tracked_ids_from_config(tracked, is_movie=True) == [(550, "tmdb")]
+    assert yamtrack.get_tracked_ids_from_config(tracked, is_movie=False) == [(85040, "tvdb")]

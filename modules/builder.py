@@ -3577,7 +3577,7 @@ class CollectionBuilder:
                 if mal_ids:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
-                ids = self.config.YamTrack.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+                ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:
@@ -3838,7 +3838,9 @@ class CollectionBuilder:
                             continue
                         try:
                             item = self.library.fetch_item(rk)
-                            if self.playlist and isinstance(item, (Show, Season)):
+                            if self.playlist and isinstance(item, Show):
+                                items.extend(item.episodes())
+                            elif self.playlist and isinstance(item, Season):
                                 items.extend(item.episodes())
                             elif self.builder_level == "movie" and not isinstance(item, Movie):
                                 logger.info(f"Item: {item} is not an Movie")
