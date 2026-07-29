@@ -331,6 +331,134 @@ class TestTextfile:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# Batched item labels
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class BatchLabelLibrary:
+    def __init__(self, section_id, batch_size=None):
+        self.Plex = SimpleNamespace(key=section_id, batchMultiEdits=MagicMock(), editTags=MagicMock())
+        self.plex_bulk_edit_batch_size = batch_size
+        self.cached_items = {}
+        self._save_multi_edits_with_retry = MagicMock()
+        self.edit_tags = MagicMock()
+        self.tag_edit = MagicMock()
+        self.search = MagicMock(return_value=[])
+        self.Radarr = None
+        self.Sonarr = None
+        self.is_movie = True
+        self.is_show = False
+        self.movie_rating_key_map = {}
+        self.show_rating_key_map = {}
+
+    @staticmethod
+    def reload(item):
+        return item
+
+    @staticmethod
+    def item_labels(item):
+        return item.labels
+
+
+def label_item(rating_key, labels=None, section_id=1, item_type="movie"):
+    return SimpleNamespace(
+        ratingKey=rating_key,
+        title=f"Item {rating_key}",
+        labels=[SimpleNamespace(tag=label) for label in labels or []],
+        librarySectionID=section_id,
+        type=item_type,
+        locations=[],
+    )
+
+
+class TestBatchedItemLabels:
+    @pytest.fixture(autouse=True)
+    def _logger(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    def test_adds_labels_in_configured_batches(self):
+        library = BatchLabelLibrary(1, batch_size=2)
+        items = [label_item(i) for i in range(1, 6)]
+        library.cached_items = {item.ratingKey: (item, True) for item in items}
+        builder = make_builder(library=library, libraries=[library], items=items, item_details={"item_label": ["Favorite"]})
+
+        builder.update_item_details()
+
+        assert [call.args[0] for call in library.Plex.batchMultiEdits.call_args_list] == [items[:2], items[2:4], items[4:]]
+        assert library.Plex.editTags.call_args_list == [
+            (("label", "Favorite"), {"remove": False}),
+            (("label", "Favorite"), {"remove": False}),
+            (("label", "Favorite"), {"remove": False}),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 3
+        assert library.cached_items == {}
+        assert all(call.args[0] == "genre" for call in library.edit_tags.call_args_list)
+
+    def test_removes_only_items_that_have_the_label(self):
+        library = BatchLabelLibrary(1)
+        first = label_item(1, ["Favorite", "Keep"])
+        second = label_item(2, ["Keep"])
+        builder = make_builder(library=library, libraries=[library], items=[first, second], item_details={"item_label.remove": ["Favorite"]})
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([first])
+        library.Plex.editTags.assert_called_once_with("label", "Favorite", remove=True)
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_sync_groups_each_label_delta(self):
+        library = BatchLabelLibrary(1)
+        first = label_item(1, ["A", "B"])
+        second = label_item(2, ["B", "C"])
+        builder = make_builder(library=library, libraries=[library], items=[first, second], item_details={"item_label.sync": ["A", "C"]})
+
+        builder.update_item_details()
+
+        assert [call.args[0] for call in library.Plex.batchMultiEdits.call_args_list] == [[first], [second], [first, second]]
+        assert library.Plex.editTags.call_args_list == [
+            (("label", "C"), {"remove": False}),
+            (("label", "A"), {"remove": False}),
+            (("label", "B"), {"remove": True}),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 3
+
+    def test_batches_non_item_label_removals_and_excludes_collection_items(self):
+        library = BatchLabelLibrary(1)
+        collection_item = label_item(1, ["Cleanup"])
+        non_item = label_item(2, ["Keep", "Cleanup"])
+        library.search.return_value = [collection_item, non_item]
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[collection_item],
+            item_details={"non_item_remove_label": ["Cleanup", "Not Present"]},
+        )
+
+        builder.update_item_details()
+
+        library.search.assert_called_once_with(label=["Cleanup", "Not Present"], libtype="movie")
+        library.Plex.batchMultiEdits.assert_called_once_with([non_item])
+        library.Plex.editTags.assert_called_once_with("label", "Cleanup", remove=True)
+        library._save_multi_edits_with_retry.assert_called_once()
+        assert all(call.args[0] == "genre" for call in library.edit_tags.call_args_list)
+
+    def test_separates_playlist_libraries_and_item_types(self):
+        first_library = BatchLabelLibrary(1)
+        second_library = BatchLabelLibrary(2)
+        movie = label_item(1, section_id=1)
+        episode = label_item(2, section_id=1, item_type="episode")
+        other_movie = label_item(3, section_id=2)
+        builder = make_builder(library=first_library, libraries=[first_library, second_library])
+
+        builder._batch_item_label_edits({"add": {"Shared": [movie, episode, other_movie]}, "remove": {}})
+
+        assert [call.args[0] for call in first_library.Plex.batchMultiEdits.call_args_list] == [[movie], [episode]]
+        second_library.Plex.batchMultiEdits.assert_called_once_with([other_movie])
+        assert first_library._save_multi_edits_with_retry.call_count == 2
+        second_library._save_multi_edits_with_retry.assert_called_once()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # TMDb lookup resilience
 # ═══════════════════════════════════════════════════════════════════════
 

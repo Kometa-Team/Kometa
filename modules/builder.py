@@ -4762,6 +4762,51 @@ class CollectionBuilder:
         except TMDbException as e:
             logger.warning(f"TMDb Warning: unable to load {item_type} TMDb ID {tmdb_id}; skipping item: {e}")
 
+    def _batch_item_label_edits(self, label_edits):
+        libraries = []
+        for library in self.libraries or [self.library]:
+            if all(library is not current for current in libraries):
+                libraries.append(library)
+
+        for operation, edits in label_edits.items():
+            remove = operation == "remove"
+            for label, items in edits.items():
+                grouped_items = {}
+                fallback_items = []
+                for item in items:
+                    section_id = getattr(item, "librarySectionID", None)
+                    item_type = getattr(item, "type", None)
+                    matching_library_index = None
+                    if len(libraries) == 1 and section_id is None:
+                        matching_library_index = 0
+                    else:
+                        for library_index, library in enumerate(libraries):
+                            if str(getattr(library.Plex, "key", "")) == str(section_id):
+                                matching_library_index = library_index
+                                break
+                    if matching_library_index is not None:
+                        grouped_items.setdefault((matching_library_index, item_type), []).append(item)
+                    else:
+                        fallback_items.append(item)
+
+                for (library_index, _), edit_items in grouped_items.items():
+                    library = libraries[library_index]
+                    batch_size = library.plex_bulk_edit_batch_size or len(edit_items)
+                    logger.info(f"Plex Label Update: {'Removing' if remove else 'Adding'} {label} {'from' if remove else 'to'} {len(edit_items)} Item{'s' if len(edit_items) != 1 else ''}")
+                    for i in range(0, len(edit_items), batch_size):
+                        batch_items = edit_items[i : i + batch_size]
+                        library.Plex.batchMultiEdits(batch_items)
+                        library.Plex.editTags("label", label, remove=remove)
+                        library._save_multi_edits_with_retry()
+                        for item in batch_items:
+                            library.cached_items.pop(item.ratingKey, None)
+
+                for item in fallback_items:
+                    logger.warning(f"Plex Warning: Unable to batch label update for {util.item_title(item)}; using an individual edit")
+                    self.library.tag_edit(item, "label", label, remove=remove)
+                    for library in libraries:
+                        library.cached_items.pop(item.ratingKey, None)
+
     def update_item_details(self):
         logger.info("")
         logger.separator(f"Updating Metadata of the Items in {self.name} {self.Type}", space=False, border=False)
@@ -4775,11 +4820,18 @@ class CollectionBuilder:
         remove_genres = self.item_details["item_genre.remove"] if "item_genre.remove" in self.item_details else None
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
+        label_edits = {"add": {}, "remove": {}}
         if "non_item_remove_label" in self.item_details:
-            rk_compare = [item.ratingKey for item in self.items]
+            rk_compare = {item.ratingKey for item in self.items}
             for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
                 if non_item.ratingKey not in rk_compare:
-                    self.library.edit_tags("label", non_item, remove_tags=self.item_details["non_item_remove_label"])
+                    non_item = self.library.reload(non_item)
+                    current_labels = [label.tag for label in self.library.item_labels(non_item)]
+                    non_item_remove_tags = [tag for tag in current_labels if tag in self.item_details["non_item_remove_label"]]
+                    for tag in non_item_remove_tags:
+                        label_edits["remove"].setdefault(tag, []).append(non_item)
+                    if non_item_remove_tags:
+                        logger.info(f"{non_item.title[:25]:<25} | Label | -{', -'.join(non_item_remove_tags)}")
 
         tmdb_paths = []
         tvdb_paths = []
@@ -4788,7 +4840,19 @@ class CollectionBuilder:
             current_labels = [la.tag for la in self.library.item_labels(item)]
             if "item_assets" in self.item_details and self.asset_directory and "Overlay" not in current_labels:
                 self.library.find_and_upload_assets(item, current_labels, asset_directory=self.asset_directory)
-            self.library.edit_tags("label", item, add_tags=add_tags, remove_tags=remove_tags, sync_tags=sync_tags)
+            if add_tags or remove_tags or sync_tags is not None:
+                item_add_tags = [tag for tag in (add_tags or []) + (sync_tags or []) if tag not in current_labels]
+                item_remove_tags = [tag for tag in current_labels if (sync_tags is not None and tag not in (sync_tags or [])) or tag in (remove_tags or [])]
+                for operation, tags in [("add", item_add_tags), ("remove", item_remove_tags)]:
+                    for tag in tags:
+                        label_edits[operation].setdefault(tag, []).append(item)
+                display = []
+                if item_add_tags:
+                    display.append(f"+{', +'.join(item_add_tags)}")
+                if item_remove_tags:
+                    display.append(f"-{', -'.join(item_remove_tags)}")
+                if display:
+                    logger.info(f"{item.title[:25]:<25} | Label | {', '.join(display)}")
             self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
             if "item_edition" in self.item_details and getattr(item, "editionTitle", None) != self.item_details["item_edition"]:
                 if hasattr(item, "editEditionTitle"):
@@ -4875,6 +4939,8 @@ class CollectionBuilder:
             if "item_analyze" in self.item_details:
                 logger.info(f"Executing Analyze on {item.title}")
                 item.analyze()
+
+        self._batch_item_label_edits(label_edits)
 
         if self.library.Radarr and tmdb_paths:
             try:
