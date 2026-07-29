@@ -65,6 +65,14 @@ collections:
 ```
 ```yaml
 collections:
+  Music From Archive Folder:
+    builder_level: track
+    smart_filter:
+      all:
+        folder_location: /media/music-archive
+```
+```yaml
+collections:
   Top Action Movies:
     smart_filter:
       all:

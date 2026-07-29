@@ -195,16 +195,28 @@ class TestNotify:
 
 class TestSearchKeys:
     def test_folder_location_uses_plex_source_filter(self):
-        section = SimpleNamespace(
-            TYPE="movie",
-            listFilters=lambda libtype: [
+        list_filters = MagicMock(
+            return_value=[
                 SimpleNamespace(filter="genre", title="Genre"),
                 SimpleNamespace(filter="source", title="Folder Location"),
-            ],
+            ]
+        )
+        section = SimpleNamespace(
+            TYPE="movie",
+            listFilters=list_filters,
         )
         plex = make_plex(Plex=section)
 
         assert plex.get_search_key("folder_location") == "source"
+        list_filters.assert_called_once_with("movie")
+
+    def test_folder_location_uses_requested_track_filter_type(self):
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        section = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        plex = make_plex(Plex=section, is_movie=False, type="Music")
+
+        assert plex.get_search_key("folder_location", libtype="track") == "source"
+        list_filters.assert_called_once_with("track")
 
     def test_folder_location_falls_back_to_filter_title(self):
         section = SimpleNamespace(
@@ -216,9 +228,10 @@ class TestSearchKeys:
         assert plex.get_search_key("folder_location") == "location"
 
     def test_folder_location_choices_map_paths_to_plex_location_ids(self):
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
         section = SimpleNamespace(
             TYPE="movie",
-            listFilters=lambda libtype: [SimpleNamespace(filter="source", title="Folder Location")],
+            listFilters=list_filters,
         )
         plex = make_plex(Plex=section)
         plex.get_tags = MagicMock(
@@ -228,11 +241,12 @@ class TestSearchKeys:
             ]
         )
 
-        choices, names = plex.get_search_choices("folder_location", title=False)
+        choices, names = plex.get_search_choices("folder_location", title=False, libtype="track")
 
         assert choices["/media/movies"] == "7"
         assert choices["/media/movies-4k"] == "8"
         assert names == ["/media/movies", "/media/movies-4k"]
+        list_filters.assert_called_once_with("track")
         plex.get_tags.assert_called_once_with("source")
 
     def test_folder_location_raises_when_plex_does_not_expose_filter(self):

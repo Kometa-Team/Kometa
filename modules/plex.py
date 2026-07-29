@@ -586,6 +586,7 @@ searches = (
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"]
 movie_sorts = {
     "title.asc": "titleSort",
     "title.desc": "titleSort%3Adesc",
@@ -1247,23 +1248,24 @@ class Plex(Library):
             raise Failed(f"Plex Error: Failed to find person ID for '{name}': {e}") from e
 
     @PLEX_RETRY
-    def get_search_key(self, search_name):
+    def get_search_key(self, search_name, libtype=None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         if search_name == "folder_location":
-            filters = self.Plex.listFilters(self.Plex.TYPE)
+            filter_type = libtype or self.Plex.TYPE
+            filters = self.Plex.listFilters(filter_type)
             try:
                 folder_filter = next(f for f in filters if f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")
             except StopIteration:
                 available_filters = [f.filter for f in filters]
-                raise NotFound(f'Unknown filter field "folder_location" for libtype "{self.Plex.TYPE}". Available filters: {available_filters}') from None
+                raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
             return folder_filter.filter
         return final_search
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False):
+    def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
         final_search = search_name
         try:
-            final_search = self.get_search_key(search_name)
+            final_search = self.get_search_key(search_name, libtype=libtype)
             final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
             names = []
             choices = {}

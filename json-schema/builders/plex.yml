@@ -101,6 +101,12 @@ collections:
         folder_location.not: /media/movies
       sort_by: title.asc
 
+  Music From Archive Folder (Smart):
+    builder_level: track
+    smart_filter:
+      all:
+        folder_location: /media/music-archive
+
   Mixed Genre Picks (Smart - any):
     smart_filter:
       any:

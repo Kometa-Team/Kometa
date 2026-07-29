@@ -3989,7 +3989,7 @@ class CollectionBuilder:
                 attr, modifier, final_attr = self.library.split(_key)
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
-                    arg_key = self.library.get_search_key(attr) if attr == "folder_location" else plex.search_translation[attr] if attr in plex.search_translation else attr
+                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr == "folder_location" else plex.search_translation[attr] if attr in plex.search_translation else attr
                     arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
@@ -4010,7 +4010,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for show libraries"
-                elif self.library.is_music and final_attr not in plex.music_searches + ["all", "any"]:
+                elif self.library.is_music and final_attr not in plex.music_searches + (plex.track_only_searches if sort_type == "track" else []) + ["all", "any"]:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for music libraries"
@@ -4029,7 +4029,7 @@ class CollectionBuilder:
                                 display_add += inside_display
                                 results += f"{conjunction if len(results) > 0 else ''}push=1&{inside_filter}pop=1&"
                     else:
-                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, plex_search=True)
+                        validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, plex_search=True, plex_search_type=sort_type)
                         if validation is not False and validation != 0 and not validation:
                             continue
                         elif attr in plex.date_attributes and modifier in ["", ".not"]:
@@ -4107,12 +4107,12 @@ class CollectionBuilder:
             logger.debug(f"Smart URL: {filter_url}")
         return type_key, filter_details, filter_url
 
-    def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False):
+    def validate_attribute(self, attribute, modifier, final, data, validate, plex_search=False, plex_search_type=None):
         def smart_pair(list_to_pair):
             return [(t, t) for t in list_to_pair] if plex_search else list_to_pair
 
         if attribute in tag_attributes and modifier in [".regex"]:
-            _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True)
+            _, names = self.library.get_search_choices(attribute, title=not plex_search, name_pairs=True, libtype=plex_search_type)
             valid_list = []
             used = []
             for reg in util.validate_regex(data, self.Type, validate=validate):
@@ -4221,7 +4221,7 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False) or []
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
+            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
             valid_list = []
             for fvalue in final_values:
                 if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
