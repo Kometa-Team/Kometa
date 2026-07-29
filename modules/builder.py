@@ -4221,10 +4221,11 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False) or []
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search)
+            is_plex_search_language = plex_search and attribute in ("audio_language", "subtitle_language")
+            search_choices, names = ({}, []) if is_plex_search_language else self.library.get_search_choices(attribute, title=not plex_search)
             valid_list = []
             for fvalue in final_values:
-                if plex_search and attribute in ("audio_language", "subtitle_language"):
+                if is_plex_search_language:
                     variants = self.library.get_language_search_values(attribute, str(fvalue).lower())
                     if variants:
                         valid_list.extend((fvalue, variant) for variant in variants)

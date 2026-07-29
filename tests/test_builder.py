@@ -193,8 +193,10 @@ class FakeLangLibrary:
         self.language_map = language_map
         self.search_choices = search_choices or {}
         self.get_tags_calls = []
+        self.get_search_choices_calls = []
 
     def get_search_choices(self, attribute, title=True):
+        self.get_search_choices_calls.append(attribute)
         return self.search_choices.get(attribute, {}), []
 
     def get_language_search_values(self, attribute, code):
@@ -214,6 +216,15 @@ class TestValidateAttributeLanguage:
         builder = make_lang_builder(library)
         result = builder.validate_attribute("audio_language", "", "audio_language", "es", True, plex_search=True)
         assert result == [("es", "es-419"), ("es", "es-MX"), ("es", "spa")]
+
+    def test_does_not_call_the_uncached_get_search_choices_for_plex_search_language(self):
+        """The generic (uncached) listFilterChoices lookup must be skipped entirely for
+        audio_language/subtitle_language under plex_search — get_language_search_values (cached)
+        is the only choices lookup that should fire."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert library.get_search_choices_calls == []
 
     def test_subtitle_language_uses_its_own_cache_key(self):
         library = FakeLangLibrary({"subtitle_language": {"fr": ["fr-CA", "fre"]}})
