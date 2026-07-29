@@ -589,6 +589,32 @@ class TestBaseLanguageCode:
         assert base_language_code(None) is None
 
 
+class TestGetSearchChoicesEpisodeLanguage:
+    """get_search_choices's title-collision fix for episode.audioLanguage/subtitleLanguage now
+    shares base_language_code() with get_language_search_values instead of a separate split()."""
+
+    def test_strips_region_from_locale_tagged_key(self):
+        plex = make_plex(is_show=True)
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("en-US", title="English")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["English"] == "en"
+        assert choices["en-us"] == "en-US"
+
+    def test_normalizes_three_letter_code_unlike_the_old_split_based_fix(self):
+        """A naive value.split('-')[0] never touched 3-letter codes (no hyphen); base_language_code does."""
+        plex = make_plex(is_show=True)
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("spa", title="Spanish")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["Spanish"] == "es"
+
+    def test_movie_library_audio_language_is_unaffected(self):
+        """Only episode-level fields get the title normalization; movie audioLanguage keeps the raw key."""
+        plex = make_plex(is_show=False)
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419", title="Spanish")])
+        choices, _ = plex.get_search_choices("audio_language", title=False)
+        assert choices["Spanish"] == "es-419"
+
+
 class TestGetLanguageSearchValues:
     def test_groups_existing_choices_by_base_code(self):
         plex = make_plex()
@@ -633,6 +659,42 @@ class TestGetLanguageSearchValues:
         plex = make_plex()
         plex.get_tags = MagicMock(side_effect=NotFound("nope"))
         assert plex.get_language_search_values("audio_language", "es") == []
+
+    def test_exact_locale_value_targets_only_that_variant(self):
+        """A user explicitly configuring a specific locale (e.g. es-419) should get only that
+        variant, not every Spanish variant in the library."""
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("es-419"),
+                make_filter_choice("es-MX"),
+                make_filter_choice("spa"),
+            ]
+        )
+        assert plex.get_language_search_values("audio_language", "es-419") == ["es-419"]
+
+    def test_exact_three_letter_code_targets_only_that_variant(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419"), make_filter_choice("spa")])
+        assert plex.get_language_search_values("audio_language", "spa") == ["spa"]
+
+    def test_base_code_still_expands_to_every_variant_even_if_also_a_literal_choice(self):
+        """A bare base code always means "every variant of this language", even when that exact
+        base code also happens to be one of the library's own choices."""
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("es"),
+                make_filter_choice("es-419"),
+                make_filter_choice("es-MX"),
+            ]
+        )
+        assert sorted(plex.get_language_search_values("audio_language", "es")) == ["es", "es-419", "es-MX"]
+
+    def test_nonexistent_exact_locale_returns_empty(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419")])
+        assert plex.get_language_search_values("audio_language", "es-xx") == []
 
 
 class TestEdgeCases:

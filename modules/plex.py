@@ -1236,8 +1236,8 @@ class Plex(Library):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
-                # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
-                title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
+                # Normalize episode language keys so "Spanish" maps to "es" not "es-ES"/"spa" when multiple locale/ISO-639-2 variants are returned.
+                title_value = base_language_code(value) if (not use_title and is_episode_lang) else value
                 choices[choice.title] = title_value  # type: ignore[union-attr]
                 choices[choice.key] = value  # type: ignore[union-attr]
                 choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
@@ -1248,21 +1248,29 @@ class Plex(Library):
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
 
     def get_language_search_values(self, search_name, code):
-        """Every Plex audioLanguage/subtitleLanguage filter value that exists in this library and
-        normalizes to the given base ISO 639-1 code (e.g. "es" -> ["es-419", "es-MX", "spa"]).
-        The choice-to-base-code mapping is built once per library per run and cached."""
+        """Every Plex audioLanguage/subtitleLanguage filter value in this library that matches `code`:
+        if `code` is itself a specific value Plex reports (e.g. "es-419" or the 3-letter "spa"), only
+        that exact value is targeted; otherwise every variant that normalizes to it as a base ISO 639-1
+        code is returned (e.g. "es" -> ["es-419", "es-MX", "spa"]). Choices are fetched once per
+        library per run and cached."""
         if search_name not in self._language_choice_cache:
             final_search = search_translation[search_name] if search_name in search_translation else search_name
             final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
             final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+            exact_map = {}
             code_map = {}
             try:
                 for choice in self.get_tags(final_search):
-                    code_map.setdefault(base_language_code(choice.key), []).append(choice.key)  # type: ignore[union-attr]
+                    key = choice.key.lower()  # type: ignore[union-attr]
+                    exact_map[key] = choice.key  # type: ignore[union-attr]
+                    code_map.setdefault(base_language_code(key), []).append(choice.key)  # type: ignore[union-attr]
             except NotFound:
                 logger.debug(f"Search Attribute: {final_search}")
-            self._language_choice_cache[search_name] = code_map
-        return self._language_choice_cache[search_name].get(code, [])
+            self._language_choice_cache[search_name] = (exact_map, code_map)
+        exact_map, code_map = self._language_choice_cache[search_name]
+        if code != base_language_code(code) and code in exact_map:
+            return [exact_map[code]]
+        return code_map.get(code, [])
 
     @PLEX_RETRY
     def get_tags(self, tag):

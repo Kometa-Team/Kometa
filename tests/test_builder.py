@@ -239,6 +239,14 @@ class TestValidateAttributeLanguage:
         result = builder.validate_attribute("audio_language", "", "audio_language", "ES", True, plex_search=True)
         assert result == [("ES", "es-419")]
 
+    def test_exact_locale_value_passes_through_as_a_single_variant(self):
+        """When the library resolves a code to a single exact variant (e.g. the user configured
+        the specific locale "es-419" rather than the base "es"), only that variant is used."""
+        library = FakeLangLibrary({"audio_language": {"es-419": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=True)
+        assert result == [("es-419", "es-419")]
+
     def test_multiple_configured_languages_each_expand_independently(self):
         library = FakeLangLibrary({"audio_language": {"es": ["es-419", "spa"], "en": ["en-US"]}})
         builder = make_lang_builder(library)
