@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
+- Improve `audio_language`/`subtitle_language` `plex_search` matching (including the default `languages.yml` flag overlays) to recognize every locale- or region-tagged variant of a language that actually exists in the library (e.g. `es-419`, `en-US`, `spa`) instead of only an exact 2-letter match. A single `es`/`it`/`zh` filter now matches every variant Plex reports for that language, resolved with one lightweight, cached lookup of the library's language filter choices rather than a separate Plex query per variant.
 
 ### Fixed
 - Batch collection and playlist `item_label`, `item_label.remove`, `item_label.sync`, and `non_item_remove_label` updates through Plex multi-edit requests, grouped by library and media type and split by `plex_bulk_edit_batch_size`, instead of sending one label request per item.

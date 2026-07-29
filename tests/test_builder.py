@@ -181,6 +181,82 @@ class TestFindPlexKeys:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# validate_attribute — audio_language / subtitle_language
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeLangLibrary:
+    """Stands in for the Plex library used by validate_attribute's language handling."""
+
+    def __init__(self, language_map, search_choices=None):
+        # language_map: {"audio_language": {"es": ["es-419", "spa"]}, ...}
+        self.language_map = language_map
+        self.search_choices = search_choices or {}
+        self.get_tags_calls = []
+
+    def get_search_choices(self, attribute, title=True):
+        return self.search_choices.get(attribute, {}), []
+
+    def get_language_search_values(self, attribute, code):
+        self.get_tags_calls.append((attribute, code))
+        return self.language_map.get(attribute, {}).get(code, [])
+
+
+def make_lang_builder(library, **attrs) -> CollectionBuilder:
+    defaults = {"details": {"show_options": False}, "ignore_blank_results": False}
+    defaults.update(attrs)
+    return make_builder(library=library, **defaults)
+
+
+class TestValidateAttributeLanguage:
+    def test_expands_base_code_to_every_library_variant_for_plex_search(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "es-MX", "spa"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es", True, plex_search=True)
+        assert result == [("es", "es-419"), ("es", "es-MX"), ("es", "spa")]
+
+    def test_subtitle_language_uses_its_own_cache_key(self):
+        library = FakeLangLibrary({"subtitle_language": {"fr": ["fr-CA", "fre"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("subtitle_language", "", "subtitle_language", "fr", True, plex_search=True)
+        assert result == [("fr", "fr-CA"), ("fr", "fre")]
+        assert library.get_tags_calls == [("subtitle_language", "fr")]
+
+    def test_is_case_insensitive(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "ES", True, plex_search=True)
+        assert result == [("ES", "es-419")]
+
+    def test_multiple_configured_languages_each_expand_independently(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "spa"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert result == [("es", "es-419"), ("es", "spa"), ("en", "en-US")]
+
+    def test_raises_filter_failed_when_language_not_present_in_library(self):
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library)
+        with pytest.raises(builder_module.FilterFailed):
+            builder.validate_attribute("audio_language", "", "audio_language", "zh", True, plex_search=True)
+
+    def test_logs_instead_of_raising_when_validate_is_false_and_ignoring_blank_results(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library, ignore_blank_results=True)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "zh", False, plex_search=True)
+        assert result == []
+
+    def test_non_plex_search_path_is_unaffected_and_uses_exact_choices_only(self):
+        """The filters: (client-side) path doesn't go through get_language_search_values."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}}, search_choices={"audio_language": {"es-419": "es-419"}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=False)
+        assert result == ["es-419"]
+        assert library.get_tags_calls == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # _rating_key_is_ignored
 # ═══════════════════════════════════════════════════════════════════════
 

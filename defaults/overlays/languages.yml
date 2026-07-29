@@ -194,7 +194,7 @@ templates:
     run_definition:
       - <<use_<<key>>>>
     plex_search:
-      all:
+      any:
         <<search_attribute>>: <<key>>
 
 overlays:

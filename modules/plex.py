@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 from xml.etree.ElementTree import ParseError
 
+import langcodes
 import plexapi
 from PIL import Image
 from plexapi import utils  # type: ignore[attr-defined]  # utils is not re-exported from plexapi.__init__
@@ -135,6 +136,19 @@ search_translation = {
     "track_source": "track.source",
     "track_label": "track.label",
 }
+
+
+def base_language_code(value):
+    """Reduce a language value in any common form down to its base ISO 639-1 code ("es", "en"):
+    a 3-letter ISO 639-2/3 code, including bibliographic/terminological pairs that differ from
+    their ISO 639-1 equivalent (e.g. "chi" -> "zh", "deu"/"ger" -> "de"), or a BCP-47/POSIX locale
+    tag (e.g. "es-419", "en_US"). Falls back to the value unchanged if it can't be parsed."""
+    if not value:
+        return value
+    try:
+        return langcodes.Language.get(str(value)).language or value
+    except ValueError:
+        return value
 
 
 def get_asset_image_matches(file_filter, file_name):
@@ -829,6 +843,7 @@ class Plex(Library):
         self._users = []
         self._all_items = []
         self._account = None
+        self._language_choice_cache = {}
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
         source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)  # type: ignore[union-attr]
@@ -1231,6 +1246,23 @@ class Plex(Library):
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
+
+    def get_language_search_values(self, search_name, code):
+        """Every Plex audioLanguage/subtitleLanguage filter value that exists in this library and
+        normalizes to the given base ISO 639-1 code (e.g. "es" -> ["es-419", "es-MX", "spa"]).
+        The choice-to-base-code mapping is built once per library per run and cached."""
+        if search_name not in self._language_choice_cache:
+            final_search = search_translation[search_name] if search_name in search_translation else search_name
+            final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
+            final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+            code_map = {}
+            try:
+                for choice in self.get_tags(final_search):
+                    code_map.setdefault(base_language_code(choice.key), []).append(choice.key)  # type: ignore[union-attr]
+            except NotFound:
+                logger.debug(f"Search Attribute: {final_search}")
+            self._language_choice_cache[search_name] = code_map
+        return self._language_choice_cache[search_name].get(code, [])
 
     @PLEX_RETRY
     def get_tags(self, tag):
