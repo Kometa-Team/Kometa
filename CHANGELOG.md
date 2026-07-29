@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Propagate the exit code from the worker process so `--validate` (and other runs) return a non-zero status on failure. Previously `start()` ran inside a `ProcessPoolExecutor` whose result was never retrieved, so a `sys.exit(1)` from a failed validation was swallowed and the parent always exited `0`, breaking CI usage.
 - Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
 - Resolve movie folder paths using the path style reported by the media server rather than the platform Kometa runs on. A Linux or Docker install pointed at a Plex server on Windows received paths such as `P:\Movies\Title\file.mkv`, which `os.path.dirname` reduced to an empty string, logging `Plex Error: No location found` for every movie and silently disabling `add_existing`, `upgrade_existing`, `monitor_existing`, `item_radarr_tag`, and `item_sonarr_tag`.
-
+- Fix `streaming` Defaults to more consistently use regional variants of Amazon, and stop trying to use `Originals` lists that do not exist
 ## [v2.4.5] - 2026-07-22
 
 ### Added
