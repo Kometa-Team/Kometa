@@ -820,7 +820,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
-            timings.registry.set_plex_hostname(urlparse(self.url).hostname)
+            timings.registry.set_plex_hostname(self.url)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -1125,26 +1125,28 @@ class Plex(Library):
         return image_url
 
     def item_reload(self, item):
-        item.reload(
-            checkFiles=False,
-            includeAllConcerts=False,
-            includeBandwidths=False,
-            includeChapters=False,
-            includeChildren=False,
-            includeConcerts=False,
-            includeExternalMedia=False,
-            includeExtras=False,
-            includeFields=False,
-            includeGeolocation=False,
-            includeLoudnessRamps=False,
-            includeMarkers=False,
-            includeOnDeck=False,
-            includePopularLeaves=False,
-            includeRelated=False,
-            includeRelatedCount=0,
-            includeReviews=False,
-            includeStations=False,
-        )
+        # Tagged so the census can isolate single-item reload GETs (the read-batching candidate) from every other kind of plex network call - see perf-results-log.md's call census entry.
+        with timings.tag_context("item_reload"):
+            item.reload(
+                checkFiles=False,
+                includeAllConcerts=False,
+                includeBandwidths=False,
+                includeChapters=False,
+                includeChildren=False,
+                includeConcerts=False,
+                includeExternalMedia=False,
+                includeExtras=False,
+                includeFields=False,
+                includeGeolocation=False,
+                includeLoudnessRamps=False,
+                includeMarkers=False,
+                includeOnDeck=False,
+                includePopularLeaves=False,
+                includeRelated=False,
+                includeRelatedCount=0,
+                includeReviews=False,
+                includeStations=False,
+            )
         item._autoReload = False
         return item
 

@@ -471,6 +471,7 @@ def start(attrs):
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
         # Startup banner doubles as a mount-verification tripwire - missing despite --timings/KOMETA_TIMINGS means the mounted /modules code was silently ignored.
         timings.registry.banner()
+        timings.registry.enable_plex_request_log(logger.log_dir)
         timings.registry.set_meta(
             kometa_version=str(my_requests.local),
             git_sha=timings.git_sha(),
@@ -867,6 +868,7 @@ def start(attrs):
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
             timings.registry.export(logger.log_dir)
+        timings.registry.close_plex_request_log()
 
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
         end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")

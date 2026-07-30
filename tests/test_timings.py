@@ -293,10 +293,29 @@ def test_overlay_context_tags_network_calls_via_instrument_session(enabled_regis
 
 
 def test_hostname_to_source_recognises_registered_plex_and_arr_hosts(enabled_registry):
-    enabled_registry.set_plex_hostname("plex.example.com")
-    enabled_registry.register_arr_host("radarr.example.com", "radarr")
+    enabled_registry.set_plex_hostname("http://plex.example.com:32400")
+    enabled_registry.register_arr_host("http://radarr.example.com:7878", "radarr")
     assert hostname_to_source("http://plex.example.com:32400/library") == "plex"
     assert hostname_to_source("http://radarr.example.com:7878/api") == "radarr"
+
+
+def test_hostname_to_source_distinguishes_same_host_different_ports(enabled_registry):
+    """Regression test for the mistagging bug found via the 2026-07-27 plex-call census: Radarr/Sonarr sharing
+    a Docker host address with Plex (e.g. host.docker.internal on different ports) must not collapse to the
+    same source tag just because the bare hostname matches."""
+    enabled_registry.set_plex_hostname("http://host.docker.internal:32400")
+    enabled_registry.register_arr_host("http://host.docker.internal:7878", "radarr")
+    enabled_registry.register_arr_host("http://host.docker.internal:8989", "sonarr")
+    assert hostname_to_source("http://host.docker.internal:32400/library/metadata/123") == "plex"
+    assert hostname_to_source("http://host.docker.internal:7878/api/v3/qualityProfile") == "radarr"
+    assert hostname_to_source("http://host.docker.internal:8989/api/v3/qualityProfile") == "sonarr"
+
+
+def test_hostname_to_source_still_accepts_bare_hostname_registration(enabled_registry):
+    """set_plex_hostname()/register_arr_host() must keep accepting a bare host[:port] string, not just a full
+    URL, so any caller that already extracted a hostname (rather than passing self.url) still works."""
+    enabled_registry.set_plex_hostname("plex.example.com")
+    assert hostname_to_source("http://plex.example.com/library") == "plex"
 
 
 # ═══════════════════════════════════════════════════════════════════════

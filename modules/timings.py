@@ -14,6 +14,7 @@ Design:
 import csv
 import json
 import os
+import re
 import threading
 import time
 from collections import defaultdict
@@ -28,6 +29,15 @@ logger = util.logger
 
 # Set by kometa.py from run_args["timings"] before any import-time reader of this flag runs; defaults False so a bare `import modules.timings` stays inert.
 ENABLED = False
+
+# One-off diagnostic, not a supported CLI flag - env-gated on purpose, for the plex-call-census research pass only.
+LOG_PLEX_REQUESTS = os.environ.get("KOMETA_LOG_PLEX_REQUESTS", "").strip().lower() in ("1", "true", "t")
+_TOKEN_PARAM_RE = re.compile(r"([?&])X-Plex-Token=[^&]*")
+
+
+def _redact_token(url):
+    return _TOKEN_PARAM_RE.sub(r"\1X-Plex-Token=REDACTED", url)
+
 
 # Hostname substring -> source tag, first match wins; unknown hosts fall back to "other:<hostname>" so new traffic is still visible.
 HOST_SOURCE_MAP = [
@@ -50,20 +60,38 @@ HOST_SOURCE_MAP = [
 ]
 
 
+def _netloc_key(value):
+    """Host[:port] lowercased, used to distinguish same-host different-port local services (e.g. Plex on
+    host.docker.internal:32400 vs Radarr on host.docker.internal:7878) - a bare-hostname comparison collapses
+    both to the same key and silently mistags arr traffic as plex when they share a Docker host address (found
+    2026-07-27 via the plex-call census). Accepts either a full URL or an already-bare host[:port] string, so
+    existing bare-hostname callers keep working - only the comparison itself needs the port, not every caller."""
+    if not value:
+        return ""
+    if "://" in value:
+        try:
+            parsed = urlparse(value)
+        except ValueError:
+            return ""
+        host = (parsed.hostname or "").lower()
+        if not host:
+            return ""
+        return f"{host}:{parsed.port}" if parsed.port else host
+    return value.lower()
+
+
 def hostname_to_source(url):
     """Map a request URL to a short source tag. Plex/Radarr/Sonarr hosts are user-configured and
     can't be recognised from the hostname alone, so those are looked up in the registry, populated
     once each service connects via registry.set_plex_hostname()/register_arr_host()."""
-    try:
-        host = (urlparse(url).hostname or "").lower()
-    except ValueError:
-        host = ""
-    if not host:
+    key = _netloc_key(url)
+    if not key:
         return "other:unknown"
-    if registry.plex_hostname and host == registry.plex_hostname:
+    host = key.split(":")[0]
+    if registry.plex_netloc and key == registry.plex_netloc:
         return "plex"
-    if host in registry.arr_hosts:
-        return registry.arr_hosts[host]
+    if key in registry.arr_hosts:
+        return registry.arr_hosts[key]
     for needle, source in HOST_SOURCE_MAP:
         if needle in host:
             return source
@@ -117,9 +145,37 @@ class TimingRegistry:
         self.library_ctx = None
         # Single-threaded call-scoped tag so every bucket can be split overlay-loop vs collection-loop work - set via overlay_context(), read in record()/timed()/instrument_session().
         self.overlay_ctx = None
-        # Populated once each service connects - see set_plex_hostname()/register_arr_host().
-        self.plex_hostname = None
+        # Populated once each service connects - see set_plex_hostname()/register_arr_host(). Keyed by host[:port], not bare host - see _netloc_key().
+        self.plex_netloc = None
         self.arr_hosts = {}
+        # Only opened when KOMETA_LOG_PLEX_REQUESTS is set - the one-off call-census research pass, not normal operation.
+        self._plex_request_log = None
+        self._plex_request_csv = None
+
+    def enable_plex_request_log(self, logs_dir):
+        if not LOG_PLEX_REQUESTS:
+            return
+        os.makedirs(logs_dir, exist_ok=True)
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        path = os.path.join(logs_dir, f"plex-request-census-{stamp}.csv")
+        self._plex_request_log = open(path, "w", newline="", encoding="utf-8")
+        self._plex_request_csv = csv.writer(self._plex_request_log)
+        self._plex_request_csv.writerow(["method", "path", "elapsed_ms", "source_tag", "library", "overlay"])
+        logger.info(f"KOMETA_LOG_PLEX_REQUESTS enabled - writing {path}")
+
+    def log_plex_request(self, method, url, elapsed, source_tag):
+        if self._plex_request_csv is None:
+            return
+        # library/overlay columns added 2026-07-27 so the census can subdivide the parallelizable-not-batchable
+        # pool by loop context (overlay-loop vs collection-loop, per library) to pick a phase-2 pilot target -
+        # same context_tag/library_ctx/overlay_ctx already recorded per-call in record(), just also logged here.
+        self._plex_request_csv.writerow([method, _redact_token(url), round(elapsed * 1000, 3), source_tag, self.library_ctx, self.overlay_ctx])
+
+    def close_plex_request_log(self):
+        if self._plex_request_log is not None:
+            self._plex_request_log.close()
+            self._plex_request_log = None
+            self._plex_request_csv = None
 
     def reset(self):
         # Re-stamps start_time and clears the four accumulator dicts so a persistent scheduler process's next run starts from zero instead of adding to every run since the container started.
@@ -132,13 +188,15 @@ class TimingRegistry:
             self.meta = {}
             self._banner_logged = False
 
-    def set_plex_hostname(self, hostname):
-        if hostname:
-            self.plex_hostname = hostname.lower()
+    def set_plex_hostname(self, url_or_hostname):
+        key = _netloc_key(url_or_hostname)
+        if key:
+            self.plex_netloc = key
 
-    def register_arr_host(self, hostname, source):
-        if hostname:
-            self.arr_hosts[hostname.lower()] = source
+    def register_arr_host(self, url_or_hostname, source):
+        key = _netloc_key(url_or_hostname)
+        if key:
+            self.arr_hosts[key] = source
 
     def record(self, phase, seconds, library=None, collection=None, source=None, num_bytes=0, overlay=None):
         if not self.enabled:
@@ -419,6 +477,8 @@ def instrument_session(session):
         except (ValueError, AttributeError):
             pass
         registry.record("network", elapsed, library=registry.library_ctx, source=source, num_bytes=num_bytes, overlay=registry.overlay_ctx)
+        if LOG_PLEX_REQUESTS and source.startswith("plex"):
+            registry.log_plex_request(method, url, elapsed, source)
         return response
 
     session.request = wrapped_request
