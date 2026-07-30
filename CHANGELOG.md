@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.4.6] - 2026-07-30
 ### Added
 - Add `folder_location` and `folder_location.not` Plex search attributes for movie, show, and track-level music smart collections and Plex searches, using the root folders configured on the Plex library.
 - Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
@@ -29,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
 - Resolve movie folder paths using the path style reported by the media server rather than the platform Kometa runs on. A Linux or Docker install pointed at a Plex server on Windows received paths such as `P:\Movies\Title\file.mkv`, which `os.path.dirname` reduced to an empty string, logging `Plex Error: No location found` for every movie and silently disabling `add_existing`, `upgrade_existing`, `monitor_existing`, `item_radarr_tag`, and `item_sonarr_tag`.
 - Fix `streaming` Defaults to more consistently use regional variants of Amazon, and stop trying to use `Originals` lists that do not exist
+
+### Changed
+- Replace the vague `Input Failed` error emitted when Trakt requires authorization in a non-interactive environment with an actionable Trakt-specific message, and include the failed token-refresh HTTP response in debug logs.
+
 ## [v2.4.5] - 2026-07-22
 
 ### Added
@@ -276,7 +281,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...HEAD
+[v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6
 [v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3
