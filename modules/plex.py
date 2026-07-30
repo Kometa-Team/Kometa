@@ -374,8 +374,45 @@ item_advance_keys = {
     "item_subtitle_mode": ("subtitleMode", subtitle_mode_options),
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
-and_searches = ["title.and", "studio.and", "actor.and", "audio_language.and", "collection.and", "content_rating.and", "country.and", "director.and", "genre.and", "label.and", "network.and", "producer.and", "subtitle_language.and", "writer.and"]
-or_searches = ["title", "studio", "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer", "decade", "resolution", "year", "episode_title", "episode_year"]
+and_searches = [
+    "title.and",
+    "studio.and",
+    "actor.and",
+    "audio_language.and",
+    "collection.and",
+    "content_rating.and",
+    "country.and",
+    "director.and",
+    "folder_location.and",
+    "genre.and",
+    "label.and",
+    "network.and",
+    "producer.and",
+    "subtitle_language.and",
+    "writer.and",
+]
+or_searches = [
+    "title",
+    "studio",
+    "actor",
+    "audio_language",
+    "collection",
+    "content_rating",
+    "country",
+    "director",
+    "folder_location",
+    "genre",
+    "label",
+    "network",
+    "producer",
+    "subtitle_language",
+    "writer",
+    "decade",
+    "resolution",
+    "year",
+    "episode_title",
+    "episode_year",
+]
 movie_only_searches = [
     "director",
     "director.not",
@@ -497,7 +534,7 @@ number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "tr
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
 float_modifiers = number_modifiers + [".rated"]
-search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
+search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor",
     "episode_actor",
@@ -506,6 +543,7 @@ tag_attributes = [
     "content_rating",
     "country",
     "director",
+    "folder_location",
     "genre",
     "label",
     "season_label",
@@ -548,6 +586,7 @@ searches = (
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"]
 movie_sorts = {
     "title.asc": "titleSort",
     "title.desc": "titleSort%3Adesc",
@@ -1208,11 +1247,26 @@ class Plex(Library):
         except (BadRequest, NotFound, Unauthorized) as e:
             raise Failed(f"Plex Error: Failed to find person ID for '{name}': {e}") from e
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False):
+    @PLEX_RETRY
+    def get_search_key(self, search_name, libtype=None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
-        final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+        if search_name == "folder_location":
+            filter_type = libtype or self.Plex.TYPE
+            filters = self.Plex.listFilters(filter_type)
+            try:
+                folder_filter = next(f for f in filters if f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")
+            except StopIteration:
+                available_filters = [f.filter for f in filters]
+                raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
+            return folder_filter.filter
+        return final_search
+
+    def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
+        final_search = search_name
         try:
+            final_search = self.get_search_key(search_name, libtype=libtype)
+            final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]

@@ -11,7 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from plexapi.exceptions import BadRequest
+from plexapi.exceptions import BadRequest, NotFound
 from requests.exceptions import ConnectionError, ReadTimeout
 from tenacity import wait_none
 
@@ -186,6 +186,81 @@ class TestNotify:
         plex = make_plex(config=mock_config, PlexServer=SimpleNamespace(friendlyName="MyServer"))
         plex.notify_delete("Playlist removed", playlist=True)
         mock_config.notify_delete.assert_called_once_with("Playlist removed", server="MyServer", library=None)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# search keys
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSearchKeys:
+    def test_folder_location_uses_plex_source_filter(self):
+        list_filters = MagicMock(
+            return_value=[
+                SimpleNamespace(filter="genre", title="Genre"),
+                SimpleNamespace(filter="source", title="Folder Location"),
+            ]
+        )
+        section = SimpleNamespace(
+            TYPE="movie",
+            listFilters=list_filters,
+        )
+        plex = make_plex(Plex=section)
+
+        assert plex.get_search_key("folder_location") == "source"
+        list_filters.assert_called_once_with("movie")
+
+    def test_folder_location_uses_requested_track_filter_type(self):
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        section = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        plex = make_plex(Plex=section, is_movie=False, type="Music")
+
+        assert plex.get_search_key("folder_location", libtype="track") == "source"
+        list_filters.assert_called_once_with("track")
+
+    def test_folder_location_falls_back_to_filter_title(self):
+        section = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="location", title="Folder Location")],
+        )
+        plex = make_plex(Plex=section)
+
+        assert plex.get_search_key("folder_location") == "location"
+
+    def test_folder_location_choices_map_paths_to_plex_location_ids(self):
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        section = SimpleNamespace(
+            TYPE="movie",
+            listFilters=list_filters,
+        )
+        plex = make_plex(Plex=section)
+        plex.get_tags = MagicMock(
+            return_value=[
+                SimpleNamespace(title="/media/movies", key="7"),
+                SimpleNamespace(title="/media/movies-4k", key="8"),
+            ]
+        )
+
+        choices, names = plex.get_search_choices("folder_location", title=False, libtype="track")
+
+        assert choices["/media/movies"] == "7"
+        assert choices["/media/movies-4k"] == "8"
+        assert names == ["/media/movies", "/media/movies-4k"]
+        list_filters.assert_called_once_with("track")
+        plex.get_tags.assert_called_once_with("source")
+
+    def test_folder_location_raises_when_plex_does_not_expose_filter(self):
+        section = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="genre", title="Genre")],
+        )
+        plex = make_plex(Plex=section)
+
+        with pytest.raises(NotFound, match="folder_location"):
+            plex.get_search_key("folder_location")
+
+        with pytest.raises(Failed, match="folder_location not supported"):
+            plex.get_search_choices("folder_location")
 
 
 # ═══════════════════════════════════════════════════════════════════════

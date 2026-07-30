@@ -636,6 +636,88 @@ class TestBuildFilter:
         with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
             builder.build_filter("tmdb", "not_a_dict")
 
+    @pytest.mark.parametrize(
+        ("attribute", "expected_filter"),
+        [
+            ("folder_location", "source=7"),
+            ("folder_location.not", "source!=7"),
+        ],
+    )
+    def test_builds_folder_location_smart_filter(self, attribute, expected_filter):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = True
+        library.is_show = False
+        library.is_music = False
+        library.Plex = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="source", title="Folder Location")],
+        )
+        library.get_search_choices = MagicMock(return_value=({"/media/movies": 7}, ["/media/movies"]))
+        builder = make_builder(
+            library=library,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {attribute: "/media/movies"}},
+            default_sort="random",
+        )
+
+        assert expected_filter in url
+        assert "Folder Location" in details
+        library.get_search_choices.assert_called_once_with("folder_location", title=False, libtype="movie")
+
+    def test_builds_track_folder_location_smart_filter(self):
+        import modules.plex as plex_module
+
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = False
+        library.is_show = False
+        library.is_music = True
+        library.Plex = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        library.get_tags = MagicMock(return_value=[SimpleNamespace(title="/media/music", key="12")])
+        builder = make_builder(
+            library=library,
+            builder_level="track",
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"folder_location": "/media/music"}},
+            default_sort="random",
+        )
+
+        assert "source=12" in url
+        assert "Folder Location" in details
+        assert list_filters.call_count == 2
+        list_filters.assert_called_with("track")
+        library.get_tags.assert_called_once_with("source")
+
+    def test_rejects_folder_location_above_track_level_in_music_library(self):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value.removesuffix(".not"), ".not" if value.endswith(".not") else "", value),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            details={"show_options": False},
+        )
+
+        with pytest.raises(builder_module.BuilderValidationError, match="does not work for music libraries"):
+            builder.build_filter(
+                "smart_filter",
+                {"all": {"folder_location": "/media/music"}},
+                default_sort="random",
+            )
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Dispatch table sanity tests
