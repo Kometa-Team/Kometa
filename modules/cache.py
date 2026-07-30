@@ -3,6 +3,7 @@ import os
 import random
 import re
 import sqlite3
+import threading
 from contextlib import closing
 from datetime import datetime, timedelta
 
@@ -20,12 +21,36 @@ def sql_identifier(name):
     return str(name)
 
 
+class _LockedConnection:
+    """Experiment A1 - wraps the shared connection so `with self.connection as c:` holds a lock for the whole transaction; RLock so the nested update_image_map call re-enters cleanly.
+    Reused for the life of the Cache (not rebuilt per access); __getattr__ proxies to the real connection so direct calls like .execute()/.set_trace_callback() still work, just without the lock."""
+
+    def __init__(self, connection, lock):
+        self._connection, self._lock = connection, lock
+
+    def __enter__(self):
+        self._lock.acquire()
+        return self._connection.__enter__()
+
+    def __exit__(self, *args):
+        try:
+            return self._connection.__exit__(*args)
+        finally:
+            self._lock.release()
+
+    def __getattr__(self, name):
+        return getattr(self._connection, name)
+
+
 @timings.wrap_cache_methods
 class Cache:
     def __init__(self, config_path, expiration):
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
         self._connection = None
+        self._locked_connection = None
+        # feat/threading Experiment A1 (won the bake-off 2026-07-26 - see perf-results-log.md): RLock guards each `with self.connection:` transaction.
+        self._lock = threading.RLock()
         # In-process memoization for _query_map/_update_map's ID lookups, keyed per map_name - avoids repeat SQLite round-trips for the same ID within one run.
         self._map_cache = {}
         # Same idea for query_guid_map/update_guid_map, which use their own SQL, not _query_map - keyed by plex_guid, caches the raw row so expiration still recomputes fresh each call.
@@ -388,7 +413,9 @@ class Cache:
             except sqlite3.Error:
                 pass
             self._connection = connection
-        return self._connection
+            # Built once and reused - callers doing `cache.connection is cache.connection` (or holding onto it across calls, e.g. set_trace_callback) need a stable object, not a fresh wrapper every access.
+            self._locked_connection = _LockedConnection(self._connection, self._lock)
+        return self._locked_connection
 
     def close(self):
         """Close database connection and clean up WAL/SHM files."""
@@ -401,6 +428,7 @@ class Cache:
                 pass
             finally:
                 self._connection = None
+                self._locked_connection = None
 
     def migrate_overlay_value_cache(self):
         # Upgrade legacy overlay_special_text2 to overlay_value_cache; its presence is the one-time upgrade signal (not created on fresh installs, dropped once migrated), and runs regardless of cache_expiration.

@@ -69,10 +69,8 @@ hub_sort_options = {
     "random": "Sort Recommendation Hubs in a random order",
 }
 # feat/threading experiment toggles - fork-only, not part of upstream schema
-threading_cache_mode_options = {
-    "lock": "RLock-guarded shared SQLite connection (Experiment A1)",
-    "threadlocal": "One SQLite connection per thread (Experiment A2)",
-}
+# cache_mode was an Experiment A toggle (lock=A1 vs threadlocal=A2); A1 won the bake-off 2026-07-26 (see
+# perf-results-log.md) and is now Cache's only behavior, so there's nothing left to toggle here.
 threading_tmdb_pages_options = {
     "bypass": "Raw-HTTP TMDb discover page fan-out (Experiment B1)",
     "subclass": "tmdbapis subclass page fan-out (Experiment B2)",
@@ -840,7 +838,6 @@ class ConfigFile:
                 # settings.threading is two levels deep, one past what check_for_attribute's single `parent` supports, so read it as its own sub-dict here.
                 # do_print=False throughout: an unconfigured run (the common case) should stay silent and behave byte-for-byte like today, not nag about a fork-only experiment block.
                 "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=1, int_min=1, save=False, do_print=False),
-                "cache_mode": check_for_attribute(threading_settings, "cache_mode", default="lock", test_list=threading_cache_mode_options, save=False, do_print=False),
                 "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
                 "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),
             },
