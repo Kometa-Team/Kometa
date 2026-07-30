@@ -121,6 +121,17 @@ class TimingRegistry:
         self.plex_hostname = None
         self.arr_hosts = {}
 
+    def reset(self):
+        # Re-stamps start_time and clears the four accumulator dicts so a persistent scheduler process's next run starts from zero instead of adding to every run since the container started.
+        with self._lock:
+            self.start_time = time.perf_counter()
+            self.buckets = defaultdict(lambda: {"seconds": 0.0, "calls": 0, "bytes": 0})
+            self.cache_hits = defaultdict(int)
+            self.cache_misses = defaultdict(int)
+            self.cache_seconds = defaultdict(float)
+            self.meta = {}
+            self._banner_logged = False
+
     def set_plex_hostname(self, hostname):
         if hostname:
             self.plex_hostname = hostname.lower()
