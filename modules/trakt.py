@@ -147,7 +147,7 @@ class Trakt:
                 raise Failed("Input Timeout: Trakt pin required.")
             except Failed as e:
                 if str(e) == "Input Failed":
-                    raise Failed("Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate with Kometa Utilities and update your config.") from e
+                    raise Failed("Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config.") from e
                 raise
         if not pin:
             raise Failed("Trakt Error: Trakt pin required.")

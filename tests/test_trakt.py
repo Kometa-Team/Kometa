@@ -75,7 +75,7 @@ class TestTraktAuthorization:
         with pytest.raises(Failed) as exc_info:
             adapter._authorization()
 
-        assert str(exc_info.value) == "Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate with Kometa Utilities and update your config."
+        assert str(exc_info.value) == "Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config."
 
     def test_other_input_failures_are_unchanged(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
