@@ -1026,7 +1026,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
             self.only_run_on_create = util.parse(self.Type, "only_run_on_create", self.data, datatype="bool", methods=methods, default=False)
-        if self.obj and self.only_run_on_create:
+        if self.obj is not None and self.only_run_on_create:
             raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
         if "allowed_library_types" in methods and "run_definition" not in methods:
@@ -1824,19 +1824,19 @@ class CollectionBuilder:
         self.do_report = not self.config.no_report and (self.details["save_report"])
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
                 logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj:
+                if self.obj is not None:
                     if check_url != self.library.smart_filter(self.obj):
                         self.library.update_smart_collection(self.obj, check_url)
                         logger.info(f"Metadata: Smart Collection updated to {check_url}")
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
-            if self.obj:
+            if self.obj is not None:
                 self.exists = True
                 if self.sync or self.playlist:
                     self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
@@ -1848,7 +1848,7 @@ class CollectionBuilder:
                 logger.warning(f"{self.Type} Error: Sync Mode can only be append when using build_collection: false")
                 self.sync = False
             self.run_again = False
-        if self.non_existing is not False and self.obj:
+        if self.non_existing is not False and self.obj is not None:
             raise NotScheduled(self.non_existing)
 
         logger.info("")
@@ -4115,7 +4115,7 @@ class CollectionBuilder:
         if not items:
             self._log_episode_count(total_ids, unique_total=0)
             return None
-        name = self.obj.title if self.obj else self.name
+        name = self.obj.title if self.obj is not None else self.name
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
@@ -4619,7 +4619,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj is not None else self.name, self.smart_label_collection)
         collection_item_keys = {ci.ratingKey for ci in collection_items}
         total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
@@ -4642,7 +4642,7 @@ class CollectionBuilder:
                 amount_added += 1
                 if self.details["changes_webhooks"]:
                     self.notification_additions.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
-        if self.playlist and items_added and not self.obj:
+        if self.playlist and items_added and self.obj is None:
             self.obj = self.library.create_playlist(self.name, items_added)
             logger.info("")
             logger.info(f"Playlist: {self.name} created")
@@ -5046,7 +5046,7 @@ class CollectionBuilder:
 
     @timings.timed("load_collection_items")
     def load_collection_items(self):
-        if self.build_collection and self.obj:
+        if self.build_collection and self.obj is not None:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
@@ -5365,7 +5365,7 @@ class CollectionBuilder:
                 if not self.library.smart_label_check(self.name):
                     raise Failed
                 smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
-                if not self.obj:
+                if self.obj is None:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
@@ -5696,7 +5696,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
         logger.info("")
-        if self.obj:
+        if self.obj is not None:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         current_ids = []
@@ -5770,10 +5770,10 @@ class CollectionBuilder:
         return list(dict.fromkeys(current_ids))
 
     def delete(self):
-        title = self.obj.title if self.obj else self.name
+        title = self.obj.title if self.obj is not None else self.name
         if self.playlist:
             output = f"Deleting {self.Type} {title}"
-        elif self.obj:
+        elif self.obj is not None:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
                 for item in self.library.search(label=self.name, libtype=self.builder_level):
@@ -5792,14 +5792,14 @@ class CollectionBuilder:
                     output += f"\nPlaylist deleted on User {user}"
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
-        elif self.obj:
+        elif self.obj is not None:
             self.library.delete_collection(self.obj)
-        if self.obj:
+        if self.obj is not None:
             self.deleted = True
         return output
 
     def sync_playlist(self):
-        if self.obj and self.valid_users:
+        if self.obj is not None and self.valid_users:
             logger.info("")
             logger.separator("Syncing Playlist to Users", space=False, border=False)
             logger.info("")
@@ -5813,7 +5813,7 @@ class CollectionBuilder:
                     logger.info(f"Playlist: {self.name} synced to {user}")
 
     def exclude_admin_from_playlist(self):
-        if self.obj and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
+        if self.obj is not None and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
             logger.info("")
             logger.separator("Excluding Admin from Playlist", space=False, border=False)
             logger.info("")
@@ -5824,7 +5824,7 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
+        if self.obj is not None and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.library.item_reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(
