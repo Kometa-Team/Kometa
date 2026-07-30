@@ -1,5 +1,6 @@
 import os
 import re
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
@@ -915,6 +916,9 @@ class ConfigFile:
         }
         # feat/threading: created only when workers>1, torn down alongside Cache.close() in kometa.py's run cleanup - never a module-level singleton, never outlives this Config/run.
         self.thread_pool = ThreadPoolExecutor(max_workers=self.general["threading"]["workers"]) if self.general["threading"]["workers"] > 1 else None
+        # Experiment C: one lock per service, lazily created (double-checked locking - meta-lock only guards dict mutation, not the service call).
+        self.service_locks = {}
+        self._service_locks_meta_lock = threading.Lock()
         self.custom_repo = None
         if self.general["custom_repo"]:
             repo = self.general["custom_repo"]
@@ -2604,6 +2608,17 @@ class ConfigFile:
             logger.save_errors = False
             logger.clear_errors()
             raise
+
+    def get_service_lock(self, key):
+        """Returns the shared Lock for a given service key (see builder.py's gather_ids), creating it on first use. Safe to call from any thread - the meta-lock only guards the moment a new key is added, never the caller's actual work."""
+        lock = self.service_locks.get(key)
+        if lock is None:
+            with self._service_locks_meta_lock:
+                lock = self.service_locks.get(key)
+                if lock is None:
+                    lock = threading.Lock()
+                    self.service_locks[key] = lock
+        return lock
 
     def thread_map(self, items, fn):
         """Run fn(item) for each item, in parallel on self.thread_pool if threading is enabled, sequentially otherwise. Returns results in input order; raises the first exception in input order once every item has finished."""

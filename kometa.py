@@ -278,7 +278,7 @@ from modules import timings  # noqa: E402
 timings.ENABLED = run_args["timings"]
 timings.registry.enabled = run_args["timings"]
 
-from modules.builder import CollectionBuilder  # noqa: E402
+from modules.builder import CollectionBuilder, prefetch_gather_ids  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
@@ -1288,12 +1288,16 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                for method, value in builder.builders:
+                # Experiment C: non-Plex gather_ids calls for this collection's builders start running in the background now; Plex-method builders (None here) still run inline below, on the main thread, in order.
+                prefetched = prefetch_gather_ids(config, builder)
+                for i, (method, value) in enumerate(builder.builders):
                     logger.debug("")
                     logger.debug(f"Builder: {method}: {value}")
                     logger.info("")
                     try:
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
+                        pending = prefetched[i]
+                        ids = pending.result() if pending is not None else builder.gather_ids(method, value)
+                        builder.filter_and_save_items(ids)
                     except BuilderValidationError:
                         raise
                     except OverlayError:

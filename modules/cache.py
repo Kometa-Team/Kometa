@@ -22,8 +22,7 @@ def sql_identifier(name):
 
 
 class _LockedConnection:
-    """Experiment A1 - wraps the shared connection so `with self.connection as c:` holds a lock for the whole transaction; RLock so the nested update_image_map call re-enters cleanly.
-    Reused for the life of the Cache (not rebuilt per access); __getattr__ proxies to the real connection so direct calls like .execute()/.set_trace_callback() still work, just without the lock."""
+    """Experiment A1 - wraps the shared connection so `with self.connection:` holds an RLock per transaction; reused for Cache's life; __getattr__ proxies direct calls (.execute() etc) through unlocked."""
 
     def __init__(self, connection, lock):
         self._connection, self._lock = connection, lock
