@@ -653,6 +653,9 @@ def start(attrs):
             except Failed as e:
                 logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
+            # Shut down the run's thread pool before closing Cache - no worker may still be touching the SQLite connection during teardown
+            if config.thread_pool:
+                config.thread_pool.shutdown(wait=True)
             # Close cache connection to clean up WAL/SHM files
             if config.Cache:
                 config.Cache.close()
