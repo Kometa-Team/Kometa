@@ -870,17 +870,28 @@ class IMDb:
         if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
         # Primary: use direct GraphQL API (bypasses HTML scraping issues)
+        graphql_error: str | None = None
         if chart in chart_graphql_map:
             try:
                 ids = self._chart_graphql(chart)
                 if ids:
                     logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
                     return ids
+                graphql_error = "returned no IMDb IDs"
             except Exception as e:
+                graphql_error = str(e)
                 logger.debug(f"GraphQL chart query error for {chart}: {e}")
         # Fallback: HTML scraping via original xpath method
-        script_data = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")[0]
-        return [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_data)]
+        script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
+        if not script_results:
+            message = f"IMDb Error: HTML fallback returned no chart data for {charts[chart]}"
+            if graphql_error:
+                message = f"{message} after GraphQL request failed: {graphql_error}"
+            raise Failed(message)
+        ids = [x.group(1) for x in re.finditer(r'"(tt\d+)"', script_results[0])]
+        if not ids:
+            raise Failed(f"IMDb Error: No IMDb IDs found in HTML fallback for {charts[chart]}")
+        return ids
 
     def get_imdb_ids(self, method, data, language):
         if method == "imdb_id":

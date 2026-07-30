@@ -268,3 +268,48 @@ class TestValidateImdbWatchlist:
         """
         result = self._imdb().validate_imdb("Test", "imdb_watchlist", [{"user_id": "ur64054558"}])
         assert result[0]["user_id"] == "ur64054558"
+
+
+class TestIdsFromChart:
+
+    @pytest.fixture(autouse=True)
+    def _mock_logger(self, monkeypatch):
+        monkeypatch.setattr("modules.imdb.logger", MagicMock())
+
+    def _imdb(self):
+        return IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+
+    def test_graphql_success_does_not_use_html_fallback(self):
+        imdb = self._imdb()
+        imdb._chart_graphql = MagicMock(return_value=["tt0111161", "tt0068646"])
+        imdb._request = MagicMock()
+
+        assert imdb._ids_from_chart("top_movies", "en") == ["tt0111161", "tt0068646"]
+        imdb._request.assert_not_called()
+
+    def test_html_fallback_returns_ids_after_graphql_failure(self):
+        imdb = self._imdb()
+        imdb._chart_graphql = MagicMock(side_effect=Failed("GraphQL unavailable"))
+        imdb._request = MagicMock(return_value=['{"id":"tt0111161"},{"id":"tt0068646"}'])
+
+        assert imdb._ids_from_chart("top_movies", "en") == ["tt0111161", "tt0068646"]
+
+    def test_empty_html_fallback_preserves_graphql_failure(self):
+        imdb = self._imdb()
+        imdb._chart_graphql = MagicMock(side_effect=Failed("GraphQL unavailable"))
+        imdb._request = MagicMock(return_value=[])
+
+        with pytest.raises(Failed) as exc_info:
+            imdb._ids_from_chart("top_movies", "en")
+
+        error = str(exc_info.value)
+        assert "HTML fallback returned no chart data for Top 250 Movies" in error
+        assert "GraphQL request failed: GraphQL unavailable" in error
+
+    def test_html_fallback_without_ids_raises_failed(self):
+        imdb = self._imdb()
+        imdb._chart_graphql = MagicMock(return_value=[])
+        imdb._request = MagicMock(return_value=['{"props":{"pageProps":{}}}'])
+
+        with pytest.raises(Failed, match="No IMDb IDs found in HTML fallback for Top 250 Movies"):
+            imdb._ids_from_chart("top_movies", "en")
