@@ -836,13 +836,13 @@ class ConfigFile:
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "threading": {
-                # settings.threading is two levels deep, one past what check_for_attribute's single `parent` supports, so read it as its own sub-dict here.
-                # do_print=False throughout: an unconfigured run (the common case) should stay silent and behave byte-for-byte like today, not nag about a fork-only experiment block.
-                "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=1, int_min=1, save=False, do_print=False),
+                # settings.threading is two levels deep (past check_for_attribute's single `parent` support), so read it as its own sub-dict; do_print=False throughout so an unconfigured run stays silent.
+                # Phase 2 productization (2026-07-30): workers/prefetch_collection_children default to the bake-off-validated shipped-forward posture, not the old inert-by-default posture - an absent threading block now behaves like the proven-fast config, not like workers:1.
+                "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=4, int_min=1, save=False, do_print=False),
                 "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
                 "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),
-                # Phase 2 pilot: submit CollectionBuilder's remove_item_map fetch (a read-only, no-shared-state Plex call) to thread_pool instead of blocking __init__, resolved lazily on first use later in the run - default off, bake-off pending.
-                "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=False, save=False, do_print=False),
+                # Confirmed ~2.7-3.0% wall-time win at workers:4, no further gain at workers:8 (overnight churn-loop A/B, see perf-results-log.md) - defaults on.
+                "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=True, save=False, do_print=False),
             },
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
