@@ -14,6 +14,7 @@ Design:
 import csv
 import json
 import os
+import threading
 import time
 from collections import defaultdict
 from contextlib import contextmanager
@@ -98,10 +99,11 @@ def _looks_like_miss(result):
 
 class TimingRegistry:
     """Accumulates elapsed seconds/call counts/bytes into buckets keyed by
-    (library, collection, phase, source). No locks: Kometa is single-threaded."""
+    (library, collection, phase, source). record() is lock-guarded for feat/threading's workers>1 runs; the rest is still single-threaded-only."""
 
     def __init__(self):
         self.enabled = ENABLED
+        self._lock = threading.Lock()
         self.buckets = defaultdict(lambda: {"seconds": 0.0, "calls": 0, "bytes": 0})
         self.cache_hits = defaultdict(int)
         self.cache_misses = defaultdict(int)
@@ -132,19 +134,21 @@ class TimingRegistry:
             return
         if overlay is None:
             overlay = self.overlay_ctx
-        bucket = self.buckets[(library, collection, phase, source, overlay)]
-        bucket["seconds"] += seconds
-        bucket["calls"] += 1
-        bucket["bytes"] += num_bytes
+        with self._lock:
+            bucket = self.buckets[(library, collection, phase, source, overlay)]
+            bucket["seconds"] += seconds
+            bucket["calls"] += 1
+            bucket["bytes"] += num_bytes
 
     def record_cache(self, name, seconds, hit):
         if not self.enabled:
             return
-        self.cache_seconds[name] += seconds
-        if hit:
-            self.cache_hits[name] += 1
-        else:
-            self.cache_misses[name] += 1
+        with self._lock:
+            self.cache_seconds[name] += seconds
+            if hit:
+                self.cache_hits[name] += 1
+            else:
+                self.cache_misses[name] += 1
         self.record("cache", seconds, source=name)
 
     def banner(self):
