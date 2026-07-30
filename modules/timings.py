@@ -2,7 +2,7 @@
 
 Design:
 - A single process-wide TimingRegistry accumulates (library, collection, phase, source) -> seconds/calls/bytes.
-- Kometa is single-threaded (no `threading` usage anywhere in the codebase), so no locking is needed.
+- record()/record_cache() take a lock so concurrent worker threads (settings.threading) can't lose updates.
 - When KOMETA_TIMINGS is unset/false every entry point below is a guarded early return - near-zero overhead.
 - `track()` is a context manager for scoping an arbitrary block of code.
 - `timed()` is a decorator for scoping an entire method with minimal diff noise at call sites.
@@ -166,9 +166,7 @@ class TimingRegistry:
     def log_plex_request(self, method, url, elapsed, source_tag):
         if self._plex_request_csv is None:
             return
-        # library/overlay columns added 2026-07-27 so the census can subdivide the parallelizable-not-batchable
-        # pool by loop context (overlay-loop vs collection-loop, per library) to pick a phase-2 pilot target -
-        # same context_tag/library_ctx/overlay_ctx already recorded per-call in record(), just also logged here.
+        # library/overlay columns (added 2026-07-27) let the census subdivide the parallelizable-not-batchable pool by loop context to pick a phase-2 pilot target.
         self._plex_request_csv.writerow([method, _redact_token(url), round(elapsed * 1000, 3), source_tag, self.library_ctx, self.overlay_ctx])
 
     def close_plex_request_log(self):
