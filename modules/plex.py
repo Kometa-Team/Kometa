@@ -841,7 +841,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = TracedPlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
-            timings.registry.set_plex_hostname(urlparse(self.url).hostname)
+            timings.registry.set_plex_hostname(self.url)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -1147,6 +1147,7 @@ class Plex(Library):
         return image_url
 
     def item_reload(self, item, exclude_elements=None):
+        # Tagged so the census can isolate single-item reload GETs (the read-batching candidate) from every other kind of plex network call - see perf-results-log.md's call census entry.
         reload_options = {
             "checkFiles": False,
             "includeAllConcerts": False,
@@ -1169,7 +1170,8 @@ class Plex(Library):
         }
         if exclude_elements:
             reload_options["excludeElements"] = exclude_elements
-        item.reload(**reload_options)
+        with timings.tag_context("item_reload"):
+            item.reload(**reload_options)
         item._autoReload = False
         return item
 
