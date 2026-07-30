@@ -3,8 +3,9 @@
 from unittest.mock import MagicMock
 
 import pytest
+from requests.exceptions import JSONDecodeError
 
-from modules.imdb import IMDb
+from modules.imdb import IMDb, graphql_url
 from modules.util import Failed
 
 
@@ -13,6 +14,53 @@ def make_imdb(graph_response):
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb._graph_request = MagicMock(return_value=graph_response)
     return imdb
+
+
+# ---------------------------------------------------------------------------
+# IMDb GraphQL request handling
+# ---------------------------------------------------------------------------
+
+
+class TestGraphRequest:
+
+    def test_sends_imdb_web_client_header(self):
+        requests = MagicMock()
+        response = MagicMock(status_code=200)
+        response.json.return_value = {"data": {"result": "ok"}}
+        requests.post.return_value = response
+        imdb = IMDb(requests=requests, cache=None, default_dir="/tmp")
+        payload = {"query": "{ result }"}
+
+        assert imdb._graph_request(payload) == {"data": {"result": "ok"}}
+        requests.post.assert_called_once_with(
+            graphql_url,
+            headers={
+                "content-type": "application/json",
+                "x-imdb-client-name": "imdb-web-next",
+            },
+            json=payload,
+        )
+
+    def test_http_error_raises_contextual_imdb_error(self):
+        requests = MagicMock()
+        response = MagicMock(status_code=403)
+        requests.post.return_value = response
+        imdb = IMDb(requests=requests, cache=None, default_dir="/tmp")
+
+        with pytest.raises(Failed, match="IMDb Error: GraphQL request failed with HTTP 403"):
+            imdb._graph_request({"query": "{ result }"})
+
+        response.json.assert_not_called()
+
+    def test_non_json_response_raises_contextual_imdb_error(self):
+        requests = MagicMock()
+        response = MagicMock(status_code=200)
+        response.json.side_effect = JSONDecodeError("Expecting value", "<html>", 0)
+        requests.post.return_value = response
+        imdb = IMDb(requests=requests, cache=None, default_dir="/tmp")
+
+        with pytest.raises(Failed, match="IMDb Error: GraphQL request returned a non-JSON response"):
+            imdb._graph_request({"query": "{ result }"})
 
 
 # ---------------------------------------------------------------------------

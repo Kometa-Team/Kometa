@@ -504,7 +504,20 @@ class IMDb:
         return response.xpath(xpath) if xpath else response
 
     def _graph_request(self, json_data):
-        return self.requests.post_json(graphql_url, headers={"content-type": "application/json"}, json=json_data)
+        response = self.requests.post(
+            graphql_url,
+            headers={
+                "content-type": "application/json",
+                "x-imdb-client-name": "imdb-web-next",
+            },
+            json=json_data,
+        )
+        if response.status_code >= 400:
+            raise Failed(f"IMDb Error: GraphQL request failed with HTTP {response.status_code}")
+        try:
+            return response.json()
+        except ValueError as e:
+            raise Failed("IMDb Error: GraphQL request returned a non-JSON response") from e
 
     @property
     def search_hash(self):
