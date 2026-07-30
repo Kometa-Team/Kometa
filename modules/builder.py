@@ -1840,14 +1840,9 @@ class CollectionBuilder:
             if self.obj is not None:
                 self.exists = True
                 if self.sync or self.playlist:
-                    # Playlists need len() below so they fetch eagerly; sync collections don't need this until add_to_collection(), so it's deferred - see property below.
-                    if not self.playlist and self.config.thread_pool is not None and self.config.general["threading"]["prefetch_collection_children"]:
-                        obj, smart_label_collection = self.obj, self.smart_label_collection
-                        self._remove_item_map = self.config.thread_pool.submit(lambda: {i.ratingKey: i for i in self.library.get_collection_items(obj, smart_label_collection)})
-                    else:
-                        self._remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+                    self._remove_item_map = self._resolve_remove_item_map()
                 if not self.smart:
-                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount or 0
+                    self.beginning_count = len(self.remove_item_map) if self.playlist else self._collection_child_count(self.obj)
         else:
             self.obj = None
             if self.sync:
@@ -3791,21 +3786,17 @@ class CollectionBuilder:
             elif "letterboxd" in method:
                 ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
             elif method in textfile.builders:
-                #  is_movie=None means playlist mode (movies + shows).
-                # The target method MUST handle all three states correctly:
-                # True = movie-only, False = show-only, None = both.
+                # is_movie: True=movie-only, False=show-only, None=playlist mode (both) - get_ids must handle all three.
                 ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
             elif "stevenlu" in method:
                 ids = self.config.StevenLu.get_imdb_ids(method, value)
             elif "mojo" in method:
                 ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
             elif "mdblist" in method:
-                #  is_movie=None = playlist mode. Must return BOTH movie
-                # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
                 ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "simkl" in method:
-                #  is_movie=None = playlist mode. Must return BOTH movie
-                # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
                 ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "tmdb" in method:
                 ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
@@ -5361,8 +5352,7 @@ class CollectionBuilder:
 
     @property
     def remove_item_map(self):
-        # Resolves the deferred thread_pool fetch (see __init__) on first real use - usually already done by
-        # the time add_to_collection() reaches it, since construction happens well ahead of the Plex-heavy tail.
+        # Resolves the deferred thread_pool fetch (see __init__) on first real use - usually already done by the time add_to_collection() reaches it.
         if isinstance(self._remove_item_map, Future):
             self._remove_item_map = self._remove_item_map.result()
         return self._remove_item_map
@@ -5370,6 +5360,18 @@ class CollectionBuilder:
     @remove_item_map.setter
     def remove_item_map(self, value):
         self._remove_item_map = value
+
+    def _resolve_remove_item_map(self):
+        # Playlists need len() below so they fetch eagerly; sync collections don't need this until add_to_collection(), so it's deferred to thread_pool when prefetch_collection_children is enabled - see remove_item_map property.
+        if not self.playlist and self.config.thread_pool is not None and self.config.general["threading"]["prefetch_collection_children"]:
+            obj, smart_label_collection = self.obj, self.smart_label_collection
+            return self.config.thread_pool.submit(lambda: {i.ratingKey: i for i in self.library.get_collection_items(obj, smart_label_collection)})
+        return {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+
+    @staticmethod
+    def _collection_child_count(obj):
+        # Plex returns None for childCount on genuinely-empty separator collections - treat as 0, not a TypeError (builder.py fix, 2026-07-30).
+        return obj.childCount or 0
 
     @timings.timed("load_collection")
     def load_collection(self):

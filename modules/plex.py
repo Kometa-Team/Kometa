@@ -2840,9 +2840,7 @@ class Plex(Library):
         return map_key, attrs
 
     def get_item_display_title(self, item_to_sort, sort=False):
-        # Only fetch the parent (show/artist) when sort actually needs its titleSort - previously fetched
-        # unconditionally and discarded on the sort=False path, which every caller but one uses; found via
-        # the 2026-07-27 reload-origin census (~2,669 wasted single-item GETs, ~19s of a 276s run).
+        # Only fetch the parent (show/artist) when sort needs its titleSort - previously fetched unconditionally and discarded on sort=False (2026-07-27 census: ~2,669 wasted GETs).
         if isinstance(item_to_sort, Album):
             if sort:
                 return f"{item_to_sort.artist().titleSort} Album {item_to_sort.titleSort}"  # type: ignore[union-attr]

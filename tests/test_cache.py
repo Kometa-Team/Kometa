@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import sqlite3
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from datetime import datetime, timedelta
 from types import SimpleNamespace
@@ -1105,6 +1106,49 @@ class TestConnectionReuse:
 # ═══════════════════════════════════════════════════════════════════════
 # SQL identifier validation
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestLockedConnection:
+    """Experiment A1 - the RLock wrapper around the shared connection."""
+
+    @staticmethod
+    def _other_thread_can_acquire(cache) -> bool:
+        # RLock has no public .locked() - probe from a different thread instead, since RLock is only reentrant for its owning thread.
+        def try_acquire():
+            got = cache._lock.acquire(blocking=False)
+            if got:
+                cache._lock.release()
+            return got
+
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(try_acquire).result()
+
+    def test_lock_is_held_for_the_duration_of_a_transaction(self, tmp_path):
+        cache = make_cache(tmp_path)
+        assert self._other_thread_can_acquire(cache) is True
+        with cache.connection:
+            assert self._other_thread_can_acquire(cache) is False
+        assert self._other_thread_can_acquire(cache) is True
+
+    def test_nested_entry_from_same_thread_does_not_deadlock(self, tmp_path):
+        """RLock, not Lock - migrate_overlay_value_cache-style nesting must re-enter cleanly from the owning thread."""
+        cache = make_cache(tmp_path)
+        with cache.connection as outer:
+            with closing(outer.cursor()) as cursor:
+                cursor.execute("SELECT 1")
+                with cache.connection as inner:
+                    with closing(inner.cursor()) as inner_cursor:
+                        inner_cursor.execute("SELECT 2")
+        # Reaching here without a hang/exception is the assertion - a plain Lock would deadlock on the inner `with`.
+        assert self._other_thread_can_acquire(cache) is True
+
+    def test_underlying_connection_object_identity_is_stable(self, tmp_path):
+        """Same real sqlite3 connection every access, not a fresh wrapper - callers like set_trace_callback need this."""
+        cache = make_cache(tmp_path)
+        first = cache.connection
+        second = cache.connection
+        assert first is second
+        assert first._connection is second._connection
 
 
 class TestSqlIdentifierValidation:

@@ -69,9 +69,7 @@ hub_sort_options = {
     "configured.desc": "Sort Recommendation Hubs in the order collections appear in your config files (last to first)",
     "random": "Sort Recommendation Hubs in a random order",
 }
-# feat/threading experiment toggles - fork-only, not part of upstream schema
-# cache_mode was an Experiment A toggle (lock=A1 vs threadlocal=A2); A1 won the bake-off 2026-07-26 (see
-# perf-results-log.md) and is now Cache's only behavior, so there's nothing left to toggle here.
+# feat/threading experiment toggles (fork-only, not upstream schema) - cache_mode was Experiment A's lock-vs-threadlocal toggle; A1 won the 2026-07-26 bake-off and is now Cache's only behavior, so nothing's left to toggle here.
 threading_tmdb_pages_options = {
     "bypass": "Raw-HTTP TMDb discover page fan-out (Experiment B1)",
     "subclass": "tmdbapis subclass page fan-out (Experiment B2)",
@@ -837,7 +835,7 @@ class ConfigFile:
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
             "threading": {
                 # settings.threading is two levels deep (past check_for_attribute's single `parent` support), so read it as its own sub-dict; do_print=False throughout so an unconfigured run stays silent.
-                # Phase 2 productization (2026-07-30): workers/prefetch_collection_children default to the bake-off-validated shipped-forward posture, not the old inert-by-default posture - an absent threading block now behaves like the proven-fast config, not like workers:1.
+                # Phase 2 (2026-07-30): workers/prefetch_collection_children now default to the bake-off-validated posture - an absent block behaves like the proven-fast config, not workers:1.
                 "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=4, int_min=1, save=False, do_print=False),
                 "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
                 "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),

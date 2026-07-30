@@ -1362,3 +1362,126 @@ class TestDispatchTables:
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _service_lock_key (Experiment C - per-service lock bucket classification)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestServiceLockKey:
+    @pytest.mark.parametrize(
+        "method, expected",
+        [
+            ("plex_all", "plex"),
+            ("plex_search", "plex"),
+            ("tautulli_popular", "tautulli"),
+            ("tracearr_watched", "tracearr"),
+            ("anidb_id", "anidb"),
+            ("anilist_id", "anilist"),
+            ("mal_id", "mal"),
+            ("tvdb_list", "tvdb"),
+            ("imdb_list", "imdb"),
+            ("icheckmovies_list", "icheckmovies"),
+            ("letterboxd_list", "letterboxd"),
+            ("stevenlu_popular", "stevenlu"),
+            ("mojo_yearly", "mojo"),
+            ("mdblist_list", "mdblist"),
+            ("simkl_list", "simkl"),
+            ("tmdb_discover", "tmdb"),
+            ("trakt_list", "trakt"),
+            ("yamtrack_list", "yamtrack"),
+            ("serializd_list", "serializd"),
+            ("floppy_tracked", "floppy"),
+            ("radarr_taglist", "radarr"),
+            ("sonarr_taglist", "sonarr"),
+        ],
+    )
+    def test_known_prefixes_map_to_expected_bucket(self, method, expected):
+        assert builder_module._service_lock_key(method) == expected
+
+    def test_textfile_builder_maps_to_textfile_bucket(self):
+        textfile_method = next(iter(builder_module.textfile.builders))
+        assert builder_module._service_lock_key(textfile_method) == "textfile"
+
+    def test_unrecognized_method_falls_into_other_not_bypassed(self):
+        """Unknown methods must still get a lock bucket ('other'), never bypass per-service locking entirely."""
+        assert builder_module._service_lock_key("some_never_seen_method") == "other"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _resolve_remove_item_map (prefetch_collection_children deferral)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeThreadPool:
+    def __init__(self):
+        self.submitted = []
+
+    def submit(self, fn, *args, **kwargs):
+        from concurrent.futures import Future
+
+        future = Future()
+        future.set_result(fn(*args, **kwargs))
+        self.submitted.append((fn, args, kwargs))
+        return future
+
+
+class TestResolveRemoveItemMap:
+    def _make(self, playlist, thread_pool, prefetch_enabled, items):
+        library = SimpleNamespace(get_collection_items=lambda obj, smart_label: items)
+        config = SimpleNamespace(thread_pool=thread_pool, general={"threading": {"prefetch_collection_children": prefetch_enabled}})
+        return make_builder(playlist=playlist, library=library, config=config, obj=SimpleNamespace(), smart_label_collection=False)
+
+    def test_toggle_off_returns_dict_directly_not_a_future(self):
+        """prefetch_collection_children:false must behave byte-identical to the pre-toggle code: eager dict, no Future."""
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=FakeThreadPool(), prefetch_enabled=False, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_thread_pool_none_returns_dict_directly_even_if_toggle_on(self):
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=None, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_toggle_on_submits_to_thread_pool_for_sync_collections(self):
+        from concurrent.futures import Future
+
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=False, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert isinstance(result, Future)
+        assert result.result() == {1: item}
+        assert len(pool.submitted) == 1
+
+    def test_playlists_always_fetch_eagerly_regardless_of_toggle(self):
+        """Playlists need len() immediately in __init__, so they must never be deferred to the thread_pool."""
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=True, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+        assert not pool.submitted
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _collection_child_count (None childCount on blank/separator collections)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCollectionChildCount:
+    def test_none_childcount_treated_as_zero(self):
+        """Plex returns None for childCount on genuinely-empty separator collections - must not raise/propagate None."""
+        obj = SimpleNamespace(childCount=None)
+        assert CollectionBuilder._collection_child_count(obj) == 0
+
+    def test_real_childcount_passes_through_unchanged(self):
+        obj = SimpleNamespace(childCount=7)
+        assert CollectionBuilder._collection_child_count(obj) == 7
+
+    def test_zero_childcount_stays_zero(self):
+        obj = SimpleNamespace(childCount=0)
+        assert CollectionBuilder._collection_child_count(obj) == 0
