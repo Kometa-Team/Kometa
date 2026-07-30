@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from concurrent.futures import Future
 from datetime import datetime, timedelta
 
 from arrapi import ArrException
@@ -1212,7 +1213,7 @@ class CollectionBuilder:
         self.notification_additions = []
         self.notification_removals = []
         self.items = []
-        self.remove_item_map = {}
+        self._remove_item_map = {}
         self.schedule = ""
         self.beginning_count = 0
         self.default_percent = 50
@@ -1839,7 +1840,12 @@ class CollectionBuilder:
             if self.obj is not None:
                 self.exists = True
                 if self.sync or self.playlist:
-                    self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+                    # Playlists need len() below so they fetch eagerly; sync collections don't need this until add_to_collection(), so it's deferred - see property below.
+                    if not self.playlist and self.config.thread_pool is not None and self.config.general["threading"]["prefetch_collection_children"]:
+                        obj, smart_label_collection = self.obj, self.smart_label_collection
+                        self._remove_item_map = self.config.thread_pool.submit(lambda: {i.ratingKey: i for i in self.library.get_collection_items(obj, smart_label_collection)})
+                    else:
+                        self._remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
                 if not self.smart:
                     self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount or 0
         else:
@@ -5352,6 +5358,18 @@ class CollectionBuilder:
             except ArrException as e:
                 logger.stacktrace()
                 logger.error(f"Arr Error: {e}")
+
+    @property
+    def remove_item_map(self):
+        # Resolves the deferred thread_pool fetch (see __init__) on first real use - usually already done by
+        # the time add_to_collection() reaches it, since construction happens well ahead of the Plex-heavy tail.
+        if isinstance(self._remove_item_map, Future):
+            self._remove_item_map = self._remove_item_map.result()
+        return self._remove_item_map
+
+    @remove_item_map.setter
+    def remove_item_map(self, value):
+        self._remove_item_map = value
 
     @timings.timed("load_collection")
     def load_collection(self):

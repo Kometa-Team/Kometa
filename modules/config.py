@@ -841,6 +841,8 @@ class ConfigFile:
                 "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=1, int_min=1, save=False, do_print=False),
                 "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
                 "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),
+                # Phase 2 pilot: submit CollectionBuilder's remove_item_map fetch (a read-only, no-shared-state Plex call) to thread_pool instead of blocking __init__, resolved lazily on first use later in the run - default off, bake-off pending.
+                "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=False, save=False, do_print=False),
             },
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
