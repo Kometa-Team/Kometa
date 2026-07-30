@@ -1188,6 +1188,67 @@ class Plex(Library):
             raise Failed(f"Item Failed to Load: {e}")
         return item
 
+    def bulk_reload(self, items, force=False):
+        # Pre-warms cached_items via PMS's batched /library/metadata/{ids} endpoint (Probe 2: ~1.68x/item) so later reload()/item_reload() calls become cache hits instead of one request per item.
+        with timings.tag_context("item_reload_batch"):
+            pending = {}
+            for item in items:
+                rk = int(item.ratingKey)
+                if not force and rk in self.cached_items and self.cached_items[rk][1]:
+                    continue
+                pending[rk] = item
+            if not pending:
+                return
+            batch_size = 100
+            # Grouped by type first, not just chunked - _buildDetailsKey's include/exclude set can differ by class, same reasoning _group_items_by_type already uses for batchMultiEdits.
+            for group in self._group_items_by_type(list(pending.values())):
+                details_key = group[0]._buildDetailsKey(
+                    checkFiles=False,
+                    includeAllConcerts=False,
+                    includeBandwidths=False,
+                    includeChapters=False,
+                    includeChildren=False,
+                    includeConcerts=False,
+                    includeExternalMedia=False,
+                    includeExtras=False,
+                    includeFields=False,
+                    includeGeolocation=False,
+                    includeLoudnessRamps=False,
+                    includeMarkers=False,
+                    includeOnDeck=False,
+                    includePopularLeaves=False,
+                    includeRelated=False,
+                    includeRelatedCount=0,
+                    includeReviews=False,
+                    includeStations=False,
+                )
+                query_suffix = details_key.split("?", 1)[1] if "?" in details_key else ""
+                keys = [int(i.ratingKey) for i in group]
+                for i in range(0, len(keys), batch_size):
+                    chunk = keys[i : i + batch_size]
+                    id_str = ",".join(str(k) for k in chunk)
+                    batch_key = f"/library/metadata/{id_str}" + (f"?{query_suffix}" if query_suffix else "")
+                    try:
+                        data = self.PlexServer.query(batch_key)
+                    except (BadRequest, NotFound):
+                        data = None
+                    seen = set()
+                    if data is not None:
+                        for element in data:
+                            rk = utils.cast(int, element.attrib.get("ratingKey"))
+                            if rk in pending:
+                                pending[rk]._invalidateCacheAndLoadData(element)
+                                pending[rk]._autoReload = False
+                                self.cached_items[rk] = (pending[rk], True)
+                                for fk in [k for k in self.filter_attr_cache if k[0] == rk]:
+                                    del self.filter_attr_cache[fk]
+                                seen.add(rk)
+                    # Anything the batch didn't return (dropped invalid key, whole-chunk failure) falls back to the proven single-item path - never silently skipped.
+                    for rk in chunk:
+                        if rk not in seen:
+                            self.item_reload(pending[rk])
+                            self.cached_items[rk] = (pending[rk], True)
+
     def cached_item_attr(self, item, attr):
         # Memoizes a plain item.<attr> read for the rest of the run - safe because reload() above already clears this item's entries the moment a real reload happens, so a cached value is exactly as fresh as reading the attribute directly would be.
         cache_key = (item.ratingKey, attr)

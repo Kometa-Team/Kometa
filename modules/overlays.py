@@ -108,6 +108,8 @@ class Overlays:
             timings.registry.library_ctx = self.library.name
             # Items freshly composed this run - flushed every plex_bulk_edit_batch_size items (if set), else once at the end.
             overlay_label_items = []
+            # Pre-warms reload data for every item in this overlay pass in batched requests instead of one per item - see plex.py's bulk_reload().
+            self.library.bulk_reload([item for item, _ in key_to_overlays.values()], force=self.library.reapply_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
