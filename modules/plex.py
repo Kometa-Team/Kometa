@@ -952,7 +952,9 @@ class Plex(Library):
 
     @PLEX_RETRY
     def fetchItem(self, data):
-        return self.PlexServer.fetchItem(data)
+        # Tagged to confirm this is the mystery batchable-but-untagged single-item GET population found by the reload-origin census - see perf-results-log.md.
+        with timings.tag_context("fetch_item"):
+            return self.PlexServer.fetchItem(data)
 
     @PLEX_RETRY
     def fetchItems(self, uri_args):
@@ -2838,15 +2840,21 @@ class Plex(Library):
         return map_key, attrs
 
     def get_item_display_title(self, item_to_sort, sort=False):
+        # Only fetch the parent (show/artist) when sort actually needs its titleSort - previously fetched
+        # unconditionally and discarded on the sort=False path, which every caller but one uses; found via
+        # the 2026-07-27 reload-origin census (~2,669 wasted single-item GETs, ~19s of a 276s run).
         if isinstance(item_to_sort, Album):
-            artist = item_to_sort.artist()  # type: ignore[union-attr]
-            return f"{artist.titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.artist().titleSort} Album {item_to_sort.titleSort}"  # type: ignore[union-attr]
+            return f"{item_to_sort.parentTitle} Album {item_to_sort.title}"
         elif isinstance(item_to_sort, Season):
-            show = item_to_sort.show()
-            return f"{show.titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.show().titleSort} Season {item_to_sort.seasonNumber}"  # type: ignore[union-attr]
+            return f"{item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
         elif isinstance(item_to_sort, Episode):
-            show = item_to_sort.show()
-            return f"{show.titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.show().titleSort} {item_to_sort.seasonEpisode.upper()}"  # type: ignore[union-attr]
+            return f"{item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
         else:
             return item_to_sort.titleSort if sort else item_to_sort.title
 
