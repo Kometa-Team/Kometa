@@ -1158,10 +1158,27 @@ class Plex(Library):
             if not is_full or force:
                 self.item_reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
+                # A real reload means this item's data may have changed - drop any cached_item_attr() reads for it so check_filter re-reads fresh values.
+                for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                    del self.filter_attr_cache[key]
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
         return item
+
+    def cached_item_attr(self, item, attr):
+        # Memoizes a plain item.<attr> read for the rest of the run - safe because reload() above already clears this item's entries the moment a real reload happens, so a cached value is exactly as fresh as reading the attribute directly would be.
+        cache_key = (item.ratingKey, attr)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = getattr(item, attr)
+        return self.filter_attr_cache[cache_key]
+
+    def cached_item_subitems(self, item, method_name):
+        # Memoizes item.<method_name>() (seasons/episodes/albums/tracks) - same cache/purge contract as cached_item_attr() above. Kometa never adds/removes these itself, so a cached listing is exactly as fresh as a live re-fetch within one run.
+        cache_key = (item.ratingKey, method_name)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = list(getattr(item, method_name)())
+        return self.filter_attr_cache[cache_key]
 
     @PLEX_RETRY
     def edit_query(self, item, edits, advanced=False):
@@ -1423,6 +1440,89 @@ class Plex(Library):
                 self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
             logger.exorcise()
+
+    @staticmethod
+    def _group_items_by_type(items):
+        # batchMultiEdits() requires every item in one call to share the same Plex object type (mixed show/season raises BadRequest), so group before chunking.
+        groups = {}
+        order = []
+        for item in items:
+            item_type = getattr(item, "type", None)
+            if item_type not in groups:
+                groups[item_type] = []
+                order.append(item_type)
+            groups[item_type].append(item)
+        return [groups[t] for t in order]
+
+    def batch_add_label(self, items, label):
+        # Batches an additive-only label across items via batchMultiEdits, same mechanism as alter_collection.
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Adding label '{label}' to {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.addLabel(label)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
+
+    @staticmethod
+    def tag_diff(current_tags, add_tags=None, remove_tags=None, sync_tags=None):
+        # Same diffing logic edit_tags() uses per-item, extracted so callers can batch the result across items.
+        _add_tags = add_tags if add_tags else []
+        _remove_tags = remove_tags if remove_tags else []
+        _sync_tags = sync_tags if sync_tags else []
+        _add = [t for t in _add_tags + _sync_tags if t not in current_tags]
+        _remove = [t for t in current_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
+        return _add, _remove
+
+    def batch_edit_tags(self, items, attr, add_tags=None, remove_tags=None, locked=True):
+        # Batches label/genre add+remove across items; safe for a heterogeneous batch since Plex's batch edit is additive-per-item on add and targeted on remove.
+        if not items or (not add_tags and not remove_tags):
+            return
+        if attr not in ("label", "genre"):
+            raise NotImplementedError(f"batch_edit_tags: unsupported attr '{attr}' (only 'label'/'genre' verified so far)")
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing {attr} for {len(chunk)} items [{total_sent} so far]")
+                # addLabel/addGenre are only accessible after batchMultiEdits() is called, so access them inline here, not cached earlier.
+                self.Plex.batchMultiEdits(chunk)
+                if add_tags:
+                    if attr == "label":
+                        self.Plex.addLabel(list(add_tags), locked=locked)
+                    else:
+                        self.Plex.addGenre(list(add_tags), locked=locked)
+                if remove_tags:
+                    if attr == "label":
+                        self.Plex.removeLabel(list(remove_tags), locked=locked)
+                    else:
+                        self.Plex.removeGenre(list(remove_tags), locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
+
+    def batch_edit_field(self, items, field, value, locked=True):
+        # Batches a single scalar field to the same value across items via batchMultiEdits; only safe when every item in the batch shares one target value (e.g. item_critic/audience/user_rating, which set one value for a whole collection).
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing '{field}' for {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.editField(field, value, locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
@@ -2567,13 +2667,17 @@ class Plex(Library):
         return attribute, modifier, final
 
     def check_filters(self, item, filters_in, current_time):
+        already_reloaded = False  # Same item can't change genre/label/collection mid-call, so only the first such filter needs to force a network reload.
         for filter_method, filter_data in filters_in:
             filter_attr, modifier, filter_final = self.split(filter_method)
-            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time) is False:
+            tag_filter = filter_attr in ["genre", "label", "collection"]
+            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=tag_filter and not already_reloaded) is False:
                 return False
+            if tag_filter:
+                already_reloaded = True
         return True
 
-    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
+    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=None):
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"
@@ -2593,9 +2697,10 @@ class Plex(Library):
             return True
         if filter_attr not in builder.filters[item_type]:
             return True
-        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        force = filter_attr in ["genre", "label", "collection"] if force_reload is None else force_reload  # Fallback preserves old always-force behavior for any future direct caller that skips check_filters.
+        item = self.reload(item, force=force)
         if filter_attr in builder.date_filters:
-            if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
+            if util.is_date_filter(self.cached_item_attr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
             values = []
@@ -2613,21 +2718,23 @@ class Plex(Library):
                     if attr and attr not in values:
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
-                values = [loc for loc in item.locations if loc]
+                values = [loc for loc in self.cached_item_attr(item, "locations") if loc]
             elif filter_attr == "season_title":
                 values = [item.season().title]
             elif filter_attr == "show_title":
                 values = [item.show().title]
             else:
-                test_value = getattr(item, filter_actual)
+                # summary/editionTitle can be written by update_details with no cache eviction anywhere (unlike title/studio/content_rating's operations.py path, which does evict) - read live, not cached, for these two specifically.
+                test_value = getattr(item, filter_actual) if filter_actual in ("summary", "editionTitle") else self.cached_item_attr(item, filter_actual)
                 values = [test_value] if test_value else []
             if util.is_string_filter(values, modifier, filter_data):
                 return False
         elif filter_attr in builder.boolean_filters:
             filter_check = False
             if filter_attr == "has_collection":
-                filter_check = len(item.collections) > 0
+                filter_check = len(self.cached_item_attr(item, "collections")) > 0
             elif filter_attr == "has_edition":
+                # editionTitle can be written by update_details with no cache eviction anywhere - read live, not cached.
                 filter_check = True if item.editionTitle else False
             elif filter_attr == "has_stinger":
                 filter_check = False
@@ -2648,7 +2755,7 @@ class Plex(Library):
             if util.is_boolean_filter(filter_data, filter_check):
                 return False
         elif filter_attr == "history":
-            item_date = item.originallyAvailableAt
+            item_date = self.cached_item_attr(item, "originallyAvailableAt")
             if item_date is None:
                 return False
             elif filter_data == "day":
@@ -2667,13 +2774,13 @@ class Plex(Library):
                     return False
         elif filter_attr in ["seasons", "episodes", "albums", "tracks"]:
             if filter_attr == "seasons":
-                sub_items = item.seasons()
+                sub_items = self.cached_item_subitems(item, "seasons")
             elif filter_attr == "albums":
-                sub_items = item.albums()
+                sub_items = self.cached_item_subitems(item, "albums")
             elif filter_attr == "tracks":
-                sub_items = item.tracks()
+                sub_items = self.cached_item_subitems(item, "tracks")
             else:
-                sub_items = item.episodes()
+                sub_items = self.cached_item_subitems(item, "episodes")
             filters_in = []
             percentage = 60
             count = None
@@ -2702,33 +2809,41 @@ class Plex(Library):
                     if failures > failure_threshold:
                         return False
         elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-            test_number = []
-            if filter_attr in ["channels", "height", "width", "aspect"]:
-                test_number = 0
-                for media in item.media:
-                    attr = getattr(media, filter_actual)
-                    if attr and attr > test_number:
-                        test_number = attr
-            elif filter_attr == "stinger_rating":
-                test_number = None
-                if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
-                    test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
-            elif filter_attr == "versions":
-                test_number = len(item.media)
-            elif filter_attr == "audio_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([a.language for a in part.audioStreams()])
-            elif filter_attr == "subtitle_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([s.language for s in part.subtitleStreams()])
-            elif filter_attr == "duration":
-                test_number = getattr(item, filter_actual)
-                if test_number:
-                    test_number /= 60000
+            # channels/height/width/aspect/versions/audio_language/subtitle_language/duration are media-file properties Kometa never writes - cache them; ratings/tmdb_* stay uncached since update_item_details can write those mid-run.
+            cacheable = filter_attr in ("channels", "height", "width", "aspect", "versions", "audio_language", "subtitle_language", "duration")
+            cache_key = (item.ratingKey, f"media_number:{filter_attr}")
+            if cacheable and cache_key in self.filter_attr_cache:
+                test_number = self.filter_attr_cache[cache_key]
             else:
-                test_number = getattr(item, filter_actual)
+                test_number = []
+                if filter_attr in ["channels", "height", "width", "aspect"]:
+                    test_number = 0
+                    for media in item.media:
+                        attr = getattr(media, filter_actual)
+                        if attr and attr > test_number:
+                            test_number = attr
+                elif filter_attr == "stinger_rating":
+                    test_number = None
+                    if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
+                        test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
+                elif filter_attr == "versions":
+                    test_number = len(item.media)
+                elif filter_attr == "audio_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([a.language for a in part.audioStreams()])
+                elif filter_attr == "subtitle_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([s.language for s in part.subtitleStreams()])
+                elif filter_attr == "duration":
+                    test_number = getattr(item, filter_actual)
+                    if test_number:
+                        test_number /= 60000
+                else:
+                    test_number = getattr(item, filter_actual)
+                if cacheable:
+                    self.filter_attr_cache[cache_key] = test_number
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                 test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
@@ -2750,7 +2865,8 @@ class Plex(Library):
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
-                attrs = [attr.tag for attr in getattr(item, filter_actual)]
+                # genre/label/collection are covered by check_filters' force-reload above; the other 6 here are never written by Kometa anywhere, so caching is safe for the whole set.
+                attrs = [attr.tag for attr in self.cached_item_attr(item, filter_actual)]
             else:
                 raise Failed(f"Filter Error: filter: {filter_final} not supported")
             if modifier == ".regex":

@@ -73,6 +73,58 @@ class TestGetOverlayItems:
         assert result == []
 
 
+class TestScanOverlayBackupExtensions:
+    """Covers the listdir-snapshot helper that replaced up to 3 os.path.exists() calls per item
+    in run_overlays' per-item loop - see the perf-profiling project's steady-state findings."""
+
+    def test_empty_directory_returns_empty_dict(self, tmp_path):
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        assert o._scan_overlay_backup_extensions() == {}
+
+    def test_single_backup_file_found(self, tmp_path):
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        (tmp_path / "12345.png").write_bytes(b"fake")
+        result = o._scan_overlay_backup_extensions()
+        assert result == {"12345": {".png"}}
+
+    def test_multiple_ratingkeys_each_tracked_separately(self, tmp_path):
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        (tmp_path / "111.png").write_bytes(b"fake")
+        (tmp_path / "222.jpg").write_bytes(b"fake")
+        (tmp_path / "333.webp").write_bytes(b"fake")
+        result = o._scan_overlay_backup_extensions()
+        assert result == {"111": {".png"}, "222": {".jpg"}, "333": {".webp"}}
+
+    def test_same_ratingkey_multiple_formats_all_tracked(self, tmp_path):
+        # Shouldn't normally happen, but the original per-format exists() code removed all matches, not just the highest-precedence one - the replacement must too.
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        (tmp_path / "999.png").write_bytes(b"fake")
+        (tmp_path / "999.jpg").write_bytes(b"fake")
+        result = o._scan_overlay_backup_extensions()
+        assert result == {"999": {".png", ".jpg"}}
+
+    def test_non_backup_files_ignored(self, tmp_path):
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        (tmp_path / "12345.png").write_bytes(b"fake")
+        (tmp_path / "readme.txt").write_bytes(b"fake")
+        (tmp_path / "12345.tmp").write_bytes(b"fake")
+        result = o._scan_overlay_backup_extensions()
+        assert result == {"12345": {".png"}}
+
+    def test_extension_matching_is_exact_case(self, tmp_path):
+        # os.path.exists() on a case-sensitive filesystem never matched "12345.PNG" against ".png" - the replacement must not become case-insensitive and start matching it.
+        o = make_overlays()
+        o.library.overlay_backup = str(tmp_path)
+        (tmp_path / "12345.PNG").write_bytes(b"fake")
+        result = o._scan_overlay_backup_extensions()
+        assert result == {}
+
+
 class TestRemoveOverlay:
     @pytest.fixture
     def overlay(self):

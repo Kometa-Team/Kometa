@@ -3766,7 +3766,7 @@ class CollectionBuilder:
                                 try:
                                     season_obj = show_item.season(season=int(season_num))
                                     if self.playlist or self.builder_level == "episode":
-                                        items.extend(season_obj.episodes())
+                                        items.extend(pl_library.cached_item_subitems(season_obj, "episodes"))
                                     else:
                                         items.append(season_obj)
                                 except NotFound:
@@ -3822,9 +3822,9 @@ class CollectionBuilder:
                                             if self.builder_level == "episode" and isinstance(item, Show):
                                                 if tvdb_season is not None:
                                                     item = item.season(season=tvdb_season)
-                                                rating_keys.extend([k.ratingKey for k in item.episodes()])  # type: ignore[union-attr]
+                                                rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "episodes")])
                                             elif self.builder_level == "season" and isinstance(item, Show):
-                                                rating_keys.extend([k.ratingKey for k in item.seasons()])  # type: ignore[union-attr]
+                                                rating_keys.extend([k.ratingKey for k in self.library.cached_item_subitems(item, "seasons")])
                                         except Failed as e:
                                             logger.error(e)
                                 else:
@@ -3838,10 +3838,8 @@ class CollectionBuilder:
                             continue
                         try:
                             item = self.library.fetch_item(rk)
-                            if self.playlist and isinstance(item, Show):
-                                items.extend(item.episodes())
-                            elif self.playlist and isinstance(item, Season):
-                                items.extend(item.episodes())
+                            if self.playlist and isinstance(item, (Show, Season)):
+                                items.extend(self.library.cached_item_subitems(item, "episodes"))
                             elif self.builder_level == "movie" and not isinstance(item, Movie):
                                 logger.info(f"Item: {item} is not an Movie")
                             elif self.builder_level == "show" and not isinstance(item, Show):
@@ -4765,14 +4763,19 @@ class CollectionBuilder:
             logger.warning(f"TMDb Warning: unable to load {item_type} TMDb ID {tmdb_id}; skipping item: {e}")
 
     def _batch_item_label_edits(self, label_edits):
+        # Thin wrapper kept for call-site compatibility with upstream #3435; grouping logic now shared with genre via _batch_item_tag_edits.
+        self._batch_item_tag_edits("label", label_edits)
+
+    def _batch_item_tag_edits(self, attr, tag_edits):
+        # Same per-library/per-type grouping upstream #3435 built for labels, generalized so genre batching gets the same mixed-library/mixed-type safety.
         libraries = []
         for library in self.libraries or [self.library]:
             if all(library is not current for current in libraries):
                 libraries.append(library)
 
-        for operation, edits in label_edits.items():
+        for operation, edits in tag_edits.items():
             remove = operation == "remove"
-            for label, items in edits.items():
+            for tag, items in edits.items():
                 grouped_items = {}
                 fallback_items = []
                 for item in items:
@@ -4794,20 +4797,64 @@ class CollectionBuilder:
                 for (library_index, _), edit_items in grouped_items.items():
                     library = libraries[library_index]
                     batch_size = library.plex_bulk_edit_batch_size or len(edit_items)
-                    logger.info(f"Plex Label Update: {'Removing' if remove else 'Adding'} {label} {'from' if remove else 'to'} {len(edit_items)} Item{'s' if len(edit_items) != 1 else ''}")
+                    logger.info(f"Plex {attr.title()} Update: {'Removing' if remove else 'Adding'} {tag} {'from' if remove else 'to'} {len(edit_items)} Item{'s' if len(edit_items) != 1 else ''}")
                     for i in range(0, len(edit_items), batch_size):
                         batch_items = edit_items[i : i + batch_size]
                         library.Plex.batchMultiEdits(batch_items)
-                        library.Plex.editTags("label", label, remove=remove)
+                        library.Plex.editTags(attr, tag, remove=remove)
                         library._save_multi_edits_with_retry()
                         for item in batch_items:
                             library.cached_items.pop(item.ratingKey, None)
 
                 for item in fallback_items:
-                    logger.warning(f"Plex Warning: Unable to batch label update for {util.item_title(item)}; using an individual edit")
-                    self.library.tag_edit(item, "label", label, remove=remove)
+                    logger.warning(f"Plex Warning: Unable to batch {attr} update for {util.item_title(item)}; using an individual edit")
+                    self.library.tag_edit(item, attr, tag, remove=remove)
                     for library in libraries:
                         library.cached_items.pop(item.ratingKey, None)
+
+    def _batch_item_field_edits(self, field_edits):
+        # Same per-library/per-type grouping as _batch_item_tag_edits, for the single-value fields (item_critic/audience/user_rating) gains-clean batches.
+        libraries = []
+        for library in self.libraries or [self.library]:
+            if all(library is not current for current in libraries):
+                libraries.append(library)
+
+        for plex_attr, (value, items) in field_edits.items():
+            grouped_items = {}
+            fallback_items = []
+            for item in items:
+                section_id = getattr(item, "librarySectionID", None)
+                item_type = getattr(item, "type", None)
+                matching_library_index = None
+                if len(libraries) == 1 and section_id is None:
+                    matching_library_index = 0
+                else:
+                    for library_index, library in enumerate(libraries):
+                        if str(getattr(library.Plex, "key", "")) == str(section_id):
+                            matching_library_index = library_index
+                            break
+                if matching_library_index is not None:
+                    grouped_items.setdefault((matching_library_index, item_type), []).append(item)
+                else:
+                    fallback_items.append(item)
+
+            for (library_index, _), edit_items in grouped_items.items():
+                library = libraries[library_index]
+                batch_size = library.plex_bulk_edit_batch_size or len(edit_items)
+                logger.info(f"Plex Field Update: Setting {plex_attr} to {value} for {len(edit_items)} Item{'s' if len(edit_items) != 1 else ''}")
+                for i in range(0, len(edit_items), batch_size):
+                    batch_items = edit_items[i : i + batch_size]
+                    library.Plex.batchMultiEdits(batch_items)
+                    library.Plex.editField(plex_attr, value)
+                    library._save_multi_edits_with_retry()
+                    for item in batch_items:
+                        library.cached_items.pop(item.ratingKey, None)
+
+            for item in fallback_items:
+                logger.warning(f"Plex Warning: Unable to batch field update for {util.item_title(item)}; using an individual edit")
+                item.editField(plex_attr, value)
+                for library in libraries:
+                    library.cached_items.pop(item.ratingKey, None)
 
     def update_item_details(self):
         logger.info("")
@@ -4823,6 +4870,7 @@ class CollectionBuilder:
         sync_genres = self.item_details["item_genre.sync"] if "item_genre.sync" in self.item_details else None
 
         label_edits = {"add": {}, "remove": {}}
+        genre_edits = {"add": {}, "remove": {}}
         if "non_item_remove_label" in self.item_details:
             rk_compare = {item.ratingKey for item in self.items}
             for non_item in self.library.search(label=self.item_details["non_item_remove_label"], libtype=self.builder_level):
@@ -4837,6 +4885,13 @@ class CollectionBuilder:
 
         tmdb_paths = []
         tvdb_paths = []
+        # Label/genre edits for every item are deferred and batched once after the loop instead of one edit_tags() call per item.
+        # item_critic/audience/user_rating each set one fixed value for the whole collection, so items needing the change can be batched the same way.
+        rating_targets = {}
+        for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
+            if _rating in self.item_details:
+                rating_targets[plex.attribute_translation[_rating[5:]]] = (_rating, self.item_details[_rating])
+        rating_batch_items = {}
         for item in self.items:
             item = self.library.reload(item)
             current_labels = [la.tag for la in self.library.item_labels(item)]
@@ -4855,7 +4910,21 @@ class CollectionBuilder:
                     display.append(f"-{', -'.join(item_remove_tags)}")
                 if display:
                     logger.info(f"{item.title[:25]:<25} | Label | {', '.join(display)}")
-            self.library.edit_tags("genre", item, add_tags=add_genres, remove_tags=remove_genres, sync_tags=sync_genres)
+
+            if add_genres or remove_genres or sync_genres is not None:
+                current_genres = [ge.tag for ge in getattr(item, "genres", [])]
+                item_add_genres = [tag for tag in (add_genres or []) + (sync_genres or []) if tag not in current_genres]
+                item_remove_genres = [tag for tag in current_genres if (sync_genres is not None and tag not in (sync_genres or [])) or tag in (remove_genres or [])]
+                for operation, tags in [("add", item_add_genres), ("remove", item_remove_genres)]:
+                    for tag in tags:
+                        genre_edits[operation].setdefault(tag, []).append(item)
+                display = []
+                if item_add_genres:
+                    display.append(f"+{', +'.join(item_add_genres)}")
+                if item_remove_genres:
+                    display.append(f"-{', -'.join(item_remove_genres)}")
+                if display:
+                    logger.info(f"{item.title[:25]:<25} | Genre | {', '.join(display)}")
             if "item_edition" in self.item_details and getattr(item, "editionTitle", None) != self.item_details["item_edition"]:
                 if hasattr(item, "editEditionTitle"):
                     try:
@@ -4865,13 +4934,13 @@ class CollectionBuilder:
                         logger.error(f"Plex Error: Edition update failed for {item.title}: {e}")
                 else:
                     logger.error(f"Plex Error: Edition cannot be edited on {item.title}")
-            for _rating in ["item_critic_rating", "item_audience_rating", "item_user_rating"]:
-                if _rating in self.item_details:
-                    plex_attr = plex.attribute_translation[_rating[5:]]
-                    current_rating = getattr(item, plex_attr)
-                    if current_rating != self.item_details[_rating]:
-                        item.editField(plex_attr, self.item_details[_rating])
-                        logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {self.item_details[_rating]}")
+
+            for plex_attr, (_rating, target_rating) in rating_targets.items():
+                current_rating = getattr(item, plex_attr)
+                if current_rating != target_rating:
+                    rating_batch_items.setdefault(plex_attr, []).append(item)
+                    logger.info(f"{item.title[:25]:<25} | {_rating[5:].replace('_', ' ').title()} | {target_rating}")
+
             path = None
             if (
                 "item_radarr_tag" in self.item_details
@@ -4943,6 +5012,10 @@ class CollectionBuilder:
                 item.analyze()
 
         self._batch_item_label_edits(label_edits)
+        self._batch_item_tag_edits("genre", genre_edits)
+        field_edits = {plex_attr: (rating_targets[plex_attr][1], batch_items) for plex_attr, batch_items in rating_batch_items.items() if batch_items}
+        if field_edits:
+            self._batch_item_field_edits(field_edits)
 
         if self.library.Radarr and tmdb_paths:
             try:

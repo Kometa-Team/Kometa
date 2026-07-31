@@ -99,6 +99,7 @@ DBRepair
 de
 death
 deathday
+Dedupe
 deduped
 deneuve
 desc
@@ -261,6 +262,8 @@ mediastinger
 mediastingers
 mediux
 meisnate
+memoized
+memoizes
 metacritic
 metacriticuser
 metascore
@@ -385,6 +388,7 @@ ro
 rogerebert
 romani
 ruamel
+ruamel's
 runtime
 runtimeh
 runtimem

@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from typing import cast
+from unittest.mock import MagicMock
+
 import pytest
 
 import modules.builder  # noqa: F401
@@ -62,6 +65,49 @@ class TestYAML:
             YAML()
 
 
+class TestYAMLReadOnly:
+    """read_only=True swaps in ruamel's safe loader for files Kometa never save()s back out."""
+
+    def test_read_only_still_parses_content_correctly(self, tmp_path):
+        from modules.request import YAML
+
+        path = tmp_path / "data.yml"
+        path.write_text("collections:\n  Test:\n    key: value\n")
+        yaml = YAML(path=str(path), read_only=True)
+        assert yaml.data == {"collections": {"Test": {"key": "value"}}}
+
+    def test_read_only_save_raises_failed(self, tmp_path):
+        from modules.request import YAML
+        from modules.util import Failed
+
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        yaml = YAML(path=str(path), read_only=True)
+        with pytest.raises(Failed, match="read_only"):
+            yaml.save()
+
+    def test_read_only_input_data_save_raises_failed(self):
+        """input_data (no path) already can't write anywhere - read_only=True still guards it explicitly."""
+        from modules.request import YAML
+        from modules.util import Failed
+
+        yaml = YAML(input_data=b"a: 1\n", read_only=True)
+        with pytest.raises(Failed, match="read_only"):
+            yaml.save()
+
+    def test_default_not_read_only_can_still_save(self, tmp_path):
+        """Regression: the read_only change must not affect any existing read-write caller."""
+        from modules.request import YAML
+
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        yaml = YAML(path=str(path))
+        assert yaml.read_only is False
+        yaml.data["a"] = 2
+        yaml.save()
+        assert path.read_text() == "a: 2\n"
+
+
 def make_requests():
     """Bare Requests instance without hitting the network or cloudscraper."""
     from modules.request import Requests
@@ -84,6 +130,10 @@ class RecordingSession:
 
     def post(self, url, **kwargs):
         self.calls.append(("post", url, kwargs))
+        return self._response
+
+    def head(self, url, **kwargs):
+        self.calls.append(("head", url, kwargs))
         return self._response
 
 
@@ -153,6 +203,13 @@ class TestRetryPolicy:
 
         assert isinstance(Requests.post.retry.wait, wait_exponential)
 
+    def test_head_uses_exponential_backoff(self):
+        from tenacity import wait_exponential
+
+        from modules.request import Requests
+
+        assert isinstance(Requests.head.retry.wait, wait_exponential)
+
 
 class TestGetStream:
     def test_progress_logging_is_throttled(self, monkeypatch, tmp_path):
@@ -183,6 +240,199 @@ class TestGetStream:
         assert req.session.calls[0][2].get("timeout") == request_module.DEFAULT_TIMEOUT
 
 
+class _FakeImageResponse:
+    def __init__(self, status_code=200, content_type="image/png", content=b"fake-png-bytes"):
+        self.status_code = status_code
+        self.headers = {"Content-Type": content_type}
+        self.content = content
+
+
+def make_image_requests():
+    """Bare Requests instance with just the attributes get_image() touches, plus its get()/head() cast to MagicMock for mock-attribute access (same cast pattern test_plex.py uses for this pyright gotcha)."""
+    req = make_requests()
+    req._image_url_cache = {}
+    req.image_content_types = ["image/png", "image/jpeg", "image/webp"]
+    req.get = MagicMock()
+    req.head = MagicMock()
+    return req, cast(MagicMock, req.get), cast(MagicMock, req.head)
+
+
+class TestGetImageMemoization:
+    """get_image() used to hit the network on every call, even for a URL already fetched this run."""
+
+    def test_repeat_url_does_not_refetch(self):
+        req, mock_get, _ = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        first = req.get_image("https://example.com/badge.png")
+        second = req.get_image("https://example.com/badge.png")
+        assert first is second
+        assert mock_get.call_count == 1  # second call must be served from the memo, not a second fetch
+
+    def test_different_urls_both_fetch(self):
+        req, mock_get, _ = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/a.png")
+        req.get_image("https://example.com/b.png")
+        assert mock_get.call_count == 2
+
+    def test_failure_is_not_cached_and_retries_next_call(self):
+        from modules.util import Failed
+
+        req, mock_get, _ = make_image_requests()
+        mock_get.side_effect = [_FakeImageResponse(status_code=404), _FakeImageResponse(status_code=200)]
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/missing.png")
+        second = req.get_image("https://example.com/missing.png")
+        assert second.status_code == 200
+        assert mock_get.call_count == 2  # a failed lookup must not poison the cache - retried fresh next call
+
+    def test_non_image_content_type_not_cached(self):
+        from modules.util import Failed
+
+        req, mock_get, _ = make_image_requests()
+        mock_get.return_value = _FakeImageResponse(content_type="text/html")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image")
+        assert mock_get.call_count == 2
+
+    def test_cached_response_content_unchanged(self):
+        req, mock_get, _ = make_image_requests()
+        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        first = req.get_image("https://example.com/badge.png")
+        second = req.get_image("https://example.com/badge.png")
+        assert first.content == b"real-bytes"
+        assert second.content == b"real-bytes"
+
+    def test_session_argument_path_also_memoizes(self):
+        req, _, _unused_head = make_image_requests()
+        session = MagicMock()
+        session.get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", session=session)
+        req.get_image("https://example.com/badge.png", session=session)
+        assert session.get.call_count == 1
+
+
+class TestGetImageValidateOnly:
+    """validate_only=True (builder.py's url_poster/url_background/url_logo/url_square_art checks) uses HEAD instead of GET - same status/Content-Type validation, without downloading the body."""
+
+    def test_validate_only_uses_head_not_get(self):
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", validate_only=True)
+        assert mock_head.call_count == 1
+        assert mock_get.call_count == 0
+
+    def test_default_still_uses_get(self):
+        req, mock_get, mock_head = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png")
+        assert mock_get.call_count == 1
+        assert mock_head.call_count == 0
+
+    def test_validate_only_repeat_url_does_not_refetch(self):
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        first = req.get_image("https://example.com/badge.png", validate_only=True)
+        second = req.get_image("https://example.com/badge.png", validate_only=True)
+        assert first is second
+        assert mock_head.call_count == 1
+
+    def test_validate_only_raises_failed_on_404(self):
+        from modules.util import Failed
+
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse(status_code=404)
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/missing.png", validate_only=True)
+
+    def test_validate_only_raises_failed_on_non_image_content_type(self):
+        from modules.util import Failed
+
+        req, _, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse(content_type="text/html")
+        with pytest.raises(Failed):
+            req.get_image("https://example.com/not-an-image", validate_only=True)
+
+    def test_head_and_get_cache_entries_are_independent(self):
+        """A validate_only HEAD response (no body) must never be served back to a caller that needs real content, or vice versa."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        mock_get.return_value = _FakeImageResponse(content=b"real-bytes")
+        head_result = req.get_image("https://example.com/badge.png", validate_only=True)
+        get_result = req.get_image("https://example.com/badge.png")
+        assert head_result is not get_result
+        assert mock_head.call_count == 1
+        assert mock_get.call_count == 1
+
+    def test_session_argument_path_uses_head_when_validate_only(self):
+        req, _, _unused_head = make_image_requests()
+        session = MagicMock()
+        session.head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/badge.png", session=session, validate_only=True)
+        assert session.head.call_count == 1
+        assert session.head.call_args.kwargs.get("allow_redirects") is True
+        assert session.get.call_count == 0
+
+
+class TestGetImageStableAssetSkip:
+    """validate_only checks against Kometa's own shipped assets (Default-Images, People-Images-*) skip the network round-trip entirely - only arbitrary user url_poster/url_background/url_logo/url_square_art values need live validation."""
+
+    def test_kometa_team_url_skips_network_when_validate_only(self):
+        req, mock_get, mock_head = make_image_requests()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png", validate_only=True)
+        assert result is None
+        assert mock_head.call_count == 0
+        assert mock_get.call_count == 0
+
+    def test_kometa_team_people_images_url_skips_network_when_validate_only(self):
+        req, mock_get, mock_head = make_image_requests()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/People-Images-Portrait/master/A/Images/Actor.jpg", validate_only=True)
+        assert result is None
+        assert mock_head.call_count == 0
+        assert mock_get.call_count == 0
+
+    def test_kometa_team_url_still_fetches_when_not_validate_only(self):
+        """The skip is scoped to validate_only - a real poster/background/logo download must still hit the network."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_get.return_value = _FakeImageResponse()
+        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png")
+        assert result is not None
+        assert mock_get.call_count == 1
+        assert mock_head.call_count == 0
+
+    def test_arbitrary_user_url_still_validated(self):
+        """The staleness risk this validation exists to catch is arbitrary/user-supplied URLs - those must never be skipped."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://example.com/my-custom-poster.jpg", validate_only=True)
+        assert mock_head.call_count == 1
+
+    def test_other_github_org_url_still_validated(self):
+        """Only the Kometa-Team org prefix is trusted - a different GitHub org/user is not Kometa's own maintained content."""
+        req, mock_get, mock_head = make_image_requests()
+        mock_head.return_value = _FakeImageResponse()
+        req.get_image("https://raw.githubusercontent.com/some-other-user/posters/master/poster.jpg", validate_only=True)
+        assert mock_head.call_count == 1
+
+    def test_kometa_team_url_skip_not_cached(self):
+        """Skipped calls return None without touching _image_url_cache - nothing to memoize since no network call was made."""
+        req, mock_get, mock_head = make_image_requests()
+        req.get_image("https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/award/logos/BAFTA.png", validate_only=True)
+        assert req._image_url_cache == {}
+
+
+class TestHeadFollowsRedirects:
+    """requests defaults HEAD to not following redirects (unlike GET) - Requests.head() must override that so validate_only behaves the same as GET for a redirected URL."""
+
+    def test_head_passes_allow_redirects_true(self):
+        req = make_requests()
+        req.session = RecordingSession()  # pyright: ignore[reportAttributeAccessIssue]
+        req.head("http://example.com")
+        assert req.session.calls[0][2].get("allow_redirects") is True  # pyright: ignore[reportAttributeAccessIssue]
+
+
 class TestNoVerifySSL:
     """Per-session SSL opt-outs must not silence InsecureRequestWarning process-wide."""
 
@@ -198,6 +448,50 @@ class TestNoVerifySSL:
         scoped = req.create_session(verify_ssl=False)
         assert scoped.verify is False
         assert calls == []
+
+
+class _FakeYamlResponse:
+    def __init__(self, status_code=200, content=b"a: 1\n"):
+        self.status_code = status_code
+        self.content = content
+
+
+class TestGetYamlReadOnly:
+    """Requests.get_yaml() never sets a path (save() was already a no-op), so it always requests the fast read_only loader."""
+
+    def test_result_is_read_only(self):
+        req = make_requests()
+        req.get = MagicMock(return_value=_FakeYamlResponse())
+        result = req.get_yaml("https://example.com/data.yml")
+        assert result.read_only is True
+        assert result.data == {"a": 1}
+
+    def test_result_save_raises_failed(self):
+        from modules.util import Failed
+
+        req = make_requests()
+        req.get = MagicMock(return_value=_FakeYamlResponse())
+        result = req.get_yaml("https://example.com/data.yml")
+        with pytest.raises(Failed, match="read_only"):
+            result.save()
+
+
+class TestFileYamlReadOnlyPassthrough:
+    """Requests.file_yaml()'s read_only kwarg must reach the underlying YAML object unchanged in both directions."""
+
+    def test_read_only_true_passes_through(self, tmp_path):
+        req = make_requests()
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        result = req.file_yaml(str(path), read_only=True)
+        assert result.read_only is True
+
+    def test_default_is_not_read_only(self, tmp_path):
+        req = make_requests()
+        path = tmp_path / "data.yml"
+        path.write_text("a: 1\n")
+        result = req.file_yaml(str(path))
+        assert result.read_only is False
 
     def test_global_opt_out_disables_warnings(self, monkeypatch):
         import urllib3

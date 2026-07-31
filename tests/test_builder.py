@@ -77,6 +77,10 @@ class FakeTVDbLibrary:
             raise AssertionError(f"Unexpected rating key: {rating_key}")
         return self._show_item
 
+    def cached_item_subitems(self, item, method_name):
+        # Mirrors the real Plex.cached_item_subitems() contract (modules/plex.py) without the memoization - these tests don't depend on cache identity, just the same seasons()/episodes() results.
+        return list(getattr(item, method_name)())
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -549,6 +553,104 @@ class TestTvdbOutageResilience:
 
         get_tvdb_obj.assert_called_once_with(1)
         assert logger.warning_messages == []
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# update_item_details — rating batching
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRatingBatching:
+    # Rating batching goes through the same per-library/per-type grouping as label batching (see TestBatchedItemLabels
+    # / BatchLabelLibrary), so mixed-library playlists route through the right library's Plex connection.
+    @staticmethod
+    def _library(section_id=1):
+        return SimpleNamespace(
+            name="Test Library",
+            Plex=SimpleNamespace(key=section_id, batchMultiEdits=MagicMock(), editField=MagicMock()),
+            plex_bulk_edit_batch_size=None,
+            cached_items={},
+            _save_multi_edits_with_retry=MagicMock(),
+            reload=lambda item: item,
+            item_labels=lambda item: [],
+            show_rating_key_map={},
+            movie_rating_key_map={},
+            is_movie=True,
+            is_show=False,
+            Radarr=None,
+            Sonarr=None,
+        )
+
+    def test_only_items_needing_change_are_batched(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        needs_change = SimpleNamespace(ratingKey=1, title="Needs Change", rating=None, librarySectionID=1, type="movie")
+        already_set = SimpleNamespace(ratingKey=2, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[needs_change, already_set],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([needs_change])
+        library.Plex.editField.assert_called_once_with("rating", 5.5)
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_multiple_rating_attrs_batched_separately(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Example", rating=None, userRating=None, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5, "item_user_rating": 7.0},
+        )
+
+        builder.update_item_details()
+
+        assert library.Plex.editField.call_args_list == [
+            (("rating", 5.5),),
+            (("userRating", 7.0),),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 2
+
+    def test_no_items_need_change_skips_batch_call(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_not_called()
+        library.Plex.editField.assert_not_called()
+
+    def test_separates_playlist_libraries_for_ratings(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        first_library = self._library(section_id=1)
+        second_library = self._library(section_id=2)
+        first_item = SimpleNamespace(ratingKey=1, title="First", rating=None, librarySectionID=1, type="movie")
+        second_item = SimpleNamespace(ratingKey=2, title="Second", rating=None, librarySectionID=2, type="movie")
+        builder = make_builder(
+            library=first_library,
+            libraries=[first_library, second_library],
+            items=[first_item, second_item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        first_library.Plex.batchMultiEdits.assert_called_once_with([first_item])
+        second_library.Plex.batchMultiEdits.assert_called_once_with([second_item])
 
 
 # ═══════════════════════════════════════════════════════════════════════

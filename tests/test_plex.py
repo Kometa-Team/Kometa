@@ -8,6 +8,7 @@ manually-set attributes.
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -43,6 +44,7 @@ def make_plex(**attrs) -> Plex:
     plex.is_show = attrs.pop("is_show", False)
     plex.type = attrs.pop("type", "Movie")
     plex.cached_items = attrs.pop("cached_items", {})
+    plex.filter_attr_cache = attrs.pop("filter_attr_cache", {})
     plex.collection_names = attrs.pop("collection_names", [])
     plex.collection_files = attrs.pop("collection_files", [])
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
@@ -608,6 +610,585 @@ class TestReload:
         result = plex.reload(item)
         assert result is item
         plex.item_reload.assert_called_once_with(item)
+
+    def test_real_reload_clears_filter_attr_cache_for_that_item(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(filter_attr_cache={(101, "genres"): ["stale"], (202, "genres"): ["untouched"]})
+        plex.item_reload = MagicMock()
+        plex.reload(item, force=True)
+        assert (101, "genres") not in plex.filter_attr_cache
+        assert (202, "genres") in plex.filter_attr_cache, "a different item's cached entries must not be touched"
+
+    def test_cache_hit_reload_does_not_clear_filter_attr_cache(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, True)}, filter_attr_cache={(101, "genres"): ["Action"]})
+        plex.item_reload = MagicMock()
+        plex.reload(item)
+        plex.item_reload.assert_not_called()
+        assert plex.filter_attr_cache[(101, "genres")] == ["Action"]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# check_filters / check_filter reload dedup
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFiltersReloadDedup:
+    def test_first_tag_filter_forces_reload_second_does_not(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("genre", ["Action"]), ("label", ["Test"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        first_call, second_call = plex.check_filter.call_args_list
+        assert first_call.kwargs["force_reload"] is True
+        assert second_call.kwargs["force_reload"] is False
+
+    def test_non_tag_filter_never_forces_reload(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("title", ["Something"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        assert plex.check_filter.call_args_list[0].kwargs["force_reload"] is False
+
+    def test_mixed_filters_only_first_tag_filter_forces(self):
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item = make_plex_item()
+        filters_in = [("title", ["Something"]), ("genre", ["Action"]), ("collection", ["Marvel"])]
+
+        plex.check_filters(item, filters_in, None)
+
+        calls = plex.check_filter.call_args_list
+        assert calls[0].kwargs["force_reload"] is False  # title - never a tag filter
+        assert calls[1].kwargs["force_reload"] is True  # genre - first tag filter this call
+        assert calls[2].kwargs["force_reload"] is False  # collection - already reloaded this call
+
+    def test_dedup_state_does_not_leak_across_separate_calls(self):
+        """Each check_filters call is for a distinct item, so a fresh call must force again."""
+        plex = make_plex()
+        plex.check_filter = MagicMock(return_value=True)
+        item_a = make_plex_item(rating_key=1)
+        item_b = make_plex_item(rating_key=2)
+        filters_in = [("genre", ["Action"])]
+
+        plex.check_filters(item_a, filters_in, None)
+        plex.check_filters(item_b, filters_in, None)
+
+        assert plex.check_filter.call_args_list[0].kwargs["force_reload"] is True
+        assert plex.check_filter.call_args_list[1].kwargs["force_reload"] is True
+
+    def test_short_circuits_on_first_failing_filter(self):
+        """A failing filter still short-circuits check_filters (dedup change must not affect this)."""
+        plex = make_plex()
+        plex.check_filter = MagicMock(side_effect=[False, True])
+        item = make_plex_item()
+        filters_in = [("genre", ["Action"]), ("label", ["Test"])]
+
+        result = plex.check_filters(item, filters_in, None)
+
+        assert result is False
+        assert plex.check_filter.call_count == 1
+
+
+class TestCheckFilterForceReloadParam:
+    def _movie_item(self, genres=None, labels=None):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        item.genres = genres if genres is not None else [MagicMock(tag="Action")]
+        item.labels = labels if labels is not None else [MagicMock(tag="Test")]
+        return item
+
+    def test_force_reload_true_passed_through_to_reload(self):
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=True)
+
+        plex.reload.assert_called_once_with(item, force=True)
+
+    def test_force_reload_false_passed_through_to_reload(self):
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=False)
+
+        plex.reload.assert_called_once_with(item, force=False)
+
+    def test_force_reload_none_falls_back_to_old_always_force_behavior(self):
+        """Only a direct caller that bypasses check_filters would hit this - kept for safety."""
+        plex = make_plex()
+        item = self._movie_item()
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=None)
+
+        plex.reload.assert_called_once_with(item, force=True)
+
+    def test_force_reload_none_for_non_tag_filter_does_not_force(self):
+        plex = make_plex()
+        item = self._movie_item()
+        item.title = "Something"
+        plex.reload = MagicMock(return_value=item)
+
+        plex.check_filter(item, "title", "", "title", ["Something"], None, force_reload=None)
+
+        plex.reload.assert_called_once_with(item, force=False)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# cached_item_attr - the per-run memo for check_filter's plain attribute reads
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCachedItemAttr:
+    def test_first_read_hits_the_real_attribute(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, genres=["Action"])
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+
+    def test_repeat_read_returns_memoized_value_without_touching_the_item_again(self):
+        plex = make_plex()
+        item = MagicMock()
+        item.ratingKey = 1
+        item.genres = ["Action"]
+        plex.cached_item_attr(item, "genres")
+        item.genres = ["Changed"]  # if the memo weren't working, the second read would see this
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+
+    def test_different_items_get_independent_cache_entries(self):
+        plex = make_plex()
+        item_a = make_plex_item(rating_key=1, genres=["Action"])
+        item_b = make_plex_item(rating_key=2, genres=["Comedy"])
+        assert plex.cached_item_attr(item_a, "genres") == ["Action"]
+        assert plex.cached_item_attr(item_b, "genres") == ["Comedy"]
+
+    def test_different_attributes_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, genres=["Action"], labels=["Test"])
+        assert plex.cached_item_attr(item, "genres") == ["Action"]
+        assert plex.cached_item_attr(item, "labels") == ["Test"]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# cached_item_subitems - the per-run memo for check_filter's seasons/episodes/albums/tracks
+# filter branch (plex.py:2667-2675). Shares filter_attr_cache and reload()'s purge-on-force-reload
+# with cached_item_attr above - Kometa never adds/removes seasons/episodes/albums/tracks from an
+# item as part of its own writes, so this container listing carries no extra staleness risk beyond
+# what cached_item_attr already covers.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCachedItemSubitems:
+    def test_first_read_calls_the_real_method(self):
+        plex = make_plex()
+        ep1, ep2 = MagicMock(), MagicMock()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=[ep1, ep2]))
+        assert plex.cached_item_subitems(item, "episodes") == [ep1, ep2]
+        item.episodes.assert_called_once()
+
+    def test_repeat_read_returns_memoized_value_without_refetching(self):
+        plex = make_plex()
+        ep1 = MagicMock()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=[ep1]))
+        first = plex.cached_item_subitems(item, "episodes")
+        second = plex.cached_item_subitems(item, "episodes")
+        assert first == second == [ep1]
+        item.episodes.assert_called_once()  # second call must be served from the memo, not a refetch
+
+    def test_different_items_get_independent_cache_entries(self):
+        plex = make_plex()
+        item_a = make_plex_item(rating_key=1, seasons=MagicMock(return_value=["A"]))
+        item_b = make_plex_item(rating_key=2, seasons=MagicMock(return_value=["B"]))
+        assert plex.cached_item_subitems(item_a, "seasons") == ["A"]
+        assert plex.cached_item_subitems(item_b, "seasons") == ["B"]
+
+    def test_different_methods_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, seasons=MagicMock(return_value=["S1"]), episodes=MagicMock(return_value=["E1"]))
+        assert plex.cached_item_subitems(item, "seasons") == ["S1"]
+        assert plex.cached_item_subitems(item, "episodes") == ["E1"]
+
+    def test_covers_all_four_sub_item_methods(self):
+        plex = make_plex()
+        for method_name in ("seasons", "episodes", "albums", "tracks"):
+            item = make_plex_item(rating_key=1, **{method_name: MagicMock(return_value=["x"])})
+            assert plex.cached_item_subitems(item, method_name) == ["x"]
+
+    def test_reload_with_force_purges_subitems_cache_entry(self):
+        # Same purge mechanism cached_item_attr relies on - reload(force=True) must drop stale sub-item listings too.
+        plex = make_plex()
+        item = make_plex_item(rating_key=1, episodes=MagicMock(return_value=["stale"]))
+        plex.cached_item_subitems(item, "episodes")
+        assert (1, "episodes") in plex.filter_attr_cache
+        plex.item_reload = MagicMock()
+        plex.reload(item, force=True)
+        assert (1, "episodes") not in plex.filter_attr_cache
+
+    def test_check_filter_seasons_branch_uses_the_cache(self):
+        """End-to-end: the actual seasons/episodes/albums/tracks filter branch in check_filter goes through the memo, not a live call each time."""
+        from plexapi.video import Show
+
+        plex = make_plex()
+        item = MagicMock(spec=Show)
+        item.ratingKey = 1
+        item.seasons = MagicMock(return_value=[])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "seasons", "", "seasons", {"count": 0}, None, force_reload=False)
+        plex.check_filter(item, "seasons", "", "seasons", {"count": 0}, None, force_reload=False)
+        item.seasons.assert_called_once()
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# check_filter - which attribute reads are cached vs. always read live
+#
+# genre/label/collection are protected by check_filters' own force-reload dedup above; every other
+# cached attribute here is never written by Kometa anywhere, so a per-run memo changes nothing about
+# the value ever returned. summary/editionTitle are the one pair confirmed writable by update_details
+# with no cache eviction anywhere - these must stay live, not cached, and this must not silently
+# regress if someone "helpfully" converts them later.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFilterCachingScope:
+    def _movie_item(self, **extras):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        for key, value in extras.items():
+            setattr(item, key, value)
+        return item
+
+    def test_has_collection_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(collections=[MagicMock(tag="Marvel")])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "has_collection", "", "has_collection", True, None, force_reload=False)
+        item.collections = []  # if cached correctly, this change must not be seen on the next call
+        result = plex.check_filter(item, "has_collection", "", "has_collection", True, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) collections list"
+
+    def test_has_edition_is_never_cached(self):
+        # editionTitle is writable by update_details with no cache eviction - must always read live.
+        plex = make_plex()
+        item = self._movie_item(editionTitle="Director's Cut")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "has_edition", "", "has_edition", True, None, force_reload=False)
+        item.editionTitle = None
+        result = plex.check_filter(item, "has_edition", "", "has_edition", True, None, force_reload=False)
+        assert result is False, "has_edition must see the live value, not a stale cached one"
+        assert (1, "editionTitle") not in plex.filter_attr_cache
+
+    def test_summary_string_filter_is_never_cached(self):
+        plex = make_plex()
+        item = self._movie_item(summary="Original summary")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "summary", "", "summary", ["Original summary"], None, force_reload=False)
+        item.summary = "Changed summary"
+        plex.check_filter(item, "summary", "", "summary", ["Changed summary"], None, force_reload=False)
+        assert (1, "summary") not in plex.filter_attr_cache
+
+    def test_title_string_filter_is_cached(self):
+        # title is written only via operations.py's mass-edit path, which explicitly evicts cached_items - safe to cache here.
+        plex = make_plex()
+        item = self._movie_item(title="Original Title")
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "title", "", "title", ["Original Title"], None, force_reload=False)
+        assert (1, "title") in plex.filter_attr_cache
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# check_filter's number_filters branch (plex.py:2710-2745) - media-file-derived
+# properties (channels/height/width/aspect/versions/audio_language/subtitle_language/
+# duration) are cached under a "media_number:" key, since Kometa never writes them.
+# critic_rating/audience_rating/user_rating/tmdb_* share this branch's generic getattr
+# fallback and must stay live, since update_item_details can write those mid-run.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCheckFilterNumberCache:
+    def _movie_item(self, **extras):
+        from plexapi.video import Movie
+
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        for key, value in extras.items():
+            setattr(item, key, value)
+        return item
+
+    def test_versions_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(media=[MagicMock(), MagicMock()])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "versions", "", "versions", 2, None, force_reload=False)
+        item.media = [MagicMock()]  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "versions", "", "versions", 2, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) versions count"
+        assert (1, "media_number:versions") in plex.filter_attr_cache
+
+    def test_duration_is_cached(self):
+        plex = make_plex()
+        item = self._movie_item(duration=120000)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "duration", "", "duration", 2.0, None, force_reload=False)
+        item.duration = 60000  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "duration", "", "duration", 2.0, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) duration"
+
+    def test_channels_is_cached(self):
+        plex = make_plex()
+        media = MagicMock(audioChannels=6)
+        item = self._movie_item(media=[media])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "channels", "", "channels", 6, None, force_reload=False)
+        media.audioChannels = 2  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "channels", "", "channels", 6, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) channel count"
+
+    def test_audio_language_is_cached(self):
+        plex = make_plex()
+        stream = MagicMock(language="English")
+        part = MagicMock(audioStreams=MagicMock(return_value=[stream]))
+        media = MagicMock(parts=[part])
+        item = self._movie_item(media=[media])
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "audio_language", ".count_gte", "audio_language.count_gte", 1, None, force_reload=False)
+        part.audioStreams = MagicMock(return_value=[])  # if cached correctly, this change must not be seen
+        result = plex.check_filter(item, "audio_language", ".count_gte", "audio_language.count_gte", 1, None, force_reload=False)
+        assert result is True, "second call must still see the cached (pre-change) audio_language list"
+
+    def test_different_number_filters_on_the_same_item_get_independent_cache_entries(self):
+        plex = make_plex()
+        item = self._movie_item(media=[MagicMock()], duration=60000)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "versions", "", "versions", 1, None, force_reload=False)
+        plex.check_filter(item, "duration", "", "duration", 1.0, None, force_reload=False)
+        assert (1, "media_number:versions") in plex.filter_attr_cache
+        assert (1, "media_number:duration") in plex.filter_attr_cache
+
+    def test_critic_rating_is_never_cached(self):
+        # critic_rating shares this branch's generic getattr fallback but is written mid-run by
+        # update_item_details/batch_edit_field with no cache eviction - must always read live.
+        plex = make_plex()
+        item = self._movie_item(rating=9.0)
+        plex.reload = MagicMock(return_value=item)
+        plex.check_filter(item, "critic_rating", "", "critic_rating", 9.0, None, force_reload=False)
+        item.rating = 5.0
+        result = plex.check_filter(item, "critic_rating", "", "critic_rating", 5.0, None, force_reload=False)
+        assert result is True, "second call must see the live (changed) critic_rating, not a stale cached one"
+        assert (1, "media_number:critic_rating") not in plex.filter_attr_cache
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# tag_diff / batch_edit_tags
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestTagDiff:
+    def test_add_only(self):
+        add, remove = Plex.tag_diff(["Action"], add_tags=["Drama"])
+        assert add == ["Drama"]
+        assert remove == []
+
+    def test_add_skips_already_present(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], add_tags=["Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_remove_only(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], remove_tags=["Drama"])
+        assert add == []
+        assert remove == ["Drama"]
+
+    def test_remove_absent_tag_is_noop(self):
+        add, remove = Plex.tag_diff(["Action"], remove_tags=["Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_sync_removes_extraneous_and_adds_missing(self):
+        add, remove = Plex.tag_diff(["Action", "Horror"], sync_tags=["Action", "Drama"])
+        assert add == ["Drama"]
+        assert remove == ["Horror"]
+
+    def test_sync_with_nothing_to_change(self):
+        add, remove = Plex.tag_diff(["Action", "Drama"], sync_tags=["Action", "Drama"])
+        assert add == []
+        assert remove == []
+
+    def test_no_args_is_noop(self):
+        add, remove = Plex.tag_diff(["Action"])
+        assert add == []
+        assert remove == []
+
+
+class TestBatchEditTags:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_edit_tags([], "label", add_tags=["Overlay"])
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_noop_when_no_tags(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        item = make_plex_item()
+        plex.batch_edit_tags([item], "label")
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_rejects_unsupported_attr(self):
+        plex = make_plex()
+        item = make_plex_item()
+        with pytest.raises(NotImplementedError):
+            plex.batch_edit_tags([item], "director", add_tags=["Someone"])
+
+    def test_add_and_remove_labels_batched_once(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_edit_tags(items, "label", add_tags={"Overlay"}, remove_tags={"Stale"})
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.addLabel.assert_called_once_with(["Overlay"], locked=True)
+        mock_section.removeLabel.assert_called_once_with(["Stale"], locked=True)
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_add_only_does_not_call_remove_method(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item()]
+
+        plex.batch_edit_tags(items, "genre", add_tags={"Drama"})
+
+        mock_section.addGenre.assert_called_once_with(["Drama"], locked=True)
+        mock_section.removeGenre.assert_not_called()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_edit_tags(items, "label", add_tags={"Overlay"})
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
+
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: batchMultiEdits() raises BadRequest("Cannot mix items of different type") if a chunk isn't homogeneous.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_edit_tags(shows + seasons, "label", add_tags={"Overlay"})
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
+
+
+class TestBatchAddLabel:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_add_label([], "Overlay")
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_adds_label_to_all_items_in_one_batch(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_add_label(items, "Overlay")
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.addLabel.assert_called_once_with("Overlay")
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_add_label(items, "Overlay")
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
+
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: overlays.py accumulates overlay_label_items across a whole library run, which can span shows and seasons.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_add_label(shows + seasons, "Overlay")
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
+
+
+class TestBatchEditField:
+    def test_noop_when_no_items(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex.batch_edit_field([], "rating", 5.5)
+        mock_section.batchMultiEdits.assert_not_called()
+
+    def test_sets_same_value_for_whole_batch(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+
+        plex.batch_edit_field(items, "rating", 5.5)
+
+        mock_section.batchMultiEdits.assert_called_once_with(items)
+        mock_section.editField.assert_called_once_with("rating", 5.5, locked=True)
+        plex._save_multi_edits_with_retry.assert_called_once()
+
+    def test_chunks_large_batches(self):
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        items = [make_plex_item(rating_key=i) for i in range(150)]
+
+        plex.batch_edit_field(items, "rating", 5.5)
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        assert plex._save_multi_edits_with_retry.call_count == 2
+
+    def test_mixed_item_types_batched_separately(self):
+        # Regression: item_critic/audience/user_rating batches can span shows and seasons in the same library run.
+        plex = make_plex()
+        mock_section = cast(MagicMock, plex.Plex)
+        plex._save_multi_edits_with_retry = MagicMock()
+        shows = [make_plex_item(rating_key=i, type="show") for i in range(2)]
+        seasons = [make_plex_item(rating_key=i + 10, type="season") for i in range(2)]
+
+        plex.batch_edit_field(shows + seasons, "rating", 5.5)
+
+        assert mock_section.batchMultiEdits.call_count == 2
+        called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
+        assert called_chunks == [shows, seasons]
 
 
 # ═══════════════════════════════════════════════════════════════════════
