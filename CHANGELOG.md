@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add TVDB ID support to YamTrack builder, enabling import of TVDB show IDs from YamTrack lists and tracked pages alongside existing TMDb support.
 
 ### Fixed
+- Send IMDb's web client identifier with GraphQL requests so `imdb_search` and IMDb-backed defaults are not rejected with HTTP 403; report HTTP and non-JSON GraphQL responses as contextual IMDb errors instead of uncaught JSON decoding tracebacks. #3444
+- Report IMDb chart GraphQL and HTML fallback failures as contextual IMDb errors instead of raising `IndexError` when the fallback page does not contain `__NEXT_DATA__` chart data. #3446
 - Batch collection and playlist `item_label`, `item_label.remove`, `item_label.sync`, and `non_item_remove_label` updates through Plex multi-edit requests, grouped by library and media type and split by `plex_bulk_edit_batch_size`, instead of sending one label request per item.
 - Fail Letterboxd collection validation when a configured list or watchlist cannot be loaded, preventing sync mode from emptying an existing collection after a blocked or unavailable source request.
 - Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
