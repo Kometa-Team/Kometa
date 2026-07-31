@@ -120,6 +120,10 @@ mdblist:
 simkl:
   user_token:                      # Enter SIMKL User Token (Optional)
                                    # Get one at https://utilities.kometa.wiki/simkl-oauth
+serializd:
+  email:                           # Enter Serializd account email (Optional)
+  password:                        # Enter Serializd account password (Optional)
+  timeout: 60
 notifiarr:
   apikey:                          # Enter Notifiarr API Key (Optional)
 gotify:

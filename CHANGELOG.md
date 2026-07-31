@@ -7,7 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add Serializd as a connector
+- Add `serializd` as a genre source for shows and episodes for the mass metadata update operation, includes nanogenres.
+- Add `serializd` as a source for show and episode audience, critic, and user mass metadata updates, and `serializd_user` for episodes only.
+- Add `sync_watchlist_to_serializd` show-library operation to mark the Plex server owner's watched episodes as watched in Serializd.
+- Add builders: `serializd_list`, `serializd_watchlist`, `serializd_trending`, `serializd_popular`, and `serializd_featured`
+- Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
+
 ### Fixed
+
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 

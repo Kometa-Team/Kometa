@@ -284,6 +284,14 @@ class Cache:
                     key INTEGER PRIMARY KEY,
                     tvdb_id TEXT,
                     library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS serializd_watched_sync (
+                    key INTEGER PRIMARY KEY,
+                    account TEXT,
+                    tmdb_id INTEGER,
+                    season_number INTEGER,
+                    episode_number INTEGER,
+                    synced_at TEXT,
+                    UNIQUE(account, tmdb_id, season_number, episode_number))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS list_cache (
                     key INTEGER PRIMARY KEY,
                     list_type TEXT,
@@ -1249,6 +1257,25 @@ class Cache:
 
     def update_sonarr_adds(self, tvdb_id, library):
         return self.update_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
+
+    def query_serializd_watched(self, account, tmdb_id, season_number):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(
+                    "SELECT episode_number FROM serializd_watched_sync WHERE account = ? AND tmdb_id = ? AND season_number = ?",
+                    (account, tmdb_id, season_number),
+                )
+                return [int(row["episode_number"]) for row in cursor]
+
+    def update_serializd_watched(self, account, tmdb_id, season_number, episode_numbers):
+        synced_at = datetime.now().isoformat(timespec="seconds")
+        rows = [(account, tmdb_id, season_number, episode_number, synced_at) for episode_number in set(episode_numbers)]
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(
+                    "INSERT OR IGNORE INTO serializd_watched_sync(account, tmdb_id, season_number, episode_number, synced_at) VALUES(?, ?, ?, ?, ?)",
+                    rows,
+                )
 
     def update_arr_adds(self, t_id, library, arr, id_type):
         arr, id_type = sql_identifier(arr), sql_identifier(id_type)

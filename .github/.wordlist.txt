@@ -289,6 +289,8 @@ myplaylists
 myspecialdomain
 mza
 namespace
+nanogenre
+nanogenres
 nas
 natively
 ncis
@@ -402,6 +404,8 @@ scrollers
 scudlee
 sdtv
 semver
+Serializd
+serializd
 setuptools
 sha
 Sharkboy

@@ -52,6 +52,9 @@
     "yamtrack": {
       "$ref": "#/definitions/yamtrack-api"
     },
+    "serializd": {
+      "$ref": "#/definitions/serializd-api"
+    },
     "github": {
       "$ref": "#/definitions/github-api"
     },
@@ -873,6 +876,27 @@
         "apikey"
       ],
       "title": "tmdb"
+    },
+    "serializd-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "title": "serializd"
     },
     "tautulli-api": {
       "type": "object",
@@ -4402,7 +4426,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|serializd|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4789,6 +4813,10 @@
             "split_duplicates": {
               "type": "boolean"
             },
+            "sync_watchlist_to_serializd": {
+              "description": "Add episodes watched by the Plex server owner to the authenticated Serializd account. Serializd does not support importing Plex watch dates.",
+              "type": "boolean"
+            },
             "radarr_add_all": {
               "type": "boolean"
             },
@@ -4941,6 +4969,9 @@
                   "enum": [
                     "tmdb",
                     "tvdb",
+                    "serializd",
+                    "serializd_nanogenres",
+                    "serializd_all",
                     "imdb",
                     "omdb",
                     "anidb",
@@ -4966,6 +4997,9 @@
                         "enum": [
                           "tmdb",
                           "tvdb",
+                          "serializd",
+                          "serializd_nanogenres",
+                          "serializd_all",
                           "imdb",
                           "omdb",
                           "anidb",
@@ -5247,6 +5281,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
                     "unlock"
                   ]
                 },
@@ -5286,6 +5321,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
                           "unlock"
                         ]
                       },
@@ -5334,6 +5370,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
                     "unlock"
                   ]
                 },
@@ -5373,6 +5410,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
                           "unlock"
                         ]
                       },
@@ -5421,6 +5459,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
                     "unlock"
                   ]
                 },
@@ -5460,6 +5499,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
                           "unlock"
                         ]
                       },
@@ -5508,6 +5548,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
                     "unlock"
                   ]
                 },
@@ -5547,6 +5589,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
                           "unlock"
                         ]
                       },
@@ -5595,6 +5639,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
                     "unlock"
                   ]
                 },
@@ -5634,6 +5680,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
                           "unlock"
                         ]
                       },
@@ -5682,6 +5730,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
                     "unlock"
                   ]
                 },
@@ -5721,6 +5771,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
                           "unlock"
                         ]
                       },

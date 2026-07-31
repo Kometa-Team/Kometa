@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -42,12 +42,14 @@ all_builders = (
     + trakt.builders
     + tvdb.builders
     + yamtrack.builders
+    + serializd.builders
     + mdblist.builders
     + simkl.builders
     + radarr.builders
     + sonarr.builders
 )
 show_only_builders = [
+    *serializd.builders,
     "tmdb_network",
     "tmdb_show",
     "tmdb_show_details",
@@ -1632,6 +1634,8 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
+                elif method_name in serializd.builders:
+                    self._serializd(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
                 elif method_name in mdblist.builders:
@@ -3428,6 +3432,12 @@ class CollectionBuilder:
             if description:
                 self.summaries[method_name] = description
 
+    def _serializd(self, method_name, method_data):
+        if self.config.Serializd is None:
+            raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
+        for value in self.config.Serializd.validate_builder(method_name, method_data):
+            self.builders.append((method_name, value))
+
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
@@ -3578,6 +3588,8 @@ class CollectionBuilder:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "serializd" in method:
+            ids = self.config.Serializd.get_builder_ids(method, value)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:

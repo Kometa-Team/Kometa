@@ -79,6 +79,24 @@ class Operations:
         self.config = config
         self.library = library
 
+    def _sync_serializd_watched(self, item, tmdb_id):
+        watched_by_season = {}
+        for episode in self.library.cached_item_subitems(item, "episodes"):
+            if getattr(episode, "isWatched", False) or (getattr(episode, "viewCount", 0) or 0) > 0:
+                watched_by_season.setdefault(episode.seasonNumber, set()).add(episode.episodeNumber)
+
+        updated = False
+        if watched_by_season:
+            show_tmdb_id = tmdb_id()
+            for season_number, episode_numbers in sorted(watched_by_season.items()):
+                already_synced = set(self.config.Cache.query_serializd_watched(self.config.Serializd.cache_key, show_tmdb_id, season_number)) if self.config.Cache else set()
+                pending = sorted(episode_numbers - already_synced)
+                if pending and self.config.Serializd.log_watched_episodes(show_tmdb_id, season_number, pending):
+                    updated = True
+                    if self.config.Cache:
+                        self.config.Cache.update_serializd_watched(self.config.Serializd.cache_key, show_tmdb_id, season_number, pending)
+        logger.info(f"Serializd Watched | {'Synced' if updated else 'No Updates'}")
+
     def _should_be_deleted(self, col_in, labels_in, configured_in, managed_in, less_in, configured_names=None):
         # Return True if the collection matches the delete_collections criteria.
         if all((x is None for x in [configured_in, managed_in, less_in])):
@@ -133,6 +151,7 @@ class Operations:
         logger.debug(f"Mass Square Art Update: {self.library.mass_square_art_update}")
         logger.debug(f"Mass Collection Mode Update: {self.library.mass_collection_mode}")
         logger.debug(f"Split Duplicates: {self.library.split_duplicates}")
+        logger.debug(f"Sync Watchlist to Serializd: {self.library.sync_watchlist_to_serializd}")
         logger.debug(f"Radarr Add All Existing: {self.library.radarr_add_all_existing}")
         logger.debug(f"Radarr Remove by Tag: {self.library.radarr_remove_by_tag}")
         logger.debug(f"Sonarr Add All Existing: {self.library.sonarr_add_all_existing}")
@@ -293,6 +312,43 @@ class Operations:
                     if not _tmdb_obj:
                         raise Failed
                     return _tmdb_obj
+
+                _serializd_tmdb_id = None
+
+                def serializd_tmdb_id():
+                    nonlocal _serializd_tmdb_id
+                    if _serializd_tmdb_id is None:
+                        _serializd_tmdb_id = tmdb_id or False
+                        if not _serializd_tmdb_id and tvdb_id:
+                            _serializd_tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id) or False
+                        if not _serializd_tmdb_id and imdb_id:
+                            converted_id, converted_type = self.config.Convert.imdb_to_tmdb(imdb_id)
+                            if converted_type == "show":
+                                _serializd_tmdb_id = converted_id or False
+                    if not _serializd_tmdb_id:
+                        raise Failed(f"Serializd Error: No TMDb ID for {item.title}")
+                    return _serializd_tmdb_id
+
+                _serializd_rating = None
+
+                def serializd_rating():
+                    nonlocal _serializd_rating
+                    if not self.config.Serializd:
+                        raise Failed("Serializd Error: Serializd is not configured")
+                    if _serializd_rating is None:
+                        _serializd_rating = self.config.Serializd.get_show_rating(serializd_tmdb_id())
+                    return _serializd_rating
+
+                if self.library.sync_watchlist_to_serializd:
+                    if not self.library.is_show:
+                        logger.warning("Serializd Warning: sync_watchlist_to_serializd is only available for show libraries")
+                    elif not self.config.Serializd:
+                        logger.error("Serializd Error: sync_watchlist_to_serializd requires Serializd authentication")
+                    else:
+                        try:
+                            self._sync_serializd_watched(item, serializd_tmdb_id)
+                        except Failed as err:
+                            logger.error(err)
 
                 _tmdb_release_dates_obj = None
 
@@ -510,6 +566,11 @@ class Operations:
                                             found_rating = _ratings[_id]
                                         else:
                                             raise Failed
+                                    elif option == "serializd":
+                                        if self.library.is_movie:
+                                            logger.info(f"Serializd Ratings are only available for Shows: {item.title}")
+                                            raise Failed
+                                        found_rating = serializd_rating()
                                     elif str(option).startswith("plex"):
                                         ratings = self.library.get_ratings(item)
                                         try:
@@ -589,6 +650,20 @@ class Operations:
                                     new_genres = omdb_obj().genres  # noqa
                                 elif option == "tvdb":
                                     new_genres = tvdb_obj().genres  # noqa
+                                elif option in ["serializd", "serializd_nanogenres", "serializd_all"]:
+                                    if self.library.is_movie:
+                                        logger.info(f"Serializd Genres are only available for Shows: {item.title}")
+                                        raise Failed
+                                    if not self.config.Serializd:
+                                        logger.info("Serializd Error: Serializd is not configured")
+                                        raise Failed
+                                    serializd_id = serializd_tmdb_id()
+                                    if option == "serializd_nanogenres":
+                                        new_genres = self.config.Serializd.get_show_nanogenres(serializd_id)
+                                    elif option == "serializd_all":
+                                        new_genres = self.config.Serializd.get_show_all_genres(serializd_id)
+                                    else:
+                                        new_genres = self.config.Serializd.get_show_genres(serializd_id)
                                 elif str(option) in anidb.weights:
                                     new_genres = [str(t).title() for t, w in anidb_obj().tags.items() if w >= anidb.weights[str(option)]]  # noqa
                                 elif option == "mal":
@@ -1292,6 +1367,14 @@ class Operations:
                                                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
                                             elif imdb_id and option == "trakt":
                                                 found_rating = self.config.Trakt.get_episode_rating(imdb_id, ep.seasonNumber, ep.episodeNumber)
+                                            elif option == "serializd":
+                                                if not self.config.Serializd:
+                                                    raise Failed("Serializd Error: Serializd is not configured")
+                                                found_rating = self.config.Serializd.get_episode_rating(serializd_tmdb_id(), ep.seasonNumber, ep.episodeNumber)
+                                            elif option == "serializd_user":
+                                                if not self.config.Serializd:
+                                                    raise Failed("Serializd Error: Serializd is not configured")
+                                                found_rating = self.config.Serializd.get_episode_user_rating(serializd_tmdb_id(), ep.seasonNumber, ep.episodeNumber)
                                             else:
                                                 try:
                                                     found_rating = float(option)

@@ -8,7 +8,7 @@ hide:
         "OVERLAY_NAME": "Ratings", 
         "CODE_NAME": "ratings",
         "OVERLAY_LEVEL": "Movie, Show, Episode",
-        "DESCRIPTION": "an overlay based on ratings from various sources including IMDb, TMDb, MDBList, OMDb, AniDB, MAL, Trakt, and Rotten Tomatoes on each item within your library"
+        "DESCRIPTION": "an overlay based on ratings from various sources including IMDb, TMDb, MDBList, OMDb, AniDB, MAL, Trakt, Serializd, and Rotten Tomatoes on each item within your library"
     }'
     replace-tags='{"title-sub": "**Please read [Kometa Ratings Explained](../../kometa/guides/ratings.md) for more understanding on how Kometa interacts with ratings.**"}'
     end='<!--rec-sub-->'
@@ -17,6 +17,8 @@ hide:
 Requirements: Template Variables must be configured, otherwise this file will not apply any overlays.
 
 Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3: user`, use the [Mass Metadata Update Library Operation](../../config/operations.md#mass-metadata-update) to populate Plex's rating slots from your preferred source. Fetched sources do not require this step.
+
+`serializd` fetches Serializd's community rating directly and is available only for show- and episode-level overlays. It requires [Serializd authentication](../../config/serializd.md).
 
 {% 
     include-markdown "./../../templates/defaults/base/mid.md" 

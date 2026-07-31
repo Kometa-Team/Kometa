@@ -522,6 +522,35 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
                     ]
                 },
+                "serializd_list": {
+                    "description": "Serializd public list URL(s). Show libraries only.",
+                    "oneOf": [
+                        { "type": "string", "format": "uri", "pattern": "^https?://(www\\.)?serializd\\.com/list/(?:.+-)?[0-9]+/?$" },
+                        { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^https?://(www\\.)?serializd\\.com/list/(?:.+-)?[0-9]+/?$" } }
+                    ]
+                },
+                "serializd_watchlist": {
+                    "description": "Serializd username, 'me', or user watchlist URL(s). Show libraries only.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "serializd_trending": {
+                    "description": "Maximum number of shows from Serializd's Trending TV Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "serializd_popular": {
+                    "description": "Maximum number of shows from Serializd's Popular TV Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "serializd_featured": {
+                    "description": "Maximum number of shows from Serializd's Featured Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
+                },
                 "letterboxd_crew": {
                     "description": "Movies credited to a Letterboxd person in a selected role.",
                     "oneOf": [

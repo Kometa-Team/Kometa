@@ -310,6 +310,7 @@ def make_title_test_library(items):
 
     for flag in [
         "split_duplicates",
+        "sync_watchlist_to_serializd",
         "update_blank_track_titles",
         "assets_for_all",
         "respect_ignore_ids",
@@ -456,6 +457,7 @@ def make_mass_edit_library(items, **mass_update_overrides):
 
     for flag in [
         "split_duplicates",
+        "sync_watchlist_to_serializd",
         "update_blank_track_titles",
         "assets_for_all",
         "respect_ignore_ids",
@@ -499,6 +501,182 @@ def make_mass_edit_library(items, **mass_update_overrides):
 
 
 class TestFlushCombinedEdits:
+    def test_syncs_plex_watched_episodes_to_serializd_by_season(self):
+        ops_module.logger.reset_mock()
+        item = make_mass_edit_item(1, "Attack on Titan")
+        episodes = [
+            SimpleNamespace(seasonNumber=1, episodeNumber=1, isWatched=True, viewCount=1),
+            SimpleNamespace(seasonNumber=1, episodeNumber=2, isWatched=False, viewCount=0),
+            SimpleNamespace(seasonNumber=2, episodeNumber=1, isWatched=False, viewCount=2),
+        ]
+        library = make_mass_edit_library([item], sync_watchlist_to_serializd=True)
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        library.cached_item_subitems.return_value = episodes
+        config = MagicMock()
+        config.Cache = None
+        config.Serializd.log_watched_episodes.return_value = True
+
+        Operations(config=config, library=library).run_operations()
+
+        assert config.Serializd.log_watched_episodes.call_args_list == [
+            ((1429, 1, [1]),),
+            ((1429, 2, [1]),),
+        ]
+        ops_module.logger.info.assert_any_call("Serializd Watched | Synced")
+
+    def test_reports_no_updates_when_all_watched_episodes_are_cached(self):
+        ops_module.logger.reset_mock()
+        item = make_mass_edit_item(1, "Ted Lasso")
+        episode = SimpleNamespace(seasonNumber=3, episodeNumber=1, isWatched=True, viewCount=1)
+        library = make_mass_edit_library([item], sync_watchlist_to_serializd=True)
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (97546, None, None)
+        library.cached_item_subitems.return_value = [episode]
+        config = MagicMock()
+        config.Serializd.cache_key = "account-key"
+        config.Cache.query_serializd_watched.return_value = [1]
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.log_watched_episodes.assert_not_called()
+        ops_module.logger.info.assert_any_call("Serializd Watched | No Updates")
+
+    def test_skips_cached_serializd_episodes_and_caches_successes(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        episodes = [
+            SimpleNamespace(seasonNumber=1, episodeNumber=1, isWatched=True, viewCount=1),
+            SimpleNamespace(seasonNumber=1, episodeNumber=2, isWatched=True, viewCount=1),
+        ]
+        library = make_mass_edit_library([item], sync_watchlist_to_serializd=True)
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        library.cached_item_subitems.return_value = episodes
+        config = MagicMock()
+        config.Serializd.cache_key = "account-key"
+        config.Serializd.log_watched_episodes.return_value = True
+        config.Cache.query_serializd_watched.return_value = [1]
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.log_watched_episodes.assert_called_once_with(1429, 1, [2])
+        config.Cache.update_serializd_watched.assert_called_once_with("account-key", 1429, 1, [2])
+
+    def test_does_not_cache_failed_serializd_sync(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        episode = SimpleNamespace(seasonNumber=1, episodeNumber=1, isWatched=True, viewCount=1)
+        library = make_mass_edit_library([item], sync_watchlist_to_serializd=True)
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        library.cached_item_subitems.return_value = [episode]
+        config = MagicMock()
+        config.Serializd.cache_key = "account-key"
+        config.Serializd.log_watched_episodes.side_effect = ops_module.Failed("sync failed")
+        config.Cache.query_serializd_watched.return_value = []
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Cache.update_serializd_watched.assert_not_called()
+
+    def test_serializd_genres_for_show(self):
+        item = make_mass_edit_item(1, "Show A")
+        library = make_mass_edit_library([item], mass_genre_update=["serializd"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1396, None, "tt0903747")
+        config = MagicMock()
+        config.Serializd.get_show_genres.return_value = ["Drama", "Crime"]
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.get_show_genres.assert_called_once_with(1396)
+        library.Plex.editTags.assert_any_call("genre", "Crime", remove=False)
+        library.Plex.editTags.assert_any_call("genre", "Drama", remove=False)
+
+    def test_serializd_resolves_tvdb_id_to_tmdb_for_show(self):
+        item = make_mass_edit_item(1, "Arcane")
+        library = make_mass_edit_library([item], mass_genre_update=["serializd"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (None, 371028, None)
+        config = MagicMock()
+        config.Convert.tvdb_to_tmdb.return_value = 94605
+        config.Serializd.get_show_genres.return_value = ["Animation", "Drama"]
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Convert.tvdb_to_tmdb.assert_called_once_with(371028)
+        config.Serializd.get_show_genres.assert_called_once_with(94605)
+        library.Plex.editTags.assert_any_call("genre", "Animation", remove=False)
+        library.Plex.editTags.assert_any_call("genre", "Drama", remove=False)
+
+    def test_serializd_nanogenres_source(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        library = make_mass_edit_library([item], mass_genre_update=["serializd_nanogenres"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        config = MagicMock()
+        config.Serializd.get_show_nanogenres.return_value = ["Anime", "Monsters"]
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.get_show_nanogenres.assert_called_once_with(1429)
+        library.Plex.editTags.assert_any_call("genre", "Anime", remove=False)
+        library.Plex.editTags.assert_any_call("genre", "Monsters", remove=False)
+
+    def test_serializd_show_rating_source(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        library = make_mass_edit_library([item], mass_audience_rating_update=["serializd"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        config = MagicMock()
+        config.Serializd.get_show_rating.return_value = 9.07
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.get_show_rating.assert_called_once_with(1429)
+        library.Plex.editField.assert_any_call("audienceRating", "9.1")
+
+    def test_serializd_episode_rating_source(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        episode = SimpleNamespace(ratingKey=2, audienceRating=None, rating=None, userRating=None, seasonNumber=1, episodeNumber=1)
+        library = make_mass_edit_library([item], mass_episode_user_rating_update=["serializd"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        library.cached_item_subitems.return_value = [episode]
+        library.get_item_display_title.return_value = "S01E01"
+        config = MagicMock()
+        config.Serializd.get_episode_rating.return_value = 8.79
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.get_episode_rating.assert_called_once_with(1429, 1, 1)
+        library.Plex.editField.assert_any_call("userRating", "8.8")
+
+    def test_serializd_user_episode_rating_source(self):
+        item = make_mass_edit_item(1, "Attack on Titan")
+        episode = SimpleNamespace(ratingKey=2, audienceRating=None, rating=None, userRating=None, seasonNumber=1, episodeNumber=1)
+        library = make_mass_edit_library([item], mass_episode_user_rating_update=["serializd_user"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (1429, None, None)
+        library.cached_item_subitems.return_value = [episode]
+        library.get_item_display_title.return_value = "S01E01"
+        config = MagicMock()
+        config.Serializd.get_episode_user_rating.return_value = 9
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Serializd.get_episode_user_rating.assert_called_once_with(1429, 1, 1)
+        library.Plex.editField.assert_any_call("userRating", "9.0")
+
     def test_merges_multiple_attribute_types_into_one_put(self):
         """An item needing rating + audience rating + genre + content rating all changed in
         the same run gets ONE batchMultiEdits()/saveMultiEdits() PUT, not four."""

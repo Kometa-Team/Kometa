@@ -945,3 +945,8 @@ class TestDispatchTables:
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
         assert "trakt" in text, "all_builders missing trakt-related entries"
         assert "imdb" in text, "all_builders missing imdb-related entries"
+        assert "serializd_list" in all_builders
+        assert "serializd_watchlist" in all_builders
+        assert "serializd_trending" in all_builders
+        assert "serializd_popular" in all_builders
+        assert "serializd_featured" in all_builders
