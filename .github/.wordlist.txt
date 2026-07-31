@@ -406,6 +406,7 @@ sdtv
 semver
 Serializd
 serializd
+Serializd's
 setuptools
 sha
 Sharkboy
@@ -491,6 +492,7 @@ unionfs
 unittest
 unmanaged
 unplayed
+unwatched
 unprioritised
 unraid
 unresolvable
