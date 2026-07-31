@@ -242,11 +242,13 @@ class Trakt:
                     raise Failed(f"({response.status_code}) {response.reason}")
             elif response.status_code == 404 and ignore_404:
                 return None
-            elif response.status_code != 200:
+            elif not 200 <= response.status_code < 300:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
             else:
                 reauth_count = 0
+                if response.status_code == 204 or not response.content:
+                    return output_json
                 response_json = response.json()
                 logger.trace(f"Headers: {response.headers}")
                 logger.trace(f"Response: {response_json}")
