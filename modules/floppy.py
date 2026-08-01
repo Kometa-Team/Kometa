@@ -12,7 +12,7 @@ logger = util.logger
 
 builders = ["floppy_list", "floppy_list_details", "floppy_tracked"]
 list_pattern = re.compile(r"^/list/(?P<list_id>\d+)(?:/|$)")
-tracked_statuses = ["no_status", "completed", "in_progress", "planning", "paused", "dropped"]
+tracked_statuses = {"no_status": None, "planning": 0, "in_progress": 1, "paused": 2, "completed": 3, "dropped": 4}
 tracked_types = ["movie", "show", "season", "anime"]
 tracked_media_types = {"movie": "movie", "show": "tv", "season": "season", "anime": "anime"}
 
@@ -101,7 +101,7 @@ class Floppy:
             status_data = floppy_tracked
             type_data = None
 
-        statuses = self._validate_tracked_values(err_type, "status", status_data, tracked_statuses + ["all"])
+        statuses = self._validate_tracked_values(err_type, "status", status_data, list(tracked_statuses) + ["all"])
         if "all" in statuses:
             statuses = ["all"]
 
@@ -226,25 +226,33 @@ class Floppy:
         selected_types = {tracked_media_types[media_type] for media_type in tracked["type"]}
         selected_statuses = set(tracked["status"])
         include_all = "all" in selected_statuses
+        include_no_status = "no_status" in selected_statuses
 
         candidates = []
         try:
             for media_type in selected_types:
-                for status in ((None,) if include_all else selected_statuses):
+                statuses = (None,) if include_all or include_no_status else (tracked_statuses[status] for status in selected_statuses)
+                for status in statuses:
                     candidates.extend(self._media_items(media_type, status))
         except FloppyApiUnavailable:
             candidates = self._legacy_tracked_items(selected_types, selected_statuses, include_all)
+
+        if not include_all:
+            candidates = [row for row in candidates if self._tracked_status(row) in {tracked_statuses[status] for status in selected_statuses}]
 
         ids = []
         mal_ids = []
         seen = set()
         seen_mal = set()
         for row in candidates:
-            media_type = row.get("media_type")
+            data = row.get("item") or row
+            if row.get("tracked") is False:
+                continue
+            media_type = data.get("media_type")
             if media_type == "anime":
-                if row.get("source") == "mal":
+                if data.get("source") == "mal":
                     try:
-                        mal_id = int(row["media_id"])
+                        mal_id = int(data["media_id"])
                     except (KeyError, TypeError, ValueError):
                         continue
                     if mal_id not in seen_mal:
@@ -287,7 +295,7 @@ class Floppy:
             batch = payload if isinstance(payload, list) else payload.get("results", payload.get("items", payload.get("data", [])))
             if not isinstance(batch, list):
                 raise Failed("Floppy Error: Invalid media response from /api/v1/media")
-            items.extend(item.get("item", item) for item in batch if isinstance(item, dict))
+            items.extend(item for item in batch if isinstance(item, dict))
             if len(batch) < limit:
                 return items
             offset += limit
@@ -302,13 +310,23 @@ class Floppy:
         season = row.get("season_number") if media_type == "season" else None
         return media_type, source, str(media_id), str(season or "")
 
+    @staticmethod
+    def _tracked_status(row):
+        status = row.get("status")
+        if status is None:
+            return None
+        if isinstance(status, int):
+            return status
+        return tracked_statuses.get(str(status).strip().lower().replace(" ", "_"))
+
     @classmethod
     def _tracked_api_id(cls, row, is_movie):
-        media_type = row.get("media_type")
+        data = row.get("item") or row
+        media_type = data.get("media_type")
         api_type = "movie" if media_type == "movie" else "tv" if media_type in ("tv", "season") else None
         if api_type is None:
             return None
-        return cls._api_id({"media_type": api_type, "source": row.get("source"), "media_id": row.get("media_id")}, is_movie)
+        return cls._api_id({"media_type": api_type, "source": data.get("source"), "media_id": data.get("media_id")}, is_movie)
 
     def get_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         self._load_ratings()

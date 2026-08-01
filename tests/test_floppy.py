@@ -87,19 +87,26 @@ def test_tracked_validation_defaults_types_to_library():
 
 
 def test_tracked_api_filters_status_types_and_maps_ids():
-    base = "https://floppy.example/api/v1/media"
+    base = "https://floppy.example/api/v1/media/"
     payloads = {
-        f"{base}?media_type=movie&limit=100&offset=0&status=completed": [{"media_type": "movie", "source": "tmdb", "media_id": "550"}],
-        f"{base}?media_type=anime&limit=100&offset=0&status=completed": [{"media_type": "anime", "source": "mal", "media_id": "123"}],
+        f"{base}?media_type=movie&limit=100&offset=0&status=3": [{"tracked": True, "status": 3, "item": {"media_type": "movie", "source": "tmdb", "media_id": "550"}}],
+        f"{base}?media_type=anime&limit=100&offset=0&status=3": [{"tracked": True, "status": 3, "item": {"media_type": "anime", "source": "mal", "media_id": "123"}}],
     }
     floppy = Floppy(Requests(payloads), {"url": "https://floppy.example", "token": "secret"})
     tracked = {"status": ["completed"], "type": ["movie", "anime"]}
     assert floppy.get_tracked_ids(tracked, is_movie=True) == ([(550, "tmdb")], [123])
 
 
+def test_tracked_api_maps_floppy_media_response_envelope():
+    url = "https://floppy.example/api/v1/media/?media_type=movie&limit=100&offset=0&status=1"
+    response = {"results": [{"tracked": True, "status": 1, "item": {"media_type": "movie", "source": "tmdb", "media_id": "123"}}]}
+    floppy = Floppy(Requests({url: response}), {"url": "https://floppy.example", "token": "secret"})
+    assert floppy.get_tracked_ids({"status": ["in_progress"], "type": ["movie"]}, is_movie=True) == ([(123, "tmdb")], [])
+
+
 def test_tracked_api_all_uses_unfiltered_request():
     url = "https://floppy.example/api/v1/media/?media_type=movie&limit=100&offset=0"
-    floppy = Floppy(Requests({url: [{"media_type": "movie", "source": "tmdb", "media_id": "550"}]}), {"url": "https://floppy.example", "token": "secret"})
+    floppy = Floppy(Requests({url: [{"tracked": True, "status": 3, "item": {"media_type": "movie", "source": "tmdb", "media_id": "550"}}]}), {"url": "https://floppy.example", "token": "secret"})
     assert floppy.get_tracked_ids({"status": ["all"], "type": ["movie"]}, is_movie=True) == ([(550, "tmdb")], [])
 
 
