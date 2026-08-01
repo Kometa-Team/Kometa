@@ -177,25 +177,31 @@ class Floppy:
 
     def get_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         self._load_ratings()
+        ratings = self._ratings
+        if ratings is None:
+            raise Failed("Floppy Error: Ratings could not be loaded")
         candidates = [("tmdb", tmdb_id), ("tvdb", tvdb_id), ("imdb", imdb_id)]
         for source, media_id in candidates:
             if media_id is None:
                 continue
             key = (media_type, source, str(media_id), season, episode)
-            if key in self._ratings:
+            if key in ratings:
                 # Plex's API is 0-10, but its UI renders each whole API point as
                 # half a star. Round metadata writes to 0.5-star UI steps.
-                return float(Decimal(str(self._ratings[key])).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+                return float(Decimal(str(ratings[key])).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         raise Failed
 
     def get_overlay_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         """Return Floppy's original decimal rating for direct overlay display."""
         self._load_ratings()
+        ratings = self._ratings
+        if ratings is None:
+            raise Failed("Floppy Error: Ratings could not be loaded")
         for source, media_id in (("tmdb", tmdb_id), ("tvdb", tvdb_id), ("imdb", imdb_id)):
             if media_id is not None:
                 key = (media_type, source, str(media_id), season, episode)
-                if key in self._ratings:
-                    return self._ratings[key]
+                if key in ratings:
+                    return ratings[key]
         raise Failed
 
     def get_ids(self, list_data, is_movie=None):
