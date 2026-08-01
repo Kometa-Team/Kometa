@@ -154,7 +154,8 @@ jobs:
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add PART
-            git commit -m "${tag_name} Part: ${new_value}"
+            # [skip ci] prevents this PAT-authenticated push from re-triggering this same job via synchronize.
+            git commit -m "${tag_name} Part: ${new_value} [skip ci]"
             # HEAD is detached because checkout uses the immutable PR head SHA.
             git push origin "HEAD:refs/heads/${GITHUB_HEAD_REF}"
 
