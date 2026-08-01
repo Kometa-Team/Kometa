@@ -30,6 +30,10 @@ def get_message(json):
         priority = 4
         title = "Run Started"
         message = json["start_time"]
+    elif json["event"] == "trakt_pin":
+        priority = 5
+        title = "Trakt Authorization Required"
+        message = f"Visit: {json['verification_url']}\nCode: {json['user_code']}\nExpires in: {json['expires_in']} seconds"
     elif json["event"] == "version":
         priority = 2
         title = "New Version Available"
@@ -87,6 +91,7 @@ class Webhooks:
         self.run_start_webhooks = system_webhooks["run_start"] if "run_start" in system_webhooks else []
         self.run_end_webhooks = system_webhooks["run_end"] if "run_end" in system_webhooks else []
         self.delete_webhooks = system_webhooks["delete"] if "delete" in system_webhooks else []
+        self.trakt_pin_webhooks = system_webhooks["trakt_pin"] if "trakt_pin" in system_webhooks else []
         self.library = library
         self.notifiarr = notifiarr
         self.gotify = gotify
@@ -213,6 +218,10 @@ class Webhooks:
                 json["library_name"] = str(library)
             self._request(self.delete_webhooks, json)
 
+    def trakt_pin_hooks(self, verification_url, user_code, expires_in):
+        if self.trakt_pin_webhooks:
+            self._request(self.trakt_pin_webhooks, {"event": "trakt_pin", "verification_url": verification_url, "user_code": user_code, "expires_in": expires_in})
+
     def collection_hooks(self, webhooks, collection, poster_url=None, background_url=None, created=False, additions=None, removals=None, radarr=None, sonarr=None, playlist=False):
         if self.library:
             thumb = None
@@ -258,6 +267,9 @@ class Webhooks:
         elif json["event"] == "run_start":
             title = ":information_source: Kometa Has Started!"
             rows = [[("*Start Time*", json["start_time"])]]
+        elif json["event"] == "trakt_pin":
+            title = ":key: Trakt Authorization Required"
+            rows = [[("*Activation URL*", json["verification_url"]), ("*Code*", json["user_code"])], [(f"Expires in {json['expires_in']} seconds",)]]
         elif json["event"] == "version":
             title = "Kometa Has a New Version Available"
             rows = [[("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])], [(json["notes"],)]]
@@ -345,6 +357,9 @@ class Webhooks:
         elif json["event"] == "run_start":
             title = "Run Started"
             description = json["start_time"]
+        elif json["event"] == "trakt_pin":
+            title = "Trakt Authorization Required"
+            description = f"Visit {json['verification_url']} and enter code: {json['user_code']}\nExpires in {json['expires_in']} seconds"
         elif json["event"] == "version":
             title = "New Version Available"
             rows = [[("Current", json["current"]), ("Latest", json["latest"])], [("New Commits", json["notes"])]]

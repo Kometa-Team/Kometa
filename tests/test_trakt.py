@@ -9,7 +9,7 @@ import pytest
 
 import modules.builder  # noqa: F401
 import modules.trakt as trakt_module
-from modules.trakt import Trakt, base_url
+from modules.trakt import Trakt, auth_url, base_url
 from modules.util import Failed
 
 
@@ -61,8 +61,8 @@ class TestTraktAuthorization:
         trakt.requests = MagicMock()
         trakt.client_id = "client-id"
         trakt.client_secret = "client-secret"
-        trakt.pin = None
         trakt.authorization = {"refresh_token": "refresh-token"}
+        trakt.webhooks = MagicMock()
         return trakt
 
     @pytest.fixture(autouse=True)
@@ -71,21 +71,21 @@ class TestTraktAuthorization:
         monkeypatch.setattr("modules.trakt.logger", logger)
         return logger
 
-    def test_headless_pin_prompt_raises_actionable_trakt_error(self, adapter, monkeypatch):
+    def test_device_authorization_polls_until_approved(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Input Failed")))
+        monkeypatch.setattr("modules.trakt.time.sleep", MagicMock())
+        adapter._save = MagicMock(return_value=True)
+        device_response = MagicMock(status_code=200, json=MagicMock(return_value={"device_code": "device-code", "user_code": "USER-CODE", "verification_url": "https://auth.trakt.tv/activate", "expires_in": 300, "interval": 1}))
+        token = {"access_token": "token"}
+        token_response = MagicMock(status_code=200, json=MagicMock(return_value=token))
+        adapter.requests.post.side_effect = [device_response, token_response]
 
-        with pytest.raises(Failed) as exc_info:
-            adapter._authorization()
+        adapter._authorization()
 
-        assert str(exc_info.value) == "Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config."
-
-    def test_other_input_failures_are_unchanged(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Different input failure")))
-
-        with pytest.raises(Failed, match="Different input failure"):
-            adapter._authorization()
+        assert adapter.requests.post.call_args_list[0].args[0] == f"{auth_url}/oauth/device/code"
+        assert adapter.requests.post.call_args_list[1].args[0] == f"{auth_url}/oauth/device/token"
+        adapter._save.assert_called_once_with(token)
+        adapter.webhooks.trakt_pin_hooks.assert_called_once_with("https://auth.trakt.tv/activate", "USER-CODE", 300)
 
     def test_failed_refresh_logs_http_response(self, adapter, mock_trakt_logger):
         adapter.requests.post.return_value = MagicMock(status_code=403, reason="Forbidden")

@@ -18,6 +18,7 @@ webhooks:
   run_end: ntfy
   delete: apprise
   changes: https://myspecialdomain/kometa
+  trakt_pin: ntfy
 ```
 
 | Attribute                               |                   Global                   |                  Library                   |                 Collection                 |
@@ -28,6 +29,7 @@ webhooks:
 | [`run_end`](#run-end-notifications)     | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`delete`](#delete-notifications)       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`changes`](#changes-notifications)     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`trakt_pin`](#trakt-authorization-notifications) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-xmark:{ .red } | :fontawesome-solid-circle-xmark:{ .red } |
 
 * Each Attribute can be either a webhook url as a string or a list of webhooks urls.
 
@@ -206,5 +208,18 @@ The Changes Notification will be sent after each collection/playlist containing 
     "title": str,               // Title of the Sonarr Add
     "id":  int                  // TVDb ID of the Sonarr Add
   ]
+}
+```
+
+## Trakt Authorization Notifications
+
+The `trakt_pin` notification is sent when Device Code Flow needs approval. It includes a short-lived activation code; treat it as sensitive.
+
+```yaml
+{
+  "event": "trakt_pin",
+  "verification_url": str,
+  "user_code": str,
+  "expires_in": int
 }
 ```

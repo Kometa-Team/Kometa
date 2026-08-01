@@ -34,7 +34,6 @@ tmdb:
 trakt:
   client_id: YOUR_TRAKT_CLIENT_ID
   client_secret: YOUR_TRAKT_CLIENT_SECRET
-  pin: YOUR_TRAKT_PIN
 
 mal:
   client_id: YOUR_MAL_CLIENT_ID
@@ -118,6 +117,7 @@ webhooks:
   run_start: https://webhook.example.com/start
   run_end: https://webhook.example.com/end
   changes: https://webhook.example.com/changes
+  trakt_pin: ntfy
 
 # ============================================================================
 # GLOBAL SETTINGS (can be overridden per library)

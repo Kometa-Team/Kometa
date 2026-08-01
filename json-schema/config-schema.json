@@ -943,6 +943,12 @@
             "string",
             "null"
           ]
+        },
+        "trakt_pin": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [],
@@ -2354,12 +2360,6 @@
             {
               "type": "null"
             }
-          ]
-        },
-        "pin": {
-          "type": [
-            "string",
-            "null"
           ]
         }
       },

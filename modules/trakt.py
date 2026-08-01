@@ -6,12 +6,12 @@ from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wai
 
 from modules import util
 from modules.request import urlparse
-from modules.util import Failed, TimeoutExpired
+from modules.util import Failed
 
 logger = util.logger
 
-redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
 base_url = "https://api.trakt.tv"
+auth_url = "https://auth.trakt.tv"
 builders = [
     "trakt_list",
     "trakt_list_details",
@@ -56,9 +56,9 @@ class Trakt:
         self.client_id = params["client_id"]
         self.client_secret = params["client_secret"]
         self.force_refresh = params["force_refresh"]
-        self.pin = params["pin"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
+        self.webhooks = params["webhooks"]
         self.username = None
         logger.secret(self.client_secret)
         if self.force_refresh is True or not self._save(self.authorization):
@@ -134,30 +134,48 @@ class Trakt:
         return self._show_certifications
 
     def _authorization(self):
-        if self.pin:
-            pin = self.pin
-        else:
-            url = f"https://trakt.tv/oauth/authorize?response_type=code&redirect_uri={redirect_uri}&client_id={self.client_id}"
-            logger.info(f"Navigate to: {url}")
-            logger.info("If you get an OAuth error your client_id or client_secret is invalid")
-            webbrowser.open(url, new=2)
-            try:
-                pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
-            except TimeoutExpired:
-                raise Failed("Input Timeout: Trakt pin required.")
-            except Failed as e:
-                if str(e) == "Input Failed":
-                    raise Failed("Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config.") from e
-                raise
-        if not pin:
-            raise Failed("Trakt Error: Trakt pin required.")
-        json_data = {"code": pin, "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "authorization_code"}
-        response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
+        response = self.requests.post(f"{auth_url}/oauth/device/code", json={"client_id": self.client_id}, headers={"Content-Type": "application/json"})
         if response.status_code != 200:
             raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
-        response_json = response.json()
-        logger.trace(response_json)
-        if not self._save(response_json):
+        device = response.json()
+        required = ("device_code", "user_code", "verification_url", "expires_in", "interval")
+        missing = [key for key in required if key not in device]
+        if missing:
+            raise Failed(f"Trakt Error: Device authorization response is missing {', '.join(missing)}")
+        logger.info(f"Visit {device['verification_url']} and enter code: {device['user_code']}")
+        try:
+            self.webhooks.trakt_pin_hooks(device["verification_url"], device["user_code"], device["expires_in"])
+        except Failed as e:
+            logger.warning(f"Trakt Warning: Unable to send authorization webhook: {e}")
+        webbrowser.open(device["verification_url"], new=2)
+        interval = max(int(device["interval"]), 1)
+        expires_at = time.monotonic() + int(device["expires_in"])
+        token_response = None
+        while time.monotonic() < expires_at:
+            time.sleep(interval)
+            token_response = self.requests.post(
+                f"{auth_url}/oauth/device/token",
+                json={"code": device["device_code"], "client_id": self.client_id, "client_secret": self.client_secret},
+                headers={"Content-Type": "application/json"},
+            )
+            if token_response.status_code == 200:
+                break
+            if token_response.status_code == 400:
+                continue
+            if token_response.status_code == 429:
+                interval += 5
+                logger.debug(f"Trakt Error: Device authorization polling too quickly; retrying in {interval} seconds")
+                continue
+            messages = {
+                404: "The device code is invalid.",
+                409: "The device code has already been used.",
+                410: "The device code expired; start authorization again.",
+                418: "Trakt authorization was denied.",
+            }
+            raise Failed(f"Trakt Error: {messages.get(token_response.status_code, f'({token_response.status_code}) {token_response.reason}')}")
+        if token_response is None or token_response.status_code != 200:
+            raise Failed("Trakt Error: Device authorization timed out; start authorization again.")
+        if not self._save(token_response.json()):
             raise Failed("Trakt Error: New Authorization Failed")
 
     def _check(self, authorization=None):
@@ -176,8 +194,8 @@ class Trakt:
     def _refresh(self):
         if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
-            json_data = {"refresh_token": self.authorization["refresh_token"], "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "refresh_token"}
-            response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
+            json_data = {"refresh_token": self.authorization["refresh_token"], "client_id": self.client_id, "client_secret": self.client_secret, "grant_type": "refresh_token"}
+            response = self.requests.post(f"{auth_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
             if response.status_code != 200:
                 logger.debug(f"Trakt Error: Access Token Refresh Failed: ({response.status_code}) {response.reason}")
                 return False
@@ -188,7 +206,6 @@ class Trakt:
         if authorization and self._check(authorization):
             if self.authorization != authorization and not self.read_only:
                 yaml = self.requests.file_yaml(self.config_path)
-                yaml.data["trakt"]["pin"] = None
                 yaml.data["trakt"]["authorization"] = {
                     "access_token": authorization["access_token"],
                     "token_type": authorization["token_type"],

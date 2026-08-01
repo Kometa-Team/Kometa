@@ -380,17 +380,15 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 ### Errors & Issues
 
-??? question "Why doesn't Kometa let me enter my authentication information for Trakt/MAL?"
+??? question "How do I authenticate Trakt or MyAnimeList?"
 
-    Kometa needs to run in an interactive mode which allows the user to enter information (such as the Trakt/MAL PIN) as part of the authentication process. 
-    This can prove troublesome in some environments, particularly NAS.
+    Trakt uses Device Code Flow. Kometa displays an activation URL and short code; open the URL on any device, enter the code, and approve access. On a headless server, configure the optional [`trakt_pin` webhook](../config/webhooks.md#trakt-authorization-notifications) to receive the code through ntfy or another supported provider.
     
-    Chazlarson has developed an online tool which will allow you to perform the authentication of both Trakt and MAL outside of Kometa, 
-    and will then provide you the completed code block to paste into your config.yml.
+    MyAnimeList authentication can be completed through the online utility, which provides a completed configuration block to paste into `config.yml`.
     
     The scripts can be found here. Click the green play button, wait a little bit, then follow the prompts. 
 
-    [Trakt & MyAnimeList Authentication](../../config/authentication)
+    [MyAnimeList Authentication](../../config/authentication)
 
 ??? question "Why am I seeing "(500) Internal Server Error" in my log files?"
 

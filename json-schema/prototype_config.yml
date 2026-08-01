@@ -457,6 +457,7 @@ webhooks:                        # Can be individually specified per library as 
   run_start:
   run_end:
   changes:
+  trakt_pin:
 plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: Enter Plex Token
@@ -526,7 +527,6 @@ sonarr:                          # Can be individually specified per library as 
 trakt:
   client_id: Enter Trakt Client ID
   client_secret: Enter Trakt Client Secret
-  pin:
   authorization:
     # everything below is autofilled by the script
     access_token:
