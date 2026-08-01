@@ -17,6 +17,10 @@ tracked_types = ["movie", "show", "season", "anime"]
 tracked_media_types = {"movie": "movie", "show": "tv", "season": "season", "anime": "anime"}
 
 
+class FloppyApiUnavailable(Failed):
+    """Raised when an optional Floppy API route is unavailable."""
+
+
 class Floppy:
     def __init__(self, requests, params):
         self.requests = requests
@@ -45,10 +49,10 @@ class Floppy:
         if response.status_code == 401:
             raise Failed("Floppy Error: Invalid or missing API token")
         if response.status_code == 403:
-            raise Failed("Floppy Error: This list is private or the API token does not have access")
+            raise Failed(f"Floppy Error: Access denied for {url}")
         if response.status_code == 404:
             if "/api/" in url:
-                raise Failed(f"Floppy Error: API endpoint not found at {url}; this Floppy version may not support the media API")
+                raise FloppyApiUnavailable(f"Floppy Error: API endpoint not found at {url}")
             raise Failed(f"Floppy Error: List not found at {url}")
         if response.status_code >= 400:
             raise Failed(f"Floppy Error: {response.status_code} on {url}")
@@ -228,9 +232,7 @@ class Floppy:
             for media_type in selected_types:
                 for status in ((None,) if include_all else selected_statuses):
                     candidates.extend(self._media_items(media_type, status))
-        except Failed as e:
-            if "API endpoint not found" not in str(e):
-                raise
+        except FloppyApiUnavailable:
             candidates = self._legacy_tracked_items(selected_types, selected_statuses, include_all)
 
         ids = []
@@ -282,7 +284,7 @@ class Floppy:
             if status is not None:
                 params["status"] = status
             payload = self._request(f"{self.url}/api/v1/media/", params=params)
-            batch = payload if isinstance(payload, list) else payload.get("results", payload.get("items", []))
+            batch = payload if isinstance(payload, list) else payload.get("results", payload.get("items", payload.get("data", [])))
             if not isinstance(batch, list):
                 raise Failed("Floppy Error: Invalid media response from /api/v1/media")
             items.extend(item.get("item", item) for item in batch if isinstance(item, dict))
