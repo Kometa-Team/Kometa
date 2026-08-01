@@ -200,7 +200,7 @@ class FakeLangLibrary:
         self.get_tags_calls = []
         self.get_search_choices_calls = []
 
-    def get_search_choices(self, attribute, title=True, name_pairs=False):
+    def get_search_choices(self, attribute, title=True, name_pairs=False, libtype=None):
         self.get_search_choices_calls.append(attribute)
         return self.search_choices.get(attribute, {}), self.names.get(attribute, [])
 

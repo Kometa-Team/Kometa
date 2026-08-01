@@ -4222,7 +4222,7 @@ class CollectionBuilder:
             else:
                 final_values = util.get_list(data, trim=False) or []
             is_plex_search_language = plex_search and attribute in ("audio_language", "subtitle_language")
-            search_choices, names = ({}, []) if is_plex_search_language else self.library.get_search_choices(attribute, title=not plex_search)
+            search_choices, names = ({}, []) if is_plex_search_language else self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
             valid_list = []
             for fvalue in final_values:
                 if is_plex_search_language:
