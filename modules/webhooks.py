@@ -33,7 +33,7 @@ def get_message(json):
     elif json["event"] == "trakt_pin":
         priority = 5
         title = "Trakt Authorization Required"
-        message = f"Visit: {json['verification_url']}\nCode: {json['user_code']}\nExpires in: {json['expires_in']} seconds"
+        message = f"Open and approve: {json['verification_url']}\nExpires in: {json['expires_in']} seconds"
     elif json["event"] == "version":
         priority = 2
         title = "New Version Available"
@@ -269,7 +269,7 @@ class Webhooks:
             rows = [[("*Start Time*", json["start_time"])]]
         elif json["event"] == "trakt_pin":
             title = ":key: Trakt Authorization Required"
-            rows = [[("*Activation URL*", json["verification_url"]), ("*Code*", json["user_code"])], [(f"Expires in {json['expires_in']} seconds",)]]
+            rows = [[("*Activation URL*", json["verification_url"])], [(f"Expires in {json['expires_in']} seconds",)]]
         elif json["event"] == "version":
             title = "Kometa Has a New Version Available"
             rows = [[("*Current Version*", json["current"]), ("*Latest Version*", json["latest"])], [(json["notes"],)]]
@@ -359,7 +359,7 @@ class Webhooks:
             description = json["start_time"]
         elif json["event"] == "trakt_pin":
             title = "Trakt Authorization Required"
-            description = f"Visit {json['verification_url']} and enter code: {json['user_code']}\nExpires in {json['expires_in']} seconds"
+            description = f"Open {json['verification_url']} and approve authorization.\nExpires in {json['expires_in']} seconds"
         elif json["event"] == "version":
             title = "New Version Available"
             rows = [[("Current", json["current"]), ("Latest", json["latest"])], [("New Commits", json["notes"])]]

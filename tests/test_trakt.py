@@ -85,7 +85,7 @@ class TestTraktAuthorization:
         assert adapter.requests.post.call_args_list[0].args[0] == f"{auth_url}/oauth/device/code"
         assert adapter.requests.post.call_args_list[1].args[0] == f"{auth_url}/oauth/device/token"
         adapter._save.assert_called_once_with(token)
-        adapter.webhooks.trakt_pin_hooks.assert_called_once_with("https://auth.trakt.tv/activate", "USER-CODE", 300)
+        adapter.webhooks.trakt_pin_hooks.assert_called_once_with("https://auth.trakt.tv/activate/USER-CODE", "USER-CODE", 300)
 
     def test_failed_refresh_logs_http_response(self, adapter, mock_trakt_logger):
         adapter.requests.post.return_value = MagicMock(status_code=403, reason="Forbidden")

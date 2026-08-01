@@ -1,6 +1,7 @@
 import time
 import webbrowser
 from typing import Any
+from urllib.parse import quote
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 
@@ -142,12 +143,13 @@ class Trakt:
         missing = [key for key in required if key not in device]
         if missing:
             raise Failed(f"Trakt Error: Device authorization response is missing {', '.join(missing)}")
-        logger.info(f"Visit {device['verification_url']} and enter code: {device['user_code']}")
+        activation_url = f"{device['verification_url'].rstrip('/')}/{quote(str(device['user_code']), safe='')}"
+        logger.info(f"Open {activation_url} and approve Trakt authorization.")
         try:
-            self.webhooks.trakt_pin_hooks(device["verification_url"], device["user_code"], device["expires_in"])
+            self.webhooks.trakt_pin_hooks(activation_url, device["user_code"], device["expires_in"])
         except Failed as e:
             logger.warning(f"Trakt Warning: Unable to send authorization webhook: {e}")
-        webbrowser.open(device["verification_url"], new=2)
+        webbrowser.open(activation_url, new=2)
         interval = max(int(device["interval"]), 1)
         expires_at = time.monotonic() + int(device["expires_in"])
         token_response = None

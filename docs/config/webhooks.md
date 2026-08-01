@@ -213,7 +213,7 @@ The Changes Notification will be sent after each collection/playlist containing 
 
 ## Trakt Authorization Notifications
 
-The `trakt_pin` notification is sent when Device Code Flow needs approval. It includes a short-lived activation code; treat it as sensitive.
+The `trakt_pin` notification is sent when Device Code Flow needs approval. Its `verification_url` includes the short-lived activation code, so opening the link goes directly to Trakt's authorization confirmation. Treat it as sensitive.
 
 ```yaml
 {

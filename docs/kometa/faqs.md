@@ -382,7 +382,7 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 ??? question "How do I authenticate Trakt or MyAnimeList?"
 
-    Trakt uses Device Code Flow. Kometa displays an activation URL and short code; open the URL on any device, enter the code, and approve access. On a headless server, configure the optional [`trakt_pin` webhook](../config/webhooks.md#trakt-authorization-notifications) to receive the code through ntfy or another supported provider.
+    Trakt uses Device Code Flow. Kometa displays an activation URL with the short-lived code already included; open it on any device and approve access. On a headless server, configure the optional [`trakt_pin` webhook](../config/webhooks.md#trakt-authorization-notifications) to receive the link through ntfy or another supported provider.
     
     MyAnimeList authentication can be completed through the online utility, which provides a completed configuration block to paste into `config.yml`.
     

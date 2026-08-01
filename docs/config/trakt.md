@@ -16,7 +16,7 @@ Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt 
 
 The `trakt` attribute is found at the root of the config file.
 
-Kometa uses Trakt's Device Code Flow. When authorization is required, it displays an activation URL and a short code. Complete that step in any browser.
+Kometa uses Trakt's Device Code Flow. When authorization is required, it displays a complete activation URL. Open it in any browser and approve access; the short-lived code is already included in the URL.
 
 Kometa automatically refreshes the stored credentials before they expire.
 
@@ -61,11 +61,11 @@ To connect to Trakt.tv you must create a Trakt application:
 6. Click the `Create` button.
 7. Record the `Client ID` and `Client Secret`; you will need them later, and you only need do this process once..
 
-Start Kometa and follow the displayed Trakt activation URL and code. The browser can be on a different device from Kometa. The generated `authorization` block is saved automatically.
+Start Kometa and open the displayed Trakt activation URL. The browser can be on a different device from Kometa. Approve access and Kometa saves the generated `authorization` block automatically.
 
 ### Headless authentication
 
-On a headless server, read the activation URL and code from the logs, or configure [`webhooks.trakt_pin`](webhooks.md#trakt-authorization-notifications) to send them to ntfy, Gotify, Apprise, Slack, Discord, or a direct webhook. The code is short-lived, so treat that notification as urgent.
+On a headless server, read the activation URL from the logs, or configure [`webhooks.trakt_pin`](webhooks.md#trakt-authorization-notifications) to send it to ntfy, Gotify, Apprise, Slack, Discord, or a direct webhook. The URL contains a short-lived code, so treat that notification as urgent.
 
 ```yaml
 webhooks:
