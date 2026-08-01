@@ -590,29 +590,24 @@ class TestBaseLanguageCode:
 
 
 class TestGetSearchChoicesEpisodeLanguage:
-    """get_search_choices's title-collision fix for episode.audioLanguage/subtitleLanguage now
-    shares base_language_code() with get_language_search_values instead of a separate split()."""
+    """get_search_choices returns raw, unstripped locale-tagged keys (e.g. "es-ES", not "es")."""
 
-    def test_strips_region_from_locale_tagged_key(self):
+    def test_title_keyed_choice_keeps_the_raw_locale_tagged_key(self):
         plex = make_plex(is_show=True)
-        plex.get_tags = MagicMock(return_value=[make_filter_choice("en-US", title="English")])
+        plex.get_tags = MagicMock(return_value=[make_filter_choice("es-ES", title="Spanish")])
         choices, _ = plex.get_search_choices("audio_language", title=False)
-        assert choices["English"] == "en"
-        assert choices["en-us"] == "en-US"
+        assert choices["Spanish"] == "es-ES"
 
-    def test_normalizes_three_letter_code_unlike_the_old_split_based_fix(self):
-        """A naive value.split('-')[0] never touched 3-letter codes (no hyphen); base_language_code does."""
+    def test_names_used_by_the_regex_branch_are_unaffected_by_locale_variants(self):
         plex = make_plex(is_show=True)
-        plex.get_tags = MagicMock(return_value=[make_filter_choice("spa", title="Spanish")])
-        choices, _ = plex.get_search_choices("audio_language", title=False)
-        assert choices["Spanish"] == "es"
-
-    def test_movie_library_audio_language_is_unaffected(self):
-        """Only episode-level fields get the title normalization; movie audioLanguage keeps the raw key."""
-        plex = make_plex(is_show=False)
-        plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419", title="Spanish")])
-        choices, _ = plex.get_search_choices("audio_language", title=False)
-        assert choices["Spanish"] == "es-419"
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("es-ES", title="Spanish"),
+                make_filter_choice("es-MX", title="Spanish"),
+            ]
+        )
+        _, names = plex.get_search_choices("audio_language", title=False, name_pairs=True)
+        assert names == [("Spanish", "es-ES"), ("Spanish", "es-MX")]
 
 
 class TestGetLanguageSearchValues:

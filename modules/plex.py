@@ -1231,16 +1231,13 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
             for choice in self.get_tags(final_search):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
-                # Normalize episode language keys so "Spanish" maps to "es" not "es-ES"/"spa" when multiple locale/ISO-639-2 variants are returned.
-                title_value = base_language_code(value) if (not use_title and is_episode_lang) else value
-                choices[choice.title] = title_value  # type: ignore[union-attr]
+                choices[choice.title] = value  # type: ignore[union-attr]
                 choices[choice.key] = value  # type: ignore[union-attr]
-                choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
+                choices[choice.title.lower()] = value  # type: ignore[union-attr]
                 choices[choice.key.lower()] = value  # type: ignore[union-attr]
             return choices, names
         except NotFound:

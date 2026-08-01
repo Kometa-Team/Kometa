@@ -188,16 +188,17 @@ class TestFindPlexKeys:
 class FakeLangLibrary:
     """Stands in for the Plex library used by validate_attribute's language handling."""
 
-    def __init__(self, language_map, search_choices=None):
+    def __init__(self, language_map, search_choices=None, names=None):
         # language_map: {"audio_language": {"es": ["es-419", "spa"]}, ...}
         self.language_map = language_map
         self.search_choices = search_choices or {}
+        self.names = names or {}
         self.get_tags_calls = []
         self.get_search_choices_calls = []
 
-    def get_search_choices(self, attribute, title=True):
+    def get_search_choices(self, attribute, title=True, name_pairs=False):
         self.get_search_choices_calls.append(attribute)
-        return self.search_choices.get(attribute, {}), []
+        return self.search_choices.get(attribute, {}), self.names.get(attribute, [])
 
     def get_language_search_values(self, attribute, code):
         self.get_tags_calls.append((attribute, code))
@@ -273,6 +274,14 @@ class TestValidateAttributeLanguage:
         result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=False)
         assert result == ["es-419"]
         assert library.get_tags_calls == []
+
+    def test_regex_on_plex_search_language_matches_against_the_raw_locale_tagged_key(self):
+        """The .regex branch only ever reads names (title, key) pairs, never a stripped value,
+        so a locale-tagged key like "es-ES" is returned as-is rather than normalized to "es"."""
+        library = FakeLangLibrary({}, names={"audio_language": [("Spanish", "es-ES")]})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", ".regex", "audio_language", "Span", True, plex_search=True)
+        assert result == [("Spanish", "es-ES")]
 
 
 # ═══════════════════════════════════════════════════════════════════════
