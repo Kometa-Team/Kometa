@@ -14,8 +14,10 @@ class Requests:
         self.payloads = payloads
         self.calls = []
 
-    def get(self, url, headers=None):
+    def get(self, url, headers=None, params=None):
         self.calls.append((url, headers))
+        if params:
+            url += "?" + "&".join(f"{key}={value}" for key, value in params.items())
         response = self.payloads[url]
         return response if isinstance(response, FakeResponse) else FakeResponse(response)
 
@@ -84,12 +86,21 @@ def test_tracked_validation_defaults_types_to_library():
     }
 
 
-def test_tracked_csv_filters_status_types_and_maps_ids():
-    url = "https://floppy.example/api/v1/export/csv?include_lists=0"
-    csv_data = "row_type,media_id,source,media_type,status,season_number\n" "media,550,tmdb,movie,completed,\n" "media,1399,tmdb,tv,in_progress,\n" "media,123,mal,anime,completed,\n"
-    floppy = Floppy(Requests({url: FakeResponse(content=csv_data.encode("utf-8"))}), {"url": "https://floppy.example", "token": "secret"})
+def test_tracked_api_filters_status_types_and_maps_ids():
+    base = "https://floppy.example/api/v1/media"
+    payloads = {
+        f"{base}?media_type=movie&limit=100&offset=0&status=completed": [{"media_type": "movie", "source": "tmdb", "media_id": "550"}],
+        f"{base}?media_type=anime&limit=100&offset=0&status=completed": [{"media_type": "anime", "source": "mal", "media_id": "123"}],
+    }
+    floppy = Floppy(Requests(payloads), {"url": "https://floppy.example", "token": "secret"})
     tracked = {"status": ["completed"], "type": ["movie", "anime"]}
     assert floppy.get_tracked_ids(tracked, is_movie=True) == ([(550, "tmdb")], [123])
+
+
+def test_tracked_api_all_uses_unfiltered_request():
+    url = "https://floppy.example/api/v1/media/?media_type=movie&limit=100&offset=0"
+    floppy = Floppy(Requests({url: [{"media_type": "movie", "source": "tmdb", "media_id": "550"}]}), {"url": "https://floppy.example", "token": "secret"})
+    assert floppy.get_tracked_ids({"status": ["all"], "type": ["movie"]}, is_movie=True) == ([(550, "tmdb")], [])
 
 
 def test_public_csv_returns_description_and_tags():

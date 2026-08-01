@@ -36,10 +36,10 @@ class Floppy:
             raise Failed(f"Floppy Error: {list_url} must use the format {self.url}/list/ID")
         return int(match.group("list_id"))
 
-    def _response(self, url):
+    def _response(self, url, params=None):
         headers = {"X-API-Key": self.token} if self.token else None
         try:
-            response = self.requests.get(url, headers=headers)
+            response = self.requests.get(url, headers=headers, params=params)
         except Exception as e:
             raise Failed(f"Floppy Error: Failed to load {url}: {e}") from e
         if response.status_code == 401:
@@ -47,13 +47,15 @@ class Floppy:
         if response.status_code == 403:
             raise Failed("Floppy Error: This list is private or the API token does not have access")
         if response.status_code == 404:
+            if "/api/" in url:
+                raise Failed(f"Floppy Error: API endpoint not found at {url}; this Floppy version may not support the media API")
             raise Failed(f"Floppy Error: List not found at {url}")
         if response.status_code >= 400:
             raise Failed(f"Floppy Error: {response.status_code} on {url}")
         return response
 
-    def _request(self, url):
-        response = self._response(url)
+    def _request(self, url, params=None):
+        response = self._response(url, params=params)
         try:
             return response.json()
         except ValueError as e:
@@ -217,32 +219,19 @@ class Floppy:
     def get_tracked_ids(self, tracked, is_movie=None):
         if not self.token:
             raise Failed("Floppy Error: An API token is required for floppy_tracked")
-        response = self._response(f"{self.url}/api/v1/export/csv?include_lists=0")
-        content = response.content.decode("utf-8-sig") if isinstance(response.content, bytes) else str(response.content)
-        rows = list(csv.DictReader(StringIO(content)))
         selected_types = {tracked_media_types[media_type] for media_type in tracked["type"]}
         selected_statuses = set(tracked["status"])
         include_all = "all" in selected_statuses
 
-        tracked_keys = set()
         candidates = []
-        for row in rows:
-            if row.get("row_type") != "media" or row.get("media_type") not in selected_types:
-                continue
-            key = self._tracked_key(row)
-            if key:
-                tracked_keys.add(key)
-                status = str(row.get("status") or "").strip().lower().replace(" ", "_") or "no_status"
-                if include_all or status in selected_statuses:
-                    candidates.append(row)
-
-        if include_all or "no_status" in selected_statuses:
-            for row in rows:
-                if row.get("row_type") != "collection" or row.get("media_type") not in selected_types:
-                    continue
-                key = self._tracked_key(row)
-                if key and key not in tracked_keys:
-                    candidates.append(row)
+        try:
+            for media_type in selected_types:
+                for status in ((None,) if include_all else selected_statuses):
+                    candidates.extend(self._media_items(media_type, status))
+        except Failed as e:
+            if "API endpoint not found" not in str(e):
+                raise
+            candidates = self._legacy_tracked_items(selected_types, selected_statuses, include_all)
 
         ids = []
         mal_ids = []
@@ -267,6 +256,39 @@ class Floppy:
         if not ids and not mal_ids:
             raise Failed("Floppy Error: No IDs found in tracked items")
         return ids, mal_ids
+
+    def _legacy_tracked_items(self, selected_types, selected_statuses, include_all):
+        response = self._response(f"{self.url}/api/v1/export/csv?include_lists=0")
+        content = response.content.decode("utf-8-sig") if isinstance(response.content, bytes) else str(response.content)
+        rows = list(csv.DictReader(StringIO(content)))
+        candidates, tracked_keys = [], set()
+        for row in rows:
+            if row.get("row_type") != "media" or row.get("media_type") not in selected_types:
+                continue
+            key = self._tracked_key(row)
+            if key:
+                tracked_keys.add(key)
+                status = str(row.get("status") or "").strip().lower().replace(" ", "_") or "no_status"
+                if include_all or status in selected_statuses:
+                    candidates.append(row)
+        if include_all or "no_status" in selected_statuses:
+            candidates.extend(row for row in rows if row.get("row_type") == "collection" and row.get("media_type") in selected_types and self._tracked_key(row) not in tracked_keys)
+        return candidates
+
+    def _media_items(self, media_type, status=None):
+        items, limit, offset = [], 100, 0
+        while True:
+            params = {"media_type": media_type, "limit": limit, "offset": offset}
+            if status is not None:
+                params["status"] = status
+            payload = self._request(f"{self.url}/api/v1/media/", params=params)
+            batch = payload if isinstance(payload, list) else payload.get("results", payload.get("items", []))
+            if not isinstance(batch, list):
+                raise Failed("Floppy Error: Invalid media response from /api/v1/media")
+            items.extend(item.get("item", item) for item in batch if isinstance(item, dict))
+            if len(batch) < limit:
+                return items
+            offset += limit
 
     @staticmethod
     def _tracked_key(row):
