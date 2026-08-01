@@ -86,12 +86,7 @@ def test_tracked_validation_defaults_types_to_library():
 
 def test_tracked_csv_filters_status_types_and_maps_ids():
     url = "https://floppy.example/api/v1/export/csv?include_lists=0"
-    csv_data = (
-        "row_type,media_id,source,media_type,status,season_number\n"
-        "media,550,tmdb,movie,completed,\n"
-        "media,1399,tmdb,tv,in_progress,\n"
-        "media,123,mal,anime,completed,\n"
-    )
+    csv_data = "row_type,media_id,source,media_type,status,season_number\n" "media,550,tmdb,movie,completed,\n" "media,1399,tmdb,tv,in_progress,\n" "media,123,mal,anime,completed,\n"
     floppy = Floppy(Requests({url: FakeResponse(content=csv_data.encode("utf-8"))}), {"url": "https://floppy.example", "token": "secret"})
     tracked = {"status": ["completed"], "type": ["movie", "anime"]}
     assert floppy.get_tracked_ids(tracked, is_movie=True) == ([(550, "tmdb")], [123])
