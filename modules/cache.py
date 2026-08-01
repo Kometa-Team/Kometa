@@ -26,6 +26,10 @@ class Cache:
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
         self._connection = None
+        # In-process memoization for _query_map/_update_map's ID lookups, keyed per map_name - avoids repeat SQLite round-trips for the same ID within one run.
+        self._map_cache = {}
+        # Same idea for query_guid_map/update_guid_map, which use their own SQL, not _query_map - keyed by plex_guid, caches the raw row so expiration still recomputes fresh each call.
+        self._guid_map_cache = {}
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
@@ -420,16 +424,22 @@ class Cache:
         imdb_id = None
         media_type = None
         expired = None
-        with self.connection as connection:
-            with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
-                row = cursor.fetchone()
-                if row:
-                    time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    id_to_return = util.get_list(row["t_id"], int_list=True)
-                    imdb_id = util.get_list(row["imdb_id"])
-                    media_type = row["media_type"]
-                    expired = time_between_insertion.days > self.expiration
+        if plex_guid in self._guid_map_cache:
+            row = self._guid_map_cache[plex_guid]
+        else:
+            with self.connection as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
+                    fetched = cursor.fetchone()
+                    # Copy to a plain dict so it survives after the cursor/connection context closes.
+                    row = dict(fetched) if fetched else None
+            self._guid_map_cache[plex_guid] = row
+        if row:
+            time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            id_to_return = util.get_list(row["t_id"], int_list=True)
+            imdb_id = util.get_list(row["imdb_id"])
+            media_type = row["media_type"]
+            expired = time_between_insertion.days > self.expiration
         return id_to_return, imdb_id, media_type, expired
 
     def update_guid_map(self, plex_guid, t_id, imdb_id, expired, media_type):
@@ -443,6 +453,8 @@ class Cache:
                 else:
                     sql = "UPDATE guids_map SET t_id = ?, imdb_id = ?, expiration_date = ?, media_type = ? WHERE plex_guid = ?"
                     cursor.execute(sql, (t_id, imdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
+        # Invalidate any memoized query_guid_map read this write could have made stale.
+        self._guid_map_cache.pop(plex_guid, None)
 
     def query_imdb_to_tmdb_map(self, _id, imdb=True, media_type=None, return_type=False):
         from_id = "imdb_id" if imdb else "tmdb_id"
@@ -481,46 +493,59 @@ class Cache:
         self._update_map("mojo_map", "mojo_url", mojo_url, "imdb_id", imdb_id, expired)
 
     def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
-        map_name, from_id = sql_identifier(map_name), sql_identifier(from_id)
+        map_name_sql, from_id_sql = sql_identifier(map_name), sql_identifier(from_id)
         id_to_return = None
         expired = None
         out_type = None
-        with self.connection as connection:
-            with closing(connection.cursor()) as cursor:
-                if media_type is None:
-                    cursor.execute(f"SELECT * FROM {map_name} WHERE {from_id} = ?", (_id,))  # nosec B608 - identifiers validated by sql_identifier()
-                else:
-                    cursor.execute(f"SELECT * FROM {map_name} WHERE {from_id} = ? AND media_type = ?", (_id, media_type))  # nosec B608 - identifiers validated by sql_identifier()
-                row = cursor.fetchone()
-                if row and row[to_id]:
-                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    time_between_insertion = datetime.now() - datetime_object
-                    if "_" in row[to_id]:
-                        id_to_return = row[to_id]
+        cache_key = (from_id, to_id, _id, media_type)
+        table_cache = self._map_cache.setdefault(map_name, {})
+        if cache_key in table_cache:
+            row = table_cache[cache_key]
+        else:
+            with self.connection as connection:
+                with closing(connection.cursor()) as cursor:
+                    if media_type is None:
+                        cursor.execute(f"SELECT * FROM {map_name_sql} WHERE {from_id_sql} = ?", (_id,))  # nosec B608 - identifiers validated by sql_identifier()
                     else:
-                        try:
-                            id_to_return = int(row[to_id])
-                        except ValueError:
-                            id_to_return = row[to_id]
-                    expired = time_between_insertion.days > self.expiration
-                    out_type = row["media_type"] if return_type else None
+                        cursor.execute(f"SELECT * FROM {map_name_sql} WHERE {from_id_sql} = ? AND media_type = ?", (_id, media_type))  # nosec B608 - identifiers validated by sql_identifier()
+                    fetched = cursor.fetchone()
+                    # Copy to a plain dict so it survives after the cursor/connection context closes.
+                    row = dict(fetched) if fetched else None
+            table_cache[cache_key] = row
+        if row and row[to_id]:
+            datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            time_between_insertion = datetime.now() - datetime_object
+            if "_" in row[to_id]:
+                id_to_return = row[to_id]
+            else:
+                try:
+                    id_to_return = int(row[to_id])
+                except ValueError:
+                    id_to_return = row[to_id]
+            expired = time_between_insertion.days > self.expiration
+            out_type = row["media_type"] if return_type else None
         if return_type:
             return id_to_return, out_type, expired
         else:
             return id_to_return, expired
 
     def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None):
-        map_name, val1_name, val2_name = sql_identifier(map_name), sql_identifier(val1_name), sql_identifier(val2_name)
+        map_name_sql, val1_name_sql, val2_name_sql = sql_identifier(map_name), sql_identifier(val1_name), sql_identifier(val2_name)
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"INSERT OR IGNORE INTO {map_name}({val1_name}) VALUES(?)", (val1,))
+                cursor.execute(f"INSERT OR IGNORE INTO {map_name_sql}({val1_name_sql}) VALUES(?)", (val1,))
                 if media_type is None:
-                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ? WHERE {val1_name} = ?"  # nosec B608 - identifiers validated by sql_identifier()
+                    sql = f"UPDATE {map_name_sql} SET {val2_name_sql} = ?, expiration_date = ? WHERE {val1_name_sql} = ?"  # nosec B608 - identifiers validated by sql_identifier()
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), val1))
                 else:
-                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ?, media_type = ? WHERE {val1_name} = ?"  # nosec B608 - identifiers validated by sql_identifier()
+                    sql = f"UPDATE {map_name_sql} SET {val2_name_sql} = ?, expiration_date = ?, media_type = ? WHERE {val1_name_sql} = ?"  # nosec B608 - identifiers validated by sql_identifier()
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), media_type, val1))
+        # Invalidate any memoized _query_map reads this write could have made stale, in either lookup direction.
+        table_cache = self._map_cache.get(map_name)
+        if table_cache:
+            for key in [k for k in table_cache if k[2] in (val1, val2)]:
+                del table_cache[key]
 
     def query_omdb(self, imdb_id, expiration):
         omdb_dict = {}

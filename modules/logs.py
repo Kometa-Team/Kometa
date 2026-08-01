@@ -62,6 +62,34 @@ def log_namer(default_name):
     return f"{log_path}/{base}-{num}.{ext}"
 
 
+class BufferedRotatingFileHandler(RotatingFileHandler):
+    """Flushes every FLUSH_EVERY records, or immediately for WARNING+, instead of after every single line. force_flush() bypasses buffering for callers that need the file complete right now (handler removal, close)."""
+
+    FLUSH_EVERY = 25
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._unflushed_count = 0
+        self._pending_level = 0
+
+    def emit(self, record):
+        self._pending_level = record.levelno
+        super().emit(record)
+
+    def flush(self):
+        self._unflushed_count += 1
+        if self._pending_level >= WARNING or self._unflushed_count >= self.FLUSH_EVERY:
+            self.force_flush()
+
+    def force_flush(self):
+        super().flush()
+        self._unflushed_count = 0
+
+    def close(self):
+        self.force_flush()
+        super().close()
+
+
 class MyLogger:
     def __init__(self, logger_name, default_dir, screen_width, separating_character, ignore_ghost, is_debug, is_trace, log_requests):
         self.logger_name = logger_name
@@ -99,7 +127,7 @@ class MyLogger:
         self.saved_errors = []
 
     def _get_handler(self, log_file, count=3):
-        _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
+        _handler = BufferedRotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
         _handler.namer = log_namer
         self._formatter(handler=_handler)
         if os.path.isfile(log_file):
@@ -123,6 +151,7 @@ class MyLogger:
 
     def remove_main_handler(self):
         if self.main_handler is not None:
+            self.main_handler.force_flush()  # Buffered handler - make sure this scope's log file is complete before it's detached.
             self._logger.removeHandler(self.main_handler)
 
     def add_library_handler(self, library_key):
@@ -132,6 +161,7 @@ class MyLogger:
 
     def remove_library_handler(self, library_key):
         if library_key in self.library_handlers:
+            self.library_handlers[library_key].force_flush()  # Buffered handler - flush (not close, it's reused by re_add_library_handler).
             self._logger.removeHandler(self.library_handlers[library_key])
 
     def re_add_library_handler(self, library_key):
@@ -145,6 +175,7 @@ class MyLogger:
 
     def remove_playlists_handler(self):
         if self.playlists_handler is not None:
+            self.playlists_handler.force_flush()  # Buffered handler - make sure this scope's log file is complete before it's detached.
             self._logger.removeHandler(self.playlists_handler)
 
     def add_collection_handler(self, library_key, collection_key):
@@ -157,6 +188,7 @@ class MyLogger:
 
     def remove_collection_handler(self, library_key, collection_key):
         if library_key in self.collection_handlers and collection_key in self.collection_handlers[library_key]:
+            self.collection_handlers[library_key][collection_key].force_flush()  # Buffered handler - make sure this collection's log file is complete before it's detached.
             self._logger.removeHandler(self.collection_handlers[library_key][collection_key])
 
     def add_playlist_handler(self, playlist_key):
@@ -167,6 +199,7 @@ class MyLogger:
 
     def remove_playlist_handler(self, playlist_key):
         if playlist_key in self.playlist_handlers:
+            self.playlist_handlers[playlist_key].force_flush()  # Buffered handler - make sure this playlist's log file is complete before it's detached.
             self._logger.removeHandler(self.playlist_handlers[playlist_key])
 
     def _centered(self, text, sep=" ", side_space=True, left=False):

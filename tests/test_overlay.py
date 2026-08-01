@@ -7,6 +7,9 @@ Plex/Pillow rendering pipeline.
 
 from __future__ import annotations
 
+import os
+import time
+
 from modules.overlay import Overlay
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -177,3 +180,74 @@ class TestGetTextSize:
         assert isinstance(bbox, tuple)
         assert len(bbox) == 4
         assert all(isinstance(v, int) for v in bbox)
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _resolve_image_path - git:/repo:/url: image caching
+#
+# get_and_save_image() used to fetch+overwrite from the network unconditionally on every
+# call, even when a fresh local copy already existed - wasteful for static overlay badge
+# assets that rarely change.
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class _FakeResponse:
+    def __init__(self, status_code=200, content_type="image/png", content=b"fake-png-bytes"):
+        self.status_code = status_code
+        self.headers = {"Content-Type": content_type}
+        self.content = content
+
+
+def make_image_overlay(tmp_path, url="https://example.com/badge.png", cache_expiration=30, cache=True):
+    from types import SimpleNamespace
+    from unittest.mock import MagicMock
+
+    ov = make_overlay(name="Test Overlay", library=SimpleNamespace(overlay_folder=str(tmp_path)))
+    ov.data = {"url": url}
+    ov.cache = SimpleNamespace(expiration=cache_expiration) if cache else None
+    ov.requests = MagicMock()
+    ov.requests.get.return_value = _FakeResponse()
+    return ov
+
+
+class TestResolveImagePathCaching:
+    def test_no_local_file_fetches_from_network(self, tmp_path):
+        ov = make_image_overlay(tmp_path)
+        path = ov._resolve_image_path()
+        assert path is not None
+        assert ov.requests.get.call_count == 1
+        assert os.path.exists(path)
+
+    def test_fresh_local_file_skips_network(self, tmp_path):
+        ov = make_image_overlay(tmp_path)
+        first_path = ov._resolve_image_path()
+        assert first_path is not None
+        assert ov.requests.get.call_count == 1
+        second_path = ov._resolve_image_path()
+        assert second_path == first_path
+        assert ov.requests.get.call_count == 1  # still 1 - the second call must be served from the local file, not a second fetch
+
+    def test_stale_local_file_refetches(self, tmp_path):
+        ov = make_image_overlay(tmp_path, cache_expiration=30)
+        path = ov._resolve_image_path()
+        assert path is not None
+        stale_time = time.time() - (31 * 86400)
+        os.utime(path, (stale_time, stale_time))
+        ov._resolve_image_path()
+        assert ov.requests.get.call_count == 2  # past the TTL window, must refetch
+
+    def test_no_cache_object_always_fetches(self, tmp_path):
+        ov = make_image_overlay(tmp_path, cache=False)
+        ov._resolve_image_path()
+        ov._resolve_image_path()
+        assert ov.requests.get.call_count == 2  # caching disabled - no TTL check applies, matches pre-fix behavior
+
+    def test_skipped_fetch_still_returns_correct_content(self, tmp_path):
+        ov = make_image_overlay(tmp_path)
+        path = ov._resolve_image_path()
+        assert path is not None
+        with open(path, "rb") as f:
+            assert f.read() == b"fake-png-bytes"
+        ov._resolve_image_path()  # served from local file this time
+        with open(path, "rb") as f:
+            assert f.read() == b"fake-png-bytes"

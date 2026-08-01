@@ -145,6 +145,10 @@ class Trakt:
                 pin = util.logger_input("Trakt pin (case insensitive)", timeout=300).strip()
             except TimeoutExpired:
                 raise Failed("Input Timeout: Trakt pin required.")
+            except Failed as e:
+                if str(e) == "Input Failed":
+                    raise Failed("Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config.") from e
+                raise
         if not pin:
             raise Failed("Trakt Error: Trakt pin required.")
         json_data = {"code": pin, "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "authorization_code"}
@@ -175,6 +179,7 @@ class Trakt:
             json_data = {"refresh_token": self.authorization["refresh_token"], "client_id": self.client_id, "client_secret": self.client_secret, "redirect_uri": redirect_uri, "grant_type": "refresh_token"}
             response = self.requests.post(f"{base_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
             if response.status_code != 200:
+                logger.debug(f"Trakt Error: Access Token Refresh Failed: ({response.status_code}) {response.reason}")
                 return False
             return self._save(response.json())
         return False
@@ -237,11 +242,13 @@ class Trakt:
                     raise Failed(f"({response.status_code}) {response.reason}")
             elif response.status_code == 404 and ignore_404:
                 return None
-            elif response.status_code != 200:
+            elif not 200 <= response.status_code < 300:
                 logger.debug(f"Trakt response issue: ({response.status_code}) {response.reason}")
                 raise Failed(f"({response.status_code}) {response.reason}")
             else:
                 reauth_count = 0
+                if response.status_code == 204 or not response.content:
+                    return output_json
                 response_json = response.json()
                 logger.trace(f"Headers: {response.headers}")
                 logger.trace(f"Response: {response_json}")

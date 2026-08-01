@@ -77,6 +77,10 @@ class FakeTVDbLibrary:
             raise AssertionError(f"Unexpected rating key: {rating_key}")
         return self._show_item
 
+    def cached_item_subitems(self, item, method_name):
+        # Mirrors the real Plex.cached_item_subitems() contract (modules/plex.py) without the memoization - these tests don't depend on cache identity, just the same seasons()/episodes() results.
+        return list(getattr(item, method_name)())
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -656,6 +660,104 @@ class TestTvdbOutageResilience:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# update_item_details — rating batching
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRatingBatching:
+    # Rating batching goes through the same per-library/per-type grouping as label batching (see TestBatchedItemLabels
+    # / BatchLabelLibrary), so mixed-library playlists route through the right library's Plex connection.
+    @staticmethod
+    def _library(section_id=1):
+        return SimpleNamespace(
+            name="Test Library",
+            Plex=SimpleNamespace(key=section_id, batchMultiEdits=MagicMock(), editField=MagicMock()),
+            plex_bulk_edit_batch_size=None,
+            cached_items={},
+            _save_multi_edits_with_retry=MagicMock(),
+            reload=lambda item: item,
+            item_labels=lambda item: [],
+            show_rating_key_map={},
+            movie_rating_key_map={},
+            is_movie=True,
+            is_show=False,
+            Radarr=None,
+            Sonarr=None,
+        )
+
+    def test_only_items_needing_change_are_batched(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        needs_change = SimpleNamespace(ratingKey=1, title="Needs Change", rating=None, librarySectionID=1, type="movie")
+        already_set = SimpleNamespace(ratingKey=2, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[needs_change, already_set],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([needs_change])
+        library.Plex.editField.assert_called_once_with("rating", 5.5)
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_multiple_rating_attrs_batched_separately(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Example", rating=None, userRating=None, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5, "item_user_rating": 7.0},
+        )
+
+        builder.update_item_details()
+
+        assert library.Plex.editField.call_args_list == [
+            (("rating", 5.5),),
+            (("userRating", 7.0),),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 2
+
+    def test_no_items_need_change_skips_batch_call(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_not_called()
+        library.Plex.editField.assert_not_called()
+
+    def test_separates_playlist_libraries_for_ratings(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        first_library = self._library(section_id=1)
+        second_library = self._library(section_id=2)
+        first_item = SimpleNamespace(ratingKey=1, title="First", rating=None, librarySectionID=1, type="movie")
+        second_item = SimpleNamespace(ratingKey=2, title="Second", rating=None, librarySectionID=2, type="movie")
+        builder = make_builder(
+            library=first_library,
+            libraries=[first_library, second_library],
+            items=[first_item, second_item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        first_library.Plex.batchMultiEdits.assert_called_once_with([first_item])
+        second_library.Plex.batchMultiEdits.assert_called_once_with([second_item])
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -739,6 +841,88 @@ class TestBuildFilter:
 
         with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
             builder.build_filter("tmdb", "not_a_dict")
+
+    @pytest.mark.parametrize(
+        ("attribute", "expected_filter"),
+        [
+            ("folder_location", "source=7"),
+            ("folder_location.not", "source!=7"),
+        ],
+    )
+    def test_builds_folder_location_smart_filter(self, attribute, expected_filter):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = True
+        library.is_show = False
+        library.is_music = False
+        library.Plex = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="source", title="Folder Location")],
+        )
+        library.get_search_choices = MagicMock(return_value=({"/media/movies": 7}, ["/media/movies"]))
+        builder = make_builder(
+            library=library,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {attribute: "/media/movies"}},
+            default_sort="random",
+        )
+
+        assert expected_filter in url
+        assert "Folder Location" in details
+        library.get_search_choices.assert_called_once_with("folder_location", title=False, libtype="movie")
+
+    def test_builds_track_folder_location_smart_filter(self):
+        import modules.plex as plex_module
+
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = False
+        library.is_show = False
+        library.is_music = True
+        library.Plex = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        library.get_tags = MagicMock(return_value=[SimpleNamespace(title="/media/music", key="12")])
+        builder = make_builder(
+            library=library,
+            builder_level="track",
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"folder_location": "/media/music"}},
+            default_sort="random",
+        )
+
+        assert "source=12" in url
+        assert "Folder Location" in details
+        assert list_filters.call_count == 2
+        list_filters.assert_called_with("track")
+        library.get_tags.assert_called_once_with("source")
+
+    def test_rejects_folder_location_above_track_level_in_music_library(self):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value.removesuffix(".not"), ".not" if value.endswith(".not") else "", value),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            details={"show_options": False},
+        )
+
+        with pytest.raises(builder_module.BuilderValidationError, match="does not work for music libraries"):
+            builder.build_filter(
+                "smart_filter",
+                {"all": {"folder_location": "/media/music"}},
+                default_sort="random",
+            )
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -16,11 +16,14 @@ jobs:
     steps:
 
       - name: Display Refs
+        env:
+          BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
-          echo "Base Repo: ${{ github.event.pull_request.base.repo.full_name }}"
+          echo "Base Repo: ${BASE_REPO}"
           echo "Base Ref: ${{ github.base_ref }}"
-          echo "Head Repo: ${{ github.event.pull_request.head.repo.full_name }}"
-          echo "Head Ref: ${{ github.event.pull_request.head.ref }}"
+          echo "Head Repo: ${HEAD_REPO}"
+          echo "Head Ref: ${GITHUB_HEAD_REF}"
 
       - name: Check Base Branch
         if: github.base_ref == 'master' || github.base_ref == 'develop'
@@ -113,47 +116,51 @@ jobs:
 
       - name: Update VERSION File
         id: update-version
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
-            branch_name="${{ github.event.pull_request.head.ref }}"
+            branch_name="${GITHUB_HEAD_REF}"
             branch_name=$(echo "${branch_name}" | sed 's/[^a-zA-Z0-9._-]/-/g')
-            repo_name=${{ github.event.pull_request.head.repo.full_name }}
+            repo_name="${HEAD_REPO}"
             base_name="${repo_name%/*}"
-            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then 
+            if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then
                 tag_name="${base_name}"
             else
                 tag_name="${branch_name}"
             fi
             echo "tag-name=${tag_name}" >> $GITHUB_OUTPUT
-          
+
             if [[ "${base_name}" == "Kometa-Team" ]]; then
                 extra=""
             else
-                extra=" from the ${{ github.event.pull_request.head.repo.full_name }} repo"
+                extra=" from the ${HEAD_REPO} repo"
             fi
             echo "extra-text=${extra}" >> $GITHUB_OUTPUT
-            
+
             value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
-          
+
             part=$(cat PART)
             if [ -n "$part" ]; then
                 new_value="$((${part} + 1))"
             else
                 new_value="1"
             fi
-      
+
             echo "part_value=${new_value}" >> $GITHUB_OUTPUT
-      
+
             echo "$new_value" > "PART"
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add PART
-            git commit -m "${tag_name} Part: ${new_value}"
-            git push
+            # [skip ci] prevents this PAT-authenticated push from re-triggering this same job via synchronize.
+            git commit -m "${tag_name} Part: ${new_value} [skip ci]"
+            # HEAD is detached because checkout uses the immutable PR head SHA.
+            git push origin "HEAD:refs/heads/${GITHUB_HEAD_REF}"
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.5.2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}

@@ -10,6 +10,7 @@ logger = util.logger
 
 builders = ["yamtrack_list", "yamtrack_list_details", "yamtrack_tracked"]
 details_pattern = re.compile(r"^/details/tmdb/(?P<media_type>movie|tv)/(?P<tmdb_id>\d+)(?:/|$)")
+tvdb_details_pattern = re.compile(r"^/details/tvdb/(?P<media_type>movie|tv)/(?P<tvdb_id>\d+)(?:/(?!(?:season|episode)/)[^/]+(?:/season/(?P<season>\d+)(?:/episode/(?P<episode>\d+))?)?)?(?:/|$)")
 mal_details_pattern = re.compile(r"^/details/mal/anime/(?P<mal_id>\d+)(?:/|$)")
 tracked_statuses = {
     "dropped": ("text-red", "Dropped"),
@@ -24,6 +25,19 @@ tracked_types = {
     "anime": ("anime", "mal"),
 }
 cross_library_tracked_types = ["anime"]
+
+
+@staticmethod
+def _tvdb_match_id(match):
+    """Extract (item_id, id_type) from a tvdb_details_pattern match."""
+    tvdb_id = int(match.group("tvdb_id"))
+    season = match.group("season")
+    if season is not None:
+        episode = match.group("episode")
+        if episode is not None:
+            return f"{tvdb_id}_{season}_{episode}", "tvdb_episode"
+        return f"{tvdb_id}_{season}", "tvdb_season"
+    return tvdb_id, "tvdb"
 
 
 class YamTrack:
@@ -136,36 +150,58 @@ class YamTrack:
             description = page.xpath("string(//*[@id='id_description'])").strip()
         return description
 
-    def get_tmdb_ids(self, method, list_url, is_movie=None):
+    def get_ids(self, method, list_url, is_movie=None):
         pretty = method.replace("_", " ").title()
         if logger:
             logger.info(f"Processing {pretty}: {list_url}")
-        page = self._html(list_url)
         ids = []
         seen = set()
-        for href in page.xpath("//a/@href"):
-            parsed = self._parse_href(href)
-            match = details_pattern.match(parsed.path)
-            if not match:
-                continue
-            tmdb_id = int(match.group("tmdb_id"))
-            id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
-            if is_movie is True and id_type != "tmdb":
-                continue
-            if is_movie is False and id_type != "tmdb_show":
-                continue
-            key = (tmdb_id, id_type)
-            if key not in seen:
-                ids.append(key)
-                seen.add(key)
+        page_num = 1
+        # YamTrack custom list order requires ?sort=custom
+        sep = "&" if "?" in list_url else "?"
+        list_url = f"{list_url}{sep}sort=custom"
+        while True:
+            page_sep = "&" if "?" in list_url else "?"
+            page_url = f"{list_url}{page_sep}page={page_num}" if page_num > 1 else list_url
+            if page_num == 1:
+                page = self._html(page_url)
+            else:
+                try:
+                    page = self._html(page_url)
+                except Failed:
+                    break
+            page_items = []
+            for href in page.xpath("//a/@href"):
+                parsed = self._parse_href(href)
+                match = details_pattern.match(parsed.path)
+                if match:
+                    item_id = int(match.group("tmdb_id"))
+                    id_type = "tmdb" if match.group("media_type") == "movie" else "tmdb_show"
+                else:
+                    match = tvdb_details_pattern.match(parsed.path)
+                    if not match:
+                        continue
+                    item_id, id_type = _tvdb_match_id(match)
+                if is_movie is True and id_type != "tmdb":
+                    continue
+                if is_movie is False and id_type not in ("tmdb_show", "tvdb", "tvdb_season", "tvdb_episode"):
+                    continue
+                key = (item_id, id_type)
+                if key not in seen:
+                    page_items.append(key)
+                    seen.add(key)
+            if not page_items:
+                break
+            ids.extend(page_items)
+            page_num += 1
         if not ids:
-            raise Failed(f"YamTrack Error: No TMDb IDs found in {list_url}")
+            raise Failed(f"YamTrack Error: No IDs found in {list_url}")
         return ids
 
-    def get_tracked_tmdb_ids(self, tracked, is_movie=None):
+    def get_tracked_ids_from_config(self, tracked, is_movie=None):
         ids, _ = self.get_tracked_ids(tracked, is_movie=is_movie)
         if not ids:
-            raise Failed("YamTrack Error: No TMDb IDs found in tracked items")
+            raise Failed("YamTrack Error: No IDs found in tracked items")
         return ids
 
     def get_tracked_ids(self, tracked, is_movie=None):
@@ -190,10 +226,13 @@ class YamTrack:
                     mal_ids.append(mal_id)
                     seen_mal.add(mal_id)
             else:
-                for tmdb_id, found_id_type, status in self._tracked_items(page):
-                    if found_id_type != id_type or status not in enabled_statuses:
+                for item_id, found_id_type, status in self._tracked_items(page):
+                    if id_type == "tmdb_show":
+                        if found_id_type not in ("tmdb_show", "tvdb", "tvdb_season", "tvdb_episode") or status not in enabled_statuses:
+                            continue
+                    elif found_id_type != id_type or status not in enabled_statuses:
                         continue
-                    key = (tmdb_id, found_id_type)
+                    key = (item_id, found_id_type)
                     if key not in seen:
                         ids.append(key)
                         seen.add(key)
@@ -217,6 +256,14 @@ class YamTrack:
             parsed = self._parse_href(href)
             match = details_pattern.match(parsed.path)
             if not match:
+                match = tvdb_details_pattern.match(parsed.path)
+                if not match:
+                    continue
+                card = link.xpath("ancestor::div[@x-data][1]")
+                status = self._card_status(card[0] if card else link)
+                if status:
+                    item_id, id_type = _tvdb_match_id(match)
+                    yield item_id, id_type, status
                 continue
             card = link.xpath("ancestor::div[@x-data][1]")
             status = self._card_status(card[0] if card else link)
