@@ -1,7 +1,7 @@
 import csv
 import json
 import re
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 from io import StringIO
 from urllib.parse import urlparse
 

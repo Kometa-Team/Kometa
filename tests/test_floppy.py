@@ -1,5 +1,6 @@
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 import modules.floppy as floppy_module
 from modules.builder import CollectionBuilder
