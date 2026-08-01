@@ -511,6 +511,7 @@ custom_sort_builders = [
     "tmdb_on_the_air",
     "trakt_list",
     "floppy_list",
+    "floppy_tracked",
     "yamtrack_list",
     "yamtrack_tracked",
     "trakt_watchlist",
@@ -3437,6 +3438,9 @@ class CollectionBuilder:
     def _floppy(self, method_name, method_data):
         if self.config.Floppy is None:
             raise BuilderValidationError(f"{self.Type} Error: floppy attribute not found in config")
+        if method_name == "floppy_tracked":
+            self.builders.append((method_name, self.config.Floppy.validate_tracked(self.Type, method_data, self.library.is_movie if not self.playlist else None)))
+            return
         for floppy_list in self.config.Floppy.validate_lists(self.Type, method_data):
             self.builders.append(("floppy_list", floppy_list))
             if method_name.endswith("_details") or floppy_list["sync_tags"]:
@@ -3598,7 +3602,12 @@ class CollectionBuilder:
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "floppy" in method:
-            ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
+            if method == "floppy_tracked":
+                ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                if mal_ids:
+                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+            else:
+                ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:

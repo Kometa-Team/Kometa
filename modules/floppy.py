@@ -10,8 +10,11 @@ from modules.util import Failed
 
 logger = util.logger
 
-builders = ["floppy_list", "floppy_list_details"]
+builders = ["floppy_list", "floppy_list_details", "floppy_tracked"]
 list_pattern = re.compile(r"^/list/(?P<list_id>\d+)(?:/|$)")
+tracked_statuses = ["no_status", "completed", "in_progress", "planning", "paused", "dropped"]
+tracked_types = ["movie", "show", "season", "anime"]
+tracked_media_types = {"movie": "movie", "show": "tv", "season": "season", "anime": "anime"}
 
 
 class Floppy:
@@ -77,6 +80,42 @@ class Floppy:
         if not valid_lists:
             raise Failed(f"{err_type} Error: No valid Floppy Lists")
         return valid_lists
+
+    def validate_tracked(self, err_type, floppy_tracked, is_movie=None):
+        if isinstance(floppy_tracked, dict):
+            methods = {str(k).lower(): k for k in floppy_tracked}
+            unknown = [str(k) for k in floppy_tracked if str(k).lower() not in ("status", "type")]
+            if unknown:
+                raise Failed(f"{err_type} Error: floppy_tracked attribute {unknown[0]} is invalid")
+            if "status" not in methods:
+                raise Failed(f"{err_type} Error: floppy_tracked status is required")
+            status_data = floppy_tracked[methods["status"]]
+            type_data = floppy_tracked[methods["type"]] if "type" in methods else None
+        else:
+            status_data = floppy_tracked
+            type_data = None
+
+        statuses = self._validate_tracked_values(err_type, "status", status_data, tracked_statuses + ["all"])
+        if "all" in statuses:
+            statuses = ["all"]
+
+        default_types = ["movie"] if is_movie is True else ["show", "season"] if is_movie is False else ["movie", "show", "season"]
+        media_types = default_types if type_data is None else self._validate_tracked_values(err_type, "type", type_data, tracked_types)
+        applicable_types = [media_type for media_type in media_types if media_type == "anime" or is_movie is None or (is_movie and media_type == "movie") or (not is_movie and media_type in ("show", "season"))]
+        if not applicable_types:
+            library_name = "movie" if is_movie else "show"
+            raise Failed(f"{err_type} Error: floppy_tracked type does not apply to a {library_name} library")
+        return {"status": statuses, "type": applicable_types}
+
+    @staticmethod
+    def _validate_tracked_values(err_type, attribute, data, valid_values):
+        values = [str(value).strip().lower().replace(" ", "_") for value in util.get_list(data, return_none=False)]
+        if not values:
+            raise Failed(f"{err_type} Error: floppy_tracked {attribute} is required")
+        for value in values:
+            if value not in valid_values:
+                raise Failed(f"{err_type} Error: floppy_tracked {attribute} {value} is invalid; options: {', '.join(valid_values)}")
+        return list(dict.fromkeys(values))
 
     @staticmethod
     def _api_id(item, is_movie):
@@ -174,6 +213,78 @@ class Floppy:
                 int(row["episode_number"]) if row.get("episode_number") else None,
             )
             self._ratings[key] = rating
+
+    def get_tracked_ids(self, tracked, is_movie=None):
+        if not self.token:
+            raise Failed("Floppy Error: An API token is required for floppy_tracked")
+        response = self._response(f"{self.url}/api/v1/export/csv?include_lists=0")
+        content = response.content.decode("utf-8-sig") if isinstance(response.content, bytes) else str(response.content)
+        rows = list(csv.DictReader(StringIO(content)))
+        selected_types = {tracked_media_types[media_type] for media_type in tracked["type"]}
+        selected_statuses = set(tracked["status"])
+        include_all = "all" in selected_statuses
+
+        tracked_keys = set()
+        candidates = []
+        for row in rows:
+            if row.get("row_type") != "media" or row.get("media_type") not in selected_types:
+                continue
+            key = self._tracked_key(row)
+            if key:
+                tracked_keys.add(key)
+                status = str(row.get("status") or "").strip().lower().replace(" ", "_") or "no_status"
+                if include_all or status in selected_statuses:
+                    candidates.append(row)
+
+        if include_all or "no_status" in selected_statuses:
+            for row in rows:
+                if row.get("row_type") != "collection" or row.get("media_type") not in selected_types:
+                    continue
+                key = self._tracked_key(row)
+                if key and key not in tracked_keys:
+                    candidates.append(row)
+
+        ids = []
+        mal_ids = []
+        seen = set()
+        seen_mal = set()
+        for row in candidates:
+            media_type = row.get("media_type")
+            if media_type == "anime":
+                if row.get("source") == "mal":
+                    try:
+                        mal_id = int(row["media_id"])
+                    except (KeyError, TypeError, ValueError):
+                        continue
+                    if mal_id not in seen_mal:
+                        mal_ids.append(mal_id)
+                        seen_mal.add(mal_id)
+                continue
+            item_id = self._tracked_api_id(row, is_movie)
+            if item_id and item_id not in seen:
+                ids.append(item_id)
+                seen.add(item_id)
+        if not ids and not mal_ids:
+            raise Failed("Floppy Error: No IDs found in tracked items")
+        return ids, mal_ids
+
+    @staticmethod
+    def _tracked_key(row):
+        media_type = row.get("media_type")
+        source = row.get("source")
+        media_id = row.get("media_id")
+        if not media_type or not source or media_id in (None, ""):
+            return None
+        season = row.get("season_number") if media_type == "season" else None
+        return media_type, source, str(media_id), str(season or "")
+
+    @classmethod
+    def _tracked_api_id(cls, row, is_movie):
+        media_type = row.get("media_type")
+        api_type = "movie" if media_type == "movie" else "tv" if media_type in ("tv", "season") else None
+        if api_type is None:
+            return None
+        return cls._api_id({"media_type": api_type, "source": row.get("source"), "media_id": row.get("media_id")}, is_movie)
 
     def get_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         self._load_ratings()

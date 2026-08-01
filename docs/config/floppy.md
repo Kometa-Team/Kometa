@@ -1,6 +1,6 @@
 # Floppy
 
-Configuring [Floppy](https://github.com/dannyvfilms/Floppy) is required for the `floppy_list` builder and to use `floppy` as a ratings update source.
+Configuring [Floppy](https://github.com/dannyvfilms/Floppy) is required for the `floppy_list` and `floppy_tracked` builders and to use `floppy` as a ratings update source.
 
 Add a `floppy` mapping at the root of the config file:
 

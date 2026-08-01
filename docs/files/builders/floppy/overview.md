@@ -14,3 +14,4 @@ You can find movies and shows using lists from your [Floppy](https://github.com/
 |:--------|:------------|:-----------------:|:----------------:|:------------------------------------:|
 | [`floppy_list`](list.md) | Finds every supported movie/show in a Floppy list. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`floppy_list_details`](list.md) | Finds list items and uses the Floppy description as the Plex collection summary. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+| [`floppy_tracked`](tracked.md) | Finds Floppy items tracked with selected statuses and media types. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |

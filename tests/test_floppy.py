@@ -76,6 +76,27 @@ def test_dictionary_builder_parses_sync_tags():
     assert floppy.validate_lists("Collection", {"url": "https://floppy.example/list/1", "sync_tags": True}) == [{"url": "https://floppy.example/list/1", "sync_tags": True}]
 
 
+def test_tracked_validation_defaults_types_to_library():
+    floppy = Floppy(Requests({}), {"url": "https://floppy.example", "token": "secret"})
+    assert floppy.validate_tracked("Collection", {"status": ["completed", "in progress"]}, is_movie=False) == {
+        "status": ["completed", "in_progress"],
+        "type": ["show", "season"],
+    }
+
+
+def test_tracked_csv_filters_status_types_and_maps_ids():
+    url = "https://floppy.example/api/v1/export/csv?include_lists=0"
+    csv_data = (
+        "row_type,media_id,source,media_type,status,season_number\n"
+        "media,550,tmdb,movie,completed,\n"
+        "media,1399,tmdb,tv,in_progress,\n"
+        "media,123,mal,anime,completed,\n"
+    )
+    floppy = Floppy(Requests({url: FakeResponse(content=csv_data.encode("utf-8"))}), {"url": "https://floppy.example", "token": "secret"})
+    tracked = {"status": ["completed"], "type": ["movie", "anime"]}
+    assert floppy.get_tracked_ids(tracked, is_movie=True) == ([(550, "tmdb")], [123])
+
+
 def test_public_csv_returns_description_and_tags():
     url = "https://floppy.example/list/1/export"
     csv_data = 'row_type,list_uid,list_description,list_tags\nlist,1,"A useful list","[""One"", ""Two""]"\n'
