@@ -2387,6 +2387,23 @@ class Plex(Library):
                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
             else:
                 found_rating = self.config.IMDb.get_rating(imdb_id)
+        elif variable_name == "floppy_rating":
+            if not getattr(self.config, "Floppy", None):
+                raise OverlayError("Overlay Error: Floppy is not configured in your config file")
+            floppy_tmdb_id = tmdb_id
+            if not self.is_movie and floppy_tmdb_id is None:
+                try:
+                    floppy_tmdb_id = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=False).tmdb_id
+                except Failed:
+                    pass
+            found_rating = self.config.Floppy.get_overlay_rating(
+                "episode" if isinstance(item, Episode) else "movie" if self.is_movie else "tv",
+                tmdb_id=floppy_tmdb_id,
+                tvdb_id=tvdb_id,
+                imdb_id=imdb_id,
+                season=item.seasonNumber if isinstance(item, Episode) else None,
+                episode=item.episodeNumber if isinstance(item, Episode) else None,
+            )
         elif variable_name == "trakt_user_rating":
             if getattr(self, "_trakt_user_ratings", None) is None:
                 self._trakt_user_ratings = self.config.Trakt.user_ratings(self.is_movie)

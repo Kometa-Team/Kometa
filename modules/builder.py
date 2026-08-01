@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -29,6 +29,7 @@ advance_show = [
 all_builders = (
     anidb.builders
     + anilist.builders
+    + floppy.builders
     + icheckmovies.builders
     + imdb.builders
     + letterboxd.builders
@@ -99,6 +100,7 @@ summary_details = [
     "tvdb_description",
     "trakt_description",
     "yamtrack_description",
+    "floppy_description",
     "letterboxd_description",
     "icheckmovies_description",
 ]
@@ -508,6 +510,7 @@ custom_sort_builders = [
     "tmdb_airing_today",
     "tmdb_on_the_air",
     "trakt_list",
+    "floppy_list",
     "yamtrack_list",
     "yamtrack_tracked",
     "trakt_watchlist",
@@ -589,6 +592,7 @@ overlay_attributes = (
 parts_collection_valid = (
     [
         "filters",
+        "value_filter",
         "plex_all",
         "plex_search",
         "text_file",
@@ -1632,6 +1636,8 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
+                elif method_name in floppy.builders:
+                    self._floppy(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
                 elif method_name in mdblist.builders:
@@ -3428,6 +3434,19 @@ class CollectionBuilder:
             if description:
                 self.summaries[method_name] = description
 
+    def _floppy(self, method_name, method_data):
+        if self.config.Floppy is None:
+            raise BuilderValidationError(f"{self.Type} Error: floppy attribute not found in config")
+        for floppy_list in self.config.Floppy.validate_lists(self.Type, method_data):
+            self.builders.append(("floppy_list", floppy_list))
+            if method_name.endswith("_details") or floppy_list["sync_tags"]:
+                description, tags = self.config.Floppy.get_list_details(floppy_list)
+                if method_name.endswith("_details") and description:
+                    self.summaries[method_name] = description
+                if floppy_list["sync_tags"] and tags:
+                    item_labels = self.item_details.setdefault("item_label", [])
+                    item_labels.extend(tag for tag in tags if tag not in item_labels)
+
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
@@ -3578,6 +3597,8 @@ class CollectionBuilder:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "floppy" in method:
+            ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:
@@ -5101,6 +5122,8 @@ class CollectionBuilder:
             summary = ("trakt_list_details", self.summaries["trakt_list_details"])
         elif "yamtrack_list_details" in self.summaries:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
+        elif "floppy_list_details" in self.summaries:
+            summary = ("floppy_list_details", self.summaries["floppy_list_details"])
         elif "tmdb_list_details" in self.summaries:
             summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
         elif "tvdb_list_details" in self.summaries:

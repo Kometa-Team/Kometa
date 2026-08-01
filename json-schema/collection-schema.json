@@ -572,6 +572,14 @@
                     "description": "YamTrack List URL(s).",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
+                "floppy_list": {
+                    "description": "Floppy List URL(s).",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
+                "floppy_list_details": {
+                    "description": "Floppy List URL(s). Also fetches the list description.",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
                 "yamtrack_list_details": {
                     "description": "YamTrack List URL(s). Also fetches description.",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
@@ -1172,6 +1180,38 @@
                 "incremental": { "type": "boolean" },
                 "note": { "type": "string" }
             }
+        },
+
+        "floppy-list-builder": {
+            "oneOf": [
+                { "type": "string" },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["url"],
+                    "properties": {
+                        "url": { "type": "string", "format": "uri" },
+                        "sync_tags": { "type": "boolean", "default": false }
+                    }
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["url"],
+                                "properties": {
+                                    "url": { "type": "string", "format": "uri" },
+                                    "sync_tags": { "type": "boolean", "default": false }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
         },
 
         "yamtrack-tracked": {

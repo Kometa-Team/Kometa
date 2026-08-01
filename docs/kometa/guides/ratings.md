@@ -48,6 +48,7 @@ All other supported values are fetched directly from their source or integration
 | `tmdb`                  | TMDb rating                                                        |
 | `trakt`                 | Trakt public rating                                                |
 | `trakt_user`            | Your Trakt user rating                                             |
+| `floppy`                | Your Floppy rating                                                 |
 | `mdb`                   | MDBList score                                                      |
 | `mdb_average`           | MDBList average                                                    |
 | `mdb_imdb`              | IMDb rating through MDBList                                        |
@@ -74,7 +75,7 @@ All other supported values are fetched directly from their source or integration
 
 Most of these source keys are also used by the Mass Rating Update operations, but in the new setup they are used directly by the overlay instead of being written into Plex first. Two exceptions: the operations equivalent of `anidb` is named `anidb_rating`, and `omdb_imdb` has no operations equivalent — it's only available as a direct overlay source.
 
-Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, and `imdb` — anything else (`mdb_*`, `omdb_*`, `trakt`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
+Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, `imdb`, and `floppy` — anything else (`mdb_*`, `omdb_*`, `trakt`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
 
 ### Images
 

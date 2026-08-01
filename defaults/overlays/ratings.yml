@@ -105,6 +105,8 @@ templates:
             value: mdb
           - rating<<rating_num>>: [user]
             value: star
+          - rating<<rating_num>>: [floppy]
+            value: floppy
           - rating<<rating_num>>: [critic]
             value: critic
           - rating<<rating_num>>: [audience]
@@ -132,7 +134,7 @@ templates:
       plex_all:
         conditions:
           - image_level: [Rotten, Fresh]
-            rating<<rating_num>>: [tmdb, imdb, trakt, trakt_user, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, plex_tmdb, plex_tomatoes, plex_tomatoesaudience]
+            rating<<rating_num>>: [tmdb, imdb, floppy, trakt, trakt_user, omdb, omdb_imdb, omdb_metascore, omdb_tomatoes, mdb, mdb_average, mdb_imdb, mdb_metacritic, mdb_metacriticuser, mdb_trakt, mdb_tomatoes, mdb_tomatoesaudience, mdb_tmdb, mdb_letterboxd, mdb_myanimelist, anidb, anidb_average, anidb_score, mal, plex_imdb, plex_tmdb, plex_tomatoes, plex_tomatoesaudience]
             value: true
       run_this:
         default: true
@@ -144,7 +146,7 @@ templates:
             rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
             value: true
           - builder_level: episode
-            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb]
+            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb, floppy]
             value: false
           - builder_level: season
             rating<<rating_num>>.not: [user, tmdb]
@@ -186,6 +188,8 @@ templates:
             value: AniDB
           - rating<<rating_num>>_image: imdb
             value: IMDb
+          - rating<<rating_num>>_image: floppy
+            value: Floppy
           - rating<<rating_num>>_image: omdb
             value: OMDb
           - rating<<rating_num>>_image: letterboxd

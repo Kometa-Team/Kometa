@@ -9,6 +9,7 @@ from modules.apprise_notify import AppriseNotify
 from modules.cache import Cache
 from modules.convert import Convert
 from modules.ergast import Ergast
+from modules.floppy import Floppy
 from modules.github import GitHub
 from modules.gotify import Gotify
 from modules.icheckmovies import ICheckMovies
@@ -170,6 +171,7 @@ mass_episode_rating_options = {
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating",
+    "floppy": "Use Floppy User Rating",
 }
 mass_rating_options = {
     "lock": "Lock Rating",
@@ -180,6 +182,7 @@ mass_rating_options = {
     "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating",
     "trakt_user": "Use Trakt User Rating",
+    "floppy": "Use Floppy User Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "omdb_metascore": "Use Metacritic Metascore through OMDb",
     "omdb_tomatoes": "Use Rotten Tomatoes Rating through OMDb",
@@ -1206,6 +1209,29 @@ class ConfigFile:
             self.Simkl = Simkl(self.Requests, self.Cache)
             self.TextFile = TextFile(self.Requests)
             self.Ergast = Ergast(self.Requests, self.Cache)
+            self.Floppy = None
+            if "floppy" in self.data:
+                logger.info("Connecting to Floppy...")
+                try:
+                    floppy_obj = Floppy(
+                        self.Requests,
+                        {
+                            "url": check_for_attribute(self.data, "url", parent="floppy", throw=True),
+                            "token": check_for_attribute(self.data, "token", parent="floppy", default_is_none=True),
+                        },
+                    )
+                    floppy_obj.test_connection()
+                    self.Floppy = floppy_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"Floppy Connection {'Failed' if self.Floppy is None else 'Successful'}")
+            else:
+                logger.info("floppy attribute not found")
+
+            logger.separator()
             self.YamTrack = None
             if "yamtrack" in self.data:
                 logger.info("Connecting to YamTrack...")
