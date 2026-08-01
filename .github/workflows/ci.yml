@@ -1,37 +1,38 @@
-name: Validate Pull Request
+# PR CI Orchestrator -- single entry point for all PR checks against nightly, replaces validate-pull.yml.
+name: CI
 
 on:
   pull_request:
     types: [opened, synchronize, reopened, labeled]
 
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: ${{ github.event.action == 'synchronize' || github.event.action == 'opened' }}
+
 jobs:
 
-  validate-pull:
+  guard:
     runs-on: ubuntu-latest
-    # Read-only: this job only diffs filenames and spellchecks markdown, no secrets needed.
-    permissions:
-      contents: read
-    outputs:
-      build: ${{ steps.list-changes.outputs.build }}
+    # Irrelevant label events (anything but docker/tester) skip the whole DAG instead of re-running everything.
+    if: >-
+      github.event.action != 'labeled' ||
+      contains(fromJSON('["docker","tester"]'), github.event.label.name)
     steps:
-
-      - name: Display Refs
-        env:
-          BASE_REPO: ${{ github.event.pull_request.base.repo.full_name }}
-          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
-        run: |
-          echo "Base Repo: ${BASE_REPO}"
-          echo "Base Ref: ${{ github.base_ref }}"
-          echo "Head Repo: ${HEAD_REPO}"
-          echo "Head Ref: ${GITHUB_HEAD_REF}"
-
       - name: Check Base Branch
         if: github.base_ref == 'master' || github.base_ref == 'develop'
         run: |
           echo "ERROR: Pull Requests cannot be submitted to master or develop. Please submit the Pull Request to the nightly branch"
           exit 1
 
-      # pull_request (not _target) + default merge-commit ref = no secrets, no fork-checkout trust issue.
+  validate:
+    runs-on: ubuntu-latest
+    needs: [guard]
+    # Read-only: this job only diffs filenames and spellchecks markdown, no secrets needed.
+    permissions:
+      contents: read
+    outputs:
+      build: ${{ steps.list-changes.outputs.build }}
+    steps:
       - name: Checkout Repo
         uses: actions/checkout@v7
         with:
@@ -39,19 +40,11 @@ jobs:
 
       - name: Get changes
         id: get-changes
-        # github.repository (not vars.REPO_NAME) because fork-originated pull_request runs get no vars/secrets at all, only the event payload.
+        # HEAD^1 is the base tip on the merge commit, so this is always the full PR-vs-base diff -- replaces the old labeled-vs-synchronize branching.
         run: |
-            git remote add -f upstream https://github.com/${{ github.repository }}.git
-            git remote update
-            if [[ ${{ github.event.action }} == "labeled" ]]; then
-                echo "files<<EOF" >> $GITHUB_OUTPUT
-                git diff --name-only upstream/nightly HEAD >> $GITHUB_OUTPUT
-                echo "EOF" >> $GITHUB_OUTPUT
-            else
-                echo "files<<EOF" >> $GITHUB_OUTPUT
-                git diff --name-only HEAD^ >> $GITHUB_OUTPUT
-                echo "EOF" >> $GITHUB_OUTPUT
-            fi
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          git diff --name-only HEAD^1 HEAD >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: List changed files
         id: list-changes
@@ -80,44 +73,43 @@ jobs:
           task_name: Markdown
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
 
+  tests:
+    needs: [guard]
+    uses: ./.github/workflows/test.yml
 
-  docker-build-pull:
+  pyright:
+    needs: [guard]
+    uses: ./.github/workflows/pyright.yml
+
+  docker-build:
     runs-on: ubuntu-latest
-    needs: [ validate-pull ]
-    # Same-repo check closes the gap where a stale label let unreviewed synchronize pushes rebuild with secrets; fork PRs now go through promote-fork-pr.yml.
+    needs: [validate, tests, pyright]
+    # Same-repo + label gate as before, now also gated on tests/pyright passing so a build can never mask a failing commit.
     if: >-
-      needs.validate-pull.outputs.build == 'true' &&
+      needs.validate.outputs.build == 'true' &&
       github.event.pull_request.head.repo.full_name == github.repository &&
-      (contains(github.event.pull_request.labels.*.name, 'docker') || contains(github.event.pull_request.labels.*.name, 'tester'))
+      (contains(github.event.pull_request.labels.*.name, 'docker') ||
+       contains(github.event.pull_request.labels.*.name, 'tester'))
     permissions:
       contents: read
       packages: write
-      actions: write
     outputs:
-      commit-msg: ${{ steps.update-version.outputs.commit-msg }}
-      part_value: ${{ steps.update-version.outputs.part_value }}
-      tag-name: ${{ steps.update-version.outputs.tag-name }}
-      extra-text: ${{ steps.update-version.outputs.extra-text }}
+      commit-msg: ${{ steps.build-vars.outputs.commit-msg }}
+      part-value: ${{ steps.build-vars.outputs.part-value }}
+      tag-name: ${{ steps.build-vars.outputs.tag-name }}
+      extra-text: ${{ steps.build-vars.outputs.extra-text }}
     steps:
-
-      - name: Create App Token
-        uses: actions/create-github-app-token@v3
-        id: app-token
-        with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_TOKEN }}
-
-      # Same-repo guaranteed by the if: above, so checkout by exact SHA is enough, no mutable ref dependency.
+      # Default GITHUB_TOKEN is enough -- nothing gets pushed, so secrets.PAT no longer needs to be here.
       - name: Check Out Repo
         uses: actions/checkout@v7
         with:
-          token: ${{ secrets.PAT }}
           ref: ${{ github.event.pull_request.head.sha }}
 
-      - name: Update VERSION File
-        id: update-version
+      - name: Compute build variables
+        id: build-vars
         env:
           HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          COMMITS: ${{ github.event.pull_request.commits }}
         run: |
             branch_name="${GITHUB_HEAD_REF}"
             branch_name=$(echo "${branch_name}" | sed 's/[^a-zA-Z0-9._-]/-/g')
@@ -137,30 +129,15 @@ jobs:
             fi
             echo "extra-text=${extra}" >> $GITHUB_OUTPUT
 
-            value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
 
-            part=$(cat PART)
-            if [ -n "$part" ]; then
-                new_value="$((${part} + 1))"
-            else
-                new_value="1"
-            fi
-
-            echo "part_value=${new_value}" >> $GITHUB_OUTPUT
-
-            echo "$new_value" > "PART"
-            git config --local user.email "action@github.com"
-            git config --local user.name "GitHub Action"
-            git add PART
-            # [skip ci] prevents this PAT-authenticated push from re-triggering this same job via synchronize.
-            git commit -m "${tag_name} Part: ${new_value} [skip ci]"
-            # HEAD is detached because checkout uses the immutable PR head SHA.
-            git push origin "HEAD:refs/heads/${GITHUB_HEAD_REF}"
+            # PART is written on the runner only, never committed -- PR commit count is a stable integer proxy for which push this is; Discord carries the short SHA as ground truth.
+            echo "${COMMITS}" > PART
+            echo "part-value=${COMMITS}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v4.5.2
+        uses: docker/login-action@v4
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
@@ -181,10 +158,10 @@ jobs:
         id: docker_build
         run: |
           docker buildx build \
-            --build-arg BRANCH_NAME=${{ steps.update-version.outputs.tag-name }} \
+            --build-arg BRANCH_NAME=${{ steps.build-vars.outputs.tag-name }} \
             --file ./Dockerfile \
             --platform linux/amd64,linux/arm64 \
-            --tag kometateam/kometa:${{ steps.update-version.outputs.tag-name }} \
+            --tag kometateam/kometa:${{ steps.build-vars.outputs.tag-name }} \
             --push \
             .
 
@@ -193,7 +170,7 @@ jobs:
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
-          title: "${{ vars.REPO_NAME }} ${{ steps.update-version.outputs.tag-name }}: ${{ vars.TEXT_SUCCESS }}"
+          title: "${{ vars.REPO_NAME }} ${{ steps.build-vars.outputs.tag-name }}: ${{ vars.TEXT_SUCCESS }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
@@ -207,7 +184,7 @@ jobs:
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
           message: ${{ vars.BUILD_FAILURE_ROLE }}
-          title: "${{ vars.REPO_NAME }} ${{ steps.update-version.outputs.tag-name }}: ${{ vars.TEXT_FAILURE }}"
+          title: "${{ vars.REPO_NAME }} ${{ steps.build-vars.outputs.tag-name }}: ${{ vars.TEXT_FAILURE }}"
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/actions/runs/${{ github.run_id }}
           color: ${{ vars.COLOR_FAILURE }}
           username: ${{ vars.BOT_NAME }}
@@ -217,10 +194,9 @@ jobs:
 
   notify-testers:
     runs-on: ubuntu-latest
-    needs: [ docker-build-pull ]
+    needs: [docker-build]
     if: github.event.action == 'labeled' && github.event.label.name == 'tester'
     steps:
-
       - name: Get Description
         env:
           DESC: ${{ github.event.pull_request.body }}
@@ -236,9 +212,9 @@ jobs:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
           message: 'The Kometa team are requesting <@&917323027438510110> to assist with testing an upcoming feature/bug fix.
 
-                    * For Local Git pull and checkout the `${{ github.event.pull_request.head.ref }}` branch${{ needs.docker-build-pull.outputs.extra-text }}
+                    * For Local Git pull and checkout the `${{ github.event.pull_request.head.ref }}` branch${{ needs.docker-build.outputs.extra-text }}
 
-                    * For Docker use the `kometateam/kometa:${{ needs.docker-build-pull.outputs.tag-name }}` image to do your testing
+                    * For Docker use the `kometateam/kometa:${{ needs.docker-build.outputs.tag-name }}` image to do your testing
 
                     Please report back either here or on the original GitHub Pull Request'
           title: ${{ github.event.pull_request.title }}
@@ -252,20 +228,35 @@ jobs:
 
   update-testers:
     runs-on: ubuntu-latest
-    needs: [ docker-build-pull ]
+    needs: [docker-build]
     if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'tester')
     steps:
-
       - name: Discord Testers Notification
         uses: Kometa-Team/discord-notifications@master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
-          message: 'New Commit Pushed to `${{ needs.docker-build-pull.outputs.tag-name }}`: Part ${{ needs.docker-build-pull.outputs.part_value }}'
+          message: 'New Commit Pushed to `${{ needs.docker-build.outputs.tag-name }}`: Part ${{ needs.docker-build.outputs.part-value }}'
           title: ${{ github.event.pull_request.title }}
-          description: ${{ needs.docker-build-pull.outputs.commit-msg }}
+          description: ${{ needs.docker-build.outputs.commit-msg }}
           url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/pull/${{ github.event.number }}
           color: ${{ vars.COLOR_SUCCESS }}
           username: ${{ vars.BOT_NAME }}
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.GIT_NAME }}
           author_icon_url: ${{ vars.GIT_IMAGE }}
+
+  # Single stable context for branch protection -- immune to job renames inside tests/pyright, and guard-skips count as pass, not pending.
+  ci-status:
+    runs-on: ubuntu-latest
+    needs: [guard, validate, tests, pyright]
+    if: always()
+    steps:
+      - name: Check required jobs
+        run: |
+          results='${{ toJSON(needs) }}'
+          echo "$results" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          failed=$(echo "$results" | jq '[.[] | select(.result != "success" and .result != "skipped")] | length')
+          if [ "$failed" -gt 0 ]; then
+            echo "One or more required jobs did not succeed."
+            exit 1
+          fi
