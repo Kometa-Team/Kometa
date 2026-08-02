@@ -11,9 +11,10 @@ The expected input is a single integer value of how many movies/shows to query.
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order. 
 
-???+ warning "Trakt Configuration"
+???+ warning "Trakt Authentication"
 
-    [Configuring Trakt](../../../config/trakt.md) in the config is required for any of these builders.
+    :lock: Trakt [authentication](../../../config/authentication.md) is required for this builder
+
 
 | Attribute              | Description & Values                                                                                                                       | Authentication Required |
 |:-----------------------|:------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------:|

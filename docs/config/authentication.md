@@ -4,7 +4,7 @@ hide:
 ---
 # Online Authentication
 
-This page covers the online utilities for Plex, MyAnimeList, and SIMKL authentication. Trakt uses Device Code Flow directly in Kometa; see [Trakt Attributes](trakt.md).
+This page covers the online utilities for Plex, MyAnimeList, SIMKL, and Trakt authentication. See [Trakt Attributes](trakt.md) for Trakt-specific behavior.
 
 This is useful on setups, primarily Docker, where completing a browser-based flow locally is inconvenient.
 
@@ -33,6 +33,24 @@ There is no logging, but if you feel more comfortable running these things local
         ![Step 2](./../assets/images/utilities/plex-oauth-03.png)
 
     4. Copy that token to your Kometa `config.yml`
+
+=== "Trakt Authentication"
+
+    1. Click the top-level button, enter your Trakt client ID and Secret.
+
+        ![Step 1](./../assets/images/utilities/trakt-oauth-01.png)
+
+    2. Click "Continue to Trakt".
+
+        Follow any instructions you see on the Trakt site.
+
+        You will be returned to the Kometa Utilities site.
+
+    3. A Kometa Trakt authentication block will be displayed.
+
+        ![Step 4](./../assets/images/utilities/trakt-oauth-03.png)
+
+        Copy that block to your Kometa `config.yml`
 
 === "MyAnimeList Authentication"
 

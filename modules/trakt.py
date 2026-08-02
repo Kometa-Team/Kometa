@@ -1,9 +1,6 @@
-import base64
-import os
+import re
 import time
-import webbrowser
 from typing import Any
-from urllib.parse import quote
 
 from tenacity import retry, retry_if_not_exception_type, stop_after_attempt, wait_fixed
 
@@ -15,6 +12,7 @@ logger = util.logger
 
 base_url = "https://api.trakt.tv"
 auth_url = "https://auth.trakt.tv"
+utilities_oauth_url = "https://utilities.kometa.wiki/trakt-oauth/"
 builders = [
     "trakt_list",
     "trakt_list_details",
@@ -54,25 +52,20 @@ id_types = {"movie": ("tmdb", "TMDb ID"), "person": ("tmdb", "TMDb ID"), "show":
 
 class Trakt:
     def __init__(self, requests, read_only, params):
-        base_string = os.environ.get("KOMETA_BASE_STRING")
-        BASE_STRING = base64.b64decode(base_string or "redacted_for_now").decode("utf-8") if not params.get("client_id") else None
         self.requests = requests
         self.read_only = read_only
-        self.client_id = params.get("client_id") or BASE_STRING
+        self.client_id = params.get("client_id") or self._get_public_client_id()
         self.client_secret = params["client_secret"]
-        self.force_refresh = params["force_refresh"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
-        self.webhooks = params["webhooks"]
         self.username = None
         if self.client_secret:
             logger.secret(self.client_secret)
         # Authentication is lazy. Public endpoints only need the application's
         # API key; obtain a user token when an endpoint explicitly requires it.
-        if self.client_secret:
-            if not self.authorization or self.force_refresh is True:
-                if not self._refresh():
-                    self._authorization()
+        if self.client_secret and self.authorization:
+            if not self._refresh():
+                self._invalidate_authorization()
         self._slugs = None
         self._movie_genres = None
         self._show_genres = None
@@ -82,6 +75,15 @@ class Trakt:
         self._show_countries = None
         self._movie_certifications = None
         self._show_certifications = None
+
+    def _get_public_client_id(self):
+        response = self.requests.get(utilities_oauth_url)
+        if response.status_code != 200:
+            raise Failed(f"Trakt Error: Unable to fetch the public Client ID from {utilities_oauth_url}: ({response.status_code}) {response.reason}")
+        match = re.search(r"const\s+TRAKT_CLIENT_ID\s*=\s*['\"]([^'\"]+)['\"]", response.text)
+        if not match:
+            raise Failed(f"Trakt Error: Unable to find TRAKT_CLIENT_ID on {utilities_oauth_url}")
+        return match.group(1)
 
     @property
     def slugs(self):
@@ -142,52 +144,6 @@ class Trakt:
             self._show_certifications = [g["slug"] for g in self._request("/certifications/shows")["us"]]
         return self._show_certifications
 
-    def _authorization(self):
-        response = self.requests.post(f"{auth_url}/oauth/device/code", json={"client_id": self.client_id}, headers={"Content-Type": "application/json"})
-        if response.status_code != 200:
-            raise Failed(f"Trakt Error: ({response.status_code}) {response.reason}")
-        device = response.json()
-        required = ("device_code", "user_code", "verification_url", "expires_in", "interval")
-        missing = [key for key in required if key not in device]
-        if missing:
-            raise Failed(f"Trakt Error: Device authorization response is missing {', '.join(missing)}")
-        activation_url = f"{device['verification_url'].rstrip('/')}/{quote(str(device['user_code']), safe='')}"
-        logger.info(f"Open {activation_url} and approve Trakt authorization.")
-        try:
-            self.webhooks.trakt_pin_hooks(activation_url, device["user_code"], device["expires_in"])
-        except Failed as e:
-            logger.warning(f"Trakt Warning: Unable to send authorization webhook: {e}")
-        webbrowser.open(activation_url, new=2)
-        interval = max(int(device["interval"]), 1)
-        expires_at = time.monotonic() + int(device["expires_in"])
-        token_response = None
-        while time.monotonic() < expires_at:
-            time.sleep(interval)
-            token_response = self.requests.post(
-                f"{auth_url}/oauth/device/token",
-                json={"code": device["device_code"], "client_id": self.client_id, "client_secret": self.client_secret},
-                headers={"Content-Type": "application/json"},
-            )
-            if token_response.status_code == 200:
-                break
-            if token_response.status_code == 400:
-                continue
-            if token_response.status_code == 429:
-                interval += 5
-                logger.debug(f"Trakt Error: Device authorization polling too quickly; retrying in {interval} seconds")
-                continue
-            messages = {
-                404: "The device code is invalid.",
-                409: "The device code has already been used.",
-                410: "The device code expired; start authorization again.",
-                418: "Trakt authorization was denied.",
-            }
-            raise Failed(f"Trakt Error: {messages.get(token_response.status_code, f'({token_response.status_code}) {token_response.reason}')}")
-        if token_response is None or token_response.status_code != 200:
-            raise Failed("Trakt Error: Device authorization timed out; start authorization again.")
-        if not self._save(token_response.json()):
-            raise Failed("Trakt Error: New Authorization Failed")
-
     def _check(self, authorization=None):
         token = self.authorization["access_token"] if authorization is None else authorization["access_token"]
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}", "trakt-api-version": "2", "trakt-api-key": self.client_id}
@@ -212,6 +168,11 @@ class Trakt:
             return self._save(response.json())
         return False
 
+    def _invalidate_authorization(self):
+        if self.authorization:
+            logger.error("Trakt authorization is invalid; please reauthenticate using the Kometa Utilities website. Kometa will continue to run in public mode.")
+        self.authorization = None
+
     def _save(self, authorization):
         if authorization and self._check(authorization):
             if self.authorization != authorization and not self.read_only:
@@ -232,7 +193,7 @@ class Trakt:
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
     def _ensure_authorized(self, method="This feature"):
-        error = f"Trakt Error: {method} requires Trakt authentication. Trakt OAuth credentials must be configured in Kometa."
+        error = f"Trakt Error: {method} requires Trakt authentication. Please (re)authenticate using the Kometa Utilities website."
         if self.authorization and self.authorization.get("access_token"):
             return True
         if not self.client_secret:
@@ -275,11 +236,14 @@ class Trakt:
             if response.status_code == 401:
                 time.sleep(auth_delay)
                 auth_delay += 3
-                if not self._refresh() and require_auth:
-                    self._ensure_authorized(auth_method)
-                elif not self.authorization:
-                    logger.debug("Trakt token refresh failure")
-                    raise Failed(f"({response.status_code}) {response.reason}")
+                if not self._refresh():
+                    self._invalidate_authorization()
+                    if require_auth:
+                        self._ensure_authorized(auth_method)
+                    if not self.authorization:
+                        reauth_count += 1
+                        if reauth_count > 1:
+                            raise Failed(f"({response.status_code}) {response.reason}")
                 reauth_count += 1
                 if reauth_count > 1:
                     logger.debug("Trakt token has been refreshed twice on this request; this may be a private list")

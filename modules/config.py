@@ -1013,7 +1013,6 @@ class ConfigFile:
             "run_end": check_for_attribute(self.data, "run_end", parent="webhooks", var_type="list", default_is_none=True),
             "changes": check_for_attribute(self.data, "changes", parent="webhooks", var_type="list", default_is_none=True),
             "delete": check_for_attribute(self.data, "delete", parent="webhooks", var_type="list", default_is_none=True),
-            "trakt_pin": check_for_attribute(self.data, "trakt_pin", parent="webhooks", var_type="list", default_is_none=True),
         }
         self.Webhooks = Webhooks(self, self.webhooks, notifiarr=self.NotifiarrFactory, gotify=self.GotifyFactory, ntfy=self.NtfyFactory, apprise=self.AppriseFactory)
         try:
@@ -1101,10 +1100,8 @@ class ConfigFile:
                     {
                         "client_id": check_for_attribute(self.data, "client_id", parent="trakt", default_is_none=True),
                         "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", default_is_none=True),
-                        "force_refresh": check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
                         "config_path": self.config_path,
                         "authorization": trakt_data.get("authorization"),
-                        "webhooks": self.Webhooks,
                     },
                 )
             except Failed as e:

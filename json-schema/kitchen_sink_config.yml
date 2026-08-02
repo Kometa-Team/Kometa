@@ -872,7 +872,6 @@ webhooks:                                           # Can be individually specif
   run_end: (redacted)
   changes: (redacted)
   version: (redacted)
-  trakt_pin: ntfy
   delete: (redacted)
 plex:                                               # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://10.10.10.10:1234

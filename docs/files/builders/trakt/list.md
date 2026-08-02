@@ -8,30 +8,25 @@ Finds every item in the Trakt List.
 
 The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
-:lock: Private Trakt Lists require authentication; public lists do not.
-
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order. 
 
 **Trakt Lists cannot be sorted through the API, but the list is always returned to the default list order if you own 
 the list.**
 
-???+ warning "Trakt Configuration"
-
-    [Configuring Trakt](../../../config/trakt.md) in the config is required for any of these builders.
-
 You can replace `trakt_list` with `trakt_list_details` if you would like to fetch and use the description from the list
 
-If you have [authorized Trakt](../../../config/trakt.md) then you can use private Trakt Lists, this is not possible if 
-you have not authorized Trakt.
+???+ warning "Private Lists"
 
-When you link to a private list, set the list to `private` and then use the standard browser link:
+    :lock: Trakt [authentication](../../../config/authentication.md) is required for any list you own which is set to Private.
 
-```
-https://trakt.tv/users/YOURTRAKTUSERNAME/lists/YOURLISTNAME
-```
+    When you link to a private list, set the list to `private` and then use the standard browser link:
+    
+    ```
+    https://trakt.tv/users/YOURTRAKTUSERNAME/lists/YOURLISTNAME
+    ```
 
-**DO NOT** set the list to `Share` and attempt to use the "Share link"; Kometa cannot use that address for the list.
+    **DO NOT** set the list to `Share` and attempt to use the "Share link"; Kometa cannot use that address for the list.
 
 
 ???+ warning

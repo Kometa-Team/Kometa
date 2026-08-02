@@ -118,7 +118,7 @@ minimum requirement is the Kometa config, but the example here assumes you have 
 
 Here's a config map for the `config.yml` file for Kometa. Note there are many placeholders that will need update based on your environment and needs.
 
-Follow the [Trakt Attributes](../../../config/trakt.md) directions for Device Code Flow. For a headless deployment, configure the optional `webhooks.trakt_pin` notification to receive notifications when a pin is needed.
+Follow the [Trakt Attributes](../../../config/trakt.md) directions to authenticate through the Kometa Utilities website.
 
 ```yaml
 apiVersion: v1

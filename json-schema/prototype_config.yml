@@ -457,7 +457,6 @@ webhooks:                        # Can be individually specified per library as 
   run_start:
   run_end:
   changes:
-  trakt_pin:
 plex:                            # Can be individually specified per library as well; REQUIRED for the script to run
   url: http://192.168.1.12:32400
   token: Enter Plex Token

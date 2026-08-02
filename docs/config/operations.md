@@ -515,13 +515,15 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         Use `ratings.audience`, `ratings.critic`, and `ratings.user` for item ratings. Use `ratings.episode_audience`, `ratings.episode_critic`, and `ratings.episode_user` for episode ratings.
 
-        ???+ warning "Important Note"
-
-            This does not affect the icons displayed in the Plex UI. This places the number of your choice in the relevant field in the Plex database. One primary use of this feature is to put ratings overlays on posters. More information on ratings can be found [here](../kometa/guides/ratings.md).
+        This does not affect the icons displayed in the Plex UI. This places the number of your choice in the relevant field in the Plex database. One primary use of this feature is to put ratings overlays on posters. More information on ratings can be found [here](../kometa/guides/ratings.md).
 
         ???+ tip "Note on `mdb` sources"
 
             MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+
+        ???+ warning "Trakt Authentication"
+
+            :lock: Trakt [authentication](authentication.md) is required for the `trakt_user` rating
 
         ??? example "Example Rating & Episode Rating Operations"
     
@@ -574,8 +576,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_tomatoes` | Use Rotten Tomatoes rating through Plex. |
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
-        | `trakt_user` | Use Trakt user's personal rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `trakt` | Use Trakt's public rating. |
+        | `trakt_user` | Use Trakt user's personal rating. :lock: Requires Trakt [authentication](authentication.md)authentication. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -588,7 +590,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_imdb` | Use IMDb rating through Plex. |
         | `plex_tmdb` | Use TMDb rating through Plex. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `trakt` | Use Trakt's public rating. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |

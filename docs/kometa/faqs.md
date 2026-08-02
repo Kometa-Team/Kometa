@@ -382,7 +382,7 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 ??? question "How do I authenticate Trakt or MyAnimeList?"
 
-    Public Trakt features do not require OAuth. Features such as `me` lists, private lists, ratings, history, collection/watchlist data, recommendations, and list changes do require authentication. Free users can assign Kometa as their one Trakt connected app, but this may disconnect services such as MDBList. Trakt VIP users are largely unaffected. When OAuth is configured, Kometa uses Device Code Flow and displays an activation URL; on a headless server, configure the optional [`trakt_pin` webhook](../config/webhooks.md#trakt-authorization-notifications).
+    Public Trakt features do not require OAuth. Features such as `me` lists, private lists, ratings, history, collection/watchlist data, recommendations, and list changes do require authentication. Free users can assign Kometa as their one Trakt connected app, but this may disconnect services such as MDBList. Trakt VIP users are largely unaffected. Authenticate through the [Kometa Utilities website](https://utilities.kometa.wiki).
     
     MyAnimeList authentication can be completed through the online utility, which provides a completed configuration block to paste into `config.yml`.
     

@@ -25,7 +25,6 @@ class TestWebhooks:
         w.end_time_webhooks = []
         w.changes_webhooks = []
         w.delete_webhooks = []
-        w.trakt_pin_webhooks = []
         w.notifiarr = None
         w.gotify = None
         w.ntfy = None
@@ -37,14 +36,3 @@ class TestWebhooks:
 
     def test_delete_hooks_no_webhooks_does_not_raise(self, wh):
         wh.delete_hooks("test delete")
-
-    def test_trakt_pin_hooks_sends_device_authorization_details(self, wh):
-        wh.trakt_pin_webhooks = ["https://example.com/webhook"]
-        wh._request = MagicMock()
-
-        wh.trakt_pin_hooks("https://auth.trakt.tv/activate", "USER-CODE", 300)
-
-        wh._request.assert_called_once_with(
-            ["https://example.com/webhook"],
-            {"event": "trakt_pin", "verification_url": "https://auth.trakt.tv/activate", "user_code": "USER-CODE", "expires_in": 300},
-        )

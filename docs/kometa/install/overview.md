@@ -91,7 +91,7 @@ The steps only cover the basics of creating a container. For a detailed step-by-
 docker run -it -v <PATH_TO_CONFIG>:/config:rw kometateam/kometa
 ```
 
-- The `-it` flag allows you to interact with the script when needed (such as for MyAnimeList authentication). Trakt Device Code Flow can be approved from any browser.
+- The `-it` flag allows you to interact with the script when needed (such as for MyAnimeList authentication).
 - The `-v <PATH_TO_CONFIG>:/config:rw` flag mounts the location you choose as a persistent volume to store your files.
 - this command will run the container in the foreground, waiting until 5AM to run; if you want it to run right now or run at a different time, 
   or run in the background, you will need to add some flags to the command. 

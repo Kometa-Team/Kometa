@@ -117,7 +117,6 @@ webhooks:
   run_start: https://webhook.example.com/start
   run_end: https://webhook.example.com/end
   changes: https://webhook.example.com/changes
-  trakt_pin: ntfy
 
 # ============================================================================
 # GLOBAL SETTINGS (can be overridden per library)

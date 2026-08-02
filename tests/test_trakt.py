@@ -71,22 +71,6 @@ class TestTraktAuthorization:
         monkeypatch.setattr("modules.trakt.logger", logger)
         return logger
 
-    def test_device_authorization_polls_until_approved(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.time.sleep", MagicMock())
-        adapter._save = MagicMock(return_value=True)
-        device_response = MagicMock(status_code=200, json=MagicMock(return_value={"device_code": "device-code", "user_code": "USER-CODE", "verification_url": "https://auth.trakt.tv/activate", "expires_in": 300, "interval": 1}))
-        token = {"access_token": "token"}
-        token_response = MagicMock(status_code=200, json=MagicMock(return_value=token))
-        adapter.requests.post.side_effect = [device_response, token_response]
-
-        adapter._authorization()
-
-        assert adapter.requests.post.call_args_list[0].args[0] == f"{auth_url}/oauth/device/code"
-        assert adapter.requests.post.call_args_list[1].args[0] == f"{auth_url}/oauth/device/token"
-        adapter._save.assert_called_once_with(token)
-        adapter.webhooks.trakt_pin_hooks.assert_called_once_with("https://auth.trakt.tv/activate/USER-CODE", "USER-CODE", 300)
-
     def test_failed_refresh_logs_http_response(self, adapter, mock_trakt_logger):
         adapter.requests.post.return_value = MagicMock(status_code=403, reason="Forbidden")
 
