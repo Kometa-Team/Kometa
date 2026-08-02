@@ -8,6 +8,8 @@ Finds every item in the Trakt List.
 
 The expected input is a Trakt List URL. Multiple values are supported only as a list.
 
+:lock: Private Trakt Lists require authentication; public lists do not.
+
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order. 
 

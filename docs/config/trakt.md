@@ -9,16 +9,28 @@ hide:
 Configuring [Trakt.tv](https://trakt.tv/) is optional but is required for Trakt based collections to function. 
 
 
-???+ warning
+???+ warning "Trakt authentication changes"
 
     Using Trakt meaningfully with Kometa probably requires a Trakt VIP account, since Trakt has limited free accounts to having a single external application connected.  This means that if you connect Kometa to Trakt, you can't use Trakt with any other application like MDBList, and vice versa, if you connect Trakt to any other applicaiton, you can't connect it to Kometa.
+
+    Trakt now limits free accounts to one connected application. Free users who need authenticated Kometa features must assign Kometa as that connected app. Doing so can disconnect or prevent other services, such as MDBList, from using the same Trakt account. Trakt VIP users are largely unaffected and can use Kometa alongside their other connected services.
 
 
 The `trakt` attribute is found at the root of the config file.
 
-Kometa uses Trakt's Device Code Flow. When authorization is required, it displays a complete activation URL. Open it in any browser and approve access; the short-lived code is already included in the URL.
+
+`client_id` may be omitted to use Kometa's bundled public API key, or set to your own application ID. `client_secret` may be omitted when Kometa is only using public endpoints. When supplied, OAuth is completed during the initial connectivity check.
+
+If `client_secret` is configured, Kometa uses Trakt's Device Code Flow during the initial connectivity check. Public lists, official lists, metadata, and charts use the application API key without sending a user token. If an authenticated feature is selected without OAuth, Kometa reports that Trakt VIP/OAuth is required instead of opening an authorization prompt.
 
 Kometa automatically refreshes the stored credentials before they expire.
+
+Public endpoints work without OAuth. Authenticated endpoints require Trakt VIP/OAuth credentials:
+
+| Requires OAuth | Kometa features                                                                                                                                            |
+|:---------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| No             | Official lists; public lists; named-user public lists; public ratings and metadata; trending, popular, and box-office charts                               |
+| Yes            | `me` lists; private lists; list changes; user ratings; collection, watchlist, and history for `me`; recommendations; liked lists; watched/collected charts |
 
 ???+ warning
 
@@ -41,11 +53,11 @@ trakt:
     created_at: 137946258
 ```
 
-| Attribute       | Description                       | Allowed Values (default in **bold**) |                  Required                  |
-|:----------------|:----------------------------------|:-------------------------------------|:------------------------------------------:|
-| `client_id`     | Trakt application client ID.      | Any valid ID or leave **blank**      | :fontawesome-solid-circle-check:{ .green } |
-| `client_secret` | Trakt application client secret.  | Any valid secret or leave **blank**  | :fontawesome-solid-circle-check:{ .green } |
-| `force_refresh` | Refresh credentials on every run, verifying that the app is still authorized. | 'true' or 'false'                    |  :fontawesome-solid-circle-xmark:{ .red }  |
+| Attribute       | Description                       | Allowed Values (default in **bold**)                        |                  Required                  |
+|:----------------|:----------------------------------|:------------------------------------------------------------|:------------------------------------------:|
+| `client_id`     | Trakt application client ID.      | Any valid ID or leave **blank** to use the public Kometa ID | :fontawesome-solid-circle-check:{ .green } |
+| `client_secret` | Trakt application client secret.  | Any valid secret or leave **blank**                         | :fontawesome-solid-circle-check:{ .green } |
+| `force_refresh` | Refresh credentials on every run, verifying that the app is still authorized. | 'true' or 'false'                                           |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 *All other attributes will be filled in as part of the authentication process*
 

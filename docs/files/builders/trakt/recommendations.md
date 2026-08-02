@@ -15,6 +15,10 @@ and in a specific order.
 
     [Configuring Trakt](../../../config/trakt.md) in the config is required for any of these builders.
 
+| Attribute              | Description & Values                                                                                                                       | Authentication Required |
+|:-----------------------|:------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------:|
+| `trakt_recommendations` | The number of movie/show recommendations to query. **Values:** Any positive integer.                                                      | :lock: **Yes**          |
+
 ### Example Trakt Recommendations Builder(s)
 
 ```yaml

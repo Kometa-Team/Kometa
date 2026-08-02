@@ -1091,30 +1091,28 @@ class ConfigFile:
 
             logger.separator()
 
+            logger.info("Connecting to Trakt in public mode..." if "trakt" not in self.data else "Connecting to Trakt...")
             self.Trakt = None
-            if "trakt" in self.data:
-                logger.info("Connecting to Trakt...")
-                try:
-                    self.Trakt = Trakt(
-                        self.Requests,
-                        self.read_only,
-                        {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="trakt", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", throw=True),
-                            "force_refresh": check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
-                            "config_path": self.config_path,
-                            "authorization": (self.data["trakt"]["authorization"] if "authorization" in self.data["trakt"] else None),
-                            "webhooks": self.Webhooks,
-                        },
-                    )
-                except Failed as e:
-                    if str(e).endswith("is blank"):
-                        logger.warning(e)
-                    else:
-                        logger.error(e)
-                logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
-            else:
-                logger.info("trakt attribute not found")
+            try:
+                trakt_data = self.data.get("trakt", {})
+                self.Trakt = Trakt(
+                    self.Requests,
+                    self.read_only,
+                    {
+                        "client_id": check_for_attribute(self.data, "client_id", parent="trakt", default_is_none=True),
+                        "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", default_is_none=True),
+                        "force_refresh": check_for_attribute(self.data, "force_refresh", parent="trakt", default_is_none=True),
+                        "config_path": self.config_path,
+                        "authorization": trakt_data.get("authorization"),
+                        "webhooks": self.Webhooks,
+                    },
+                )
+            except Failed as e:
+                if str(e).endswith("is blank"):
+                    logger.warning(e)
+                else:
+                    logger.error(e)
+            logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
 
             logger.separator()
 

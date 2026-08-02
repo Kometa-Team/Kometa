@@ -6,6 +6,9 @@ hide:
 
 Finds every movie/show in the Trakt UserList.
 
+Using a named username accesses that user's public data and does not require OAuth.<br>
+:lock: Using `user: me`, or accessing a private profile, requires Trakt authentication.
+
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated 
 and in a specific order.
 

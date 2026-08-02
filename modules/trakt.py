@@ -1,3 +1,5 @@
+import base64
+import os
 import time
 import webbrowser
 from typing import Any
@@ -52,19 +54,25 @@ id_types = {"movie": ("tmdb", "TMDb ID"), "person": ("tmdb", "TMDb ID"), "show":
 
 class Trakt:
     def __init__(self, requests, read_only, params):
+        base_string = os.environ.get("KOMETA_BASE_STRING")
+        BASE_STRING = base64.b64decode(base_string or "redacted_for_now").decode("utf-8")
         self.requests = requests
         self.read_only = read_only
-        self.client_id = params["client_id"]
+        self.client_id = params.get("client_id") or BASE_STRING
         self.client_secret = params["client_secret"]
         self.force_refresh = params["force_refresh"]
         self.config_path = params["config_path"]
         self.authorization = params["authorization"]
         self.webhooks = params["webhooks"]
         self.username = None
-        logger.secret(self.client_secret)
-        if self.force_refresh is True or not self._save(self.authorization):
-            if not self._refresh():
-                self._authorization()
+        if self.client_secret:
+            logger.secret(self.client_secret)
+        # Authentication is lazy. Public endpoints only need the application's
+        # API key; obtain a user token when an endpoint explicitly requires it.
+        if self.client_secret:
+            if not self.authorization or self.force_refresh is True:
+                if not self._refresh():
+                    self._authorization()
         self._slugs = None
         self._movie_genres = None
         self._show_genres = None
@@ -80,7 +88,7 @@ class Trakt:
         if self._slugs is None:
             items = []
             try:
-                items = [i["ids"]["slug"] for i in self._request("/users/me/lists")]
+                items = [i["ids"]["slug"] for i in self._request("/users/me/lists", require_auth=True)]
             except Failed:
                 pass
             self._slugs = items
@@ -194,7 +202,7 @@ class Trakt:
         return response.status_code == 200
 
     def _refresh(self):
-        if self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
+        if self.client_secret and self.authorization and "refresh_token" in self.authorization and self.authorization["refresh_token"]:
             logger.info("Refreshing Access Token...")
             json_data = {"refresh_token": self.authorization["refresh_token"], "client_id": self.client_id, "client_secret": self.client_secret, "grant_type": "refresh_token"}
             response = self.requests.post(f"{auth_url}/oauth/token", json=json_data, headers={"Content-Type": "application/json"})
@@ -223,7 +231,18 @@ class Trakt:
         return False
 
     @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
-    def _request(self, url, params=None, json_data=None, ignore_404=False) -> Any:
+    def _ensure_authorized(self, method="This feature"):
+        error = f"Trakt Error: {method} requires Trakt authentication. Trakt OAuth credentials must be configured in Kometa."
+        if self.authorization and self.authorization.get("access_token"):
+            return True
+        if not self.client_secret:
+            raise Failed(error)
+        if not self._refresh():
+            raise Failed(error)
+        return bool(self.authorization and self.authorization.get("access_token"))
+
+    @retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type(Failed))
+    def _request(self, url, params=None, json_data=None, ignore_404=False, require_auth=False, auth_method="This feature") -> Any:
         # Returns dict[str, Any] for single-page endpoints and list[dict] for
         # paginated endpoints.  Annotated Any so callers can subscript/iterate
         # based on their knowledge of the specific endpoint being called.
@@ -234,13 +253,17 @@ class Trakt:
         current = 1
         reauth_count = 0
         auth_delay = 3
+        if require_auth:
+            self._ensure_authorized(auth_method)
         logger.trace(f"URL: {base_url}{url}")
         if params:
             logger.trace(f"Params: {params}")
         if json_data:
             logger.trace(f"JSON: {json_data}")
         while current <= pages:
-            headers = {"Content-Type": "application/json", "Authorization": f"Bearer {self.authorization['access_token']}", "trakt-api-version": "2", "trakt-api-key": self.client_id}
+            headers = {"Content-Type": "application/json", "trakt-api-version": "2", "trakt-api-key": self.client_id}
+            if self.authorization and self.authorization.get("access_token"):
+                headers["Authorization"] = f"Bearer {self.authorization['access_token']}"
             if pages > 1:
                 params["page"] = current
             if json_data is not None:
@@ -252,7 +275,9 @@ class Trakt:
             if response.status_code == 401:
                 time.sleep(auth_delay)
                 auth_delay += 3
-                if not self._refresh():
+                if not self._refresh() and require_auth:
+                    self._ensure_authorized(auth_method)
+                elif not self.authorization:
                     logger.debug("Trakt token refresh failure")
                     raise Failed(f"({response.status_code}) {response.reason}")
                 reauth_count += 1
@@ -281,7 +306,7 @@ class Trakt:
     def user_ratings(self, is_movie):
         media = "movie" if is_movie else "show"
         id_type = "tmdb" if is_movie else "tvdb"
-        return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s") if i[media]["ids"][id_type]}
+        return {int(i[media]["ids"][id_type]): i["rating"] for i in self._request(f"/users/me/ratings/{media}s", require_auth=True) if i[media]["ids"][id_type]}
 
     def get_episode_rating(self, show_id, season, episode):
         response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
@@ -347,7 +372,7 @@ class Trakt:
         else:
             path = urlparse(list_url).path
         try:
-            return self._request(path)["description"]
+            return self._request(path, require_auth="/users/me/" in path)["description"]
         except Failed:
             raise Failed(list_url)
 
@@ -439,7 +464,7 @@ class Trakt:
         add_ids = [id_set for id_set in ids if id_set not in current_ids]
         if add_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items", json_data=self._build_item_json(add_ids))
+            results = self._request(f"/users/me/lists/{slug}/items", json_data=self._build_item_json(add_ids), require_auth=True)
             for object_type in ["movies", "shows", "seasons", "episodes"]:
                 read_result(results, object_type, "added")
             read_not_found(results, "Add")
@@ -448,7 +473,7 @@ class Trakt:
         remove_ids = [id_set for id_set in current_ids if id_set not in ids]
         if remove_ids:
             logger.info("")
-            results = self._request(f"/users/me/lists/{slug}/items/remove", json_data=self._build_item_json(remove_ids))
+            results = self._request(f"/users/me/lists/{slug}/items/remove", json_data=self._build_item_json(remove_ids), require_auth=True)
             for object_type in ["movies", "shows", "seasons", "episodes"]:
                 read_result(results, object_type, "deleted", "Removed")
             read_not_found(results, "Remove")
@@ -457,13 +482,13 @@ class Trakt:
         trakt_ids = self._list(slug, parse=False, trakt_ids=True)
         trakt_lookup = {f"{ty}_{i_id}": t_id for t_id, i_id, ty in trakt_ids}
         rank_ids = [trakt_lookup[f"{ty}_{i_id}"] for i_id, ty in ids if f"{ty}_{i_id}" in trakt_lookup]
-        self._request(f"/users/me/lists/{slug}/items/reorder", json_data={"rank": rank_ids})
+        self._request(f"/users/me/lists/{slug}/items/reorder", json_data={"rank": rank_ids}, require_auth=True)
         logger.info("")
         logger.info("Trakt List Ordered Successfully")
 
     def all_user_lists(self, user="me"):
         try:
-            items = self._request(f"/users/{user}/lists")
+            items = self._request(f"/users/{user}/lists", require_auth=user == "me")
         except Failed:
             raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
@@ -471,7 +496,7 @@ class Trakt:
         return [(user, i["ids"]["slug"], i["name"]) for i in items]
 
     def all_liked_lists(self):
-        items = self._request("/users/likes/lists")
+        items = self._request("/users/likes/lists", require_auth=True)
         if len(items) == 0:
             raise Failed("Trakt Error: No Liked lists found")
         return {self.build_user_url(i["list"]["user"]["ids"]["slug"], i["list"]["ids"]["slug"]): i["list"]["name"] for i in items}
@@ -482,7 +507,7 @@ class Trakt:
     def _list(self, data, parse=True, trakt_ids=False, fail=True, ignore_other=False):
         try:
             url = urlparse(data).path.replace("/official/", "/") if parse else f"/users/me/lists/{data}"
-            items = self._request(f"{url}/items")
+            items = self._request(f"{url}/items", require_auth="/users/me/" in url)
         except Failed:
             raise Failed(f"Trakt Error: List {data} not found")
         if len(items) == 0:
@@ -497,7 +522,7 @@ class Trakt:
             url_end = "movies" if is_movie else "shows"
             if sort_by:
                 url_end = f"{url_end}/{sort_by}"
-            items = self._request(f"/users/{user}/{list_type}/{url_end}")
+            items = self._request(f"/users/{user}/{list_type}/{url_end}", require_auth=user == "me")
         except Failed:
             raise Failed(f"Trakt Error: User {user} not found")
         if len(items) == 0:
@@ -507,8 +532,15 @@ class Trakt:
     def _recommendations(self, limit, is_movie):
         media_type = "Movie" if is_movie else "Show"
         try:
-            items = self._request(f"/recommendations/{'movies' if is_movie else 'shows'}", params={"limit": limit})
-        except Failed:
+            items = self._request(
+                f"/recommendations/{'movies' if is_movie else 'shows'}",
+                params={"limit": limit},
+                require_auth=True,
+                auth_method="trakt_recommendations",
+            )
+        except Failed as e:
+            if "requires Trakt authentication" in str(e):
+                raise
             raise Failed(f"Trakt Error: failed to fetch {media_type} Recommendations")
         if len(items) == 0:
             raise Failed(f"Trakt Error: no {media_type} Recommendations were found")
@@ -522,7 +554,12 @@ class Trakt:
             chart_url = f"/{media}/{chart_type}/{time_period}"
         else:
             chart_url = f"/{media}/{chart_type}"
-        items = self._request(chart_url, params=params)
+        items = self._request(
+            chart_url,
+            params=params,
+            require_auth=chart_type in ["recommended", "watched", "collected"],
+            auth_method=f"trakt_chart {chart_type}",
+        )
         return self._parse(items, typeless=chart_type == "popular", item_type="movie" if is_movie else "show", ignore_other=ignore_other)
 
     def get_people(self, data):
