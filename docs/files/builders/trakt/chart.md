@@ -31,8 +31,8 @@ Links to each chart are available for `daily`, `weekly`, `monthly`, `yearly`, an
 | `limit`                        | Limits the number of returned items.          | `10`; any number of items                                                                             |
 | `query`                        | Searches titles and descriptions.             | Any string                                                                                            |
 | `years`                        | Searches for specific years or year ranges.   | `1950` or `1950-1959`                                                                                 |
-| `genres`                       | Filters by movie or show genres.              | See the genres values admoniton below                                                                 |
-| `languages`                    | Filters by movie or show languages.           | See the languages admoniton below                                                                     |
+| `genres`                       | Filters by movie or show genres.              | See the genres values admonition below                                                                 |
+| `languages`                    | Filters by movie or show languages.           | See the languages admonition below                                                                     |
 | `countries`                    | Filters by movie or show countries.           | See the countries admonition below                                                                    |
 | `certifications`               | Filters by certification.                     | Movie: `g`, `pg`, `pg-13`, `r`, `nr`; show: `tv-y`, `tv-y7`, `tv-g`, `tv-pg`, `tv-14`, `tv-ma`, `nr`  |
 | `runtimes`                     | Filters by runtime in minutes.                | A range such as `0-60`                                                                                |

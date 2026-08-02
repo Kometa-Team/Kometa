@@ -9,7 +9,7 @@ import pytest
 
 import modules.builder  # noqa: F401
 import modules.trakt as trakt_module
-from modules.trakt import Trakt, auth_url, base_url
+from modules.trakt import Trakt, base_url
 from modules.util import Failed
 
 

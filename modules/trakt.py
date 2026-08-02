@@ -76,11 +76,11 @@ class Trakt:
         self._movie_certifications = None
         self._show_certifications = None
 
-    def _get_public_client_id(self):
+    def _get_public_client_id(self) -> str:
         response = self.requests.get(utilities_oauth_url)
         if response.status_code != 200:
             raise Failed(f"Trakt Error: Unable to fetch the public Client ID from {utilities_oauth_url}: ({response.status_code}) {response.reason}")
-        match = re.search(r"const\s+TRAKT_CLIENT_ID\s*=\s*['\"]([^'\"]+)['\"]", response.text)
+        match: re.Match[str] | None = re.search(r"const\s+TRAKT_CLIENT_ID\s*=\s*['\"]([^'\"]+)['\"]", response.text)
         if not match:
             raise Failed(f"Trakt Error: Unable to find TRAKT_CLIENT_ID on {utilities_oauth_url}")
         return match.group(1)
