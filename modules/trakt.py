@@ -55,7 +55,7 @@ id_types = {"movie": ("tmdb", "TMDb ID"), "person": ("tmdb", "TMDb ID"), "show":
 class Trakt:
     def __init__(self, requests, read_only, params):
         base_string = os.environ.get("KOMETA_BASE_STRING")
-        BASE_STRING = base64.b64decode(base_string or "redacted_for_now").decode("utf-8")
+        BASE_STRING = base64.b64decode(base_string or "redacted_for_now").decode("utf-8") if not params.get("client_id") else None
         self.requests = requests
         self.read_only = read_only
         self.client_id = params.get("client_id") or BASE_STRING
