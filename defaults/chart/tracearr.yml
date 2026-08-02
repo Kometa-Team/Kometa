@@ -14,11 +14,14 @@ templates:
   tracearr:
     default:
       list_days: 30
+      list_minimum: 0
       list_size: 20
       list_days_<<key>>: <<list_days>>
+      list_minimum_<<key>>: <<list_minimum>>
       list_size_<<key>>: <<list_size>>
     tracearr_<<type>>:
       list_days: <<list_days_<<key>>>>
+      list_minimum: <<list_minimum_<<key>>>>
       list_size: <<list_size_<<key>>>>
 
 collections:
@@ -31,6 +34,7 @@ collections:
         type: popular
       - name: shared
         translation_key: tracearr_popular
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -43,6 +47,7 @@ collections:
         type: watched
       - name: shared
         translation_key: tracearr_watched
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -56,6 +61,7 @@ collections:
         type: trending
       - name: shared
         translation_key: tracearr_trending
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -68,6 +74,7 @@ collections:
         type: rewatched
       - name: shared
         translation_key: tracearr_rewatched
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -80,6 +87,7 @@ collections:
         type: completed
       - name: shared
         translation_key: tracearr_completed
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -93,6 +101,7 @@ collections:
       - name: shared
         allowed_libraries: show
         translation_key: tracearr_binged
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0
 
@@ -105,5 +114,6 @@ collections:
         type: transcoded
       - name: shared
         translation_key: tracearr_transcoded
+        url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png
       - name: custom
         cache_builders: 0

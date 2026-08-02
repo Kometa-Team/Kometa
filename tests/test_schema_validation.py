@@ -81,10 +81,18 @@ def test_at_least_one_default_exists() -> None:
     assert DEFAULT_YAML_FILES, f"no YAML files found under {DEFAULTS_DIR}"
 
 
-def test_tracearr_default_uses_short_trending_window_without_raw_history() -> None:
+def test_tracearr_default_uses_short_trending_window_without_raw_history_and_sets_logos() -> None:
     with (DEFAULTS_DIR / "chart" / "tracearr.yml").open(encoding="utf-8") as fh:
         tracearr_default = yaml.safe_load(fh)
 
     collections = tracearr_default["collections"]
+    tracearr_template = tracearr_default["templates"]["tracearr"]
+    assert tracearr_template["default"]["list_minimum"] == 0
+    assert tracearr_template["default"]["list_minimum_<<key>>"] == "<<list_minimum>>"
+    assert tracearr_template["tracearr_<<type>>"]["list_minimum"] == "<<list_minimum_<<key>>>>"
     assert collections["Tracearr Trending"]["variables"]["list_days"] == 7
     assert "Tracearr History" not in collections
+    expected_logo = "https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png"
+    for collection in collections.values():
+        shared_template = next(template for template in collection["template"] if template["name"] == "shared")
+        assert shared_template["url_logo"] == expected_logo
