@@ -26,6 +26,8 @@ class Tracearr:
         self.url = params["url"].rstrip("/")
         self.apikey = str(params["apikey"]).strip() if params["apikey"] else None
         self.api = f"{self.url}/api/v1/public"
+        self.history_api = f"{self.url}/api/v2/public"
+        self.history_version = 2
         logger.secret(self.url)
         logger.secret(self.apikey)
         if not self.apikey:
@@ -72,23 +74,23 @@ class Tracearr:
 
         cutoff = datetime.now(timezone.utc) - timedelta(days=int(data["list_days"]))
         params = {
-            "page": 1,
             "pageSize": 100,
-            "startDate": cutoff.date().isoformat(),
-            "endDate": datetime.now(timezone.utc).date().isoformat(),
-            "serverId": self.server_id,
+            "since": cutoff.isoformat(),
+            "until": datetime.now(timezone.utc).isoformat(),
+            "server_id": self.server_id,
         }
         if is_playlist and list_type == "binged":
-            params["mediaType"] = "episode"
+            params["media_type"] = "episode"
         elif not is_playlist and self.library.is_movie:
-            params["mediaType"] = "movie"
+            params["media_type"] = "movie"
         elif not is_playlist and self.library.is_show:
-            params["mediaType"] = "episode"
+            params["media_type"] = "episode"
 
         items = self._fetch_history(params)
         aggregated = self._aggregate_history(items, list_type, int(data["list_minimum"]))
         rating_keys = []
         seen = set()
+        result_seen = set()
         search_libraries = libraries if libraries else [self.library]
         for item in aggregated:
             if len(rating_keys) >= int(data["list_size"]):
@@ -96,26 +98,46 @@ class Tracearr:
             media_type = item["media_type"]
             title = item["title"]
             year = item["year"]
-            dedupe_key = (media_type, title, year)
+            library_id = item["library_id"]
+            rating_key = item["rating_key"]
+            dedupe_key = (media_type, library_id, rating_key or title, year)
             if dedupe_key in seen:
                 continue
             libtype = "movie" if media_type == "movie" else "show"
             matched = False
-            for search_library in search_libraries:
-                if (media_type == "movie" and not search_library.is_movie) or (media_type == "show" and not search_library.is_show):
-                    continue
-                new_item = search_library.exact_search(title, libtype=libtype, year=year if media_type == "movie" else None)
-                if not new_item:
-                    continue
+            matching_libraries = [
+                search_library
+                for search_library in search_libraries
+                if not ((media_type == "movie" and not search_library.is_movie) or (media_type == "show" and not search_library.is_show)) and (library_id is None or str(search_library.Plex.key) == str(library_id))
+            ]
+            if not matching_libraries:
+                continue
+            for search_library in matching_libraries:
+                plex_item = None
+                if rating_key:
+                    try:
+                        plex_item = search_library.fetch_item(rating_key)
+                    except Failed as e:
+                        logger.debug(e)
+                if plex_item is None:
+                    new_items = search_library.exact_search(title, libtype=libtype, year=year if media_type == "movie" else None)
+                    if not new_items:
+                        continue
+                    plex_item = new_items[0]
                 if is_playlist:
-                    item_id = self._playlist_item_id(search_library, new_item[0], media_type)
+                    item_id = self._playlist_item_id(search_library, plex_item, media_type)
                     if item_id:
-                        rating_keys.append(item_id)
+                        if item_id not in result_seen:
+                            rating_keys.append(item_id)
+                            result_seen.add(item_id)
                     else:
                         logger.error(Failed(f"Tracearr Error: No supported external ID found for {title}"))
                         continue
                 else:
-                    rating_keys.append((new_item[0].ratingKey, "ratingKey"))
+                    item_id = (plex_item.ratingKey, "ratingKey")
+                    if item_id not in result_seen:
+                        rating_keys.append(item_id)
+                        result_seen.add(item_id)
                 seen.add(dedupe_key)
                 matched = True
                 break
@@ -139,8 +161,42 @@ class Tracearr:
         return None
 
     def _fetch_history(self, params):
+        if self.history_version == 1:
+            return self._fetch_history_v1(params)
         items = []
         request_params = dict(params)
+        cursors = set()
+        while True:
+            response = self._request("history", params=request_params, api=self.history_api, allow_404=not items and "cursor" not in request_params)
+            if response is None:
+                self.history_version = 1
+                logger.warning("Tracearr Warning: Public API v2 is unavailable; falling back to v1 without Plex library-aware matching")
+                return self._fetch_history_v1(params)
+            page_items = response.get("data")
+            meta = response.get("meta")
+            if not isinstance(page_items, list) or not isinstance(meta, dict):
+                raise Failed("Tracearr Error: /history response must contain data and pagination metadata")
+            items.extend(page_items)
+            next_cursor = meta.get("nextCursor")
+            if next_cursor is None:
+                break
+            if not isinstance(next_cursor, str) or not next_cursor or next_cursor in cursors:
+                raise Failed("Tracearr Error: /history response contains invalid pagination metadata")
+            cursors.add(next_cursor)
+            request_params["cursor"] = next_cursor
+        return items
+
+    def _fetch_history_v1(self, params):
+        request_params = {
+            "page": 1,
+            "pageSize": params["pageSize"],
+            "startDate": str(params["since"])[:10],
+            "endDate": str(params["until"])[:10],
+            "serverId": params["server_id"],
+        }
+        if "media_type" in params:
+            request_params["mediaType"] = params["media_type"]
+        items = []
         while True:
             response = self._request("history", params=request_params)
             page_items = response.get("data")
@@ -159,12 +215,20 @@ class Tracearr:
             request_params["page"] += 1
         return items
 
+    @staticmethod
+    def _field(item, snake_case, camel_case=None):
+        if snake_case in item:
+            return item[snake_case]
+        return item.get(camel_case) if camel_case else None
+
     def _aggregate_history(self, items, list_type, minimum):
         grouped = defaultdict(
             lambda: {
                 "media_type": None,
                 "title": None,
                 "year": None,
+                "library_id": None,
+                "rating_key": None,
                 "total_sessions": 0,
                 "completed_sessions": 0,
                 "unique_users": set(),
@@ -181,22 +245,29 @@ class Tracearr:
         )
 
         for item in items:
-            if item.get("serverId") and item["serverId"] != self.server_id:
+            item_server_id = self._field(item, "server_id", "serverId")
+            if item_server_id and item_server_id != self.server_id:
                 continue
 
-            source_media_type = str(item.get("mediaType") or "").lower()
+            source_media_type = str(self._field(item, "media_type", "mediaType") or "").lower()
             if source_media_type not in {"movie", "episode"}:
                 continue
             media_type = "movie" if source_media_type == "movie" else "show"
-            title = item.get("mediaTitle") if media_type == "movie" else item.get("showTitle")
+            title = self._field(item, "media_title", "mediaTitle") if media_type == "movie" else self._field(item, "show_title", "showTitle")
             if not title:
                 continue
-            year = item.get("year") if media_type == "movie" else None
-            key = (media_type, title, year)
+            year = self._field(item, "year") if media_type == "movie" else None
+            library_id = self._field(item, "library_id", "libraryId")
+            rating_key = self._field(item, "rating_key", "ratingKey") if media_type == "movie" else self._field(item, "grandparent_rating_key", "grandparentRatingKey")
+            canonical_id = self._field(item, "media_id", "mediaId") if media_type == "movie" else self._field(item, "show_media_id", "showMediaId")
+            media_identity = rating_key or canonical_id or (title, year)
+            key = (media_type, str(library_id) if library_id is not None else None, media_identity)
             entry = grouped[key]
             entry["media_type"] = media_type
             entry["title"] = title
             entry["year"] = year
+            entry["library_id"] = library_id
+            entry["rating_key"] = rating_key
             entry["total_sessions"] += 1
             watched = item.get("watched") is True
             if watched:
@@ -208,14 +279,15 @@ class Tracearr:
                 entry["unique_users"].add(user_key)
                 entry["sessions_by_user"][user_key] += 1
             if watched and media_type == "show" and user_id:
-                season_number = item.get("seasonNumber")
-                episode_number = item.get("episodeNumber")
-                episode_key = (season_number, episode_number) if season_number is not None or episode_number is not None else item.get("mediaTitle")
+                season_number = self._field(item, "season_number", "seasonNumber")
+                episode_number = self._field(item, "episode_number", "episodeNumber")
+                episode_rating_key = self._field(item, "rating_key", "ratingKey")
+                episode_key = episode_rating_key or ((season_number, episode_number) if season_number is not None or episode_number is not None else self._field(item, "media_title", "mediaTitle"))
                 if episode_key:
                     entry["watched_episodes_by_user"][str(user_id)].add(episode_key)
-            if item.get("isTranscode") is True or str(item.get("videoDecision") or "").lower() == "transcode" or str(item.get("audioDecision") or "").lower() == "transcode":
+            if self._field(item, "is_transcode", "isTranscode") is True or str(self._field(item, "video_decision", "videoDecision") or "").lower() == "transcode" or str(self._field(item, "audio_decision", "audioDecision") or "").lower() == "transcode":
                 entry["transcoded_sessions"] += 1
-            ts = item.get("stoppedAt") or item.get("startedAt")
+            ts = self._field(item, "stopped_at", "stoppedAt") or self._field(item, "started_at", "startedAt")
             parsed_ts = self._parse_ts(ts)
             if parsed_ts and (entry["last_played"] is None or parsed_ts > entry["last_played"]):
                 entry["last_played"] = parsed_ts
@@ -276,24 +348,27 @@ class Tracearr:
     def _headers(self):
         return {"Authorization": f"Bearer {self.apikey}"}
 
-    def _request(self, endpoint, params=None):
+    def _request(self, endpoint, params=None, api=None, allow_404=False):
+        request_api = api or self.api
         logger.trace(f"Tracearr CMD: {endpoint}")
         if params:
             logger.trace(f"Tracearr Params: {params}")
         try:
-            response = self.requests.get(f"{self.api}/{endpoint}", params=params, headers=self._headers())
+            response = self.requests.get(f"{request_api}/{endpoint}", params=params, headers=self._headers())
         except Exception as e:
             raise Failed(f"Tracearr Error: Unable to connect to {self.url}: {e}") from e
         try:
             payload = response.json()
         except ValueError as e:
-            raise Failed(f"Tracearr Error: Non-JSON response from /api/v1/public/{endpoint} (HTTP {response.status_code})") from e
+            raise Failed(f"Tracearr Error: Non-JSON response from {request_api.removeprefix(self.url)}/{endpoint} (HTTP {response.status_code})") from e
         if response.status_code >= 400:
             detail = (payload.get("message") or payload.get("error")) if isinstance(payload, dict) else None
             suffix = f": {detail}" if detail else ""
+            if response.status_code == 404 and allow_404:
+                return None
             if response.status_code in {401, 403}:
                 raise Failed(f"Tracearr Error: API key was rejected (HTTP {response.status_code}){suffix}")
-            raise Failed(f"Tracearr Error: HTTP {response.status_code} on /api/v1/public/{endpoint}{suffix}")
+            raise Failed(f"Tracearr Error: HTTP {response.status_code} on {request_api.removeprefix(self.url)}/{endpoint}{suffix}")
         if not isinstance(payload, dict):
-            raise Failed(f"Tracearr Error: Invalid response from /api/v1/public/{endpoint}")
+            raise Failed(f"Tracearr Error: Invalid response from {request_api.removeprefix(self.url)}/{endpoint}")
         return payload

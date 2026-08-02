@@ -27,6 +27,8 @@ The `sync_mode: sync` and `collection_order: custom` settings are recommended si
 
 Tracearr playlist builders can combine movie and show libraries from the same Plex server. A single playlist definition cannot combine Tracearr history from multiple Plex servers.
 
+When Tracearr's v2 Public API is available, Kometa uses its history identity fields to match each play to its originating Plex library and exact Plex rating key. This prevents an identically named item in another library from being selected. Tracearr versions without v2 automatically use the v1 endpoint, and title/year matching is also retained for older history records without library identity.
+
 `tracearr_binged` requires at least two distinct completed episodes and works with Show libraries. In playlists, it returns shows only.
 
 ???+ warning "Tracearr Configuration"

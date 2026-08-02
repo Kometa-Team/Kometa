@@ -177,6 +177,8 @@ class TestTracearr:
         t.requests = MagicMock()
         t.url = "http://tracearr:3000"
         t.api = f"{t.url}/api/v1/public"
+        t.history_api = f"{t.url}/api/v2/public"
+        t.history_version = 2
         t.apikey = "trr_pub_test"
         t.server_id = self.SERVER_ID
         t.library = MagicMock()
@@ -229,8 +231,8 @@ class TestTracearr:
         assert result == [(202, "ratingKey")]
         adapter.library.exact_search.assert_any_call("Tracearr Movie", libtype="movie", year=2024)
         params = adapter._request.call_args.kwargs["params"]
-        assert params["serverId"] == self.SERVER_ID
-        assert params["mediaType"] == "movie"
+        assert params["server_id"] == self.SERVER_ID
+        assert params["media_type"] == "movie"
         assert params["pageSize"] == 100
 
     def test_show_history_requests_episodes_and_groups_by_show(self, adapter, monkeypatch):
@@ -269,7 +271,97 @@ class TestTracearr:
 
         assert result == [(202, "ratingKey")]
         adapter.library.exact_search.assert_called_once_with("Example Show", libtype="show", year=None)
-        assert adapter._request.call_args.kwargs["params"]["mediaType"] == "episode"
+        assert adapter._request.call_args.kwargs["params"]["media_type"] == "episode"
+
+    def test_v2_history_uses_library_and_rating_key_for_exact_plex_item(self, adapter):
+        adapter.library.Plex.key = 7
+        plex_item = MagicMock(ratingKey=202)
+        adapter.library.fetch_item.return_value = plex_item
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "movie",
+                        "media_title": "Tracearr Movie",
+                        "year": 2024,
+                        "library_id": "7",
+                        "rating_key": "202",
+                        "watched": True,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": "user-1"},
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        result = adapter.get_rating_keys({"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0})
+
+        assert result == [(202, "ratingKey")]
+        adapter.library.fetch_item.assert_called_once_with("202")
+        adapter.library.exact_search.assert_not_called()
+        assert adapter._request.call_args.kwargs["api"] == adapter.history_api
+
+    def test_v2_history_excludes_items_watched_in_another_plex_library(self, adapter):
+        adapter.library.Plex.key = 7
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "movie",
+                        "media_title": "Tracearr Movie",
+                        "year": 2024,
+                        "library_id": "8",
+                        "rating_key": "202",
+                        "watched": True,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": "user-1"},
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        result = adapter.get_rating_keys({"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0})
+
+        assert result == []
+        adapter.library.fetch_item.assert_not_called()
+        adapter.library.exact_search.assert_not_called()
+
+    def test_v2_show_history_fetches_grandparent_rating_key(self, adapter):
+        adapter.library.is_movie = False
+        adapter.library.is_show = True
+        adapter.library.Plex.key = 9
+        plex_show = MagicMock(ratingKey=303)
+        adapter.library.fetch_item.return_value = plex_show
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "episode",
+                        "media_title": "Pilot",
+                        "show_title": "Example Show",
+                        "season_number": 1,
+                        "episode_number": 1,
+                        "library_id": "9",
+                        "rating_key": "304",
+                        "grandparent_rating_key": "303",
+                        "watched": True,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": "user-1"},
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        result = adapter.get_rating_keys({"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0})
+
+        assert result == [(303, "ratingKey")]
+        adapter.library.fetch_item.assert_called_once_with("303")
 
     def test_popular_and_trending_include_incomplete_sessions(self, adapter):
         items = [
@@ -468,7 +560,47 @@ class TestTracearr:
         )
 
         assert result == [(1234, "tmdb")]
-        assert "mediaType" not in adapter._request.call_args.kwargs["params"]
+        assert "media_type" not in adapter._request.call_args.kwargs["params"]
+
+    def test_v2_playlist_deduplicates_same_movie_watched_from_two_libraries(self, adapter):
+        adapter.library.Plex.key = 7
+        adapter.library.fetch_item.return_value = MagicMock(ratingKey=202)
+        adapter.library.get_ids.return_value = (1234, None, None)
+        second_library = MagicMock()
+        second_library.is_movie = True
+        second_library.is_show = False
+        second_library.Plex.key = 8
+        second_library.fetch_item.return_value = MagicMock(ratingKey=203)
+        second_library.get_ids.return_value = (1234, None, None)
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "movie",
+                        "media_title": "Duplicate Movie",
+                        "year": 2024,
+                        "library_id": library_id,
+                        "rating_key": rating_key,
+                        "watched": True,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": "user-1"},
+                    }
+                    for library_id, rating_key in (("7", "202"), ("8", "203"))
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        result = adapter.get_rating_keys(
+            {"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0},
+            is_playlist=True,
+            libraries=[adapter.library, second_library],
+        )
+
+        assert result == [(1234, "tmdb")]
+        adapter.library.fetch_item.assert_called_once_with("202")
+        second_library.fetch_item.assert_called_once_with("203")
 
     def test_binged_playlist_requests_only_episodes(self, adapter):
         adapter.library.is_movie = False
@@ -503,7 +635,7 @@ class TestTracearr:
         )
 
         assert result == [(5678, "tvdb")]
-        assert adapter._request.call_args.kwargs["params"]["mediaType"] == "episode"
+        assert adapter._request.call_args.kwargs["params"]["media_type"] == "episode"
 
     def test_resolves_server_uuid_by_plex_name(self, adapter):
         adapter.library.PlexServer.friendlyName = "Main Plex"
@@ -544,7 +676,44 @@ class TestTracearr:
         adapter.requests.get.return_value = FakeResponse(payload={"message": "Invalid API key"}, status_code=401)
 
         with pytest.raises(Failed, match="API key was rejected.*Invalid API key"):
-            adapter._request("history")
+            adapter._request("history", api=adapter.history_api, allow_404=True)
+
+    def test_request_can_treat_v2_404_as_unsupported(self, adapter):
+        adapter.requests.get.return_value = FakeResponse(payload={"message": "Route not found"}, status_code=404)
+
+        assert adapter._request("history", api=adapter.history_api, allow_404=True) is None
+
+    def test_history_falls_back_to_v1_only_when_v2_is_unavailable(self, adapter):
+        adapter._request = MagicMock(
+            side_effect=[
+                None,
+                {
+                    "data": [
+                        {
+                            "serverId": self.SERVER_ID,
+                            "mediaType": "movie",
+                            "mediaTitle": "Legacy Movie",
+                            "year": 2024,
+                            "watched": True,
+                            "stoppedAt": "2026-07-30T12:00:00Z",
+                            "user": {"id": "user-1"},
+                        }
+                    ],
+                    "meta": {"total": 1, "page": 1, "pageSize": 100},
+                },
+            ]
+        )
+
+        result = adapter.get_rating_keys({"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0})
+
+        assert result == [(202, "ratingKey")]
+        assert adapter.history_version == 1
+        first_call, second_call = adapter._request.call_args_list
+        assert first_call.kwargs["api"] == adapter.history_api
+        assert first_call.kwargs["allow_404"] is True
+        assert second_call.kwargs["params"]["serverId"] == self.SERVER_ID
+        assert second_call.kwargs["params"]["mediaType"] == "movie"
+        assert second_call.kwargs["params"]["startDate"] == first_call.kwargs["params"]["since"][:10]
 
     def test_request_rejects_non_json_response(self, adapter):
         adapter.requests.get.return_value = FakeResponse(status_code=502, content=b"Bad Gateway", json_error=ValueError("not json"))
@@ -558,15 +727,33 @@ class TestTracearr:
         with pytest.raises(Failed, match="pagination metadata"):
             adapter._fetch_history({"page": 1, "pageSize": 100})
 
-    def test_history_paginates_using_total_metadata(self, adapter):
+    def test_history_paginates_using_v2_cursor_metadata(self, adapter):
+        adapter._request = MagicMock(
+            side_effect=[
+                {"data": [{"id": "first"}], "meta": {"nextCursor": "next-page", "pageSize": 1}},
+                {"data": [{"id": "second"}], "meta": {"nextCursor": None, "pageSize": 1}},
+            ]
+        )
+
+        assert adapter._fetch_history({"pageSize": 1}) == [{"id": "first"}, {"id": "second"}]
+        assert adapter._request.call_args_list[1].kwargs["params"]["cursor"] == "next-page"
+
+    def test_v1_history_fallback_preserves_page_pagination(self, adapter):
         adapter._request = MagicMock(
             side_effect=[
                 {"data": [{"id": "first"}], "meta": {"total": 2, "page": 1, "pageSize": 1}},
                 {"data": [{"id": "second"}], "meta": {"total": 2, "page": 2, "pageSize": 1}},
             ]
         )
+        params = {
+            "pageSize": 1,
+            "since": "2026-07-01T12:00:00+00:00",
+            "until": "2026-07-31T12:00:00+00:00",
+            "server_id": self.SERVER_ID,
+            "media_type": "movie",
+        }
 
-        assert adapter._fetch_history({"page": 1, "pageSize": 1}) == [{"id": "first"}, {"id": "second"}]
+        assert adapter._fetch_history_v1(params) == [{"id": "first"}, {"id": "second"}]
         assert adapter._request.call_args_list[1].kwargs["params"]["page"] == 2
 
     def test_constructor_requires_public_api_key(self, monkeypatch):

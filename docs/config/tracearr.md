@@ -25,7 +25,7 @@ tracearr:
 
 ???+ tip
 
-    The API key can be found in Tracearr's settings under the Public API section. Tracearr uses Bearer auth and exposes its interactive API reference at `/api-docs`:
+    The API key can be found in Tracearr's settings under the Public API section. Tracearr uses Bearer auth and exposes its interactive API reference at `/api-docs`. Kometa uses the v2 Public API history endpoint when available so watched items can be matched to their originating Plex library. Tracearr versions without v2 automatically fall back to the v1 endpoint and title/year matching:
     `Authorization: Bearer trr_pub_<your_token>`.
 
 ???+ tip "Finding the Server ID"
