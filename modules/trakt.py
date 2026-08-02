@@ -145,7 +145,10 @@ class Trakt:
         return self._show_certifications
 
     def _check(self, authorization=None):
-        token = self.authorization["access_token"] if authorization is None else authorization["access_token"]
+        authorization_data = self.authorization if authorization is None else authorization
+        if not authorization_data or "access_token" not in authorization_data:
+            return False
+        token = authorization_data["access_token"]
         headers = {"Content-Type": "application/json", "Authorization": f"Bearer {token}", "trakt-api-version": "2", "trakt-api-key": self.client_id}
         logger.secret(token)
         response = self.requests.get(f"{base_url}/users/settings", headers=headers)
