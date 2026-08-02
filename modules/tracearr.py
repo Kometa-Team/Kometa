@@ -199,6 +199,8 @@ class Tracearr:
         items = []
         while True:
             response = self._request("history", params=request_params)
+            if response is None:
+                raise Failed("Tracearr Error: Invalid response from /api/v1/public/history")
             page_items = response.get("data")
             meta = response.get("meta")
             if not isinstance(page_items, list) or not isinstance(meta, dict):
