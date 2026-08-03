@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -3497,6 +3497,7 @@ class CollectionBuilder:
             raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
         for value in self.config.Serializd.validate_builder(method_name, method_data):
             self.builders.append((method_name, value))
+
     def _floppy(self, method_name, method_data):
         if self.config.Floppy is None:
             raise BuilderValidationError(f"{self.Type} Error: floppy attribute not found in config")

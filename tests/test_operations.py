@@ -676,6 +676,7 @@ class TestFlushCombinedEdits:
 
         config.Serializd.get_episode_user_rating.assert_called_once_with(1429, 1, 1)
         library.Plex.editField.assert_any_call("userRating", "9.0")
+
     def test_floppy_show_rating_resolves_tmdb_id_from_tvdb_first_plex_mapping(self):
         item = make_mass_edit_item(1, "Arcane")
         item.guid = "plex://show/arcane"
