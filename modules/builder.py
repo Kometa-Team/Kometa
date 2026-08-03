@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -44,12 +44,14 @@ all_builders = (
     + trakt.builders
     + tvdb.builders
     + yamtrack.builders
+    + serializd.builders
     + mdblist.builders
     + simkl.builders
     + radarr.builders
     + sonarr.builders
 )
 show_only_builders = [
+    *serializd.builders,
     "tmdb_network",
     "tmdb_show",
     "tmdb_show_details",
@@ -1652,6 +1654,8 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
+                elif method_name in serializd.builders:
+                    self._serializd(method_name, method_data)
                 elif method_name in floppy.builders:
                     self._floppy(method_name, method_data)
                 elif method_name in tvdb.builders:
@@ -3488,6 +3492,12 @@ class CollectionBuilder:
             if description:
                 self.summaries[method_name] = description
 
+    def _serializd(self, method_name, method_data):
+        if self.config.Serializd is None:
+            raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
+        for value in self.config.Serializd.validate_builder(method_name, method_data):
+            self.builders.append((method_name, value))
+
     def _floppy(self, method_name, method_data):
         if self.config.Floppy is None:
             raise BuilderValidationError(f"{self.Type} Error: floppy attribute not found in config")
@@ -3672,6 +3682,8 @@ class CollectionBuilder:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "serializd" in method:
+            ids = self.config.Serializd.get_builder_ids(method, value)
         elif "floppy" in method:
             if method == "floppy_tracked":
                 ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)

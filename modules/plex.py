@@ -2419,6 +2419,23 @@ class Plex(Library):
                 found_rating = self.config.Trakt.get_rating(imdb_id, self.is_movie)
             else:
                 raise OverlayError("Overlay Error: No Trakt rating found")
+        elif variable_name == "serializd_rating":
+            if not self.config.Serializd:
+                raise OverlayError("Overlay Error: Serializd is not configured in your config file")
+            if not tmdb_id and tvdb_id:
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+            if not tmdb_id and imdb_id:
+                converted_id, converted_type = self.config.Convert.imdb_to_tmdb(imdb_id)
+                if converted_type == "show":
+                    tmdb_id = converted_id
+            if not tmdb_id:
+                raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
+            if isinstance(item, Episode):
+                found_rating = self.config.Serializd.get_episode_rating(tmdb_id, item.seasonNumber, item.episodeNumber)
+            elif self.is_show:
+                found_rating = self.config.Serializd.get_show_rating(tmdb_id)
+            else:
+                raise OverlayError("Overlay Error: Serializd ratings are only available for shows and episodes")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
             if self.config.MDBList.limit is False:

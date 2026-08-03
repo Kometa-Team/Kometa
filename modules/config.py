@@ -25,6 +25,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.serializd import Serializd
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
@@ -82,6 +83,9 @@ mass_genre_options = {
     "imdb": "Use IMDb Genres",
     "omdb": "Use IMDb Genres through OMDb",
     "tvdb": "Use TVDb Genres",
+    "serializd": "Use Serializd Genres (Shows Only)",
+    "serializd_nanogenres": "Use Serializd Nanogenres (Shows Only)",
+    "serializd_all": "Use Serializd Genres and Nanogenres (Shows Only)",
     "mal": "Use MyAnimeList Genres",
     "mal_all": "Use MyAnimeList Genres including Explicit Genres, Themes and Demographics",
     "anidb": "Use AniDB Main Tags",
@@ -172,6 +176,8 @@ mass_episode_rating_options = {
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating",
+    "serializd": "Use Serializd Rating",
+    "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
 }
 mass_rating_options = {
@@ -183,6 +189,7 @@ mass_rating_options = {
     "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating",
     "trakt_user": "Use Trakt User Rating",
+    "serializd": "Use Serializd Rating",
     "floppy": "Use Floppy User Rating",
     "omdb": "Use IMDb Rating through OMDb",
     "omdb_metascore": "Use Metacritic Metascore through OMDb",
@@ -214,6 +221,7 @@ library_operations = {
     "ignore_labels": "list",
     "respect_ignore_ids": "bool",
     "split_duplicates": "bool",
+    "sync_watchlist_to_serializd": "bool",
     "update_blank_track_titles": "bool",
     "remove_title_parentheses": "bool",
     "radarr_add_all_existing": "bool",
@@ -1210,6 +1218,23 @@ class ConfigFile:
             self.BoxOfficeMojo = BoxOfficeMojo(self.Requests, self.Cache)
             self.StevenLu = StevenLu(self.Requests)
             self.Simkl = Simkl(self.Requests, self.Cache)
+            self.Serializd = None
+            if "serializd" in self.data:
+                logger.info("Connecting to Serializd...")
+                try:
+                    self.Serializd = Serializd(
+                        check_for_attribute(self.data, "email", parent="serializd", throw=True),
+                        check_for_attribute(self.data, "password", parent="serializd", throw=True),
+                        timeout=check_for_attribute(self.data, "timeout", parent="serializd", var_type="int", default=60, int_min=1),
+                    )
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"Serializd Connection {'Failed' if self.Serializd is None else 'Successful'}")
+            else:
+                logger.info("serializd attribute not found")
             self.TextFile = TextFile(self.Requests)
             self.Ergast = Ergast(self.Requests, self.Cache)
             self.Floppy = None
