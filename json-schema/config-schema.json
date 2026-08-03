@@ -4456,7 +4456,7 @@
               "$ref": "#/definitions/template-variables-library"
             },
             "schedule": {
-              "description": "Used to schedule when a library is run using the schedule options.",
+              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(days), diff, diff_episode, or index(range) modes.",
               "oneOf": [
                 {
                   "type": "string"
