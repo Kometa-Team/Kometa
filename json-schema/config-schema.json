@@ -57,6 +57,7 @@
     },
     "serializd": {
       "$ref": "#/definitions/serializd-api"
+    },
     "floppy": {
       "$ref": "#/definitions/floppy-api"
     },
