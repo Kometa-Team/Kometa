@@ -5,6 +5,10 @@ on:
     branches: [nightly]
     types: [closed]
 
+concurrency:
+  group: increment-build-nightly
+  cancel-in-progress: false
+
 jobs:
 
   verify-changes:
@@ -22,7 +26,8 @@ jobs:
 
       - name: Get changes
         id: get-changes
-        run: echo "files=$(git diff --name-only HEAD^ | xargs)" >> $GITHUB_OUTPUT
+        # Diffs the actual merge commit's own parents -- correct even if something else lands on nightly before this job runs.
+        run: echo "files=$(git diff --name-only ${{ github.event.pull_request.merge_commit_sha }}^1..${{ github.event.pull_request.merge_commit_sha }} | xargs)" >> $GITHUB_OUTPUT
 
       - name: List changed files
         id: list-changes
@@ -47,6 +52,7 @@ jobs:
       commit-hash: ${{ steps.update-version.outputs.commit-hash }}
       commit-short: ${{ steps.update-version.outputs.commit-short }}
       pr-tag: ${{ steps.update-version.outputs.pr-tag }}
+      bump-commit-hash: ${{ steps.update-version.outputs.bump-commit-hash }}
     steps:
 
       - name: Create App Token
@@ -93,38 +99,39 @@ jobs:
                 pr_tag="${branch_name}"
             fi
             echo "pr-tag=${pr_tag}" >> $GITHUB_OUTPUT
-            
+
             value=$(cat VERSION)
             old_msg=$(git log -1 HEAD --pretty=format:%s)
             version="${value%-build*}"
-          
-            part_value=$(cat PART)
-          
+
             if [[ "$value" == *"-"* ]]; then
                 build_value="$((${value#*-build} + 1))"
             else
                 build_value="1"
             fi
-          
+
             new_value="${version}-build${build_value}"
             new_msg="[${build_value}] ${old_msg}"
-          
+
             echo "version=${version}" >> $GITHUB_OUTPUT
             echo "build-value=${build_value}" >> $GITHUB_OUTPUT
             echo "commit-msg=${old_msg}" >> $GITHUB_OUTPUT
+            # Captured before the bump commit -- points at the real merge commit, which stays reachable on nightly since nothing amends it away.
             echo "commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
             echo "commit-short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          
+
             echo "$new_value" > "VERSION"
+            # Defensive reset -- scrubs any PART value a PR might still carry from the old commit-based flow.
             echo "" > "PART"
-            git diff --name-only HEAD^
             git config --local user.email "action@github.com"
             git config --local user.name "GitHub Action"
             git add README.md
             git add VERSION
             git add PART
-            git commit -m "${new_msg}" --amend
-            git push origin nightly --force-with-lease
+            # Normal follow-up commit + fast-forward push, no amend/force -- concurrency group above serializes runs so merges can't race each other.
+            git commit -m "${new_msg}"
+            git push origin nightly
+            echo "bump-commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   docker-build-nightly:
     runs-on: ubuntu-latest
@@ -132,10 +139,11 @@ jobs:
     if: needs.verify-changes.outputs.build == 'true'
     steps:
 
+      # Checks out the bump commit itself (has both the merged code and new VERSION/PART), not a mutable nightly ref -- closes the race with later pushes.
       - name: Check Out Repo
         uses: actions/checkout@v7
         with:
-          ref: nightly
+          ref: ${{ needs.increment-build.outputs.bump-commit-hash }}
 
       - name: Login to Docker Hub
         uses: docker/login-action@v4.5.2

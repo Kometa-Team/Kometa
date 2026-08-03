@@ -212,7 +212,6 @@
                 "list_size": { "type": "integer", "minimum": 1 }
             }
         },
-
         "template-call": {
             "type": "object", "additionalProperties": true,
             "properties": { "name": { "type": "string" } },

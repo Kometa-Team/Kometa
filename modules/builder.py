@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -38,6 +38,7 @@ all_builders = (
     + plex.builders
     + stevenlu.builders
     + tautulli.builders
+    + tracearr.builders
     + textfile.builders
     + tmdb.builders
     + trakt.builders
@@ -536,6 +537,14 @@ custom_sort_builders = [
     "trakt_watched_monthly",
     "trakt_watched_yearly",
     "trakt_watched_all",
+    "tracearr_history",
+    "tracearr_popular",
+    "tracearr_watched",
+    "tracearr_trending",
+    "tracearr_rewatched",
+    "tracearr_completed",
+    "tracearr_binged",
+    "tracearr_transcoded",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -1556,10 +1565,14 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
+                elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tracearr to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}'requires MyAnimeList to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries")
+                elif not self.playlist and self.library.is_movie and method_name == "tracearr_binged":
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries or playlists")
                 elif self.library.is_show and method_name in movie_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:
@@ -1628,6 +1641,8 @@ class CollectionBuilder:
                     self._textfile(method_name, method_data)
                 elif method_name in tautulli.builders:
                     self._tautulli(method_name, method_data)
+                elif method_name in tracearr.builders:
+                    self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
                 elif method_name in trakt.builders or method_name in [
@@ -3237,6 +3252,44 @@ class CollectionBuilder:
             final_dict["list_buffer"] = buff
             self.builders.append((method_name, final_dict))
 
+    def _tracearr(self, method_name, method_data):
+        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            dict_methods = {dm.lower(): dm for dm in dict_data}
+            final_dict = {
+                "list_type": method_name.replace("tracearr_", "", 1),
+                "list_days": util.parse(
+                    self.Type,
+                    "list_days",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=1,
+                    default=30,
+                    parent=method_name,
+                ),
+                "list_size": util.parse(
+                    self.Type,
+                    "list_size",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=1,
+                    default=10,
+                    parent=method_name,
+                ),
+                "list_minimum": util.parse(
+                    self.Type,
+                    "list_minimum",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=0,
+                    default=0,
+                    parent=method_name,
+                ),
+            }
+            self.builders.append((method_name, final_dict))
+
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
@@ -3556,6 +3609,24 @@ class CollectionBuilder:
             ids = self.library.get_rating_keys(method, value, self.playlist)
         elif "tautulli" in method:
             ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
+        elif "tracearr" in method:
+            if self.playlist:
+                ids = []
+                connectors = {}
+                for pl_library in self.libraries:
+                    connector = pl_library.Tracearr
+                    if not connector:
+                        continue
+                    server_key = (connector.api, connector.server_id)
+                    connectors[server_key] = connector
+                if len(connectors) > 1:
+                    raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
+                for connector in connectors.values():
+                    machine_id = connector.library.PlexServer.machineIdentifier
+                    server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
+                    ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
+            else:
+                ids = self.library.Tracearr.get_rating_keys(value)
         elif "anidb" in method:
             anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
             ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
