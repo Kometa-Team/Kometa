@@ -571,6 +571,21 @@ class Operations:
                                             logger.info(f"Serializd Ratings are only available for Shows: {item.title}")
                                             raise Failed
                                         found_rating = serializd_rating()
+                                    elif option == "floppy":
+                                        if not self.config.Floppy:
+                                            raise Failed
+                                        floppy_tmdb_id = tmdb_id
+                                        if not self.library.is_movie and floppy_tmdb_id is None:
+                                            try:
+                                                floppy_tmdb_id = tmdb_obj().tmdb_id
+                                            except Failed:
+                                                pass
+                                        found_rating = self.config.Floppy.get_rating(
+                                            "movie" if self.library.is_movie else "tv",
+                                            tmdb_id=floppy_tmdb_id,
+                                            tvdb_id=tvdb_id,
+                                            imdb_id=imdb_id,
+                                        )
                                     elif str(option).startswith("plex"):
                                         ratings = self.library.get_ratings(item)
                                         try:
@@ -619,7 +634,7 @@ class Operations:
                                         found_rating = mal_obj().score  # noqa
                                     else:
                                         found_rating = option
-                                    if not found_rating:
+                                    if found_rating is None:
                                         logger.info(f"No {option} {name_display[item_attr]} Found")
                                         raise Failed
                                     found_rating = f"{float(found_rating):.1f}"
@@ -1375,12 +1390,24 @@ class Operations:
                                                 if not self.config.Serializd:
                                                     raise Failed("Serializd Error: Serializd is not configured")
                                                 found_rating = self.config.Serializd.get_episode_user_rating(serializd_tmdb_id(), ep.seasonNumber, ep.episodeNumber)
+                                            elif option == "floppy":
+                                                if not self.config.Floppy:
+                                                    raise Failed
+                                                show_tmdb_id = tmdb_item.tmdb_id if tmdb_item else tmdb_id
+                                                found_rating = self.config.Floppy.get_rating(
+                                                    "episode",
+                                                    tmdb_id=show_tmdb_id,
+                                                    tvdb_id=tvdb_id,
+                                                    imdb_id=imdb_id,
+                                                    season=ep.seasonNumber,
+                                                    episode=ep.episodeNumber,
+                                                )
                                             else:
                                                 try:
                                                     found_rating = float(option)
                                                 except ValueError:
                                                     pass
-                                            if not found_rating:
+                                            if found_rating is None:
                                                 logger.info(f"  No {option} {name_display[item_attr]} Found")
                                                 raise Failed
                                             found_rating = f"{float(found_rating):.1f}"

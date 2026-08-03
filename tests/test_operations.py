@@ -676,6 +676,21 @@ class TestFlushCombinedEdits:
 
         config.Serializd.get_episode_user_rating.assert_called_once_with(1429, 1, 1)
         library.Plex.editField.assert_any_call("userRating", "9.0")
+    def test_floppy_show_rating_resolves_tmdb_id_from_tvdb_first_plex_mapping(self):
+        item = make_mass_edit_item(1, "Arcane")
+        item.guid = "plex://show/arcane"
+        library = make_mass_edit_library([item], mass_user_rating_update=["floppy"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.return_value = (None, 371028, "tt11126994")
+        config = MagicMock()
+        config.TMDb.get_item.return_value = SimpleNamespace(tmdb_id=94605)
+        config.Floppy.get_rating.return_value = 5.0
+
+        Operations(config=config, library=library).run_operations()
+
+        config.Floppy.get_rating.assert_called_once_with("tv", tmdb_id=94605, tvdb_id=371028, imdb_id="tt11126994")
+        library.Plex.editField.assert_called_once_with("userRating", "5.0")
 
     def test_merges_multiple_attribute_types_into_one_put(self):
         """An item needing rating + audience rating + genre + content rating all changed in

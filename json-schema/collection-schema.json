@@ -476,6 +476,14 @@
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_trending": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_rewatched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_completed": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -600,6 +608,18 @@
                 "yamtrack_list": {
                     "description": "YamTrack List URL(s).",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
+                },
+                "floppy_list": {
+                    "description": "Floppy List URL(s).",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
+                "floppy_list_details": {
+                    "description": "Floppy List URL(s). Also fetches the list description.",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
+                "floppy_tracked": {
+                    "description": "Floppy tracked items filtered by status and type.",
+                    "$ref": "#/definitions/floppy-tracked"
                 },
                 "yamtrack_list_details": {
                     "description": "YamTrack List URL(s). Also fetches description.",
@@ -1092,6 +1112,14 @@
                 "list_size": { "type": "integer", "minimum": 1 }
             }
         },
+        "tracearr-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 }
+            }
+        },
 
         "mdblist-list-entry": {
             "type": "object", "additionalProperties": false,
@@ -1201,6 +1229,63 @@
                 "incremental": { "type": "boolean" },
                 "note": { "type": "string" }
             }
+        },
+
+        "floppy-list-builder": {
+            "oneOf": [
+                { "type": "string" },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["url"],
+                    "properties": {
+                        "url": { "type": "string", "format": "uri" },
+                        "sync_tags": { "type": "boolean", "default": false }
+                    }
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["url"],
+                                "properties": {
+                                    "url": { "type": "string", "format": "uri" },
+                                    "sync_tags": { "type": "boolean", "default": false }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+
+        "floppy-tracked": {
+            "description": "Floppy tracked status and media type filters.",
+            "oneOf": [
+                { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] },
+                { "type": "array", "items": { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] }, "minItems": 1 },
+                {
+                    "type": "object", "additionalProperties": false, "required": ["status"],
+                    "properties": {
+                        "status": {
+                            "oneOf": [
+                                { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] },
+                                { "type": "array", "items": { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] }, "minItems": 1 }
+                            ]
+                        },
+                        "type": {
+                            "oneOf": [
+                                { "type": "string", "enum": ["movie", "show", "season", "anime"] },
+                                { "type": "array", "items": { "type": "string", "enum": ["movie", "show", "season", "anime"] }, "minItems": 1 }
+                            ]
+                        }
+                    }
+                }
+            ]
         },
 
         "yamtrack-tracked": {

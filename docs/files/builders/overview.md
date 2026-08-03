@@ -142,6 +142,23 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[Tracearr](../tracearr/overview)** builders grab items based on watch history from your configured Tracearr instance
+
+    [:octicons-home-16: View Builder](../tracearr/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:material-movie-search: Tracearr Popular](../tracearr/history) - Gets items based on unique users in Tracearr watch history
+        - [:material-movie-search: Tracearr Watched](../tracearr/history) - Gets items based on completed Tracearr sessions
+        - [:material-movie-search: Tracearr Trending](../tracearr/history) - Gets the most active items from recent Tracearr watch history
+        - [:material-movie-search: Tracearr Rewatched](../tracearr/history) - Gets items repeatedly played by the same Tracearr user
+        - [:material-movie-search: Tracearr Completed](../tracearr/history) - Gets the most recently completed items from Tracearr watch history
+        - [:material-movie-search: Tracearr Binged](../tracearr/history) - Gets shows ranked by distinct completed episodes watched by one user
+        - [:material-movie-search: Tracearr Most Transcoded](../tracearr/history) - Gets items with the most sessions requiring transcoding
+        - [:material-movie-search: Tracearr History](../tracearr/history) - Gets every movie/show in the Tracearr watch history
+
+!!! builder
+
     ![Radarr logo](../../assets/images/files/builders/radarr.png){ align=right }
 
     **[Radarr](../radarr/overview)** builders grab items based on tags in Radarr
