@@ -8,16 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views. The connector uses Tracearr's authenticated Public API, resolves its internal Plex server UUID safely, ranks recent activity and per-user repeat plays distinctly, aggregates episode activity to shows, and fails contextually on invalid API responses so sync mode cannot mistake an API error for empty history.
-- Add the official Tracearr logo to every shipped Tracearr chart collection and expose global/per-collection `list_minimum` variables.
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views.
 
 ### Fixed
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 
 ### Changed
-
-- Prefer Tracearr's v2 history API and its Plex library/rating-key identity fields, ensuring watched items resolve against the library where playback occurred before falling back to title matching; automatically retain v1 history support when the v2 endpoint is unavailable.
 - Batch Plex writes that were previously one API call per item: label/genre sync, `item_critic`/`audience`/`user_rating` updates, and title-parentheses removal now merge into shared `saveMultiEdits()`/`batchMultiEdits()` calls (respecting `plex_bulk_edit_batch_size`) instead of one `edit_tags()`/`editField()`/`editTitle()` call per item; label/genre and rating writes for the same item are further merged into a single PUT instead of one per attribute type, grouped by library and media type so mixed-library/mixed-type playlists route through the correct Plex connection. The overlay `Overlay` label add is batched the same way, flushing every `plex_bulk_edit_batch_size` items instead of only once at the very end of the run.
 - Reduce repeated in-run Plex/API lookups via caching: `modules/cache.py`'s ID-map queries (`query_tmdb_to_tvdb_map` and siblings, `query_guid_map`/`update_guid_map`) are memoized in-process; `check_filter` memoizes plain item-attribute reads (excluding writable fields), media-derived number filters (channels/height/width/aspect/versions/audio_language/subtitle_language/duration), and per-item seasons/episodes/albums/tracks sub-item listings, the last of which is now reused via `cached_item_subitems` at every remaining call site (including `overlays.py`'s runtime/total_runtime lookups) instead of re-querying Plex each time.
 - Reduce redundant network/image work: `Requests.get_image()` is memoized by URL for the run; validate-only image URL checks use HEAD instead of GET; validate-only checks are skipped entirely for Kometa's own GitHub-hosted assets; and fresh local overlay images are reused instead of being re-fetched from GitHub on every call.
