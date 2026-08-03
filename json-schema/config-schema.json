@@ -13,6 +13,9 @@
     "tautulli": {
       "$ref": "#/definitions/tautulli-api"
     },
+    "tracearr": {
+      "$ref": "#/definitions/tracearr-api"
+    },
     "webhooks": {
       "$ref": "#/definitions/webhooks"
     },
@@ -51,6 +54,12 @@
     },
     "yamtrack": {
       "$ref": "#/definitions/yamtrack-api"
+    },
+    "serializd": {
+      "$ref": "#/definitions/serializd-api"
+    },
+    "floppy": {
+      "$ref": "#/definitions/floppy-api"
     },
     "github": {
       "$ref": "#/definitions/github-api"
@@ -109,6 +118,25 @@
             }
           },
           "additionalProperties": false
+        }
+      ]
+    },
+    "mass-rating-source": {
+      "oneOf": [
+        { "type": "number", "minimum": 0, "maximum": 10 },
+        {
+          "type": "string",
+          "enum": ["floppy", "lock", "remove", "reset", "unlock"]
+        },
+        {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "oneOf": [
+              { "type": "number", "minimum": 0, "maximum": 10 },
+              { "type": "string", "enum": ["floppy", "lock", "remove", "reset", "unlock"] }
+            ]
+          }
         }
       ]
     },
@@ -874,7 +902,70 @@
       ],
       "title": "tmdb"
     },
+    "serializd-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "email": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "timeout": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "email",
+        "password"
+      ],
+      "title": "serializd"
+    },
     "tautulli-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apikey": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^trr_pub_.+"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "server_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^(https?)://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "title": "tautulli"
+    },
+    "tracearr-api": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -902,7 +993,7 @@
         }
       },
       "required": [],
-      "title": "tautulli"
+      "title": "tracearr"
     },
     "webhooks": {
       "type": "object",
@@ -1039,6 +1130,21 @@
       },
       "required": [],
       "title": "yamtrack"
+    },
+    "floppy-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["url"],
+      "title": "floppy"
     },
     "gotify-api": {
       "type": "object",
@@ -2424,6 +2530,7 @@
             "subtitle_language",
             "sundance",
             "tautulli",
+            "tracearr",
             "tiff",
             "tmdb",
             "trakt",
@@ -2516,6 +2623,7 @@
             "subtitle_language",
             "sundance",
             "tautulli",
+            "tracearr",
             "tiff",
             "tmdb",
             "trakt",
@@ -3040,12 +3148,15 @@
                                                                 "if": {
                                                                   "properties": {
                                                                     "default": {
-                                                                      "const": "tautulli"
-                                                                    }
-                                                                  },
-                                                                  "required": [
-                                                                    "default"
-                                                                  ]
+                                                                      "enum": [
+                                                                        "tautulli",
+                                                                        "tracearr"
+                                                                      ]
+                                                                  }
+                                                                },
+                                                                "required": [
+                                                                  "default"
+                                                                ]
                                                                 },
                                                                 "then": {
                                                                   "properties": {
@@ -4402,7 +4513,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4451,6 +4562,9 @@
             },
             "tautulli": {
               "$ref": "#/definitions/tautulli-api"
+            },
+            "tracearr": {
+              "$ref": "#/definitions/tracearr-api"
             },
             "template_variables": {
               "$ref": "#/definitions/template-variables-library"
@@ -4820,6 +4934,10 @@
             "split_duplicates": {
               "type": "boolean"
             },
+            "sync_watchlist_to_serializd": {
+              "description": "Add episodes watched by the Plex server owner to the authenticated Serializd account. Serializd does not support importing Plex watch dates.",
+              "type": "boolean"
+            },
             "radarr_add_all": {
               "type": "boolean"
             },
@@ -4972,6 +5090,9 @@
                   "enum": [
                     "tmdb",
                     "tvdb",
+                    "serializd",
+                    "serializd_nanogenres",
+                    "serializd_all",
                     "imdb",
                     "omdb",
                     "anidb",
@@ -4997,6 +5118,9 @@
                         "enum": [
                           "tmdb",
                           "tvdb",
+                          "serializd",
+                          "serializd_nanogenres",
+                          "serializd_all",
                           "imdb",
                           "omdb",
                           "anidb",
@@ -5278,6 +5402,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5317,6 +5443,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5365,6 +5493,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5404,6 +5534,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5452,6 +5584,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5491,6 +5625,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5539,6 +5675,9 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5578,6 +5717,9 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5626,6 +5768,9 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5665,6 +5810,9 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5713,6 +5861,9 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "serializd",
+                    "serializd_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5752,6 +5903,9 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "serializd",
+                          "serializd_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -13906,7 +14060,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating1_image": {
@@ -13961,7 +14116,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating2_image": {
@@ -14016,7 +14172,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating3_image": {

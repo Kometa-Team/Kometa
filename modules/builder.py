@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -29,6 +29,7 @@ advance_show = [
 all_builders = (
     anidb.builders
     + anilist.builders
+    + floppy.builders
     + icheckmovies.builders
     + imdb.builders
     + letterboxd.builders
@@ -37,17 +38,20 @@ all_builders = (
     + plex.builders
     + stevenlu.builders
     + tautulli.builders
+    + tracearr.builders
     + textfile.builders
     + tmdb.builders
     + trakt.builders
     + tvdb.builders
     + yamtrack.builders
+    + serializd.builders
     + mdblist.builders
     + simkl.builders
     + radarr.builders
     + sonarr.builders
 )
 show_only_builders = [
+    *serializd.builders,
     "tmdb_network",
     "tmdb_show",
     "tmdb_show_details",
@@ -99,6 +103,7 @@ summary_details = [
     "tvdb_description",
     "trakt_description",
     "yamtrack_description",
+    "floppy_description",
     "letterboxd_description",
     "icheckmovies_description",
 ]
@@ -508,6 +513,8 @@ custom_sort_builders = [
     "tmdb_airing_today",
     "tmdb_on_the_air",
     "trakt_list",
+    "floppy_list",
+    "floppy_tracked",
     "yamtrack_list",
     "yamtrack_tracked",
     "trakt_watchlist",
@@ -532,6 +539,14 @@ custom_sort_builders = [
     "trakt_watched_monthly",
     "trakt_watched_yearly",
     "trakt_watched_all",
+    "tracearr_history",
+    "tracearr_popular",
+    "tracearr_watched",
+    "tracearr_trending",
+    "tracearr_rewatched",
+    "tracearr_completed",
+    "tracearr_binged",
+    "tracearr_transcoded",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -589,6 +604,7 @@ overlay_attributes = (
 parts_collection_valid = (
     [
         "filters",
+        "value_filter",
         "plex_all",
         "plex_search",
         "text_file",
@@ -1551,10 +1567,14 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
+                elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tracearr to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}'requires MyAnimeList to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries")
+                elif not self.playlist and self.library.is_movie and method_name == "tracearr_binged":
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries or playlists")
                 elif self.library.is_show and method_name in movie_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:
@@ -1623,6 +1643,8 @@ class CollectionBuilder:
                     self._textfile(method_name, method_data)
                 elif method_name in tautulli.builders:
                     self._tautulli(method_name, method_data)
+                elif method_name in tracearr.builders:
+                    self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
                 elif method_name in trakt.builders or method_name in [
@@ -1632,6 +1654,10 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
+                elif method_name in serializd.builders:
+                    self._serializd(method_name, method_data)
+                elif method_name in floppy.builders:
+                    self._floppy(method_name, method_data)
                 elif method_name in tvdb.builders:
                     self._tvdb(method_name, method_data)
                 elif method_name in mdblist.builders:
@@ -3230,6 +3256,44 @@ class CollectionBuilder:
             final_dict["list_buffer"] = buff
             self.builders.append((method_name, final_dict))
 
+    def _tracearr(self, method_name, method_data):
+        for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
+            dict_methods = {dm.lower(): dm for dm in dict_data}
+            final_dict = {
+                "list_type": method_name.replace("tracearr_", "", 1),
+                "list_days": util.parse(
+                    self.Type,
+                    "list_days",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=1,
+                    default=30,
+                    parent=method_name,
+                ),
+                "list_size": util.parse(
+                    self.Type,
+                    "list_size",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=1,
+                    default=10,
+                    parent=method_name,
+                ),
+                "list_minimum": util.parse(
+                    self.Type,
+                    "list_minimum",
+                    dict_data,
+                    datatype="int",
+                    methods=dict_methods,
+                    minimum=0,
+                    default=0,
+                    parent=method_name,
+                ),
+            }
+            self.builders.append((method_name, final_dict))
+
     def _tmdb(self, method_name, method_data):
         if method_name == "tmdb_discover":
             for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
@@ -3428,6 +3492,28 @@ class CollectionBuilder:
             if description:
                 self.summaries[method_name] = description
 
+    def _serializd(self, method_name, method_data):
+        if self.config.Serializd is None:
+            raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
+        for value in self.config.Serializd.validate_builder(method_name, method_data):
+            self.builders.append((method_name, value))
+
+    def _floppy(self, method_name, method_data):
+        if self.config.Floppy is None:
+            raise BuilderValidationError(f"{self.Type} Error: floppy attribute not found in config")
+        if method_name == "floppy_tracked":
+            self.builders.append((method_name, self.config.Floppy.validate_tracked(self.Type, method_data, self.library.is_movie if not self.playlist else None)))
+            return
+        for floppy_list in self.config.Floppy.validate_lists(self.Type, method_data):
+            self.builders.append(("floppy_list", floppy_list))
+            if method_name.endswith("_details") or floppy_list["sync_tags"]:
+                description, tags = self.config.Floppy.get_list_details(floppy_list)
+                if method_name.endswith("_details") and description:
+                    self.summaries[method_name] = description
+                if floppy_list["sync_tags"] and tags:
+                    item_labels = self.item_details.setdefault("item_label", [])
+                    item_labels.extend(tag for tag in tags if tag not in item_labels)
+
     def _tvdb(self, method_name, method_data):
         values = util.get_list(method_data) or []
         if method_name.endswith("_details"):
@@ -3533,6 +3619,24 @@ class CollectionBuilder:
             ids = self.library.get_rating_keys(method, value, self.playlist)
         elif "tautulli" in method:
             ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
+        elif "tracearr" in method:
+            if self.playlist:
+                ids = []
+                connectors = {}
+                for pl_library in self.libraries:
+                    connector = pl_library.Tracearr
+                    if not connector:
+                        continue
+                    server_key = (connector.api, connector.server_id)
+                    connectors[server_key] = connector
+                if len(connectors) > 1:
+                    raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
+                for connector in connectors.values():
+                    machine_id = connector.library.PlexServer.machineIdentifier
+                    server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
+                    ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
+            else:
+                ids = self.library.Tracearr.get_rating_keys(value)
         elif "anidb" in method:
             anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
             ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
@@ -3578,6 +3682,15 @@ class CollectionBuilder:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "serializd" in method:
+            ids = self.config.Serializd.get_builder_ids(method, value)
+        elif "floppy" in method:
+            if method == "floppy_tracked":
+                ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                if mal_ids:
+                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+            else:
+                ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
         elif "radarr" in method:
             ids = self.library.Radarr.get_tmdb_ids(method, value)
         elif "sonarr" in method:
@@ -4223,29 +4336,35 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False) or []
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
+            is_plex_search_language = plex_search and attribute in ("audio_language", "subtitle_language")
+            search_choices, names = ({}, []) if is_plex_search_language else self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
             valid_list = []
             for fvalue in final_values:
-                if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
+                if is_plex_search_language:
+                    variants = self.library.get_language_search_values(attribute, str(fvalue).lower())
+                    if variants:
+                        valid_list.extend((fvalue, variant) for variant in variants)
+                        continue
+                elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
-                else:
-                    actor_id = None
-                    if attribute in ["actor", "director", "producer", "writer"]:
-                        actor_id = self.library.get_actor_id(fvalue)
-                        if actor_id:
-                            if plex_search:
-                                valid_list.append((fvalue, actor_id))
-                            else:
-                                valid_list.append(actor_id)
-                    if not actor_id:
-                        error = f"Plex Error: {attribute}: {fvalue} not found"
-                        if self.details["show_options"]:
-                            error += f"\nOptions: {names}"
-                        if validate:
-                            raise FilterFailed(error)
-                        elif not self.ignore_blank_results:
-                            logger.error(error)
+                    continue
+                actor_id = None
+                if attribute in ["actor", "director", "producer", "writer"]:
+                    actor_id = self.library.get_actor_id(fvalue)
+                    if actor_id:
+                        if plex_search:
+                            valid_list.append((fvalue, actor_id))
+                        else:
+                            valid_list.append(actor_id)
+                if not actor_id:
+                    error = f"Plex Error: {attribute}: {fvalue} not found"
+                    if self.details["show_options"]:
+                        error += f"\nOptions: {names}"
+                    if validate:
+                        raise FilterFailed(error)
+                    elif not self.ignore_blank_results:
+                        logger.error(error)
             return valid_list
         elif attribute in date_attributes and modifier in [".before", ".after"]:
             try:
@@ -5103,6 +5222,8 @@ class CollectionBuilder:
             summary = ("trakt_list_details", self.summaries["trakt_list_details"])
         elif "yamtrack_list_details" in self.summaries:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
+        elif "floppy_list_details" in self.summaries:
+            summary = ("floppy_list_details", self.summaries["floppy_list_details"])
         elif "tmdb_list_details" in self.summaries:
             summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
         elif "tvdb_list_details" in self.summaries:

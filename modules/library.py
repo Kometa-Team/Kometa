@@ -21,6 +21,7 @@ class Library(ABC):
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
+        self.Tracearr = None
         self.Webhooks = None
         self.Operations = Operations(config, self)
         self.Overlays = None
@@ -145,6 +146,7 @@ class Library(ABC):
         self.content_rating_mapper = params["content_rating_mapper"]
         self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"]  # TODO: Here or just in Plex?
+        self.sync_watchlist_to_serializd = params["sync_watchlist_to_serializd"]
         self.stats = {
             "created": 0,
             "modified": 0,
@@ -184,6 +186,7 @@ class Library(ABC):
             or self.mass_background_update
             or self.mass_logo_update
             or self.mass_square_art_update
+            or self.sync_watchlist_to_serializd
             else False
         )
         self.library_operation = (

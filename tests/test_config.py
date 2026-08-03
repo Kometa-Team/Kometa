@@ -74,6 +74,7 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
         "modules.simkl",
         "modules.stevenlu",
         "modules.tautulli",
+        "modules.tracearr",
         "modules.icheckmovies",
         "modules.mal",
         "modules.anilist",

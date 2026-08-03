@@ -13,6 +13,7 @@
     - separator_chart.yml
     - simkl.yml
     - tautulli.yml
+    - tracearr.yml
     - tmdb.yml
     - trakt.yml
 - Public API / entry points (best-effort): (none — YAML collection/overlay definitions)

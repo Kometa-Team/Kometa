@@ -9,8 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, `diff_episode`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes; `diff_episode` compares episode rating keys using a dedicated cache snapshot and is documented as potentially time-intensive for large libraries.
+- Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
+- Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
+- Add `floppy` as a direct Defaults ratings-overlay source for movies, shows, and episodes.
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views.
+- Add Serializd as a connector
+- Add `serializd` as a genre source for shows and episodes for the mass metadata update operation, includes nanogenres.
+- Add `serializd` as a source for show and episode audience, critic, and user mass metadata updates, and `serializd_user` for episodes only.
+- Add `sync_watchlist_to_serializd` show-library operation to mark the Plex server owner's watched episodes as watched in Serializd.
+- Add builders: `serializd_list`, `serializd_watchlist`, `serializd_trending`, `serializd_popular`, and `serializd_featured`
+- Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
 
 ### Fixed
+- Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 
@@ -20,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduce redundant network/image work: `Requests.get_image()` is memoized by URL for the run; validate-only image URL checks use HEAD instead of GET; validate-only checks are skipped entirely for Kometa's own GitHub-hosted assets; and fresh local overlay images are reused instead of being re-fetched from GitHub on every call.
 - `modules/request.py`: read-only file/URL YAML loads (that are never saved back) now use ruamel's safe loader, skipping comment/formatting-preservation bookkeeping that was pure overhead for these loads.
 - Dedupe forced Plex reloads for tag filters checked back-to-back in `check_filters`; snapshot the overlay backup folder once per run instead of calling `os.path.exists()` per item; buffer log file writes instead of flushing after every line (`WARNING` and above still flush immediately, and handler removal/close force a final flush so the file is always complete); early-exit `check_for_var`'s variable-resolution loop once a pass makes no substitutions, and skip its redundant second pass when no arithmetic `<<var+N>>` syntax is present.
+- Improve `audio_language`/`subtitle_language` `plex_search` matching (including the default `languages.yml` flag overlays) to recognize every locale- or region-tagged variant of a language that actually exists in the library (e.g. `es-419`, `en-US`, `spa`) instead of only an exact 2-letter match. A single `es`/`it`/`zh` filter now matches every variant Plex reports for that language, resolved with one lightweight, cached lookup of the library's language filter choices rather than a separate Plex query per variant.
 
 ## [v2.4.6] - 2026-07-30
 

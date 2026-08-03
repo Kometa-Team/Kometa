@@ -87,6 +87,7 @@ class TestInit:
             "image_maps",
             "radarr_adds",
             "sonarr_adds",
+            "serializd_watched_sync",
             "list_cache",
             "list_ids",
             "imdb_keywords",
@@ -97,6 +98,23 @@ class TestInit:
             "letterboxd_incremental_state",
         ]:
             assert table_exists(cache, table), f"Table {table} not created"
+
+
+class TestSerializdWatchedSync:
+    def test_records_and_queries_synced_episodes(self, tmp_path):
+        cache = make_cache(tmp_path)
+
+        cache.update_serializd_watched("account-a", 1429, 1, [3, 1, 3])
+
+        assert sorted(cache.query_serializd_watched("account-a", 1429, 1)) == [1, 3]
+
+    def test_records_are_scoped_to_account_show_and_season(self, tmp_path):
+        cache = make_cache(tmp_path)
+        cache.update_serializd_watched("account-a", 1429, 1, [1])
+
+        assert cache.query_serializd_watched("account-b", 1429, 1) == []
+        assert cache.query_serializd_watched("account-a", 9999, 1) == []
+        assert cache.query_serializd_watched("account-a", 1429, 2) == []
 
     def test_drops_old_table_names(self, tmp_path):
         cache = make_cache(tmp_path)
