@@ -61,6 +61,12 @@ class FakeLogger:
         if text and str(text) not in self.secrets:
             self.secrets.append(str(text))
 
+    def redact(self, text: Any) -> str:
+        text = str(text)
+        for secret in self.secrets:
+            text = text.replace(secret, "(redacted)")
+        return text
+
     def clear_errors(self) -> None:
         self.saved_errors = []
 

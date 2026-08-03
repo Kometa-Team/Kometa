@@ -312,6 +312,17 @@ class MyLogger:
             if variant not in self.secrets:
                 self.secrets.append(variant)
 
+    def redact(self, text):
+        text = str(text)
+        for secret in self.secrets:
+            if secret in text:
+                text = text.replace(secret, "(redacted)")
+        if "HTTPConnectionPool" in text:
+            text = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", text)
+        if "HTTPSConnectionPool" in text:
+            text = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", text)
+        return text
+
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
         trace = level == TRACE
         log_only = False
@@ -328,13 +339,7 @@ class MyLogger:
                     self._formatter(log_only=True, space=True)
             log_only = True
         else:
-            for secret in self.secrets:
-                if secret in msg:
-                    msg = msg.replace(secret, "(redacted)")
-            if "HTTPConnectionPool" in msg:
-                msg = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", msg)
-            if "HTTPSConnectionPool" in msg:
-                msg = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", msg)
+            msg = self.redact(msg)
             try:
                 if not _srcfile:
                     raise ValueError

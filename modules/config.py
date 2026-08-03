@@ -2591,7 +2591,7 @@ class ConfigFile:
     def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         for error in util.get_list(text, split=False, return_none=False) or []:
             try:
-                self.Webhooks.error_hooks(error, server=server, library=library, collection=collection, playlist=playlist, critical=critical)
+                self.Webhooks.error_hooks(logger.redact(error), server=server, library=library, collection=collection, playlist=playlist, critical=critical)
             except Failed as e:
                 logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")

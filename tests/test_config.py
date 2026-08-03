@@ -484,6 +484,12 @@ class TestNotify:
         cf.notify("Something went wrong")
         cf.Webhooks.error_hooks.assert_called_once()
 
+    def test_notify_redacts_secrets_before_calling_error_webhooks(self, tmp_path):
+        cf = make_config(tmp_path)
+        config_module.logger.secret("fake-plex-token")
+        cf.notify("Upload failed: http://localhost:32400/posters?X-Plex-Token=fake-plex-token")
+        assert cf.Webhooks.error_hooks.call_args.args[0] == "Upload failed: http://localhost:32400/posters?X-Plex-Token=(redacted)"
+
     def test_notify_delete_calls_webhooks_delete_hooks(self, tmp_path):
         cf = make_config(tmp_path)
         cf.notify_delete("Collection deleted")
