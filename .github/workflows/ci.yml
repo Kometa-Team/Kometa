@@ -3,7 +3,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, labeled]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
 
 concurrency:
   group: ci-${{ github.event.pull_request.number }}
@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     # Irrelevant label events (anything but docker/tester) skip the whole DAG instead of re-running everything.
     if: >-
-      github.event.action != 'labeled' ||
+      (github.event.action != 'labeled' && github.event.action != 'unlabeled') ||
       contains(fromJSON('["docker","tester"]'), github.event.label.name)
     steps:
       - name: Check Base Branch
@@ -93,6 +93,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      pull-requests: write
     outputs:
       commit-msg: ${{ steps.build-vars.outputs.commit-msg }}
       part-value: ${{ steps.build-vars.outputs.part-value }}
@@ -191,6 +192,66 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.DOCKER_NAME }}
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
+
+      # Updates the same comment label-status posted -- one evolving comment per PR, not one per event.
+      - name: Update label status comment with build result
+        if: always()
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const marker = "<!-- kometa-docker-label-status -->";
+            const tagName = "${{ steps.build-vars.outputs.tag-name }}";
+            const success = "${{ job.status }}" === "success";
+            const body = success
+              ? `${marker}\nDocker image pushed: \`kometateam/kometa:${tagName}\``
+              : `${marker}\nDocker build failed -- check the Actions run.`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+  label-status:
+    runs-on: ubuntu-latest
+    if: contains(fromJSON('["docker","tester"]'), github.event.label.name)
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Update label status comment
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const marker = "<!-- kometa-docker-label-status -->";
+            const removed = "${{ github.event.action }}" === "unlabeled";
+
+            const headRef = context.payload.pull_request.head.ref;
+            const headRepoFullName = context.payload.pull_request.head.repo.full_name;
+            const branchName = headRef.replace(/[^a-zA-Z0-9._-]/g, "-");
+            const baseName = headRepoFullName.split("/")[0];
+            const tagName = ["master", "develop", "nightly"].includes(branchName) ? baseName : branchName;
+
+            const body = removed
+              ? `${marker}\nDocker label removed. No image will be built unless the label is re-added.`
+              : `${marker}\nDocker label added. Image will be tagged \`kometateam/kometa:${tagName}\` once Tests and Pyright pass.`;
+
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+            const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
 
   notify-testers:
     runs-on: ubuntu-latest
