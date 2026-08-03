@@ -1,0 +1,33 @@
+collections:
+  Tracearr Popular:
+    tracearr_popular:
+      list_days: 30
+      list_size: 10
+  Tracearr Watched:
+    tracearr_watched:
+      list_days: 30
+      list_size: 10
+  Tracearr Trending:
+    tracearr_trending:
+      list_days: 30
+      list_size: 10
+  Tracearr Rewatched:
+    tracearr_rewatched:
+      list_days: 30
+      list_size: 10
+  Tracearr Completed:
+    tracearr_completed:
+      list_days: 30
+      list_size: 10
+  Tracearr Binged:
+    tracearr_binged:
+      list_days: 30
+      list_size: 10
+  Tracearr Most Transcoded:
+    tracearr_transcoded:
+      list_days: 30
+      list_size: 10
+  Tracearr History:
+    tracearr_history:
+      list_days: 30
+      list_size: 10

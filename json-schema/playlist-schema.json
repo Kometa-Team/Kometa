@@ -137,6 +137,14 @@
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_trending": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_rewatched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_completed": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
 
                 "mdblist_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
                 "letterboxd_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
@@ -178,6 +186,14 @@
         },
 
         "tautulli-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 }
+            }
+        },
+        "tracearr-builder-block": {
             "type": "object", "additionalProperties": false,
             "properties": {
                 "list_days": { "type": "integer", "minimum": 1 },

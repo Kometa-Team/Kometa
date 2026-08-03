@@ -39,6 +39,22 @@ def test_letterboxd_semantic_builder_rejects_wrong_slug_attribute(collection_sch
         validate(_collection_with_builder("letterboxd_genre", {"url": "https://letterboxd.com/films/genre/crime/"}), collection_schema)
 
 
+@pytest.mark.parametrize("builder", ["tracearr_popular", "tracearr_binged", "tracearr_transcoded"])
+def test_tracearr_builder_passes(collection_schema, builder):
+    validate(_collection_with_builder(builder, {"list_days": 30, "list_minimum": 2, "list_size": 20}), collection_schema)
+
+
+def test_tracearr_builder_rejects_removed_list_buffer(collection_schema):
+    with pytest.raises(ValidationError):
+        validate(
+            _collection_with_builder(
+                "tracearr_popular",
+                {"list_days": 30, "list_size": 20, "list_buffer": 10},
+            ),
+            collection_schema,
+        )
+
+
 # ── Property validation ────────────────────────────────────────────────────────
 
 
