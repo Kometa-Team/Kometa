@@ -648,7 +648,7 @@ class Library(ABC):
 
     @property
     def has_schedule_scope(self):
-        return self.schedule_mode != "full"
+        return getattr(self, "schedule_mode", "full") != "full"
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):
