@@ -41,11 +41,11 @@ def test_library_schedule_modes_select_the_expected_items(monkeypatch):
 
     monkeypatch.setattr("modules.library.datetime", FrozenDateTime)
 
-    library.schedule_modes = [("weekly(monday)", "added(7)")]
+    library.schedule_mode = "added(7)"
     assert Library._schedule_item_keys(library, items) == {1, 3}
 
-    library.schedule_modes = [("weekly(monday)", "diff")]
+    library.schedule_mode = "diff"
     assert Library._schedule_item_keys(library, items) == {1, 3}
 
-    library.schedule_modes = [("weekly.not(monday)", "full"), ("weekly(monday)", "added(7)")]
-    assert Library._schedule_item_keys(library, items) == {1, 3}
+    library.schedule_mode = "full"
+    assert Library._schedule_item_keys(library, items) == {1, 2, 3}

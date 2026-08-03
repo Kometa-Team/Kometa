@@ -52,8 +52,7 @@ class Library(ABC):
         self.scheduled_episode_cached_keys = set()
         self.scheduled_item_keys = set()
         self.scheduled_episode_keys = set()
-        self.schedule_modes = params.get("schedule_modes", [])
-        self.schedule_mode = "full"
+        self.schedule_mode = params.get("schedule_mode", "full")
         # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
         self.filter_attr_cache = {}
         self.run_again = []
@@ -592,22 +591,17 @@ class Library(ABC):
         logger.info("")
         # A schedule mode is selected only after every item has been fetched.
         # Do not let an existing scope affect this source-of-truth snapshot.
-        items = self.get_all(ignore_schedule_scope=True)
+        items = self.get_cached_items()
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items
 
+    def get_cached_items(self):
+        """Return the unscoped top-level item snapshot cached for this run."""
+        return self.get_all(ignore_schedule_scope=True)
+
     def _schedule_item_keys(self, items):
         """Return the keys in scope for today's library schedule mode."""
-        self.schedule_mode = "full"
-        for schedule, mode in self.schedule_modes:
-            try:
-                util.schedule_check("schedule", schedule, datetime.now(), self.config.run_hour)
-                self.schedule_mode = mode
-                break
-            except NotScheduled:
-                continue
-
         if self.schedule_mode == "full":
             return {item.ratingKey for item in items}
         if self.schedule_mode == "diff":

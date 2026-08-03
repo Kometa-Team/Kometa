@@ -1135,7 +1135,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 if config.Cache:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
-                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library._all_items])
+                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
                     if library.schedule_mode == "diff_episode":
                         episode_schedule_list_key = config.Cache.update_list_cache("library_schedule_episodes", library.mapping_name, True, 0)
                         config.Cache.delete_list_ids(episode_schedule_list_key)

@@ -1928,7 +1928,7 @@ class ConfigFile:
                 params["default_dir"] = default_dir
 
                 params["skip_library"] = False
-                params["schedule_modes"] = []
+                params["schedule_mode"] = "full"
                 if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
@@ -1936,6 +1936,7 @@ class ConfigFile:
                         logger.debug(f"Value: {lib['schedule']}")
                         schedule_entries = util.get_list(lib["schedule"], split=False)
                         if any(isinstance(entry, dict) for entry in schedule_entries):
+                            schedule_modes = []
                             for entry in schedule_entries:
                                 if not isinstance(entry, dict) or set(entry) != {"schedule", "mode"}:
                                     logger.error("Config Error: each library schedule mode must contain schedule and mode attributes")
@@ -1948,13 +1949,14 @@ class ConfigFile:
                                 if not isinstance(mode, str):
                                     logger.error(f"Config Error: schedule mode for {schedule} must be a string")
                                     continue
-                                params["schedule_modes"].append((schedule, mode.lower()))
-                            if not params["schedule_modes"]:
+                                schedule_modes.append((schedule, mode.lower()))
+                            if not schedule_modes:
                                 params["skip_library"] = True
                             else:
-                                for schedule, _ in params["schedule_modes"]:
+                                for schedule, mode in schedule_modes:
                                     try:
                                         util.schedule_check("schedule", schedule, current_time, self.run_hour)
+                                        params["schedule_mode"] = mode
                                         break
                                     except NotScheduled:
                                         continue

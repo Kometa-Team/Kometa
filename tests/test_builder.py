@@ -69,6 +69,8 @@ class FakeShow:
 
 class FakeTVDbLibrary:
     def __init__(self, show_item, tvdb_id=383275, rating_key=101):
+        self.has_schedule_scope = False
+        self.scheduled_item_keys = set()
         self.show_map = {tvdb_id: [rating_key]}
         self._show_item = show_item
 
@@ -136,6 +138,7 @@ def make_builder(**attrs) -> CollectionBuilder:
 
 def _episode_builder(library) -> CollectionBuilder:
     return make_builder(
+        library=library,
         builder_level="episode",
         libraries=[library],
         details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
@@ -215,11 +218,38 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_list_rating_keys_respect_library_schedule_scope(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+        class FakeMovie:
+            def __init__(self, rating_key):
+                self.ratingKey = rating_key
+                self.title = "Outside Scope"
+
+        class FakeLibrary:
+            has_schedule_scope = True
+            scheduled_item_keys = {100}
+            movie_map = {}
+            show_map = {}
+
+            @staticmethod
+            def fetch_item(rating_key):
+                return FakeMovie(rating_key)
+
+        monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+        library = FakeLibrary()
+        builder = make_builder(library=library, libraries=[library])
+
+        builder.filter_and_save_items([(101, "ratingKey")])
+
+        assert builder.found_items == []
+
     def test_ratingkey_items_respect_shared_ignore_ids(self, monkeypatch):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
 
         class FakeLibrary:
             def __init__(self):
+                self.has_schedule_scope = False
                 self.movie_map = {353546: [101]}
                 self.show_map = {}
                 self.imdb_map = {}
