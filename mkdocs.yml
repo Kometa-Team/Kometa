@@ -403,6 +403,7 @@ nav:
       - Floppy:
         - Overview: files/builders/floppy/overview.md
         - List: files/builders/floppy/list.md
+        - Tracked: files/builders/floppy/tracked.md
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md
