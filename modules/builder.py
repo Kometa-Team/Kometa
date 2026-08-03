@@ -4334,29 +4334,35 @@ class CollectionBuilder:
                         final_values.append(value)
             else:
                 final_values = util.get_list(data, trim=False) or []
-            search_choices, names = self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
+            is_plex_search_language = plex_search and attribute in ("audio_language", "subtitle_language")
+            search_choices, names = ({}, []) if is_plex_search_language else self.library.get_search_choices(attribute, title=not plex_search, libtype=plex_search_type)
             valid_list = []
             for fvalue in final_values:
-                if str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
+                if is_plex_search_language:
+                    variants = self.library.get_language_search_values(attribute, str(fvalue).lower())
+                    if variants:
+                        valid_list.extend((fvalue, variant) for variant in variants)
+                        continue
+                elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
-                else:
-                    actor_id = None
-                    if attribute in ["actor", "director", "producer", "writer"]:
-                        actor_id = self.library.get_actor_id(fvalue)
-                        if actor_id:
-                            if plex_search:
-                                valid_list.append((fvalue, actor_id))
-                            else:
-                                valid_list.append(actor_id)
-                    if not actor_id:
-                        error = f"Plex Error: {attribute}: {fvalue} not found"
-                        if self.details["show_options"]:
-                            error += f"\nOptions: {names}"
-                        if validate:
-                            raise FilterFailed(error)
-                        elif not self.ignore_blank_results:
-                            logger.error(error)
+                    continue
+                actor_id = None
+                if attribute in ["actor", "director", "producer", "writer"]:
+                    actor_id = self.library.get_actor_id(fvalue)
+                    if actor_id:
+                        if plex_search:
+                            valid_list.append((fvalue, actor_id))
+                        else:
+                            valid_list.append(actor_id)
+                if not actor_id:
+                    error = f"Plex Error: {attribute}: {fvalue} not found"
+                    if self.details["show_options"]:
+                        error += f"\nOptions: {names}"
+                    if validate:
+                        raise FilterFailed(error)
+                    elif not self.ignore_blank_results:
+                        logger.error(error)
             return valid_list
         elif attribute in date_attributes and modifier in [".before", ".after"]:
             try:
