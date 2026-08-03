@@ -341,6 +341,9 @@ class TestTextfile:
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
 
+    def test_value_filter_is_allowed_for_episode_overlays(self):
+        assert "value_filter" in parts_collection_valid
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Batched item labels

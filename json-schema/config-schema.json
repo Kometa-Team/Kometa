@@ -55,6 +55,9 @@
     "yamtrack": {
       "$ref": "#/definitions/yamtrack-api"
     },
+    "floppy": {
+      "$ref": "#/definitions/floppy-api"
+    },
     "github": {
       "$ref": "#/definitions/github-api"
     },
@@ -112,6 +115,25 @@
             }
           },
           "additionalProperties": false
+        }
+      ]
+    },
+    "mass-rating-source": {
+      "oneOf": [
+        { "type": "number", "minimum": 0, "maximum": 10 },
+        {
+          "type": "string",
+          "enum": ["floppy", "lock", "remove", "reset", "unlock"]
+        },
+        {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "oneOf": [
+              { "type": "number", "minimum": 0, "maximum": 10 },
+              { "type": "string", "enum": ["floppy", "lock", "remove", "reset", "unlock"] }
+            ]
+          }
         }
       ]
     },
@@ -1084,6 +1106,21 @@
       },
       "required": [],
       "title": "yamtrack"
+    },
+    "floppy-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "token": {
+          "type": ["string", "null"]
+        }
+      },
+      "required": ["url"],
+      "title": "floppy"
     },
     "gotify-api": {
       "type": "object",
@@ -4452,7 +4489,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -5300,6 +5337,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5339,6 +5377,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5387,6 +5426,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5426,6 +5466,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5474,6 +5515,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5513,6 +5555,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5561,6 +5604,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5600,6 +5644,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5648,6 +5693,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5687,6 +5733,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -5735,6 +5782,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "floppy",
                     "unlock"
                   ]
                 },
@@ -5774,6 +5822,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "floppy",
                           "unlock"
                         ]
                       },
@@ -13928,7 +13977,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating1_image": {
@@ -13983,7 +14033,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating2_image": {
@@ -14038,7 +14089,8 @@
           "enum": [
             "critic",
             "audience",
-            "user"
+            "user",
+            "floppy"
           ]
         },
         "rating3_image": {
