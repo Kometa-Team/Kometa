@@ -73,6 +73,18 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[Serializd](../serializd/overview)** builders grab shows from Serializd lists and watchlists through its JSON API.
+
+    [:octicons-home-16: View Builder](../serializd/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: Serializd List](../serializd/list) - Gets every show in a public Serializd list.
+        - [:octicons-list-ordered-16: Serializd Watchlist](../serializd/watchlist) - Gets every show in a Serializd user watchlist.
+        - [:octicons-graph-16: Serializd Charts](../serializd/charts) - Gets Trending, Popular, or Featured shows.
+
+!!! builder
+
     ![IMDb logo](../../assets/images/files/builders/imdb.png){ align=right }
 
     **[IMDb](../imdb/overview)** builders grab items based on metadata and lists on IMDb.com

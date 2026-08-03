@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 from xml.etree.ElementTree import ParseError
 
+import langcodes
 import plexapi
 from PIL import Image
 from plexapi import utils  # type: ignore[attr-defined]  # utils is not re-exported from plexapi.__init__
@@ -135,6 +136,19 @@ search_translation = {
     "track_source": "track.source",
     "track_label": "track.label",
 }
+
+
+def base_language_code(value):
+    """Reduce a language value in any common form down to its base ISO 639-1 code ("es", "en"):
+    a 3-letter ISO 639-2/3 code, including bibliographic/terminological pairs that differ from
+    their ISO 639-1 equivalent (e.g. "chi" -> "zh", "deu"/"ger" -> "de"), or a BCP-47/POSIX locale
+    tag (e.g. "es-419", "en_US"). Falls back to the value unchanged if it can't be parsed."""
+    if not value:
+        return value
+    try:
+        return langcodes.Language.get(str(value)).language or value
+    except ValueError:
+        return value
 
 
 def get_asset_image_matches(file_filter, file_name):
@@ -868,6 +882,7 @@ class Plex(Library):
         self._users = []
         self._all_items = []
         self._account = None
+        self._language_choice_cache = {}
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
         source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)  # type: ignore[union-attr]
@@ -1287,21 +1302,43 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
             for choice in self.get_tags(final_search):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
-                # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
-                title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
-                choices[choice.title] = title_value  # type: ignore[union-attr]
+                choices[choice.title] = value  # type: ignore[union-attr]
                 choices[choice.key] = value  # type: ignore[union-attr]
-                choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
+                choices[choice.title.lower()] = value  # type: ignore[union-attr]
                 choices[choice.key.lower()] = value  # type: ignore[union-attr]
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
+
+    def get_language_search_values(self, search_name, code):
+        """Every Plex audioLanguage/subtitleLanguage filter value in this library that matches `code`:
+        if `code` is itself a specific value Plex reports (e.g. "es-419" or the 3-letter "spa"), only
+        that exact value is targeted; otherwise every variant that normalizes to it as a base ISO 639-1
+        code is returned (e.g. "es" -> ["es-419", "es-MX", "spa"]). Choices are fetched once per
+        library per run and cached."""
+        if search_name not in self._language_choice_cache:
+            final_search = search_translation[search_name] if search_name in search_translation else search_name
+            final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
+            final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+            exact_map = {}
+            code_map = {}
+            try:
+                for choice in self.get_tags(final_search):
+                    key = choice.key.lower()  # type: ignore[union-attr]
+                    exact_map[key] = choice.key  # type: ignore[union-attr]
+                    code_map.setdefault(base_language_code(key), []).append(choice.key)  # type: ignore[union-attr]
+            except NotFound:
+                logger.debug(f"Search Attribute: {final_search}")
+            self._language_choice_cache[search_name] = (exact_map, code_map)
+        exact_map, code_map = self._language_choice_cache[search_name]
+        if code != base_language_code(code) and code in exact_map:
+            return [exact_map[code]]
+        return code_map.get(code, [])
 
     @PLEX_RETRY
     def get_tags(self, tag):
@@ -2419,6 +2456,23 @@ class Plex(Library):
                 found_rating = self.config.Trakt.get_rating(imdb_id, self.is_movie)
             else:
                 raise OverlayError("Overlay Error: No Trakt rating found")
+        elif variable_name == "serializd_rating":
+            if not self.config.Serializd:
+                raise OverlayError("Overlay Error: Serializd is not configured in your config file")
+            if not tmdb_id and tvdb_id:
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+            if not tmdb_id and imdb_id:
+                converted_id, converted_type = self.config.Convert.imdb_to_tmdb(imdb_id)
+                if converted_type == "show":
+                    tmdb_id = converted_id
+            if not tmdb_id:
+                raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
+            if isinstance(item, Episode):
+                found_rating = self.config.Serializd.get_episode_rating(tmdb_id, item.seasonNumber, item.episodeNumber)
+            elif self.is_show:
+                found_rating = self.config.Serializd.get_show_rating(tmdb_id)
+            else:
+                raise OverlayError("Overlay Error: Serializd ratings are only available for shows and episodes")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
             if self.config.MDBList.limit is False:

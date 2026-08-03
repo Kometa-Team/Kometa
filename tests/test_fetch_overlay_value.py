@@ -15,6 +15,7 @@ from unittest.mock import MagicMock
 
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
 import modules.plex as plex_module
+from modules.overlay import vars_by_type
 from modules.plex import Plex
 from modules.util import Failed
 
@@ -37,6 +38,13 @@ def _item(rating_key=5173):
 
 def _episode(guids=None, season=2, episode=8):
     return SimpleNamespace(guids=guids or [], seasonNumber=season, episodeNumber=episode)
+
+
+def test_serializd_rating_is_limited_to_shows_and_episodes():
+    assert "serializd_rating" in vars_by_type["show"]
+    assert "serializd_rating" in vars_by_type["episode"]
+    assert "serializd_rating" not in vars_by_type["movie"]
+    assert "serializd_rating" not in vars_by_type["season"]
 
 
 def test_tmdb_episode_guid_is_used_before_plex_position():
@@ -224,3 +232,41 @@ def test_plex_rating_key_not_found_returns_none():
     result = plx.fetch_overlay_value(_item(), "plex_imdb_rating")
 
     assert result is None
+
+
+def test_serializd_show_rating_is_fetched_directly():
+    plx = _make_plex(get_ids=MagicMock(return_value=(1429, None, None)))
+    plx.is_movie = False
+    plx.is_show = True
+    plx.config.Serializd = MagicMock()
+    plx.config.Serializd.get_show_rating.return_value = 9.07
+
+    assert plx.fetch_overlay_value(_item(), "serializd_rating") == 9.07
+    plx.config.Serializd.get_show_rating.assert_called_once_with(1429)
+
+
+def test_serializd_episode_rating_is_fetched_directly(monkeypatch):
+    monkeypatch.setattr(plex_module, "Episode", SimpleNamespace)
+    show = _item()
+    episode = SimpleNamespace(ratingKey=2, title="Episode", guid="plex://episode/abc", seasonNumber=1, episodeNumber=3, show=MagicMock(return_value=show))
+    plx = _make_plex(get_ids=MagicMock(return_value=(1429, None, None)))
+    plx.is_movie = False
+    plx.is_show = True
+    plx.config.Serializd = MagicMock()
+    plx.config.Serializd.get_episode_rating.return_value = 8.79
+
+    assert plx.fetch_overlay_value(episode, "serializd_rating") == 8.79
+    plx.config.Serializd.get_episode_rating.assert_called_once_with(1429, 1, 3)
+
+
+def test_serializd_rating_resolves_tvdb_show_id_to_tmdb():
+    plx = _make_plex(get_ids=MagicMock(return_value=(None, 121361, None)))
+    plx.is_movie = False
+    plx.is_show = True
+    plx.config.Serializd = MagicMock()
+    plx.config.Serializd.get_show_rating.return_value = 9.07
+    plx.config.Convert = MagicMock()
+    plx.config.Convert.tvdb_to_tmdb.return_value = 1429
+
+    assert plx.fetch_overlay_value(_item(), "serializd_rating") == 9.07
+    plx.config.Serializd.get_show_rating.assert_called_once_with(1429)

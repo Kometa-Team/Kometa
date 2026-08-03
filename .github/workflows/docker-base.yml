@@ -1,11 +1,6 @@
 name: Docker Base Image Build
 
 on:
-  push:
-    branches: [ nightly ]
-    paths:
-      - requirements.txt
-      - Dockerfile.base
   schedule:
     - cron: "0 5 * * 0"  # weekly on Sunday 5am UTC
   workflow_dispatch:
