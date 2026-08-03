@@ -37,6 +37,39 @@ The scheduling options are:
 * You can have multiple scheduling options as a list.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
+## Library Schedule Modes
+
+Library schedule modes let a library run on its normal schedule while limiting the media items Kometa processes. Use an ordered list of `schedule` and `mode` mappings under the library's `schedule` attribute. Kometa uses the first matching entry; if no entry matches, it skips the library.
+
+```yaml title="Run a limited Monday update and a full update on other days"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: added(7)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The `.not` modifier inverts one schedule expression. For example, `weekly.not(monday)` matches every day except Monday.
+
+| Mode           | Scope                                                                                                                                                                                                                                                                                                               |
+|:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `full`         | Every top-level library item. This is the normal Kometa behavior.                                                                                                                                                                                                                                                   |
+| `added(days)`  | Items added to Plex during the previous number of days. In a TV Show library, this also includes an existing show if Plex added one of its episodes during that window.                                                                                                                                             |
+| `diff`         | Items whose top-level Plex rating keys were not in the previous library snapshot. Requires Kometa's cache to persist between runs.                                                                                                                                                                                  |
+| `diff_episode` | TV Show libraries only. Episodes whose rating keys were not in the previous episode snapshot, together with their parent shows. Requires Kometa's cache to persist between runs.<p> This is not recommended as Kometa must retrieve and compare every episode rating key on each run, this can be time intensive.   |
+| `index(A-F)`   | Titles beginning with any letter in the inclusive A through F range.                                                                                                                                                                                                                                                |
+| `index(A-F#)`  | The same A through F range, plus titles beginning with a number, symbol, or another non-alphabetical character.                                                                                                                                                                                                     |
+
+`index` matches the first non-whitespace character in an item's Plex title, case-insensitively. Ranges must be alphabetical and ascending.
+
+When a mode is not `full`, Kometa does not remove collection members that are outside the scope and does not change custom item positions within collections. Item-level collection work, overlays, metadata updates, and the normal item operations run only for scoped media.
+
+!!!+ note
+
+    Library schedule modes do not restrict explicitly broad maintenance actions, such as `radarr_remove_by_tag`, `sonarr_remove_by_tag`, collection deletion operations, or the `--delete-collections` and `--delete-labels` command-line options.
+
 ???+ warning "monthly(N) behaviour change"
     In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.
 

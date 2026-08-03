@@ -1,6 +1,8 @@
 import os
+import re
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta, timezone
 
 from PIL import Image
 
@@ -46,6 +48,12 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        self.scheduled_cached_keys = set()
+        self.scheduled_episode_cached_keys = set()
+        self.scheduled_item_keys = set()
+        self.scheduled_episode_keys = set()
+        self.schedule_modes = params.get("schedule_modes", [])
+        self.schedule_mode = "full"
         # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
         self.filter_attr_cache = {}
         self.run_again = []
@@ -579,10 +587,65 @@ class Library(ABC):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_all()
+        # A schedule mode is selected only after every item has been fetched.
+        # Do not let an existing scope affect this source-of-truth snapshot.
+        items = self.get_all(ignore_schedule_scope=True)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items
+
+    def _schedule_item_keys(self, items):
+        """Return the keys in scope for today's library schedule mode."""
+        self.schedule_mode = "full"
+        for schedule, mode in self.schedule_modes:
+            try:
+                util.schedule_check("schedule", schedule, datetime.now(), self.config.run_hour)
+                self.schedule_mode = mode
+                break
+            except NotScheduled:
+                continue
+
+        if self.schedule_mode == "full":
+            return {item.ratingKey for item in items}
+        if self.schedule_mode == "diff":
+            return {item.ratingKey for item in items if item.ratingKey not in self.scheduled_cached_keys}
+        if self.schedule_mode == "diff_episode":
+            if not getattr(self, "is_show", False):
+                raise Failed("Config Error: schedule mode diff_episode is only supported for TV Show libraries")
+            episodes = self.get_all(builder_level="episode")
+            self.scheduled_episode_keys = {episode.ratingKey for episode in episodes}
+            new_episodes = [episode for episode in episodes if episode.ratingKey not in self.scheduled_episode_cached_keys]
+            return {int(key) for episode in new_episodes for key in (episode.ratingKey, getattr(episode, "grandparentRatingKey", None)) if key is not None}
+        if self.schedule_mode.startswith("added(") and self.schedule_mode.endswith(")"):
+            try:
+                days = int(self.schedule_mode[6:-1])
+            except ValueError as e:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected added(<days>)") from e
+            if days < 1:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added days must be at least 1")
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            scheduled_keys = {item.ratingKey for item in items if getattr(item, "addedAt", None) and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff}
+            # Shows are cached and scoped at the show level. Include an existing
+            # show when Plex reports an episode added within the same window.
+            if getattr(self, "is_show", False):
+                for episode in self.get_items_added_since("episode", cutoff):
+                    show_key = getattr(episode, "grandparentRatingKey", None)
+                    if show_key is None:
+                        continue
+                    scheduled_keys.add(int(show_key))
+            return scheduled_keys
+        index_match = re.fullmatch(r"index\(([a-z])(?:-([a-z])(#)?)?\)", self.schedule_mode)
+        if index_match:
+            start, end, include_non_alphabetical = index_match.groups()
+            end = end or start
+            if start > end:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; index range must be ascending")
+            return {item.ratingKey for item in items if (start <= str(getattr(item, "title", "")).lstrip()[:1].lower() <= end or (include_non_alphabetical and not re.match(r"[a-z]", str(getattr(item, "title", "")).lstrip()[:1], re.IGNORECASE)))}
+        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, diff_episode, added(<days>), or index(<range>)")
+
+    @property
+    def has_schedule_scope(self):
+        return self.schedule_mode != "full"
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):

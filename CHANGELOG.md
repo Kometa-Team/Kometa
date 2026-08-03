@@ -7,12 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, `diff_episode`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes; `diff_episode` compares episode rating keys using a dedicated cache snapshot and is documented as potentially time-intensive for large libraries.
+
 ### Fixed
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 
 ### Changed
-
 - Batch Plex writes that were previously one API call per item: label/genre sync, `item_critic`/`audience`/`user_rating` updates, and title-parentheses removal now merge into shared `saveMultiEdits()`/`batchMultiEdits()` calls (respecting `plex_bulk_edit_batch_size`) instead of one `edit_tags()`/`editField()`/`editTitle()` call per item; label/genre and rating writes for the same item are further merged into a single PUT instead of one per attribute type, grouped by library and media type so mixed-library/mixed-type playlists route through the correct Plex connection. The overlay `Overlay` label add is batched the same way, flushing every `plex_bulk_edit_batch_size` items instead of only once at the very end of the run.
 - Reduce repeated in-run Plex/API lookups via caching: `modules/cache.py`'s ID-map queries (`query_tmdb_to_tvdb_map` and siblings, `query_guid_map`/`update_guid_map`) are memoized in-process; `check_filter` memoizes plain item-attribute reads (excluding writable fields), media-derived number filters (channels/height/width/aspect/versions/audio_language/subtitle_language/duration), and per-item seasons/episodes/albums/tracks sub-item listings, the last of which is now reused via `cached_item_subitems` at every remaining call site (including `overlays.py`'s runtime/total_runtime lookups) instead of re-querying Plex each time.
 - Reduce redundant network/image work: `Requests.get_image()` is memoized by URL for the run; validate-only image URL checks use HEAD instead of GET; validate-only checks are skipped entirely for Kometa's own GitHub-hosted assets; and fresh local overlay images are reused instead of being re-fetched from GitHub on every call.

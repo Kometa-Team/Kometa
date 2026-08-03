@@ -253,13 +253,13 @@ The available attributes for each library are as follows:
 
 ??? blank "`schedule` - Used to schedule when a library is run.<a class="headerlink" href="#schedule" title="Permanent link">¶</a>"
 
-    <div id="schedule" />Used to schedule when a library is run using the [schedule options](schedule.md).
+    <div id="schedule" />Used to schedule when a library is run using the [schedule options](schedule.md). It can also select a [library schedule mode](schedule.md#library-schedule-modes) that limits the items Kometa processes.
 
     <hr style="margin: 0px;">
 
     **Attribute:** `schedule`
 
-    **Accepted Values:** Any [schedule option](schedule.md).
+    **Accepted Values:** Any [schedule option](schedule.md), or a [library schedule mode list](schedule.md#library-schedule-modes).
 
     **Default Value:** `daily`
 

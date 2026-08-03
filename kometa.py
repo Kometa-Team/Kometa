@@ -398,7 +398,7 @@ def process(attrs):
 
 
 def should_sync_collection(builder):
-    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
+    return not builder.library.has_schedule_scope and builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
 
 
 def collection_count_after_run(beginning_count, items_added, items_removed):
@@ -1116,14 +1116,30 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
 
             time_start = datetime.now()
             temp_items = None
-            list_key = None
+            schedule_list_key = None
+            episode_schedule_list_key = None
             if config.Cache:
-                list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
+                schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
+                if schedule_list_key:
+                    library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
+                episode_schedule_list_key, _ = config.Cache.query_list_cache("library_schedule_episodes", library.mapping_name, 0)
+                if episode_schedule_list_key:
+                    library.scheduled_episode_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(episode_schedule_list_key)}
 
             if not temp_items:
                 temp_items = library.cache_items()
-                if config.Cache and list_key:
-                    config.Cache.delete_list_ids(list_key)
+                library.scheduled_item_keys = library._schedule_item_keys(temp_items)
+                if library.has_schedule_scope:
+                    temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
+                    logger.info(f"Library Schedule Mode: {library.schedule_mode} ({len(temp_items)} items in scope)")
+                if config.Cache:
+                    schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
+                    config.Cache.delete_list_ids(schedule_list_key)
+                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library._all_items])
+                    if library.schedule_mode == "diff_episode":
+                        episode_schedule_list_key = config.Cache.update_list_cache("library_schedule_episodes", library.mapping_name, True, 0)
+                        config.Cache.delete_list_ids(episode_schedule_list_key)
+                        config.Cache.update_list_ids(episode_schedule_list_key, [(key, "ratingKey") for key in library.scheduled_episode_keys])
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
