@@ -151,7 +151,7 @@ templates:
             rating<<rating_num>>_image: [rt_popcorn, rt_tomato, metacritic]
             value: true
           - builder_level: episode
-            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb, serializd, floppyfloppy]
+            rating<<rating_num>>.not: [audience, critic, user, tmdb, imdb, serializd, floppy]
             value: false
           - builder_level: season
             rating<<rating_num>>.not: [user, tmdb]
