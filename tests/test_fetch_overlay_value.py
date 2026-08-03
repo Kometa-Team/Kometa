@@ -156,6 +156,16 @@ def test_no_cache_always_fetches():
     assert result == 6.0
 
 
+def test_floppy_rating_fetches_direct_decimal_value():
+    plx = _make_plex(cache=None, get_ids=MagicMock(return_value=(550, None, "tt0137523")))
+    floppy = MagicMock()
+    floppy.get_overlay_rating.return_value = 9.9
+    plx.config.Floppy = floppy
+
+    assert plx.fetch_overlay_value(_item(), "floppy_rating") == 9.9
+    floppy.get_overlay_rating.assert_called_once_with("movie", tmdb_id=550, tvdb_id=None, imdb_id="tt0137523", season=None, episode=None)
+
+
 # ── Float normalization ────────────────────────────────────────────────────────
 
 

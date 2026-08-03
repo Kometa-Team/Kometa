@@ -15,6 +15,7 @@ from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
+from modules.util import Failed
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -150,6 +151,13 @@ def _episode_builder(library) -> CollectionBuilder:
 @pytest.mark.parametrize("method", builder_module.letterboxd.semantic_builders)
 def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
+
+
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded"])
+def test_tracearr_activity_builders_support_custom_sort(method):
+    assert method in builder_module.tracearr.builders
+    assert method in custom_sort_builders
+    assert method in builder_module.playlist_attributes
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -332,6 +340,9 @@ class TestTextfile:
 
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
+
+    def test_value_filter_is_allowed_for_episode_overlays(self):
+        assert "value_filter" in parts_collection_valid
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -721,6 +732,70 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 # gather_ids
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestGatherIds:
+    def test_dispatches_tracearr_builder(self):
+        tracearr = MagicMock()
+        tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
+        library = SimpleNamespace(Tracearr=tracearr)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            libraries=[library],
+            playlist=False,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "ratingKey")]
+        tracearr.get_rating_keys.assert_called_once_with(value)
+
+    def test_playlist_queries_tracearr_server_once_for_movie_and_show_libraries(self):
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.get_rating_keys.return_value = [(101, "tmdb")]
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+
+        movie_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        libraries = [movie_library, show_library]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=movie_library,
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "tmdb")]
+        first_connector.get_rating_keys.assert_called_once_with(value, is_playlist=True, libraries=[movie_library, show_library])
+
+    def test_playlist_rejects_multiple_tracearr_servers(self):
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+        second_server = SimpleNamespace(machineIdentifier="plex-server-2")
+        second_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-2")
+        second_connector.library = SimpleNamespace(PlexServer=second_server)
+        libraries = [
+            SimpleNamespace(Tracearr=first_connector, PlexServer=first_server),
+            SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
+        ]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=libraries[0],
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+
+        with pytest.raises(Failed, match="only combine libraries from one Plex server"):
+            builder.gather_ids(
+                "tracearr_history",
+                {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0},
+            )
 
 
 class TestBuildFilter:

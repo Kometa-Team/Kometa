@@ -191,6 +191,7 @@ nav:
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
       - Trakt: config/trakt.md
+      - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
@@ -399,6 +400,10 @@ nav:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
         - Tracked: files/builders/yamtrack/tracked.md
+      - Floppy:
+        - Overview: files/builders/floppy/overview.md
+        - List: files/builders/floppy/list.md
+        - Tracked: files/builders/floppy/tracked.md
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md

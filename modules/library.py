@@ -19,6 +19,7 @@ class Library(ABC):
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
+        self.Tracearr = None
         self.Webhooks = None
         self.Operations = Operations(config, self)
         self.Overlays = None
