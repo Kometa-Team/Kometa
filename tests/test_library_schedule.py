@@ -6,7 +6,7 @@ import pytest
 import modules.builder  # noqa: F401 - pre-import breaks the plex/meta circular import
 from modules import util
 from modules.library import Library
-from modules.util import Failed, NotScheduled
+from modules.util import NotScheduled
 
 
 def test_schedule_not_inverts_each_rule_independently():

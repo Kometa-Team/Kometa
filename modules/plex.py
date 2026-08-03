@@ -1604,7 +1604,9 @@ class Plex(Library):
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
     def get_smart_filter_from_uri(self, uri):
-        smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0]  # noqa
+        smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query).get("key", [None])[0]
+        if not smart_filter:
+            raise Failed(f"Plex Error: Smart Collection URI has no filter key: {uri}")
         args = smart_filter[smart_filter.index("?") :]
         return self.build_smart_filter(args), int(args[args.index("type=") + 5 : args.index("type=") + 6])
 
@@ -1617,6 +1619,8 @@ class Plex(Library):
 
     def smart_filter(self, collection):
         smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
+        if not smart_filter:
+            raise Failed(f"Plex Error: Collection {collection} has no smart filter")
         return smart_filter[smart_filter.index("?") :]
 
     def collection_visibility(self, collection):
