@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add `mass_metadata_update.labels.source: floppy_tag` to add non-empty Floppy item tags as Plex labels.
 - Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
 - Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
 - Add `floppy` as a direct Defaults ratings-overlay source for movies, shows, and episodes.

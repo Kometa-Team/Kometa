@@ -120,6 +120,7 @@ class Library(ABC):
         self.mass_originally_available_update = params["mass_originally_available_update"]
         self.mass_added_at_update = params["mass_added_at_update"]
         self.mass_imdb_parental_labels = params["mass_imdb_parental_labels"]
+        self.mass_floppy_tag_labels = params["mass_floppy_tag_labels"]
         self.mass_poster_update = params["mass_poster_update"]
         self.mass_background_update = params["mass_background_update"]
         self.mass_logo_update = params["mass_logo_update"]
@@ -170,6 +171,7 @@ class Library(ABC):
             or self.mass_added_at_update
             or self.mass_original_title_update
             or self.mass_imdb_parental_labels
+            or self.mass_floppy_tag_labels
             or self.genre_mapper
             or self.content_rating_mapper
             or self.mass_studio_update
@@ -195,7 +197,7 @@ class Library(ABC):
             or self.update_blank_track_titles
             else False
         )
-        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.ignore_labels else False
+        self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.mass_floppy_tag_labels or self.ignore_labels else False
 
         if self.asset_directory:
             logger.info("")

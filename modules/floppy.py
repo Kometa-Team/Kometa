@@ -344,6 +344,27 @@ class Floppy:
                 return float(Decimal(str(ratings[key])).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
         raise Failed
 
+    def get_tags(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None):
+        """Return the user's Floppy tags for a movie or TV item."""
+        if not self.token:
+            raise Failed("Floppy Error: An API token is required for floppy_tag")
+        for source, media_id in (("tmdb", tmdb_id), ("tvdb", tvdb_id), ("imdb", imdb_id)):
+            if media_id is None:
+                continue
+            try:
+                payload = self._request(f"{self.url}/api/v1/media/{media_type}/{source}/{media_id}/tags/")
+            except FloppyApiUnavailable:
+                raise Failed("Floppy Error: Your Floppy server does not support item tags")
+            except Failed as e:
+                if "not found" in str(e).lower():
+                    continue
+                raise
+            tags = payload.get("results", payload) if isinstance(payload, dict) else payload
+            if not isinstance(tags, list):
+                raise Failed("Floppy Error: Invalid tag response")
+            return [str(tag.get("name", "")).strip() for tag in tags if isinstance(tag, dict) and str(tag.get("name", "")).strip()]
+        return []
+
     def get_overlay_rating(self, media_type, tmdb_id=None, tvdb_id=None, imdb_id=None, season=None, episode=None):
         """Return Floppy's original decimal rating for direct overlay display."""
         self._load_ratings()

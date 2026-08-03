@@ -205,6 +205,15 @@
             "severity"
           ],
           "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "schedule": { "type": "string" },
+            "source": { "const": "floppy_tag" }
+          },
+          "required": ["source"],
+          "additionalProperties": false
         }
       ]
     },

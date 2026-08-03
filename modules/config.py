@@ -240,6 +240,7 @@ library_operations = {
     "mass_episode_user_rating_update": mass_episode_rating_options,
     "mass_original_title_update": mass_original_title_options,
     "mass_imdb_parental_labels": imdb_label_options,
+    "mass_floppy_tag_labels": "bool",
     "mass_originally_available_update": mass_available_options,
     "mass_added_at_update": mass_available_options,
     "mass_collection_mode": "mass_collection_mode",
@@ -782,6 +783,8 @@ class ConfigFile:
                 if isinstance(labels_config, dict):
                     if "severity" in labels_config:
                         add_operation("labels.severity", {"mass_imdb_parental_labels": labels_config["severity"]}, schedule=labels_schedule)
+                    if labels_config.get("source") == "floppy_tag":
+                        add_operation("labels.source", {"mass_floppy_tag_labels": True}, schedule=labels_schedule)
                 else:
                     add_operation("labels", {"mass_imdb_parental_labels": labels_config}, schedule=labels_schedule)
 

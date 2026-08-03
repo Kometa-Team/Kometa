@@ -145,6 +145,7 @@ class Operations:
         logger.debug(f"Mass Originally Available Update: {self.library.mass_originally_available_update}")
         logger.debug(f"Mass Added At Update: {self.library.mass_added_at_update}")
         logger.debug(f"Mass IMDb Parental Labels: {self.library.mass_imdb_parental_labels}")
+        logger.debug(f"Mass Floppy Tag Labels: {self.library.mass_floppy_tag_labels}")
         logger.debug(f"Mass Poster Update: {self.library.mass_poster_update}")
         logger.debug(f"Mass Background Update: {self.library.mass_background_update}")
         logger.debug(f"Mass Logo Update: {self.library.mass_logo_update}")
@@ -276,6 +277,24 @@ class Operations:
                                 item_edits += f"\n{edit_type.capitalize()} IMDb Parental Labels (Batched) | {', '.join(label_list)}"
                     except Failed:
                         pass
+                if self.library.mass_floppy_tag_labels:
+                    try:
+                        media_type = "movie" if self.library.is_movie else "tv"
+                        floppy_tmdb_id = tmdb_id
+                        if not self.library.is_movie and floppy_tmdb_id is None and tvdb_id:
+                            try:
+                                floppy_tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+                            except Failed:
+                                pass
+                        floppy_tags = self.config.Floppy.get_tags(media_type, tmdb_id=floppy_tmdb_id, tvdb_id=tvdb_id, imdb_id=imdb_id)
+                        if floppy_tags:
+                            add_labels = [label for label in floppy_tags if label not in current_labels]
+                            for label in add_labels:
+                                label_edits["add"].setdefault(label, []).append(item.ratingKey)
+                            if add_labels:
+                                item_edits += f"\nAdded Floppy Tags (Batched) | {', '.join(add_labels)}"
+                    except Failed as e:
+                        logger.trace(e)
                 if item.locations:
                     path = util.media_dirname(item.locations[0]) if self.library.is_movie else str(item.locations[0])
                     if self.library.Radarr and self.library.radarr_add_all_existing and tmdb_id:

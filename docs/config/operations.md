@@ -688,6 +688,15 @@ Several of these operations perform **mass** updates; these are just that, **mas
               assets_for_all: false
         ```
 
+    Set `source: floppy_tag` to add each tagged movie or show's Floppy tags as Plex labels. Existing Plex labels are never removed, and items with no Floppy tags are left unchanged. A Floppy API token is required.
+
+    ```yaml
+    operations:
+      mass_metadata_update:
+        labels:
+          source: floppy_tag
+    ```
+
 ###### Assets For All Collections
 
 ??? info "`assets_for_all_collections` - Used to search the asset directories for images for all unmanaged and/or unconfigured in the library."
