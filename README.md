@@ -132,7 +132,7 @@ So, if you're not comfortable with technical issues, it's best to stick with the
 The [develop](https://github.com/Kometa-Team/Kometa/tree/develop) branch has the most updated **documented** fixes and enhancements to Kometa. 
 This version is tested and documented to some degree, but it is still an active Develop branch, so there may be rough edges.
 
-Switching to `develop`:
+Switching to the `develop` branch:
 <!--develop-end-->
 
 <details>
@@ -182,7 +182,7 @@ which documents any changes made from the Master branch.
 There is also a [nightly](https://github.com/Kometa-Team/Kometa/tree/nightly) branch which will have the absolute latest version of the script, but it could easily break, 
 there is no guarantee that it even works, and any new features will not be documented until they have progressed enough to reach the develop branch.
 
-Switching to `nightly`:
+Switching to the `nightly` branch:
 <!--nightly-end-->
 
 <details>
