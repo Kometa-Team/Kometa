@@ -21,7 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
-- Complete the Tracearr documentation by adding its Defaults, connector, and builder sidebar entries; restore the annotated Defaults example; place all Tracearr list controls in the file-specific template-variable table; document authentication requirements, `list_minimum`, and the v2-to-v1 history API fallback; include Tracearr in the configuration template; and validate its optional `server_id` and Public API key in the correct JSON Schema definition.
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 
