@@ -256,7 +256,7 @@ def test_schema_library_schedule_modes_pass(tmp_path, monkeypatch):
         + "  TV Shows:\n"
         + "    schedule:\n"
         + "      - schedule: weekly(thursday)\n"
-        + "        mode: diff_episode\n"
+        + "        mode: diff\n"
     )
     v = make_validator(tmp_path, config, level="syntax", validate_schema=True, schema_path=SCHEMA_DIR)
     passed, errors, warnings = v.validate()

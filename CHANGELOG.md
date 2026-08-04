@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, `diff_episode`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes; `diff_episode` compares episode rating keys using a dedicated cache snapshot and is documented as potentially time-intensive for large libraries.
+- Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes and TV Show `diff` scans season XML `updatedAt` values.
 
 ### Fixed
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453

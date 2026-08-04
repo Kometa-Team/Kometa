@@ -49,3 +49,24 @@ def test_library_schedule_modes_select_the_expected_items(monkeypatch):
 
     library.schedule_mode = "full"
     assert Library._schedule_item_keys(library, items) == {1, 2, 3}
+
+
+def test_tv_diff_scans_season_xml_and_selects_changed_shows(monkeypatch):
+    monkeypatch.setattr("modules.library.logger", SimpleNamespace(ghost=lambda *_: None))
+    seasons = {
+        1: [SimpleNamespace(ratingKey=11, updatedAt=100), SimpleNamespace(ratingKey=12, updatedAt=200)],
+        2: [SimpleNamespace(ratingKey=21, updatedAt=300)],
+    }
+    cache = SimpleNamespace(query_xml_updated_at=lambda _: {("1", "11"): "100", ("1", "12"): "150", ("2", "21"): "300"})
+    library = SimpleNamespace(
+        schedule_mode="diff",
+        is_show=True,
+        config=SimpleNamespace(Cache=cache),
+        xml_library_id=7,
+        xml_updates=[],
+        cached_item_subitems=lambda show, level: seasons[show.ratingKey],
+    )
+    shows = [SimpleNamespace(ratingKey=1, title="Changed Show"), SimpleNamespace(ratingKey=2, title="Unchanged Show")]
+
+    assert Library._schedule_item_keys(library, shows) == {1}
+    assert library.xml_updates == [("1", "11", "100"), ("1", "12", "200"), ("2", "21", "300")]

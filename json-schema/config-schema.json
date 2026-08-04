@@ -4456,7 +4456,7 @@
               "$ref": "#/definitions/template-variables-library"
             },
             "schedule": {
-              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(days), diff, diff_episode, or index(range) modes.",
+              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(days), diff, or index(range) modes.",
               "oneOf": [
                 {
                   "type": "string"
@@ -4480,7 +4480,7 @@
                           },
                           "mode": {
                             "type": "string",
-                            "pattern": "^(full|diff|diff_episode|added\\([1-9][0-9]*\\)|index\\([A-Za-z](-[A-Za-z]#?)?\\))$"
+                            "pattern": "^(full|diff|added\\([1-9][0-9]*\\)|index\\([A-Za-z](-[A-Za-z]#?)?\\))$"
                           }
                         },
                         "additionalProperties": false

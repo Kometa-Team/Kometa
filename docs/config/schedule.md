@@ -53,18 +53,19 @@ libraries:
 
 The `.not` modifier inverts one schedule expression. For example, `weekly.not(monday)` matches every day except Monday.
 
-| Mode           | Scope                                                                                                                                                                                                                                                                                                               |
-|:---------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `full`         | Every top-level library item. This is the normal Kometa behavior.                                                                                                                                                                                                                                                   |
-| `added(days)`  | Items added to Plex during the previous number of days. In a TV Show library, this also includes an existing show if Plex added one of its episodes during that window.                                                                                                                                             |
-| `diff`         | Items whose top-level Plex rating keys were not in the previous library snapshot. Requires Kometa's cache to persist between runs.                                                                                                                                                                                  |
-| `diff_episode` | TV Show libraries only. Episodes whose rating keys were not in the previous episode snapshot, together with their parent shows. Requires Kometa's cache to persist between runs.<p> This is not recommended as Kometa must retrieve and compare every episode rating key on each run, this can be time intensive.   |
-| `index(A-F)`   | Titles beginning with any letter in the inclusive A through F range.                                                                                                                                                                                                                                                |
-| `index(A-F#)`  | The same A through F range, plus titles beginning with a number, symbol, or another non-alphabetical character.                                                                                                                                                                                                     |
+| Mode           | Scope                                                                                                                                                                                                                        |
+|:---------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `full`         | Every top-level library item. This is the normal Kometa behavior.                                                                                                                                                            |
+| `added(days)`  | Items added to Plex during the previous number of days. In a TV Show library, this also includes an existing show if Plex added one of its episodes during that window.                                                      |
+| `diff`         | Items that are in Plex's library but do not appear in the Kometa Cache file. Show libraries compare every season of every show, so may take more time than Movie libraries. Requires Kometa's cache to persist between runs. |
+| `index(A-F)`   | Titles beginning with any letter in the inclusive A through F range.                                                                                                                                                         |
+| `index(A-F#)`  | The same A through F range, plus titles beginning with a number, symbol, or another non-alphabetical character.                                                                                                              |
 
 `index` matches the first non-whitespace character in an item's Plex title, case-insensitively. Ranges must be alphabetical and ascending.
 
-When a mode is not `full`, Kometa does not remove collection members that are outside the scope and does not change custom item positions within collections. Item-level collection work, overlays, metadata updates, and the normal item operations run only for scoped media.
+When a mode is not `full`, Kometa only processes media in that mode's scope. It leaves every other library item alone: it does not update its metadata or overlays, run item-level operations for it, remove it from collections, or change custom item positions in collections.
+
+For example, suppose an IMDb Top 250 collection contains 250 movies and the library uses `diff`. A run finds two newly added movies, one of which belongs in the IMDb Top 250. Kometa processes those two movies and can add the matching one to the collection, but it does not remove any of the existing 250 collection members because they were outside the `diff` scope. It also preserves the collection's existing custom item order. Run with `full` to reconcile the whole collection and apply work to every library item.
 
 !!!+ note
 

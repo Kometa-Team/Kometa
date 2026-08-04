@@ -1117,14 +1117,10 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             time_start = datetime.now()
             temp_items = None
             schedule_list_key = None
-            episode_schedule_list_key = None
             if config.Cache:
                 schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
                 if schedule_list_key:
                     library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
-                episode_schedule_list_key, _ = config.Cache.query_list_cache("library_schedule_episodes", library.mapping_name, 0)
-                if episode_schedule_list_key:
-                    library.scheduled_episode_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(episode_schedule_list_key)}
 
             if not temp_items:
                 temp_items = library.cache_items()
@@ -1136,10 +1132,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                     schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
                     config.Cache.delete_list_ids(schedule_list_key)
                     config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
-                    if library.schedule_mode == "diff_episode":
-                        episode_schedule_list_key = config.Cache.update_list_cache("library_schedule_episodes", library.mapping_name, True, 0)
-                        config.Cache.delete_list_ids(episode_schedule_list_key)
-                        config.Cache.update_list_ids(episode_schedule_list_key, [(key, "ratingKey") for key in library.scheduled_episode_keys])
+                    if library.schedule_mode == "diff" and library.is_show and library.xml_library_id is not None:
+                        config.Cache.update_xml_updated_at(library.xml_library_id, library.xml_updates)
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
