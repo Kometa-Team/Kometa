@@ -15,6 +15,7 @@ from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
+from modules.util import Failed
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -155,6 +156,13 @@ def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
 
 
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded"])
+def test_tracearr_activity_builders_support_custom_sort(method):
+    assert method in builder_module.tracearr.builders
+    assert method in custom_sort_builders
+    assert method in builder_module.playlist_attributes
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # _find_plex_keys
 # ═══════════════════════════════════════════════════════════════════════
@@ -185,6 +193,110 @@ class TestFindPlexKeys:
         library.plex_map = {}
         builder = make_builder(libraries=[library], builder_level="movie")
         assert builder._find_plex_keys("unknown://id") is None
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# validate_attribute — audio_language / subtitle_language
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeLangLibrary:
+    """Stands in for the Plex library used by validate_attribute's language handling."""
+
+    def __init__(self, language_map, search_choices=None, names=None):
+        # language_map: {"audio_language": {"es": ["es-419", "spa"]}, ...}
+        self.language_map = language_map
+        self.search_choices = search_choices or {}
+        self.names = names or {}
+        self.get_tags_calls = []
+        self.get_search_choices_calls = []
+
+    def get_search_choices(self, attribute, title=True, name_pairs=False, libtype=None):
+        self.get_search_choices_calls.append(attribute)
+        return self.search_choices.get(attribute, {}), self.names.get(attribute, [])
+
+    def get_language_search_values(self, attribute, code):
+        self.get_tags_calls.append((attribute, code))
+        return self.language_map.get(attribute, {}).get(code, [])
+
+
+def make_lang_builder(library, **attrs) -> CollectionBuilder:
+    defaults = {"details": {"show_options": False}, "ignore_blank_results": False}
+    defaults.update(attrs)
+    return make_builder(library=library, **defaults)
+
+
+class TestValidateAttributeLanguage:
+    def test_expands_base_code_to_every_library_variant_for_plex_search(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "es-MX", "spa"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es", True, plex_search=True)
+        assert result == [("es", "es-419"), ("es", "es-MX"), ("es", "spa")]
+
+    def test_does_not_call_the_uncached_get_search_choices_for_plex_search_language(self):
+        """The generic (uncached) listFilterChoices lookup must be skipped entirely for
+        audio_language/subtitle_language under plex_search — get_language_search_values (cached)
+        is the only choices lookup that should fire."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert library.get_search_choices_calls == []
+
+    def test_subtitle_language_uses_its_own_cache_key(self):
+        library = FakeLangLibrary({"subtitle_language": {"fr": ["fr-CA", "fre"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("subtitle_language", "", "subtitle_language", "fr", True, plex_search=True)
+        assert result == [("fr", "fr-CA"), ("fr", "fre")]
+        assert library.get_tags_calls == [("subtitle_language", "fr")]
+
+    def test_is_case_insensitive(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "ES", True, plex_search=True)
+        assert result == [("ES", "es-419")]
+
+    def test_exact_locale_value_passes_through_as_a_single_variant(self):
+        """When the library resolves a code to a single exact variant (e.g. the user configured
+        the specific locale "es-419" rather than the base "es"), only that variant is used."""
+        library = FakeLangLibrary({"audio_language": {"es-419": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=True)
+        assert result == [("es-419", "es-419")]
+
+    def test_multiple_configured_languages_each_expand_independently(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "spa"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert result == [("es", "es-419"), ("es", "spa"), ("en", "en-US")]
+
+    def test_raises_filter_failed_when_language_not_present_in_library(self):
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library)
+        with pytest.raises(builder_module.FilterFailed):
+            builder.validate_attribute("audio_language", "", "audio_language", "zh", True, plex_search=True)
+
+    def test_logs_instead_of_raising_when_validate_is_false_and_ignoring_blank_results(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library, ignore_blank_results=True)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "zh", False, plex_search=True)
+        assert result == []
+
+    def test_non_plex_search_path_is_unaffected_and_uses_exact_choices_only(self):
+        """The filters: (client-side) path doesn't go through get_language_search_values."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}}, search_choices={"audio_language": {"es-419": "es-419"}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=False)
+        assert result == ["es-419"]
+        assert library.get_tags_calls == []
+
+    def test_regex_on_plex_search_language_matches_against_the_raw_locale_tagged_key(self):
+        """The .regex branch only ever reads names (title, key) pairs, never a stripped value,
+        so a locale-tagged key like "es-ES" is returned as-is rather than normalized to "es"."""
+        library = FakeLangLibrary({}, names={"audio_language": [("Spanish", "es-ES")]})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", ".regex", "audio_language", "Span", True, plex_search=True)
+        assert result == [("Spanish", "es-ES")]
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -362,6 +474,9 @@ class TestTextfile:
 
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
+
+    def test_value_filter_is_allowed_for_episode_overlays(self):
+        assert "value_filter" in parts_collection_valid
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -753,6 +868,70 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+class TestGatherIds:
+    def test_dispatches_tracearr_builder(self):
+        tracearr = MagicMock()
+        tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
+        library = SimpleNamespace(Tracearr=tracearr)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            libraries=[library],
+            playlist=False,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "ratingKey")]
+        tracearr.get_rating_keys.assert_called_once_with(value)
+
+    def test_playlist_queries_tracearr_server_once_for_movie_and_show_libraries(self):
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.get_rating_keys.return_value = [(101, "tmdb")]
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+
+        movie_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        libraries = [movie_library, show_library]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=movie_library,
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "tmdb")]
+        first_connector.get_rating_keys.assert_called_once_with(value, is_playlist=True, libraries=[movie_library, show_library])
+
+    def test_playlist_rejects_multiple_tracearr_servers(self):
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+        second_server = SimpleNamespace(machineIdentifier="plex-server-2")
+        second_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-2")
+        second_connector.library = SimpleNamespace(PlexServer=second_server)
+        libraries = [
+            SimpleNamespace(Tracearr=first_connector, PlexServer=first_server),
+            SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
+        ]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=libraries[0],
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+
+        with pytest.raises(Failed, match="only combine libraries from one Plex server"):
+            builder.gather_ids(
+                "tracearr_history",
+                {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0},
+            )
+
+
 class TestBuildFilter:
     def test_raises_on_none_filter(self):
         builder = make_builder()
@@ -975,3 +1154,8 @@ class TestDispatchTables:
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
         assert "trakt" in text, "all_builders missing trakt-related entries"
         assert "imdb" in text, "all_builders missing imdb-related entries"
+        assert "serializd_list" in all_builders
+        assert "serializd_watchlist" in all_builders
+        assert "serializd_trending" in all_builders
+        assert "serializd_popular" in all_builders
+        assert "serializd_featured" in all_builders

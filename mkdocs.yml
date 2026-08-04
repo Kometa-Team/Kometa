@@ -187,10 +187,12 @@ nav:
       - ntfy: config/ntfy.md
       - Apprise: config/apprise.md
       - Simkl: config/simkl.md
+      - Serializd: config/serializd.md
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
       - Trakt: config/trakt.md
+      - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
@@ -399,6 +401,15 @@ nav:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
         - Tracked: files/builders/yamtrack/tracked.md
+      - Serializd:
+        - Overview: files/builders/serializd/overview.md
+        - Charts: files/builders/serializd/charts.md
+        - List: files/builders/serializd/list.md
+        - Watchlist: files/builders/serializd/watchlist.md
+      - Floppy:
+        - Overview: files/builders/floppy/overview.md
+        - List: files/builders/floppy/list.md
+        - Tracked: files/builders/floppy/tracked.md
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md

@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # Testing & Quality Gates
 #
-# Runs on every PR targeting nightly + on push to nightly.
+# Called as a job (workflow_call) from ci.yml for PRs targeting nightly; also runs standalone on push to nightly for post-merge validation.
 #
 # Checks (in order of speed):
 #   1. lint       — black, isort, flake8, bandit                        (ubuntu)
@@ -20,8 +20,7 @@
 name: Tests
 
 on:
-  pull_request:
-    branches: [nightly]
+  workflow_call:
   push:
     branches: [nightly]
 

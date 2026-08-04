@@ -289,6 +289,8 @@ myplaylists
 myspecialdomain
 mza
 namespace
+nanogenre
+nanogenres
 nas
 natively
 ncis
@@ -382,6 +384,7 @@ remux
 renormalized
 repo
 repos
+rewatched
 rholder
 ro
 ro
@@ -402,6 +405,9 @@ scrollers
 scudlee
 sdtv
 semver
+Serializd
+serializd
+Serializd's
 setuptools
 sha
 Sharkboy
@@ -462,8 +468,12 @@ tooltip
 tooltips
 traceback
 tracebacks
+Tracearr
+tracearr
+Tracearr's
 trakt
 trakt's
+transcode
 transcoded
 transcoding
 trash
@@ -481,12 +491,14 @@ TZ
 ua
 ui
 UID
+UUID
 uncompress
 unconfigured
 unionfs
 unittest
 unmanaged
 unplayed
+unwatched
 unprioritised
 unraid
 unresolvable

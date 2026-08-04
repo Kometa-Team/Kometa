@@ -37,6 +37,7 @@
     - sonarr.py
     - stevenlu.py
     - tautulli.py
+    - tracearr.py
     - textfile.py
     - tmdb.py
     - trakt.py
