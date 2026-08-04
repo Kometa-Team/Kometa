@@ -930,19 +930,7 @@
         "apikey": {
           "anyOf": [
             {
-              "type": "string",
-              "pattern": "^trr_pub_.+"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "server_id": {
-          "anyOf": [
-            {
-              "type": "string",
-              "format": "uuid"
+              "type": "string"
             },
             {
               "type": "null"
@@ -972,7 +960,19 @@
         "apikey": {
           "anyOf": [
             {
-              "type": "string"
+              "type": "string",
+              "pattern": "^trr_pub_.+"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "server_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid"
             },
             {
               "type": "null"
