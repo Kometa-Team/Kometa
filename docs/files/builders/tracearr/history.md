@@ -4,7 +4,7 @@ hide:
 ---
 # Tracearr History
 
-The Tracearr builders below all derive from the `/api/v1/public/history` endpoint and use its pagination and filtering support.
+The Tracearr builders below use the Public API history endpoints and their pagination and filtering support. Kometa prefers `/api/v2/public/history` and automatically falls back to `/api/v1/public/history` when v2 is unavailable.
 
 | Builder | Description |
 |:--------|:------------|

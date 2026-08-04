@@ -23,24 +23,33 @@ hide:
 
 {% include-markdown "./../../templates/snippets/white_style.md" replace='{"CODE_NAME": "tracearr"}' %}
 {% include-markdown "./../../templates/defaults/base/mid.md" replace='{"CODE_NAME": "tracearr"}' include-tags='all|movie|show' %}
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - default: tracearr
+            template_variables:
+              use_rewatched: false #(1)!
+              list_days_popular: 7 #(2)!
+              list_size_popular: 10 #(3)!
+              visible_library_popular: true #(4)!
+              visible_home_popular: true #(5)!
+              visible_shared_popular: true #(6)!
+    ```
 
-## Template Variables
-
-Tracearr collections share the same base settings, and each collection can be customized individually by using the matching key suffix.
-
-| Variable | Description |
-|:---------|:------------|
-| `list_days_<<key>>` | Number of days to look back in Tracearr history for the matching collection key. Default: `30`; `list_days_trending` defaults to `7`. |
-| `list_size_<<key>>` | Maximum number of items to include in the matching collection. Default: `20` |
-
-The `<<key>>` suffix matches the collection key from the table above, such as `popular`, `watched`, `trending`, `rewatched`, `completed`, `binged`, or `transcoded`.
+    1. Do not create the "Tracearr Rewatched" collection
+    2. Change "Tracearr Popular" to look at items from the past 7 days
+    3. Change "Tracearr Popular" to have a maximum of 10 items
+    4. Pin the "Tracearr Popular" collection to the Recommended tab of the library
+    5. Pin the "Tracearr Popular" collection to the home screen of the server owner
+    6. Pin the "Tracearr Popular" collection to the home screen of other users of the server
 
 {% include-markdown "./../../templates/defaults/base/collection/variables_header.md" exclude-tags="separator" %}
     {%
         include-markdown "./../../templates/variable_list.md"
-        include-tags="white-style|limit|sync_mode|collection_order"
+        include-tags="tracearr|white-style|sync_mode|collection_order"
         rewrite-relative-urls=false
-        replace='{"<!--limit-extra-->": "<br>**Default:** `100`", "COLLECTION_ORDER": "`custom`"}'
+        replace='{"COLLECTION_ORDER": "`custom`"}'
     %}
 
     {% include-markdown "./../../templates/variable_list.md" include-tags="sup1" rewrite-relative-urls=false %}
