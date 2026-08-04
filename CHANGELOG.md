@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
 
 ### Fixed
+- Refresh an item's in-run Plex state after `mass_poster_update` removes its `Overlay` label, ensuring the following overlay pass detects the reset poster and reapplies its overlays instead of incorrectly skipping it.
 - Redact registered secrets from critical-error webhook messages before sending them to Discord, Slack, Notifiarr, or other webhook destinations. #3472
 - Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
