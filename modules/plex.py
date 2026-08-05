@@ -2077,8 +2077,6 @@ class Plex(Library):
                     logger.info(f"{text} | Reset from {location}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
-                    # The Overlay label was just changed on Plex. Do not let the overlay phase reuse
-                    # this run's pre-reset item, or it will incorrectly think the overlay is still present.
                     self.cached_items.pop(item.ratingKey, None)
                     for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
                         del self.filter_attr_cache[key]
