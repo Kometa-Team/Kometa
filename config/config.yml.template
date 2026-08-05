@@ -181,7 +181,6 @@ sonarr:                            # Can be individually specified per library a
 trakt:
   client_id:                       # Enter Trakt Client ID (Optional)
   client_secret:                   # Enter Trakt Client Secret (Optional)
-  pin:
   authorization:
                                    # authorization section is autofilled by the script
     access_token:

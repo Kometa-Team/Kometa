@@ -4,9 +4,9 @@ hide:
 ---
 # Online Authentication
 
-When trying to authorize Trakt or MyAnimeList, Kometa needs to run in interactive mode so that you can enter details like a PIN or authentication code.
+This page covers the online utilities for Plex, MyAnimeList, SIMKL, and Trakt authentication. See [Trakt Attributes](trakt.md) for Trakt-specific behavior.
 
-This is problematic on some setups [primarily docker] where entering interactive mode is not always simple.
+This is useful on setups, primarily Docker, where completing a browser-based flow locally is inconvenient.
 
 For this reason, Kometa provides a utilities webapp which will take you through the authentication process and will provide the service's authentication block ready to paste into your config.
 

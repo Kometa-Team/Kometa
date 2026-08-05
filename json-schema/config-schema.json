@@ -2461,12 +2461,6 @@
               "type": "null"
             }
           ]
-        },
-        "pin": {
-          "type": [
-            "string",
-            "null"
-          ]
         }
       },
       "required": [],

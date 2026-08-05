@@ -61,8 +61,8 @@ class TestTraktAuthorization:
         trakt.requests = MagicMock()
         trakt.client_id = "client-id"
         trakt.client_secret = "client-secret"
-        trakt.pin = None
         trakt.authorization = {"refresh_token": "refresh-token"}
+        trakt.webhooks = MagicMock()
         return trakt
 
     @pytest.fixture(autouse=True)
@@ -70,22 +70,6 @@ class TestTraktAuthorization:
         logger = MagicMock()
         monkeypatch.setattr("modules.trakt.logger", logger)
         return logger
-
-    def test_headless_pin_prompt_raises_actionable_trakt_error(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Input Failed")))
-
-        with pytest.raises(Failed) as exc_info:
-            adapter._authorization()
-
-        assert str(exc_info.value) == "Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config."
-
-    def test_other_input_failures_are_unchanged(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Different input failure")))
-
-        with pytest.raises(Failed, match="Different input failure"):
-            adapter._authorization()
 
     def test_failed_refresh_logs_http_response(self, adapter, mock_trakt_logger):
         adapter.requests.post.return_value = MagicMock(status_code=403, reason="Forbidden")
