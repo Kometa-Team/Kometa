@@ -179,6 +179,9 @@ class TestTracearr:
         t.api = f"{t.url}/api/v1/public"
         t.history_api = f"{t.url}/api/v2/public"
         t.history_version = 2
+        t._history_cache = {}
+        t._users_cache = None
+        t._history_until = None
         t.apikey = "trr_pub_test"
         t.server_id = self.SERVER_ID
         t.library = MagicMock()
@@ -531,6 +534,269 @@ class TestTracearr:
         assert [item["title"] for item in ranked] == ["Frequently Transcoded", "Audio Transcoded"]
         assert [item["transcoded_sessions"] for item in ranked] == [2, 1]
         assert [item["title"] for item in adapter._aggregate_history(items, "transcoded", 2)] == ["Frequently Transcoded"]
+
+    def test_watch_time_ranks_total_minutes(self, adapter):
+        items = [
+            {
+                "server_id": self.SERVER_ID,
+                "media_type": "movie",
+                "media_title": title,
+                "duration_ms": duration,
+                "stopped_at": stopped_at,
+                "user": {"id": "user-1"},
+            }
+            for title, duration, stopped_at in (
+                ("Long Watch", 7_200_000, "2026-07-29T12:00:00Z"),
+                ("Short Watch", 1_800_000, "2026-07-30T12:00:00Z"),
+            )
+        ]
+
+        ranked = adapter._aggregate_history(items, "watch_time", 60)
+
+        assert [item["title"] for item in ranked] == ["Long Watch"]
+        assert ranked[0]["watch_time_ms"] == 7_200_000
+
+    def test_history_filters_playback_details(self, adapter):
+        items = [
+            {
+                "media_type": "movie",
+                "media_title": "Subtitle Transcode",
+                "watched": False,
+                "percent_complete": 50,
+                "is_transcode": True,
+                "video_decision": "transcode",
+                "platform": "Apple TV",
+                "resolution": "4K",
+                "source_video_codec": "hevc",
+                "subtitle_info": {"decision": "burn"},
+                "transcode_info": {"reasons": ["Subtitle burn required"]},
+                "genres": ["Science Fiction"],
+                "user": {"id": "user-1"},
+            },
+            {
+                "media_type": "movie",
+                "media_title": "Direct Play",
+                "watched": True,
+                "percent_complete": 100,
+                "is_transcode": False,
+                "video_decision": "directplay",
+                "platform": "Roku",
+                "user": {"id": "user-1"},
+            },
+        ]
+        data = {
+            "list_type": "history",
+            "watched": False,
+            "minimum_progress": 25,
+            "maximum_progress": 75,
+            "transcode": True,
+            "video_decision": "transcode",
+            "platform": "apple tv",
+            "resolution": "4k",
+            "source_video_codec": "HEVC",
+            "subtitle_decision": "burn",
+            "transcode_reason": "subtitle",
+            "genre": "science fiction",
+        }
+
+        assert [item["media_title"] for item in adapter._filter_history(items, data, None)] == ["Subtitle Transcode"]
+
+    def test_in_progress_uses_latest_play_state(self, adapter):
+        items = [
+            {
+                "media_type": "movie",
+                "media_title": "Finished Later",
+                "media_id": "media-1",
+                "watched": False,
+                "percent_complete": 40,
+                "stopped_at": "2026-07-29T12:00:00Z",
+                "user": {"id": "user-1"},
+            },
+            {
+                "media_type": "movie",
+                "media_title": "Finished Later",
+                "media_id": "media-1",
+                "watched": True,
+                "percent_complete": 100,
+                "stopped_at": "2026-07-30T12:00:00Z",
+                "user": {"id": "user-1"},
+            },
+            {
+                "media_type": "movie",
+                "media_title": "Still Watching",
+                "media_id": "media-2",
+                "watched": False,
+                "percent_complete": 55,
+                "stopped_at": "2026-07-30T13:00:00Z",
+                "user": {"id": "user-1"},
+            },
+        ]
+        data = {"list_type": "in_progress", "watched": None, "minimum_progress": 1, "maximum_progress": 84}
+
+        assert [item["media_title"] for item in adapter._filter_history(items, data, None)] == ["Still Watching"]
+
+    def test_in_progress_playlist_returns_exact_episode_rating_key(self, adapter):
+        user_id = "550e8400-e29b-41d4-a716-446655440010"
+        adapter._users_cache = [{"id": user_id, "username": "Anthony", "accounts": []}]
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "episode",
+                        "media_title": "The Exact Episode",
+                        "show_title": "Example Show",
+                        "show_media_id": "550e8400-e29b-41d4-a716-446655440020",
+                        "season_number": 2,
+                        "episode_number": 4,
+                        "library_id": "9",
+                        "rating_key": "304",
+                        "grandparent_rating_key": "303",
+                        "watched": False,
+                        "percent_complete": 42,
+                        "duration_ms": 1_200_000,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": user_id, "username": "Anthony"},
+                    },
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "episode",
+                        "media_title": "Excluded Library Episode",
+                        "show_title": "Example Show",
+                        "show_media_id": "550e8400-e29b-41d4-a716-446655440020",
+                        "season_number": 2,
+                        "episode_number": 5,
+                        "library_id": "10",
+                        "rating_key": "305",
+                        "grandparent_rating_key": "303",
+                        "watched": False,
+                        "percent_complete": 50,
+                        "duration_ms": 1_200_000,
+                        "stopped_at": "2026-07-30T13:00:00Z",
+                        "user": {"id": user_id, "username": "Anthony"},
+                    },
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+        show_library = MagicMock()
+        show_library.is_movie = False
+        show_library.is_show = True
+        show_library.Plex.key = 9
+
+        result = adapter.get_rating_keys(
+            {"list_type": "in_progress", "list_size": 10, "list_days": 30, "list_minimum": 0, "user": "Anthony", "watched": False, "minimum_progress": 1, "maximum_progress": 84},
+            is_playlist=True,
+            libraries=[show_library],
+        )
+
+        assert result == [("304", "ratingKey")]
+        show_library.fetch_item.assert_not_called()
+        show_library.exact_search.assert_not_called()
+
+    def test_in_progress_requires_v2_history_identity(self, adapter):
+        adapter.history_version = 1
+
+        with pytest.raises(Failed, match="requires Tracearr Public API v2"):
+            adapter.get_rating_keys(
+                {"list_type": "in_progress", "list_size": 10, "list_days": 30, "list_minimum": 0, "user": "Anthony", "watched": False, "minimum_progress": 1, "maximum_progress": 84},
+                is_playlist=True,
+                libraries=[adapter.library],
+            )
+
+    def test_in_progress_skips_episode_without_exact_rating_key(self, adapter):
+        user_id = "550e8400-e29b-41d4-a716-446655440010"
+        adapter._users_cache = [{"id": user_id, "username": "Anthony", "accounts": []}]
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "episode",
+                        "media_title": "Unresolvable Episode",
+                        "show_title": "Example Show",
+                        "show_media_id": "550e8400-e29b-41d4-a716-446655440020",
+                        "library_id": "9",
+                        "rating_key": None,
+                        "watched": False,
+                        "percent_complete": 42,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": user_id, "username": "Anthony"},
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+        show_library = MagicMock()
+        show_library.is_movie = False
+        show_library.is_show = True
+        show_library.Plex.key = 9
+
+        result = adapter.get_rating_keys(
+            {"list_type": "in_progress", "list_size": 10, "list_days": 30, "list_minimum": 0, "user": "Anthony", "watched": False, "minimum_progress": 1, "maximum_progress": 84},
+            is_playlist=True,
+            libraries=[show_library],
+        )
+
+        assert result == []
+        show_library.exact_search.assert_not_called()
+
+    def test_resolves_friendly_user_across_linked_accounts(self, adapter):
+        identity_id = "550e8400-e29b-41d4-a716-446655440010"
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "id": identity_id,
+                        "username": "Anthony",
+                        "plex_account_id": "42",
+                        "accounts": [{"external_user_id": "1001", "username": "anthony-plex"}],
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        assert adapter._resolve_user("anthony-plex") == identity_id
+        assert adapter._resolve_user("1001") == identity_id
+        assert adapter._request.call_count == 1
+
+    def test_history_reuses_identical_request_in_one_run(self, adapter):
+        adapter._request = MagicMock(return_value={"data": [{"id": "play-1"}], "meta": {"nextCursor": None, "pageSize": 100}})
+        params = {"pageSize": 100, "server_id": self.SERVER_ID, "since": "2026-07-01T00:00:00Z", "until": "2026-07-31T00:00:00Z"}
+
+        assert adapter._fetch_history(params) == adapter._fetch_history(params)
+        assert adapter._request.call_count == 1
+
+    def test_v2_movie_playlist_uses_history_provider_id_without_plex_lookup(self, adapter):
+        adapter.library.Plex.key = 7
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {
+                        "server_id": self.SERVER_ID,
+                        "media_type": "movie",
+                        "media_title": "Tracearr Movie",
+                        "library_id": "7",
+                        "rating_key": "202",
+                        "tmdb_id": 1234,
+                        "stopped_at": "2026-07-30T12:00:00Z",
+                        "user": {"id": "user-1"},
+                    }
+                ],
+                "meta": {"nextCursor": None, "pageSize": 100},
+            }
+        )
+
+        result = adapter.get_rating_keys(
+            {"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0},
+            is_playlist=True,
+            libraries=[adapter.library],
+        )
+
+        assert result == [(1234, "tmdb")]
+        adapter.library.fetch_item.assert_not_called()
+        adapter.library.get_ids.assert_not_called()
 
     def test_playlist_uses_external_id(self, adapter):
         item = MagicMock(ratingKey=202, guid="plex://movie/example")

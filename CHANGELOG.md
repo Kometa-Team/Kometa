@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
 - Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
 - Add `floppy` as a direct Defaults ratings-overlay source for movies, shows, and episodes.
-- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views.
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, watch time, in-progress, and full history views, including user-specific and playback-quality filters, direct movie provider-ID matching, v2 capability detection with v1 fallback, and in-run history reuse.
 - Add Serializd as a connector
 - Add `serializd` as a genre source for shows and episodes for the mass metadata update operation, includes nanogenres.
 - Add `serializd` as a source for show and episode audience, critic, and user mass metadata updates, and `serializd_user` for episodes only.
