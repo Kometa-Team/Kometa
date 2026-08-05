@@ -88,7 +88,6 @@ load_dotenv(os.path.join(default_dir, ".env"))
 
 arguments = {
     "config": {"args": "c", "type": "str", "help": "Run with desired *.yml file"},
-    "base-string": {"args": [], "type": "str", "default": None, "help": argparse.SUPPRESS},
     "times": {"args": ["t", "time"], "type": "str", "default": "05:00", "help": "Times to update each day use format HH:MM (Default: 05:00) (comma-separated list)"},
     "run": {"args": "r", "type": "bool", "help": "Run without the scheduler"},
     "tests": {"args": ["ts", "rt", "test", "run-test", "run-tests"], "type": "bool", "help": "Run in debug mode with only collections that have test: true"},
@@ -186,10 +185,6 @@ for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
-
-if run_args["base-string"]:
-    os.environ["KOMETA_BASE_STRING"] = run_args["base-string"]
-
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
