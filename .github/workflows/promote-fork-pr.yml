@@ -25,7 +25,7 @@ jobs:
       github.event.pull_request.head.repo.full_name != github.repository &&
       contains(github.event.pull_request.labels.*.name, 'internal-test')
 
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
 
     steps:
       # Do not use context.actor/sender here -- on synchronize that's the PR author, not the labeler -- so check the timeline for who last applied internal-test instead.
@@ -221,7 +221,7 @@ jobs:
       github.event.action == 'closed' &&
       github.event.pull_request.head.repo.full_name != github.repository
 
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
 
     steps:
       - name: Create GitHub App token

@@ -4,7 +4,7 @@ on: push
 jobs:
   build:
     name: Spellcheck
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
     # The checkout step
     - uses: actions/checkout@v7

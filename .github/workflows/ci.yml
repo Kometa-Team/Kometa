@@ -12,7 +12,7 @@ concurrency:
 jobs:
 
   guard:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     # Irrelevant label events (anything but docker/tester) skip the whole DAG instead of re-running everything.
     if: >-
       (github.event.action != 'labeled' && github.event.action != 'unlabeled') ||
@@ -25,7 +25,7 @@ jobs:
           exit 1
 
   validate:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [guard]
     # Read-only: this job only diffs filenames and spellchecks markdown, no secrets needed.
     permissions:
@@ -82,7 +82,7 @@ jobs:
     uses: ./.github/workflows/pyright.yml
 
   docker-build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [validate, tests, pyright]
     # Same-repo + label gate as before, now also gated on tests/pyright passing so a build can never mask a failing commit.
     if: >-
@@ -148,12 +148,8 @@ jobs:
         with:
           platforms: all
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.20.0
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Build and Push
         id: docker_build
@@ -225,7 +221,7 @@ jobs:
             }
 
   label-status:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: contains(fromJSON('["docker","tester"]'), github.event.label.name)
     permissions:
       pull-requests: write
@@ -265,7 +261,7 @@ jobs:
             }
 
   notify-testers:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [docker-build]
     if: github.event.action == 'labeled' && github.event.label.name == 'tester'
     steps:
@@ -299,7 +295,7 @@ jobs:
           author_icon_url: ${{ vars.GIT_IMAGE }}
 
   update-testers:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [docker-build]
     if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'tester')
     steps:
@@ -319,7 +315,7 @@ jobs:
 
   # Single stable context for branch protection -- immune to job renames inside tests/pyright, and guard-skips count as pass, not pending.
   ci-status:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [guard, validate, tests, pyright]
     if: always()
     steps:

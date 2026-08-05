@@ -30,7 +30,7 @@ env:
 jobs:
   # ── 1. Lint & Format ────────────────────────────────────────────────────────
   lint:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - uses: actions/checkout@v7
 
@@ -75,7 +75,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, blacksmith-4vcpu-windows-2025]
     steps:
       - uses: actions/checkout@v7
 
@@ -147,7 +147,7 @@ jobs:
   # during the bootstrap phase. Once we have >= 1 regression test, this job
   # will run them and fail if any break.
   regression:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [lint]
     steps:
       - uses: actions/checkout@v7
@@ -192,7 +192,7 @@ jobs:
 
   # ── 4. Schema Validation ───────────────────────────────────────────────────
   schema:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [lint]
     steps:
       - uses: actions/checkout@v7
@@ -224,7 +224,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, blacksmith-4vcpu-windows-2025]
     steps:
       - uses: actions/checkout@v7
 
@@ -248,7 +248,7 @@ jobs:
   # hangs for more than 30s; --durations-min=2.0 surfaces every test slower
   # than 2s in the report.
   perf:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [lint]
     steps:
       - uses: actions/checkout@v7
@@ -286,7 +286,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, blacksmith-4vcpu-windows-2025]
     defaults:
       run:
         shell: bash

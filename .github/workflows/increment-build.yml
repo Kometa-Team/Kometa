@@ -12,7 +12,7 @@ concurrency:
 jobs:
 
   verify-changes:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: github.base_ref == 'nightly' && github.event.pull_request.merged
     outputs:
       build: ${{ steps.list-changes.outputs.build }}
@@ -47,7 +47,7 @@ jobs:
             done
 
   increment-build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ verify-changes ]
     if: needs.verify-changes.outputs.build == 'true'
     outputs:
@@ -139,7 +139,7 @@ jobs:
             echo "bump-commit-hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
   docker-build-base:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ increment-build, verify-changes ]
     if: needs.verify-changes.outputs.base == 'true'
     steps:
@@ -160,14 +160,11 @@ jobs:
         with:
           platforms: all
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.20.0
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Build and Push Base Image
-        uses: docker/build-push-action@v7
+        uses: useblacksmith/build-push-action@v2
         with:
           context: ./
           file: ./Dockerfile.base
@@ -176,11 +173,9 @@ jobs:
           tags: |
             ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:base
             ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:base-${{ needs.increment-build.outputs.bump-commit-hash }}
-          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-base
-          cache-to: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-base,mode=max
 
   docker-build-nightly:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ increment-build, verify-changes, docker-build-base ]
     if: >-
       always() &&
@@ -205,16 +200,12 @@ jobs:
         with:
           platforms: all
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.20.0
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Build and Push
         id: docker_build
-        uses: docker/build-push-action@v7
+        uses: useblacksmith/build-push-action@v2
         with:
           context: ./
           file: ./Dockerfile
@@ -224,8 +215,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
-          cache-from: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-nightly
-          cache-to: type=registry,ref=${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:buildcache-nightly,mode=min
+
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@master
         if: success()
@@ -254,7 +244,7 @@ jobs:
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
 
   commit-notification:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ increment-build, verify-changes, docker-build-base, docker-build-nightly ]
     if: ${{ success() && needs.verify-changes.outputs.build == 'true' }}
     steps:

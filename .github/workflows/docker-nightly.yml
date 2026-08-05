@@ -14,7 +14,7 @@ concurrency:
 jobs:
 
   docker-build-nightly:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     strategy:
       fail-fast: false
       matrix:
@@ -46,12 +46,8 @@ jobs:
         with:
           platforms: all
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.20.0
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Build and Push
         id: docker_build
@@ -65,7 +61,7 @@ jobs:
             .
 
   docker-publish-nightly:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ docker-build-nightly ]
     steps:
 
@@ -75,12 +71,8 @@ jobs:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
-      - name: Set up Docker Buildx
-        id: buildx
-        uses: docker/setup-buildx-action@v4
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.20.0
+      - name: Setup Blacksmith Builder
+        uses: useblacksmith/setup-docker-builder@v1
 
       - name: Publish Multi-Arch Tag
         run: |
@@ -91,7 +83,7 @@ jobs:
             ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly-armv7
 
   docker-nightly-notification:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     needs: [ docker-build-nightly, docker-publish-nightly ]
     if: always()
     steps:

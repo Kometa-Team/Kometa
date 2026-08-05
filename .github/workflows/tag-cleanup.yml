@@ -7,7 +7,7 @@ on:
 jobs:
 
   tag-cleanup:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     if: github.event.action == 'closed' || (contains(github.event.pull_request.labels.*.name, 'docker') == false && contains(github.event.pull_request.labels.*.name, 'tester') == false)
     steps:
 
