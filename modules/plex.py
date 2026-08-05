@@ -2077,6 +2077,9 @@ class Plex(Library):
                     logger.info(f"{text} | Reset from {location}")
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+                    self.cached_items.pop(item.ratingKey, None)
+                    for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                        del self.filter_attr_cache[key]
                 return "Reset", source, "Updated" if updated else "Failed"
             else:
                 logger.warning(f"{text} | No Reset Image Found")

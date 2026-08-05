@@ -122,6 +122,24 @@ class TestImageUpdate:
 
         assert result == ("Reset", "Assets", "Updated")
 
+    def test_poster_reset_removing_overlay_invalidates_item_cache(self):
+        item = make_plex_item(rating_key=42)
+        plex = make_plex(
+            mass_poster_update={"source": "tmdb", "language": None},
+            cached_items={42: (item, True)},
+            filter_attr_cache={(42, "labels"): ["Overlay"], (7, "labels"): ["Keep"]},
+        )
+        plex.upload_poster = MagicMock()
+        plex.item_labels = MagicMock(return_value=[SimpleNamespace(tag="Overlay")])
+        plex.edit_tags = MagicMock(return_value="Label | -Overlay")
+
+        result = plex.image_update(item, None, tmdb=("tmdb", "https://image.tmdb.org/poster.jpg"))
+
+        assert result == ("Reset", "TMDb", "Updated")
+        plex.edit_tags.assert_called_once_with("label", item, remove_tags="Overlay", do_print=False)
+        assert plex.cached_items == {}
+        assert plex.filter_attr_cache == {(7, "labels"): ["Keep"]}
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # validate_image_size
