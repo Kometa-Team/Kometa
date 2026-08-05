@@ -1,4 +1,3 @@
-import re
 import time
 from typing import Any
 
@@ -12,7 +11,7 @@ logger = util.logger
 
 base_url = "https://api.trakt.tv"
 auth_url = "https://auth.trakt.tv"
-utilities_oauth_url = "https://utilities.kometa.wiki/trakt-oauth/"
+utilities_client_ids_url = "https://raw.githubusercontent.com/Kometa-Team/Kometa-Utilities/main/CLIENT_IDS"
 builders = [
     "trakt_list",
     "trakt_list_details",
@@ -77,13 +76,14 @@ class Trakt:
         self._show_certifications = None
 
     def _get_public_client_id(self) -> str:
-        response = self.requests.get(utilities_oauth_url)
+        response = self.requests.get(utilities_client_ids_url)
         if response.status_code != 200:
-            raise Failed(f"Trakt Error: Unable to fetch the public Client ID from {utilities_oauth_url}: ({response.status_code}) {response.reason}")
-        match: re.Match[str] | None = re.search(r"const\s+TRAKT_CLIENT_ID\s*=\s*['\"]([^'\"]+)['\"]", response.text)
-        if not match:
-            raise Failed(f"Trakt Error: Unable to find TRAKT_CLIENT_ID on {utilities_oauth_url}")
-        return match.group(1)
+            raise Failed(f"Trakt Error: Unable to fetch public Client IDs from {utilities_client_ids_url}: ({response.status_code}) {response.reason}")
+        for line in response.text.splitlines():
+            key, separator, value = line.partition("=")
+            if key.strip() == "TRAKT_CLIENT_ID" and separator and value.strip():
+                return value.strip()
+        raise Failed(f"Trakt Error: Unable to find TRAKT_CLIENT_ID in {utilities_client_ids_url}")
 
     @property
     def slugs(self):
