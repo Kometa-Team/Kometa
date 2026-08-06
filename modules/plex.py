@@ -1285,13 +1285,15 @@ class Plex(Library):
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         if search_name == "folder_location":
             filter_type = libtype or self.Plex.TYPE
+            if self.is_show and filter_type == "show":
+                filter_type = "episode"  # Plex only exposes a folder filter for shows at the episode libtype
             filters = self.Plex.listFilters(filter_type)
             try:
                 folder_filter = next(f for f in filters if f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")
             except StopIteration:
                 available_filters = [f.filter for f in filters]
                 raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
-            return folder_filter.filter
+            return f"{filter_type}.{folder_filter.filter}"
         return final_search
 
     def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
