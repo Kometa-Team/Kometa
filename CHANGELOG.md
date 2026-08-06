@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
 
 ### Fixed
+- Sort IMDb award years and multi-edition year values before resolving `starting`/`ending` ranges, so out-of-order repository entries do not cause `latest` ranges to include the wrong years.
 - Refresh an item's in-run Plex state after `mass_poster_update` removes its `Overlay` label, ensuring the following overlay pass detects the reset poster and reapplies its overlays instead of incorrectly skipping it.
 - Redact registered secrets from critical-error webhook messages before sending them to Discord, Slack, Notifiarr, or other webhook destinations. #3472
 - Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
