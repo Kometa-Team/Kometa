@@ -1074,7 +1074,10 @@ class MetadataFile(DataFile):
                             if event_id not in self.config.IMDb.git_events_validation:
                                 raise Failed(f"Config Error: {map_name} data only specific Event IDs work with imdb_awards. Event Options: [{', '.join([k for k in self.config.IMDb.git_events_validation])}]")
                             _, event_years = self.config.IMDb.get_event_years(event_id)
-                            year_options = [event_years[len(event_years) - i] for i in range(1, len(event_years) + 1)]
+                            year_options = sorted(
+                                event_years,
+                                key=lambda year: tuple(int(part) for part in str(year).split("-")),
+                            )
 
                             def get_position(attr):
                                 if attr not in award_methods:
