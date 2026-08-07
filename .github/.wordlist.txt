@@ -231,6 +231,7 @@ letterboxd
 Letterboxd's
 letterboxdpy
 LF
+libtype
 lgbtq
 limburgish
 linas
