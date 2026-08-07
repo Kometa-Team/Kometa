@@ -1293,7 +1293,8 @@ class Plex(Library):
             except StopIteration:
                 available_filters = [f.filter for f in filters]
                 raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
-            return f"{filter_type}.{folder_filter.filter}"
+            # Prefix so get_tags() resolves against "episode" instead of self.Plex.TYPE ("show")
+            return f"episode.{folder_filter.filter}" if self.is_show and filter_type == "episode" else folder_filter.filter
         return final_search
 
     def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
