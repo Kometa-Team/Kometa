@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
+- Lock the poster, background, logo, and square art fields after resetting them from a source, so subsequent runs with `ignore_locked: true` skip re-resetting instead of looping forever. #3487
 
 ### Changed
 - Document Trakt's free connected-app limitation and identify which Trakt builders and account features require OAuth/VIP access versus public API access.

@@ -2075,6 +2075,9 @@ class Plex(Library):
                         updated = False
                 if updated:
                     logger.info(f"{text} | Reset from {location}")
+                    lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]  # lock the field so it isn't reset again next run
+                    if hasattr(item, lock_method):
+                        self.query(getattr(item, lock_method))
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
                     self.cached_items.pop(item.ratingKey, None)
