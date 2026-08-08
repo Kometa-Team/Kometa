@@ -1208,7 +1208,7 @@ class Operations:
                     if self.library.mass_logo_update:
                         source = self.library.mass_logo_update["source"]
                         ignore_locked = self.library.mass_logo_update["ignore_locked"]
-                        logo_locked = _field_locked("logo")
+                        logo_locked = _field_locked("clearLogo")  # Plex's Field name for the logo is "clearLogo", not "logo" - matches lockLogo()/unlockLogo()'s clearLogo.locked
                         resolved_source, logo_url = _get_external_image(self.library.mass_logo_update, is_poster=False, image_type="logo")
                         if (source in ["unlock", "lock"] and len(_image_sources(self.library.mass_logo_update)) == 1) or not (ignore_locked and logo_locked):
                             result = self.library.logo_update(item, new_logo, tmdb=(resolved_source, logo_url))
