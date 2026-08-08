@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
 - Fix `folder_location`/`folder_location.not` smart_filter matching for show libraries, which previously failed with `plex_search attribute: folder_location not supported` (or, for `builder_level: episode`, `Unknown filter field "location"`) because the filter was being resolved against Plex's `show` libtype, which doesn't expose a folder filter; it's now resolved against the `episode` libtype instead, matching how Plex exposes it for shows. #3483
+- Lock the poster, background, logo, and square art fields after resetting them from a source, and check the logo's actual Plex field name (`clearLogo`, not `logo`), so subsequent runs with `ignore_locked: true` skip re-resetting instead of looping forever. #3487
 
 ### Changed
 
