@@ -9,11 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes and TV Show `diff` scans season XML `updatedAt` values.
-- Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, `diff_episode`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes; `diff_episode` compares episode rating keys using a dedicated cache snapshot and is documented as potentially time-intensive for large libraries.
+- Added a fallback Trakt Client ID for "public" mode if the current Trakt credentials are invalid
 - Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
 - Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
 - Add `floppy` as a direct Defaults ratings-overlay source for movies, shows, and episodes.
-- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, and full history views.
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, watch time, in-progress, and full history views, including user-specific and playback-quality filters, direct movie provider-ID matching, v2 capability detection with v1 fallback, and in-run history reuse.
 - Add Serializd as a connector
 - Add `serializd` as a genre source for shows and episodes for the mass metadata update operation, includes nanogenres.
 - Add `serializd` as a source for show and episode audience, critic, and user mass metadata updates, and `serializd_user` for episodes only.
@@ -22,11 +22,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
 
 ### Fixed
+- Sort IMDb award years and multi-edition year values before resolving `starting`/`ending` ranges, so out-of-order repository entries do not cause `latest` ranges to include the wrong years.
+- Refresh an item's in-run Plex state after `mass_poster_update` removes its `Overlay` label, ensuring the following overlay pass detects the reset poster and reapplies its overlays instead of incorrectly skipping it.
+- Redact registered secrets from critical-error webhook messages before sending them to Discord, Slack, Notifiarr, or other webhook destinations. #3472
 - Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
 - Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
 - Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
+- Fix `folder_location`/`folder_location.not` smart_filter matching for show libraries, which previously failed with `plex_search attribute: folder_location not supported` (or, for `builder_level: episode`, `Unknown filter field "location"`) because the filter was being resolved against Plex's `show` libtype, which doesn't expose a folder filter; it's now resolved against the `episode` libtype instead, matching how Plex exposes it for shows. #3483
+- Lock the poster, background, logo, and square art fields after resetting them from a source, and check the logo's actual Plex field name (`clearLogo`, not `logo`), so subsequent runs with `ignore_locked: true` skip re-resetting instead of looping forever. #3487
 
 ### Changed
+
+- Document Trakt's free connected-app limitation and identify which Trakt builders and account features require OAuth/VIP access versus public API access.
+- Migrate Trakt authentication documentation and shipped configuration examples from the legacy PIN/OAuth callback flow to Device Code Flow, including headless-server guidance and the optional `webhooks.trakt_pin` notification.
 - Batch Plex writes that were previously one API call per item: label/genre sync, `item_critic`/`audience`/`user_rating` updates, and title-parentheses removal now merge into shared `saveMultiEdits()`/`batchMultiEdits()` calls (respecting `plex_bulk_edit_batch_size`) instead of one `edit_tags()`/`editField()`/`editTitle()` call per item; label/genre and rating writes for the same item are further merged into a single PUT instead of one per attribute type, grouped by library and media type so mixed-library/mixed-type playlists route through the correct Plex connection. The overlay `Overlay` label add is batched the same way, flushing every `plex_bulk_edit_batch_size` items instead of only once at the very end of the run.
 - Reduce repeated in-run Plex/API lookups via caching: `modules/cache.py`'s ID-map queries (`query_tmdb_to_tvdb_map` and siblings, `query_guid_map`/`update_guid_map`) are memoized in-process; `check_filter` memoizes plain item-attribute reads (excluding writable fields), media-derived number filters (channels/height/width/aspect/versions/audio_language/subtitle_language/duration), and per-item seasons/episodes/albums/tracks sub-item listings, the last of which is now reused via `cached_item_subitems` at every remaining call site (including `overlays.py`'s runtime/total_runtime lookups) instead of re-querying Plex each time.
 - Reduce redundant network/image work: `Requests.get_image()` is memoized by URL for the run; validate-only image URL checks use HEAD instead of GET; validate-only checks are skipped entirely for Kometa's own GitHub-hosted assets; and fresh local overlay images are reused instead of being re-fetched from GitHub on every call.
@@ -37,11 +45,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [v2.4.6] - 2026-07-30
 
 ### Added
+
 - Add `folder_location` and `folder_location.not` Plex search attributes for movie, show, and track-level music smart collections and Plex searches, using the root folders configured on the Plex library.
 - Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
 - Add TVDB ID support to YamTrack builder, enabling import of TVDB show IDs from YamTrack lists and tracked pages alongside existing TMDb support.
 
 ### Fixed
+
 - Send IMDb's web client identifier with GraphQL requests so `imdb_search` and IMDb-backed defaults are not rejected with HTTP 403; report HTTP and non-JSON GraphQL responses as contextual IMDb errors instead of uncaught JSON decoding tracebacks. #3444
 - Report IMDb chart GraphQL and HTML fallback failures as contextual IMDb errors instead of raising `IndexError` when the fallback page does not contain `__NEXT_DATA__` chart data. #3446
 - Batch collection and playlist `item_label`, `item_label.remove`, `item_label.sync`, and `non_item_remove_label` updates through Plex multi-edit requests, grouped by library and media type and split by `plex_bulk_edit_batch_size`, instead of sending one label request per item.

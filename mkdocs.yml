@@ -179,6 +179,7 @@ nav:
       - TMDb: config/tmdb.md
     - OPTIONAL CONNECTIONS:
       - Tautulli: config/tautulli.md
+      - Tracearr: config/tracearr.md
       - Github: config/github.md
       - OMDb: config/omdb.md
       - MDBList: config/mdblist.md
@@ -235,6 +236,7 @@ nav:
       - Simkl Charts: defaults/chart/simkl.md
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
+      - Tracearr Charts: defaults/chart/tracearr.md
       - Trakt Charts: defaults/chart/trakt.md
       - Other Charts: defaults/chart/other.md
     - Content:
@@ -386,6 +388,9 @@ nav:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md
         - Watched: files/builders/tautulli/watched.md
+      - Tracearr:
+        - Overview: files/builders/tracearr/overview.md
+        - History: files/builders/tracearr/history.md
       - Radarr:
         - Overview: files/builders/radarr/overview.md
         - All: files/builders/radarr/all.md

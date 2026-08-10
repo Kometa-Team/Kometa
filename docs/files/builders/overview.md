@@ -155,6 +155,8 @@ Builders use third-party services to source items to be added to the collection.
         - [:material-movie-search: Tracearr Completed](../tracearr/history) - Gets the most recently completed items from Tracearr watch history
         - [:material-movie-search: Tracearr Binged](../tracearr/history) - Gets shows ranked by distinct completed episodes watched by one user
         - [:material-movie-search: Tracearr Most Transcoded](../tracearr/history) - Gets items with the most sessions requiring transcoding
+        - [:material-movie-search: Tracearr Watch Time](../tracearr/history) - Gets items ranked by total time watched
+        - [:material-movie-search: Tracearr In Progress](../tracearr/history) - Gets a user's unfinished items for a playlist
         - [:material-movie-search: Tracearr History](../tracearr/history) - Gets every movie/show in the Tracearr watch history
 
 !!! builder

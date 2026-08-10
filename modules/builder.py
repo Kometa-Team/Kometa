@@ -547,6 +547,8 @@ custom_sort_builders = [
     "tracearr_completed",
     "tracearr_binged",
     "tracearr_transcoded",
+    "tracearr_watch_time",
+    "tracearr_in_progress",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -1575,6 +1577,8 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries")
                 elif not self.playlist and self.library.is_movie and method_name == "tracearr_binged":
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries or playlists")
+                elif not self.playlist and method_name == "tracearr_in_progress":
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for playlists")
                 elif self.library.is_show and method_name in movie_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Movie libraries")
                 elif self.library.is_show and method_name in plex.movie_only_searches:
@@ -3259,8 +3263,9 @@ class CollectionBuilder:
     def _tracearr(self, method_name, method_data):
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
+            list_type = method_name.replace("tracearr_", "", 1)
             final_dict = {
-                "list_type": method_name.replace("tracearr_", "", 1),
+                "list_type": list_type,
                 "list_days": util.parse(
                     self.Type,
                     "list_days",
@@ -3292,6 +3297,35 @@ class CollectionBuilder:
                     parent=method_name,
                 ),
             }
+            optional_attributes = {
+                "user": {},
+                "watched": {"datatype": "bool"},
+                "transcode": {"datatype": "bool"},
+                "video_decision": {"options": tracearr.decisions},
+                "audio_decision": {"options": tracearr.decisions},
+                "transcode_reason": {},
+                "subtitle_decision": {},
+                "platform": {},
+                "device": {},
+                "resolution": {},
+                "source_video_codec": {},
+                "source_audio_codec": {},
+                "genre": {},
+            }
+            for attribute, parse_options in optional_attributes.items():
+                final_dict[attribute] = util.parse(self.Type, attribute, dict_data, methods=dict_methods, parent=method_name, **parse_options) if attribute in dict_methods else None
+            final_dict["minimum_progress"] = (
+                util.parse(self.Type, "minimum_progress", dict_data, datatype="float", methods=dict_methods, minimum=0, maximum=100, parent=method_name) if "minimum_progress" in dict_methods else 1 if list_type == "in_progress" else None
+            )
+            final_dict["maximum_progress"] = (
+                util.parse(self.Type, "maximum_progress", dict_data, datatype="float", methods=dict_methods, minimum=0, maximum=100, parent=method_name) if "maximum_progress" in dict_methods else 84 if list_type == "in_progress" else None
+            )
+            if final_dict["minimum_progress"] is not None and final_dict["maximum_progress"] is not None and final_dict["minimum_progress"] > final_dict["maximum_progress"]:
+                raise Failed(f"{self.Type} Error: {method_name} minimum_progress cannot be greater than maximum_progress")
+            if list_type == "in_progress":
+                if not final_dict["user"]:
+                    raise Failed(f"{self.Type} Error: {method_name} requires user")
+                final_dict["watched"] = False
             self.builders.append((method_name, final_dict))
 
     def _tmdb(self, method_name, method_data):

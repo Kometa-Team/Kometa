@@ -185,7 +185,6 @@ for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
-
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)

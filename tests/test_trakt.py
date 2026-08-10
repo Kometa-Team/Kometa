@@ -9,7 +9,7 @@ import pytest
 
 import modules.builder  # noqa: F401
 import modules.trakt as trakt_module
-from modules.trakt import Trakt, base_url
+from modules.trakt import Trakt, base_url, utilities_client_ids_url
 from modules.util import Failed
 
 
@@ -61,8 +61,8 @@ class TestTraktAuthorization:
         trakt.requests = MagicMock()
         trakt.client_id = "client-id"
         trakt.client_secret = "client-secret"
-        trakt.pin = None
         trakt.authorization = {"refresh_token": "refresh-token"}
+        trakt.webhooks = MagicMock()
         return trakt
 
     @pytest.fixture(autouse=True)
@@ -71,27 +71,32 @@ class TestTraktAuthorization:
         monkeypatch.setattr("modules.trakt.logger", logger)
         return logger
 
-    def test_headless_pin_prompt_raises_actionable_trakt_error(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Input Failed")))
-
-        with pytest.raises(Failed) as exc_info:
-            adapter._authorization()
-
-        assert str(exc_info.value) == "Trakt Error: Authorization required; interactive input is unavailable. Reauthenticate at https://utilities.kometa.wiki/ and update your config."
-
-    def test_other_input_failures_are_unchanged(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.trakt.webbrowser.open", MagicMock())
-        monkeypatch.setattr("modules.trakt.util.logger_input", MagicMock(side_effect=Failed("Different input failure")))
-
-        with pytest.raises(Failed, match="Different input failure"):
-            adapter._authorization()
-
     def test_failed_refresh_logs_http_response(self, adapter, mock_trakt_logger):
         adapter.requests.post.return_value = MagicMock(status_code=403, reason="Forbidden")
 
         assert adapter._refresh() is False
         mock_trakt_logger.debug.assert_called_once_with("Trakt Error: Access Token Refresh Failed: (403) Forbidden")
+
+
+class TestTraktPublicClientId:
+    def test_gets_client_id_from_utilities_file(self):
+        trakt = Trakt.__new__(Trakt)
+        trakt.requests = MagicMock()
+        trakt.requests.get.return_value = SimpleNamespace(
+            status_code=200,
+            text="OTHER_CLIENT_ID=other-client-id\nTRAKT_CLIENT_ID=public-client-id\n",
+        )
+
+        assert trakt._get_public_client_id() == "public-client-id"
+        trakt.requests.get.assert_called_once_with(utilities_client_ids_url)
+
+    def test_raises_when_utilities_file_has_no_client_id(self):
+        trakt = Trakt.__new__(Trakt)
+        trakt.requests = MagicMock()
+        trakt.requests.get.return_value = SimpleNamespace(status_code=200, text="OTHER_CLIENT_ID=other-client-id\n")
+
+        with pytest.raises(Failed, match="Unable to find TRAKT_CLIENT_ID"):
+            trakt._get_public_client_id()
 
 
 class TestTraktRequest:

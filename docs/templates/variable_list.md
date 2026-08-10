@@ -230,6 +230,14 @@
 | `list_size`                     | **Description:** Changes the `list_size` attribute of the Builder for all collections in a Defaults File.<br>**Values:** Number greater than 0         |
 | `list_size_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes the `list_size` attribute of the Builder of the [key's](#collection_section) collection.<br>**Values:** Number greater than 0 |
 <!--tautulli-->
+<!--tracearr-->
+| `list_days` | **Description:** Changes how many days of Tracearr history are used for all collections in the Defaults File.<br>**Default:** `30`<br>**Values:** Number greater than 0 |
+| `list_days_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes how many days of Tracearr history are used for the [key's](#collection_section) collection.<br>**Default:** `30`; `list_days_trending` defaults to `7`<br>**Values:** Number greater than 0 |
+| `list_minimum` | **Description:** Changes the minimum activity count required for all collections in the Defaults File.<br>**Default:** `0`<br>**Values:** Number 0 or greater |
+| `list_minimum_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes the minimum activity count required for the [key's](#collection_section) collection.<br>**Default:** `0`<br>**Values:** Number 0 or greater |
+| `list_size` | **Description:** Changes the maximum number of items in all collections in the Defaults File.<br>**Default:** `20`<br>**Values:** Number greater than 0 |
+| `list_size_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" } | **Description:** Changes the maximum number of items in the [key's](#collection_section) collection.<br>**Default:** `20`<br>**Values:** Number greater than 0 |
+<!--tracearr-->
 <!--universe-->
 | `name_mapping_<<key>>` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-defaults-key" }     | **Description:** Sets the name mapping value for using assets of the [key's](#collection_section) collection. <br>**Values:** Any String                                                                                        |
 | `minimum_items`                        | **Description:** Controls the minimum items that the collection must have to be created.<br>**Default:** `2`<br>**Values:** Any number                                                                                          |

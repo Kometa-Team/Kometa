@@ -231,6 +231,7 @@ letterboxd
 Letterboxd's
 letterboxdpy
 LF
+libtype
 lgbtq
 limburgish
 linas
@@ -374,6 +375,7 @@ reacher
 readme
 readwriteonce
 realtime
+reauthenticate
 reauthenticating
 reauthentication
 rebased

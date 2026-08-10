@@ -1321,13 +1321,16 @@ class Plex(Library):
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         if search_name == "folder_location":
             filter_type = libtype or self.Plex.TYPE
+            if self.is_show and filter_type == "show":
+                filter_type = "episode"  # Plex only exposes a folder filter for shows at the episode libtype
             filters = self.Plex.listFilters(filter_type)
             try:
                 folder_filter = next(f for f in filters if f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")
             except StopIteration:
                 available_filters = [f.filter for f in filters]
                 raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
-            return folder_filter.filter
+            # Prefix so get_tags() resolves against "episode" instead of self.Plex.TYPE ("show")
+            return f"episode.{folder_filter.filter}" if self.is_show and filter_type == "episode" else folder_filter.filter
         return final_search
 
     def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
@@ -2115,8 +2118,14 @@ class Plex(Library):
                         updated = False
                 if updated:
                     logger.info(f"{text} | Reset from {location}")
+                    lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]  # lock the field so it isn't reset again next run
+                    if hasattr(item, lock_method):
+                        self.query(getattr(item, lock_method))
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+                    self.cached_items.pop(item.ratingKey, None)
+                    for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                        del self.filter_attr_cache[key]
                 return "Reset", source, "Updated" if updated else "Failed"
             else:
                 logger.warning(f"{text} | No Reset Image Found")

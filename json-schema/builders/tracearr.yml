@@ -27,6 +27,10 @@ collections:
     tracearr_transcoded:
       list_days: 30
       list_size: 10
+  Tracearr Watch Time:
+    tracearr_watch_time:
+      list_days: 30
+      list_size: 10
   Tracearr History:
     tracearr_history:
       list_days: 30

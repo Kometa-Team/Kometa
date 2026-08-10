@@ -533,7 +533,6 @@ sonarr:                          # Can be individually specified per library as 
 trakt:
   client_id: Enter Trakt Client ID
   client_secret: Enter Trakt Client Secret
-  pin:
   authorization:
     # everything below is autofilled by the script
     access_token:

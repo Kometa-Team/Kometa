@@ -484,6 +484,7 @@
                 "tracearr_completed": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -1117,7 +1118,22 @@
             "properties": {
                 "list_days": { "type": "integer", "minimum": 1 },
                 "list_minimum": { "type": "integer", "minimum": 0 },
-                "list_size": { "type": "integer", "minimum": 1 }
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "watched": { "type": "boolean" },
+                "minimum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "maximum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "transcode": { "type": "boolean" },
+                "video_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "audio_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "transcode_reason": { "type": "string", "minLength": 1 },
+                "subtitle_decision": { "type": "string", "minLength": 1 },
+                "platform": { "type": "string", "minLength": 1 },
+                "device": { "type": "string", "minLength": 1 },
+                "resolution": { "type": "string", "minLength": 1 },
+                "source_video_codec": { "type": "string", "minLength": 1 },
+                "source_audio_codec": { "type": "string", "minLength": 1 },
+                "genre": { "type": "string", "minLength": 1 }
             }
         },
 

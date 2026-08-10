@@ -449,6 +449,22 @@
             "works_with_playlists_and_custom_sort": "Yes"
         },
         {
+            "builder": "tracearr_watch_time",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets items ranked by total Tracearr watch time",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "tracearr_in_progress",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
+            "description": "Gets a Tracearr user's unfinished movies and exact episodes",
+            "works_with_movies": "No",
+            "works_with_shows": "No",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
             "builder": "tracearr_history",
             "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/tracearr/#tracearr-builders",
             "description": "Gets the Tracearr watch history items",

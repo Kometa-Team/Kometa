@@ -209,13 +209,19 @@ jobs:
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
 
-            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
-            const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
+            // Fork PRs get a read-only GITHUB_TOKEN no matter what permissions: this job declares, so
+            // comment writes 403 there. Log and move on instead of failing the whole build job over a comment.
+            try {
+              const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+              const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
 
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              }
+            } catch (err) {
+              core.warning(`Could not post/update status comment (likely a fork PR with a read-only token): ${err.message}`);
             }
 
   label-status:
@@ -244,13 +250,18 @@ jobs:
             const { owner, repo } = context.repo;
             const issue_number = context.payload.pull_request.number;
 
-            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
-            const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
+            // Same fork-token limitation as docker-build's comment step -- swallow the 403 instead of failing the job.
+            try {
+              const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number, per_page: 100 });
+              const existing = comments.find(c => c.user?.type === "Bot" && c.body?.includes(marker));
 
-            if (existing) {
-              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
-            } else {
-              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number, body });
+              }
+            } catch (err) {
+              core.warning(`Could not post/update status comment (likely a fork PR with a read-only token): ${err.message}`);
             }
 
   notify-testers:

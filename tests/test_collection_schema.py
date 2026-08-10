@@ -6,11 +6,18 @@ import pytest
 from jsonschema import ValidationError, validate
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "json-schema", "collection-schema.json")
+PLAYLIST_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "json-schema", "playlist-schema.json")
 
 
 @pytest.fixture(scope="module")
 def collection_schema():
     with open(SCHEMA_PATH, encoding="utf-8") as f:
+        return json.load(f)
+
+
+@pytest.fixture(scope="module")
+def playlist_schema():
+    with open(PLAYLIST_SCHEMA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -39,7 +46,7 @@ def test_letterboxd_semantic_builder_rejects_wrong_slug_attribute(collection_sch
         validate(_collection_with_builder("letterboxd_genre", {"url": "https://letterboxd.com/films/genre/crime/"}), collection_schema)
 
 
-@pytest.mark.parametrize("builder", ["tracearr_popular", "tracearr_binged", "tracearr_transcoded"])
+@pytest.mark.parametrize("builder", ["tracearr_popular", "tracearr_binged", "tracearr_transcoded", "tracearr_watch_time"])
 def test_tracearr_builder_passes(collection_schema, builder):
     validate(_collection_with_builder(builder, {"list_days": 30, "list_minimum": 2, "list_size": 20}), collection_schema)
 
@@ -53,6 +60,43 @@ def test_tracearr_builder_rejects_removed_list_buffer(collection_schema):
             ),
             collection_schema,
         )
+
+
+def test_tracearr_builder_accepts_v2_filters(collection_schema):
+    validate(
+        _collection_with_builder(
+            "tracearr_watch_time",
+            {
+                "user": "Anthony",
+                "watched": True,
+                "minimum_progress": 25,
+                "maximum_progress": 90,
+                "transcode": True,
+                "video_decision": "transcode",
+                "platform": "Apple TV",
+                "genre": "Science Fiction",
+            },
+        ),
+        collection_schema,
+    )
+
+
+def test_tracearr_in_progress_playlist_schema(playlist_schema):
+    validate(
+        {
+            "playlists": {
+                "Continue Watching": {
+                    "tracearr_in_progress": {
+                        "user": "Anthony",
+                        "minimum_progress": 10,
+                        "maximum_progress": 84,
+                        "list_size": 20,
+                    }
+                }
+            }
+        },
+        playlist_schema,
+    )
 
 
 # ── Property validation ────────────────────────────────────────────────────────

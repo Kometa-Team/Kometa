@@ -72,6 +72,11 @@ class TestSecretRedaction:
         logger.secret("abc123")
         assert logger.secrets.count("abc123") == 1
 
+    def test_redact_replaces_raw_and_url_encoded_secrets(self, logger):
+        logger.secret("my token+key")
+        text = "raw=my token+key encoded=my%20token%2Bkey query=my+token%2Bkey"
+        assert logger.redact(text) == "raw=(redacted) encoded=(redacted) query=(redacted)"
+
 
 class TestTracebackSuppression:
     def test_known_not_found_error_is_suppressed(self, capsys):

@@ -156,11 +156,53 @@ def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
 
 
-@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded"])
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress"])
 def test_tracearr_activity_builders_support_custom_sort(method):
     assert method in builder_module.tracearr.builders
     assert method in custom_sort_builders
     assert method in builder_module.playlist_attributes
+
+
+def test_tracearr_parser_supports_user_and_quality_filters():
+    builder = make_builder()
+
+    builder._tracearr(
+        "tracearr_watch_time",
+        {
+            "user": "Anthony",
+            "watched": True,
+            "minimum_progress": 25,
+            "maximum_progress": 90,
+            "transcode": True,
+            "video_decision": "transcode",
+            "platform": "Apple TV",
+        },
+    )
+
+    _, data = builder.builders[0]
+    assert data["list_type"] == "watch_time"
+    assert data["user"] == "Anthony"
+    assert data["minimum_progress"] == 25
+    assert data["maximum_progress"] == 90
+    assert data["transcode"] is True
+
+
+def test_tracearr_in_progress_requires_user():
+    builder = make_builder(playlist=True)
+
+    with pytest.raises(Failed, match="requires user"):
+        builder._tracearr("tracearr_in_progress", {"list_days": 30})
+
+
+def test_tracearr_in_progress_sets_progress_defaults():
+    builder = make_builder(playlist=True)
+
+    builder._tracearr("tracearr_in_progress", {"user": "Anthony"})
+
+    _, data = builder.builders[0]
+    assert data["watched"] is False
+    assert data["minimum_progress"] == 1
+    assert data["maximum_progress"] == 84
 
 
 # ═══════════════════════════════════════════════════════════════════════
