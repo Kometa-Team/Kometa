@@ -113,7 +113,7 @@ def check_requirements(logger):
             outdated.append(f"{requirement.name} {installed} (requires {requirement.specifier})")
 
     if outdated:
-        logger.info("    Requirements are out of date:")
+        logger.warning("    Requirements are out of date. Please follow the documentation for instructions on installing requirements.")
         for requirement in outdated:
             logger.info(f"      {requirement}")
 
