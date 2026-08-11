@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+from importlib.metadata import PackageNotFoundError, version as installed_version
 import os
 import platform
 import re
@@ -11,9 +12,6 @@ from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from typing import TypeAlias
-
-from packaging.requirements import InvalidRequirement, Requirement
-from packaging.version import parse
 
 from modules.logs import MyLogger
 
@@ -40,9 +38,17 @@ if sys.version_info[0] != 3 or sys.version_info[1] < 10:
     sys.exit(0)
 
 try:
+    import apprise
     import arrapi
+    import cloudscraper
     import dateutil
+    import git
+    import jsonschema
+    import langcodes
+    import letterboxdpy
     import lxml
+    import num2words
+    import packaging
     import pathvalidate
     import PIL
     import plexapi
@@ -51,12 +57,18 @@ try:
     import requests
     import ruamel.yaml
     import schedule
+    import serializd
     import setuptools
+    import tenacity
     import tmdbapis
     from dotenv import load_dotenv
     from dotenv import version as dotenv_version
     from PIL import ImageFile
+    from packaging.requirements import InvalidRequirement, Requirement
+    from packaging.version import parse
     from plexapi.exceptions import BadRequest, NotFound
+    if sys.platform == "win32":
+        import win32api
 except (ModuleNotFoundError, ImportError) as ie:
     print(f"Requirements Error: Requirements are not installed.\nPlease follow the documentation for instructions on installing requirements. ({ie})")
     sys.exit(0)
@@ -80,6 +92,30 @@ system_versions = {
     "tenacity": None,
     "tmdbapis": tmdbapis.__version__,
 }
+
+
+def check_requirements(logger):
+    requirements_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "requirements.txt")
+    try:
+        with open(requirements_path, "r") as file:
+            requirements = [Requirement(line.strip()) for line in file if line.strip() and not line.startswith("#")]
+    except FileNotFoundError:
+        logger.error("    File Error: requirements.txt not found")
+        return
+
+    outdated = []
+    for requirement in requirements:
+        try:
+            installed = parse(installed_version(requirement.name))
+        except PackageNotFoundError:
+            continue
+        if installed not in requirement.specifier:
+            outdated.append(f"{requirement.name} {installed} (requires {requirement.specifier})")
+
+    if outdated:
+        logger.info("    Requirements are out of date:")
+        for requirement in outdated:
+            logger.info(f"      {requirement}")
 
 LibraryRunStatus: TypeAlias = dict[str, dict[str, str]]
 
@@ -491,39 +527,7 @@ def start(attrs):
         logger.info(f"    Process Priority: {'low' if run_args['low-priority'] else 'normal'}")
 
         if not is_docker and not is_linuxserver:
-            try:
-                with open(os.path.abspath(os.path.join(os.path.dirname(__file__), "requirements.txt")), "r") as file:
-                    required_specs = {}
-                    required_versions = {}
-                    for line in file:
-                        line = line.strip()
-                        if not line or line.startswith("#"):
-                            continue
-                        try:
-                            requirement = Requirement(line)
-                        except InvalidRequirement:
-                            continue
-                        required_specs[requirement.name] = requirement.specifier
-                        pinned_versions = [spec.version for spec in requirement.specifier if spec.operator == "=="]
-                        if pinned_versions:
-                            required_versions[requirement.name] = pinned_versions[0]
-                required_versions_ci = {k.lower(): v for k, v in required_versions.items()}
-                required_specs_ci = {k.lower(): v for k, v in required_specs.items()}
-                for req_name, sys_ver in system_versions.items():
-                    if not sys_ver:
-                        continue
-                    key = req_name.lower()
-                    v1 = parse(sys_ver)
-                    if key in required_versions_ci:
-                        v2 = parse(required_versions_ci[key])
-                        if v1 < v2:
-                            logger.info(f"    {req_name} version: {v1} requires an update to: {v2}")
-                        elif v1 > v2:
-                            logger.info(f"    {req_name} version: {v1} does not match expected: {v2}")
-                    elif key in required_specs_ci and v1 not in required_specs_ci[key]:
-                        logger.info(f"    {req_name} version: {v1} does not satisfy expected: {required_specs_ci[key]}")
-            except FileNotFoundError:
-                logger.error("    File Error: requirements.txt not found")
+            check_requirements(logger)
         if "time" in attrs and attrs["time"]:
             start_type = f"{attrs['time']} "
         elif run_args["tests"]:
