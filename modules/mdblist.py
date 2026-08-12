@@ -225,8 +225,7 @@ class MDBList:
         lists = lists if isinstance(lists, list) else lists.get("lists", [])
         matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
         if len(matches) > 1:
-            logger.warning(f"MDBList Warning: Multiple lists named '{slug}' found; no changes made")
-            return
+            raise Failed(f"MDBList Error: Multiple lists named '{slug}' found")
         if not matches:
             created, _ = self._request(f"{api_url}lists/user/add", json_data={"name": slug})
             if isinstance(created, dict):
@@ -248,26 +247,14 @@ class MDBList:
         payload = {"movies": [], "shows": []}
         for item_id, item_type in ids:
             key = "movies" if item_type == "tmdb" else "shows"
-            payload[key].append({"tmdb": int(str(item_id).split("_")[0])})
+            payload[key].append({"tmdb": int(item_id)})
         payload = {key: value for key, value in payload.items() if value}
 
         def update_items(action, item_payload, processed, total):
             if not item_payload:
                 return processed
             result, _ = self._request(f"{api_url}lists/{list_id}/items/{action}", json_data=item_payload)
-            result = result if isinstance(result, dict) else {}
-            counts = result.get(action + "ed", result.get("removed", {}))
-            if action == "remove":
-                counts = result.get("removed", result.get("deleted", counts))
-            existing = result.get("existing", {})
-            not_found = result.get("not_found", result.get("notfound", {}))
-            for kind in ("movies", "shows"):
-                if counts.get(kind, 0):
-                    logger.info(f"MDBList {action.capitalize()} {counts[kind]} {kind}")
-                if existing.get(kind, 0):
-                    logger.info(f"MDBList Existing {existing[kind]} {kind}")
-                if not_found.get(kind, 0):
-                    logger.warning(f"MDBList Not Found {not_found[kind]} {kind}")
+            logger.trace(f"MDBList {action.capitalize()} Response: {result}")
             processed += sum(len(value) for value in item_payload.values())
             logger.info(f"MDBList Sync Progress: {processed}/{total} items processed")
             return processed
@@ -278,7 +265,7 @@ class MDBList:
             if owner and list_slug:
                 existing = self.get_tmdb_ids("mdblist_list", {"url": f"{base_url}{owner}/{list_slug}"}, is_movie=None)
             else:
-                existing = []
+                raise Failed(f"MDBList Error: Could not determine the URL for list '{slug}'")
             wanted = set(ids)
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:

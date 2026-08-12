@@ -15,7 +15,7 @@ from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal,
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
-from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError
+from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, NotScheduledRange, ServiceError
 
 logger = util.logger
 
@@ -5604,7 +5604,12 @@ class CollectionBuilder:
                     current_ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb"))
                     break
                 if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
-                    current_ids.append((self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True), "tmdb_show"))
+                    try:
+                        tmdb_id = self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True)
+                    except MappingConvertError as e:
+                        logger.warning(f"MDBList Warning: Skipping {item.title}: {e}")
+                        break
+                    current_ids.append((tmdb_id, "tmdb_show"))
                     break
         self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
 

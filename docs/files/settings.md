@@ -115,7 +115,7 @@ collections:
 If a list with the name specified exists, it will be used. If no list exists, one will be created.
 The default `mode` is `sync`, which adds missing items and removes items no
 longer present in the collection. Use `append` to add items without removing
-existing list entries. Movies, shows, seasons, and episodes are supported.
+existing list entries. Movies and shows are supported.
 
 ## Smart Label Definitions
 
