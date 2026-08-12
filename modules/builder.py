@@ -3754,7 +3754,7 @@ class CollectionBuilder:
                 self.config.Cache.delete_list_ids(list_key)
             list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
-        if self.sync_to_mdb_list and method in mdb_list_arr_types:
+        if getattr(self, "sync_to_mdb_list", None) and method in mdb_list_arr_types:
             if self.mdb_list_arr_ids is None:
                 self.mdb_list_arr_ids = []
             self.mdb_list_arr_ids.extend(ids)

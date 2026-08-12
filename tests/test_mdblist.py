@@ -140,7 +140,8 @@ class TestMDBList:
         with pytest.raises(Failed, match="Could not determine the URL"):
             adapter.sync_list("Favourites", [])
 
-    def test_sync_list_limits_removals_to_requested_media_types(self, adapter):
+    def test_sync_list_limits_removals_to_requested_media_types(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "username": "user", "slug": "favourites"}], {}))
         adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb"), (2, "tmdb_show")])
 
