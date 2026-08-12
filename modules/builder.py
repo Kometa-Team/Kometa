@@ -4926,7 +4926,7 @@ class CollectionBuilder:
             logger.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
             logger.info("")
             self.items = self.found_items
-        if not self.items and not self.sync_to_mdb_list:
+        if not self.items and self.mdb_list_arr_ids is None:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
     def _safe_tmdb_lookup(self, getter, tmdb_id, item_type):

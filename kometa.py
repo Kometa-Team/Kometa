@@ -1331,7 +1331,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and not builder.sync_to_mdb_list:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
