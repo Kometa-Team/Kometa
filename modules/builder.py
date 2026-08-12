@@ -5591,6 +5591,8 @@ class CollectionBuilder:
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
     def sync_mdb_list(self):
+        if not self.sync_to_mdb_list:
+            return
         logger.separator(f"Syncing {self.name} {self.Type} to MDBList {self.sync_to_mdb_list['name']}", space=False, border=False)
         if self.obj:
             self.library.item_reload(self.obj)
@@ -5599,9 +5601,11 @@ class CollectionBuilder:
         for item in self.items:
             for pl_library in self.libraries:
                 if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
-                    current_ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb")); break
+                    current_ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb"))
+                    break
                 if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
-                    current_ids.append((self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True), "tmdb_show")); break
+                    current_ids.append((self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True), "tmdb_show"))
+                    break
         self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
 
     def delete(self):
