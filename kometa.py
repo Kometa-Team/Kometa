@@ -1331,7 +1331,7 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and not builder.sync_to_mdb_list:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
@@ -1376,7 +1376,11 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or builder.sync_to_mdb_list):
+            arr_mdb_list_sync = builder.sync_to_mdb_list and builder.mdb_list_arr_ids is not None
+            if valid and run_item_details and arr_mdb_list_sync:
+                builder.sync_mdb_list()
+
+            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or (builder.sync_to_mdb_list and not arr_mdb_list_sync)):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1389,7 +1393,7 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.sort_collection()
                     if builder.sync_to_trakt_list:
                         builder.sync_trakt_list()
-                    if builder.sync_to_mdb_list:
+                    if builder.sync_to_mdb_list and not arr_mdb_list_sync:
                         builder.sync_mdb_list()
 
             builder.send_notifications()

@@ -19,6 +19,7 @@ from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, 
 
 logger = util.logger
 
+mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = [
     "item_episode_sorting",
@@ -1165,6 +1166,8 @@ class CollectionBuilder:
         self.file_theme = None
         self.sync_to_trakt_list = None
         self.sync_to_mdb_list = None
+        self.mdb_list_arr_ids = None
+        self.mdb_list_arr_removal_types = set()
         self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
@@ -3751,6 +3754,11 @@ class CollectionBuilder:
                 self.config.Cache.delete_list_ids(list_key)
             list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
+        if self.sync_to_mdb_list and method in mdb_list_arr_types:
+            if self.mdb_list_arr_ids is None:
+                self.mdb_list_arr_ids = []
+            self.mdb_list_arr_ids.extend(ids)
+            self.mdb_list_arr_removal_types.add(mdb_list_arr_types[method])
         return ids
 
     def _find_plex_keys(self, input_id):
@@ -4918,7 +4926,7 @@ class CollectionBuilder:
             logger.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
             logger.info("")
             self.items = self.found_items
-        if not self.items:
+        if not self.items and not self.sync_to_mdb_list:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
     def _safe_tmdb_lookup(self, getter, tmdb_id, item_type):
@@ -5594,6 +5602,15 @@ class CollectionBuilder:
         if not self.sync_to_mdb_list:
             return
         logger.separator(f"Syncing {self.name} {self.Type} to MDBList {self.sync_to_mdb_list['name']}", space=False, border=False)
+        if self.mdb_list_arr_ids is not None:
+            logger.info("Using Radarr/Sonarr tag-list results as the MDBList sync source")
+            self.config.MDBList.sync_list(
+                self.sync_to_mdb_list["name"],
+                self._get_mdb_list_arr_ids(),
+                self.sync_to_mdb_list["mode"],
+                removal_types=self.mdb_list_arr_removal_types,
+            )
+            return
         if self.obj:
             self.library.item_reload(self.obj)
         self.load_collection_items()
@@ -5612,6 +5629,18 @@ class CollectionBuilder:
                     current_ids.append((tmdb_id, "tmdb_show"))
                     break
         self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
+
+    def _get_mdb_list_arr_ids(self):
+        current_ids = []
+        for item_id, item_type in self.mdb_list_arr_ids:
+            if item_type == "tmdb":
+                current_ids.append((item_id, "tmdb"))
+            elif item_type == "tvdb":
+                try:
+                    current_ids.append((self.config.Convert.tvdb_to_tmdb(item_id, fail=True), "tmdb_show"))
+                except MappingConvertError as e:
+                    logger.warning(f"MDBList Warning: Skipping TVDb ID {item_id}: {e}")
+        return list(dict.fromkeys(current_ids))
 
     def delete(self):
         title = self.obj.title if self.obj else self.name

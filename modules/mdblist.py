@@ -212,12 +212,13 @@ class MDBList:
     def get_movie(self, tmdb_id):
         return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id)
 
-    def sync_list(self, slug, ids, mode="sync"):
+    def sync_list(self, slug, ids, mode="sync", removal_types=None):
         """Update a user-owned static list using MDBList's list item API.
 
         ``slug`` is the exact list name. MDBList resolves it to the user's
         numeric list id; write endpoints then require the id and a payload
         containing ``tmdb`` identifiers grouped under movies and shows.
+        ``removal_types`` optionally limits removals to the supplied media types.
         """
         if mode not in ("sync", "append"):
             raise Failed(f"MDBList Error: invalid sync mode: {mode}")
@@ -269,7 +270,7 @@ class MDBList:
             wanted = set(ids)
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:
-                if (item_id, item_type) not in wanted:
+                if (removal_types is None or item_type in removal_types) and (item_id, item_type) not in wanted:
                     key = "movies" if item_type == "tmdb" else "shows"
                     remove_payload[key].append({"tmdb": int(item_id)})
             remove_payload = {key: value for key, value in remove_payload.items() if value}

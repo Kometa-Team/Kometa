@@ -129,3 +129,22 @@ class TestMDBList:
         adapter._request = MagicMock(side_effect=Failed("Invalid API key"))
         with pytest.raises(Failed, match="Invalid"):
             adapter.add_key("bad-key", 30)
+
+    def test_sync_list_rejects_ambiguous_names(self, adapter):
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}, {"id": 2, "name": "Favourites"}], {}))
+        with pytest.raises(Failed, match="Multiple lists"):
+            adapter.sync_list("Favourites", [])
+
+    def test_sync_list_requires_list_url_in_sync_mode(self, adapter):
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
+        with pytest.raises(Failed, match="Could not determine the URL"):
+            adapter.sync_list("Favourites", [])
+
+    def test_sync_list_limits_removals_to_requested_media_types(self, adapter):
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "username": "user", "slug": "favourites"}], {}))
+        adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb"), (2, "tmdb_show")])
+
+        adapter.sync_list("Favourites", [], removal_types={"tmdb"})
+
+        remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
+        assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
