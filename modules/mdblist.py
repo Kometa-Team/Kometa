@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from urllib.parse import urlencode
 
 from modules import util
 from modules.util import Failed, LimitReached
@@ -147,7 +148,7 @@ class MDBList:
     def has_key(self):
         return self.apikey is not None
 
-    def _request(self, url, params=None):
+    def _request(self, url, params=None, json_data=None):
         final_params = {"apikey": self.apikey}
         if params:
             final_params.update(params)
@@ -155,9 +156,14 @@ class MDBList:
         # Respect API Rate limits
         time.sleep(0.2 if self.supporter else 1.0)
 
-        response = self.requests.get(url, params=final_params)
+        if json_data is not None:
+            separator = "&" if "?" in url else "?"
+            post_url = f"{url}{separator}{urlencode(final_params)}"
+            response = self.requests.post(post_url, json=json_data)
+        else:
+            response = self.requests.get(url, params=final_params)
 
-        if response.status_code != 200:
+        if not 200 <= response.status_code < 300:
             raise Failed(f"MDBList Error: {response.status_code} - {response.text}")
 
         json_data = response.json()
@@ -205,6 +211,94 @@ class MDBList:
 
     def get_movie(self, tmdb_id):
         return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id)
+
+    def sync_list(self, slug, ids, mode="sync"):
+        """Update a user-owned static list using MDBList's list item API.
+
+        ``slug`` is the exact list name. MDBList resolves it to the user's
+        numeric list id; write endpoints then require the id and a payload
+        containing ``tmdb`` identifiers grouped under movies and shows.
+        """
+        if mode not in ("sync", "append"):
+            raise Failed(f"MDBList Error: invalid sync mode: {mode}")
+        lists, _ = self._request(f"{api_url}lists/user")
+        lists = lists if isinstance(lists, list) else lists.get("lists", [])
+        matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+        if len(matches) > 1:
+            logger.warning(f"MDBList Warning: Multiple lists named '{slug}' found; no changes made")
+            return
+        if not matches:
+            created, _ = self._request(f"{api_url}lists/user/add", json_data={"name": slug})
+            if isinstance(created, dict):
+                list_id = created.get("id") or (created.get("list") or {}).get("id")
+            else:
+                list_id = None
+            if not list_id:
+                lists, _ = self._request(f"{api_url}lists/user")
+                lists = lists if isinstance(lists, list) else lists.get("lists", [])
+                matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+                list_id = matches[0].get("id") if len(matches) == 1 else None
+            if not list_id:
+                raise Failed(f"MDBList Error: could not create list: {slug}")
+        else:
+            list_id = matches[0].get("id")
+
+        selected = matches[0] if matches else {"id": list_id}
+
+        payload = {"movies": [], "shows": []}
+        for item_id, item_type in ids:
+            key = "movies" if item_type == "tmdb" else "shows"
+            payload[key].append({"tmdb": int(str(item_id).split("_")[0])})
+        payload = {key: value for key, value in payload.items() if value}
+
+        def update_items(action, item_payload, processed, total):
+            if not item_payload:
+                return processed
+            result, _ = self._request(f"{api_url}lists/{list_id}/items/{action}", json_data=item_payload)
+            result = result if isinstance(result, dict) else {}
+            counts = result.get(action + "ed", result.get("removed", {}))
+            if action == "remove":
+                counts = result.get("removed", result.get("deleted", counts))
+            existing = result.get("existing", {})
+            not_found = result.get("not_found", result.get("notfound", {}))
+            for kind in ("movies", "shows"):
+                if counts.get(kind, 0):
+                    logger.info(f"MDBList {action.capitalize()} {counts[kind]} {kind}")
+                if existing.get(kind, 0):
+                    logger.info(f"MDBList Existing {existing[kind]} {kind}")
+                if not_found.get(kind, 0):
+                    logger.warning(f"MDBList Not Found {not_found[kind]} {kind}")
+            processed += sum(len(value) for value in item_payload.values())
+            logger.info(f"MDBList Sync Progress: {processed}/{total} items processed")
+            return processed
+
+        if mode == "sync":
+            owner = selected.get("username") or selected.get("user") or selected.get("owner")
+            list_slug = selected.get("slug") or selected.get("list_slug")
+            if owner and list_slug:
+                existing = self.get_tmdb_ids("mdblist_list", {"url": f"{base_url}{owner}/{list_slug}"}, is_movie=None)
+            else:
+                existing = []
+            wanted = set(ids)
+            remove_payload = {"movies": [], "shows": []}
+            for item_id, item_type in existing:
+                if (item_id, item_type) not in wanted:
+                    key = "movies" if item_type == "tmdb" else "shows"
+                    remove_payload[key].append({"tmdb": int(item_id)})
+            remove_payload = {key: value for key, value in remove_payload.items() if value}
+            if remove_payload:
+                total = sum(len(value) for value in remove_payload.values())
+                processed = 0
+                for key, value in remove_payload.items():
+                    for start in range(0, len(value), 100):
+                        processed = update_items("remove", {key: value[start : start + 100]}, processed, total)
+        if payload:
+            total = sum(len(value) for value in payload.values())
+            processed = 0
+            for key, value in payload.items():
+                for start in range(0, len(value), 100):
+                    processed = update_items("add", {key: value[start : start + 100]}, processed, total)
+        logger.info(f"MDBList list {slug} updated ({mode})")
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []

@@ -640,6 +640,7 @@ parts_collection_valid = (
         "non_item_remove_label",
         "item_analyze",
         "sync_to_trakt_list",
+        "sync_to_mdb_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1163,6 +1164,7 @@ class CollectionBuilder:
         self.url_theme = None
         self.file_theme = None
         self.sync_to_trakt_list = None
+        self.sync_to_mdb_list = None
         self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
@@ -1653,6 +1655,7 @@ class CollectionBuilder:
                     self._tmdb(method_name, method_data)
                 elif method_name in trakt.builders or method_name in [
                     "sync_to_trakt_list",
+                    "sync_to_mdb_list",
                     "sync_missing_to_trakt_list",
                 ]:
                     self._trakt(method_name, method_data)
@@ -3488,6 +3491,17 @@ class CollectionBuilder:
             if method_data not in self.config.Trakt.slugs:
                 raise BuilderValidationError(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
             self.sync_to_trakt_list = method_data
+        elif method_name == "sync_to_mdb_list":
+            if isinstance(method_data, dict):
+                name = method_data.get("name")
+                mode = str(method_data.get("mode", "sync")).lower()
+            else:
+                name, mode = method_data, "sync"
+            if not name:
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
+            if mode not in ("sync", "append"):
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
+            self.sync_to_mdb_list = {"name": str(name), "mode": mode}
         elif method_name == "sync_missing_to_trakt_list":
             self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
         elif method_name in trakt.builders:
@@ -5575,6 +5589,20 @@ class CollectionBuilder:
             current_ids.extend([(mm, "tmdb") for mm in self.missing_movies])
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
+
+    def sync_mdb_list(self):
+        logger.separator(f"Syncing {self.name} {self.Type} to MDBList {self.sync_to_mdb_list['name']}", space=False, border=False)
+        if self.obj:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        current_ids = []
+        for item in self.items:
+            for pl_library in self.libraries:
+                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                    current_ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb")); break
+                if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                    current_ids.append((self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True), "tmdb_show")); break
+        self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
 
     def delete(self):
         title = self.obj.title if self.obj else self.name

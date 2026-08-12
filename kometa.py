@@ -1376,7 +1376,7 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Plex Server Movie pre-roll video updated to {builder.server_preroll}")
 
-            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list):
+            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or builder.sync_to_mdb_list):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1389,6 +1389,8 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.sort_collection()
                     if builder.sync_to_trakt_list:
                         builder.sync_trakt_list()
+                    if builder.sync_to_mdb_list:
+                        builder.sync_mdb_list()
 
             builder.send_notifications()
 

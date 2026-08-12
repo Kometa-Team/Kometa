@@ -35,6 +35,7 @@ tags:
   - tmdb_birthday
   - changes_webhooks
   - sync_to_trakt_list
+  - sync_to_mdb_list
   - sync_missing_to_trakt_list
   - run_definition
   - default_percent
@@ -81,12 +82,40 @@ All the following attributes serve various functions as how the definition funct
 | `sync_missing_to_trakt_list` | **Description:** Used to also sync missing items to the Trakt List specified by `sync_to_trakt_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `sync_mode`                  | **Description:** Used to change how builders sync with this definition.<br>**Default:** `sync_mode` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `sync` or `append`<br>See main [settings page](../config/settings.md#sync-mode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `sync_to_trakt_list`         | **Description:** Used to specify a trakt list you want the definition synced to.<br>**Values:** Trakt List Slug you want to sync to                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `sync_to_mdb_list`           | **Description:** Syncs a collection to an MDBList static list by exact `name`, creating it when absent. Use a name directly or an object with `name` and optional `mode` (`sync` by default, or `append`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `template`                   | **Description:** Used to specify a template and Template Variables to use for this definition. See the [Templates Page](templates.md) for more information.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `test`                       | **Description:** When running in Test Mode (`--run-tests` [option](../kometa/environmental.md)) only definitions with `test: true` will be run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
 | `tmdb_deathday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Deathday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Deathday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Deathday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Deathday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
 | `tmdb_region`                | **Description:** Sets the region for `tmdb_popular`, `tmdb_now_playing`, `tmdb_top_rated`, and `tmdb_upcoming`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `validate_builders`          | **Description:** When set to false the definition will not fail if one Builder fails.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+
+### MDBList Sync Example
+
+`sync_to_mdb_list` synchronizes a collection with an MDBList static list. The
+list is found by exact name and created automatically when it does not exist.
+
+```yaml
+collections:
+  Recently Added:
+    plex_search:
+      all:
+        added: 30
+    sync_to_mdb_list: "Recently Added"
+
+  Favourites:
+    plex_search:
+      all:
+        user_rating.gte: 8.0
+    sync_to_mdb_list:
+      name: "Favourites"
+      mode: append
+```
+
+If a list with the name specified exists, it will be used. If no list exists, one will be created.
+The default `mode` is `sync`, which adds missing items and removes items no
+longer present in the collection. Use `append` to add items without removing
+existing list entries. Movies, shows, seasons, and episodes are supported.
 
 ## Smart Label Definitions
 
