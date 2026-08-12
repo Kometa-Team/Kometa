@@ -5632,7 +5632,7 @@ class CollectionBuilder:
 
     def _get_mdb_list_arr_ids(self):
         current_ids = []
-        for item_id, item_type in self.mdb_list_arr_ids:
+        for item_id, item_type in self.mdb_list_arr_ids or []:
             if item_type == "tmdb":
                 current_ids.append((item_id, "tmdb"))
             elif item_type == "tvdb":
