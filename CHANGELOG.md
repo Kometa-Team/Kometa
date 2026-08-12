@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `sync_watchlist_to_serializd` show-library operation to mark the Plex server owner's watched episodes as watched in Serializd.
 - Add builders: `serializd_list`, `serializd_watchlist`, `serializd_trending`, `serializd_popular`, and `serializd_featured`
 - Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
+- Add `sync_to_mdb_list` for synchronizing collections with MDBList static lists.
 
 ### Fixed
 - Sort IMDb award years and multi-edition year values before resolving `starting`/`ending` ranges, so out-of-order repository entries do not cause `latest` ranges to include the wrong years.
