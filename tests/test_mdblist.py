@@ -135,10 +135,14 @@ class TestMDBList:
         with pytest.raises(Failed, match="Multiple lists"):
             adapter.sync_list("Favourites", [])
 
-    def test_sync_list_requires_list_url_in_sync_mode(self, adapter):
+    def test_sync_list_uses_list_id_when_syncing(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
-        with pytest.raises(Failed, match="Could not determine the URL"):
-            adapter.sync_list("Favourites", [])
+        adapter.get_tmdb_ids = MagicMock(return_value=[])
+
+        adapter.sync_list("Favourites", [])
+
+        adapter.get_tmdb_ids.assert_called_once_with("mdblist_list", {"id": 1}, is_movie=None)
 
     def test_sync_list_limits_removals_to_requested_media_types(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())

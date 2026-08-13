@@ -243,8 +243,6 @@ class MDBList:
         else:
             list_id = matches[0].get("id")
 
-        selected = matches[0] if matches else {"id": list_id}
-
         payload = {"movies": [], "shows": []}
         for item_id, item_type in ids:
             key = "movies" if item_type == "tmdb" else "shows"
@@ -261,12 +259,7 @@ class MDBList:
             return processed
 
         if mode == "sync":
-            owner = selected.get("username") or selected.get("user") or selected.get("owner")
-            list_slug = selected.get("slug") or selected.get("list_slug")
-            if owner and list_slug:
-                existing = self.get_tmdb_ids("mdblist_list", {"url": f"{base_url}{owner}/{list_slug}"}, is_movie=None)
-            else:
-                raise Failed(f"MDBList Error: Could not determine the URL for list '{slug}'")
+            existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
             wanted = set(ids)
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:
@@ -310,12 +303,16 @@ class MDBList:
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
 
-        list_path = data["url"].split("/lists/")[-1].strip("/")
-
-        external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
-
-        items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
-        meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
+        list_id = data.get("id")
+        if list_id:
+            external_id = None
+            items_url = f"{api_url}lists/{list_id}/items/"
+            meta_url = f"{api_url}lists/{list_id}"
+        else:
+            list_path = data["url"].split("/lists/")[-1].strip("/")
+            external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
+            items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+            meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
 
         sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
