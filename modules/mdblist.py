@@ -243,6 +243,9 @@ class MDBList:
         else:
             list_id = matches[0].get("id")
 
+        existing = []
+        if mode == "sync":
+            existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
         payload = {"movies": [], "shows": []}
         for item_id, item_type in ids:
             key = "movies" if item_type == "tmdb" else "shows"
@@ -255,15 +258,15 @@ class MDBList:
             result, _ = self._request(f"{api_url}lists/{list_id}/items/{action}", json_data=item_payload)
             logger.trace(f"MDBList {action.capitalize()} Response: {result}")
             processed += sum(len(value) for value in item_payload.values())
-            logger.info(f"MDBList Sync Progress: {processed}/{total} items processed")
+            item_type = "movies" if "movies" in item_payload else "shows"
+            action_name = "Added to" if action == "add" else "Removed from"
+            logger.info(f"{action_name} MDBList ({item_type}): {processed}/{total}")
             return processed
 
         if mode == "sync":
-            existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
-            wanted = set(ids)
             remove_payload = {"movies": [], "shows": []}
             for item_id, item_type in existing:
-                if (removal_types is None or item_type in removal_types) and (item_id, item_type) not in wanted:
+                if removal_types is None or item_type in removal_types:
                     key = "movies" if item_type == "tmdb" else "shows"
                     remove_payload[key].append({"tmdb": int(item_id)})
             remove_payload = {key: value for key, value in remove_payload.items() if value}
@@ -386,10 +389,10 @@ class MDBList:
             if total_count:
                 percent = min(int((len(results) / total_count) * 100), 100)
                 suffix = "..." if has_more else " - Complete"
-                logger.info(f"MDBList Sync Progress: {len(results)}/{total_count} ({percent}%){suffix}")
+                logger.info(f"Reading current MDBList items: {len(results)}/{total_count} ({percent}%){suffix}")
             else:
                 suffix = "..." if has_more else ""
-                logger.info(f"MDBList Sync Progress: {len(results)} items fetched{suffix}")
+                logger.info(f"Reading current MDBList items: {len(results)} found{suffix}")
 
             if len(items) == 0:  # type: ignore
                 break

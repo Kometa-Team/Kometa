@@ -144,6 +144,19 @@ class TestMDBList:
 
         adapter.get_tmdb_ids.assert_called_once_with("mdblist_list", {"id": 1}, is_movie=None)
 
+    def test_sync_list_removes_existing_items_before_adding_in_source_order(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
+        adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb")])
+
+        adapter.sync_list("Favourites", [(1, "tmdb"), (2, "tmdb")])
+
+        remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
+        add_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/add"))
+        assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
+        assert add_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}, {"tmdb": 2}]}
+        assert adapter._request.call_args_list.index(remove_call) < adapter._request.call_args_list.index(add_call)
+
     def test_sync_list_limits_removals_to_requested_media_types(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "username": "user", "slug": "favourites"}], {}))
