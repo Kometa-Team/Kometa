@@ -292,6 +292,7 @@ filters_by_type = {
     ],
     "movie_show_season_episode_album_track": ["year"],
     "movie_show_season_episode_artist_album": ["has_overlay"],
+    "movie_show_season_episode_track": ["audio_codec"],
     "movie_show_season_episode": [
         "resolution",
         "audio_language",
@@ -301,7 +302,6 @@ filters_by_type = {
         "height",
         "width",
         "aspect",
-        "audio_codec",
         "audio_profile",
         "video_codec",
         "video_profile",
