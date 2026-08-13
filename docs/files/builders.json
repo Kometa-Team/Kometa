@@ -304,7 +304,7 @@
         },
         {
             "builder": "plex_id",
-            "hyperlink": "https://kometa.wiki/en/latest/files/builders/plex/id/",
+            "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/id/",
             "description": "Gets items using Plex metadata IDs or full Plex GUIDs.",
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
