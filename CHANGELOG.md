@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes and TV Show `diff` scans season XML `updatedAt` values.
+
+## [v2.4.7] - 2026-08-12
+
+### Added
 - Added a fallback Trakt Client ID for "public" mode if the current Trakt credentials are invalid
 - Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
 - Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
@@ -32,7 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Lock the poster, background, logo, and square art fields after resetting them from a source, and check the logo's actual Plex field name (`clearLogo`, not `logo`), so subsequent runs with `ignore_locked: true` skip re-resetting instead of looping forever. #3487
 
 ### Changed
-
 - Document Trakt's free connected-app limitation and identify which Trakt builders and account features require OAuth/VIP access versus public API access.
 - Migrate Trakt authentication documentation and shipped configuration examples from the legacy PIN/OAuth callback flow to Device Code Flow, including headless-server guidance and the optional `webhooks.trakt_pin` notification.
 - Batch Plex writes that were previously one API call per item: label/genre sync, `item_critic`/`audience`/`user_rating` updates, and title-parentheses removal now merge into shared `saveMultiEdits()`/`batchMultiEdits()` calls (respecting `plex_bulk_edit_batch_size`) instead of one `edit_tags()`/`editField()`/`editTitle()` call per item; label/genre and rating writes for the same item are further merged into a single PUT instead of one per attribute type, grouped by library and media type so mixed-library/mixed-type playlists route through the correct Plex connection. The overlay `Overlay` label add is batched the same way, flushing every `plex_bulk_edit_batch_size` items instead of only once at the very end of the run.
@@ -317,7 +320,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...HEAD
+[v2.4.7]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...v2.4.7
 [v2.4.6]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6
 [v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
