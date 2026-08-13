@@ -50,6 +50,8 @@ The majority of Smart and Manual Builders utilize the same Builder Attributes. A
 |:-------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
 | [`smart_filter`](smart-filter.md)          | use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`plex_all`](all.md)                       | Gets every movie/show in your library. Useful with [Filters](../../filters.md)                                                                               | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`plex_id`](id.md)                         | Gets items using Plex metadata IDs or full Plex GUIDs                                                                                                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`plex_rating_key`](rating-key.md)         | Gets items using numeric Plex rating keys                                                                                                                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`plex_search`](search.md)                 | Gets every movie/show based on the search parameters provided                                                                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`plex_watchlist`](watchlist.md)           | Gets every movie/show in your Watchlist.                                                                                                                     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 | [`plex_pilots`](pilots.md)                 | Gets the first episode of every show in your library                                                                                                         |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
@@ -63,5 +65,3 @@ The majority of Smart and Manual Builders utilize the same Builder Attributes. A
 {%
     include-markdown "./sort-options.md"
 %}
-
-

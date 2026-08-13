@@ -491,6 +491,35 @@ class TestTextfile:
         assert "value_filter" in parts_collection_valid
 
 
+# ═══════════════════════════════════════════════
+# Direct Plex ID builders
+# ═══════════════════════════════════════════════
+
+
+class TestDirectPlexBuilders:
+    def test_normalizes_rating_key_scalar_and_list(self):
+        builder = make_builder()
+        builder._plex("plex_rating_key", 123)
+        builder._plex("plex_rating_key", ["456", 789])
+        assert builder.builders == [("plex_rating_key", [123]), ("plex_rating_key", [456, 789])]
+
+    def test_normalizes_metadata_ids_and_guids(self):
+        builder = make_builder()
+        builder._plex("plex_id", ["63E3EEDD166819851638A316", "plex://episode/63e3eedd166819851638a317"])
+        assert builder.builders == [("plex_id", ["63e3eedd166819851638a316", "plex://episode/63e3eedd166819851638a317"])]
+
+    @pytest.mark.parametrize("method,value", [("plex_rating_key", "abc"), ("plex_id", "not-a-plex-id"), ("plex_id", None)])
+    def test_rejects_invalid_values(self, method, value):
+        builder = make_builder()
+        with pytest.raises(builder_module.BuilderValidationError):
+            builder._plex(method, value)
+
+    def test_are_available_to_part_collections_but_not_custom_sort(self):
+        for method in ["plex_id", "plex_rating_key"]:
+            assert method in parts_collection_valid
+            assert method not in custom_sort_builders
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Batched item labels
 # ═══════════════════════════════════════════════════════════════════════

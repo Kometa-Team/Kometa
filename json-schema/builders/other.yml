@@ -313,3 +313,16 @@ collections:
       - config/lists/classics.txt
     sync_mode: sync
     collection_order: custom
+
+  # ---------------------------------------------------------------------------
+  # Direct Plex identifiers
+  # ---------------------------------------------------------------------------
+  Plex Metadata IDs:
+    plex_id:
+      - 5d7768243c3c2a001fbca85b
+      - plex://movie/5d776824880197001ec901ab
+
+  Plex Rating Keys:
+    plex_rating_key:
+      - 123
+      - 456

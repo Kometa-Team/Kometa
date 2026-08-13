@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add `plex_id` and `plex_rating_key` builders for selecting Plex items directly by metadata ID, GUID, or rating key.
+
 ## [v2.4.7] - 2026-08-12
 
 ### Added

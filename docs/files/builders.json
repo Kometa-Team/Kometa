@@ -303,12 +303,28 @@
             "works_with_playlists_and_custom_sort": "No"
         },
         {
+            "builder": "plex_id",
+            "hyperlink": "https://kometa.wiki/en/latest/files/builders/plex/id/",
+            "description": "Gets items using Plex metadata IDs or full Plex GUIDs.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
+        },
+        {
             "builder": "plex_pilots",
             "hyperlink": "https://kometa--2487.org.readthedocs.build/en/2487/files/builders/plex/#plex-pilots",
             "description": "Gets the first episode of every show in your library",
             "works_with_movies": "No",
             "works_with_shows": "Yes",
             "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "plex_rating_key",
+            "hyperlink": "https://kometa.wiki/en/latest/files/builders/plex/rating-key/",
+            "description": "Gets items using numeric Plex rating keys.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
         },
         {
             "builder": "plex_search",
