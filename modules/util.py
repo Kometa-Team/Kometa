@@ -756,6 +756,20 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                     schedule_str += "\nScheduled monthly on the last day of the month"
                     if current_time.day == last_day.day:
                         all_check += 1
+                elif "-" in param:
+                    try:
+                        start, end = param.split("-", 1)
+                        start_day = int(start)
+                        end_day = 31 if end == "last" else int(end)
+                        if not 1 <= start_day <= end_day <= 31:
+                            raise ValueError
+                        end_display = "last day of the month" if end == "last" else num2words(end_day, to="ordinal_num")
+                        schedule_str += f"\nScheduled monthly between the {num2words(start_day, to='ordinal_num')} and {end_display}"
+                        range_end = last_day.day if end == "last" else end_day
+                        if start_day <= current_time.day <= range_end:
+                            all_check += 1
+                    except ValueError:
+                        logger.error(f"Schedule Error: monthly {display} must be a range from 1 to 31, optionally ending in 'last'")
                 else:
                     try:
                         if 1 <= int(param) <= 31:

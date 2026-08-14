@@ -40,6 +40,33 @@ class TestExceptionHierarchy:
             raise FilterFailed("test")
 
 
+class TestMonthlyScheduleRanges:
+    def test_numeric_range_runs_on_each_inclusive_day(self):
+        from datetime import datetime
+
+        from modules.util import schedule_check
+
+        for day in range(1, 8):
+            schedule_check("schedule", "monthly(1-7)", datetime(2026, 8, day), 0)
+
+    def test_numeric_range_skips_days_outside_the_range(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "monthly(1-7)", datetime(2026, 8, 8), 0)
+
+    def test_range_ending_in_last_runs_through_the_last_day(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "monthly(21-last)", datetime(2026, 2, 28), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "monthly(21-last)", datetime(2026, 2, 20), 0)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Helper functions
 # ═══════════════════════════════════════════════════════════════════════

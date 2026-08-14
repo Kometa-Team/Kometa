@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Allow inclusive monthly day ranges, such as `monthly(1-7)` and `monthly(25-last)`.
+
 ## [v2.4.7] - 2026-08-12
 
 ### Added
