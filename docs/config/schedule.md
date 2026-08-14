@@ -49,6 +49,22 @@ The scheduling options are:
     Use monthly(last) if you want to schedule for the last day of every month.
     ```
 
+### Multiple Schedule Values
+
+Use a bar (`|`) inside `hourly`, `monthly`, or `yearly` schedules to accept any of several values. Monthly values can mix individual days and inclusive ranges:
+
+```yaml
+# Runs on the 1st, 3rd, 5th, 7th, and every day from the 9th through the end of the month.
+schedule: monthly(1|3|5|7|9-last)
+```
+
+Hourly schedules can likewise mix individual hours and hour ranges:
+
+```yaml
+# Runs at 02:00, every hour from 05:00 through 07:00, and at 22:00.
+schedule: hourly(2|5-7|22)
+```
+
 ## Examples
 
 ??? blank "Scheduling a Library<a class="headerlink" href="#schedule-library" title="Permanent link">¶</a>"
