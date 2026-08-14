@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add library schedule modes, allowing an ordered schedule-to-mode mapping to limit a run to `full`, `added(days)`, `diff`, or alphabetical `index()` item scopes. Supports the `.not` schedule modifier, prevents collection member removals and custom item-position changes during scoped runs, and preserves collection lookups. TV Show `added(days)` includes shows with recently added episodes and TV Show `diff` scans season XML `updatedAt` values.
+
 ## [v2.4.7] - 2026-08-12
 
 ### Added

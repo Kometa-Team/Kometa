@@ -1,6 +1,8 @@
 import os
+import re
 import time
 from abc import ABC, abstractmethod
+from datetime import datetime, timedelta, timezone
 
 from PIL import Image
 
@@ -47,6 +49,9 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        self.scheduled_cached_keys = set()
+        self.scheduled_item_keys = set()
+        self.schedule_mode = params.get("schedule_mode", "full")
         # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
         self.filter_attr_cache = {}
         self.run_again = []
@@ -65,6 +70,8 @@ class Library(ABC):
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
+        self.xml_library_id = int(self.image_table_name.rsplit("_", 1)[1]) if self.image_table_name else None
+        self.xml_updates: list[tuple[str, str, str]] = []
         self.overlay_folder = os.path.join(self.config.default_dir, "overlays")
         self.overlay_backup = os.path.join(self.overlay_folder, f"{self.mapping_name} Original Posters")
         self.report_path = params["report_path"] if params["report_path"] else os.path.join(self.default_dir, f"{self.mapping_name}_report.yml")
@@ -531,7 +538,13 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, builder_level=None, load=False) -> list: ...
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False) -> list: ...
+
+    @abstractmethod
+    def get_items_added_since(self, builder_level, cutoff) -> list: ...
+
+    @abstractmethod
+    def cached_item_subitems(self, item, method_name) -> list: ...
 
     @abstractmethod
     def get_ids(self, item) -> tuple: ...
@@ -582,10 +595,67 @@ class Library(ABC):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_all()
+        # A schedule mode is selected only after every item has been fetched.
+        # Do not let an existing scope affect this source-of-truth snapshot.
+        items = self.get_cached_items()
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items
+
+    def get_cached_items(self):
+        """Return the unscoped top-level item snapshot cached for this run."""
+        return self.get_all(ignore_schedule_scope=True)
+
+    def _schedule_item_keys(self, items):
+        """Return the keys in scope for today's library schedule mode."""
+        if self.schedule_mode == "full":
+            return {item.ratingKey for item in items}
+        if self.schedule_mode == "diff":
+            if not getattr(self, "is_show", False):
+                return {item.ratingKey for item in items if item.ratingKey not in self.scheduled_cached_keys}
+            changed_shows = set()
+            cached_updates = self.config.Cache.query_xml_updated_at(self.xml_library_id) if self.xml_library_id else {}
+            total_shows = len(items)
+            for index, show in enumerate(items, 1):
+                logger.ghost(f"Loading Seasons: {index}/{total_shows} {show.title}")
+                for season in self.cached_item_subitems(show, "seasons"):
+                    season_key = int(season.ratingKey)
+                    updated_at = str(getattr(season, "updatedAt", ""))
+                    parent_key = str(show.ratingKey)
+                    self.xml_updates.append((parent_key, str(season_key), updated_at))
+                    if cached_updates.get((parent_key, str(season_key))) != updated_at:
+                        changed_shows.add(int(show.ratingKey))
+            return changed_shows
+        if self.schedule_mode.startswith("added(") and self.schedule_mode.endswith(")"):
+            try:
+                days = int(self.schedule_mode[6:-1])
+            except ValueError as e:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected added(<days>)") from e
+            if days < 1:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added days must be at least 1")
+            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+            scheduled_keys = {item.ratingKey for item in items if getattr(item, "addedAt", None) and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff}
+            # Shows are cached and scoped at the show level. Include an existing
+            # show when Plex reports an episode added within the same window.
+            if getattr(self, "is_show", False):
+                for episode in self.get_items_added_since("episode", cutoff):
+                    show_key = getattr(episode, "grandparentRatingKey", None)
+                    if show_key is None:
+                        continue
+                    scheduled_keys.add(int(show_key))
+            return scheduled_keys
+        index_match = re.fullmatch(r"index\(([a-z])(?:-([a-z])(#)?)?\)", self.schedule_mode)
+        if index_match:
+            start, end, include_non_alphabetical = index_match.groups()
+            end = end or start
+            if start > end:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; index range must be ascending")
+            return {item.ratingKey for item in items if (start <= str(getattr(item, "title", "")).lstrip()[:1].lower() <= end or (include_non_alphabetical and not re.match(r"[a-z]", str(getattr(item, "title", "")).lstrip()[:1], re.IGNORECASE)))}
+        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), or index(<range>)")
+
+    @property
+    def has_schedule_scope(self):
+        return getattr(self, "schedule_mode", "full") != "full"
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):

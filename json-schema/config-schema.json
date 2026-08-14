@@ -4564,8 +4564,39 @@
               "$ref": "#/definitions/template-variables-library"
             },
             "schedule": {
-              "description": "Used to schedule when a library is run using the schedule options.",
-              "type": "string"
+              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(days), diff, or index(range) modes.",
+              "oneOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "schedule",
+                          "mode"
+                        ],
+                        "properties": {
+                          "schedule": {
+                            "type": "string"
+                          },
+                          "mode": {
+                            "type": "string",
+                            "pattern": "^(full|diff|added\\([1-9][0-9]*\\)|index\\([A-Za-z](-[A-Za-z]#?)?\\))$"
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              ]
             },
             "schedule_overlays": {
               "description": "Used to schedule when overlays are run for this library.",

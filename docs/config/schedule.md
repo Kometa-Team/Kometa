@@ -37,6 +37,40 @@ The scheduling options are:
 * You can have multiple scheduling options as a list.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
+## Library Schedule Modes
+
+Library schedule modes let a library run on its normal schedule while limiting the media items Kometa processes. Use an ordered list of `schedule` and `mode` mappings under the library's `schedule` attribute. Kometa uses the first matching entry; if no entry matches, it skips the library.
+
+```yaml title="Run a limited Monday update and a full update on other days"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: added(7)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The `.not` modifier inverts one schedule expression. For example, `weekly.not(monday)` matches every day except Monday.
+
+| Mode           | Scope                                                                                                                                                                                                                        |
+|:---------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `full`         | Every top-level library item. This is the normal Kometa behavior.                                                                                                                                                            |
+| `added(days)`  | Items added to Plex during the previous number of days. In a TV Show library, this also includes an existing show if Plex added one of its episodes during that window.                                                      |
+| `diff`         | Items that are in Plex's library but do not appear in the Kometa Cache file. Show libraries compare every season of every show, so may take more time than Movie libraries. Requires Kometa's cache to persist between runs. |
+| `index(A-F)`   | Titles beginning with any letter in the inclusive A through F range.                                                                                                                                                         |
+| `index(A-F#)`  | The same A through F range, plus titles beginning with a number, symbol, or another non-alphabetical character.                                                                                                              |
+
+`index` matches the first non-whitespace character in an item's Plex title, case-insensitively. Ranges must be alphabetical and ascending.
+
+When a mode is not `full`, Kometa only processes media in that mode's scope. It leaves every other library item alone: it does not update its metadata or overlays, run item-level operations for it, remove it from collections, or change custom item positions in collections.
+
+For example, suppose an IMDb Top 250 collection contains 250 movies and the library uses `diff`. A run finds two newly added movies, one of which belongs in the IMDb Top 250. Kometa processes those two movies and can add the matching one to the collection, but it does not remove any of the existing 250 collection members because they were outside the `diff` scope. It also preserves the collection's existing custom item order. Run with `full` to reconcile the whole collection and apply work to every library item.
+
+!!!+ note
+
+    Library schedule modes do not restrict explicitly broad maintenance actions, such as `radarr_remove_by_tag`, `sonarr_remove_by_tag`, collection deletion operations, or the `--delete-collections` and `--delete-labels` command-line options.
+
 ???+ warning "monthly(N) behaviour change"
     In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.
 

@@ -683,6 +683,19 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
         run_time = str(schedule).lower()
         display = f"{attribute} attribute {schedule} invalid"
         schedules_run += 1
+        # Modifiers apply to one scheduling expression.  Keep this dispatch here
+        # so new modifiers can be added without changing each schedule type.
+        modifier_match = re.match(r"^([a-z]+)\.([a-z]+)(\(.+\))$", run_time)
+        if modifier_match:
+            schedule_type, modifier, parameters = modifier_match.groups()
+            if modifier != "not":
+                logger.error(f"Schedule Error: {display}")
+                continue
+            try:
+                schedule_check(attribute, f"{schedule_type}{parameters}", current_time, run_hour)
+            except NotScheduled:
+                all_check += 1
+            continue
         if run_time.startswith("all"):
             match = re.search("\\[([^\\]]+)\\]", run_time)
             if not match:

@@ -240,6 +240,30 @@ def test_schema_valid_collection_file_passes(tmp_path, monkeypatch):
     assert errors == [], f"Unexpected errors: {errors}"
 
 
+def test_schema_library_schedule_modes_pass(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = (
+        _VALID_CONFIG_STUB
+        + "libraries:\n"
+        + "  Movies:\n"
+        + "    schedule:\n"
+        + "      - schedule: weekly(monday)\n"
+        + "        mode: added(7)\n"
+        + "      - schedule: weekly(tuesday)\n"
+        + "        mode: diff\n"
+        + "      - schedule: weekly(wednesday)\n"
+        + "        mode: index(A-F#)\n"
+        + "  TV Shows:\n"
+        + "    schedule:\n"
+        + "      - schedule: weekly(thursday)\n"
+        + "        mode: diff\n"
+    )
+    v = make_validator(tmp_path, config, level="syntax", validate_schema=True, schema_path=SCHEMA_DIR)
+    passed, errors, warnings = v.validate()
+    assert passed
+    assert errors == [], f"Unexpected errors: {errors}"
+
+
 def test_schema_missing_schema_dir_warns_and_does_not_error(tmp_path, monkeypatch):
     monkeypatch.setattr(validator_module, "logger", FakeLogger())
     v = make_validator(
