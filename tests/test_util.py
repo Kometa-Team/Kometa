@@ -66,6 +66,37 @@ class TestMonthlyScheduleRanges:
         with pytest.raises(NotScheduled):
             schedule_check("schedule", "monthly(21-last)", datetime(2026, 2, 20), 0)
 
+    def test_pipe_separates_monthly_days_and_ranges(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule = "monthly(1|3|5|7|9-last)"
+        for day in [1, 3, 5, 7, 9, 31]:
+            schedule_check("schedule", schedule, datetime(2026, 8, day), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", schedule, datetime(2026, 8, 8), 0)
+
+
+class TestPipeSeparatedSchedules:
+    def test_hourly_accepts_hours_and_ranges(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "hourly(2|5-7|22)", datetime(2026, 8, 1), 6)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "hourly(2|5-7|22)", datetime(2026, 8, 1), 8)
+
+    def test_yearly_accepts_multiple_dates(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 14), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 15), 0)
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helper functions
