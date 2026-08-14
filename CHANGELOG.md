@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add `audio_codec` as a Plex search and filter attribute for music tracks.
+
 ## [v2.4.7] - 2026-08-12
 
 ### Added
