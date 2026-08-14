@@ -72,7 +72,7 @@ class TestMonthlyScheduleRanges:
         from modules.util import NotScheduled, schedule_check
 
         schedule = "monthly(1|3|5|7|9-last)"
-        for day in [1, 3, 5, 7, 9, 31]:
+        for day in [1, 3, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]:
             schedule_check("schedule", schedule, datetime(2026, 8, day), 0)
         with pytest.raises(NotScheduled):
             schedule_check("schedule", schedule, datetime(2026, 8, 8), 0)
