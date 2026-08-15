@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.4.8] - 2026-08-15
+
+### Fixed
+
+- Pushed 2.4.8 to resolve an issue in GitHub workflows that prevented docker builds from being deployed for nightly updates.
+ 
 ### Added
+
 - Add `plex_id` and `plex_rating_key` builders for selecting Plex items directly by metadata ID, GUID, or rating key.
 - Add `audio_codec` as a Plex search and filter attribute for music tracks.
 
@@ -329,7 +336,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...HEAD
+[v2.4.8]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...v2.4.8
 [v2.4.7]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...v2.4.7
 [v2.4.6]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6
 [v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
