@@ -28,3 +28,20 @@ collections:
   Sonarr Series Without Tags:
     sonarr_taglist: 
 ```
+
+### Sync to MDBList
+
+When used with [`sync_to_mdb_list`](../../settings.md#mdblist-sync-example),
+`sonarr_taglist` uses the matching series in Sonarr as the source of truth.
+The sync does not depend on the items being present in Plex or on a Plex
+collection being built. Removing a tag in Sonarr also removes
+the series from the MDBList static list. Only series are removed, so this can
+safely share a list with [`radarr_taglist`](../../radarr/taglist.md) syncs.
+
+```yaml
+collections:
+  Sonarr Test:
+    sonarr_taglist: kometa_test
+    sync_to_mdb_list: My Kometa Test Tags
+    build_collection: false
+```
