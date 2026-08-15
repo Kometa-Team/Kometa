@@ -134,6 +134,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `album_title`        | Uses the Album's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_title`        | Uses the Track's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `album_record_label` | Uses the Album's Record Label attribute to match         |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `audio_codec`        | Uses the Track's audio codec attribute to match          |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 
     ???+ tip "String Filter Modifiers"
     
