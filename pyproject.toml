@@ -1,6 +1,6 @@
 [project]
 name = "kometa"
-version = "2.4.7"
+version = "2.4.8"
 description = "Metadata editor for Plex"
 readme = "README.md"
 requires-python = ">=3.12"
