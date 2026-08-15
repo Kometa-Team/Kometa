@@ -104,6 +104,7 @@
                 "sync_missing_to_trakt_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
                 "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
+                "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
                 "test": { "type": "boolean" },
                 "tmdb_birthday": {
                     "type": "object", "additionalProperties": false,

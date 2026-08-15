@@ -111,6 +111,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "name": "Test Collection",
         "builders": [],
         "items": [],
+        "mdb_list_arr_ids": None,
         "item_details": {},
         "asset_directory": None,
         "radarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
@@ -141,6 +142,21 @@ def _episode_builder(library) -> CollectionBuilder:
         libraries=[library],
         details={"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
     )
+
+
+def test_load_collection_items_rejects_empty_standard_mdblist_sync(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, sync_to_mdb_list={"name": "List", "mode": "sync"})
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
+
+def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, sync_to_mdb_list={"name": "List", "mode": "sync"}, mdb_list_arr_ids=[])
+
+    builder.load_collection_items()
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -504,7 +504,7 @@ show_only_searches = [
     "episode_unmatched",
     "show_unmatched",
 ]
-string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title", "audio_codec"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
@@ -600,7 +600,7 @@ searches = (
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
-track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"]
+track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
     "title.desc": "titleSort%3Adesc",

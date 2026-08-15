@@ -927,6 +927,29 @@ class TestCheckFilterCachingScope:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# Music tracks expose their selected media codec as ``audioCodec``. Plex Media
+# Server 1.43.3.10861 also exposes this as a track-level advanced search filter.
+class TestMusicTrackAudioCodec:
+    def test_audio_codec_is_available_for_track_filters_and_searches(self):
+        import modules.builder as builder_module
+        import modules.plex as plex_module
+
+        assert all("audio_codec" in builder_module.filters[item_type] for item_type in ["artist", "album", "track"])
+        assert all(f"audio_codec{modifier}" in plex_module.track_only_searches for modifier in plex_module.string_modifiers)
+
+    def test_audio_codec_filter_reads_track_media_codec(self):
+        from plexapi.audio import Track
+
+        plex = make_plex()
+        item = MagicMock(spec=Track)
+        item.ratingKey = 1
+        item.media = [MagicMock(audioCodec="mp3")]
+        plex.reload = MagicMock(return_value=item)
+
+        assert plex.check_filter(item, "audio_codec", ".is", "audio_codec.is", ["mp3"], None, force_reload=False) is True
+        assert plex.check_filter(item, "audio_codec", ".is", "audio_codec.is", ["flac"], None, force_reload=False) is False
+
+
 # check_filter's number_filters branch (plex.py:2710-2745) - media-file-derived
 # properties (channels/height/width/aspect/versions/audio_language/subtitle_language/
 # duration) are cached under a "media_number:" key, since Kometa never writes them.

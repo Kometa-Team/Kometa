@@ -15,10 +15,11 @@ from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal,
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
-from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, NonExisting, NotScheduled, NotScheduledRange, ServiceError
+from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, NotScheduledRange, ServiceError
 
 logger = util.logger
 
+mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = [
     "item_episode_sorting",
@@ -288,6 +289,7 @@ filters_by_type = {
         "label",
         "audio_track_title",
         "subtitle_track_title",
+        "audio_codec",
         "versions",
     ],
     "movie_show_season_episode_album_track": ["year"],
@@ -301,7 +303,6 @@ filters_by_type = {
         "height",
         "width",
         "aspect",
-        "audio_codec",
         "audio_profile",
         "video_codec",
         "video_profile",
@@ -642,6 +643,7 @@ parts_collection_valid = (
         "non_item_remove_label",
         "item_analyze",
         "sync_to_trakt_list",
+        "sync_to_mdb_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1165,6 +1167,9 @@ class CollectionBuilder:
         self.url_theme = None
         self.file_theme = None
         self.sync_to_trakt_list = None
+        self.sync_to_mdb_list = None
+        self.mdb_list_arr_ids = None
+        self.mdb_list_arr_removal_types = set()
         self.sync_missing_to_trakt_list = False
         self.collection_poster = None
         self.collection_background = None
@@ -1655,6 +1660,7 @@ class CollectionBuilder:
                     self._tmdb(method_name, method_data)
                 elif method_name in trakt.builders or method_name in [
                     "sync_to_trakt_list",
+                    "sync_to_mdb_list",
                     "sync_missing_to_trakt_list",
                 ]:
                     self._trakt(method_name, method_data)
@@ -3506,6 +3512,17 @@ class CollectionBuilder:
             if method_data not in self.config.Trakt.slugs:
                 raise BuilderValidationError(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
             self.sync_to_trakt_list = method_data
+        elif method_name == "sync_to_mdb_list":
+            if isinstance(method_data, dict):
+                name = method_data.get("name")
+                mode = str(method_data.get("mode", "sync")).lower()
+            else:
+                name, mode = method_data, "sync"
+            if not name:
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
+            if mode not in ("sync", "append"):
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
+            self.sync_to_mdb_list = {"name": str(name), "mode": mode}
         elif method_name == "sync_missing_to_trakt_list":
             self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
         elif method_name in trakt.builders:
@@ -3755,6 +3772,11 @@ class CollectionBuilder:
                 self.config.Cache.delete_list_ids(list_key)
             list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
+        if getattr(self, "sync_to_mdb_list", None) and method in mdb_list_arr_types:
+            if self.mdb_list_arr_ids is None:
+                self.mdb_list_arr_ids = []
+            self.mdb_list_arr_ids.extend(ids)
+            self.mdb_list_arr_removal_types.add(mdb_list_arr_types[method])
         return ids
 
     def _find_plex_keys(self, input_id):
@@ -4922,7 +4944,7 @@ class CollectionBuilder:
             logger.separator(f"Items Found for {self.name} {self.Type}", space=False, border=False)
             logger.info("")
             self.items = self.found_items
-        if not self.items:
+        if not self.items and self.mdb_list_arr_ids is None:
             raise Failed(f"Plex Error: No {self.Type} items found")
 
     def _safe_tmdb_lookup(self, getter, tmdb_id, item_type):
@@ -5593,6 +5615,50 @@ class CollectionBuilder:
             current_ids.extend([(mm, "tmdb") for mm in self.missing_movies])
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
+
+    def sync_mdb_list(self):
+        if not self.sync_to_mdb_list:
+            return
+        logger.separator(f"Syncing {self.name} {self.Type} to MDBList {self.sync_to_mdb_list['name']}", space=False, border=False)
+        if self.mdb_list_arr_ids is not None:
+            logger.info("Using Radarr/Sonarr tag-list results as the MDBList sync source")
+            self.config.MDBList.sync_list(
+                self.sync_to_mdb_list["name"],
+                self._get_mdb_list_arr_ids(),
+                self.sync_to_mdb_list["mode"],
+                removal_types=self.mdb_list_arr_removal_types,
+            )
+            return
+        if self.obj:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        current_ids = []
+        for item in self.items:
+            for pl_library in self.libraries:
+                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                    current_ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb"))
+                    break
+                if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                    try:
+                        tmdb_id = self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True)
+                    except MappingConvertError as e:
+                        logger.warning(f"MDBList Warning: Skipping {item.title}: {e}")
+                        break
+                    current_ids.append((tmdb_id, "tmdb_show"))
+                    break
+        self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
+
+    def _get_mdb_list_arr_ids(self):
+        current_ids = []
+        for item_id, item_type in self.mdb_list_arr_ids or []:
+            if item_type == "tmdb":
+                current_ids.append((item_id, "tmdb"))
+            elif item_type == "tvdb":
+                try:
+                    current_ids.append((self.config.Convert.tvdb_to_tmdb(item_id, fail=True), "tmdb_show"))
+                except MappingConvertError as e:
+                    logger.warning(f"MDBList Warning: Skipping TVDb ID {item_id}: {e}")
+        return list(dict.fromkeys(current_ids))
 
     def delete(self):
         title = self.obj.title if self.obj else self.name
