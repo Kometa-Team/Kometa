@@ -185,6 +185,20 @@
                     ]
                 },
                 "plex_all": { "type": "boolean", "description": "Get every item in the library." },
+                "plex_id": {
+                    "description": "Plex metadata ID(s) or full plex:// GUID(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "plex_rating_key": {
+                    "description": "Plex rating key(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
                 "plex_search": {
                     "oneOf": [
                         { "$ref": "#/definitions/plex-filter-block" },

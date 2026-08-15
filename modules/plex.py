@@ -54,7 +54,7 @@ def _plex_timeout_before_sleep(retry_state):
         logger.info(f"Plex Error: retrying {label} in {int(retry_state.next_action.sleep)} seconds.")
 
 
-builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_id", "plex_rating_key", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp", ".tbn")
 search_translation = {
@@ -1858,7 +1858,11 @@ class Plex(Library):
 
     def get_rating_keys(self, method, data, is_playlist=False, display=True):
         items = []
-        if method == "plex_all":
+        if method == "plex_rating_key":
+            return [(rating_key, "ratingKey") for rating_key in data]
+        elif method == "plex_id":
+            return [(plex_id, "plex") for plex_id in data]
+        elif method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":

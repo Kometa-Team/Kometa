@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Add `plex_id` and `plex_rating_key` builders for selecting Plex items directly by metadata ID, GUID, or rating key.
+- Add `audio_codec` as a Plex search and filter attribute for music tracks.
+
+### Changed
 
 - Allow pipe-separated hourly, monthly, and yearly schedule values. Monthly schedules also support inclusive ranges, such as `monthly(1-7)` and `monthly(25-last)`.
-- Add `audio_codec` as a Plex search and filter attribute for music tracks.
 
 ## [v2.4.7] - 2026-08-12
 

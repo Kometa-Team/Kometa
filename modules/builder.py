@@ -610,6 +610,8 @@ parts_collection_valid = (
         "value_filter",
         "plex_all",
         "plex_search",
+        "plex_id",
+        "plex_rating_key",
         "text_file",
         "trakt_list",
         "trakt_list_details",
@@ -3168,7 +3170,23 @@ class CollectionBuilder:
             self.builders.append((method_name, final))
 
     def _plex(self, method_name, method_data):
-        if method_name in ["plex_all", "plex_pilots"]:
+        if method_name in ["plex_id", "plex_rating_key"]:
+            values = util.get_list(method_data, split=False, return_none=False)
+            if not values:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} attribute is blank")
+            normalized = []
+            for value in values:
+                value = str(value).strip().lower()
+                if method_name == "plex_rating_key":
+                    if not value.isdigit():
+                        raise BuilderValidationError(f"{self.Type} Error: {method_name} attribute must be a numeric Plex rating key: {value}")
+                    normalized.append(int(value))
+                elif textfile.plex_guid_pattern.match(value) or textfile.plex_id_pattern.match(value):
+                    normalized.append(value)
+                else:
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} attribute must be a Plex metadata ID or GUID: {value}")
+            self.builders.append((method_name, normalized))
+        elif method_name in ["plex_all", "plex_pilots"]:
             self.builders.append((method_name, self.builder_level))
         elif method_name == "plex_watchlist":
             if method_data not in plex.watchlist_sorts:
