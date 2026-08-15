@@ -18,7 +18,10 @@ import modules.operations as ops_module
 # util.logger is None until Kometa initialises its logger; patch it for tests.
 ops_module.logger = MagicMock()
 
+from modules.mdblist import MDBList  # noqa: E402 -- must follow logger patch above
 from modules.operations import Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
+from modules.overlays import Overlays  # noqa: E402 -- must follow logger patch above
+from modules.plex import Plex  # noqa: E402 -- must follow logger patch above
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -59,6 +62,132 @@ def test_image_operation_summary_pivots_results_by_source_type_and_level():
         ("Reset", "TMDb", "Poster", "Episode", 11077, 0, 318, 0),
         ("Reset", "TMDb", "Poster", "Season", 923, 0, 6, 0),
     ]
+
+
+class TestMDBListPrefetch:
+    def test_prefetches_movie_tmdb_ids_and_imdb_fallbacks(self):
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2), SimpleNamespace(ratingKey=3)]
+        library = make_mass_edit_library(items, mass_critic_rating_update=["mdb_imdb"])
+        library.get_ids.side_effect = [(101, None, "tt101"), (None, None, "tt202"), (303, None, None)]
+        config = MagicMock()
+        config.MDBList.limit = False
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+
+        assert config.MDBList.get_items.call_args_list == [
+            (("tmdb", "movie", [101, 303]),),
+            (("imdb", "movie", ["tt202"]),),
+        ]
+
+    def test_prefetches_show_tvdb_ids_and_imdb_fallbacks(self):
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        library = make_mass_edit_library(items, mass_content_rating_update=["mdb_age_rating"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.side_effect = [(1001, 2001, "tt1"), (1002, None, "tt2")]
+        config = MagicMock()
+        config.MDBList.limit = False
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+
+        assert config.MDBList.get_items.call_args_list == [
+            (("tvdb", "show", [2001]),),
+            (("imdb", "show", ["tt2"]),),
+        ]
+
+    def test_does_not_prefetch_without_an_mdblist_operation(self):
+        items = [SimpleNamespace(ratingKey=1)]
+        library = make_mass_edit_library(items, mass_critic_rating_update=["tmdb"])
+        config = MagicMock()
+        config.MDBList.limit = False
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+        library.get_ids.assert_not_called()
+        config.MDBList.get_items.assert_not_called()
+
+    def test_stops_prefetching_after_limit_is_reached(self):
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        library = make_mass_edit_library(items, mass_originally_available_update=["mdb"])
+        library.get_ids.side_effect = [(101, None, None), (None, None, "tt2")]
+        config = MagicMock()
+        config.MDBList.limit = False
+
+        def limit_reached(*args):
+            config.MDBList.limit = True
+            raise ops_module.LimitReached("limit reached")
+
+        config.MDBList.get_items.side_effect = limit_reached
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+
+        config.MDBList.get_items.assert_called_once_with("tmdb", "movie", [101])
+
+    def test_one_thousand_items_use_ten_bulk_requests(self):
+        items = [SimpleNamespace(ratingKey=i) for i in range(1000)]
+        library = make_mass_edit_library(items, mass_user_rating_update=["mdb"])
+        library.get_ids.side_effect = [(i, None, None) for i in range(1000)]
+        config = MagicMock()
+        config.MDBList = MDBList.__new__(MDBList)
+        config.MDBList.cache = None
+        config.MDBList.limit = False
+        config.MDBList._run_cache = {}
+        config.MDBList._request = MagicMock(return_value=([], {}))
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+
+        assert config.MDBList._request.call_count == 10
+
+    def test_operations_and_overlays_share_run_cache_without_persistent_cache(self):
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        mdblist = MDBList.__new__(MDBList)
+        mdblist.cache = None
+        mdblist.expiration = 60
+        mdblist.limit = False
+        mdblist._run_cache = {}
+
+        def batch_response(url, json_data):
+            return (
+                [
+                    {
+                        "id": media_id,
+                        "title": f"Movie {media_id}",
+                        "released": None,
+                        "released_digital": None,
+                    }
+                    for media_id in json_data["ids"]
+                ],
+                {},
+            )
+
+        mdblist._request = MagicMock(side_effect=batch_response)
+        config = SimpleNamespace(MDBList=mdblist)
+        library = Plex.__new__(Plex)
+        library.config = config
+        library.is_movie = True
+        library.is_show = False
+        library.get_ids = MagicMock(side_effect=lambda item: (item.ratingKey + 100, None, None))
+        library.mass_audience_rating_update = ["mdb"]
+        library.mass_critic_rating_update = None
+        library.mass_user_rating_update = None
+        library.mass_content_rating_update = None
+        library.mass_originally_available_update = None
+        library.mass_added_at_update = None
+
+        Operations(config=config, library=library)._prefetch_mdblist(items)
+        assert mdblist._request.call_count == 1
+
+        overlays = Overlays.__new__(Overlays)
+        overlays.cache = None
+        overlays.library = library
+        overlays._prefetch_mdblist(
+            {
+                1: (items[0], ["rating"]),
+                2: (items[1], ["rating"]),
+            },
+            {"rating": SimpleNamespace(name="text(<<mdb_tomatoes_rating>>)")},
+        )
+
+        assert mdblist._request.call_count == 1
 
 
 # ---------------------------------------------------------------------------

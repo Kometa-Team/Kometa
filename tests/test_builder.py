@@ -385,6 +385,33 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_mdblist_value_prefetch_runs_after_standard_filters(self, monkeypatch):
+        class FakeMovie:
+            def __init__(self, rating_key):
+                self.ratingKey = rating_key
+                self.title = f"Movie {rating_key}"
+
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        items = {1: FakeMovie(1), 2: FakeMovie(2)}
+        library = MagicMock()
+        library.fetch_item.side_effect = lambda rating_key: items[rating_key]
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(Cache=None),
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+            check_filters=MagicMock(side_effect=[False, True]),
+        )
+        builder.check_value_filter = MagicMock(return_value=True)
+
+        builder.filter_and_save_items([(1, "ratingKey"), (2, "ratingKey")])
+
+        library.prefetch_mdblist.assert_called_once_with([items[2]])
+        assert builder.check_filters.call_count == 2
+        builder.check_value_filter.assert_called_once_with(items[2])
+        assert builder.found_items == [items[2]]
+
     def test_ratingkey_items_respect_shared_ignore_ids(self, monkeypatch):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
 
@@ -455,6 +482,36 @@ class TestFilterAndSaveItems:
         assert "3 Episodes Expanded from 2 IDs" in logger.info_messages
         assert "2 Unique Episodes Kept" in logger.info_messages
         assert builder.found_items == [ep1, ep2]
+
+
+class TestMDBListValueFilterPrefetch:
+    def test_skips_items_with_fresh_overlay_values(self):
+        cache = MagicMock()
+        cache.query_overlay_value_cache.side_effect = [("7.5", False), (None, None)]
+        library = MagicMock()
+        first = SimpleNamespace(ratingKey=1)
+        second = SimpleNamespace(ratingKey=2)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache),
+            library=library,
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([first, second])
+
+        library.prefetch_mdblist.assert_called_once_with([second])
+
+    def test_ignores_non_mdblist_value_filters(self):
+        library = MagicMock()
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            value_filters=[("tmdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([SimpleNamespace(ratingKey=1)])
+
+        library.prefetch_mdblist.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════

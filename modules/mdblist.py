@@ -114,6 +114,7 @@ class MDBList:
         self.api_request_count = 0
         self.supporter = False
         self.rating_id_limit = 10
+        self._run_cache = {}
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
@@ -148,6 +149,33 @@ class MDBList:
     def has_key(self):
         return self.apikey is not None
 
+    @staticmethod
+    def _cache_key(media_provider, media_type, media_id):
+        if media_provider == "imdb":
+            return media_id
+        if media_provider == "tmdb":
+            return f"{'tm' if media_type == 'movie' else 'ts'}{media_id}"
+        if media_provider == "tvdb":
+            return f"{'tvm' if media_type == 'movie' else 'tvs'}{media_id}"
+        raise Failed("MDBList Error: media_provider, media_type, media_id Required")
+
+    @staticmethod
+    def _response_id(data, media_provider):
+        ids = data.get("ids") or {}
+        aliases = {
+            "imdb": ("imdbid", "imdb_id"),
+            "tmdb": ("tmdbid", "tmdb_id"),
+            "tvdb": ("tvdbid", "tvdb_id"),
+        }
+        for field in aliases[media_provider]:
+            if data.get(field) is not None:
+                return data[field]
+        if ids.get(media_provider) is not None:
+            return ids[media_provider]
+        if media_provider == "tmdb" and data.get("id") is not None:
+            return data["id"]
+        return None
+
     def _request(self, url, params=None, json_data=None):
         final_params = {"apikey": self.apikey}
         if params:
@@ -176,32 +204,76 @@ class MDBList:
         return json_data, response.headers
 
     def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False):
-
-        is_movie = media_type == "movie"
-
-        if media_provider == "imdb":
-            key = media_id
-        elif media_provider == "tmdb":
-            key = f"{'tm' if is_movie else 'ts'}{media_id}"
-        elif media_provider == "tvdb":
-            key = f"{'tvm' if is_movie else 'tvs'}{media_id}"
-        else:
-            raise Failed("MDBList Error: media_provider, media_type, media_id Required")
+        key = self._cache_key(media_provider, media_type, media_id)
 
         expired = None
 
         item_url = f"{api_url}{media_provider}/{media_type}/{media_id}/"
 
+        if not ignore_cache and key in self._run_cache:
+            return self._run_cache[key]
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
-                return MDbObj(mdb_dict)
+                mdb = MDbObj(mdb_dict)
+                self._run_cache[key] = mdb
+                return mdb
         logger.trace(f"ID: {key}")
         mdb_tuple = self._request(item_url, params={})
         mdb = MDbObj(mdb_tuple[0])
         if self.cache and not ignore_cache:
             self.cache.update_mdb(expired, key, mdb, self.expiration)
+        if not ignore_cache:
+            self._run_cache[key] = mdb
         return mdb
+
+    def get_items(self, media_provider, media_type, media_ids, batch_size=100):
+        """Return MDBList data for many provider IDs, fetching cache misses in bulk."""
+        if media_provider not in ("imdb", "tmdb", "tvdb") or media_type not in ("movie", "show"):
+            raise Failed("MDBList Error: media_provider and media_type Required")
+        if batch_size < 1 or batch_size > 100:
+            raise Failed("MDBList Error: batch_size must be between 1 and 100")
+
+        unique_ids = list(dict.fromkeys(media_ids))
+        results = {}
+        pending = []
+        expired_by_id = {}
+        for media_id in unique_ids:
+            key = self._cache_key(media_provider, media_type, media_id)
+            if key in self._run_cache:
+                results[media_id] = self._run_cache[key]
+                continue
+            expired = None
+            if self.cache:
+                mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
+                if mdb_dict and expired is False:
+                    mdb = MDbObj(mdb_dict)
+                    self._run_cache[key] = mdb
+                    results[media_id] = mdb
+                    continue
+            pending.append(media_id)
+            expired_by_id[media_id] = expired
+
+        requested_ids = {str(media_id): media_id for media_id in pending}
+        item_url = f"{api_url}{media_provider}/{media_type}/"
+        for batch_start in range(0, len(pending), batch_size):
+            batch = pending[batch_start : batch_start + batch_size]
+            response, _ = self._request(item_url, json_data={"ids": batch})
+            if not isinstance(response, list):
+                raise Failed("MDBList Error: Batch response must be a list")
+            for data in response:
+                response_id = self._response_id(data, media_provider)
+                media_id = requested_ids.get(str(response_id))
+                if media_id is None:
+                    logger.warning(f"MDBList Warning: Ignoring unexpected {media_provider} ID in batch response: {response_id}")
+                    continue
+                mdb = MDbObj(data)
+                results[media_id] = mdb
+                key = self._cache_key(media_provider, media_type, media_id)
+                self._run_cache[key] = mdb
+                if self.cache:
+                    self.cache.update_mdb(expired_by_id[media_id], key, mdb, self.expiration)
+        return results
 
     def get_imdb(self, imdb_id):
         return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)

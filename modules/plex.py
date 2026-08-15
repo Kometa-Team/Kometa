@@ -2365,6 +2365,36 @@ class Plex(Library):
             imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
+    def prefetch_mdblist(self, items):
+        if self.config.MDBList.limit is not False:
+            return
+        primary_ids = []
+        imdb_ids = []
+        seen_items = set()
+        for item in items:
+            item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id.ratingKey in seen_items:
+                continue
+            seen_items.add(item_to_id.ratingKey)
+            tmdb_id, tvdb_id, imdb_id = self.get_ids(item_to_id)
+            primary_id = tmdb_id if self.is_movie else tvdb_id
+            if primary_id:
+                primary_ids.append(primary_id)
+            elif imdb_id:
+                imdb_ids.append(imdb_id)
+
+        media_type = "movie" if self.is_movie else "show"
+        primary_provider = "tmdb" if self.is_movie else "tvdb"
+        for provider, ids in ((primary_provider, primary_ids), ("imdb", imdb_ids)):
+            if not ids or self.config.MDBList.limit is not False:
+                continue
+            try:
+                self.config.MDBList.get_items(provider, media_type, ids)
+            except LimitReached as err:
+                logger.debug(err)
+            except Failed as err:
+                logger.error(str(err))
+
     def get_ratings(self, item):
         ratings = {
             "plex_imdb": None,
