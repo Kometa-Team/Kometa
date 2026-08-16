@@ -1026,6 +1026,11 @@ class Plex(Library):
             self.notify_delete(delete_message or f"{'Playlist' if is_playlist else 'Collection'} {obj.title} deleted", playlist=is_playlist)
         return result
 
+    def delete_collection(self, obj, notify=True, delete_message=None):
+        result = self.delete(obj, notify=notify, delete_message=delete_message)
+        self.stats["deleted"] += 1
+        return result
+
     @PLEX_RETRY
     def query_data(self, method, data):
         return method(data)

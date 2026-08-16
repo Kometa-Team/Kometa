@@ -47,6 +47,7 @@ def make_plex(**attrs) -> Plex:
     plex.filter_attr_cache = attrs.pop("filter_attr_cache", {})
     plex.collection_names = attrs.pop("collection_names", [])
     plex.collection_files = attrs.pop("collection_files", [])
+    plex.stats = attrs.pop("stats", {"deleted": 0})
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
 
     # Required by Plex class
@@ -453,6 +454,24 @@ class TestDelete:
             plex.delete(item)
 
         mock_config.notify_delete.assert_not_called()
+
+    def test_delete_collection_increments_run_stats_after_success(self):
+        item = make_plex_item(type="collection")
+        plex = make_plex()
+
+        plex.delete_collection(item)
+
+        assert plex.stats["deleted"] == 1
+
+    def test_delete_collection_does_not_increment_run_stats_after_failure(self):
+        item = make_plex_item(type="collection")
+        plex = make_plex()
+        plex.query = MagicMock(side_effect=RuntimeError("delete failed"))
+
+        with pytest.raises(Failed, match="Plex Error: Failed to delete Test Item"):
+            plex.delete_collection(item)
+
+        assert plex.stats["deleted"] == 0
 
     def test_delete_user_playlist_includes_user(self):
         item = make_plex_item(title="My Playlist", type="playlist")

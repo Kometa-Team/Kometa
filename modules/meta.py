@@ -1455,7 +1455,7 @@ class MetadataFile(DataFile):
                             self.collections[other_name] = col
                         for _, col in sync.items():
                             try:
-                                self.library.delete(col)
+                                self.library.delete_collection(col)
                                 logger.info(f"{map_name} Dynamic Collection: {col.title} Deleted")
                             except Failed as e:
                                 logger.error(e)

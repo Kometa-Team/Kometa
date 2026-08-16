@@ -289,10 +289,15 @@ def test_delete_collections_counts_successful_deletions_in_run_stats():
     library.get_all_collections.return_value = collections
     library.item_labels.return_value = [SimpleNamespace(tag="Kometa")]
 
+    def delete_collection(_collection):
+        library.stats["deleted"] += 1
+
+    library.delete_collection.side_effect = delete_collection
+
     Operations(config=MagicMock(), library=library).run_operations()
 
     assert library.stats["deleted"] == 2
-    assert library.delete.call_count == 2
+    assert library.delete_collection.call_count == 2
 
 
 # ---------------------------------------------------------------------------
