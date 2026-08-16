@@ -4245,9 +4245,21 @@ class CollectionBuilder:
                             results = ""
                             display_add = ""
                             for og_value, result in validation:  # type: ignore[misc]
-                                built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
-                                display_add += built_arg[1]
-                                results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                                if isinstance(result, list):
+                                    # Same-language locale variants: OR them (AND their negations, De Morgan style) in their own sub-block instead of the outer all/any conjunction, since an item only ever matches one variant.
+                                    sub_conjunction = "and=1&" if modifier in [".not", ".isnot"] else "or=1&"
+                                    sub_results = ""
+                                    sub_display = ""
+                                    for variant in result:
+                                        built_arg = build_url_arg(quote(str(variant)) if attr in plex.string_attributes else variant, arg_s=og_value)
+                                        sub_display += built_arg[1]
+                                        sub_results += f"{sub_conjunction if len(sub_results) > 0 else ''}{built_arg[0]}"
+                                    display_add += sub_display
+                                    results += f"{conjunction if len(results) > 0 else ''}push=1&{sub_results}pop=1&"
+                                else:
+                                    built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
+                                    display_add += built_arg[1]
+                                    results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
                         else:
                             results, display_add = build_url_arg(validation)
                     display_out += display_add
@@ -4417,7 +4429,7 @@ class CollectionBuilder:
                 if is_plex_search_language:
                     variants = self.library.get_language_search_values(attribute, str(fvalue).lower())
                     if variants:
-                        valid_list.extend((fvalue, variant) for variant in variants)
+                        valid_list.append((fvalue, variants[0] if len(variants) == 1 else variants))
                         continue
                 elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
