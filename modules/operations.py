@@ -88,7 +88,7 @@ class Operations:
             self.library.mass_originally_available_update,
             self.library.mass_added_at_update,
         ]
-        return any(str(option).startswith("mdb") for source in sources if source for option in util.get_list(source, split=False))
+        return any(str(option).startswith("mdb") for source in sources if source for option in util.get_list(source, split=False, return_none=False))
 
     def _prefetch_mdblist(self, items):
         if not self._uses_mdblist() or self.config.MDBList.limit is not False:

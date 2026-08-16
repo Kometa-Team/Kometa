@@ -29,7 +29,7 @@ username_pattern = re.compile(r"^[A-Za-z0-9_.-]+$")
 
 class Serializd:
     def __init__(self, email, password, timeout=60):
-        self.client = SerializdClient()
+        self.client = SerializdClient()  # type: ignore[operator]
         self.client.session.timeout = timeout
         self.cache_key = hashlib.sha256(str(email).strip().lower().encode("utf-8")).hexdigest()
         for attempt in range(1, 4):
