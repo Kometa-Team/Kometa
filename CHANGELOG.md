@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support the `folder_location` Plex search option in music-library track builders.
+
+### Fixed
+
+- Fixed `audio_codec` track builder
+
 ## [v2.4.8] - 2026-08-15
 
 ### Fixed

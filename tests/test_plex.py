@@ -248,6 +248,14 @@ class TestSearchKeys:
 
         assert plex.get_search_key("folder_location") == "location"
 
+    def test_audio_codec_uses_the_track_filter_advertised_by_plex(self):
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="media.audioCodec", title="Audio Codec")])
+        section = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        plex = make_plex(Plex=section, is_movie=False, type="Music")
+
+        assert plex.get_search_key("audio_codec") == "media.audioCodec"
+        list_filters.assert_called_once_with("track")
+
     def test_folder_location_choices_map_paths_to_plex_location_ids(self):
         list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
         section = SimpleNamespace(
@@ -268,7 +276,7 @@ class TestSearchKeys:
         assert choices["/media/movies-4k"] == "8"
         assert names == ["/media/movies", "/media/movies-4k"]
         list_filters.assert_called_once_with("track")
-        plex.get_tags.assert_called_once_with("source")
+        plex.get_tags.assert_called_once_with("track.source")
 
     def test_folder_location_raises_when_plex_does_not_expose_filter(self):
         section = SimpleNamespace(

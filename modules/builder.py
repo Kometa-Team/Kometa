@@ -4176,10 +4176,12 @@ class CollectionBuilder:
                 attr, modifier, final_attr = self.library.split(_key)
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
-                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr == "folder_location" else plex.search_translation[attr] if attr in plex.search_translation else attr
+                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr in ["folder_location", "audio_codec"] else plex.search_translation[attr] if attr in plex.search_translation else attr
                     arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
+                    if attr == "audio_codec" and modifier == ".is":
+                        mod = ""
                     if arg_s is None:
                         arg_s = arg
                     if attr in plex.string_attributes and modifier in ["", ".not"]:

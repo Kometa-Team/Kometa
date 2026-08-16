@@ -1283,18 +1283,25 @@ class Plex(Library):
     def get_search_key(self, search_name, libtype=None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
-        if search_name == "folder_location":
-            filter_type = libtype or self.Plex.TYPE
+        if search_name in ["folder_location", "audio_codec"]:
+            # Media-derived fields are only searchable with the exact key exposed
+            # by this Plex server. In particular, the track codec filter is not
+            # consistently named `audioCodec` across Plex Media Server releases.
+            filter_type = "track" if search_name == "audio_codec" else libtype or self.Plex.TYPE
             if self.is_show and filter_type == "show":
                 filter_type = "episode"  # Plex only exposes a folder filter for shows at the episode libtype
             filters = self.Plex.listFilters(filter_type)
             try:
-                folder_filter = next(f for f in filters if f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")
+                filter_field = next(
+                    f
+                    for f in filters
+                    if (search_name == "folder_location" and (f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")) or (search_name == "audio_codec" and str(f.title).lower().replace(" ", "_") == "audio_codec")
+                )
             except StopIteration:
                 available_filters = [f.filter for f in filters]
-                raise NotFound(f'Unknown filter field "folder_location" for libtype "{filter_type}". Available filters: {available_filters}') from None
+                raise NotFound(f'Unknown filter field "{search_name}" for libtype "{filter_type}". Available filters: {available_filters}') from None
             # Prefix so get_tags() resolves against "episode" instead of self.Plex.TYPE ("show")
-            return f"episode.{folder_filter.filter}" if self.is_show and filter_type == "episode" else folder_filter.filter
+            return f"episode.{filter_field.filter}" if self.is_show and filter_type == "episode" else filter_field.filter
         return final_search
 
     def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
@@ -1305,7 +1312,9 @@ class Plex(Library):
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            for choice in self.get_tags(final_search):
+            choice_type = "track" if search_name == "folder_location" and getattr(self, "is_music", False) else libtype
+            tag_search = f"{choice_type}.{final_search}" if search_name == "folder_location" and choice_type and "." not in final_search else final_search
+            for choice in self.get_tags(tag_search):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
