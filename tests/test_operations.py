@@ -372,7 +372,7 @@ def make_title_test_library(items):
         setattr(library, flag, False)
 
     library.get_all.return_value = items
-    library.reload.side_effect = lambda item: item
+    library.reload.side_effect = lambda item, **_: item
     library.item_has_ignore_label.return_value = False
     library.get_ids.return_value = (None, None, None)
     library.load_list_from_cache.side_effect = lambda keys: [items_by_key[k] for k in keys]

@@ -877,7 +877,7 @@ class TestDelete:
 
                 self.Webhooks = _Webhooks(self)
 
-            def delete(self, item):
+            def delete_collection(self, item):
                 self.deleted_items.append(item)
 
             def item_reload(self, item):
@@ -912,7 +912,7 @@ class TestDelete:
             (("label", items[0]), {"remove_tags": "Smart"}),
             (("label", items[1]), {"remove_tags": "Smart"}),
         ]
-        library.delete.assert_called_once_with(builder.obj)
+        library.delete_collection.assert_called_once_with(builder.obj)
         assert builder.deleted is True
 
     def test_no_obj_returns_empty_string(self):
