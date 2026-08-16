@@ -51,20 +51,19 @@ class MDbObj:
         self.title = data.get("title")
         self.year = util.check_num(data.get("release_year") or data.get("year"))
         self.type = data.get("mediatype") or data.get("type")
-        self.tmdbid = util.check_num(data.get("id") or data.get("tmdbid"))
-        self.imdbid = data.get("imdbid")
+        self.tmdbid = util.check_num(data.get("tmdbid") or data.get("tmdb_id") or data.get("id"))
+        self.imdbid = data.get("imdbid") or data.get("imdb_id")
 
         try:
-            self.released = datetime.strptime(data["released"], "%Y-%m-%d")
+            self.released = datetime.strptime(data.get("released"), "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released = None
         try:
-            self.released_digital = datetime.strptime(data["released_digital"], "%Y-%m-%d")
+            self.released_digital = datetime.strptime(data.get("released_digital"), "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
-        self.tmdbid = util.check_num(data.get("tmdbid"))
         self.score = util.check_num(data.get("score"))
         self.average = util.check_num(data.get("score_average"))
 

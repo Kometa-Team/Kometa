@@ -57,6 +57,16 @@ class TestMDbObj:
         m = MDbObj({**self._BASE})
         assert m.released is None
 
+    def test_handles_omitted_release_fields_in_batch_response(self):
+        from modules.mdblist import MDbObj
+
+        m = MDbObj({"id": 101, "imdb_id": "tt101", "title": "Batch Item"})
+
+        assert m.released is None
+        assert m.released_digital is None
+        assert m.tmdbid == 101
+        assert m.imdbid == "tt101"
+
     def test_handles_invalid_release_date(self):
         from modules.mdblist import MDbObj
 
