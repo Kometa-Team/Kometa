@@ -492,7 +492,7 @@ class TestMDBListValueFilterPrefetch:
         first = SimpleNamespace(ratingKey=1)
         second = SimpleNamespace(ratingKey=2)
         builder = make_builder(
-            config=SimpleNamespace(Cache=cache),
+            config=SimpleNamespace(Cache=cache, MDBList=SimpleNamespace(limit=False)),
             library=library,
             value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
         )
@@ -504,13 +504,27 @@ class TestMDBListValueFilterPrefetch:
     def test_ignores_non_mdblist_value_filters(self):
         library = MagicMock()
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, MDBList=SimpleNamespace(limit=False)),
             library=library,
             value_filters=[("tmdb_rating", "gte", 6.0)],
         )
 
         builder._prefetch_mdblist_value_filters([SimpleNamespace(ratingKey=1)])
 
+        library.prefetch_mdblist.assert_not_called()
+
+    def test_skips_cache_work_after_mdblist_limit_is_reached(self):
+        cache = MagicMock()
+        library = MagicMock()
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache, MDBList=SimpleNamespace(limit=True)),
+            library=library,
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([SimpleNamespace(ratingKey=1)])
+
+        cache.query_overlay_value_cache.assert_not_called()
         library.prefetch_mdblist.assert_not_called()
 
 

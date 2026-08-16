@@ -4812,6 +4812,8 @@ class CollectionBuilder:
         return passed
 
     def _prefetch_mdblist_value_filters(self, items):
+        if getattr(getattr(self.config, "MDBList", None), "limit", False) is not False:
+            return
         variables = sorted({variable_name for variable_name, _, _ in self.value_filters if variable_name.startswith("mdb")})
         if not variables:
             return

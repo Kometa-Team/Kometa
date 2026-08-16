@@ -227,11 +227,15 @@ class MDBList:
         return mdb
 
     def get_items(self, media_provider, media_type, media_ids, batch_size=100):
-        """Return MDBList data for many provider IDs, fetching cache misses in bulk."""
+        """Return MDBList data for many provider IDs, fetching cache misses in bulk.
+
+        LimitReached intentionally propagates after preserving completed batches in
+        the run and persistent caches; callers stop further prefetch work when it does.
+        """
         if media_provider not in ("imdb", "tmdb", "tvdb") or media_type not in ("movie", "show"):
             raise Failed("MDBList Error: media_provider and media_type Required")
         if batch_size < 1 or batch_size > 100:
-            raise Failed("MDBList Error: batch_size must be between 1 and 100")
+            raise Failed(f"MDBList Error: batch_size must be between 1 and 100, not {batch_size}")
 
         unique_ids = list(dict.fromkeys(media_ids))
         results = {}
@@ -272,7 +276,15 @@ class MDBList:
                 self._run_cache[key] = mdb
                 if self.cache:
                     self.cache.update_mdb(expired_by_id[media_id], key, mdb, self.expiration)
+        missing_ids = [media_id for media_id in pending if media_id not in results]
+        if missing_ids and logger:
+            sample = ", ".join(str(media_id) for media_id in missing_ids[:10])
+            suffix = "..." if len(missing_ids) > 10 else ""
+            logger.warning(f"MDBList Warning: Batch lookup returned no data for {len(missing_ids)} of {len(pending)} requested {media_provider} IDs: {sample}{suffix}")
         return results
+
+    def cache_run_alias(self, media_provider, media_type, media_id, mdb):
+        self._run_cache[self._cache_key(media_provider, media_type, media_id)] = mdb
 
     def get_imdb(self, imdb_id):
         return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)

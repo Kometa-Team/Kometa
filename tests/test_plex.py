@@ -96,6 +96,7 @@ class TestMDBListPrefetch:
         plex = make_plex(config=config)
         items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2), make_plex_item(rating_key=3)]
         plex.get_ids = MagicMock(side_effect=[(101, None, "tt1"), (None, None, "tt2"), (303, None, None)])
+        config.MDBList.get_items.side_effect = [{101: MagicMock(), 303: MagicMock()}, {"tt2": MagicMock()}]
 
         plex.prefetch_mdblist(items)
 
@@ -109,6 +110,7 @@ class TestMDBListPrefetch:
         plex = make_plex(config=config, is_movie=False, is_show=True)
         item = make_plex_item(rating_key=1)
         plex.get_ids = MagicMock(return_value=(1001, 2001, "tt1"))
+        config.MDBList.get_items.return_value = {2001: MagicMock()}
 
         plex.prefetch_mdblist([item, item])
 
@@ -124,6 +126,7 @@ class TestMDBListPrefetch:
         first.show.return_value = show
         second.show.return_value = show
         plex.get_ids = MagicMock(return_value=(None, 2001, "tt1"))
+        config.MDBList.get_items.return_value = {2001: MagicMock()}
 
         plex.prefetch_mdblist([first, second])
 
@@ -137,6 +140,22 @@ class TestMDBListPrefetch:
         plex.prefetch_mdblist([make_plex_item()])
 
         config.MDBList.get_items.assert_not_called()
+
+    def test_uses_imdb_fallback_when_primary_batch_omits_item(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=False))
+        plex = make_plex(config=config)
+        items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2)]
+        fallback = MagicMock()
+        plex.get_ids = MagicMock(side_effect=[(101, None, "tt1"), (202, None, "tt2")])
+        config.MDBList.get_items.side_effect = [{101: MagicMock()}, {"tt2": fallback}]
+
+        plex.prefetch_mdblist(items)
+
+        assert config.MDBList.get_items.call_args_list == [
+            (("tmdb", "movie", [101, 202]),),
+            (("imdb", "movie", ["tt2"]),),
+        ]
+        config.MDBList.cache_run_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
 class TestImageUpdate:

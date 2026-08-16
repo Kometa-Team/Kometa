@@ -14,6 +14,7 @@ import pytest
 
 import modules.builder  # noqa: F401
 from modules.mdblist import MDBList
+from modules.overlay import get_text_variables
 from modules.plex import Plex
 from modules.util import Failed
 from tests.conftest import FakeLogger
@@ -129,6 +130,9 @@ class TestScanOverlayBackupExtensions:
 
 
 class TestMDBListPrefetch:
+    def test_text_variables_are_parsed_when_overlay_is_compiled(self):
+        assert get_text_variables("IMDb: <<mdb_imdb_rating#>> / <<tmdb_rating>>", "movie") == {"mdb_imdb_rating", "tmdb_rating"}
+
     def test_prefetches_only_items_with_mdblist_text(self):
         o = make_overlays(cache=None)
         mdb_item = SimpleNamespace(ratingKey=1)
@@ -138,8 +142,8 @@ class TestMDBListPrefetch:
             2: (tmdb_item, ["tmdb"]),
         }
         properties = {
-            "mdb": SimpleNamespace(name="text(<<mdb_tomatoes_rating>>)"),
-            "tmdb": SimpleNamespace(name="text(<<tmdb_rating>>)"),
+            "mdb": SimpleNamespace(variables={"mdb_tomatoes_rating"}),
+            "tmdb": SimpleNamespace(variables={"tmdb_rating"}),
         }
 
         o._prefetch_mdblist(key_to_overlays, properties)
@@ -154,7 +158,7 @@ class TestMDBListPrefetch:
 
         o._prefetch_mdblist(
             {1: (item, ["mdb"])},
-            {"mdb": SimpleNamespace(name="text(<<mdb_imdb_rating>>)")},
+            {"mdb": SimpleNamespace(variables={"mdb_imdb_rating"})},
         )
 
         o.library.prefetch_mdblist.assert_not_called()
@@ -167,7 +171,7 @@ class TestMDBListPrefetch:
 
         o._prefetch_mdblist(
             {1: (item, ["mdb"])},
-            {"mdb": SimpleNamespace(name="text(<<mdb_imdb_rating>> <<mdb_tmdb_rating>>)")},
+            {"mdb": SimpleNamespace(variables={"mdb_imdb_rating", "mdb_tmdb_rating"})},
         )
 
         o.library.prefetch_mdblist.assert_called_once_with([item])
@@ -204,7 +208,7 @@ class TestMDBListPrefetch:
 
         o._prefetch_mdblist(
             {item.ratingKey: (item, ["rating"]) for item in items},
-            {"rating": SimpleNamespace(name="text(<<mdb_tomatoes_rating>>)")},
+            {"rating": SimpleNamespace(variables={"mdb_tomatoes_rating"})},
         )
 
         assert mdblist._request.call_count == 10

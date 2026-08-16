@@ -65,35 +65,15 @@ def test_image_operation_summary_pivots_results_by_source_type_and_level():
 
 
 class TestMDBListPrefetch:
-    def test_prefetches_movie_tmdb_ids_and_imdb_fallbacks(self):
-        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2), SimpleNamespace(ratingKey=3)]
+    def test_delegates_enabled_mdblist_operations_to_library(self):
+        items = [SimpleNamespace(ratingKey=1)]
         library = make_mass_edit_library(items, mass_critic_rating_update=["mdb_imdb"])
-        library.get_ids.side_effect = [(101, None, "tt101"), (None, None, "tt202"), (303, None, None)]
         config = MagicMock()
         config.MDBList.limit = False
 
         Operations(config=config, library=library)._prefetch_mdblist(items)
 
-        assert config.MDBList.get_items.call_args_list == [
-            (("tmdb", "movie", [101, 303]),),
-            (("imdb", "movie", ["tt202"]),),
-        ]
-
-    def test_prefetches_show_tvdb_ids_and_imdb_fallbacks(self):
-        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
-        library = make_mass_edit_library(items, mass_content_rating_update=["mdb_age_rating"])
-        library.is_movie = False
-        library.is_show = True
-        library.get_ids.side_effect = [(1001, 2001, "tt1"), (1002, None, "tt2")]
-        config = MagicMock()
-        config.MDBList.limit = False
-
-        Operations(config=config, library=library)._prefetch_mdblist(items)
-
-        assert config.MDBList.get_items.call_args_list == [
-            (("tvdb", "show", [2001]),),
-            (("imdb", "show", ["tt2"]),),
-        ]
+        library.prefetch_mdblist.assert_called_once_with(items)
 
     def test_does_not_prefetch_without_an_mdblist_operation(self):
         items = [SimpleNamespace(ratingKey=1)]
@@ -102,38 +82,43 @@ class TestMDBListPrefetch:
         config.MDBList.limit = False
 
         Operations(config=config, library=library)._prefetch_mdblist(items)
-        library.get_ids.assert_not_called()
-        config.MDBList.get_items.assert_not_called()
+        library.prefetch_mdblist.assert_not_called()
 
     def test_stops_prefetching_after_limit_is_reached(self):
         items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
         library = make_mass_edit_library(items, mass_originally_available_update=["mdb"])
-        library.get_ids.side_effect = [(101, None, None), (None, None, "tt2")]
         config = MagicMock()
-        config.MDBList.limit = False
-
-        def limit_reached(*args):
-            config.MDBList.limit = True
-            raise ops_module.LimitReached("limit reached")
-
-        config.MDBList.get_items.side_effect = limit_reached
+        config.MDBList.limit = True
 
         Operations(config=config, library=library)._prefetch_mdblist(items)
 
-        config.MDBList.get_items.assert_called_once_with("tmdb", "movie", [101])
+        library.prefetch_mdblist.assert_not_called()
 
     def test_one_thousand_items_use_ten_bulk_requests(self):
         items = [SimpleNamespace(ratingKey=i) for i in range(1000)]
         library = make_mass_edit_library(items, mass_user_rating_update=["mdb"])
-        library.get_ids.side_effect = [(i, None, None) for i in range(1000)]
         config = MagicMock()
         config.MDBList = MDBList.__new__(MDBList)
         config.MDBList.cache = None
         config.MDBList.limit = False
         config.MDBList._run_cache = {}
         config.MDBList._request = MagicMock(return_value=([], {}))
+        real_library = Plex.__new__(Plex)
+        real_library.config = config
+        real_library.is_movie = True
+        real_library.is_show = False
+        real_library.get_ids = MagicMock(side_effect=[(i, None, None) for i in range(1000)])
+        for name in (
+            "mass_user_rating_update",
+            "mass_critic_rating_update",
+            "mass_audience_rating_update",
+            "mass_content_rating_update",
+            "mass_originally_available_update",
+            "mass_added_at_update",
+        ):
+            setattr(real_library, name, getattr(library, name))
 
-        Operations(config=config, library=library)._prefetch_mdblist(items)
+        Operations(config=config, library=real_library)._prefetch_mdblist(items)
 
         assert config.MDBList._request.call_count == 10
 
@@ -184,7 +169,7 @@ class TestMDBListPrefetch:
                 1: (items[0], ["rating"]),
                 2: (items[1], ["rating"]),
             },
-            {"rating": SimpleNamespace(name="text(<<mdb_tomatoes_rating>>)")},
+            {"rating": SimpleNamespace(variables={"mdb_tomatoes_rating"})},
         )
 
         assert mdblist._request.call_count == 1

@@ -93,28 +93,7 @@ class Operations:
     def _prefetch_mdblist(self, items):
         if not self._uses_mdblist() or self.config.MDBList.limit is not False:
             return
-
-        primary_ids = []
-        imdb_ids = []
-        for item in items:
-            tmdb_id, tvdb_id, imdb_id = self.library.get_ids(item)
-            primary_id = tmdb_id if self.library.is_movie else tvdb_id
-            if primary_id:
-                primary_ids.append(primary_id)
-            elif imdb_id:
-                imdb_ids.append(imdb_id)
-
-        media_type = "movie" if self.library.is_movie else "show"
-        primary_provider = "tmdb" if self.library.is_movie else "tvdb"
-        for provider, ids in ((primary_provider, primary_ids), ("imdb", imdb_ids)):
-            if not ids or self.config.MDBList.limit is not False:
-                continue
-            try:
-                self.config.MDBList.get_items(provider, media_type, ids)
-            except LimitReached as err:
-                logger.debug(err)
-            except Failed as err:
-                logger.error(str(err))
+        self.library.prefetch_mdblist(items)
 
     def _sync_serializd_watched(self, item, tmdb_id):
         watched_by_season = {}

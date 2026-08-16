@@ -31,10 +31,9 @@ class Overlays:
         return extensions_by_ratingkey
 
     def _prefetch_mdblist(self, key_to_overlays, properties):
-        mdb_sources = [source for source in overlay.rating_sources if source.startswith("mdb")]
         items = []
         for item, over_names in key_to_overlays.values():
-            variables = sorted({source for over_name in over_names for source in mdb_sources if re.search(f"(?<![a-z0-9_]){re.escape(source)}(?![a-z0-9_])", properties[over_name].name)})
+            variables = sorted({variable for over_name in over_names for variable in properties[over_name].variables if variable.startswith("mdb")})
             if not variables:
                 continue
             if self.cache:

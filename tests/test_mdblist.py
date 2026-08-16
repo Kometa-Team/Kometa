@@ -208,13 +208,15 @@ class TestMDBList:
         assert result[media_id].title == "Matched"
 
     def test_get_items_returns_only_items_present_in_partial_response(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        logger = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logger)
         adapter.cache = None
         adapter._request = MagicMock(return_value=([{"id": 101, "title": "Found", "released": None, "released_digital": None}], {}))
 
         result = adapter.get_items("tmdb", "movie", [101, 202])
 
         assert list(result) == [101]
+        assert any("1 of 2 requested tmdb IDs" in message for message in logger.warning_messages)
 
     def test_get_items_propagates_limit_reached_without_requesting_later_batches(self, adapter):
         adapter.cache = None
@@ -275,7 +277,7 @@ class TestMDBList:
 
     @pytest.mark.parametrize("batch_size", [0, 101])
     def test_get_items_rejects_invalid_batch_size(self, adapter, batch_size):
-        with pytest.raises(Failed, match="batch_size"):
+        with pytest.raises(Failed, match=f"batch_size.*{batch_size}"):
             adapter.get_items("tmdb", "movie", [1], batch_size=batch_size)
 
     def test_sync_list_rejects_ambiguous_names(self, adapter):
