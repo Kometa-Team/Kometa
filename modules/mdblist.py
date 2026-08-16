@@ -283,8 +283,12 @@ class MDBList:
             logger.warning(f"MDBList Warning: Batch lookup returned no data for {len(missing_ids)} of {len(pending)} requested {media_provider} IDs: {sample}{suffix}")
         return results
 
-    def cache_run_alias(self, media_provider, media_type, media_id, mdb):
-        self._run_cache[self._cache_key(media_provider, media_type, media_id)] = mdb
+    def cache_item_alias(self, media_provider, media_type, media_id, mdb):
+        key = self._cache_key(media_provider, media_type, media_id)
+        self._run_cache[key] = mdb
+        if self.cache:
+            _, expired = self.cache.query_mdb(key, self.expiration)
+            self.cache.update_mdb(expired, key, mdb, self.expiration)
 
     def get_imdb(self, imdb_id):
         return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)

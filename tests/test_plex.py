@@ -155,7 +155,7 @@ class TestMDBListPrefetch:
             (("tmdb", "movie", [101, 202]),),
             (("imdb", "movie", ["tt2"]),),
         ]
-        config.MDBList.cache_run_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
+        config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
 class TestImageUpdate:

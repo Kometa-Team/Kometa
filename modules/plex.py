@@ -2409,7 +2409,7 @@ class Plex(Library):
                 imdb_results = self.config.MDBList.get_items("imdb", media_type, list(dict.fromkeys(imdb_ids)))
                 for primary_id, imdb_id in imdb_by_primary_id.items():
                     if imdb_id in imdb_results:
-                        self.config.MDBList.cache_run_alias(primary_provider, media_type, primary_id, imdb_results[imdb_id])
+                        self.config.MDBList.cache_item_alias(primary_provider, media_type, primary_id, imdb_results[imdb_id])
             except LimitReached as err:
                 logger.debug(err)
             except Failed as err:

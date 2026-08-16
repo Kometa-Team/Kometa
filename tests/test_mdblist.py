@@ -264,6 +264,27 @@ class TestMDBList:
         assert result[101].title == "One"
         assert adapter._request.call_count == 1
 
+    def test_item_alias_is_reused_from_persistent_cache_on_next_run(self, adapter, tmp_path, monkeypatch):
+        from modules.cache import Cache
+        from modules.mdblist import MDbObj
+
+        monkeypatch.setattr("modules.cache.logger", FakeLogger())
+        cache = Cache(config_path=str(tmp_path / "config.yml"), expiration=60)
+        fallback = MDbObj({"id": "tt2", "title": "Fallback", "released": None, "released_digital": None})
+        adapter.cache = cache
+
+        adapter.cache_item_alias("tmdb", "movie", 202, fallback)
+
+        next_run = type(adapter).__new__(type(adapter))
+        next_run.cache = cache
+        next_run.expiration = 60
+        next_run._run_cache = {}
+        next_run._request = MagicMock()
+        result = next_run.get_movie(202)
+
+        assert result.title == "Fallback"
+        next_run._request.assert_not_called()
+
     def test_ignore_cache_bypasses_and_does_not_replace_run_cache(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter.cache = None
