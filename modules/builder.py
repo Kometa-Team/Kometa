@@ -4189,10 +4189,12 @@ class CollectionBuilder:
                 attr, modifier, final_attr = self.library.split(_key)
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
-                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr == "folder_location" else plex.search_translation[attr] if attr in plex.search_translation else attr
+                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr in ["folder_location", "audio_codec"] else plex.search_translation[attr] if attr in plex.search_translation else attr
                     arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
+                    if attr == "audio_codec" and modifier == ".is":
+                        mod = ""
                     if arg_s is None:
                         arg_s = arg
                     if attr in plex.string_attributes and modifier in ["", ".not"]:
@@ -4256,9 +4258,21 @@ class CollectionBuilder:
                             results = ""
                             display_add = ""
                             for og_value, result in validation:  # type: ignore[misc]
-                                built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
-                                display_add += built_arg[1]
-                                results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
+                                if isinstance(result, list):
+                                    # Same-language locale variants: OR them (AND their negations, De Morgan style) in their own sub-block instead of the outer all/any conjunction, since an item only ever matches one variant.
+                                    sub_conjunction = "and=1&" if modifier in [".not", ".isnot"] else "or=1&"
+                                    sub_results = ""
+                                    sub_display = ""
+                                    for variant in result:
+                                        built_arg = build_url_arg(quote(str(variant)) if attr in plex.string_attributes else variant, arg_s=og_value)
+                                        sub_display += built_arg[1]
+                                        sub_results += f"{sub_conjunction if len(sub_results) > 0 else ''}{built_arg[0]}"
+                                    display_add += sub_display
+                                    results += f"{conjunction if len(results) > 0 else ''}push=1&{sub_results}pop=1&"
+                                else:
+                                    built_arg = build_url_arg(quote(str(result)) if attr in plex.string_attributes else result, arg_s=og_value)
+                                    display_add += built_arg[1]
+                                    results += f"{conjunction if len(results) > 0 else ''}{built_arg[0]}"
                         else:
                             results, display_add = build_url_arg(validation)
                     display_out += display_add
@@ -4428,7 +4442,7 @@ class CollectionBuilder:
                 if is_plex_search_language:
                     variants = self.library.get_language_search_values(attribute, str(fvalue).lower())
                     if variants:
-                        valid_list.extend((fvalue, variant) for variant in variants)
+                        valid_list.append((fvalue, variants[0] if len(variants) == 1 else variants))
                         continue
                 elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
