@@ -286,7 +286,7 @@ class TestValidateAttributeLanguage:
         library = FakeLangLibrary({"audio_language": {"es": ["es-419", "es-MX", "spa"]}})
         builder = make_lang_builder(library)
         result = builder.validate_attribute("audio_language", "", "audio_language", "es", True, plex_search=True)
-        assert result == [("es", "es-419"), ("es", "es-MX"), ("es", "spa")]
+        assert result == [("es", ["es-419", "es-MX", "spa"])]
 
     def test_does_not_call_the_uncached_get_search_choices_for_plex_search_language(self):
         """The generic (uncached) listFilterChoices lookup must be skipped entirely for
@@ -301,7 +301,7 @@ class TestValidateAttributeLanguage:
         library = FakeLangLibrary({"subtitle_language": {"fr": ["fr-CA", "fre"]}})
         builder = make_lang_builder(library)
         result = builder.validate_attribute("subtitle_language", "", "subtitle_language", "fr", True, plex_search=True)
-        assert result == [("fr", "fr-CA"), ("fr", "fre")]
+        assert result == [("fr", ["fr-CA", "fre"])]
         assert library.get_tags_calls == [("subtitle_language", "fr")]
 
     def test_is_case_insensitive(self):
@@ -322,7 +322,7 @@ class TestValidateAttributeLanguage:
         library = FakeLangLibrary({"audio_language": {"es": ["es-419", "spa"], "en": ["en-US"]}})
         builder = make_lang_builder(library)
         result = builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
-        assert result == [("es", "es-419"), ("es", "spa"), ("en", "en-US")]
+        assert result == [("es", ["es-419", "spa"]), ("en", "en-US")]
 
     def test_raises_filter_failed_when_language_not_present_in_library(self):
         library = FakeLangLibrary({"audio_language": {}})
@@ -1085,6 +1085,56 @@ class TestBuildFilter:
                 {"all": {"folder_location": "/media/music"}},
                 default_sort="random",
             )
+
+    @staticmethod
+    def _split(value):
+        attribute = value.removesuffix(".not")
+        modifier = ".not" if value.endswith(".not") else ""
+        return attribute, modifier, value
+
+    def test_language_variants_are_ored_not_anded_under_plex_search_all(self):
+        """Regression: a base language code (e.g. "de") that expands to multiple Plex locale
+        variants (e.g. "de", "de-DE") must be OR'd together, since an item can only ever carry
+        one variant at a time. AND-ing them (the #3440 regression) produces a filter that can
+        never match, silently dropping every item from the overlay/collection."""
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, _details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language": "de"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage=de&or=1&audioLanguage=de-DE&pop=1" in url
+        assert "audioLanguage=de&and=1&audioLanguage=de-DE" not in url
+
+    def test_negated_language_variants_are_anded_under_plex_search_all(self):
+        """Excluding a language must exclude every one of its variants: audioLanguage!=de AND
+        audioLanguage!=de-DE (De Morgan's), not an OR of negatives which would only require an
+        item to fail to match one of the two variants."""
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, _details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language.not": "de"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage!=de&and=1&audioLanguage!=de-DE&pop=1" in url
 
 
 # ═══════════════════════════════════════════════════════════════════════
