@@ -1284,9 +1284,6 @@ class Plex(Library):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
         if search_name in ["folder_location", "audio_codec"]:
-            # Media-derived fields are only searchable with the exact key exposed
-            # by this Plex server. In particular, the track codec filter is not
-            # consistently named `audioCodec` across Plex Media Server releases.
             filter_type = "track" if search_name == "audio_codec" else libtype or self.Plex.TYPE
             if self.is_show and filter_type == "show":
                 filter_type = "episode"  # Plex only exposes a folder filter for shows at the episode libtype
