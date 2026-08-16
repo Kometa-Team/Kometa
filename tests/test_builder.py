@@ -1064,9 +1064,34 @@ class TestBuildFilter:
         assert "Folder Location" in details
         assert list_filters.call_count == 2
         list_filters.assert_called_with("track")
-        library.get_tags.assert_called_once_with("source")
+        library.get_tags.assert_called_once_with("track.source")
 
-    def test_rejects_folder_location_above_track_level_in_music_library(self):
+    def test_builds_track_audio_codec_smart_filter(self):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = False
+        library.is_show = False
+        library.is_music = True
+        library.Plex = SimpleNamespace(TYPE="artist", listFilters=lambda libtype: [SimpleNamespace(filter="media.audioCodec", title="Audio Codec")])
+        builder = make_builder(
+            library=library,
+            builder_level="track",
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_codec.is": "mp3"}},
+            default_sort="random",
+        )
+
+        assert "media.audioCodec=mp3" in url
+        assert "media.audioCodec%3D=mp3" not in url
+        assert "Audio Codec is mp3" in details
+
+    @pytest.mark.parametrize("builder_level", ["artist", "album"])
+    def test_rejects_folder_location_above_track_level_in_music_library(self, builder_level):
         library = SimpleNamespace(
             is_movie=False,
             is_show=False,
@@ -1075,7 +1100,7 @@ class TestBuildFilter:
         )
         builder = make_builder(
             library=library,
-            builder_level="artist",
+            builder_level=builder_level,
             details={"show_options": False},
         )
 
