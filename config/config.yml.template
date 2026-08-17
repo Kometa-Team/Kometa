@@ -88,6 +88,8 @@ settings:
   show_missing: true
   show_missing_assets: true
   save_report: false
+  # threading:
+  #   workers: 4
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:

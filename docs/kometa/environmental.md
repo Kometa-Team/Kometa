@@ -649,6 +649,32 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-labels
             ```
 
+??? blank "Delete Collections + Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--delete-collections-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS_LABELS`<a class="headerlink" href="#delete-collections-labels" title="Permanent link">¶</a>"
+
+    <div id="delete-collections-labels" />Delete all collections in each library as the first step in the run, same as [Delete Collections](#delete-collections) above. For any deleted collection whose title matches an existing Plex label of the same name - the default for [Smart Label Collections](../files/settings/#smart-label-definitions) - also batch-removes that one label from just the items that currently have it, instead of the full library-wide label wipe [Delete Labels](#delete-labels) does.
+
+    ???+ note
+
+        This only detects Smart Label collections using the default label name (the collection's own title). A collection using a custom `smart_label` name won't be matched, since that name isn't known until the config is parsed - use [Delete Labels](#delete-labels) for those.
+
+        This flag has no short form - `-dc` and `-dl` are single-dash because they're exactly 2 characters (Kometa's own convention for short flags); anything longer would collide with an existing single-character flag (e.g. `-d`/`--divider`) when typed with a single dash. Use `--delete-collections-labels` or `--delete-collection-label` in full.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `--delete-collections-labels` or `--delete-collection-label` (ex. `--delete-collections-labels`)
+
+    **Environment Variable:** `KOMETA_DELETE_COLLECTIONS_LABELS` (ex. `KOMETA_DELETE_COLLECTIONS_LABELS=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --delete-collections-labels
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-collections-labels
+            ```
+
 ??? blank "Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME`<a class="headerlink" href="#resume" title="Permanent link">¶</a>"
 
     <div id="resume" />Perform an [immediate run](#run) starting from the first instance of the specified collection, bypassing the time to run flag.

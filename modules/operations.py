@@ -241,6 +241,8 @@ class Operations:
                     source = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
                     image_operation_counts[(operation, source, image_type, level, status)] += 1
 
+            # Pre-warms reload data for the whole library in batched requests instead of one per item - see plex.py's bulk_reload().
+            self.library.bulk_reload(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
                 logger.info(f"({i}/{total_items}) {item.title}")

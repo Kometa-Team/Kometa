@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from concurrent.futures import Future
 from datetime import datetime, timedelta
 
 from arrapi import ArrException
@@ -20,6 +21,65 @@ from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, 
 logger = util.logger
 
 mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
+
+
+def _service_lock_key(method):
+    # Experiment C: classifies method into a lock bucket, mirroring gather_ids' dispatch below; unrecognized methods fall into "other" so they're always locked.
+    if "plex" in method:
+        return "plex"
+    if "tautulli" in method:
+        return "tautulli"
+    if "tracearr" in method:
+        return "tracearr"
+    if "anidb" in method:
+        return "anidb"
+    if "anilist" in method:
+        return "anilist"
+    if "mal" in method:
+        return "mal"
+    if "tvdb" in method:
+        return "tvdb"
+    if "imdb" in method:
+        return "imdb"
+    if "icheckmovies" in method:
+        return "icheckmovies"
+    if "letterboxd" in method:
+        return "letterboxd"
+    if method in textfile.builders:
+        return "textfile"
+    if "stevenlu" in method:
+        return "stevenlu"
+    if "mojo" in method:
+        return "mojo"
+    if "mdblist" in method:
+        return "mdblist"
+    if "simkl" in method:
+        return "simkl"
+    if "tmdb" in method:
+        return "tmdb"
+    if "trakt" in method:
+        return "trakt"
+    if "yamtrack" in method:
+        return "yamtrack"
+    if "serializd" in method:
+        return "serializd"
+    if "floppy" in method:
+        return "floppy"
+    if "radarr" in method:
+        return "radarr"
+    if "sonarr" in method:
+        return "sonarr"
+    return "other"
+
+
+def prefetch_gather_ids(config, builder):
+    """Submits non-Plex gather_ids calls to the shared pool, aligned with builder.builders; Plex pairs get None (main-thread only) and so does everything if threading is off."""
+    pairs = builder.builders
+    if config.thread_pool is None or not config.general["threading"]["parallel_sources"]:
+        return [None] * len(pairs)
+    return [None if "plex" in method else config.thread_pool.submit(builder.gather_ids, method, value) for method, value in pairs]
+
+
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = [
     "item_episode_sorting",
@@ -967,7 +1027,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
             self.only_run_on_create = util.parse(self.Type, "only_run_on_create", self.data, datatype="bool", methods=methods, default=False)
-        if self.obj and self.only_run_on_create:
+        if self.obj is not None and self.only_run_on_create:
             raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
         if "allowed_library_types" in methods and "run_definition" not in methods:
@@ -1153,7 +1213,7 @@ class CollectionBuilder:
         self.notification_additions = []
         self.notification_removals = []
         self.items = []
-        self.remove_item_map = {}
+        self._remove_item_map = {}
         self.schedule = ""
         self.beginning_count = 0
         self.default_percent = 50
@@ -1765,31 +1825,31 @@ class CollectionBuilder:
         self.do_report = not self.config.no_report and (self.details["save_report"])
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
                 logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj:
+                if self.obj is not None:
                     if check_url != self.library.smart_filter(self.obj):
                         self.library.update_smart_collection(self.obj, check_url)
                         logger.info(f"Metadata: Smart Collection updated to {check_url}")
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
-            if self.obj:
+            if self.obj is not None:
                 self.exists = True
                 if self.sync or self.playlist:
-                    self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+                    self._remove_item_map = self._resolve_remove_item_map()
                 if not self.smart:
-                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
+                    self.beginning_count = len(self.remove_item_map) if self.playlist else self._collection_child_count(self.obj)
         else:
             self.obj = None
             if self.sync:
                 logger.warning(f"{self.Type} Error: Sync Mode can only be append when using build_collection: false")
                 self.sync = False
             self.run_again = False
-        if self.non_existing is not False and self.obj:
+        if self.non_existing is not False and self.obj is not None:
             raise NotScheduled(self.non_existing)
 
         logger.info("")
@@ -3684,89 +3744,87 @@ class CollectionBuilder:
             if list_key and expired is False:
                 logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
-        if "plex" in method:
-            ids = self.library.get_rating_keys(method, value, self.playlist)
-        elif "tautulli" in method:
-            ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
-        elif "tracearr" in method:
-            if self.playlist:
+        # Experiment C: serializes gather_ids calls per service - tmdbapis' shared _api.response isn't thread-safe, assume others are too until audited.
+        with self.config.get_service_lock(_service_lock_key(method)):
+            if "plex" in method:
+                ids = self.library.get_rating_keys(method, value, self.playlist)
+            elif "tautulli" in method:
+                ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
+            elif "tracearr" in method:
+                if self.playlist:
+                    ids = []
+                    connectors = {}
+                    for pl_library in self.libraries:
+                        connector = pl_library.Tracearr
+                        if not connector:
+                            continue
+                        server_key = (connector.api, connector.server_id)
+                        connectors[server_key] = connector
+                    if len(connectors) > 1:
+                        raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
+                    for connector in connectors.values():
+                        machine_id = connector.library.PlexServer.machineIdentifier
+                        server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
+                        ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
+                else:
+                    ids = self.library.Tracearr.get_rating_keys(value)
+            elif "anidb" in method:
+                anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
+                ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
+            elif "anilist" in method:
+                anilist_ids = self.config.AniList.get_anilist_ids(method, value)
+                ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
+            elif "mal" in method:
+                mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
+                ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
+            elif "tvdb" in method:
+                ids = self.config.TVDb.get_tvdb_ids(method, value)
+            elif "imdb" in method:
+                ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+            elif "icheckmovies" in method:
+                ids = self.config.ICheckMovies.get_imdb_ids(method, value)
+            elif "letterboxd" in method:
+                ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
+            elif method in textfile.builders:
+                # is_movie: True=movie-only, False=show-only, None=playlist mode (both) - get_ids must handle all three.
+                ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
+            elif "stevenlu" in method:
+                ids = self.config.StevenLu.get_imdb_ids(method, value)
+            elif "mojo" in method:
+                ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
+            elif "mdblist" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "simkl" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "tmdb" in method:
+                ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
+            elif "trakt" in method:
+                ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+            elif "yamtrack" in method:
+                if method == "yamtrack_tracked":
+                    ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    if mal_ids:
+                        ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+                else:
+                    ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "serializd" in method:
+                ids = self.config.Serializd.get_builder_ids(method, value)
+            elif "floppy" in method:
+                if method == "floppy_tracked":
+                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    if mal_ids:
+                        ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+                else:
+                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
+            elif "radarr" in method:
+                ids = self.library.Radarr.get_tmdb_ids(method, value)
+            elif "sonarr" in method:
+                ids = self.library.Sonarr.get_tvdb_ids(method, value)
+            else:
                 ids = []
-                connectors = {}
-                for pl_library in self.libraries:
-                    connector = pl_library.Tracearr
-                    if not connector:
-                        continue
-                    server_key = (connector.api, connector.server_id)
-                    connectors[server_key] = connector
-                if len(connectors) > 1:
-                    raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
-                for connector in connectors.values():
-                    machine_id = connector.library.PlexServer.machineIdentifier
-                    server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
-                    ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
-            else:
-                ids = self.library.Tracearr.get_rating_keys(value)
-        elif "anidb" in method:
-            anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
-            ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
-        elif "anilist" in method:
-            anilist_ids = self.config.AniList.get_anilist_ids(method, value)
-            ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
-        elif "mal" in method:
-            mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
-            ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
-        elif "tvdb" in method:
-            ids = self.config.TVDb.get_tvdb_ids(method, value)
-        elif "imdb" in method:
-            ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
-        elif "icheckmovies" in method:
-            ids = self.config.ICheckMovies.get_imdb_ids(method, value)
-        elif "letterboxd" in method:
-            ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
-        elif method in textfile.builders:
-            #  is_movie=None means playlist mode (movies + shows).
-            # The target method MUST handle all three states correctly:
-            # True = movie-only, False = show-only, None = both.
-            ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
-        elif "stevenlu" in method:
-            ids = self.config.StevenLu.get_imdb_ids(method, value)
-        elif "mojo" in method:
-            ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
-        elif "mdblist" in method:
-            #  is_movie=None = playlist mode. Must return BOTH movie
-            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
-            ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "simkl" in method:
-            #  is_movie=None = playlist mode. Must return BOTH movie
-            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
-            ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "tmdb" in method:
-            ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
-        elif "trakt" in method:
-            ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
-        elif "yamtrack" in method:
-            if method == "yamtrack_tracked":
-                ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
-                if mal_ids:
-                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
-            else:
-                ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "serializd" in method:
-            ids = self.config.Serializd.get_builder_ids(method, value)
-        elif "floppy" in method:
-            if method == "floppy_tracked":
-                ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
-                if mal_ids:
-                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
-            else:
-                ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
-        elif "radarr" in method:
-            ids = self.library.Radarr.get_tmdb_ids(method, value)
-        elif "sonarr" in method:
-            ids = self.library.Sonarr.get_tvdb_ids(method, value)
-        else:
-            ids = []
-            logger.error(f"{self.Type} Error: {method} method not supported")
+                logger.error(f"{self.Type} Error: {method} method not supported")
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
@@ -4054,7 +4112,7 @@ class CollectionBuilder:
         if not items:
             self._log_episode_count(total_ids, unique_total=0)
             return None
-        name = self.obj.title if self.obj else self.name
+        name = self.obj.title if self.obj is not None else self.name
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
@@ -4558,7 +4616,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj is not None else self.name, self.smart_label_collection)
         collection_item_keys = {ci.ratingKey for ci in collection_items}
         total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
@@ -4581,7 +4639,7 @@ class CollectionBuilder:
                 amount_added += 1
                 if self.details["changes_webhooks"]:
                     self.notification_additions.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
-        if self.playlist and items_added and not self.obj:
+        if self.playlist and items_added and self.obj is None:
             self.obj = self.library.create_playlist(self.name, items_added)
             logger.info("")
             logger.info(f"Playlist: {self.name} created")
@@ -4985,7 +5043,7 @@ class CollectionBuilder:
 
     @timings.timed("load_collection_items")
     def load_collection_items(self):
-        if self.build_collection and self.obj:
+        if self.build_collection and self.obj is not None:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
@@ -5292,6 +5350,29 @@ class CollectionBuilder:
                 logger.stacktrace()
                 logger.error(f"Arr Error: {e}")
 
+    @property
+    def remove_item_map(self):
+        # Resolves the deferred thread_pool fetch (see __init__) on first real use - usually already done by the time add_to_collection() reaches it.
+        if isinstance(self._remove_item_map, Future):
+            self._remove_item_map = self._remove_item_map.result()
+        return self._remove_item_map
+
+    @remove_item_map.setter
+    def remove_item_map(self, value):
+        self._remove_item_map = value
+
+    def _resolve_remove_item_map(self):
+        # Playlists need len() below so they fetch eagerly; sync collections don't need this until add_to_collection(), so it's deferred to thread_pool when prefetch_collection_children is enabled - see remove_item_map property.
+        if not self.playlist and self.config.thread_pool is not None and self.config.general["threading"]["prefetch_collection_children"]:
+            obj, smart_label_collection = self.obj, self.smart_label_collection
+            return self.config.thread_pool.submit(lambda: {i.ratingKey: i for i in self.library.get_collection_items(obj, smart_label_collection)})
+        return {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+
+    @staticmethod
+    def _collection_child_count(obj):
+        # Plex returns None for childCount on genuinely-empty separator collections - treat as 0, not a TypeError (builder.py fix, 2026-07-30).
+        return obj.childCount or 0
+
     @timings.timed("load_collection")
     def load_collection(self):
         if self.obj is None and self.smart_url:
@@ -5304,7 +5385,7 @@ class CollectionBuilder:
                 if not self.library.smart_label_check(self.name):
                     raise Failed
                 smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
-                if not self.obj:
+                if self.obj is None:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
@@ -5635,7 +5716,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
         logger.info("")
-        if self.obj:
+        if self.obj is not None:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         current_ids = []
@@ -5709,10 +5790,10 @@ class CollectionBuilder:
         return list(dict.fromkeys(current_ids))
 
     def delete(self):
-        title = self.obj.title if self.obj else self.name
+        title = self.obj.title if self.obj is not None else self.name
         if self.playlist:
             output = f"Deleting {self.Type} {title}"
-        elif self.obj:
+        elif self.obj is not None:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
                 for item in self.library.search(label=self.name, libtype=self.builder_level):
@@ -5731,14 +5812,14 @@ class CollectionBuilder:
                     output += f"\nPlaylist deleted on User {user}"
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
-        elif self.obj:
+        elif self.obj is not None:
             self.library.delete_collection(self.obj)
-        if self.obj:
+        if self.obj is not None:
             self.deleted = True
         return output
 
     def sync_playlist(self):
-        if self.obj and self.valid_users:
+        if self.obj is not None and self.valid_users:
             logger.info("")
             logger.separator("Syncing Playlist to Users", space=False, border=False)
             logger.info("")
@@ -5752,7 +5833,7 @@ class CollectionBuilder:
                     logger.info(f"Playlist: {self.name} synced to {user}")
 
     def exclude_admin_from_playlist(self):
-        if self.obj and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
+        if self.obj is not None and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
             logger.info("")
             logger.separator("Excluding Admin from Playlist", space=False, border=False)
             logger.info("")
@@ -5763,7 +5844,7 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
+        if self.obj is not None and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.library.item_reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(

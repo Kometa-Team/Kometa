@@ -10,16 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
+- Default `settings.threading.workers` to 4 (was effectively single-threaded) and `settings.threading.prefetch_collection_children` to `true`, deferring a collection's `sync_collection` "what to remove" lookup and PMS's comma-separated `/library/metadata/{ids}` batch-read to the shared thread pool instead of blocking the main collection loop; the cache is now RLock-guarded (`_LockedConnection`) so concurrent worker threads can share one SQLite connection safely.
 
 ### Added
 
 - Support the `folder_location` Plex search option in music-library track builders.
+- Add a `settings.threading` config block (`workers`, `tmdb_pages`, `parallel_sources`, `prefetch_collection_children`) backed by a shared `ThreadPoolExecutor`, used to defer non-Plex `gather_ids` work and Plex item-reload batching off the main collection loop.
+- Add a `--delete-collections-labels` CLI flag (no short form - would collide with `-d`/`--divider`) that deletes all collections, same as `-dc`, and for any deleted collection whose title matches an existing Plex label of the same name (the Smart Label default), batch-removes that one label from just the items that have it - instead of `-dl`'s full library-wide, one-item-at-a-time label wipe.
 
 ### Fixed
 
 - Fixed `audio_codec` track builder
 - Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.
 - Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.
+- Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
+- Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.
+- Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
 
 ## [v2.4.8] - 2026-08-15
 

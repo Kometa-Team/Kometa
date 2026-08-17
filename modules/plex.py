@@ -820,7 +820,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
-            timings.registry.set_plex_hostname(urlparse(self.url).hostname)
+            timings.registry.set_plex_hostname(self.url)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -952,7 +952,9 @@ class Plex(Library):
 
     @PLEX_RETRY
     def fetchItem(self, data):
-        return self.PlexServer.fetchItem(data)
+        # Tagged to confirm this is the mystery batchable-but-untagged single-item GET population found by the reload-origin census - see perf-results-log.md.
+        with timings.tag_context("fetch_item"):
+            return self.PlexServer.fetchItem(data)
 
     @PLEX_RETRY
     def fetchItems(self, uri_args):
@@ -1125,26 +1127,28 @@ class Plex(Library):
         return image_url
 
     def item_reload(self, item):
-        item.reload(
-            checkFiles=False,
-            includeAllConcerts=False,
-            includeBandwidths=False,
-            includeChapters=False,
-            includeChildren=False,
-            includeConcerts=False,
-            includeExternalMedia=False,
-            includeExtras=False,
-            includeFields=False,
-            includeGeolocation=False,
-            includeLoudnessRamps=False,
-            includeMarkers=False,
-            includeOnDeck=False,
-            includePopularLeaves=False,
-            includeRelated=False,
-            includeRelatedCount=0,
-            includeReviews=False,
-            includeStations=False,
-        )
+        # Tagged so the census can isolate single-item reload GETs (the read-batching candidate) from every other kind of plex network call - see perf-results-log.md's call census entry.
+        with timings.tag_context("item_reload"):
+            item.reload(
+                checkFiles=False,
+                includeAllConcerts=False,
+                includeBandwidths=False,
+                includeChapters=False,
+                includeChildren=False,
+                includeConcerts=False,
+                includeExternalMedia=False,
+                includeExtras=False,
+                includeFields=False,
+                includeGeolocation=False,
+                includeLoudnessRamps=False,
+                includeMarkers=False,
+                includeOnDeck=False,
+                includePopularLeaves=False,
+                includeRelated=False,
+                includeRelatedCount=0,
+                includeReviews=False,
+                includeStations=False,
+            )
         item._autoReload = False
         return item
 
@@ -1185,6 +1189,67 @@ class Plex(Library):
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
         return item
+
+    def bulk_reload(self, items, force=False):
+        # Pre-warms cached_items via PMS's batched /library/metadata/{ids} endpoint (Probe 2: ~1.68x/item) so later reload()/item_reload() calls become cache hits instead of one request per item.
+        with timings.tag_context("item_reload_batch"):
+            pending = {}
+            for item in items:
+                rk = int(item.ratingKey)
+                if not force and rk in self.cached_items and self.cached_items[rk][1]:
+                    continue
+                pending[rk] = item
+            if not pending:
+                return
+            batch_size = 100
+            # Grouped by type first, not just chunked - _buildDetailsKey's include/exclude set can differ by class, same reasoning _group_items_by_type already uses for batchMultiEdits.
+            for group in self._group_items_by_type(list(pending.values())):
+                details_key = group[0]._buildDetailsKey(
+                    checkFiles=False,
+                    includeAllConcerts=False,
+                    includeBandwidths=False,
+                    includeChapters=False,
+                    includeChildren=False,
+                    includeConcerts=False,
+                    includeExternalMedia=False,
+                    includeExtras=False,
+                    includeFields=False,
+                    includeGeolocation=False,
+                    includeLoudnessRamps=False,
+                    includeMarkers=False,
+                    includeOnDeck=False,
+                    includePopularLeaves=False,
+                    includeRelated=False,
+                    includeRelatedCount=0,
+                    includeReviews=False,
+                    includeStations=False,
+                )
+                query_suffix = details_key.split("?", 1)[1] if "?" in details_key else ""
+                keys = [int(i.ratingKey) for i in group]
+                for i in range(0, len(keys), batch_size):
+                    chunk = keys[i : i + batch_size]
+                    id_str = ",".join(str(k) for k in chunk)
+                    batch_key = f"/library/metadata/{id_str}" + (f"?{query_suffix}" if query_suffix else "")
+                    try:
+                        data = self.PlexServer.query(batch_key)
+                    except (BadRequest, NotFound):
+                        data = None
+                    seen = set()
+                    if data is not None:
+                        for element in data:
+                            rk = utils.cast(int, element.attrib.get("ratingKey"))
+                            if rk in pending:
+                                pending[rk]._invalidateCacheAndLoadData(element)
+                                pending[rk]._autoReload = False
+                                self.cached_items[rk] = (pending[rk], True)
+                                for fk in [k for k in self.filter_attr_cache if k[0] == rk]:
+                                    del self.filter_attr_cache[fk]
+                                seen.add(rk)
+                    # Anything the batch didn't return (dropped invalid key, whole-chunk failure) falls back to the proven single-item path - never silently skipped.
+                    for rk in chunk:
+                        if rk not in seen:
+                            self.item_reload(pending[rk])
+                            self.cached_items[rk] = (pending[rk], True)
 
     def cached_item_attr(self, item, attr):
         # Memoizes a plain item.<attr> read for the rest of the run - safe because reload() above already clears this item's entries the moment a real reload happens, so a cached value is exactly as fresh as reading the attribute directly would be.
@@ -1574,6 +1639,16 @@ class Plex(Library):
                 self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
         logger.exorcise()
+
+    def remove_smart_label_for_collection(self, collection):
+        # --delete-collections-labels: Smart Label's default label is the collection's own title (see CollectionBuilder.smart_label). Custom smart_label names aren't detectable here, before config is parsed - returns 0, caller no-ops.
+        if not self.smart_label_check(collection.title):
+            return 0
+        labeled_items = self.search(label=collection.title)
+        if not labeled_items:
+            return 0
+        self.batch_edit_tags(labeled_items, "label", remove_tags=[collection.title])
+        return len(labeled_items)
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
@@ -2775,15 +2850,19 @@ class Plex(Library):
         return map_key, attrs
 
     def get_item_display_title(self, item_to_sort, sort=False):
+        # Only fetch the parent (show/artist) when sort needs its titleSort - previously fetched unconditionally and discarded on sort=False (2026-07-27 census: ~2,669 wasted GETs).
         if isinstance(item_to_sort, Album):
-            artist = item_to_sort.artist()  # type: ignore[union-attr]
-            return f"{artist.titleSort if sort else item_to_sort.parentTitle} Album {item_to_sort.titleSort if sort else item_to_sort.title}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.artist().titleSort} Album {item_to_sort.titleSort}"  # type: ignore[union-attr]
+            return f"{item_to_sort.parentTitle} Album {item_to_sort.title}"
         elif isinstance(item_to_sort, Season):
-            show = item_to_sort.show()
-            return f"{show.titleSort if sort else item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.show().titleSort} Season {item_to_sort.seasonNumber}"  # type: ignore[union-attr]
+            return f"{item_to_sort.parentTitle} Season {item_to_sort.seasonNumber}"
         elif isinstance(item_to_sort, Episode):
-            show = item_to_sort.show()
-            return f"{show.titleSort if sort else item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"  # type: ignore[union-attr]
+            if sort:
+                return f"{item_to_sort.show().titleSort} {item_to_sort.seasonEpisode.upper()}"  # type: ignore[union-attr]
+            return f"{item_to_sort.grandparentTitle} {item_to_sort.seasonEpisode.upper()}"
         else:
             return item_to_sort.titleSort if sort else item_to_sort.title
 

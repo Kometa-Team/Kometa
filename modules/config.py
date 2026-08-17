@@ -1,5 +1,7 @@
 import os
 import re
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from modules import operations, radarr, sonarr, util
@@ -66,6 +68,12 @@ hub_sort_options = {
     "configured": "Sort Recommendation Hubs in the order collections appear in your config files (first to last)",
     "configured.desc": "Sort Recommendation Hubs in the order collections appear in your config files (last to first)",
     "random": "Sort Recommendation Hubs in a random order",
+}
+# feat/threading experiment toggles (fork-only, not upstream schema) - cache_mode was Experiment A's lock-vs-threadlocal toggle; A1 won the 2026-07-26 bake-off and is now Cache's only behavior, so nothing's left to toggle here.
+threading_tmdb_pages_options = {
+    "bypass": "Raw-HTTP TMDb discover page fan-out (Experiment B1)",
+    "subclass": "tmdbapis subclass page fan-out (Experiment B2)",
+    "off": "Sequential TMDb discover pagination (control)",
 }
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
@@ -811,6 +819,9 @@ class ConfigFile:
                     add_operation(image_key, {"mass_image_update": {image_key: image_config}}, schedule=get_schedule(input_dict[image_key]))
             return output_ops
 
+        settings_block = self.data.get("settings") if isinstance(self.data.get("settings"), dict) else None
+        threading_settings = settings_block.get("threading") if settings_block and isinstance(settings_block.get("threading"), dict) else {}
+
         self.general = {
             "run_order": check_for_attribute(
                 self.data,
@@ -822,6 +833,15 @@ class ConfigFile:
             ),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
+            "threading": {
+                # settings.threading is two levels deep (past check_for_attribute's single `parent` support), so read it as its own sub-dict; do_print=False throughout so an unconfigured run stays silent.
+                # Phase 2 (2026-07-30): workers/prefetch_collection_children now default to the bake-off-validated posture - an absent block behaves like the proven-fast config, not workers:1.
+                "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=4, int_min=1, save=False, do_print=False),
+                "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
+                "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),
+                # Confirmed ~2.7-3.0% wall-time win at workers:4, no further gain at workers:8 (overnight churn-loop A/B, see perf-results-log.md) - defaults on.
+                "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=True, save=False, do_print=False),
+            },
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
@@ -894,6 +914,11 @@ class ConfigFile:
                 do_print=False,
             ),
         }
+        # feat/threading: created only when workers>1, torn down alongside Cache.close() in kometa.py's run cleanup - never a module-level singleton, never outlives this Config/run.
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.general["threading"]["workers"]) if self.general["threading"]["workers"] > 1 else None
+        # Experiment C: one lock per service, lazily created (double-checked locking - meta-lock only guards dict mutation, not the service call).
+        self.service_locks = {}
+        self._service_locks_meta_lock = threading.Lock()
         self.custom_repo = None
         if self.general["custom_repo"]:
             repo = self.general["custom_repo"]
@@ -2583,6 +2608,34 @@ class ConfigFile:
             logger.save_errors = False
             logger.clear_errors()
             raise
+
+    def get_service_lock(self, key):
+        """Returns the shared Lock for a given service key (see builder.py's gather_ids), creating it on first use. Safe to call from any thread - the meta-lock only guards the moment a new key is added, never the caller's actual work."""
+        lock = self.service_locks.get(key)
+        if lock is None:
+            with self._service_locks_meta_lock:
+                lock = self.service_locks.get(key)
+                if lock is None:
+                    lock = threading.Lock()
+                    self.service_locks[key] = lock
+        return lock
+
+    def thread_map(self, items, fn):
+        """Run fn(item) for each item, in parallel on self.thread_pool if threading is enabled, sequentially otherwise. Returns results in input order; raises the first exception in input order once every item has finished."""
+        if self.thread_pool is None:
+            return [fn(item) for item in items]
+        futures = [self.thread_pool.submit(fn, item) for item in items]
+        results = [None] * len(futures)
+        first_exception = None
+        for i, future in enumerate(futures):
+            try:
+                results[i] = future.result()
+            except Exception as e:
+                if first_exception is None:
+                    first_exception = e
+        if first_exception is not None:
+            raise first_exception
+        return results
 
     def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         for error in util.get_list(text, split=False, return_none=False) or []:

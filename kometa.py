@@ -109,6 +109,7 @@ arguments = {
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
     "delete-labels": {"args": ["dl", "delete-label"], "type": "bool", "help": "Deletes all Labels in the Plex Library before running"},
+    "delete-collections-labels": {"args": "delete-collection-label", "type": "bool", "help": "Deletes all Collections; for any that match an existing Plex label of the same name, batch-removes that label from just the items that have it"},
     "resume": {"args": "re", "type": "str", "help": "Resume collection run from a specific collection"},
     "no-countdown": {"args": "nc", "type": "bool", "help": "Run without displaying the countdown"},
     "no-missing": {"args": "nm", "type": "bool", "help": "Run without running the missing section"},
@@ -278,7 +279,7 @@ from modules import timings  # noqa: E402
 timings.ENABLED = run_args["timings"]
 timings.registry.enabled = run_args["timings"]
 
-from modules.builder import CollectionBuilder  # noqa: E402
+from modules.builder import CollectionBuilder, prefetch_gather_ids  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.request import Requests  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
@@ -471,6 +472,7 @@ def start(attrs):
         my_requests = Requests(local_version, local_part, env_branch, git_branch, verify_ssl=False if run_args["no-verify-ssl"] else True)
         # Startup banner doubles as a mount-verification tripwire - missing despite --timings/KOMETA_TIMINGS means the mounted /modules code was silently ignored.
         timings.registry.banner()
+        timings.registry.enable_plex_request_log(logger.log_dir)
         timings.registry.set_meta(
             kometa_version=str(my_requests.local),
             git_sha=timings.git_sha(),
@@ -653,6 +655,9 @@ def start(attrs):
             except Failed as e:
                 logger.stacktrace()
                 logger.error(f"Webhooks Error: {e}")
+            # Shut down the run's thread pool before closing Cache - no worker may still be touching the SQLite connection during teardown
+            if config.thread_pool:
+                config.thread_pool.shutdown(wait=True)
             # Close cache connection to clean up WAL/SHM files
             if config.Cache:
                 config.Cache.close()
@@ -864,6 +869,7 @@ def start(attrs):
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
             timings.registry.export(logger.log_dir)
+        timings.registry.close_plex_request_log()
 
         start_str = start_time.strftime("%H:%M:%S %Y-%m-%d")
         end_str = end_time.strftime("%H:%M:%S %Y-%m-%d")
@@ -1080,12 +1086,16 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if run_args["delete-collections"] and not run_args["playlists-only"]:
+            if (run_args["delete-collections"] or run_args["delete-collections-labels"]) and not run_args["playlists-only"]:
                 time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
+                    if run_args["delete-collections-labels"]:
+                        removed_count = library.remove_smart_label_for_collection(collection)
+                        if removed_count:
+                            logger.info(f"Label '{collection.title}' Removed from {removed_count} item{'s' if removed_count != 1 else ''}")
                     try:
                         library.delete_collection(collection)
                         logger.info(f"Collection {collection.title} Deleted")
@@ -1285,12 +1295,16 @@ def run_collection(config, library, metadata, requested_collections):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                for method, value in builder.builders:
+                # Experiment C: non-Plex gather_ids calls for this collection's builders start running in the background now; Plex-method builders (None here) still run inline below, on the main thread, in order.
+                prefetched = prefetch_gather_ids(config, builder)
+                for i, (method, value) in enumerate(builder.builders):
                     logger.debug("")
                     logger.debug(f"Builder: {method}: {value}")
                     logger.info("")
                     try:
-                        builder.filter_and_save_items(builder.gather_ids(method, value))
+                        pending = prefetched[i]
+                        ids = pending.result() if pending is not None else builder.gather_ids(method, value)
+                        builder.filter_and_save_items(ids)
                     except BuilderValidationError:
                         raise
                     except OverlayError:

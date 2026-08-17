@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest
 from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
-from modules.builder import CollectionBuilder
+from modules.builder import CollectionBuilder, prefetch_gather_ids
 from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
 logger = util.logger
@@ -108,6 +108,8 @@ class Overlays:
             timings.registry.library_ctx = self.library.name
             # Items freshly composed this run - flushed every plex_bulk_edit_batch_size items (if set), else once at the end.
             overlay_label_items = []
+            # Pre-warms reload data for every item in this overlay pass in batched requests instead of one per item - see plex.py's bulk_reload().
+            self.library.bulk_reload([item for item, _ in key_to_overlays.values()], force=self.library.reapply_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
@@ -515,12 +517,16 @@ class Overlays:
 
                         builder.display_filters()
 
-                        for method, value in builder.builders:
+                        # Experiment C: non-Plex gather_ids calls for this overlay's builders start running in the background now; Plex-method builders (None here) still run inline below, on the main thread, in order.
+                        prefetched = prefetch_gather_ids(self.config, builder)
+                        for i, (method, value) in enumerate(builder.builders):
                             logger.debug("")
                             logger.debug(f"Builder: {method}: {value}")
                             logger.info("")
                             try:
-                                builder.filter_and_save_items(builder.gather_ids(method, value))
+                                pending = prefetched[i]
+                                ids = pending.result() if pending is not None else builder.gather_ids(method, value)
+                                builder.filter_and_save_items(ids)
                             except Failed as e:
                                 if builder.ignore_blank_results:
                                     logger.info("")

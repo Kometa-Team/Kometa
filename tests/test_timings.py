@@ -105,6 +105,32 @@ def test_timed_decorator_is_noop_when_disabled(disabled_registry):
     assert len(disabled_registry.buckets) == 0
 
 
+def test_reset_clears_accumulator_state_and_restamps_start_time(enabled_registry):
+    enabled_registry.record("gather_ids", 1.5, library="Movies", collection="Marvel", source="tmdb")
+    enabled_registry.record_cache("query_thing", 0.2, hit=True)
+    enabled_registry.set_meta(kometa_version="2.4.4-build57")
+    enabled_registry._banner_logged = True
+    old_start_time = enabled_registry.start_time
+    time.sleep(0.01)
+
+    enabled_registry.reset()
+
+    assert enabled_registry.buckets == {}
+    assert enabled_registry.cache_hits == {}
+    assert enabled_registry.cache_misses == {}
+    assert enabled_registry.cache_seconds == {}
+    assert enabled_registry.meta == {}
+    assert enabled_registry._banner_logged is False
+    assert enabled_registry.start_time > old_start_time
+
+
+def test_reset_scopes_total_wall_time_to_the_run_since_reset(enabled_registry):
+    time.sleep(0.02)
+    enabled_registry.reset()
+    elapsed = enabled_registry.total_wall_time()
+    assert elapsed < 0.02
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Cache hit/miss wrapping
 # ═══════════════════════════════════════════════════════════════════════
@@ -267,10 +293,29 @@ def test_overlay_context_tags_network_calls_via_instrument_session(enabled_regis
 
 
 def test_hostname_to_source_recognises_registered_plex_and_arr_hosts(enabled_registry):
-    enabled_registry.set_plex_hostname("plex.example.com")
-    enabled_registry.register_arr_host("radarr.example.com", "radarr")
+    enabled_registry.set_plex_hostname("http://plex.example.com:32400")
+    enabled_registry.register_arr_host("http://radarr.example.com:7878", "radarr")
     assert hostname_to_source("http://plex.example.com:32400/library") == "plex"
     assert hostname_to_source("http://radarr.example.com:7878/api") == "radarr"
+
+
+def test_hostname_to_source_distinguishes_same_host_different_ports(enabled_registry):
+    """Regression test for the mistagging bug found via the 2026-07-27 plex-call census: Radarr/Sonarr sharing
+    a Docker host address with Plex (e.g. host.docker.internal on different ports) must not collapse to the
+    same source tag just because the bare hostname matches."""
+    enabled_registry.set_plex_hostname("http://host.docker.internal:32400")
+    enabled_registry.register_arr_host("http://host.docker.internal:7878", "radarr")
+    enabled_registry.register_arr_host("http://host.docker.internal:8989", "sonarr")
+    assert hostname_to_source("http://host.docker.internal:32400/library/metadata/123") == "plex"
+    assert hostname_to_source("http://host.docker.internal:7878/api/v3/qualityProfile") == "radarr"
+    assert hostname_to_source("http://host.docker.internal:8989/api/v3/qualityProfile") == "sonarr"
+
+
+def test_hostname_to_source_still_accepts_bare_hostname_registration(enabled_registry):
+    """set_plex_hostname()/register_arr_host() must keep accepting a bare host[:port] string, not just a full
+    URL, so any caller that already extracted a hostname (rather than passing self.url) still works."""
+    enabled_registry.set_plex_hostname("plex.example.com")
+    assert hostname_to_source("http://plex.example.com/library") == "plex"
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -1239,6 +1239,49 @@ class TestBatchEditTags:
         assert called_chunks == [shows, seasons]
 
 
+class TestRemoveSmartLabelForCollection:
+    def test_no_matching_plex_label_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=False)
+        plex.search = MagicMock()
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_not_called()
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_but_no_labeled_items_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        plex.search = MagicMock(return_value=[])
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_batch_removes_from_labeled_items_only(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+        plex.search = MagicMock(return_value=items)
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 3
+        plex.smart_label_check.assert_called_once_with("Apple TV+")
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_called_once_with(items, "label", remove_tags=["Apple TV+"])
+
+
 class TestBatchAddLabel:
     def test_noop_when_no_items(self):
         plex = make_plex()
@@ -1327,6 +1370,115 @@ class TestBatchEditField:
         assert mock_section.batchMultiEdits.call_count == 2
         called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
         assert called_chunks == [shows, seasons]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# bulk_reload (batch-prefetch via PMS's comma-separated /library/metadata/{ids})
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def make_batch_element(rating_key: int) -> MagicMock:
+    """A fake plexapi XML element as returned by PlexServer.query() for a batch metadata fetch."""
+    element = MagicMock()
+    element.attrib = {"ratingKey": str(rating_key)}
+    return element
+
+
+class TestBulkReload:
+    def test_ids_in_same_objects_out(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item2 = make_plex_item(rating_key=2, type="movie")
+        for item in (item1, item2):
+            item._buildDetailsKey = MagicMock(return_value="/library/metadata/1,2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1), make_batch_element(2)])
+        plex.item_reload = MagicMock()
+
+        plex.bulk_reload([item1, item2])
+
+        assert plex.cached_items[1] == (item1, True)
+        assert plex.cached_items[2] == (item2, True)
+        item1._invalidateCacheAndLoadData.assert_called_once()
+        item2._invalidateCacheAndLoadData.assert_called_once()
+        plex.item_reload.assert_not_called()
+
+    def test_missing_ratingkey_falls_back_to_single_item_reload(self):
+        """A dropped/invalid ratingKey in the batch response must still get reloaded, not silently skipped."""
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item2 = make_plex_item(rating_key=2, type="movie")
+        for item in (item1, item2):
+            item._buildDetailsKey = MagicMock(return_value="/library/metadata/1,2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+        plex.item_reload = MagicMock(side_effect=lambda i: i)
+
+        plex.bulk_reload([item1, item2])
+
+        plex.item_reload.assert_called_once_with(item2)
+        assert plex.cached_items[1] == (item1, True)
+        assert plex.cached_items[2] == (item2, True)
+
+    def test_whole_chunk_http_failure_falls_back_for_every_item(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(side_effect=BadRequest("boom"))
+        plex.item_reload = MagicMock(side_effect=lambda i: i)
+
+        plex.bulk_reload([item1])
+
+        plex.item_reload.assert_called_once_with(item1)
+        assert plex.cached_items[1] == (item1, True)
+
+    def test_skips_items_already_fully_cached_when_not_forced(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        plex = make_plex(cached_items={1: (item1, True)})
+        plex.PlexServer.query = MagicMock()
+
+        plex.bulk_reload([item1])
+
+        plex.PlexServer.query.assert_not_called()
+
+    def test_force_refetches_even_if_already_cached(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex(cached_items={1: (item1, True)})
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+
+        plex.bulk_reload([item1], force=True)
+
+        plex.PlexServer.query.assert_called_once()
+
+    def test_empty_items_is_a_noop(self):
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock()
+
+        plex.bulk_reload([])
+
+        plex.PlexServer.query.assert_not_called()
+
+    def test_mixed_types_are_batched_in_separate_requests(self):
+        movie = make_plex_item(rating_key=1, type="movie")
+        show = make_plex_item(rating_key=2, type="show")
+        movie._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        show._buildDetailsKey = MagicMock(return_value="/library/metadata/2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(side_effect=[[make_batch_element(1)], [make_batch_element(2)]])
+
+        plex.bulk_reload([movie, show])
+
+        assert plex.PlexServer.query.call_count == 2
+
+    def test_reloaded_item_clears_stale_filter_attr_cache(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex(filter_attr_cache={(1, "genres"): ["stale"], (2, "genres"): ["untouched"]})
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+
+        plex.bulk_reload([item1])
+
+        assert (1, "genres") not in plex.filter_attr_cache
+        assert (2, "genres") in plex.filter_attr_cache
 
 
 # ═══════════════════════════════════════════════════════════════════════

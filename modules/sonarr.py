@@ -1,5 +1,3 @@
-from urllib.parse import urlparse
-
 from arrapi import SonarrAPI
 from arrapi.exceptions import ArrException
 
@@ -36,7 +34,7 @@ class Sonarr:
         logger.secret(self.token)
         try:
             self.api = SonarrAPI(self.url, self.token, session=self.requests.session)
-            timings.registry.register_arr_host(urlparse(self.url).hostname, "sonarr")
+            timings.registry.register_arr_host(self.url, "sonarr")
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"], params["language_profile"])  # noqa
             self.profiles = self.api.quality_profile()
