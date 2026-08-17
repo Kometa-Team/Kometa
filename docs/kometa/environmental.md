@@ -649,7 +649,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-labels
             ```
 
-??? blank "Delete Collections + Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dcl`/`--delete-collections-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS_LABELS`<a class="headerlink" href="#delete-collections-labels" title="Permanent link">¶</a>"
+??? blank "Delete Collections + Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--dcl`/`--delete-collections-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS_LABELS`<a class="headerlink" href="#delete-collections-labels" title="Permanent link">¶</a>"
 
     <div id="delete-collections-labels" />Delete all collections in each library as the first step in the run, same as [Delete Collections](#delete-collections) above. For any deleted collection whose title matches an existing Plex label of the same name - the default for [Smart Label Collections](../files/settings/#smart-label-definitions) - also batch-removes that one label from just the items that currently have it, instead of the full library-wide label wipe [Delete Labels](#delete-labels) does.
 
@@ -657,9 +657,13 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
         This only detects Smart Label collections using the default label name (the collection's own title). A collection using a custom `smart_label` name won't be matched, since that name isn't known until the config is parsed - use [Delete Labels](#delete-labels) for those.
 
+    ???+ danger "Use `--dcl`, not `-dcl`"
+
+        This flag only has double-dash forms. `-dc` and `-dl` are single-dash because they're exactly 2 characters - Kometa's own convention for short flags - but `-dcl` is 3 characters, and a single dash there collides with `-d`/`--divider` (a flag that takes a value): `-dcl` on the command line is parsed as `-d` with value `cl`, silently corrupting your divider character (every separator renders as a wall of `c`s) and never actually triggering this flag. Always use `--dcl` or `--delete-collections-labels`, never a single dash.
+
     <hr style="margin: 0px;">
 
-    **Shell Flags:** `-dcl` or `--delete-collections-labels` (ex. `--delete-collections-labels`)
+    **Shell Flags:** `--dcl` or `--delete-collections-labels` (ex. `--delete-collections-labels`)
 
     **Environment Variable:** `KOMETA_DELETE_COLLECTIONS_LABELS` (ex. `KOMETA_DELETE_COLLECTIONS_LABELS=true`)
 
