@@ -1965,6 +1965,28 @@
             "append"
           ]
         },
+        "threading": {
+          "description": "Used to control Kometa's shared thread pool for concurrent processing.\nControls the shared thread pool Kometa uses to run some work concurrently instead of one call at a time.",
+          "type": "object",
+          "properties": {
+            "workers": {
+              "description": "Number of worker threads in the shared thread pool.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "prefetch_collection_children": {
+              "description": "Defers a sync-enabled collection's \"what to remove\" lookup, and Plex item-reload batching in the operations and overlay loops, to the thread pool instead of blocking the main collection loop.",
+              "type": "boolean"
+            },
+            "tmdb_pages": {
+              "type": "string"
+            },
+            "parallel_sources": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "minimum_items": {
           "description": "Used to control minimum items requires to build a collection/playlist.\nSet the minimum number of items that must be found in order to build or update a collection/playlist.",
           "type": "integer",
