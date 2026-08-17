@@ -1640,6 +1640,16 @@ class Plex(Library):
                 total_sent += len(chunk)
         logger.exorcise()
 
+    def remove_smart_label_for_collection(self, collection):
+        # -dcl: Smart Label's default label is the collection's own title (see CollectionBuilder.smart_label). Custom smart_label names aren't detectable here, before config is parsed - returns 0, caller no-ops.
+        if not self.smart_label_check(collection.title):
+            return 0
+        labeled_items = self.search(label=collection.title)
+        if not labeled_items:
+            return 0
+        self.batch_edit_tags(labeled_items, "label", remove_tags=[collection.title])
+        return len(labeled_items)
+
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
         if after:

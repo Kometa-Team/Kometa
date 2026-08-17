@@ -1239,6 +1239,49 @@ class TestBatchEditTags:
         assert called_chunks == [shows, seasons]
 
 
+class TestRemoveSmartLabelForCollection:
+    def test_no_matching_plex_label_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=False)
+        plex.search = MagicMock()
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_not_called()
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_but_no_labeled_items_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        plex.search = MagicMock(return_value=[])
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_batch_removes_from_labeled_items_only(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+        plex.search = MagicMock(return_value=items)
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 3
+        plex.smart_label_check.assert_called_once_with("Apple TV+")
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_called_once_with(items, "label", remove_tags=["Apple TV+"])
+
+
 class TestBatchAddLabel:
     def test_noop_when_no_items(self):
         plex = make_plex()

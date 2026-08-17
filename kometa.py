@@ -109,6 +109,7 @@ arguments = {
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
     "delete-labels": {"args": ["dl", "delete-label"], "type": "bool", "help": "Deletes all Labels in the Plex Library before running"},
+    "delete-collections-labels": {"args": ["dcl", "delete-collection-label"], "type": "bool", "help": "Deletes all Collections; for any that match an existing Plex label of the same name, batch-removes that label from just the items that have it"},
     "resume": {"args": "re", "type": "str", "help": "Resume collection run from a specific collection"},
     "no-countdown": {"args": "nc", "type": "bool", "help": "Run without displaying the countdown"},
     "no-missing": {"args": "nm", "type": "bool", "help": "Run without running the missing section"},
@@ -1085,12 +1086,16 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.debug(f"Optimize: {library.optimize}")
             logger.debug(f"Timeout: {library.timeout}")
 
-            if run_args["delete-collections"] and not run_args["playlists-only"]:
+            if (run_args["delete-collections"] or run_args["delete-collections-labels"]) and not run_args["playlists-only"]:
                 time_start = datetime.now()
                 logger.info("")
                 logger.separator(f"Deleting all Collections from the {library.name} Library", space=False, border=False)
                 logger.info("")
                 for collection in library.get_all_collections():
+                    if run_args["delete-collections-labels"]:
+                        removed_count = library.remove_smart_label_for_collection(collection)
+                        if removed_count:
+                            logger.info(f"Label '{collection.title}' Removed from {removed_count} item{'s' if removed_count != 1 else ''}")
                     try:
                         library.delete_collection(collection)
                         logger.info(f"Collection {collection.title} Deleted")
