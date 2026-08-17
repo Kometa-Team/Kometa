@@ -7,6 +7,7 @@ filtering, deletion, and method dispatching.
 
 from __future__ import annotations
 
+import contextlib
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -399,7 +400,7 @@ class TestFilterAndSaveItems:
         library.fetch_item.side_effect = lambda rating_key: items[rating_key]
         builder = make_builder(
             library=library,
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
             check_filters=MagicMock(side_effect=[False, True]),
         )
@@ -1002,7 +1003,7 @@ class TestGatherIds:
         tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
         library = SimpleNamespace(Tracearr=tracearr)
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=library,
             libraries=[library],
             playlist=False,
@@ -1023,7 +1024,7 @@ class TestGatherIds:
         show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
         libraries = [movie_library, show_library]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=movie_library,
             libraries=libraries,
             playlist=True,
@@ -1046,7 +1047,7 @@ class TestGatherIds:
             SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
         ]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=libraries[0],
             libraries=libraries,
             playlist=True,
