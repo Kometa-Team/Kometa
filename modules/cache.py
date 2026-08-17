@@ -400,7 +400,7 @@ class Cache:
         self.migrate_overlay_value_cache()
 
     @property
-    def connection(self):
+    def connection(self) -> "_LockedConnection":
         # One shared connection for the life of the run; opening a fresh one per
         # query costs a file open + schema parse and previously was never closed.
         # `with self.connection:` still commits per block exactly as before.
@@ -414,6 +414,7 @@ class Cache:
             self._connection = connection
             # Built once and reused - callers doing `cache.connection is cache.connection` (or holding onto it across calls, e.g. set_trace_callback) need a stable object, not a fresh wrapper every access.
             self._locked_connection = _LockedConnection(self._connection, self._lock)
+        assert self._locked_connection is not None
         return self._locked_connection
 
     def close(self):
