@@ -111,6 +111,22 @@ vars_by_type = {
 }
 
 
+def get_text_variables(text, level):
+    variables = set()
+    valid_variables = set(vars_by_type[level])
+    for token in re.findall(r"<<([^>]+)>>", text):
+        if token.startswith("originally_available["):
+            variables.add("originally_available")
+            continue
+        if token not in valid_variables:
+            continue
+        for variable, modifiers in var_mods.items():
+            if token in {f"{variable}{modifier}" for modifier in modifiers}:
+                variables.add(variable)
+                break
+    return variables
+
+
 def get_canvas_size(item):
     if isinstance(item, Episode):
         return landscape_dim
@@ -135,6 +151,7 @@ class Overlay:
         self.image = None
         self.backdrop_box = None
         self.backdrop_text = None
+        self.variables = set()
         self.group = None
         self.queue = None
         self.queue_name = None
@@ -322,6 +339,7 @@ class Overlay:
             box = self.image.size if self.image else None
             self.backdrop_box = box
             self.backdrop_text = self.name[5:-1]
+            self.variables = get_text_variables(self.backdrop_text, self.level)
         elif self.name.startswith("backdrop"):
             self.backdrop_box = self.back_box
             if self.horizontal_offset is None:

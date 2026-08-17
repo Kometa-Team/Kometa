@@ -79,6 +79,22 @@ class Operations:
         self.config = config
         self.library = library
 
+    def _uses_mdblist(self):
+        sources = [
+            self.library.mass_audience_rating_update,
+            self.library.mass_critic_rating_update,
+            self.library.mass_user_rating_update,
+            self.library.mass_content_rating_update,
+            self.library.mass_originally_available_update,
+            self.library.mass_added_at_update,
+        ]
+        return any(str(option).startswith("mdb") for source in sources if source for option in util.get_list(source, split=False, return_none=False))
+
+    def _prefetch_mdblist(self, items):
+        if not self._uses_mdblist() or self.config.MDBList.limit is not False:
+            return
+        self.library.prefetch_mdblist(items)
+
     def _sync_serializd_watched(self, item, tmdb_id):
         watched_by_season = {}
         for episode in self.library.cached_item_subitems(item, "episodes"):
@@ -196,6 +212,7 @@ class Operations:
 
             items = self.library.get_all()
             total_items = len(items)
+            self._prefetch_mdblist(items)
 
             radarr_adds = []
             sonarr_adds = []

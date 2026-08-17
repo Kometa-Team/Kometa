@@ -30,6 +30,25 @@ class Overlays:
                 extensions_by_ratingkey.setdefault(stem, set()).add(ext)
         return extensions_by_ratingkey
 
+    def _prefetch_mdblist(self, key_to_overlays, properties):
+        items = []
+        for item, over_names in key_to_overlays.values():
+            variables = sorted({variable for over_name in over_names for variable in properties[over_name].variables if variable.startswith("mdb")})
+            if not variables:
+                continue
+            if self.cache:
+                needs_fetch = False
+                for variable in variables:
+                    cached_value, expired = self.cache.query_overlay_value_cache(item.ratingKey, variable)
+                    if cached_value is None or expired:
+                        needs_fetch = True
+                        break
+                if not needs_fetch:
+                    continue
+            items.append(item)
+        if items:
+            self.library.prefetch_mdblist(items)
+
     def run_overlays(self):
         overlay_start = datetime.now()
         logger.info("")
@@ -42,6 +61,7 @@ class Overlays:
         properties = {}
         if not self.library.remove_overlays:
             key_to_overlays, properties = self.compile_overlays()
+            self._prefetch_mdblist(key_to_overlays, properties)
         ignore_list = [rk for rk in key_to_overlays]
 
         old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]

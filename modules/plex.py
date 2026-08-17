@@ -2371,6 +2371,50 @@ class Plex(Library):
             imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
+    def prefetch_mdblist(self, items):
+        if self.config.MDBList.limit is not False:
+            return
+        primary_ids = []
+        imdb_ids = []
+        imdb_by_primary_id = {}
+        seen_items = set()
+        for item in items:
+            item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id.ratingKey in seen_items:
+                continue
+            seen_items.add(item_to_id.ratingKey)
+            tmdb_id, tvdb_id, imdb_id = self.get_ids(item_to_id)
+            primary_id = tmdb_id if self.is_movie else tvdb_id
+            if primary_id:
+                primary_ids.append(primary_id)
+                if imdb_id:
+                    imdb_by_primary_id[primary_id] = imdb_id
+            elif imdb_id:
+                imdb_ids.append(imdb_id)
+
+        media_type = "movie" if self.is_movie else "show"
+        primary_provider = "tmdb" if self.is_movie else "tvdb"
+        if primary_ids:
+            try:
+                primary_results = self.config.MDBList.get_items(primary_provider, media_type, primary_ids)
+                imdb_ids.extend(imdb_by_primary_id[primary_id] for primary_id in primary_ids if primary_id not in primary_results and primary_id in imdb_by_primary_id)
+            except LimitReached as err:
+                logger.debug(err)
+                return
+            except Failed as err:
+                logger.error(str(err))
+                imdb_ids.extend(imdb_by_primary_id.values())
+        if imdb_ids and self.config.MDBList.limit is False:
+            try:
+                imdb_results = self.config.MDBList.get_items("imdb", media_type, list(dict.fromkeys(imdb_ids)))
+                for primary_id, imdb_id in imdb_by_primary_id.items():
+                    if imdb_id in imdb_results:
+                        self.config.MDBList.cache_item_alias(primary_provider, media_type, primary_id, imdb_results[imdb_id])
+            except LimitReached as err:
+                logger.debug(err)
+            except Failed as err:
+                logger.error(str(err))
+
     def get_ratings(self, item):
         ratings = {
             "plex_imdb": None,

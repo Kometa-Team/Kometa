@@ -1,6 +1,6 @@
 [project]
 name = "kometa"
-version = "2.4.8"
+version = "2.4.7"
 description = "Metadata editor for Plex"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -154,6 +154,7 @@ dev = [
     "requests==2.34.2",
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
+    "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git",
     "setuptools==84.0.0",
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",

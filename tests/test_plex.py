@@ -13,6 +13,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
+from plexapi.video import Episode
 from requests.exceptions import ConnectionError, ReadTimeout
 from tenacity import wait_none
 
@@ -87,6 +88,74 @@ def make_plex_item(
 # ═══════════════════════════════════════════════════════════════════════
 # image_update
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestMDBListPrefetch:
+    def test_prefetches_movie_tmdb_ids_and_imdb_fallbacks(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=False))
+        plex = make_plex(config=config)
+        items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2), make_plex_item(rating_key=3)]
+        plex.get_ids = MagicMock(side_effect=[(101, None, "tt1"), (None, None, "tt2"), (303, None, None)])
+        config.MDBList.get_items.side_effect = [{101: MagicMock(), 303: MagicMock()}, {"tt2": MagicMock()}]
+
+        plex.prefetch_mdblist(items)
+
+        assert config.MDBList.get_items.call_args_list == [
+            (("tmdb", "movie", [101, 303]),),
+            (("imdb", "movie", ["tt2"]),),
+        ]
+
+    def test_prefetches_show_tvdb_ids_and_deduplicates_items(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=False))
+        plex = make_plex(config=config, is_movie=False, is_show=True)
+        item = make_plex_item(rating_key=1)
+        plex.get_ids = MagicMock(return_value=(1001, 2001, "tt1"))
+        config.MDBList.get_items.return_value = {2001: MagicMock()}
+
+        plex.prefetch_mdblist([item, item])
+
+        config.MDBList.get_items.assert_called_once_with("tvdb", "show", [2001])
+        plex.get_ids.assert_called_once_with(item)
+
+    def test_episode_items_are_deduplicated_by_parent_show(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=False))
+        plex = make_plex(config=config, is_movie=False, is_show=True)
+        show = make_plex_item(rating_key=10)
+        first = MagicMock(spec=Episode)
+        second = MagicMock(spec=Episode)
+        first.show.return_value = show
+        second.show.return_value = show
+        plex.get_ids = MagicMock(return_value=(None, 2001, "tt1"))
+        config.MDBList.get_items.return_value = {2001: MagicMock()}
+
+        plex.prefetch_mdblist([first, second])
+
+        config.MDBList.get_items.assert_called_once_with("tvdb", "show", [2001])
+        plex.get_ids.assert_called_once_with(show)
+
+    def test_does_not_prefetch_after_limit_reached(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=True))
+        plex = make_plex(config=config)
+
+        plex.prefetch_mdblist([make_plex_item()])
+
+        config.MDBList.get_items.assert_not_called()
+
+    def test_uses_imdb_fallback_when_primary_batch_omits_item(self):
+        config = SimpleNamespace(MDBList=MagicMock(limit=False))
+        plex = make_plex(config=config)
+        items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2)]
+        fallback = MagicMock()
+        plex.get_ids = MagicMock(side_effect=[(101, None, "tt1"), (202, None, "tt2")])
+        config.MDBList.get_items.side_effect = [{101: MagicMock()}, {"tt2": fallback}]
+
+        plex.prefetch_mdblist(items)
+
+        assert config.MDBList.get_items.call_args_list == [
+            (("tmdb", "movie", [101, 202]),),
+            (("imdb", "movie", ["tt2"]),),
+        ]
+        config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
 class TestImageUpdate:
