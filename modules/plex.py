@@ -1641,7 +1641,7 @@ class Plex(Library):
         logger.exorcise()
 
     def remove_smart_label_for_collection(self, collection):
-        # -dcl: Smart Label's default label is the collection's own title (see CollectionBuilder.smart_label). Custom smart_label names aren't detectable here, before config is parsed - returns 0, caller no-ops.
+        # --delete-collections-labels: Smart Label's default label is the collection's own title (see CollectionBuilder.smart_label). Custom smart_label names aren't detectable here, before config is parsed - returns 0, caller no-ops.
         if not self.smart_label_check(collection.title):
             return 0
         labeled_items = self.search(label=collection.title)

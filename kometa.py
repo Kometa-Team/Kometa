@@ -109,7 +109,7 @@ arguments = {
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
     "delete-labels": {"args": ["dl", "delete-label"], "type": "bool", "help": "Deletes all Labels in the Plex Library before running"},
-    "delete-collections-labels": {"args": ["dcl", "delete-collection-label"], "type": "bool", "help": "Deletes all Collections; for any that match an existing Plex label of the same name, batch-removes that label from just the items that have it"},
+    "delete-collections-labels": {"args": "delete-collection-label", "type": "bool", "help": "Deletes all Collections; for any that match an existing Plex label of the same name, batch-removes that label from just the items that have it"},
     "resume": {"args": "re", "type": "str", "help": "Resume collection run from a specific collection"},
     "no-countdown": {"args": "nc", "type": "bool", "help": "Run without displaying the countdown"},
     "no-missing": {"args": "nm", "type": "bool", "help": "Run without running the missing section"},
