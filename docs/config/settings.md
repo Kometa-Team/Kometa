@@ -1097,6 +1097,37 @@ The available setting attributes which can be set at each level are outlined bel
 
 
 
+??? blank "`threading` - Used to control Kometa's shared thread pool for concurrent processing.<a class="headerlink" href="#threading" title="Permanent link">¶</a>"
+
+    <div id="threading" />Controls the shared thread pool Kometa uses to run some work concurrently instead of one call at a time. See [Timing Instrumentation](../kometa/environmental.md#timings) if you want to measure the effect of these settings against your own library.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `threading`
+
+    **Levels with this Attribute:** Global
+
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of the sub-attributes below.
+
+    <table class="clearTable">
+      <tr><td>`workers`</td><td>Number of worker threads in the shared thread pool. Accepts any integer of `1` or greater.</td></tr>
+      <tr><td>`prefetch_collection_children`</td><td>Defers a sync-enabled collection's "what to remove" lookup, and Plex item-reload batching in the operations and overlay loops, to the thread pool instead of blocking the main collection loop. Accepts `true` or `false`.</td></tr>
+    </table>
+
+    **Default Value:** `workers: 4`, `prefetch_collection_children: true`
+
+    ???+ note "Other sub-attributes"
+
+        `threading` has a couple of additional experimental sub-attributes (`tmdb_pages`, `parallel_sources`) that are off by default and intentionally undocumented; they exist for internal bake-off testing and aren't expected to help most libraries. Leave them unset.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          threading:
+            workers: 8
+        ```
+
 ??? blank "`tvdb_language` - Specify the language to query TVDb in.<a class="headerlink" href="#tvdb-language" title="Permanent link">¶</a>"
 
     <div id="tvdb-language" />Specify the language to query TVDb in.
