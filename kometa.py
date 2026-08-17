@@ -1087,7 +1087,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 logger.info("")
                 for collection in library.get_all_collections():
                     try:
-                        library.delete(collection)
+                        library.delete_collection(collection)
                         logger.info(f"Collection {collection.title} Deleted")
                     except Failed as e:
                         logger.error(e)
@@ -1344,7 +1344,6 @@ def run_collection(config, library, metadata, requested_collections):
                 if builder.details["delete_below_minimum"] and builder.obj:
                     logger.info("")
                     logger.info(builder.delete())
-                    library.stats["deleted"] += 1
                     delete_status = f"Deleted; {delete_status}"
                 library.status[str(mapping_name)]["status"] = delete_status
 
@@ -1407,7 +1406,6 @@ def run_collection(config, library, metadata, requested_collections):
         except NotScheduled as e:
             logger.info(e)
             if str(e).endswith("and was deleted"):
-                library.stats["deleted"] += 1
                 library.status[str(mapping_name)]["status"] = "Deleted Not Scheduled"
             elif str(e).startswith("Skipped because run_definition"):
                 library.status[str(mapping_name)]["status"] = "Skipped Run Definition"

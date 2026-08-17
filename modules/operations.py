@@ -1637,7 +1637,7 @@ class Operations:
 
                 if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:
-                        self.library.delete(col)
+                        self.library.delete_collection(col)
                         logger.info(f"{col.title} Deleted")
                     except Failed as e:
                         logger.error(e)

@@ -385,6 +385,36 @@ def test_collection_names_used_not_collections():
 
 
 # ---------------------------------------------------------------------------
+# delete_collections run-end statistics
+# ---------------------------------------------------------------------------
+
+
+def test_delete_collections_counts_successful_deletions_in_run_stats():
+    """Library-operation deletions must be included in the run-end notification total."""
+    collections = [make_col("Biopic Movies"), make_col("Musical Movies")]
+    library = make_title_test_library([])
+    library.name = "Movies"
+    library.items_library_operation = False
+    library.delete_collections = {"managed": True, "configured": None, "less": None, "ignore_empty_smart_collections": True}
+    library.collection_names = []
+    library.collection_files = []
+    library.assets_for_all_collections = False
+    library.stats = {"deleted": 0}
+    library.get_all_collections.return_value = collections
+    library.item_labels.return_value = [SimpleNamespace(tag="Kometa")]
+
+    def delete_collection(_collection):
+        library.stats["deleted"] += 1
+
+    library.delete_collection.side_effect = delete_collection
+
+    Operations(config=MagicMock(), library=library).run_operations()
+
+    assert library.stats["deleted"] == 2
+    assert library.delete_collection.call_count == 2
+
+
+# ---------------------------------------------------------------------------
 # remove_title_parentheses batching (run_operations / items_library_operation)
 # ---------------------------------------------------------------------------
 
@@ -456,7 +486,7 @@ def make_title_test_library(items):
         setattr(library, flag, False)
 
     library.get_all.return_value = items
-    library.reload.side_effect = lambda item: item
+    library.reload.side_effect = lambda item, **_: item
     library.item_has_ignore_label.return_value = False
     library.get_ids.return_value = (None, None, None)
     library.load_list_from_cache.side_effect = lambda keys: [items_by_key[k] for k in keys]

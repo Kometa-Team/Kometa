@@ -1267,7 +1267,7 @@ class CollectionBuilder:
             for del_col in util.parse(self.Type, "delete_collections_named", self.data, datatype="strlist", methods=methods):
                 try:
                     del_obj = self.library.get_collection(del_col, force_search=True)
-                    self.library.delete(del_obj)
+                    self.library.delete_collection(del_obj)
                     logger.info(f"Collection: {del_obj.title} deleted")
                 except Failed as e:
                     if str(e).startswith("Plex Error: Failed to delete"):
@@ -5732,7 +5732,7 @@ class CollectionBuilder:
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
         elif self.obj:
-            self.library.delete(self.obj)
+            self.library.delete_collection(self.obj)
         if self.obj:
             self.deleted = True
         return output
