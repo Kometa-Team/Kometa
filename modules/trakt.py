@@ -277,7 +277,7 @@ class Trakt:
 
     def get_episode_rating(self, show_id, season, episode):
         response = self._request(f"/shows/{show_id}/seasons/{season}/episodes/{episode}/ratings")
-        return response["rating"]
+        return response.get("rating") if isinstance(response, dict) else None
 
     def get_item_images(self, item_id, media_type, season=None, episode=None):
         if media_type not in ["movie", "show"]:

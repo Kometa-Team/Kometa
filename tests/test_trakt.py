@@ -51,6 +51,12 @@ class TestTrakt:
         adapter._request.return_value = [{"ids": {"slug": "my-list"}}]
         assert adapter.slugs == ["my-list"]
 
+    def test_missing_episode_rating_returns_none(self, adapter):
+        adapter._request.return_value = []
+
+        assert adapter.get_episode_rating("tt0103359", 2, 15) is None
+        adapter._request.assert_called_once_with("/shows/tt0103359/seasons/2/episodes/15/ratings")
+
 
 class TestTraktAuthorization:
     @pytest.fixture
