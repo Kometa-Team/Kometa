@@ -51,7 +51,6 @@ class TestTrakt:
         adapter._request.return_value = [{"ids": {"slug": "my-list"}}]
         assert adapter.slugs == ["my-list"]
 
-
     def test_missing_episode_rating_returns_none(self, adapter):
         adapter._request.return_value = []
 
