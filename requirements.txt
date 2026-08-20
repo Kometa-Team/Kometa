@@ -14,7 +14,7 @@ PlexAPI==4.18.2
 psutil==7.2.2
 pyinstrument==5.1.3
 python-dateutil==2.9.0.post0
-python-dotenv==1.2.2
+python-dotenv==1.2.3
 pywin32==312; sys_platform == 'win32'
 requests==2.34.2
 ruamel.yaml==0.19.1
