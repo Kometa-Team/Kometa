@@ -55,6 +55,9 @@
     "yamtrack": {
       "$ref": "#/definitions/yamtrack-api"
     },
+    "flicklist": {
+      "$ref": "#/definitions/flicklist-api"
+    },
     "serializd": {
       "$ref": "#/definitions/serializd-api"
     },
@@ -1130,6 +1133,17 @@
       },
       "required": [],
       "title": "yamtrack"
+    },
+    "flicklist-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "api_key": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "flicklist"
     },
     "floppy-api": {
       "type": "object",
@@ -4507,7 +4521,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {

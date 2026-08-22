@@ -9,6 +9,7 @@ from modules.apprise_notify import AppriseNotify
 from modules.cache import Cache
 from modules.convert import Convert
 from modules.ergast import Ergast
+from modules.flicklist import FlickList
 from modules.floppy import Floppy
 from modules.github import GitHub
 from modules.gotify import Gotify
@@ -1278,6 +1279,28 @@ class ConfigFile:
                 logger.info(f"YamTrack Connection {'Failed' if self.YamTrack is None else 'Successful'}")
             else:
                 logger.info("yamtrack attribute not found")
+
+            logger.separator()
+
+            self.FlickList = None
+            if "flicklist" in self.data:
+                logger.info("Connecting to FlickList...")
+                try:
+                    flicklist_obj = FlickList(
+                        self.Requests,
+                        self.read_only,
+                        {"api_key": check_for_attribute(self.data, "api_key", parent="flicklist", throw=True)},
+                    )
+                    flicklist_obj.test_connection()
+                    self.FlickList = flicklist_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"FlickList Connection {'Failed' if self.FlickList is None else 'Successful'}")
+            else:
+                logger.info("flicklist attribute not found")
 
             logger.separator()
 
