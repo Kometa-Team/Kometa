@@ -102,9 +102,11 @@
                 "show_missing": { "type": "boolean" },
                 "show_unfiltered": { "type": "boolean" },
                 "sync_missing_to_trakt_list": { "type": "boolean" },
+                "sync_missing_to_flicklist_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
                 "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
                 "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
+                "sync_to_flicklist_list": { "oneOf": [{ "type": "string" }, { "type": "integer" }], "description": "FlickList list id or name to sync this definition to. Created automatically if no matching list is found among your own lists." },
                 "test": { "type": "boolean" },
                 "tmdb_birthday": {
                     "type": "object", "additionalProperties": false,
