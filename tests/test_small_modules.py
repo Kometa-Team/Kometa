@@ -133,10 +133,18 @@ class TestTautulli:
         t = Tautulli.__new__(Tautulli)
         t.requests = MagicMock()
         t.api = "http://tautulli:8181/api/v2?apikey=fake"
+        t.apikey = "fake"
         t.library = MagicMock()
         t.library.is_movie = True
         t.has_section = False
         return t
+
+    def test_rate_limit_failure_propagates_from_json_request(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.tautulli.logger", FakeLogger())
+        adapter.requests.get_json.side_effect = Failed("URL Error: Too many requests - http://tautulli:8181/api/v2")
+
+        with pytest.raises(Failed, match="Too many requests"):
+            adapter._request("get_tautulli_info")
 
     def test_get_rating_keys_returns_list(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.tautulli.logger", FakeLogger())

@@ -7,8 +7,8 @@ from unittest.mock import MagicMock
 import pytest
 
 import modules.builder  # noqa: F401
-from tests.conftest import FakeLogger
 from modules.util import Failed
+from tests.conftest import FakeLogger
 
 
 class TestMyAnimeList:
