@@ -1,11 +1,13 @@
 import time
 
 from modules import util
+from modules.request import DEFAULT_TIMEOUT
 from modules.util import Failed
 
 logger = util.logger
 
 base_url = "https://flicklist.tv/api/v3"
+sync_batch_size = 1000
 builders = [
     "flicklist_list",
     "flicklist_list_details",
@@ -57,6 +59,9 @@ class FlickList:
         while True:
             if method == "POST":
                 response = self.requests.post(url, json=json_data, headers=headers)
+            elif method == "DELETE":
+                # No Requests.delete() wrapper exists yet; the raw session skips the tenacity retry get()/post() carry, but the 429 loop below still applies.
+                response = self.requests.session.delete(url, json=json_data, headers=headers, timeout=DEFAULT_TIMEOUT)
             else:
                 response = self.requests.get(url, headers=headers, params=params)
             if response.status_code != 429:
@@ -356,3 +361,110 @@ class FlickList:
             self._log_info(f"Processing {pretty}")
             return self._parse_ids(self._request_list("/sync/tracked"), is_movie=False)
         raise Failed(f"FlickList Error: Method {method} not supported")
+
+    def _resolve_list(self, list_id_or_name):
+        """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
+        as_id = None
+        if isinstance(list_id_or_name, int) and not isinstance(list_id_or_name, bool):
+            as_id = list_id_or_name
+        else:
+            text = str(list_id_or_name).strip()
+            if text.isdigit():
+                as_id = int(text)
+        own_lists = self._request_paginated("/sync/lists") or []
+        if as_id is not None:
+            for entry in own_lists:
+                if entry.get("id") == as_id:
+                    return as_id, False
+            raise Failed(f"FlickList Error: List id {as_id} not found among your own lists")
+        name = str(list_id_or_name).strip()
+        for entry in own_lists:
+            if str(entry.get("name") or "").strip() == name:
+                return entry.get("id"), False
+        created = self._request("/sync/lists", json_data={"name": name, "privacy": "private"}, method="POST")
+        new_id = created.get("id") if created else None
+        if new_id is None:
+            raise Failed(f"FlickList Error: Could not create list '{name}'")
+        return new_id, True
+
+    @staticmethod
+    def _comparison_key(ids_block, media_type, convert):
+        """Best available identity for diffing: tmdb (native or Convert-resolved) first, then fldb, then imdb, then tvdb.
+        Returns None only when the ids block carries nothing usable at all."""
+        tmdb_id = ids_block.get("tmdb")
+        if tmdb_id is not None:
+            return media_type, "tmdb", int(tmdb_id)
+        tvdb_id = ids_block.get("tvdb")
+        if tvdb_id is not None and media_type == "show" and convert is not None:
+            resolved = convert.tvdb_to_tmdb(tvdb_id)
+            if resolved is not None:
+                return media_type, "tmdb", int(resolved)
+        fldb_id = ids_block.get("fldb")
+        if fldb_id is not None:
+            return media_type, "fldb", fldb_id
+        imdb_id = ids_block.get("imdb")
+        if imdb_id is not None:
+            if convert is not None:
+                resolved, resolved_type = convert.imdb_to_tmdb(imdb_id)
+                if resolved is not None and (resolved_type or media_type) == media_type:
+                    return media_type, "tmdb", int(resolved)
+            return media_type, "imdb", imdb_id
+        if tvdb_id is not None:
+            return media_type, "tvdb", tvdb_id
+        return None
+
+    @staticmethod
+    def _media_type_of(item):
+        raw = str(item.get("media_type") or "").lower()
+        return "show" if raw in ("tv", "show") else "movie"
+
+    def _sync_batch(self, list_id, action, payloads):
+        if not payloads:
+            return
+        method = "POST" if action == "add" else "DELETE"
+        not_found_total = 0
+        for start in range(0, len(payloads), sync_batch_size):
+            chunk = payloads[start : start + sync_batch_size]
+            results = self._request(f"/sync/lists/{list_id}/items", json_data={"items": chunk}, method=method) or {}
+            existing_items = results.get("existing") or []
+            not_found_items = results.get("not_found") or []
+            not_found_total += len(not_found_items)
+            # `added`/`removed` counts from the API are not reliable net-new/net-removed totals (duplicate submissions in one batch double-count) - the batch size below is the trustworthy number.
+            if existing_items and logger:
+                logger.debug(f"FlickList List: {len(existing_items)} item(s) in this batch were already present: {existing_items}")
+            if not_found_items and logger:
+                logger.error(f"FlickList Error: {len(not_found_items)} item(s) not found while syncing: {not_found_items}")
+        if logger:
+            verb = "add" if action == "add" else "remove"
+            logger.info(f"FlickList List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found)")
+
+    def sync_list(self, convert, list_id_or_name, ids):
+        """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie")."""
+        list_id, created = self._resolve_list(list_id_or_name)
+        if created and logger:
+            logger.info(f"FlickList List '{list_id_or_name}' not found; created a new list (id {list_id})")
+        current_items = self._request_paginated(f"/sync/lists/{list_id}/items") or []
+        desired = []
+        for ids_block, media_type in ids:
+            key = self._comparison_key(ids_block, media_type, convert)
+            if key is None:
+                continue
+            desired.append((key, ids_block, media_type))
+        desired_keys = {key for key, _, _ in desired}
+        current_by_key = {}
+        unmatched = 0
+        for item in current_items:
+            item_ids = item.get("ids") or {}
+            media_type = self._media_type_of(item)
+            key = self._comparison_key(item_ids, media_type, convert)
+            if key is None:
+                unmatched += 1
+                continue
+            current_by_key[key] = (item_ids, media_type)
+        if unmatched and logger:
+            logger.warning(f"FlickList Warning: {unmatched} existing list item(s) could not be matched against the desired set; leaving them in place")
+        add_payloads = [{"ids": ids_block, "media_type": media_type} for key, ids_block, media_type in desired if key not in current_by_key]
+        # Never remove an item this run couldn't positively match (see the unmatched count above) - a stale entry is cheap, a wrongly deleted one is not.
+        remove_payloads = [{"ids": item_ids, "media_type": media_type} for key, (item_ids, media_type) in current_by_key.items() if key not in desired_keys]
+        self._sync_batch(list_id, "add", add_payloads)
+        self._sync_batch(list_id, "remove", remove_payloads)

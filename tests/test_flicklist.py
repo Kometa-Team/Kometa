@@ -22,12 +22,23 @@ class FakeResponse:
         return self._json_data
 
 
+class FakeSession:
+    def __init__(self, parent):
+        self._parent = parent
+
+    def delete(self, url, json=None, headers=None, timeout=None):
+        self._parent.deletes.append((url, json, headers))
+        return self._parent._responses.pop(0)
+
+
 class FakeRequests:
     def __init__(self, responses):
         self.local = "2.4.8-build5"
         self._responses = list(responses)
         self.gets = []
         self.posts = []
+        self.deletes = []
+        self.session = FakeSession(self)
 
     def get(self, url, headers=None, params=None):
         self.gets.append((url, headers, params))
@@ -36,6 +47,20 @@ class FakeRequests:
     def post(self, url, json=None, headers=None):
         self.posts.append((url, json, headers))
         return self._responses.pop(0)
+
+
+class FakeConvert:
+    """Stand-in for modules.convert.Convert, controllable per test."""
+
+    def __init__(self, tvdb_to_tmdb_map=None, imdb_to_tmdb_map=None):
+        self._tvdb_to_tmdb_map = tvdb_to_tmdb_map or {}
+        self._imdb_to_tmdb_map = imdb_to_tmdb_map or {}
+
+    def tvdb_to_tmdb(self, tvdb_id, fail=False):
+        return self._tvdb_to_tmdb_map.get(tvdb_id)
+
+    def imdb_to_tmdb(self, imdb_id, fail=False):
+        return self._imdb_to_tmdb_map.get(imdb_id, (None, None))
 
 
 def make_flicklist(responses, read_only=False):
@@ -271,6 +296,8 @@ def test_validate_ratings_accepts_blank_number_and_dict():
 
 # --- flicklist_watched: WatchedMovie/WatchedShow carry no top-level media_type (WatchedShow also
 # nests its `ids` under a `show` object), unlike every other personal endpoint this integration
+# reads. _parse_ids classifies purely off `media_type`, so without normalizing these two # --- flicklist_watched: WatchedMovie/WatchedShow carry no top-level media_type (WatchedShow also
+# nests its `ids` under a `show` object), unlike every other personal endpoint this integration
 # reads. _parse_ids classifies purely off `media_type`, so without normalizing these two shapes
 # first, every watched item is silently dropped regardless of real watch history - these fixtures
 # use the real nested/flat shapes from the live OpenAPI spec, not a flattened stand-in that would
@@ -332,3 +359,128 @@ def test_flicklist_watched_playlist_mode_returns_both_movies_and_shows():
         ]
     )
     assert flicklist.get_flicklist_ids("flicklist_watched", None, is_movie=None) == [(550, "tmdb"), (1396, "tmdb_show")]
+
+
+# --- Layer 2: sync_to_flicklist_list ---
+
+
+def test_comparison_key_native_tmdb():
+    flicklist = make_flicklist([])
+    assert flicklist._comparison_key({"tmdb": 550}, "movie", FakeConvert()) == ("movie", "tmdb", 550)
+
+
+def test_comparison_key_tvdb_resolves_to_tmdb_via_convert():
+    flicklist = make_flicklist([])
+    convert = FakeConvert(tvdb_to_tmdb_map={81189: 1396})
+    assert flicklist._comparison_key({"tvdb": 81189}, "show", convert) == ("show", "tmdb", 1396)
+
+
+def test_comparison_key_tvdb_unresolved_falls_back_to_tvdb():
+    flicklist = make_flicklist([])
+    assert flicklist._comparison_key({"tvdb": 81189}, "show", FakeConvert()) == ("show", "tvdb", 81189)
+
+
+def test_comparison_key_prefers_fldb_over_imdb_when_no_tmdb():
+    flicklist = make_flicklist([])
+    key = flicklist._comparison_key({"fldb": "flt_abc", "imdb": "tt0903747"}, "show", FakeConvert())
+    assert key == ("show", "fldb", "flt_abc")
+
+
+def test_comparison_key_imdb_resolves_to_tmdb_via_convert():
+    flicklist = make_flicklist([])
+    convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (1396, "show")})
+    assert flicklist._comparison_key({"imdb": "tt0903747"}, "show", convert) == ("show", "tmdb", 1396)
+
+
+def test_comparison_key_imdb_resolves_wrong_media_type_is_ignored():
+    flicklist = make_flicklist([])
+    convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (1396, "movie")})
+    key = flicklist._comparison_key({"imdb": "tt0903747"}, "show", convert)
+    assert key == ("show", "imdb", "tt0903747")
+
+
+def test_comparison_key_none_when_no_ids_at_all():
+    flicklist = make_flicklist([])
+    assert flicklist._comparison_key({}, "movie", FakeConvert()) is None
+
+
+def test_resolve_list_matches_by_numeric_id():
+    flicklist = make_flicklist([FakeResponse(json_data=[{"id": 4821, "name": "Watchlist"}], headers={})])
+    list_id, created = flicklist._resolve_list(4821)
+    assert (list_id, created) == (4821, False)
+
+
+def test_resolve_list_matches_by_exact_name():
+    flicklist = make_flicklist([FakeResponse(json_data=[{"id": 4821, "name": "Recently Added"}], headers={})])
+    list_id, created = flicklist._resolve_list("Recently Added")
+    assert (list_id, created) == (4821, False)
+
+
+def test_resolve_list_creates_when_no_name_match():
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"id": 9310, "name": "New List"}),
+        ]
+    )
+    list_id, created = flicklist._resolve_list("New List")
+    assert (list_id, created) == (9310, True)
+
+
+def test_resolve_list_unknown_id_raises_failed():
+    flicklist = make_flicklist([FakeResponse(json_data=[{"id": 1, "name": "Other"}], headers={})])
+    with pytest.raises(Failed, match="not found among your own lists"):
+        flicklist._resolve_list(4821)
+
+
+def test_sync_list_adds_new_items_and_removes_stale_ones():
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"ids": {"tmdb": 999}, "media_type": "movie"}], headers={}),  # current items
+            FakeResponse(json_data={"existing": [], "not_found": []}),  # add batch
+            FakeResponse(json_data={"not_found": []}),  # remove batch
+        ]
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    flicklist.sync_list(FakeConvert(), 4821, ids)
+    add_call = flicklist.requests.posts[0]
+    assert add_call[1] == {"items": [{"ids": {"tmdb": 550}, "media_type": "movie"}]}
+    remove_call = flicklist.requests.deletes[0]
+    assert remove_call[1] == {"items": [{"ids": {"tmdb": 999}, "media_type": "movie"}]}
+
+
+def test_sync_list_leaves_unmatched_current_items_alone():
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"ids": {}, "media_type": "movie"}], headers={}),  # current items, no usable id
+            FakeResponse(json_data={"existing": [], "not_found": []}),  # add batch
+        ]
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    flicklist.sync_list(FakeConvert(), 4821, ids)
+    assert len(flicklist.requests.deletes) == 0
+
+
+def test_sync_list_chunks_batches_at_1000_items():
+    current_page = FakeResponse(json_data=[], headers={})
+    add_batches = [FakeResponse(json_data={"existing": [], "not_found": []}) for _ in range(2)]
+    flicklist = make_flicklist([FakeResponse(json_data=[{"id": 4821, "name": "Big List"}], headers={}), current_page] + add_batches)
+    ids = [({"tmdb": i}, "movie") for i in range(1500)]
+    flicklist.sync_list(FakeConvert(), 4821, ids)
+    assert len(flicklist.requests.posts) == 2
+    assert len(flicklist.requests.posts[0][1]["items"]) == 1000
+    assert len(flicklist.requests.posts[1][1]["items"]) == 500
+
+
+def test_sync_list_logs_not_found_but_does_not_raise():
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"existing": [], "not_found": [{"ids": {"tmdb": 550}}]}),
+        ]
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    flicklist.sync_list(FakeConvert(), 4821, ids)  # should not raise
