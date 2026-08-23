@@ -8,6 +8,7 @@ logger = util.logger
 
 base_url = "https://flicklist.tv/api/v3"
 sync_batch_size = 1000
+max_retry_after_seconds = 120.0
 builders = [
     "flicklist_list",
     "flicklist_list_details",
@@ -74,6 +75,13 @@ class FlickList:
                 wait_seconds = float(retry_after)
             except (TypeError, ValueError):
                 wait_seconds = 60.0
+            if wait_seconds > max_retry_after_seconds:
+                # FlickList's own 1000/hr limit means a legitimate Retry-After can be up to an hour (see Â§6);
+                # sleeping the run for that long is worse than failing fast and letting the next scheduled run pick it up.
+                raise Failed(
+                    f"FlickList Error: Rate limited on {path}; server asked us to wait {wait_seconds:.0f} seconds "
+                    f"(over the {max_retry_after_seconds:.0f}s cap) - giving up for now rather than blocking the run"
+                )
             if logger:
                 logger.warning(f"FlickList Warning: Rate limited on {path}; waiting {wait_seconds} seconds")
             time.sleep(wait_seconds)
@@ -388,30 +396,40 @@ class FlickList:
         return new_id, True
 
     @staticmethod
-    def _comparison_key(ids_block, media_type, convert):
-        """Best available identity for diffing: tmdb (native or Convert-resolved) first, then fldb, then imdb, then tvdb.
-        Returns None only when the ids block carries nothing usable at all."""
+    def _candidate_keys(ids_block, media_type, convert):
+        """Every identifier this item could plausibly be matched on, not just one 'best' key.
+        The old design picked a single best key per side (tmdb first, then fldb, then imdb, then
+        tvdb) and compared those. That breaks whenever the two sides expose different id types for
+        the same title - e.g. a desired show whose tvdb->tmdb Convert lookup misses this run (rate
+        limited or not yet cached) falls back to a bare tvdb key, while the matching FlickList item
+        already carries a native tmdb id and never even looks at its own tvdb value under the old
+        priority order. Two keys for the same title that never intersect reads as "not present",
+        so the real item gets deleted and a duplicate gets added in its place. Returning the full
+        set of candidates and matching on intersection means any single shared id is enough to
+        recognize the same item on both sides, regardless of which id each side happened to key on.
+        Returns an empty set only when the ids block carries nothing usable at all."""
+        keys = set()
         tmdb_id = ids_block.get("tmdb")
         if tmdb_id is not None:
-            return media_type, "tmdb", int(tmdb_id)
+            keys.add((media_type, "tmdb", int(tmdb_id)))
         tvdb_id = ids_block.get("tvdb")
-        if tvdb_id is not None and media_type == "show" and convert is not None:
-            resolved = convert.tvdb_to_tmdb(tvdb_id)
-            if resolved is not None:
-                return media_type, "tmdb", int(resolved)
-        fldb_id = ids_block.get("fldb")
-        if fldb_id is not None:
-            return media_type, "fldb", fldb_id
+        if tvdb_id is not None:
+            keys.add((media_type, "tvdb", tvdb_id))
+            if media_type == "show" and convert is not None:
+                resolved = convert.tvdb_to_tmdb(tvdb_id)
+                if resolved is not None:
+                    keys.add((media_type, "tmdb", int(resolved)))
         imdb_id = ids_block.get("imdb")
         if imdb_id is not None:
+            keys.add((media_type, "imdb", imdb_id))
             if convert is not None:
                 resolved, resolved_type = convert.imdb_to_tmdb(imdb_id)
                 if resolved is not None and (resolved_type or media_type) == media_type:
-                    return media_type, "tmdb", int(resolved)
-            return media_type, "imdb", imdb_id
-        if tvdb_id is not None:
-            return media_type, "tvdb", tvdb_id
-        return None
+                    keys.add((media_type, "tmdb", int(resolved)))
+        fldb_id = ids_block.get("fldb")
+        if fldb_id is not None:
+            keys.add((media_type, "fldb", fldb_id))
+        return keys
 
     @staticmethod
     def _media_type_of(item):
@@ -433,38 +451,56 @@ class FlickList:
             if existing_items and logger:
                 logger.debug(f"FlickList List: {len(existing_items)} item(s) in this batch were already present: {existing_items}")
             if not_found_items and logger:
-                logger.error(f"FlickList Error: {len(not_found_items)} item(s) not found while syncing: {not_found_items}")
+                shown, remaining = not_found_items[:20], len(not_found_items) - 20
+                suffix = f" (+{remaining} more)" if remaining > 0 else ""
+                logger.error(f"FlickList Error: {len(not_found_items)} item(s) not found while syncing: {shown}{suffix}")
         if logger:
             verb = "add" if action == "add" else "remove"
             logger.info(f"FlickList List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found)")
 
     def sync_list(self, convert, list_id_or_name, ids):
-        """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie")."""
+        """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie").
+
+        Matching is by candidate-key-set intersection, not a single best key per item (see
+        _candidate_keys). A current item is only ever removed when NONE of its candidate keys
+        appear anywhere in the desired universe; the moment it shares even one id with some
+        desired item, it's treated as still wanted, even if that wasn't the id either side would
+        have picked as "primary" under the old single-key design. This keeps the conservative-on-
+        delete guarantee from Â§8.2 (a stale entry is cheap, a wrongly deleted one is not) while
+        actually covering the cases that fell through it: an unresolved tvdb->tmdb conversion on
+        the desired side, and a current item keyed on fldb+imdb with no tmdb/tvdb at all.
+        """
         list_id, created = self._resolve_list(list_id_or_name)
         if created and logger:
             logger.info(f"FlickList List '{list_id_or_name}' not found; created a new list (id {list_id})")
         current_items = self._request_paginated(f"/sync/lists/{list_id}/items") or []
+
         desired = []
+        desired_keys = set()
         for ids_block, media_type in ids:
-            key = self._comparison_key(ids_block, media_type, convert)
-            if key is None:
+            keys = self._candidate_keys(ids_block, media_type, convert)
+            if not keys:
                 continue
-            desired.append((key, ids_block, media_type))
-        desired_keys = {key for key, _, _ in desired}
-        current_by_key = {}
+            desired.append((keys, ids_block, media_type))
+            desired_keys |= keys
+
+        current = []
+        current_keys = set()
         unmatched = 0
         for item in current_items:
             item_ids = item.get("ids") or {}
             media_type = self._media_type_of(item)
-            key = self._comparison_key(item_ids, media_type, convert)
-            if key is None:
+            keys = self._candidate_keys(item_ids, media_type, convert)
+            if not keys:
                 unmatched += 1
                 continue
-            current_by_key[key] = (item_ids, media_type)
+            current.append((keys, item_ids, media_type))
+            current_keys |= keys
         if unmatched and logger:
-            logger.warning(f"FlickList Warning: {unmatched} existing list item(s) could not be matched against the desired set; leaving them in place")
-        add_payloads = [{"ids": ids_block, "media_type": media_type} for key, ids_block, media_type in desired if key not in current_by_key]
-        # Never remove an item this run couldn't positively match (see the unmatched count above) - a stale entry is cheap, a wrongly deleted one is not.
-        remove_payloads = [{"ids": item_ids, "media_type": media_type} for key, (item_ids, media_type) in current_by_key.items() if key not in desired_keys]
+            logger.warning(f"FlickList Warning: {unmatched} existing list item(s) had no usable id at all; leaving them in place")
+
+        add_payloads = [{"ids": ids_block, "media_type": media_type} for keys, ids_block, media_type in desired if keys.isdisjoint(current_keys)]
+        # Never remove an item this run couldn't positively rule out (no shared id with the desired universe at all) - a stale entry is cheap, a wrongly deleted one is not.
+        remove_payloads = [{"ids": item_ids, "media_type": media_type} for keys, item_ids, media_type in current if keys.isdisjoint(desired_keys)]
         self._sync_batch(list_id, "add", add_payloads)
         self._sync_batch(list_id, "remove", remove_payloads)
