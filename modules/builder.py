@@ -5738,7 +5738,7 @@ class CollectionBuilder:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         current_ids = []
-        skipped_episodes = 0
+        skipped_seasons_and_episodes = 0
         for item in self.items:
             for pl_library in self.libraries:
                 new_id = None
@@ -5747,13 +5747,13 @@ class CollectionBuilder:
                 elif isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
                     new_id = ({"tvdb": pl_library.show_rating_key_map[item.ratingKey]}, "show")
                 elif isinstance(item, (Season, Episode)):
-                    skipped_episodes += 1
+                    skipped_seasons_and_episodes += 1
                     break
                 if new_id:
                     current_ids.append(new_id)
                     break
-        if skipped_episodes:
-            logger.warning(f"FlickList Warning: Skipped {skipped_episodes} season/episode item(s); FlickList lists hold movies and shows only")
+        if skipped_seasons_and_episodes:
+            logger.warning(f"FlickList Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); FlickList lists hold movies and shows only")
         if self.sync_missing_to_flicklist_list:
             current_ids.extend([({"tmdb": mm}, "movie") for mm in self.missing_movies])
             current_ids.extend([({"tvdb": ms}, "show") for ms in self.missing_shows])

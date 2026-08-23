@@ -136,6 +136,14 @@ def test_429_gives_up_after_three_attempts(mock_sleep):
     assert len(flicklist.requests.gets) == 3
 
 
+@patch("time.sleep", return_value=None)
+def test_429_with_retry_after_over_cap_fails_fast_instead_of_sleeping(mock_sleep):
+    flicklist = make_flicklist([FakeResponse(status_code=429, headers={"Retry-After": "3600"}, json_data={"error": "rate_limited"})])
+    with pytest.raises(Failed, match="over the 120s cap"):
+        flicklist._request("/me")
+    mock_sleep.assert_not_called()
+
+
 def test_paginated_read_follows_page_count_header():
     flicklist = make_flicklist(
         [
@@ -364,44 +372,46 @@ def test_flicklist_watched_playlist_mode_returns_both_movies_and_shows():
 # --- Layer 2: sync_to_flicklist_list ---
 
 
-def test_comparison_key_native_tmdb():
+def test_candidate_keys_native_tmdb():
     flicklist = make_flicklist([])
-    assert flicklist._comparison_key({"tmdb": 550}, "movie", FakeConvert()) == ("movie", "tmdb", 550)
+    assert flicklist._candidate_keys({"tmdb": 550}, "movie", FakeConvert()) == {("movie", "tmdb", 550)}
 
 
-def test_comparison_key_tvdb_resolves_to_tmdb_via_convert():
+def test_candidate_keys_tvdb_resolves_to_tmdb_via_convert_but_keeps_raw_tvdb_too():
     flicklist = make_flicklist([])
     convert = FakeConvert(tvdb_to_tmdb_map={81189: 1396})
-    assert flicklist._comparison_key({"tvdb": 81189}, "show", convert) == ("show", "tmdb", 1396)
+    keys = flicklist._candidate_keys({"tvdb": 81189}, "show", convert)
+    assert keys == {("show", "tmdb", 1396), ("show", "tvdb", 81189)}
 
 
-def test_comparison_key_tvdb_unresolved_falls_back_to_tvdb():
+def test_candidate_keys_tvdb_unresolved_falls_back_to_tvdb_only():
     flicklist = make_flicklist([])
-    assert flicklist._comparison_key({"tvdb": 81189}, "show", FakeConvert()) == ("show", "tvdb", 81189)
+    assert flicklist._candidate_keys({"tvdb": 81189}, "show", FakeConvert()) == {("show", "tvdb", 81189)}
 
 
-def test_comparison_key_prefers_fldb_over_imdb_when_no_tmdb():
+def test_candidate_keys_includes_both_fldb_and_imdb_when_no_tmdb():
     flicklist = make_flicklist([])
-    key = flicklist._comparison_key({"fldb": "flt_abc", "imdb": "tt0903747"}, "show", FakeConvert())
-    assert key == ("show", "fldb", "flt_abc")
+    keys = flicklist._candidate_keys({"fldb": "flt_abc", "imdb": "tt0903747"}, "show", FakeConvert())
+    assert keys == {("show", "fldb", "flt_abc"), ("show", "imdb", "tt0903747")}
 
 
-def test_comparison_key_imdb_resolves_to_tmdb_via_convert():
+def test_candidate_keys_imdb_resolves_to_tmdb_via_convert_but_keeps_raw_imdb_too():
     flicklist = make_flicklist([])
     convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (1396, "show")})
-    assert flicklist._comparison_key({"imdb": "tt0903747"}, "show", convert) == ("show", "tmdb", 1396)
+    keys = flicklist._candidate_keys({"imdb": "tt0903747"}, "show", convert)
+    assert keys == {("show", "tmdb", 1396), ("show", "imdb", "tt0903747")}
 
 
-def test_comparison_key_imdb_resolves_wrong_media_type_is_ignored():
+def test_candidate_keys_imdb_resolves_wrong_media_type_is_ignored():
     flicklist = make_flicklist([])
     convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (1396, "movie")})
-    key = flicklist._comparison_key({"imdb": "tt0903747"}, "show", convert)
-    assert key == ("show", "imdb", "tt0903747")
+    keys = flicklist._candidate_keys({"imdb": "tt0903747"}, "show", convert)
+    assert keys == {("show", "imdb", "tt0903747")}
 
 
-def test_comparison_key_none_when_no_ids_at_all():
+def test_candidate_keys_empty_set_when_no_ids_at_all():
     flicklist = make_flicklist([])
-    assert flicklist._comparison_key({}, "movie", FakeConvert()) is None
+    assert flicklist._candidate_keys({}, "movie", FakeConvert()) == set()
 
 
 def test_resolve_list_matches_by_numeric_id():
@@ -472,6 +482,49 @@ def test_sync_list_chunks_batches_at_1000_items():
     assert len(flicklist.requests.posts) == 2
     assert len(flicklist.requests.posts[0][1]["items"]) == 1000
     assert len(flicklist.requests.posts[1][1]["items"]) == 500
+
+
+def test_sync_list_unresolved_tvdb_conversion_does_not_delete_the_matching_tmdb_item():
+    # Desired show only carries tvdb (Convert misses this run - rate limited/not cached - so it
+    # can't resolve to tmdb, and falls back to a bare tvdb key). The existing FlickList item for
+    # the same show carries both a native tmdb id AND that same tvdb id. Under the old single-best-
+    # key design, the current item's key was tmdb (checked first) and never even looked at its own
+    # tvdb value, so it never matched the desired item's tvdb-only key - the real item got deleted
+    # and a duplicate got added under tvdb. Candidate-key-set matching includes tvdb as one of the
+    # current item's candidates alongside tmdb, so the shared tvdb id keeps them linked.
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"ids": {"tmdb": 1396, "tvdb": 81189}, "media_type": "show"}], headers={}),  # current items
+            FakeResponse(json_data={"existing": [], "not_found": []}),  # add batch (should be empty)
+            FakeResponse(json_data={"not_found": []}),  # remove batch (should be empty)
+        ]
+    )
+    ids = [({"tvdb": 81189}, "show")]  # Convert unavailable/misses -> FakeConvert() has no tvdb_to_tmdb_map entry
+    flicklist.sync_list(FakeConvert(), 4821, ids)
+    assert flicklist.requests.posts == []
+    assert flicklist.requests.deletes == []
+
+
+def test_sync_list_current_item_with_only_fldb_and_imdb_matches_desired_tmdb_via_convert():
+    # A current FlickList item may carry only fldb (its own internal id) plus imdb, with no tmdb or
+    # tvdb at all. The desired side (from Kometa/TMDb) only has tmdb. Under the old design the
+    # current item's single best key was fldb (checked before imdb), which never gets compared
+    # against imdb/tmdb at all, so it always looked unmatched and got deleted every run. Candidate
+    # keys must include the Convert-resolved tmdb from its imdb id so the two sides still connect.
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"ids": {"fldb": "flt_abc", "imdb": "tt0903747"}, "media_type": "movie"}], headers={}),  # current items
+            FakeResponse(json_data={"existing": [], "not_found": []}),  # add batch (should be empty)
+            FakeResponse(json_data={"not_found": []}),  # remove batch (should be empty)
+        ]
+    )
+    convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (550, "movie")})
+    ids = [({"tmdb": 550}, "movie")]
+    flicklist.sync_list(convert, 4821, ids)
+    assert flicklist.requests.posts == []
+    assert flicklist.requests.deletes == []
 
 
 def test_sync_list_logs_not_found_but_does_not_raise():
