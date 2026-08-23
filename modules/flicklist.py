@@ -224,11 +224,12 @@ class FlickList:
 
     @staticmethod
     def validate_flag(err_type, method_name, method_data):
+        """True/blank enables the builder; explicit false just leaves it out, same as omitting the
+        attribute - erroring on `method_name: false` punished a value config.yml owners can reach
+        for naturally (e.g. templating a shared block where one library sets a flag off)."""
         if method_data is None:
             return True
-        if not util.parse(err_type, method_name, method_data, datatype="bool", default=True):
-            raise Failed(f"{err_type} Error: {method_name} must be set to true")
-        return True
+        return util.parse(err_type, method_name, method_data, datatype="bool", default=True)
 
     @staticmethod
     def validate_up_next(err_type, method_data):

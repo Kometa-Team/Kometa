@@ -246,10 +246,10 @@ def test_validate_flag_accepts_blank_as_true():
     assert flicklist.validate_flag("Collection", "flicklist_watchlist", None) is True
 
 
-def test_validate_flag_rejects_explicit_false():
+def test_validate_flag_explicit_false_returns_false_without_raising():
+    # false just means "don't add this builder" - same as omitting the attribute - not a config error.
     flicklist = make_flicklist([])
-    with pytest.raises(Failed, match="must be set to true"):
-        flicklist.validate_flag("Collection", "flicklist_watchlist", False)
+    assert flicklist.validate_flag("Collection", "flicklist_watchlist", False) is False
 
 
 def test_validate_up_next_accepts_blank_true_and_int():

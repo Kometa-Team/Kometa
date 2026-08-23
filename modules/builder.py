@@ -1841,6 +1841,11 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
             except Failed as e:
                 logger.error(f"Trakt Error: List description not found: {e}")
+        elif method_name == "flicklist_description":
+            try:
+                self.summaries[method_name] = self.config.FlickList.list_description(self.config.FlickList._parse_list_id(method_data))
+            except Failed as e:
+                logger.error(f"FlickList Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -3589,15 +3594,17 @@ class CollectionBuilder:
                 self.builders.append(("flicklist_list", flicklist_list))
             if method_name.endswith("_details"):
                 try:
-                    self.summaries[method_name] = self.config.FlickList.list_description(flicklist_lists[0])
+                    description = self.config.FlickList.list_description(flicklist_lists[0])
+                    if description:
+                        self.summaries[method_name] = description
                 except Failed as e:
                     logger.error(f"FlickList Error: List description not found: {e}")
         elif method_name == "flicklist_user_lists":
             username = self.config.FlickList.validate_username(self.Type, method_data)
             self.builders.append((method_name, username))
         elif method_name in ("flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_tracked"):
-            self.config.FlickList.validate_flag(self.Type, method_name, method_data)
-            self.builders.append((method_name, True))
+            if self.config.FlickList.validate_flag(self.Type, method_name, method_data):
+                self.builders.append((method_name, True))
         elif method_name == "flicklist_up_next":
             self.builders.append((method_name, self.config.FlickList.validate_up_next(self.Type, method_data)))
         elif method_name == "flicklist_ratings":
