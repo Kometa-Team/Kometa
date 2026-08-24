@@ -1125,27 +1125,30 @@ class Plex(Library):
             raise Failed("Overlay Error: No Poster found to reset")
         return image_url
 
-    def item_reload(self, item):
-        item.reload(
-            checkFiles=False,
-            includeAllConcerts=False,
-            includeBandwidths=False,
-            includeChapters=False,
-            includeChildren=False,
-            includeConcerts=False,
-            includeExternalMedia=False,
-            includeExtras=False,
-            includeFields=False,
-            includeGeolocation=False,
-            includeLoudnessRamps=False,
-            includeMarkers=False,
-            includeOnDeck=False,
-            includePopularLeaves=False,
-            includeRelated=False,
-            includeRelatedCount=0,
-            includeReviews=False,
-            includeStations=False,
-        )
+    def item_reload(self, item, exclude_elements=None):
+        reload_options = {
+            "checkFiles": False,
+            "includeAllConcerts": False,
+            "includeBandwidths": False,
+            "includeChapters": False,
+            "includeChildren": False,
+            "includeConcerts": False,
+            "includeExternalMedia": False,
+            "includeExtras": False,
+            "includeFields": False,
+            "includeGeolocation": False,
+            "includeLoudnessRamps": False,
+            "includeMarkers": False,
+            "includeOnDeck": False,
+            "includePopularLeaves": False,
+            "includeRelated": False,
+            "includeRelatedCount": 0,
+            "includeReviews": False,
+            "includeStations": False,
+        }
+        if exclude_elements:
+            reload_options["excludeElements"] = exclude_elements
+        item.reload(**reload_options)
         item._autoReload = False
         return item
 
@@ -1171,14 +1174,20 @@ class Plex(Library):
             return False
 
     @PLEX_RETRY
-    def reload(self, item, force=False):
+    def reload(self, item, force=False, exclude_elements=None):
         is_full = False
         if not force and item.ratingKey in self.cached_items:
             item, is_full = self.cached_items[item.ratingKey]
         try:
             if not is_full or force:
-                self.item_reload(item)
-                self.cached_items[item.ratingKey] = (item, True)
+                if exclude_elements:
+                    self.item_reload(item, exclude_elements=exclude_elements)
+                    # The requested payload is sufficient for its caller, but later stages
+                    # may need an excluded element and must be allowed to perform a full reload.
+                    self.cached_items[item.ratingKey] = (item, False)
+                else:
+                    self.item_reload(item)
+                    self.cached_items[item.ratingKey] = (item, True)
                 # A real reload means this item's data may have changed - drop any cached_item_attr() reads for it so check_filter re-reads fresh values.
                 for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
                     del self.filter_attr_cache[key]

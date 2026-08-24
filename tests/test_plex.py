@@ -737,6 +737,14 @@ class TestSaveMultiEditsRetry:
 
 
 class TestReload:
+    def test_item_reload_can_exclude_unused_elements(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex()
+
+        plex.item_reload(item, exclude_elements="Media,Role")
+
+        assert item.reload.call_args.kwargs["excludeElements"] == "Media,Role"
+
     def test_reload_cached_item_does_not_refetch(self):
         item = make_plex_item(rating_key=101)
         plex = make_plex(cached_items={101: (item, True)})
@@ -752,6 +760,29 @@ class TestReload:
         result = plex.reload(item)
         assert result is item
         plex.item_reload.assert_called_once_with(item)
+
+    def test_limited_reload_is_not_cached_as_full(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, False)})
+        plex.item_reload = MagicMock()
+
+        plex.reload(item, exclude_elements="Media,Role")
+
+        plex.item_reload.assert_called_once_with(item, exclude_elements="Media,Role")
+        assert plex.cached_items[101] == (item, False)
+
+        plex.reload(item)
+        assert plex.item_reload.call_args_list[-1].args == (item,)
+        assert plex.cached_items[101] == (item, True)
+
+    def test_forced_limited_reload_downgrades_full_cache_entry(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, True)})
+        plex.item_reload = MagicMock()
+
+        plex.reload(item, force=True, exclude_elements="Media,Role")
+
+        assert plex.cached_items[101] == (item, False)
 
     def test_real_reload_clears_filter_attr_cache_for_that_item(self):
         item = make_plex_item(rating_key=101)

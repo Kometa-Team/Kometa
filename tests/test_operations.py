@@ -21,7 +21,7 @@ import modules.operations as ops_module
 ops_module.logger = MagicMock()
 
 from modules.mdblist import MDBList  # noqa: E402 -- must follow logger patch above
-from modules.operations import Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
+from modules.operations import SHOW_OPERATION_RELOAD_EXCLUDE_ELEMENTS, Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
 from modules.overlays import Overlays  # noqa: E402 -- must follow logger patch above
 from modules.plex import Plex  # noqa: E402 -- must follow logger patch above
 
@@ -496,6 +496,24 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_uses_limited_metadata_reload(self):
+        item = make_item(1, "Movie A")
+        library = make_title_test_library([item])
+        library.is_movie = False
+        library.is_show = True
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        library.reload.assert_called_once_with(item, exclude_elements=SHOW_OPERATION_RELOAD_EXCLUDE_ELEMENTS)
+
+    def test_movie_uses_standard_metadata_reload(self):
+        item = make_item(1, "Movie A")
+        library = make_title_test_library([item])
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        library.reload.assert_called_once_with(item)
+
     def test_batches_by_distinct_new_title(self):
         """Two items with different target titles - one editField call per distinct value."""
         item_a = make_item(1, "Movie A (2020)")
@@ -638,7 +656,7 @@ def make_mass_edit_library(items, **mass_update_overrides):
         setattr(library, key, value)
 
     library.get_all.return_value = items
-    library.reload.side_effect = lambda item: item
+    library.reload.side_effect = lambda item, **_: item
     library.item_has_ignore_label.return_value = False
     library.get_ids.return_value = (None, None, None)
     library.load_list_from_cache.side_effect = lambda keys: [items_by_key[k] for k in keys if k in items_by_key]
