@@ -5,7 +5,7 @@ langcodes==3.5.1
 letterboxdpy==6.5.7
 gitpython==3.1.59
 jsonschema==4.26.0
-lxml==6.1.1
+lxml==6.1.2
 num2words==0.5.14
 packaging==26.3
 pathvalidate==3.3.1
