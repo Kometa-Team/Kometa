@@ -27,6 +27,22 @@ class Unavailable(ServiceError):
     """Raised when transient TMDb failures exhaust their retry budget."""
 
 
+class KometaTMDbAPIs(TMDbAPIs):
+    """Defensively normalize response shapes before tmdbapis parses them."""
+
+    def _parse(self, data=None, attrs=None, value_type="str", default_is_none=False, is_list=False, is_dict=False, extend=False, key=None):
+        aggregate_key = "roles" if value_type == "agg_tv_cast" else "jobs" if value_type == "agg_tv_crew" else None
+        if aggregate_key and isinstance(data, dict):
+            entries = data.get(aggregate_key)
+            valid_entries = [entry for entry in entries if isinstance(entry, dict)] if isinstance(entries, list) else []
+            invalid_count = (len(entries) - len(valid_entries)) if isinstance(entries, list) else 1
+            if invalid_count:
+                entry_name = "role" if aggregate_key == "roles" else "job"
+                logger.warning(f"TMDb Warning: Ignoring {invalid_count} malformed aggregate {entry_name}{'' if invalid_count == 1 else 's'} for {data.get('name') or data.get('id') or 'unknown credit'}")
+                data = {**data, aggregate_key: valid_entries}
+        return super()._parse(data=data, attrs=attrs, value_type=value_type, default_is_none=default_is_none, is_list=is_list, is_dict=is_dict, extend=extend, key=key)  # pyright: ignore[reportAttributeAccessIssue]
+
+
 int_builders = ["tmdb_airing_today", "tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_on_the_air", "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_upcoming"]
 info_builders = ["tmdb_actor", "tmdb_collection", "tmdb_crew", "tmdb_director", "tmdb_list", "tmdb_movie", "tmdb_producer", "tmdb_show", "tmdb_writer"]
 details_builders = [f"{d}_details" for d in info_builders]
@@ -237,6 +253,11 @@ class TMDbMovie(TMDBObj):
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Movie with TMDb ID {self.tmdb_id}: {e}") from e
 
     @TMDB_RETRY
     def load_movie(self):
@@ -281,6 +302,11 @@ class TMDbShow(TMDBObj):
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Show with TMDb ID {self.tmdb_id}: {e}") from e
 
     @TMDB_RETRY
     def load_show(self):
@@ -349,7 +375,7 @@ class TMDb:
         self._complete_episode_id_maps = set()
         logger.secret(self.apikey)
         try:
-            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
+            self.TMDb = KometaTMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()}  # noqa
