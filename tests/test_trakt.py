@@ -6,6 +6,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from requests.exceptions import HTTPError
+from tenacity import wait_none
 
 import modules.builder  # noqa: F401
 import modules.trakt as trakt_module
@@ -147,3 +149,21 @@ class TestTraktRequest:
 
         with pytest.raises(Failed, match=r"\(300\) Multiple Choices"):
             trakt._request("/users/me/lists/example/items", json_data={})
+
+    def test_request_retries_too_many_requests(self, monkeypatch):
+        from modules.request import Requests
+
+        limited = MagicMock(status_code=429, reason="Too Many Requests", headers={"Retry-After": "30"}, content=b"")
+        limited.raise_for_status.side_effect = HTTPError(response=limited)
+        payload = {"rating": 8.5}
+        success = SimpleNamespace(status_code=200, reason="OK", headers={}, content=b"{}", json=MagicMock(return_value=payload))
+        trakt = self.adapter(limited)
+        requests = Requests.__new__(Requests)
+        requests.session = MagicMock()
+        requests.session.get.side_effect = [limited, success]
+        trakt.requests = requests
+        monkeypatch.setattr(Requests.get.retry, "wait", wait_none())
+
+        assert trakt._request("/shows/example/ratings") == payload
+        assert requests.session.get.call_count == 2
+        limited.raise_for_status.assert_called_once_with()

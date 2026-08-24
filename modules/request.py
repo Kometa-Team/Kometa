@@ -7,8 +7,8 @@ import cloudscraper
 import requests
 import ruamel.yaml
 from lxml import html
-from requests.exceptions import ConnectionError, RequestException
-from tenacity import retry, stop_after_attempt, wait_exponential
+from requests.exceptions import ConnectionError, HTTPError, RequestException
+from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 
 from modules import timings, util
 from modules.poster import ImageData
@@ -22,6 +22,25 @@ image_content_types = ["image/png", "image/jpeg", "image/webp"]
 # stalled external server hangs the whole run (tenacity only retries on
 # raised exceptions, and a silent stall never raises).
 DEFAULT_TIMEOUT = 30
+
+
+def _request_retry_exhausted(retry_state):
+    exception = retry_state.outcome.exception()
+    response = getattr(exception, "response", None)
+    if isinstance(exception, HTTPError) and response is not None and response.status_code == 429:
+        url = retry_state.kwargs.get("url") or (retry_state.args[1] if len(retry_state.args) > 1 else getattr(response, "url", "Unknown"))
+        raise Failed(f"URL Error: Too many requests - {url}") from exception
+    raise RetryError(retry_state.outcome) from exception
+
+
+def _request_retry():
+    return retry(stop=stop_after_attempt(6), wait=util.wait_for_retry_after_header(wait_exponential(multiplier=1, min=1, max=10)), retry_error_callback=_request_retry_exhausted)
+
+
+def _raise_for_rate_limit(response):
+    if response.status_code == 429:
+        response.raise_for_status()
+    return response
 
 
 def get_header(headers, header, language):
@@ -213,13 +232,13 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
-        return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
+        return _raise_for_rate_limit(self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT))
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def head(self, url, headers=None, header=None, language=None):
-        return self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+        return _raise_for_rate_limit(self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True))
 
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode("utf-8")
@@ -235,9 +254,9 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
-        return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT)
+        return _raise_for_rate_limit(self.session.post(url, data=data, json=json, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT))
 
     def has_new_version(self):
         return self.local and self.latest and self.local.main != self.latest.main or (self.local.build and self.local.build < self.latest.build)
