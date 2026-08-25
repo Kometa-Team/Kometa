@@ -76,12 +76,9 @@ class FlickList:
             except (TypeError, ValueError):
                 wait_seconds = 60.0
             if wait_seconds > max_retry_after_seconds:
-                # FlickList's own 1000/hr limit means a legitimate Retry-After can be up to an hour (see Â§6);
+                # FlickList's own 1,000/hr limit (documented in docs/config/flicklist.md) means a legitimate Retry-After can be up to an hour;
                 # sleeping the run for that long is worse than failing fast and letting the next scheduled run pick it up.
-                raise Failed(
-                    f"FlickList Error: Rate limited on {path}; server asked us to wait {wait_seconds:.0f} seconds "
-                    f"(over the {max_retry_after_seconds:.0f}s cap) - giving up for now rather than blocking the run"
-                )
+                raise Failed(f"FlickList Error: Rate limited on {path}; server asked us to wait {wait_seconds:.0f} seconds (over the {max_retry_after_seconds:.0f}s cap) - giving up for now rather than blocking the run")
             if logger:
                 logger.warning(f"FlickList Warning: Rate limited on {path}; waiting {wait_seconds} seconds")
             time.sleep(wait_seconds)
@@ -466,7 +463,7 @@ class FlickList:
         appear anywhere in the desired universe; the moment it shares even one id with some
         desired item, it's treated as still wanted, even if that wasn't the id either side would
         have picked as "primary" under the old single-key design. This keeps the conservative-on-
-        delete guarantee from Â§8.2 (a stale entry is cheap, a wrongly deleted one is not) while
+        delete guarantee (a stale entry is cheap, a wrongly deleted one is not) while
         actually covering the cases that fell through it: an unresolved tvdb->tmdb conversion on
         the desired side, and a current item keyed on fldb+imdb with no tmdb/tvdb at all.
         """
@@ -483,7 +480,7 @@ class FlickList:
                 continue
             desired.append((keys, ids_block, media_type))
             desired_keys |= keys
-
+        delete guarantee (a stale entry is cheap, a wrongly deleted one is not) while
         current = []
         current_keys = set()
         unmatched = 0
