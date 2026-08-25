@@ -57,3 +57,12 @@ collections:
 | `flicklist_watched`   | Entire watched history | —             | Movies and Shows    |
 | `flicklist_up_next`   | All up-next episodes   | Integer limit | Shows only          |
 | `flicklist_tracked`   | Every tracked show     | —             | Shows only          |
+
+!!! note "`flicklist_watchlist` covers more than "plan to watch""
+
+    FlickList's watchlist is richer than a Trakt-style plan-to-watch list: every item carries a
+    `status` of `plan_to_watch`, `watching`, `completed`, `on_hold`, or `dropped`. `flicklist_watchlist`
+    currently returns the entire watchlist regardless of status - there is no way to filter to just
+    one status yet. If you're looking for "shows I've marked completed" specifically, note that this
+    is a different concept from `flicklist_watched`, which reflects actual play history (has the
+    episode/movie been played), not a manually-set watchlist status.

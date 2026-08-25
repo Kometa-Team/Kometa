@@ -267,3 +267,68 @@ def test_validate_ratings_accepts_blank_number_and_dict():
     assert FlickList.validate_ratings("Collection", None) == {"minimum": None, "maximum": None}
     assert FlickList.validate_ratings("Collection", 7) == {"minimum": 7.0, "maximum": None}
     assert FlickList.validate_ratings("Collection", {"minimum": 7, "maximum": 9}) == {"minimum": 7.0, "maximum": 9.0}
+
+
+# --- flicklist_watched: WatchedMovie/WatchedShow carry no top-level media_type (WatchedShow also
+# nests its `ids` under a `show` object), unlike every other personal endpoint this integration
+# reads. _parse_ids classifies purely off `media_type`, so without normalizing these two shapes
+# first, every watched item is silently dropped regardless of real watch history - these fixtures
+# use the real nested/flat shapes from the live OpenAPI spec, not a flattened stand-in that would
+# pass against both the buggy and fixed code. ---
+
+
+def _watched_movie_payload(tmdb=550, title="Fight Club", plays=3):
+    # Real WatchedMovie shape: top-level `ids`, no `media_type` key at all.
+    return {"title": title, "year": 1999, "plays": plays, "last_watched_at": "2026-05-14T02:10:33.000Z", "ids": {"tmdb": tmdb}}
+
+
+def _watched_show_payload(tmdb=1396, title="Breaking Bad", plays=62):
+    # Real WatchedShow shape: no top-level `media_type` OR `ids` - both live under `show`.
+    return {
+        "show": {"title": title, "ids": {"tmdb": tmdb}},
+        "plays": plays,
+        "last_watched_at": "2026-05-14T02:10:33.000Z",
+        "reset_at": None,
+        "seasons": [],
+    }
+
+
+def test_normalize_watched_movie_tags_media_type_without_losing_ids():
+    flicklist = make_flicklist([])
+    normalized = flicklist._normalize_watched_movie(_watched_movie_payload(tmdb=550))
+    assert normalized["media_type"] == "movie"
+    assert normalized["ids"] == {"tmdb": 550}
+
+
+def test_normalize_watched_show_unwraps_show_object_and_tags_media_type():
+    flicklist = make_flicklist([])
+    normalized = flicklist._normalize_watched_show(_watched_show_payload(tmdb=1396))
+    assert normalized["media_type"] == "tv"
+    assert normalized["ids"] == {"tmdb": 1396}
+
+
+def test_normalize_watched_show_missing_show_key_does_not_raise():
+    flicklist = make_flicklist([])
+    normalized = flicklist._normalize_watched_show({"plays": 1, "seasons": []})
+    assert normalized["media_type"] == "tv"
+    assert normalized.get("ids") is None
+
+
+def test_flicklist_watched_movie_library_returns_real_watched_movies():
+    flicklist = make_flicklist([FakeResponse(json_data=[_watched_movie_payload(tmdb=550)])])
+    assert flicklist.get_flicklist_ids("flicklist_watched", None, is_movie=True) == [(550, "tmdb")]
+
+
+def test_flicklist_watched_show_library_returns_real_watched_shows():
+    flicklist = make_flicklist([FakeResponse(json_data=[_watched_show_payload(tmdb=1396)])])
+    assert flicklist.get_flicklist_ids("flicklist_watched", None, is_movie=False) == [(1396, "tmdb_show")]
+
+
+def test_flicklist_watched_playlist_mode_returns_both_movies_and_shows():
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[_watched_movie_payload(tmdb=550)]),
+            FakeResponse(json_data=[_watched_show_payload(tmdb=1396)]),
+        ]
+    )
+    assert flicklist.get_flicklist_ids("flicklist_watched", None, is_movie=None) == [(550, "tmdb"), (1396, "tmdb_show")]

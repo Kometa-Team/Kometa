@@ -193,6 +193,26 @@ class FlickList:
         return ids
 
     @staticmethod
+    def _normalize_watched_movie(item):
+        """WatchedMovie carries a top-level `ids` block but no `media_type` field at all - the
+        endpoint is movie-only by construction, so the schema omits it. _parse_ids relies on
+        `media_type` to classify each item, so every watched movie was silently dropped (matched
+        neither the movie nor show branch) until this tagged it explicitly."""
+        item = dict(item)
+        item["media_type"] = "movie"
+        return item
+
+    @staticmethod
+    def _normalize_watched_show(item):
+        """WatchedShow has no top-level `media_type` OR `ids` - both live one level down, under
+        `show` ({"show": {"title": ..., "ids": {...}}, "plays": ..., "seasons": [...]}). Unwrap it
+        and tag the type so _parse_ids has an `ids` block to look at at all, not just a type to
+        classify it by - without this every watched show was silently dropped twice over."""
+        show = dict(item.get("show") or {})
+        show["media_type"] = "tv"
+        return show
+
+    @staticmethod
     def _parse_list_id(value):
         if isinstance(value, bool):
             raise Failed(f"FlickList Error: Could not parse a list id from {value}")
@@ -309,9 +329,9 @@ class FlickList:
             self._log_info(f"Processing {pretty}")
             items = []
             if is_movie is not False:
-                items.extend(self._request_list("/sync/watched/movies"))
+                items.extend(self._normalize_watched_movie(item) for item in self._request_list("/sync/watched/movies"))
             if is_movie is not True:
-                items.extend(self._request_list("/sync/watched/shows"))
+                items.extend(self._normalize_watched_show(item) for item in self._request_list("/sync/watched/shows"))
             return self._parse_ids(items, is_movie=is_movie)
         if method == "flicklist_ratings":
             self._log_info(f"Processing {pretty}")
