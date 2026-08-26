@@ -480,7 +480,6 @@ class FlickList:
                 continue
             desired.append((keys, ids_block, media_type))
             desired_keys |= keys
-        delete guarantee (a stale entry is cheap, a wrongly deleted one is not) while
         current = []
         current_keys = set()
         unmatched = 0
