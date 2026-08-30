@@ -31,10 +31,16 @@ def _summary_log_groups() -> list[tuple[str, str]]:
 
 
 def _other_log_groups() -> list[tuple[str, str]]:
-    """Extract the named summary section rules without importing kometa.py."""
+    """Extract literal named summary rules without importing kometa.py."""
     for node in ast.walk(_module_ast()):
         if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "other_log_groups" for target in node.targets):
-            return ast.literal_eval(node.value)
+            groups = []
+            for element in node.value.elts:
+                try:
+                    groups.append(ast.literal_eval(element))
+                except ValueError:
+                    pass  # Rating-source groups are generated dynamically from modules.overlay.
+            return groups
     raise AssertionError("other_log_groups was not found in kometa.py")
 
 
@@ -149,13 +155,40 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     messages for missing ratings.
     """
     text = KOMETA_PY.read_text(encoding="utf-8")
-    assert "(\"Overlay Warning: No 'anidb_average_rating' found\"," in text
+    assert 'for rating_source in ["audience_rating", "critic_rating", "user_rating", *rating_sources]' in text
     assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
     assert 'logger.info("Count | Message")' in text
     assert 'logger.separator("Convert Summary", space=False, border=False)' in text
     assert 'return f"{message} for {source}"' in text
     assert 'r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"' in text
     assert "Plex Error: resolution: No matches found with regex pattern" not in text
+
+
+def test_overlay_summary_groups_follow_current_rating_sources() -> None:
+    """The generated groups must follow active sources instead of a stale manual copy."""
+    overlay_tree = ast.parse((REPO_ROOT / "modules" / "overlay.py").read_text(encoding="utf-8"))
+    sources = None
+    for node in ast.walk(overlay_tree):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "rating_sources" for target in node.targets):
+            sources = ast.literal_eval(node.value)
+            break
+    assert sources is not None
+    assert "floppy_rating" in sources
+    assert "serializd_rating" in sources
+    assert "plex_user_rating" not in sources
+
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert "from modules.overlay import rating_sources" in text
+    assert "re.escape(rating_source)" in text
+    assert "plex_user_rating" not in text
+
+
+def test_stale_summary_rules_are_removed() -> None:
+    """Rules without current emitters should not linger in the summary catalog."""
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert "Convert Warning: No MyAnimeList Found for AniDB ID:" not in text
+    assert 'r".+ Error: No Filter Created"' not in text
+    assert "Trakt Error: No TVDb ID found for" not in text
 
 
 def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
