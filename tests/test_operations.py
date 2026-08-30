@@ -1029,7 +1029,7 @@ class TestFindCollectionTransKey:
 
 class TestConfiguredCollectionNameAliases:
     @staticmethod
-    def _objects(expanded):
+    def _objects(expanded, language="fr"):
         english = {
             "variables": {"library_translation": {"movie": "movie"}},
             "key_names": {"chart": "Chart"},
@@ -1046,11 +1046,32 @@ class TestConfiguredCollectionNameAliases:
                 "tmdb_popular": {"name": "TMDb Populaire"},
             },
         }
+        german = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Rangliste"},
+            "collections": {"separator": {"name": "<<key_name>> Sammlungen"}},
+        }
+        spanish = {
+            "variables": {"library_translation": {"movie": "película"}},
+            "key_names": {"chart": "Clasificación"},
+            "collections": {"separator": {"name": "Colecciones de <<key_name>>"}},
+        }
+        japanese = {
+            "variables": {"library_translation": {"movie": "映画"}},
+            "key_names": {"chart": "ランキング"},
+            "collections": {"separator": {"name": "<<key_name>>コレクション"}},
+        }
+        italian = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Classifica"},
+            "collections": {},
+        }
+        translations = {"en": english, "fr": french, "de": german, "es": spanish, "ja": japanese, "it": italian}
         config = MagicMock()
-        config.GitHub.translation_keys = ["en", "fr"]
-        config.GitHub.translation_yaml.side_effect = lambda language: {"en": english, "fr": french}[language]
+        config.GitHub.translation_keys = list(translations)
+        config.GitHub.translation_yaml.side_effect = translations.__getitem__
         library = SimpleNamespace(type="Movie")
-        metadata_file = SimpleNamespace(language="fr", apply_template=MagicMock(return_value=expanded))
+        metadata_file = SimpleNamespace(language=language, apply_template=MagicMock(return_value=expanded))
         return config, library, metadata_file
 
     def test_resolves_mapping_english_and_selected_language_names(self):
@@ -1079,6 +1100,37 @@ class TestConfiguredCollectionNameAliases:
 
         assert aliases == {"Chart Collections", "Collections Classement"}
         metadata_file.apply_template.assert_not_called()
+
+    def test_resolves_selected_languages_without_language_specific_code(self):
+        expected_names = {
+            "fr": "Collections Classement",
+            "de": "Rangliste Sammlungen",
+            "es": "Colecciones de Clasificación",
+            "ja": "ランキングコレクション",
+        }
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        for language, expected_name in expected_names.items():
+            config, library, metadata_file = self._objects({}, language=language)
+            aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+            assert expected_name in aliases
+
+    def test_collection_language_override_takes_priority_over_file_language(self):
+        config, library, metadata_file = self._objects({}, language="fr")
+        collection_data = {"language": "ja", "translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert "ランキングコレクション" in aliases
+        assert "Collections Classement" not in aliases
+
+    def test_falls_back_to_english_when_selected_language_has_no_collection_name(self):
+        config, library, metadata_file = self._objects({}, language="it")
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert aliases == {"Chart Collections"}
 
     def test_keeps_mapping_name_when_name_resolution_fails(self):
         config, library, metadata_file = self._objects({})
