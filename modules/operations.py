@@ -140,7 +140,7 @@ def _configured_collection_name_aliases(config, library, metadata_file, mapping_
     explicit_name = str(data[methods["name"]]) if "name" in methods and data[methods["name"]] else None
     translation_key = str(data[methods["translation_key"]]) if "translation_key" in methods and data[methods["translation_key"]] else None
     key_name = str(data[methods["key_name"]]) if "key_name" in methods and data[methods["key_name"]] else None
-    limit = data[methods["limit"]] if "limit" in methods and data[methods["limit"]] else None
+    limit = data[methods["limit"]] if "limit" in methods and data[methods["limit"]] is not None else None
     translation_prefix = str(data[methods["translation_prefix"]]) if "translation_prefix" in methods and data[methods["translation_prefix"]] else ""
 
     if not any([explicit_name, translation_key]):
@@ -185,6 +185,16 @@ class Operations:
     def __init__(self, config, library):
         self.config = config
         self.library = library
+
+    def _configured_collection_names(self):
+        configured_names = set(self.library.collection_names)
+        for metadata_file in self.library.collection_files:
+            for mapping_name, collection_data in (metadata_file.collections or {}).items():
+                try:
+                    configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
+                except Exception as e:
+                    logger.debug(f"Configured name resolution failed for {mapping_name}: {e}")
+        return configured_names
 
     def _uses_mdblist(self):
         sources = [
@@ -1718,15 +1728,8 @@ class Operations:
             managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
             configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
             ignore_smart = self.library.delete_collections["ignore_empty_smart_collections"] if self.library.delete_collections else True
-            # Include mapping, explicit, English, and selected-language titles so operations running before collections do not delete configured localized collections.
-            configured_names = set(self.library.collection_names)
-            if configured is not None:
-                for metadata_file in self.library.collection_files:
-                    for mapping_name, collection_data in (metadata_file.collections or {}).items():
-                        try:
-                            configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
-                        except Exception as e:
-                            logger.debug(f"Configured name resolution failed for {mapping_name}: {e}")
+            # Include mapping, explicit, English, and selected-language titles for every consumer of the configured-name set.
+            configured_names = self._configured_collection_names()
 
             unmanaged_collections = []
             unconfigured_collections = []

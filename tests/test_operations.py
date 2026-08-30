@@ -1132,6 +1132,24 @@ class TestConfiguredCollectionNameAliases:
 
         assert aliases == {"Chart Collections"}
 
+    def test_zero_limit_is_substituted(self):
+        config, library, metadata_file = self._objects({})
+        collection_data = {"name": "Top <<limit>>", "limit": 0}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Top", collection_data)
+
+        assert "Top 0" in aliases
+
+    def test_operation_names_include_localized_aliases_without_delete_filter(self):
+        config, library, metadata_file = self._objects({})
+        metadata_file.collections = {"Chart Collections": {"translation_key": "separator", "key_name": "Chart"}}
+        library.collection_names = ["Manual Collection"]
+        library.collection_files = [metadata_file]
+
+        configured_names = Operations(config, library)._configured_collection_names()
+
+        assert configured_names == {"Manual Collection", "Chart Collections", "Collections Classement"}
+
     def test_keeps_mapping_name_when_name_resolution_fails(self):
         config, library, metadata_file = self._objects({})
 
