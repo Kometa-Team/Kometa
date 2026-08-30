@@ -30,11 +30,26 @@ def _summary_log_groups() -> list[tuple[str, str]]:
     raise AssertionError("summary_log_groups was not found in kometa.py")
 
 
+def _other_log_groups() -> list[tuple[str, str]]:
+    """Extract the named summary section rules without importing kometa.py."""
+    for node in ast.walk(_module_ast()):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "other_log_groups" for target in node.targets):
+            return ast.literal_eval(node.value)
+    raise AssertionError("other_log_groups was not found in kometa.py")
+
+
 def _summarize_log_message(message: str) -> str:
     for pattern, replacement in _summary_log_groups():
         if re.match(pattern, message):
             return replacement
     return message
+
+
+def _named_log_group(message: str) -> tuple[str, str] | None:
+    for key, pattern in _other_log_groups():
+        if message.startswith(key) and (match := re.match(pattern, message)):
+            return key, match.group(1)
+    return None
 
 
 def test_issue_3244_resource_import_is_guarded() -> None:
@@ -154,6 +169,16 @@ def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
     assert 'key == "Overlays Attempted on"' in text
 
 
+def test_missing_overlay_template_values_are_grouped_by_placeholder() -> None:
+    """Generic text-overlay misses belong in Overlay Summary, grouped by template value."""
+    assert _named_log_group("Overlay Error: No '<<user_rating>>' found") == ("Overlay Error: No '", "<<user_rating>>")
+    assert _named_log_group("Overlay Error: No '<<critic_rating>>' found") == ("Overlay Error: No '", "<<critic_rating>>")
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert 'key.startswith(("Overlay Warning", "Overlay Error"))' in text
+    assert 'other_message[key]["name_counts"][_name] += 1' in text
+    assert "Overlay Warning: No '{template_value}' found" in text
+
+
 def test_letterboxd_tmdb_failures_are_summarized() -> None:
     """Regression for repeated Letterboxd per-item TMDb lookup noise.
 
@@ -164,6 +189,22 @@ def test_letterboxd_tmdb_failures_are_summarized() -> None:
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert 'r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\\."' in text
     assert 'r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\\."' in text
+
+
+def test_dynamic_run_summary_messages_are_consolidated() -> None:
+    """IDs, titles, GUIDs, and URLs from the supplied large log should not create one row each."""
+    cases = {
+        "Config Warning: Skipping duplicate collection: Pusher": "Config Warning: Skipping duplicate collection",
+        "MDBList Warning: Batch lookup returned no data for 6 of 6 requested tmdb IDs: 584729, 586152": "MDBList Warning: Batch lookup returned no data for requested IDs",
+        "No MdbItem for 4k77 DNR (Guid: local://597050)": "MDBList Warning: No item found",
+        "Letterboxd Warning: letterboxdpy does not reliably support films page https://letterboxd.com/user/films/rated/5/; using Kometa fallback parsing.": "Letterboxd Warning: Using fallback films-page parsing",
+        "Letterboxd Warning: cloudscraper hit a Cloudflare challenge for https://letterboxd.com/user/list/example/; retrying with curl_cffi.": "Letterboxd Warning: Cloudflare challenge; retrying with curl_cffi",
+        "TMDb Error: No Movie found for TMDb ID: 1710116": "TMDb Error: No Movie found for TMDb ID",
+        "TMDb Error: No Movie found for TMDb ID 1710116: (404 [Not Found]) Requested Item Not Found": "TMDb Error: No Movie found for TMDb ID",
+        "TMDb Error: No Episode found for TMDb ID 330444 Season 1931 Episode 17: (404 [Not Found]) Requested Item Not Found": "TMDb Error: No Episode found for TMDb ID",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
 
 
 def test_asset_paths_and_warnings_are_summarized() -> None:
