@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -50,6 +50,7 @@ all_builders = (
     + simkl.builders
     + radarr.builders
     + sonarr.builders
+    + flicklist.builders
 )
 show_only_builders = [
     *serializd.builders,
@@ -64,6 +65,8 @@ show_only_builders = [
     "item_tmdb_season_titles",
     "sonarr_all",
     "sonarr_taglist",
+    "flicklist_up_next",
+    "flicklist_tracked",
 ]
 movie_only_builders = [
     "letterboxd_list",
@@ -107,6 +110,7 @@ summary_details = [
     "floppy_description",
     "letterboxd_description",
     "icheckmovies_description",
+    "flicklist_description",
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
@@ -223,8 +227,14 @@ none_details = [
     "item_critic_rating",
     "item_audience_rating",
     "item_user_rating",
+    "flicklist_watchlist",
+    "flicklist_favorites",
+    "flicklist_watched",
+    "flicklist_up_next",
+    "flicklist_tracked",
+    "flicklist_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist"]
+none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings"]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",
@@ -586,6 +596,11 @@ custom_sort_builders = [
     "anidb_tag_name",
     "simkl_trending",
     "simkl_dvd",
+    "flicklist_list",
+    "flicklist_user_lists",
+    "flicklist_watchlist",
+    "flicklist_favorites",
+    "flicklist_up_next",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays", "value_filter"]
@@ -1570,6 +1585,8 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
                 elif not self.config.Trakt and "trakt" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Trakt to be configured")
+                elif not self.config.FlickList and "flicklist" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
@@ -1666,6 +1683,8 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
+                elif method_name in flicklist.builders:
+                    self._flicklist(method_name, method_data)
                 elif method_name in serializd.builders:
                     self._serializd(method_name, method_data)
                 elif method_name in floppy.builders:
@@ -1822,6 +1841,11 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
             except Failed as e:
                 logger.error(f"Trakt Error: List description not found: {e}")
+        elif method_name == "flicklist_description":
+            try:
+                self.summaries[method_name] = self.config.FlickList.list_description(self.config.FlickList._parse_list_id(method_data))
+            except Failed as e:
+                logger.error(f"FlickList Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -3561,6 +3585,31 @@ class CollectionBuilder:
             if description:
                 self.summaries[method_name] = description
 
+    def _flicklist(self, method_name, method_data):
+        if self.config.FlickList is None:
+            raise BuilderValidationError(f"{self.Type} Error: flicklist attribute not found in config")
+        if method_name in ("flicklist_list", "flicklist_list_details"):
+            flicklist_lists = self.config.FlickList.validate_lists(self.Type, method_data)
+            for flicklist_list in flicklist_lists:
+                self.builders.append(("flicklist_list", flicklist_list))
+            if method_name.endswith("_details"):
+                try:
+                    description = self.config.FlickList.list_description(flicklist_lists[0])
+                    if description:
+                        self.summaries[method_name] = description
+                except Failed as e:
+                    logger.error(f"FlickList Error: List description not found: {e}")
+        elif method_name == "flicklist_user_lists":
+            username = self.config.FlickList.validate_username(self.Type, method_data)
+            self.builders.append((method_name, username))
+        elif method_name in ("flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_tracked"):
+            if self.config.FlickList.validate_flag(self.Type, method_name, method_data):
+                self.builders.append((method_name, True))
+        elif method_name == "flicklist_up_next":
+            self.builders.append((method_name, self.config.FlickList.validate_up_next(self.Type, method_data)))
+        elif method_name == "flicklist_ratings":
+            self.builders.append((method_name, self.config.FlickList.validate_ratings(self.Type, method_data)))
+
     def _serializd(self, method_name, method_data):
         if self.config.Serializd is None:
             raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
@@ -3751,6 +3800,9 @@ class CollectionBuilder:
                     ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
             else:
                 ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+        elif "flicklist" in method:
+            #  is_movie=None = playlist mode; must return BOTH movie and show entries.
+            ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
         elif "serializd" in method:
             ids = self.config.Serializd.get_builder_ids(method, value)
         elif "floppy" in method:
@@ -5342,6 +5394,8 @@ class CollectionBuilder:
             summary = ("trakt_list_details", self.summaries["trakt_list_details"])
         elif "yamtrack_list_details" in self.summaries:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
+        elif "flicklist_list_details" in self.summaries:
+            summary = ("flicklist_list_details", self.summaries["flicklist_list_details"])
         elif "floppy_list_details" in self.summaries:
             summary = ("floppy_list_details", self.summaries["floppy_list_details"])
         elif "tmdb_list_details" in self.summaries:

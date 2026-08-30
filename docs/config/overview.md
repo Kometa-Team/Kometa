@@ -53,6 +53,7 @@ requirements for setup that can be found by clicking the links within the table 
 | [`trakt`](trakt.md)                                                                                                                                                                                                   |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`floppy`](floppy.md)                                                                                                                                                                                                 |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`yamtrack`](yamtrack.md)                                                                                                                                                                                             |  :fontawesome-solid-circle-xmark:{ .red }  |
+| [`flicklist`](flicklist.md)                                                                                                                                                                                           |  :fontawesome-solid-circle-xmark:{ .red }  |
 | [`mal`](myanimelist.md)                                                                                                                                                                                               |  :fontawesome-solid-circle-xmark:{ .red }  |
 
 ## Configuration Template File Example

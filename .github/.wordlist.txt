@@ -114,6 +114,10 @@ Filmin
 filmin
 filmography
 FLAC
+fldb
+FlickList
+flicklist
+FlickList's
 FlixPatrol
 fontawesome
 FSK
@@ -171,6 +175,7 @@ Letterboxd
 letterboxd
 Letterboxd's
 LGBTQ
+lifecycle
 Limburgish
 Lingala
 LinuxServer
@@ -300,6 +305,7 @@ Schemas
 schemas
 SciFi
 SDTV
+selectable
 Serializd
 serializd
 Serializd's

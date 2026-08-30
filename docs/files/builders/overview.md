@@ -73,6 +73,17 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[FlickList](../flicklist/overview)** builders grab lists and personal data from your configured FlickList account.
+
+    [:octicons-home-16: View Builder](../flicklist/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: FlickList List](../flicklist/list) - Gets every item in a FlickList list.
+        - [:octicons-list-ordered-16: FlickList Watchlist](../flicklist/personal) - Gets the configured user's FlickList watchlist.
+
+!!! builder
+
     **[Serializd](../serializd/overview)** builders grab shows from Serializd lists and watchlists through its JSON API.
 
     [:octicons-home-16: View Builder](../serializd/overview){ .md-button .md-button--primary }
