@@ -1,3 +1,4 @@
+import copy
 import math
 import os
 import re
@@ -89,6 +90,95 @@ def _find_collection_trans_key(col_data):
             if result:
                 return result
     return None
+
+
+def _apply_collection_name_vars(value, variables, key_name=None, limit=None):
+    if value is None:
+        return None
+    output = str(value)
+    if "<<library_type>>" in output:
+        output = output.replace("<<library_type>>", "<<library_translation>>")
+    if "<<library_typeU>>" in output:
+        output = output.replace("<<library_typeU>>", "<<library_translationU>>")
+    for variable, variable_value in variables.items():
+        output = output.replace(f"<<{variable}>>", str(variable_value))
+        output = output.replace(f"<<{variable}U>>", str(variable_value).capitalize())
+    if key_name is not None:
+        output = output.replace("<<key_name>>", str(key_name))
+    if limit:
+        output = output.replace("<<limit>>", str(limit))
+    return output
+
+
+def _configured_collection_name_aliases(config, library, metadata_file, mapping_name, collection_data):
+    """Resolve names which may identify one configured collection in Plex."""
+    aliases = {str(mapping_name)}
+    if not isinstance(collection_data, dict):
+        return aliases
+
+    data = copy.deepcopy(collection_data)
+    methods = {method.lower(): method for method in data}
+    if "collection_name" in methods and data[methods["collection_name"]]:
+        data["name"] = data[methods["collection_name"]]
+        methods["name"] = "name"
+
+    if "template" in methods:
+        variables = data[methods["variables"]] if "variables" in methods and isinstance(data[methods["variables"]], dict) else {}
+        explicit_name = data[methods["name"]] if "name" in methods else None
+        expanded = metadata_file.apply_template(explicit_name, mapping_name, data, data[methods["template"]], variables)
+        for attribute, value in expanded.items():
+            if attribute.lower() not in methods:
+                data[attribute] = value
+                methods[attribute.lower()] = attribute
+
+    language = metadata_file.language
+    if "language" in methods and data[methods["language"]]:
+        requested_language = str(data[methods["language"]]).lower()
+        if requested_language in config.GitHub.translation_keys:
+            language = requested_language
+
+    explicit_name = str(data[methods["name"]]) if "name" in methods and data[methods["name"]] else None
+    translation_key = str(data[methods["translation_key"]]) if "translation_key" in methods and data[methods["translation_key"]] else None
+    key_name = str(data[methods["key_name"]]) if "key_name" in methods and data[methods["key_name"]] else None
+    limit = data[methods["limit"]] if "limit" in methods and data[methods["limit"]] else None
+    translation_prefix = str(data[methods["translation_prefix"]]) if "translation_prefix" in methods and data[methods["translation_prefix"]] else ""
+
+    if not any([explicit_name, translation_key]):
+        return aliases
+
+    english = config.GitHub.translation_yaml("en")
+    translations = config.GitHub.translation_yaml(language)
+    library_type = library.type.lower()
+    english_variables = {key: value[library_type] for key, value in english.get("variables", {}).items() if library_type in value and value[library_type]}
+    translated_variables = {key: value[library_type] for key, value in translations.get("variables", {}).items() if library_type in value and value[library_type]}
+    for key, value in english_variables.items():
+        translated_variables.setdefault(key, value)
+
+    english_key_name = key_name
+    translated_key_name = key_name
+    if key_name and language != "en":
+        key_name_key = next((key for key, value in english.get("key_names", {}).items() if value == key_name), None)
+        if key_name_key:
+            translated_key_name = translations.get("key_names", {}).get(key_name_key, key_name)
+
+    english_name = None
+    translated_name = None
+    if translation_key and translation_key in english.get("collections", {}):
+        english_name = english["collections"][translation_key].get("name")
+        translated_name = translations.get("collections", {}).get(translation_key, {}).get("name")
+        if english_name:
+            english_name = f"{translation_prefix}{english_name}"
+        if translated_name:
+            translated_name = f"{translation_prefix}{translated_name}"
+
+    for resolved_name in [
+        _apply_collection_name_vars(explicit_name, translated_variables, translated_key_name, limit),
+        _apply_collection_name_vars(english_name, english_variables, english_key_name, limit),
+        _apply_collection_name_vars(translated_name, translated_variables, translated_key_name, limit),
+    ]:
+        if resolved_name:
+            aliases.add(resolved_name)
+    return aliases
 
 
 class Operations:
@@ -1628,21 +1718,15 @@ class Operations:
             managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
             configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
             ignore_smart = self.library.delete_collections["ignore_empty_smart_collections"] if self.library.delete_collections else True
-            # Build configured_names: YAML keys + English-translated titles for default collections (#3168)
+            # Include mapping, explicit, English, and selected-language titles so operations running before collections do not delete configured localized collections.
             configured_names = set(self.library.collection_names)
             if configured is not None:
-                try:
-                    en_colls = self.config.GitHub.translation_yaml("en").get("collections", {})
-                    for mf in self.library.collection_files:
-                        if mf.collections:
-                            for col_data in mf.collections.values():
-                                trans_key = _find_collection_trans_key(col_data)
-                                if trans_key and trans_key in en_colls:
-                                    en_name = en_colls[trans_key].get("name")
-                                    if en_name:
-                                        configured_names.add(en_name)
-                except Exception as e:
-                    logger.debug(f"Translation name resolution for configured check failed: {e}")
+                for metadata_file in self.library.collection_files:
+                    for mapping_name, collection_data in (metadata_file.collections or {}).items():
+                        try:
+                            configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
+                        except Exception as e:
+                            logger.debug(f"Configured name resolution failed for {mapping_name}: {e}")
 
             unmanaged_collections = []
             unconfigured_collections = []

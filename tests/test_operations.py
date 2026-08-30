@@ -21,7 +21,7 @@ import modules.operations as ops_module
 ops_module.logger = MagicMock()
 
 from modules.mdblist import MDBList  # noqa: E402 -- must follow logger patch above
-from modules.operations import Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
+from modules.operations import Operations, _configured_collection_name_aliases, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
 from modules.overlays import Overlays  # noqa: E402 -- must follow logger patch above
 from modules.plex import Plex  # noqa: E402 -- must follow logger patch above
 
@@ -1025,6 +1025,67 @@ class TestFindCollectionTransKey:
         }
         # dict iteration order is insertion order in Python 3.7+
         assert _find_collection_trans_key(data) == "first"
+
+
+class TestConfiguredCollectionNameAliases:
+    @staticmethod
+    def _objects(expanded):
+        english = {
+            "variables": {"library_translation": {"movie": "movie"}},
+            "key_names": {"chart": "Chart"},
+            "collections": {
+                "separator": {"name": "<<key_name>> Collections"},
+                "tmdb_popular": {"name": "TMDb Popular"},
+            },
+        }
+        french = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Classement"},
+            "collections": {
+                "separator": {"name": "Collections <<key_name>>"},
+                "tmdb_popular": {"name": "TMDb Populaire"},
+            },
+        }
+        config = MagicMock()
+        config.GitHub.translation_keys = ["en", "fr"]
+        config.GitHub.translation_yaml.side_effect = lambda language: {"en": english, "fr": french}[language]
+        library = SimpleNamespace(type="Movie")
+        metadata_file = SimpleNamespace(language="fr", apply_template=MagicMock(return_value=expanded))
+        return config, library, metadata_file
+
+    def test_resolves_mapping_english_and_selected_language_names(self):
+        config, library, metadata_file = self._objects({"translation_key": "separator", "key_name": "Chart"})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", {"template": [{"name": "separator"}]})
+
+        assert aliases == {"Chart Collections", "Collections Classement"}
+        operations = make_ops(collections=[], collection_names=[])
+        french_collection = make_col("Collections Classement")
+        assert operations._should_be_deleted(french_collection, ["Kometa"], configured_in=False, managed_in=True, less_in=None, configured_names=aliases) is False
+
+    def test_includes_custom_name_override_and_translation_aliases(self):
+        custom_name = "🌍 Films populaires dans le monde"
+        config, library, metadata_file = self._objects({"name": custom_name, "translation_key": "tmdb_popular"})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "TMDb Popular", {"template": [{"name": "shared"}]})
+
+        assert aliases == {"TMDb Popular", "TMDb Populaire", custom_name}
+
+    def test_resolves_generated_dynamic_collection_without_reapplying_template(self):
+        config, library, metadata_file = self._objects({})
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert aliases == {"Chart Collections", "Collections Classement"}
+        metadata_file.apply_template.assert_not_called()
+
+    def test_keeps_mapping_name_when_name_resolution_fails(self):
+        config, library, metadata_file = self._objects({})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Manual Collection", {})
+
+        assert aliases == {"Manual Collection"}
 
 
 # ---------------------------------------------------------------------------
