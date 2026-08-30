@@ -105,7 +105,7 @@ def _apply_collection_name_vars(value, variables, key_name=None, limit=None):
         output = output.replace(f"<<{variable}U>>", str(variable_value).capitalize())
     if key_name is not None:
         output = output.replace("<<key_name>>", str(key_name))
-    if limit:
+    if limit is not None:
         output = output.replace("<<limit>>", str(limit))
     return output
 
