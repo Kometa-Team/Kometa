@@ -280,6 +280,7 @@ timings.registry.enabled = run_args["timings"]
 
 from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
+from modules.overlay import rating_sources  # noqa: E402
 from modules.request import Requests  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
 
@@ -667,37 +668,8 @@ def start(attrs):
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
-                ("Overlay Warning: No 'anidb_average_rating' found", r"Overlay Warning: No 'anidb_average_rating' found for (.*)"),
-                ("Overlay Warning: No 'anidb_rating' found", r"Overlay Warning: No 'anidb_rating' found for (.*)"),
-                ("Overlay Warning: No 'anidb_score_rating' found", r"Overlay Warning: No 'anidb_score_rating' found for (.*)"),
-                ("Overlay Warning: No 'audience_rating' found", r"Overlay Warning: No 'audience_rating' found for (.*)"),
-                ("Overlay Warning: No 'critic_rating' found", r"Overlay Warning: No 'critic_rating' found for (.*)"),
-                ("Overlay Warning: No 'imdb_rating' found", r"Overlay Warning: No 'imdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'mal_rating' found", r"Overlay Warning: No 'mal_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_average_rating' found", r"Overlay Warning: No 'mdb_average_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_imdb_rating' found", r"Overlay Warning: No 'mdb_imdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_letterboxd_rating' found", r"Overlay Warning: No 'mdb_letterboxd_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_metacritic_rating' found", r"Overlay Warning: No 'mdb_metacritic_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_metacriticuser_rating' found", r"Overlay Warning: No 'mdb_metacriticuser_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_myanimelist_rating' found", r"Overlay Warning: No 'mdb_myanimelist_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_rating' found", r"Overlay Warning: No 'mdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_tmdb_rating' found", r"Overlay Warning: No 'mdb_tmdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_tomatoesaudience_rating' found", r"Overlay Warning: No 'mdb_tomatoesaudience_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_tomatoes_rating' found", r"Overlay Warning: No 'mdb_tomatoes_rating' found for (.*)"),
-                ("Overlay Warning: No 'mdb_trakt_rating' found", r"Overlay Warning: No 'mdb_trakt_rating' found for (.*)"),
-                ("Overlay Warning: No 'omdb_imdb_rating' found", r"Overlay Warning: No 'omdb_imdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'omdb_metascore_rating' found", r"Overlay Warning: No 'omdb_metascore_rating' found for (.*)"),
-                ("Overlay Warning: No 'omdb_rating' found", r"Overlay Warning: No 'omdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'omdb_tomatoes_rating' found", r"Overlay Warning: No 'omdb_tomatoes_rating' found for (.*)"),
-                ("Overlay Warning: No 'plex_imdb_rating' found", r"Overlay Warning: No 'plex_imdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'plex_tmdb_rating' found", r"Overlay Warning: No 'plex_tmdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'plex_tomatoesaudience_rating' found", r"Overlay Warning: No 'plex_tomatoesaudience_rating' found for (.*)"),
-                ("Overlay Warning: No 'plex_tomatoes_rating' found", r"Overlay Warning: No 'plex_tomatoes_rating' found for (.*)"),
-                ("Overlay Warning: No 'plex_user_rating' found", r"Overlay Warning: No 'plex_user_rating' found for (.*)"),
-                ("Overlay Warning: No 'tmdb_rating' found", r"Overlay Warning: No 'tmdb_rating' found for (.*)"),
-                ("Overlay Warning: No 'trakt_rating' found", r"Overlay Warning: No 'trakt_rating' found for (.*)"),
-                ("Overlay Warning: No 'trakt_user_rating' found", r"Overlay Warning: No 'trakt_user_rating' found for (.*)"),
-                ("Overlay Warning: No 'user_rating' found", r"Overlay Warning: No 'user_rating' found for (.*)"),
+                *[(f"Overlay Warning: No '{rating_source}' found", rf"Overlay Warning: No '{re.escape(rating_source)}' found for (.*)") for rating_source in ["audience_rating", "critic_rating", "user_rating", *rating_sources]],
+                ("Overlay Error: No '", r"Overlay Error: No '(<<.+>>.*)' found$"),
                 ("Overlays Attempted on", r"Overlays Attempted on (.*): .+"),
                 ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
                 ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
@@ -709,7 +681,6 @@ def start(attrs):
                 ("Convert Warning: No IMDb ID found for TVDb ID", r"Convert Warning: No IMDb ID found for TVDb ID '(.*)'"),
                 ("Convert Warning: No TVDb ID found for IMDb ID", r"Convert Warning: No TVDb ID found for IMDb ID '(.*)'"),
                 ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '(.*)'"),
-                ("Convert Warning: No MyAnimeList Found for AniDB ID:", r"Convert Warning: No MyAnimeList Found for AniDB ID: (.*) of Guid: .*"),
                 ("Convert Error: No AniDB ID found for IMDb ID", r"Convert Error: No AniDB ID found for IMDb ID '(.*)'"),
                 ("Convert Error: No AniDB ID found for TVDb ID", r"Convert Error: No AniDB ID found for TVDb ID '(.*)'"),
                 ("Convert Error: No MyAnimeList ID found for AniDB ID", r"Convert Error: No MyAnimeList ID found for AniDB ID '(.*)'"),
@@ -728,6 +699,7 @@ def start(attrs):
                 (r"Asset Warning: No poster or background found in an assets folder for '.+'", "Asset Warning: No poster or background found in an assets folder"),
                 (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
                 (r"Collection Error: No valid Plex Collections in .+", "Collection Error: No valid Plex Collections"),
+                (r"Config Warning: Skipping duplicate collection: .+", "Config Warning: Skipping duplicate collection"),
                 (r"(?:Collection|Playlist) Warning: tvdb_episode:\d+_\d+_\d+ -> .+ Season: \d+ Episode: \d+ Missing", "TVDb Episode Missing"),
                 (r"(?:Collection|Playlist) Warning: tvdb_season:\d+_\d+ -> .+ Season: \d+ Missing", "TVDb Season Missing"),
                 (r"(?:Collection|Playlist) Warning: imdb:tt\d+ -> .+ Season: \d+ Episode: \d+ Missing", "IMDb Episode Missing"),
@@ -738,19 +710,32 @@ def start(attrs):
                 (r".+ Error: Theme Path Does Not Exist: .+", "Error: Theme Path Does Not Exist"),
                 (r".+ Error: No builders were found", "Error: No builders were found"),
                 (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
-                (r".+ Error: No Filter Created", "Error: No Filter Created"),
                 (r"Letterboxd Error: No List Items found in .+", "Letterboxd Error: No List Items found"),
                 (r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\.", "Letterboxd Error: TMDb Movie ID not found"),
+                (
+                    r"Letterboxd Warning: cloudscraper hit a Cloudflare challenge for .+; retrying with curl_cffi\.",
+                    "Letterboxd Warning: Cloudflare challenge; retrying with curl_cffi",
+                ),
+                (
+                    r"Letterboxd Warning: letterboxdpy does not reliably support films page .+; using Kometa fallback parsing\.",
+                    "Letterboxd Warning: Using fallback films-page parsing",
+                ),
                 (r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\.", "Letterboxd Warning: TMDb link is for a TV show, not a movie"),
+                (
+                    r"MDBList Warning: Batch lookup returned no data for \d+ of \d+ requested [A-Za-z]+ IDs: .+",
+                    "MDBList Warning: Batch lookup returned no data for requested IDs",
+                ),
                 (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
+                (r"No MdbItem for .+ \(Guid: .+\)", "MDBList Warning: No item found"),
                 (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
                 (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
                 (
                     r"TMDb Error: Collection ID \d+ missing on TMDb; add '\d+' to the franchise exclude list if this is auto-built\.",
                     "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built",
                 ),
+                (r"TMDb Error: No Episode found for TMDb ID \d+ Season \d+ Episode \d+: .+", "TMDb Error: No Episode found for TMDb ID"),
+                (r"TMDb Error: No Movie found for TMDb ID:? \d+(?:: .+)?", "TMDb Error: No Movie found for TMDb ID"),
                 (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
-                (r"Trakt Error: No TVDb ID found for .+", "Trakt Error: No TVDb ID found"),
                 (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
                 (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
@@ -778,8 +763,9 @@ def start(attrs):
                                     other = True
                                     _name = match.group(1)
                                     if key not in other_message:
-                                        other_message[key] = {"list": [], "count": 0}
+                                        other_message[key] = {"list": [], "count": 0, "name_counts": Counter()}
                                     other_message[key]["count"] += 1
+                                    other_message[key]["name_counts"][_name] += 1
                                     if _name not in other_message[key]["list"]:
                                         other_message[key]["list"].append(_name)
                             if other is False:
@@ -802,13 +788,17 @@ def start(attrs):
             overlay_title = False
             details = run_args["trace"] or run_args["log-requests"]
             for key, _ in other_log_groups:
-                if (key == "No Items found for" or key.startswith("Overlay Warning") or key == "Overlays Attempted on") and key in other_message:
+                if (key == "No Items found for" or key.startswith(("Overlay Warning", "Overlay Error")) or key == "Overlays Attempted on") and key in other_message:
                     if overlay_title is False:
                         logger.separator("Overlay Summary", space=False, border=False)
                         logger.info("")
                         logger.info("Count | Message")
                         logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
                         overlay_title = True
+                    if key == "Overlay Error: No '":
+                        for template_value, count in other_message[key]["name_counts"].most_common():
+                            logger.info(f"{count:>5} | Overlay Warning: No '{template_value}' found")
+                        continue
                     overlay_count = other_message[key]["count"]
                     overlay_line = "No Items found" if key == "No Items found for" else key
                     if details:
