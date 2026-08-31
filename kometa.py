@@ -382,12 +382,21 @@ if run_args["low-priority"]:
         logger.critical(f"Failed to set priority: {e}")
 
 
+def _process_pool_context():
+    """Use fork only when replacing Python 3.14's forkserver default.
+
+    Windows and macOS use spawn by default; retaining that context keeps this
+    entry point portable and avoids forcing macOS onto its unsafe fork method.
+    """
+    if multiprocessing.get_start_method() == "forkserver" and "fork" in multiprocessing.get_all_start_methods():
+        return multiprocessing.get_context("fork")
+    return None
+
+
 def process(attrs):
-    # Force "fork" so the worker inherits already-parsed run_args/module state.
-    # Python 3.14 defaults to "forkserver" on Linux, which instead re-executes
-    # this file's top-level code (including argv parsing) with a different
-    # sys.argv, silently resetting every CLI flag to its default.
-    with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("fork")) as executor:
+    # Replace Python 3.14's forkserver default with fork so the worker inherits
+    # already-parsed run_args/module state. Other platform defaults are retained.
+    with ProcessPoolExecutor(max_workers=1, mp_context=_process_pool_context()) as executor:
         future = executor.submit(start, *[attrs])
         try:
             future.result()
