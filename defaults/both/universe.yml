@@ -97,15 +97,6 @@ dynamic_collections:
       star: Star Wars Universe
       mummy: Mummy Universe
       wizard: Wizarding World
-      xmen: X-Men Universe      fast: Fast & Furious
-      marvel: In Association With Marvel
-      mcu: Marvel Cinematic Universe
-      middle: Middle Earth
-      rocky: Rocky / Creed
-      trek: Star Trek
-      star: Star Wars Universe
-      mummy: Mummy Universe
-      wizard: Wizarding World
       xmen: X-Men Universe
     template:
       - universe
