@@ -175,15 +175,21 @@ templates:
             value: '(?i)Criterion|\[CC\]'
           - key: openmatte
             value: '(?i)\b(Open[ ._-]?Matte)\b'
+      require_resolution:
+        conditions:
+          - type: edition_dovetail
+            value: <<use_resolution>>
     optional:
       - search
       - use_<<key>>
       - use_edition
+      - use_resolution
       - allowed_libraries
     run_definition:
       - <<use_<<key>>>>
       - <<use_edition>>
       - <<allowed_libraries>>
+      - <<require_resolution>>
     ignore_blank_results: true
     plex_all: true
     filters:
