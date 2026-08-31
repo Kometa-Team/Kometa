@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Skip mass metadata rating values above Plex's maximum of 10 instead of sending them to Plex.
 - Fixed `audio_codec` track builder
 - Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.
 - Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.

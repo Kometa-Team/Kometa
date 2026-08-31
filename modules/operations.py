@@ -45,6 +45,14 @@ def _item_batches(items_iterable, batch_size):
         yield items_iterable[batch_num * batch_size : (batch_num + 1) * batch_size]
 
 
+def _format_plex_rating(value, source, rating_name):
+    rating = float(value)
+    if rating > 10:
+        logger.warning(f"{source} {rating_name} value {rating:g} exceeds Plex maximum of 10; skipping")
+        raise Failed
+    return f"{rating:.1f}"
+
+
 def _image_operation_summary_rows(counts):
     rows = {}
     for (operation, source, image_type, level, status), count in counts.items():
@@ -654,7 +662,7 @@ class Operations:
                                     if found_rating is None:
                                         logger.info(f"No {option} {name_display[item_attr]} Found")
                                         raise Failed
-                                    found_rating = f"{float(found_rating):.1f}"
+                                    found_rating = _format_plex_rating(found_rating, option, name_display[item_attr])
                                     if str(current) != found_rating:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
@@ -1427,7 +1435,7 @@ class Operations:
                                             if found_rating is None:
                                                 logger.info(f"  No {option} {name_display[item_attr]} Found")
                                                 raise Failed
-                                            found_rating = f"{float(found_rating):.1f}"
+                                            found_rating = _format_plex_rating(found_rating, option, name_display[item_attr])
                                             if str(current) != found_rating:
                                                 if found_rating not in ep_rating_edits[item_attr]:
                                                     ep_rating_edits[item_attr][found_rating] = []
