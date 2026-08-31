@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.
 - Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.
 - Fix `episode_*` ratings from producing a critical error when Trakt did not have an episode in its database
+- Fix DC-based lists in 'universe' Defaults file
 
 ## [v2.4.8] - 2026-08-15
 
