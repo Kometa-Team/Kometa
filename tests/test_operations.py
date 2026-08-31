@@ -837,6 +837,20 @@ class TestFlushCombinedEdits:
         config.Floppy.get_rating.assert_called_once_with("tv", tmdb_id=94605, tvdb_id=371028, imdb_id="tt11126994")
         library.Plex.editField.assert_called_once_with("userRating", "5.0")
 
+    def test_mdb_letterboxd_rating_above_ten_is_not_sent_to_plex(self):
+        ops_module.logger.reset_mock()
+        item = make_mass_edit_item(1, "Invalid Letterboxd Rating")
+        library = make_mass_edit_library([item], mass_user_rating_update=["mdb_letterboxd"])
+        library.get_ids.return_value = (123, None, None)
+        config = MagicMock()
+        config.MDBList.limit = False
+        config.MDBList.get_movie.return_value = SimpleNamespace(letterboxd_rating=5.1)
+
+        Operations(config=config, library=library).run_operations()
+
+        library.Plex.editField.assert_not_called()
+        ops_module.logger.warning.assert_any_call("mdb_letterboxd User Rating value 10.2 exceeds Plex maximum of 10; skipping")
+
     def test_merges_multiple_attribute_types_into_one_put(self):
         """An item needing rating + audience rating + genre + content rating all changed in
         the same run gets ONE batchMultiEdits()/saveMultiEdits() PUT, not four."""
