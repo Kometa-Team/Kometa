@@ -589,7 +589,7 @@ class Overlays:
 
         for over_key, (item, over_names) in key_to_overlays.items():
             group_status = {}
-            for over_name in over_names:
+            for over_name in list(over_names):
                 for suppress_name in properties[over_name].suppress:
                     if suppress_name in over_names:
                         key_to_overlays[over_key][1].remove(suppress_name)
