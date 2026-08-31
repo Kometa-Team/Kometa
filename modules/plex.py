@@ -992,12 +992,13 @@ class Plex(Library):
             self._all_items = results
         return results
 
-    def upload_theme(self, collection, url=None, filepath=None):
-        key = f"/library/metadata/{collection.ratingKey}/themes"
+    def upload_theme(self, item, url=None, filepath=None):
+        key = f"/library/metadata/{item.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
         elif filepath:
-            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
+            with open(filepath, "rb") as theme_file:
+                self.PlexServer.query(key, method=self.PlexServer._session.post, data=theme_file.read())
 
     @PLEX_RETRY
     def create_playlist(self, name, items):

@@ -60,6 +60,30 @@ def test_at_least_one_schema_exists() -> None:
     assert SCHEMA_FILES, f"no *-schema.json files found in {SCHEMA_DIR}"
 
 
+def test_metadata_schema_accepts_movie_and_show_themes() -> None:
+    with (SCHEMA_DIR / "metadata-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    metadata = {
+        "metadata": {
+            "Movie": {"url_theme": "https://example.com/movie-theme.mp3"},
+            "Show": {"file_theme": "/config/themes/show-theme.mp3"},
+        }
+    }
+
+    assert list(Draft7Validator(schema).iter_errors(metadata)) == []
+
+
+def test_metadata_schema_rejects_season_themes() -> None:
+    with (SCHEMA_DIR / "metadata-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    metadata = {"metadata": {"Show": {"seasons": {1: {"url_theme": "https://example.com/season-theme.mp3"}}}}}
+    errors = list(Draft7Validator(schema).iter_errors(metadata))
+
+    assert any("url_theme" in error.message for error in errors)
+
+
 # ── 2. Defaults must be parseable YAML ────────────────────────────────────────
 
 

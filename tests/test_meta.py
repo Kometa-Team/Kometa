@@ -6,12 +6,13 @@ loading logic that can be tested without real Plex/GitHub connections.
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.meta import DataFile
+from modules.meta import DataFile, MetadataFile
 from tests.conftest import FakeLogger, FakeRequests
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -45,6 +46,84 @@ def make_datafile(**attrs) -> DataFile:
     for key, value in defaults.items():
         setattr(df, key, value)
     return df
+
+
+def make_metadata_file(library):
+    import modules.meta as meta_module
+
+    test_logger = FakeLogger()
+    meta_module.logger = test_logger
+    metadata_file = MetadataFile.__new__(MetadataFile)
+    metadata_file.library = library
+    metadata_file.type_str = "Metadata File"
+    return metadata_file, test_logger
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# update_theme
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestUpdateTheme:
+    @staticmethod
+    def _library(is_movie=True, is_show=False):
+        return SimpleNamespace(is_movie=is_movie, is_show=is_show, upload_theme=MagicMock())
+
+    def test_uploads_url_theme_for_movie(self):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=101)
+
+        updated = metadata_file.update_theme(item, {"url_theme": "https://example.com/theme.mp3"}, {"url_theme": "url_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, url="https://example.com/theme.mp3")
+        assert "Metadata: theme updated" in test_logger.info_messages
+
+    def test_uploads_file_theme_for_show(self, tmp_path):
+        library = self._library(is_movie=False, is_show=True)
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=202)
+        theme_path = tmp_path / "theme.mp3"
+        theme_path.write_bytes(b"theme data")
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(theme_path)}, {"file_theme": "file_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, filepath=str(theme_path.resolve()))
+
+    def test_url_theme_takes_precedence_over_file_theme(self):
+        library = self._library()
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=303)
+        group = {"url_theme": "https://example.com/theme.mp3", "file_theme": "/missing/theme.mp3"}
+
+        updated = metadata_file.update_theme(item, group, {"url_theme": "url_theme", "file_theme": "file_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, url="https://example.com/theme.mp3")
+
+    def test_missing_file_theme_is_not_uploaded(self, tmp_path):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=404)
+        theme_path = tmp_path / "missing.mp3"
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(theme_path)}, {"file_theme": "file_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
+        assert f"Metadata File Error: Theme Path Does Not Exist: {theme_path}" in test_logger.error_messages
+
+    def test_does_not_upload_theme_for_unsupported_item_type(self):
+        library = self._library(is_movie=False, is_show=False)
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=505)
+
+        updated = metadata_file.update_theme(item, {"url_theme": "https://example.com/theme.mp3"}, {"url_theme": "url_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════
