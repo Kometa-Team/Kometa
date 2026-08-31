@@ -6,7 +6,7 @@ import re
 from modules import util
 from modules.util import Failed
 
-builders = ["text_file"]
+builders = ["text_file", "text"]
 
 imdb_pattern = re.compile(r"^(tt\d+)$", re.IGNORECASE)
 plex_guid_pattern = re.compile(r"^plex://[a-z_]+/[0-9a-f]{24}$", re.IGNORECASE)
@@ -99,11 +99,11 @@ class TextFile:
             raise Failed(f"{name} Error: JSON list not found at {url}")
         return data
 
-    def _normalize_plex(self, value, source):
+    def _normalize_plex(self, value, source, error_name="Text File"):
         plex_value = str(value).strip().lower()
         if plex_guid_pattern.match(plex_value) or plex_id_pattern.match(plex_value):
             return [(plex_value, "plex")]
-        raise Failed(f"Text File Error: Plex ID not supported in {source}: {value}")
+        raise Failed(f"{error_name} Error: Plex ID not supported in {source}: {value}")
 
     def _first_value(self, data, keys):
         for key in keys:
@@ -111,7 +111,7 @@ class TextFile:
                 return data[key]
         return None
 
-    def _normalize_tvdb_part(self, value_type, value, source):
+    def _normalize_tvdb_part(self, value_type, value, source, error_name="Text File"):
         item_label = "TVDb Episode" if value_type == "tvdb_episode" else "TVDb Season"
         if isinstance(value, dict):
             values = [
@@ -128,21 +128,21 @@ class TextFile:
 
         expected = 3 if value_type == "tvdb_episode" else 2
         if not values or len(values) != expected or any(part is None for part in values):
-            raise Failed(f"Text File Error: {item_label} not supported in {source}: {value}")
+            raise Failed(f"{error_name} Error: {item_label} not supported in {source}: {value}")
 
         try:
             normalized = [int(str(part).strip()) for part in values]
         except ValueError:
-            raise Failed(f"Text File Error: {item_label} not supported in {source}: {value}")
+            raise Failed(f"{error_name} Error: {item_label} not supported in {source}: {value}")
 
         return [("_".join(str(part) for part in normalized), value_type)]
 
-    def _normalize_value(self, value_type, value, source, is_movie=None):
+    def _normalize_value(self, value_type, value, source, is_movie=None, error_name="Text File"):
         if value_type == "imdb":
             imdb_id = util.get_id_from_imdb_url(value) if "imdb.com/title/" in str(value) else str(value).strip()
             if imdb_pattern.match(imdb_id):
                 return [(imdb_id, "imdb")]
-            raise Failed(f"Text File Error: IMDb ID not supported in {source}: {value}")
+            raise Failed(f"{error_name} Error: IMDb ID not supported in {source}: {value}")
         if value_type == "tmdb":
             tmdb_id = util.regex_first_int(value, "TMDb ID")
             if is_movie is True:
@@ -154,18 +154,18 @@ class TextFile:
         if value_type == "tvdb":
             return [(util.regex_first_int(value, "TVDb ID"), "tvdb")]
         if value_type in ["tvdb_season", "tvdb_episode"]:
-            return self._normalize_tvdb_part(value_type, value, source)
+            return self._normalize_tvdb_part(value_type, value, source, error_name=error_name)
         if value_type == "plex":
-            return self._normalize_plex(value, source)
+            return self._normalize_plex(value, source, error_name=error_name)
         if value_type == "url":
-            return self._parse_json_url(value, is_movie=is_movie)
-        raise Failed(f"Text File Error: {value_type} is not a supported ID type in {source}")
+            return self._parse_json_url(value, is_movie=is_movie, error_name=error_name)
+        raise Failed(f"{error_name} Error: {value_type} is not a supported ID type in {source}")
 
-    def _parse_json_item(self, item, source, is_movie=None):
+    def _parse_json_item(self, item, source, is_movie=None, error_name="Text File"):
         if isinstance(item, (str, int)):
-            return self._parse_line(str(item), source, is_movie=is_movie)
+            return self._parse_line(str(item), source, is_movie=is_movie, error_name=error_name)
         if not isinstance(item, dict):
-            raise Failed(f"Text File Error: Unsupported JSON item found in {source}: {item}")
+            raise Failed(f"{error_name} Error: Unsupported JSON item found in {source}: {item}")
         item_type = None
         item_value = None
         if "type" in item and any(k in item for k in ["id", "value"]):
@@ -181,30 +181,28 @@ class TextFile:
                     item_value = item[key]
                     break
         if item_type in typed_id_keys:
-            return self._normalize_value(typed_id_keys[item_type], item_value, source, is_movie=is_movie)
-        raise Failed(f"Text File Error: No supported IDs found in {source}: {item}")
+            return self._normalize_value(typed_id_keys[item_type], item_value, source, is_movie=is_movie, error_name=error_name)
+        raise Failed(f"{error_name} Error: No supported IDs found in {source}: {item}")
 
-    def _parse_json_url(self, url, is_movie=None):
+    def _parse_json_url(self, url, is_movie=None, error_name="Text File"):
         url = str(url).strip()
         ids = []
-        for i, item in enumerate(self._request_list(url), 1):
-            ids.extend(self._parse_json_item(item, f"{url} item {i}", is_movie=is_movie))
+        for i, item in enumerate(self._request_list(url, name=error_name), 1):
+            ids.extend(self._parse_json_item(item, f"{url} item {i}", is_movie=is_movie, error_name=error_name))
         if not ids:
-            raise Failed(f"Text File Error: No IDs found at {url}")
+            raise Failed(f"{error_name} Error: No IDs found at {url}")
         return ids
 
     def _parse_text_url(self, url, is_movie=None):
         try:
             return self._parse_json_url(url, is_movie=is_movie)
         except Failed:
-            ids = []
-            for line_number, line in enumerate(self._request_text(url).splitlines(), 1):
-                ids.extend(self._parse_line(line, f"{url}:{line_number}", is_movie=is_movie))
+            ids = self._parse_source_lines(((line, f"{url}:{line_number}") for line_number, line in enumerate(self._request_text(url).splitlines(), 1)), is_movie=is_movie)
             if not ids:
                 raise Failed(f"Text File Error: No IDs found at {url}")
             return ids
 
-    def _parse_line(self, line, source, is_movie=None):
+    def _parse_line(self, line, source, is_movie=None, error_name="Text File"):
         entry = self._clean_line(line)
         if not entry:
             return []
@@ -212,13 +210,13 @@ class TextFile:
         if type_match and not entry.lower().startswith(("http://", "https://", "plex://")):
             entry_type = type_match.group(1).lower()
             if entry_type in typed_id_keys:
-                return self._normalize_value(typed_id_keys[entry_type], type_match.group(2).strip(), source, is_movie=is_movie)
+                return self._normalize_value(typed_id_keys[entry_type], type_match.group(2).strip(), source, is_movie=is_movie, error_name=error_name)
         if imdb_pattern.match(entry) or "imdb.com/title/" in entry:
-            return self._normalize_value("imdb", entry, source)
+            return self._normalize_value("imdb", entry, source, error_name=error_name)
         if plex_guid_pattern.match(entry) or plex_id_pattern.match(entry):
-            return self._normalize_plex(entry, source)
+            return self._normalize_plex(entry, source, error_name=error_name)
         if entry.startswith(("http://", "https://")):
-            return self._parse_json_url(entry, is_movie=is_movie)
+            return self._parse_json_url(entry, is_movie=is_movie, error_name=error_name)
         if entry.isdigit():
             numeric_id = int(entry)
             if is_movie is True:
@@ -226,7 +224,39 @@ class TextFile:
             if is_movie is False:
                 return [(numeric_id, "tvdb")]
             return [(numeric_id, "number")]
-        raise Failed(f"Text File Error: Line not supported in {source}: {entry}")
+        raise Failed(f"{error_name} Error: Line not supported in {source}: {entry}")
+
+    def _parse_source_lines(self, source_lines, is_movie=None, error_name="Text File"):
+        ids = []
+        for line, source in source_lines:
+            ids.extend(self._parse_line(line, source, is_movie=is_movie, error_name=error_name))
+        return ids
+
+    def _inline_source_lines(self, data):
+        if isinstance(data, bool) or not isinstance(data, (str, int, list)):
+            raise Failed("Text Error: text must be a string, integer, or list of strings and integers")
+        values = data if isinstance(data, list) else [data]
+        if not values:
+            raise Failed("Text Error: No IDs found.")
+        scalar_input = not isinstance(data, list)
+        for item_number, value in enumerate(values, 1):
+            if isinstance(value, bool) or not isinstance(value, (str, int)):
+                raise Failed(f"Text Error: text item {item_number} must be a string or integer")
+            lines = str(value).splitlines() or [""]
+            for line_number, line in enumerate(lines, 1):
+                if scalar_input:
+                    source = f"text line {line_number}"
+                elif len(lines) == 1:
+                    source = f"text item {item_number}"
+                else:
+                    source = f"text item {item_number} line {line_number}"
+                yield line, source
+
+    def validate_text(self, data):
+        source_lines = list(self._inline_source_lines(data))
+        if not any(self._clean_line(line) for line, _ in source_lines):
+            raise Failed("Text Error: No IDs found.")
+        return data
 
     def validate_file(self, data):
         valid_files = []
@@ -250,8 +280,16 @@ class TextFile:
                 ids.extend(self._parse_text_url(file_path, is_movie=is_movie))
             else:
                 with open(str(file_path), encoding="utf-8") as handle:
-                    for line_number, line in enumerate(handle, 1):
-                        ids.extend(self._parse_line(line, f"{file_path}:{line_number}", is_movie=is_movie))
+                    ids.extend(self._parse_source_lines(((line, f"{file_path}:{line_number}") for line_number, line in enumerate(handle, 1)), is_movie=is_movie))
         if not ids:
             raise Failed("Text File Error: No IDs found.")
+        return ids
+
+    def get_text_ids(self, data, is_movie=None):
+        self.validate_text(data)
+        if util.logger:
+            util.logger.info("Processing Inline Text")
+        ids = self._parse_source_lines(self._inline_source_lines(data), is_movie=is_movie, error_name="Text")
+        if not ids:
+            raise Failed("Text Error: No IDs found.")
         return ids

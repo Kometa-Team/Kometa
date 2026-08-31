@@ -299,8 +299,26 @@ collections:
     collection_order: custom
 
   # ---------------------------------------------------------------------------
-  # text_file — plain-text file with one ID per line (string or list)
+  # text / text_file — inline IDs or a plain-text file with one ID per line
   # ---------------------------------------------------------------------------
+  Inline Text List:
+    text: |-
+      tt0079945
+      174
+      tmdb:154
+      plex://movie/5d7768243c3c2a001fbca85b
+    sync_mode: sync
+    collection_order: custom
+    summary: A hand-curated list stored directly in this YAML file.
+
+  Inline Text YAML List:
+    text:
+      - tt0079945
+      - 174
+      - tmdb:154
+    sync_mode: sync
+    collection_order: custom
+
   My Custom List:
     text_file: config/lists/my_movies.txt
     sync_mode: sync

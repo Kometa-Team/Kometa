@@ -296,12 +296,13 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Text File logo](../../assets/images/files/builders/text.png){ align=right }
+    ![Text logo](../../assets/images/files/builders/text.png){ align=right }
 
-    **[Text File](textfile/overview.md)** builders read items from a manually maintained local or remote text file.
+    **[Text](textfile/overview.md)** builders read item IDs directly from YAML or from a manually maintained local or remote text file.
 
     [:octicons-home-16: View Builder](textfile/overview.md){ .md-button .md-button--primary }
 
     ??? quicklink "Popular Builders"
 
+        - [:material-format-text: Text](textfile/text.md) - Reads supported IDs and URLs directly from an inline YAML value.
         - [:material-file-document-outline: Text File](textfile/text-file.md) - Reads supported IDs and URLs from a local or remote text file while preserving source order.

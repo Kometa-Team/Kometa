@@ -574,6 +574,22 @@ class TestTextfile:
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
 
+    def test_registers_inline_text_without_file_validation(self):
+        text_file = MagicMock()
+        text_file.validate_text.return_value = ["tt1234567", 12345]
+        builder = make_builder()
+        builder.config = SimpleNamespace(TextFile=text_file)
+
+        builder._textfile("text", ["tt1234567", 12345])
+
+        assert builder.builders == [("text", ["tt1234567", 12345])]
+        text_file.validate_text.assert_called_once_with(["tt1234567", 12345])
+        text_file.validate_file.assert_not_called()
+
+    def test_inline_text_supports_custom_sort_and_show_parts(self):
+        assert "text" in custom_sort_builders
+        assert "text" in parts_collection_valid
+
     def test_value_filter_is_allowed_for_episode_overlays(self):
         assert "value_filter" in parts_collection_valid
 
@@ -997,6 +1013,21 @@ class TestDelete:
 
 
 class TestGatherIds:
+    @pytest.mark.parametrize(("playlist", "is_movie"), [(False, True), (True, None)])
+    def test_dispatches_inline_text_builder_with_library_context(self, playlist, is_movie):
+        text_file = MagicMock()
+        text_file.get_text_ids.return_value = [(12345, "tmdb")]
+        library = SimpleNamespace(type="Movie", is_movie=True)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None, TextFile=text_file),
+            library=library,
+            playlist=playlist,
+            details={"cache_builders": 0},
+        )
+
+        assert builder.gather_ids("text", [12345]) == [(12345, "tmdb")]
+        text_file.get_text_ids.assert_called_once_with([12345], is_movie)
+
     def test_dispatches_tracearr_builder(self):
         tracearr = MagicMock()
         tracearr.get_rating_keys.return_value = [(101, "ratingKey")]

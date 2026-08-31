@@ -773,8 +773,25 @@
                 "text_file": {
                     "description": "Path(s) to a plain-text file containing one IMDb/TMDb/TVDb ID per line.",
                     "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
+                        { "type": "string", "minLength": 1 },
+                        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+                    ]
+                },
+                "text": {
+                    "description": "Inline IDs using the same one-entry-per-line syntax as text_file.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "integer" },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string", "minLength": 1 },
+                                    { "type": "integer" }
+                                ]
+                            }
+                        }
                     ]
                 },
 
