@@ -1,5 +1,6 @@
 import argparse
 import hashlib
+import multiprocessing
 import os
 import platform
 import re
@@ -382,7 +383,11 @@ if run_args["low-priority"]:
 
 
 def process(attrs):
-    with ProcessPoolExecutor(max_workers=1) as executor:
+    # Force "fork" so the worker inherits already-parsed run_args/module state.
+    # Python 3.14 defaults to "forkserver" on Linux, which instead re-executes
+    # this file's top-level code (including argv parsing) with a different
+    # sys.argv, silently resetting every CLI flag to its default.
+    with ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("fork")) as executor:
         future = executor.submit(start, *[attrs])
         try:
             future.result()
