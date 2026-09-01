@@ -15,11 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
+- Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
 - Support the `folder_location` Plex search option in music-library track builders.
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
 
 ### Fixed
 
+- Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
+- Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
 - Fix the `resolution` Defaults overlay file selecting the `-Dovetail` (resolution-paired) edition overlay instead of the plain one when `use_resolution: false` disables resolution overlays entirely, by no longer building the dovetail edition overlays in that case, and fix a related list-mutation-during-iteration bug in overlay suppress/group resolution that could skip a suppress rule for an overlay later in an item's match list.
 - Fixed `audio_codec` track builder
 - Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.

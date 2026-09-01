@@ -992,12 +992,13 @@ class Plex(Library):
             self._all_items = results
         return results
 
-    def upload_theme(self, collection, url=None, filepath=None):
-        key = f"/library/metadata/{collection.ratingKey}/themes"
+    def upload_theme(self, item, url=None, filepath=None):
+        key = f"/library/metadata/{item.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
         elif filepath:
-            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
+            with open(filepath, "rb") as theme_file:
+                self.PlexServer.query(key, method=self.PlexServer._session.post, data=theme_file.read())
 
     @PLEX_RETRY
     def create_playlist(self, name, items):
@@ -2469,8 +2470,22 @@ class Plex(Library):
         if self.config.Cache:
             cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, variable_name)
             if cached_value is not None and not expired:
-                return float(cached_value)
+                if util.is_valid_rating(cached_value):
+                    return float(cached_value)
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {cached_value} is invalid; expected a finite value from 0 to 10; skipping")
         found_rating = None
+        cacheable = True
+
+        def _scale_rating(value, maximum, factor):
+            if util.is_missing_rating(value):
+                return None
+            if not util.is_valid_rating(value, maximum=maximum):
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {value} is invalid for the provider's 0 to {maximum} scale; expected a finite number; skipping")
+                return None
+            return float(value) * factor
+
         item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
         tmdb_id, tvdb_id, imdb_id = self.get_ids(item_to_id)
         if variable_name == "tmdb_rating":
@@ -2577,28 +2592,29 @@ class Plex(Library):
                 if not mdb_item:
                     raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
             if mdb_item:
+                cacheable = getattr(mdb_item, "ratings_valid", True)
                 if variable_name == "mdb_average_rating":
-                    found_rating = mdb_item.average / 10 if mdb_item.average else None
+                    found_rating = _scale_rating(mdb_item.average, 100, 0.1)
                 elif variable_name == "mdb_imdb_rating":
                     found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                 elif variable_name == "mdb_metacritic_rating":
-                    found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                    found_rating = _scale_rating(mdb_item.metacritic_rating, 100, 0.1)
                 elif variable_name == "mdb_metacriticuser_rating":
                     found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
                 elif variable_name == "mdb_trakt_rating":
-                    found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                    found_rating = _scale_rating(mdb_item.trakt_rating, 100, 0.1)
                 elif variable_name == "mdb_tomatoes_rating":
-                    found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                    found_rating = _scale_rating(mdb_item.tomatoes_rating, 100, 0.1)
                 elif variable_name == "mdb_tomatoesaudience_rating":
-                    found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                    found_rating = _scale_rating(mdb_item.tomatoesaudience_rating, 100, 0.1)
                 elif variable_name == "mdb_tmdb_rating":
-                    found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                    found_rating = _scale_rating(mdb_item.tmdb_rating, 100, 0.1)
                 elif variable_name == "mdb_letterboxd_rating":
-                    found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                    found_rating = _scale_rating(mdb_item.letterboxd_rating, 5, 2)
                 elif variable_name == "mdb_myanimelist_rating":
                     found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
                 else:
-                    found_rating = mdb_item.score / 10 if mdb_item.score else None
+                    found_rating = _scale_rating(mdb_item.score, 100, 0.1)
         elif str(variable_name).startswith("omdb"):
             if not getattr(self.config, "OMDb", None):
                 raise OverlayError("Overlay Error: OMDb is not configured in your config file")
@@ -2609,10 +2625,11 @@ class Plex(Library):
             else:
                 try:
                     omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
+                    cacheable = getattr(omdb_obj, "ratings_valid", True)
                     if variable_name == "omdb_metascore_rating":
-                        found_rating = omdb_obj.metacritic_rating / 10 if omdb_obj.metacritic_rating else None
+                        found_rating = _scale_rating(omdb_obj.metacritic_rating, 100, 0.1)
                     elif variable_name == "omdb_tomatoes_rating":
-                        found_rating = omdb_obj.rotten_tomatoes / 10 if omdb_obj.rotten_tomatoes else None
+                        found_rating = _scale_rating(omdb_obj.rotten_tomatoes, 100, 0.1)
                     else:
                         found_rating = omdb_obj.imdb_rating if omdb_obj.imdb_rating else None
                 except Exception:
@@ -2625,6 +2642,7 @@ class Plex(Library):
                     raise OverlayError("Overlay Error: AniDB is not configured in your config file")
                 if anidb_id:
                     anidb_obj = self.config.AniDB.get_anime(anidb_id)
+                    cacheable = getattr(anidb_obj, "ratings_valid", True)
                     if variable_name == "anidb_rating_rating":
                         found_rating = anidb_obj.rating
                     elif variable_name == "anidb_average_rating":
@@ -2655,12 +2673,12 @@ class Plex(Library):
             except KeyError:
                 found_rating = None
         if found_rating is not None:
-            # Sources are inconsistent (e.g. IMDb returns a string); normalize to float so callers can compare numerically.
-            try:
-                found_rating = float(found_rating)
-            except (TypeError, ValueError):
+            if not util.is_valid_rating(found_rating):
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {found_rating} is invalid; expected a finite value from 0 to 10; skipping")
                 return None
-            if self.config.Cache:
+            found_rating = float(found_rating)
+            if self.config.Cache and cacheable:
                 self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
         return found_rating
 

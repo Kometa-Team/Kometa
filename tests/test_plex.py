@@ -159,6 +159,33 @@ class TestMDBListPrefetch:
         config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
+class TestUploadTheme:
+    def test_uploads_theme_from_url(self):
+        plex = make_plex()
+        item = make_plex_item(rating_key=123)
+
+        plex.upload_theme(item, url="https://example.com/theme music.mp3")
+
+        plex.PlexServer.query.assert_called_once_with(
+            "/library/metadata/123/themes?url=https%3A%2F%2Fexample.com%2Ftheme+music.mp3",
+            method=plex.PlexServer._session.post,
+        )
+
+    def test_uploads_theme_from_file(self, tmp_path):
+        plex = make_plex()
+        item = make_plex_item(rating_key=456)
+        theme_path = tmp_path / "theme.mp3"
+        theme_path.write_bytes(b"theme data")
+
+        plex.upload_theme(item, filepath=str(theme_path))
+
+        plex.PlexServer.query.assert_called_once_with(
+            "/library/metadata/456/themes",
+            method=plex.PlexServer._session.post,
+            data=b"theme data",
+        )
+
+
 class TestImageUpdate:
     def test_tmdb_reset_returns_structured_result_and_logs_success(self):
         import modules.plex as plex_module

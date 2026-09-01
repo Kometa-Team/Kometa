@@ -45,6 +45,23 @@ def _item_batches(items_iterable, batch_size):
         yield items_iterable[batch_num * batch_size : (batch_num + 1) * batch_size]
 
 
+def _format_plex_rating(value, source, rating_name):
+    if not util.is_valid_rating(value):
+        logger.warning(f"{source} {rating_name} value {value} is invalid for Plex; expected a finite number from 0 to 10; skipping")
+        raise Failed
+    rating = float(value)
+    return f"{rating:.1f}"
+
+
+def _scale_provider_rating(value, source, rating_name, maximum, factor):
+    if util.is_missing_rating(value):
+        return None
+    if not util.is_valid_rating(value, maximum=maximum):
+        logger.warning(f"{source} {rating_name} value {value} is invalid for the provider's 0 to {maximum} scale; expected a finite number; skipping")
+        raise Failed
+    return float(value) * factor
+
+
 def _image_operation_summary_rows(counts):
     rows = {}
     for (operation, source, image_type, level, status), count in counts.items():
@@ -612,35 +629,35 @@ class Operations:
                                     elif str(option).startswith("omdb"):
                                         omdb_item = omdb_obj()
                                         if option == "omdb_metascore":
-                                            found_rating = omdb_item.metacritic_rating / 10 if omdb_item.metacritic_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(omdb_item.metacritic_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "omdb_tomatoes":
-                                            found_rating = omdb_item.rotten_tomatoes / 10 if omdb_item.rotten_tomatoes else None  # noqa
+                                            found_rating = _scale_provider_rating(omdb_item.rotten_tomatoes, option, name_display[item_attr], 100, 0.1)  # noqa
                                         else:
                                             found_rating = omdb_item.imdb_rating  # noqa
                                     elif str(option).startswith("mdb"):
                                         mdb_item = mdb_obj()
                                         if option == "mdb_average":
-                                            found_rating = mdb_item.average / 10 if mdb_item.average else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.average, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_imdb":
                                             found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None  # noqa
                                         elif option == "mdb_metacritic":
-                                            found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.metacritic_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_metacriticuser":
                                             found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None  # noqa
                                         elif option == "mdb_trakt":
-                                            found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.trakt_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_tomatoes":
-                                            found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.tomatoes_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_tomatoesaudience":
-                                            found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.tomatoesaudience_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_tmdb":
-                                            found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.tmdb_rating, option, name_display[item_attr], 100, 0.1)  # noqa
                                         elif option == "mdb_letterboxd":
-                                            found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.letterboxd_rating, option, name_display[item_attr], 5, 2)  # noqa
                                         elif option == "mdb_myanimelist":
                                             found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None  # noqa
                                         else:
-                                            found_rating = mdb_item.score / 10 if mdb_item.score else None  # noqa
+                                            found_rating = _scale_provider_rating(mdb_item.score, option, name_display[item_attr], 100, 0.1)  # noqa
                                     elif option == "anidb_rating":
                                         found_rating = anidb_obj().rating  # noqa
                                     elif option == "anidb_average":
@@ -654,7 +671,7 @@ class Operations:
                                     if found_rating is None:
                                         logger.info(f"No {option} {name_display[item_attr]} Found")
                                         raise Failed
-                                    found_rating = f"{float(found_rating):.1f}"
+                                    found_rating = _format_plex_rating(found_rating, option, name_display[item_attr])
                                     if str(current) != found_rating:
                                         if found_rating not in rating_edits[item_attr]:
                                             rating_edits[item_attr][found_rating] = []
@@ -1427,7 +1444,7 @@ class Operations:
                                             if found_rating is None:
                                                 logger.info(f"  No {option} {name_display[item_attr]} Found")
                                                 raise Failed
-                                            found_rating = f"{float(found_rating):.1f}"
+                                            found_rating = _format_plex_rating(found_rating, option, name_display[item_attr])
                                             if str(current) != found_rating:
                                                 if found_rating not in ep_rating_edits[item_attr]:
                                                     ep_rating_edits[item_attr][found_rating] = []

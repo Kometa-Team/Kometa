@@ -12,6 +12,8 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KOMETA_PY = REPO_ROOT / "kometa.py"
@@ -20,6 +22,41 @@ KOMETA_PY = REPO_ROOT / "kometa.py"
 def _module_ast() -> ast.Module:
     """Parse kometa.py once and return its AST."""
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
+
+
+def _process_pool_context(multiprocessing):
+    """Load the context-selection helper without importing kometa.py."""
+    for node in _module_ast().body:
+        if isinstance(node, ast.FunctionDef) and node.name == "_process_pool_context":
+            helper_module = ast.Module(body=[node], type_ignores=[])
+            namespace = {"multiprocessing": multiprocessing}
+            exec(compile(helper_module, str(KOMETA_PY), "exec"), namespace)
+            return namespace["_process_pool_context"]()
+    raise AssertionError("_process_pool_context was not found in kometa.py")
+
+
+def test_process_pool_uses_fork_instead_of_forkserver() -> None:
+    expected_context = object()
+    multiprocessing = SimpleNamespace(
+        get_start_method=MagicMock(return_value="forkserver"),
+        get_all_start_methods=MagicMock(return_value=["forkserver", "fork", "spawn"]),
+        get_context=MagicMock(return_value=expected_context),
+    )
+
+    assert _process_pool_context(multiprocessing) is expected_context
+    multiprocessing.get_context.assert_called_once_with("fork")
+
+
+def test_process_pool_preserves_spawn_when_fork_is_unavailable() -> None:
+    multiprocessing = SimpleNamespace(
+        get_start_method=MagicMock(return_value="spawn"),
+        get_all_start_methods=MagicMock(return_value=["spawn"]),
+        get_context=MagicMock(),
+    )
+
+    assert _process_pool_context(multiprocessing) is None
+    multiprocessing.get_all_start_methods.assert_not_called()
+    multiprocessing.get_context.assert_not_called()
 
 
 def _summary_log_groups() -> list[tuple[str, str]]:

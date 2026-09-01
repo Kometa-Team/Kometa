@@ -172,6 +172,17 @@ class TestTMDbEpisodeCache:
 
         assert count == 1
 
+    @pytest.mark.parametrize("value", [-0.1, 10.1, float("nan"), float("inf"), "bad", True])
+    def test_invalid_rating_is_not_written(self, tmp_path, value):
+        from modules import cache as cache_module
+
+        cache = make_cache(tmp_path)
+
+        cache.update_tmdb_episode(False, make_tmdb_episode(vote_average=value), "en", 30)
+
+        assert cache.query_tmdb_episode_by_id(6855841, "en", 30) == ({}, None)
+        assert any(f"TMDb Warning: vote_average rating value {value}" in message for message in cache_module.logger.warning_messages)
+
     def test_partial_season_write_preserves_richer_external_ids(self, tmp_path):
         cache = make_cache(tmp_path)
         cache.update_tmdb_episode(False, make_tmdb_episode(imdb_id="tt1234567", tvdb_id=7654321), "en", 30)
@@ -402,6 +413,27 @@ class TestMdbCache:
         result, expired = cache.query_mdb("no-such-key", expiration=30)
         assert result == {}
         assert expired is None
+
+    def test_invalid_rating_is_not_written(self, tmp_path):
+        cache = make_cache(tmp_path)
+
+        cache.update_mdb(False, "invalid", _make_mdb_obj(letterboxd_rating=5.1), expiration=30)
+
+        assert cache.query_mdb("invalid", expiration=30) == ({}, None)
+
+    def test_stale_invalid_rating_is_evicted(self, tmp_path):
+        from modules import cache as cache_module
+
+        cache = make_cache(tmp_path)
+        cache.update_mdb(False, "stale", _make_mdb_obj(), expiration=30)
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("UPDATE mdb_data5 SET letterboxd_rating = ? WHERE key_id = ?", (5.1, "stale"))
+
+        assert cache.query_mdb("stale", expiration=30) == ({}, None)
+        with sqlite3.connect(cache.cache_path) as connection:
+            count = connection.execute("SELECT COUNT(*) FROM mdb_data5 WHERE key_id = ?", ("stale",)).fetchone()[0]
+        assert count == 0
+        assert any("MDBList Warning: letterboxd rating value 5.1" in message and "cached value will be evicted" in message for message in cache_module.logger.warning_messages)
 
 
 def _make_anidb_obj(**overrides):
@@ -868,6 +900,29 @@ class TestOverlayValueCache:
         cache.update_overlay_value_cache(False, 5173, "mdb_tomatoes_rating", "8.1")
         assert cache.query_overlay_value_cache(5173, "plex_imdb_rating")[0] == "7.3"
         assert cache.query_overlay_value_cache(5173, "mdb_tomatoes_rating")[0] == "8.1"
+
+    @pytest.mark.parametrize("value", [-0.1, 10.1, "bad", "nan", "inf"])
+    def test_invalid_rating_is_not_written(self, tmp_path, value):
+        from modules import cache as cache_module
+
+        cache = make_cache(tmp_path)
+
+        cache.update_overlay_value_cache(False, 5173, "mdb_letterboxd_rating", value)
+
+        assert cache.query_overlay_value_cache(5173, "mdb_letterboxd_rating") == (None, None)
+        assert any("value will not be cached" in message for message in cache_module.logger.warning_messages)
+
+    def test_legacy_invalid_rating_is_reported_and_evicted(self, tmp_path):
+        from modules import cache as cache_module
+
+        cache = make_cache(tmp_path)
+        cache.update_overlay_value_cache(False, 5173, "title", "placeholder")
+        with sqlite3.connect(cache.cache_path) as connection:
+            connection.execute("UPDATE overlay_value_cache SET type = ?, value = ? WHERE rating_key = ?", ("mdb_letterboxd_rating", "10.2", "5173"))
+
+        assert cache.query_overlay_value_cache(5173, "mdb_letterboxd_rating") == (None, None)
+        assert _ovc_row_count(cache, 5173, "mdb_letterboxd_rating") == 0
+        assert any("cached value will be evicted" in message for message in cache_module.logger.warning_messages)
 
     def test_miss_returns_none(self, tmp_path):
         cache = make_cache(tmp_path)

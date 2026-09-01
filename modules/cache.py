@@ -13,6 +13,21 @@ logger = util.logger
 SQL_IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
 
 
+def _ratings_valid(provider, values, cached=False):
+    invalid = [(field, value, maximum) for field, value, maximum in values if value is not None and not util.is_valid_rating(value, maximum=maximum)]
+    if logger:
+        action = "cached value will be evicted" if cached else "response will not be cached"
+        for field, value, maximum in invalid:
+            logger.warning(f"{provider} Warning: {field} rating value {value} is invalid; expected a finite value from 0 to {maximum}; {action}")
+    return not invalid
+
+
+def _object_ratings_valid(provider, obj, fields):
+    if not getattr(obj, "ratings_valid", True):
+        return False
+    return _ratings_valid(provider, [(field.removesuffix("_rating"), getattr(obj, field, None), maximum) for field, maximum in fields])
+
+
 def sql_identifier(name):
     """Guard for table/column names interpolated into SQL, where ? placeholders can't be used."""
     if not SQL_IDENTIFIER_RE.fullmatch(str(name)):
@@ -563,6 +578,9 @@ class Cache:
                 cursor.execute("SELECT * FROM omdb_data3 WHERE imdb_id = ?", (imdb_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("OMDb", [("imdb", row["imdb_rating"], 10), ("metacritic", row["metacritic_rating"], 100)], cached=True):
+                        cursor.execute("DELETE FROM omdb_data3 WHERE imdb_id = ?", (imdb_id,))
+                        return {}, None
                     omdb_dict["imdbID"] = row["imdb_id"] if row["imdb_id"] else None
                     omdb_dict["Title"] = row["title"] if row["title"] else None
                     omdb_dict["Year"] = row["year"] if row["year"] else None
@@ -583,6 +601,8 @@ class Cache:
         return omdb_dict, expired
 
     def update_omdb(self, expired, omdb, expiration):
+        if not _object_ratings_valid("OMDb", omdb, [("imdb_rating", 10), ("metacritic_rating", 100), ("rotten_tomatoes", 100)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -620,6 +640,25 @@ class Cache:
                 cursor.execute("SELECT * FROM mdb_data5 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid(
+                        "MDBList",
+                        [
+                            ("score", row["score"], 100),
+                            ("average", row["average"], 100),
+                            ("imdb", row["imdb_rating"], 10),
+                            ("metacritic", row["metacritic_rating"], 100),
+                            ("metacriticuser", row["metacriticuser_rating"], 10),
+                            ("trakt", row["trakt_rating"], 100),
+                            ("tomatoes", row["tomatoes_rating"], 100),
+                            ("tomatoesaudience", row["tomatoesaudience_rating"], 100),
+                            ("tmdb", row["tmdb_rating"], 100),
+                            ("letterboxd", row["letterboxd_rating"], 5),
+                            ("myanimelist", row["myanimelist_rating"], 10),
+                        ],
+                        cached=True,
+                    ):
+                        cursor.execute("DELETE FROM mdb_data5 WHERE key_id = ?", (key_id,))
+                        return {}, None
                     mdb_dict["title"] = row["title"] if row["title"] else None
                     mdb_dict["year"] = row["year"] if row["year"] else None
                     mdb_dict["released"] = row["released"] if row["released"] else None
@@ -650,6 +689,24 @@ class Cache:
         return mdb_dict, expired
 
     def update_mdb(self, expired, key_id, mdb, expiration):
+        if not _object_ratings_valid(
+            "MDBList",
+            mdb,
+            [
+                ("score", 100),
+                ("average", 100),
+                ("imdb_rating", 10),
+                ("metacritic_rating", 100),
+                ("metacriticuser_rating", 10),
+                ("trakt_rating", 100),
+                ("tomatoes_rating", 100),
+                ("tomatoesaudience_rating", 100),
+                ("tmdb_rating", 100),
+                ("letterboxd_rating", 5),
+                ("myanimelist_rating", 10),
+            ],
+        ):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -698,6 +755,9 @@ class Cache:
                 cursor.execute("SELECT * FROM anidb_data4 WHERE anidb_id = ?", (anidb_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("AniDB", [("rating", row["rating"], 10), ("average", row["average"], 10), ("score", row["score"], 10)], cached=True):
+                        cursor.execute("DELETE FROM anidb_data4 WHERE anidb_id = ?", (anidb_id,))
+                        return {}, None
                     anidb_dict["main_title"] = row["main_title"]
                     anidb_dict["titles"] = row["titles"] if row["titles"] else None
                     anidb_dict["studio"] = row["studio"] if row["studio"] else None
@@ -716,6 +776,8 @@ class Cache:
         return anidb_dict, expired
 
     def update_anidb(self, expired, anidb_id, anidb, expiration):
+        if not _object_ratings_valid("AniDB", anidb, [("rating", 10), ("average", 10), ("score", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -749,6 +811,9 @@ class Cache:
                 cursor.execute("SELECT * FROM mal_data4 WHERE mal_id = ?", (mal_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("MyAnimeList", [("score", row["score"], 10)], cached=True):
+                        cursor.execute("DELETE FROM mal_data4 WHERE mal_id = ?", (mal_id,))
+                        return {}, None
                     mal_dict["title"] = row["title"]
                     mal_dict["title_english"] = row["title_english"] if row["title_english"] else None
                     mal_dict["title_japanese"] = row["title_japanese"] if row["title_japanese"] else None
@@ -770,6 +835,8 @@ class Cache:
         return mal_dict, expired
 
     def update_mal(self, expired, mal_id, mal, expiration):
+        if not _object_ratings_valid("MyAnimeList", mal, [("score", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -809,6 +876,9 @@ class Cache:
                 cursor.execute("SELECT * FROM tmdb_movie_data2 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                        cursor.execute("DELETE FROM tmdb_movie_data2 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
+                        return {}, None
                     tmdb_dict["title"] = row["title"] if row["title"] else ""
                     tmdb_dict["original_title"] = row["original_title"] if row["original_title"] else ""
                     tmdb_dict["studio"] = row["studio"] if row["studio"] else ""
@@ -832,6 +902,8 @@ class Cache:
         return tmdb_dict, expired
 
     def update_tmdb_movie(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -876,6 +948,9 @@ class Cache:
                 cursor.execute("SELECT * FROM tmdb_show_data4 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                        cursor.execute("DELETE FROM tmdb_show_data4 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
+                        return {}, None
                     tmdb_dict["title"] = row["title"] if row["title"] else ""
                     tmdb_dict["original_title"] = row["original_title"] if row["original_title"] else ""
                     tmdb_dict["studio"] = row["studio"] if row["studio"] else ""
@@ -903,6 +978,8 @@ class Cache:
         return tmdb_dict, expired
 
     def update_tmdb_show(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -970,6 +1047,9 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT * FROM tmdb_episode_data2 WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ?", (tmdb_id, season_number, episode_number, language))
                 row = cursor.fetchone()
+                if row and not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                    cursor.execute("DELETE FROM tmdb_episode_data2 WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ?", (tmdb_id, season_number, episode_number, language))
+                    return {}, None
         return self._parse_tmdb_episode_row(row, expiration)
 
     def query_tmdb_episode_by_id(self, episode_id, language, expiration):
@@ -977,9 +1057,14 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT * FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (episode_id, language))
                 row = cursor.fetchone()
+                if row and not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                    cursor.execute("DELETE FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (episode_id, language))
+                    return {}, None
         return self._parse_tmdb_episode_row(row, expiration)
 
     def update_tmdb_episode(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -1431,6 +1516,10 @@ class Cache:
                 row = cursor.fetchone()
                 if row:
                     value = row["value"]
+                    if data_type.endswith("_rating") and not util.is_valid_rating(value):
+                        logger.warning(f"Overlay Cache Warning: {data_type} value {value} is invalid; expected a finite value from 0 to 10; cached value will be evicted")
+                        cursor.execute("DELETE FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), data_type))
+                        return None, None
                     if row["expiration_date"]:
                         datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                         time_between_insertion = datetime.now() - datetime_object
@@ -1444,10 +1533,17 @@ class Cache:
                 cursor.execute("SELECT * FROM overlay_value_cache WHERE rating_key = ?", (str(rating_key),))
                 for row in cursor.fetchall():
                     if row:
-                        values[row["type"]] = row["value"]
+                        if row["type"].endswith("_rating") and not util.is_valid_rating(row["value"]):
+                            logger.warning(f"Overlay Cache Warning: {row['type']} value {row['value']} is invalid; expected a finite value from 0 to 10; cached value will be evicted")
+                            cursor.execute("DELETE FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), row["type"]))
+                        else:
+                            values[row["type"]] = row["value"]
         return values
 
     def update_overlay_value_cache(self, expired, rating_key, data_type, value):
+        if data_type.endswith("_rating") and not util.is_valid_rating(value):
+            logger.warning(f"Overlay Cache Warning: {data_type} value {value} is invalid; expected a finite value from 0 to 10; value will not be cached")
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:

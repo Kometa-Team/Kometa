@@ -48,6 +48,14 @@ headers = {"User-Agent": "Kometa"}
 class MDbObj:
     def __init__(self, data):
         self._data = data
+        self._invalid_rating_values = []
+
+        def _rating(source, value, maximum, is_int=True):
+            parsed = util.check_num(value, is_int=is_int)
+            if not util.is_missing_rating(value) and not util.is_valid_rating(value, maximum=maximum):
+                self._invalid_rating_values.append((source, value))
+            return parsed
+
         self.title = data.get("title")
         self.year = util.check_num(data.get("release_year") or data.get("year"))
         self.type = data.get("mediatype") or data.get("type")
@@ -64,8 +72,8 @@ class MDbObj:
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
-        self.score = util.check_num(data.get("score"))
-        self.average = util.check_num(data.get("score_average"))
+        self.score = _rating("score", data.get("score"), 100)
+        self.average = _rating("average", data.get("score_average"), 100)
 
         self.imdb_rating = None
         self.metacritic_rating = None
@@ -78,26 +86,33 @@ class MDbObj:
         self.myanimelist_rating = None
         for rating in data.get("ratings", []):
             if rating["source"] == "imdb":
-                self.imdb_rating = util.check_num(rating["value"], is_int=False)
+                self.imdb_rating = _rating("imdb", rating["value"], 10, is_int=False)
             elif rating["source"] == "metacritic":
-                self.metacritic_rating = util.check_num(rating["value"])
+                self.metacritic_rating = _rating("metacritic", rating["value"], 100)
             elif rating["source"] == "metacriticuser":
-                self.metacriticuser_rating = util.check_num(rating["value"], is_int=False)
+                self.metacriticuser_rating = _rating("metacriticuser", rating["value"], 10, is_int=False)
             elif rating["source"] == "trakt":
-                self.trakt_rating = util.check_num(rating["value"])
+                self.trakt_rating = _rating("trakt", rating["value"], 100)
             elif rating["source"] == "tomatoes":
-                self.tomatoes_rating = util.check_num(rating["value"])
+                self.tomatoes_rating = _rating("tomatoes", rating["value"], 100)
             elif rating["source"] in ("tomatoesaudience", "popcorn"):
-                self.tomatoesaudience_rating = util.check_num(rating["value"])
+                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating["value"], 100)
             elif rating["source"] == "tmdb":
-                self.tmdb_rating = util.check_num(rating["value"])
+                self.tmdb_rating = _rating("tmdb", rating["value"], 100)
             elif rating["source"] == "letterboxd":
-                self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+                self.letterboxd_rating = _rating("letterboxd", rating["value"], 5, is_int=False)
             elif rating["source"] == "myanimelist":
-                self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
+                self.myanimelist_rating = _rating("myanimelist", rating["value"], 10, is_int=False)
         self.content_rating = data.get("certification")
         self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
+        if logger:
+            for source, value in self._invalid_rating_values:
+                logger.warning(f"MDBList Warning: {source} rating value {value} is invalid; expected a finite value in the provider's supported range; response will not be cached")
+
+    @property
+    def ratings_valid(self):
+        return not self._invalid_rating_values
 
 
 class MDBList:
@@ -215,14 +230,16 @@ class MDBList:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
                 mdb = MDbObj(mdb_dict)
-                self._run_cache[key] = mdb
-                return mdb
+                if mdb.ratings_valid:
+                    self._run_cache[key] = mdb
+                    return mdb
+                expired = True
         logger.trace(f"ID: {key}")
         mdb_tuple = self._request(item_url, params={})
         mdb = MDbObj(mdb_tuple[0])
-        if self.cache and not ignore_cache:
+        if self.cache and not ignore_cache and mdb.ratings_valid:
             self.cache.update_mdb(expired, key, mdb, self.expiration)
-        if not ignore_cache:
+        if not ignore_cache and mdb.ratings_valid:
             self._run_cache[key] = mdb
         return mdb
 
@@ -251,9 +268,11 @@ class MDBList:
                 mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
                 if mdb_dict and expired is False:
                     mdb = MDbObj(mdb_dict)
-                    self._run_cache[key] = mdb
-                    results[media_id] = mdb
-                    continue
+                    if mdb.ratings_valid:
+                        self._run_cache[key] = mdb
+                        results[media_id] = mdb
+                        continue
+                    expired = True
             pending.append(media_id)
             expired_by_id[media_id] = expired
 
@@ -273,9 +292,10 @@ class MDBList:
                 mdb = MDbObj(data)
                 results[media_id] = mdb
                 key = self._cache_key(media_provider, media_type, media_id)
-                self._run_cache[key] = mdb
-                if self.cache:
-                    self.cache.update_mdb(expired_by_id[media_id], key, mdb, self.expiration)
+                if mdb.ratings_valid:
+                    self._run_cache[key] = mdb
+                    if self.cache:
+                        self.cache.update_mdb(expired_by_id[media_id], key, mdb, self.expiration)
         missing_ids = [media_id for media_id in pending if media_id not in results]
         if missing_ids and logger:
             sample = ", ".join(str(media_id) for media_id in missing_ids[:10])
@@ -285,6 +305,8 @@ class MDBList:
 
     def cache_item_alias(self, media_provider, media_type, media_id, mdb):
         key = self._cache_key(media_provider, media_type, media_id)
+        if not mdb.ratings_valid:
+            return
         self._run_cache[key] = mdb
         if self.cache:
             _, expired = self.cache.query_mdb(key, self.expiration)

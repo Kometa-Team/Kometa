@@ -1,4 +1,5 @@
 import glob
+import math
 import ntpath
 import os
 import re
@@ -54,6 +55,20 @@ class FilterFailed(Failed):
 
 class Continue(Exception):
     pass
+
+
+def is_missing_rating(value):
+    return value is None or (isinstance(value, str) and value.strip().upper() in ["", "N/A"])
+
+
+def is_valid_rating(value, minimum=0, maximum=10):
+    if isinstance(value, bool) or is_missing_rating(value):
+        return False
+    try:
+        rating = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return math.isfinite(rating) and minimum <= rating <= maximum
 
 
 class Deleted(Exception):
