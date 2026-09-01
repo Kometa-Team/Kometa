@@ -6,10 +6,12 @@ loading logic that can be tested without real Plex/GitHub connections.
 
 from __future__ import annotations
 
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from ruamel.yaml import YAML
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.meta import DataFile, MetadataFile
@@ -256,6 +258,45 @@ class TestApplyTemplateNestedVarResolution:
         result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
 
         assert result["summary"] == "8"
+
+
+class TestResolutionEditionDovetailTemplate:
+    @staticmethod
+    def _apply_edition_template(*, overlay_type, use_resolution=None):
+        resolution_path = Path(__file__).resolve().parents[1] / "defaults" / "overlays" / "resolution.yml"
+        with resolution_path.open(encoding="utf-8") as handle:
+            edition_template = YAML(typ="safe").load(handle)["templates"]["edition"]
+
+        df = make_datafile(
+            data_type="Overlay",
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            templates={"edition": (edition_template, {})},
+        )
+        variables = {
+            "name": "edition",
+            "key": "imax",
+            "search": "IMAX",
+            "type": overlay_type,
+            "allowed_libraries": "movie",
+        }
+        if use_resolution is not None:
+            variables["use_resolution"] = use_resolution
+
+        return df.apply_template("IMAX", "IMAX", {}, [variables], {})
+
+    @pytest.mark.parametrize(
+        ("use_resolution", "expected"),
+        [(None, ["movie"]), (True, ["movie", True]), (False, ["movie", False])],
+    )
+    def test_dovetail_follows_use_resolution(self, use_resolution, expected):
+        result = self._apply_edition_template(overlay_type="edition_dovetail", use_resolution=use_resolution)
+
+        assert result["run_definition"] == expected
+
+    def test_plain_edition_is_not_disabled_with_resolution(self):
+        result = self._apply_edition_template(overlay_type="edition", use_resolution=False)
+
+        assert result["run_definition"] == ["movie"]
 
 
 # ═══════════════════════════════════════════════════════════════════════
