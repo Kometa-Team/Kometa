@@ -73,6 +73,29 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[FlickList](../flicklist/overview)** builders grab lists and personal data from your configured FlickList account.
+
+    [:octicons-home-16: View Builder](../flicklist/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: FlickList List](../flicklist/list) - Gets every item in a FlickList list.
+        - [:octicons-list-ordered-16: FlickList Watchlist](../flicklist/personal) - Gets the configured user's FlickList watchlist.
+
+!!! builder
+
+    **[Serializd](../serializd/overview)** builders grab shows from Serializd lists and watchlists through its JSON API.
+
+    [:octicons-home-16: View Builder](../serializd/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: Serializd List](../serializd/list) - Gets every show in a public Serializd list.
+        - [:octicons-list-ordered-16: Serializd Watchlist](../serializd/watchlist) - Gets every show in a Serializd user watchlist.
+        - [:octicons-graph-16: Serializd Charts](../serializd/charts) - Gets Trending, Popular, or Featured shows.
+
+!!! builder
+
     ![IMDb logo](../../assets/images/files/builders/imdb.png){ align=right }
 
     **[IMDb](../imdb/overview)** builders grab items based on metadata and lists on IMDb.com
@@ -127,6 +150,25 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:material-movie-search: Tautulli Popular](../tautulli/popular) - Gets  every movie/show in the Tautulli Most Popular List
         - [:material-movie-search: Tautulli Watched](../tautulli/watched) - Gets every movie/show in the Tautulli Most Watched List
+
+!!! builder
+
+    **[Tracearr](../tracearr/overview)** builders grab items based on watch history from your configured Tracearr instance
+
+    [:octicons-home-16: View Builder](../tracearr/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:material-movie-search: Tracearr Popular](../tracearr/history) - Gets items based on unique users in Tracearr watch history
+        - [:material-movie-search: Tracearr Watched](../tracearr/history) - Gets items based on completed Tracearr sessions
+        - [:material-movie-search: Tracearr Trending](../tracearr/history) - Gets the most active items from recent Tracearr watch history
+        - [:material-movie-search: Tracearr Rewatched](../tracearr/history) - Gets items repeatedly played by the same Tracearr user
+        - [:material-movie-search: Tracearr Completed](../tracearr/history) - Gets the most recently completed items from Tracearr watch history
+        - [:material-movie-search: Tracearr Binged](../tracearr/history) - Gets shows ranked by distinct completed episodes watched by one user
+        - [:material-movie-search: Tracearr Most Transcoded](../tracearr/history) - Gets items with the most sessions requiring transcoding
+        - [:material-movie-search: Tracearr Watch Time](../tracearr/history) - Gets items ranked by total time watched
+        - [:material-movie-search: Tracearr In Progress](../tracearr/history) - Gets a user's unfinished items for a playlist
+        - [:material-movie-search: Tracearr History](../tracearr/history) - Gets every movie/show in the Tracearr watch history
 
 !!! builder
 
@@ -254,12 +296,13 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Text File logo](../../assets/images/files/builders/text.png){ align=right }
+    ![Text logo](../../assets/images/files/builders/text.png){ align=right }
 
-    **[Text File](textfile/overview.md)** builders read items from a manually maintained local or remote text file.
+    **[Text](textfile/overview.md)** builders read item IDs directly from YAML or from a manually maintained local or remote text file.
 
     [:octicons-home-16: View Builder](textfile/overview.md){ .md-button .md-button--primary }
 
     ??? quicklink "Popular Builders"
 
+        - [:material-format-text: Text](textfile/text.md) - Reads supported IDs and URLs directly from an inline YAML value.
         - [:material-file-document-outline: Text File](textfile/text-file.md) - Reads supported IDs and URLs from a local or remote text file while preserving source order.

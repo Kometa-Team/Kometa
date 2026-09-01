@@ -40,6 +40,64 @@ class TestExceptionHierarchy:
             raise FilterFailed("test")
 
 
+class TestMonthlyScheduleRanges:
+    def test_numeric_range_runs_on_each_inclusive_day(self):
+        from datetime import datetime
+
+        from modules.util import schedule_check
+
+        for day in range(1, 8):
+            schedule_check("schedule", "monthly(1-7)", datetime(2026, 8, day), 0)
+
+    def test_numeric_range_skips_days_outside_the_range(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "monthly(1-7)", datetime(2026, 8, 8), 0)
+
+    def test_range_ending_in_last_runs_through_the_last_day(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "monthly(21-last)", datetime(2026, 2, 28), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "monthly(21-last)", datetime(2026, 2, 20), 0)
+
+    def test_pipe_separates_monthly_days_and_ranges(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule = "monthly(1|3|5|7|9-last)"
+        for day in [1, 3, 5, 7, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31]:
+            schedule_check("schedule", schedule, datetime(2026, 8, day), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", schedule, datetime(2026, 8, 8), 0)
+
+
+class TestPipeSeparatedSchedules:
+    def test_hourly_accepts_hours_and_ranges(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "hourly(2|5-7|22)", datetime(2026, 8, 1), 6)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "hourly(2|5-7|22)", datetime(2026, 8, 1), 8)
+
+    def test_yearly_accepts_multiple_dates(self):
+        from datetime import datetime
+
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 14), 0)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 15), 0)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # Helper functions
 # ═══════════════════════════════════════════════════════════════════════
@@ -70,6 +128,26 @@ class TestCheckNum:
         from modules.util import check_num
 
         assert check_num("") is None
+
+
+class TestRatingValidation:
+    @pytest.mark.parametrize("value", [0, 10, 7.5, "0", "10", "7.5"])
+    def test_accepts_finite_values_in_range(self, value):
+        from modules.util import is_valid_rating
+
+        assert is_valid_rating(value)
+
+    @pytest.mark.parametrize("value", [-0.1, 10.1, "not-a-rating", float("nan"), float("inf"), float("-inf"), None, "", "N/A", True, False, []])
+    def test_rejects_every_illegal_rating_shape(self, value):
+        from modules.util import is_valid_rating
+
+        assert not is_valid_rating(value)
+
+    def test_supports_provider_native_scale(self):
+        from modules.util import is_valid_rating
+
+        assert is_valid_rating(100, maximum=100)
+        assert not is_valid_rating(100.1, maximum=100)
 
 
 class TestGetIdFromImdbUrl:
@@ -160,3 +238,41 @@ class TestParseValidatesOptionsList:
                 translation={"alpha": 1, "beta": 2},
                 options=None,
             )
+
+
+class TestMediaDirname:
+    """Plex reports paths using the separator of the machine running the server,
+    which need not match the machine running Kometa. os.path.dirname only knows
+    its own platform's separator, so a Linux Kometa talking to a Windows Plex
+    returned "" for every movie and callers reported "No location found".
+    """
+
+    def test_windows_path_on_any_platform(self):
+        from modules.util import media_dirname
+
+        assert media_dirname(r"P:\Movies\Title (2024)\Title (2024).mkv") == r"P:\Movies\Title (2024)"
+
+    def test_windows_unc_path(self):
+        from modules.util import media_dirname
+
+        assert media_dirname(r"\\server\share\Movies\Title\Title.mkv") == r"\\server\share\Movies\Title"
+
+    def test_posix_path(self):
+        from modules.util import media_dirname
+
+        assert media_dirname("/media/Movies/Title (2024)/Title (2024).mkv") == "/media/Movies/Title (2024)"
+
+    def test_windows_path_is_truthy(self):
+        """The bug was the empty return being treated as 'no location found'."""
+        from modules.util import media_dirname
+
+        assert media_dirname(r"P:\Movies\Title\file.mkv")
+
+    def test_accepts_non_str(self):
+        from modules.util import media_dirname
+
+        class FakePath:
+            def __str__(self):
+                return r"P:\Movies\Title\file.mkv"
+
+        assert media_dirname(FakePath()) == r"P:\Movies\Title"

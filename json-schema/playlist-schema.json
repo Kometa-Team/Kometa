@@ -106,6 +106,30 @@
                     "type": "string",
                     "enum": ["title.asc","title.desc","release.asc","release.desc","critic_rating.asc","critic_rating.desc","added.asc","added.desc"]
                 },
+                "text_file": {
+                    "description": "Path(s) to a plain-text file containing one supported ID per line.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+                    ]
+                },
+                "text": {
+                    "description": "Inline IDs using the same one-entry-per-line syntax as text_file.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "integer" },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string", "minLength": 1 },
+                                    { "type": "integer" }
+                                ]
+                            }
+                        }
+                    ]
+                },
 
                 "tmdb_collection": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
                 "tmdb_movie": { "oneOf": [{ "type": "integer" }, { "type": "string" }, { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }] },
@@ -137,6 +161,16 @@
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_trending": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_rewatched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_completed": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_in_progress": { "$ref": "#/definitions/tracearr-builder-block" },
 
                 "mdblist_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
                 "letterboxd_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
@@ -183,6 +217,29 @@
                 "list_days": { "type": "integer", "minimum": 1 },
                 "list_minimum": { "type": "integer", "minimum": 0 },
                 "list_size": { "type": "integer", "minimum": 1 }
+            }
+        },
+        "tracearr-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "watched": { "type": "boolean" },
+                "minimum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "maximum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "transcode": { "type": "boolean" },
+                "video_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "audio_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "transcode_reason": { "type": "string", "minLength": 1 },
+                "subtitle_decision": { "type": "string", "minLength": 1 },
+                "platform": { "type": "string", "minLength": 1 },
+                "device": { "type": "string", "minLength": 1 },
+                "resolution": { "type": "string", "minLength": 1 },
+                "source_video_codec": { "type": "string", "minLength": 1 },
+                "source_audio_codec": { "type": "string", "minLength": 1 },
+                "genre": { "type": "string", "minLength": 1 }
             }
         },
 

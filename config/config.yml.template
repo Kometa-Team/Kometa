@@ -109,6 +109,10 @@ webhooks:                          # Can be individually specified per library a
 tautulli:                          # Can be individually specified per library as well
   url: http://192.168.1.12:8181    # Enter Tautulli URL (Optional)
   apikey:                          # Enter Tautulli API Key (Optional)
+tracearr:                          # Can be individually specified per library as well
+  url: http://192.168.1.12:3019    # Enter Tracearr URL (Optional)
+  apikey:                          # Enter Tracearr Public API Key (Optional)
+  server_id:                       # Enter Tracearr Plex Server UUID when automatic matching is ambiguous (Optional)
 github:
   token:                           # Enter GitHub Personal Access Token (Optional)
 omdb:
@@ -120,6 +124,10 @@ mdblist:
 simkl:
   user_token:                      # Enter SIMKL User Token (Optional)
                                    # Get one at https://utilities.kometa.wiki/simkl-oauth
+serializd:
+  email:                           # Enter Serializd account email (Optional)
+  password:                        # Enter Serializd account password (Optional)
+  timeout: 60
 notifiarr:
   apikey:                          # Enter Notifiarr API Key (Optional)
 gotify:
@@ -173,7 +181,6 @@ sonarr:                            # Can be individually specified per library a
 trakt:
   client_id:                       # Enter Trakt Client ID (Optional)
   client_secret:                   # Enter Trakt Client Secret (Optional)
-  pin:
   authorization:
                                    # authorization section is autofilled by the script
     access_token:

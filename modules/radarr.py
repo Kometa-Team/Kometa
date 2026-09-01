@@ -1,7 +1,9 @@
+from urllib.parse import urlparse
+
 from arrapi import RadarrAPI
 from arrapi.exceptions import ArrException
 
-from modules import util
+from modules import timings, util
 from modules.util import Continue, Failed
 
 logger = util.logger
@@ -25,6 +27,7 @@ class Radarr:
         logger.secret(self.token)
         try:
             self.api = RadarrAPI(self.url, self.token, session=self.requests.session)
+            timings.registry.register_arr_host(urlparse(self.url).hostname, "radarr")
             self.api.respect_list_exclusions_when_adding()
             self.api._validate_add_options(params["root_folder_path"], params["quality_profile"])  # noqa
             self.profiles = self.api.quality_profile()

@@ -21,6 +21,7 @@ rating_sources = [
     "anidb_rating",
     "anidb_score_rating",
     "imdb_rating",
+    "floppy_rating",
     "mal_rating",
     "mdb_average_rating",
     "mdb_imdb_rating",
@@ -41,6 +42,7 @@ rating_sources = [
     "plex_tmdb_rating",
     "plex_tomatoes_rating",
     "plex_tomatoesaudience_rating",
+    "serializd_rating",
     "tmdb_rating",
     "trakt_rating",
     "trakt_user_rating",
@@ -75,9 +77,10 @@ types_for_var = {
         "plex_tomatoesaudience_rating",
         "trakt_rating",
     ],
+    "show_episode": ["serializd_rating"],
     "movie_show_season": ["original_title", "trakt_user_rating"],
     "show_season_artist_album": ["total_runtime"],
-    "movie_show_episode": ["audience_rating", "content_rating"],
+    "movie_show_episode": ["audience_rating", "content_rating", "floppy_rating"],
     "movie_show": ["anidb_average_rating", "anidb_rating", "anidb_score_rating", "mal_rating", "edition"],
     "movie_episode": ["bitrate", "versions"],
     "season_episode": ["season_number", "show_title"],
@@ -108,6 +111,22 @@ vars_by_type = {
 }
 
 
+def get_text_variables(text, level):
+    variables = set()
+    valid_variables = set(vars_by_type[level])
+    for token in re.findall(r"<<([^>]+)>>", text):
+        if token.startswith("originally_available["):
+            variables.add("originally_available")
+            continue
+        if token not in valid_variables:
+            continue
+        for variable, modifiers in var_mods.items():
+            if token in {f"{variable}{modifier}" for modifier in modifiers}:
+                variables.add(variable)
+                break
+    return variables
+
+
 def get_canvas_size(item):
     if isinstance(item, Episode):
         return landscape_dim
@@ -132,6 +151,7 @@ class Overlay:
         self.image = None
         self.backdrop_box = None
         self.backdrop_text = None
+        self.variables = set()
         self.group = None
         self.queue = None
         self.queue_name = None
@@ -319,6 +339,7 @@ class Overlay:
             box = self.image.size if self.image else None
             self.backdrop_box = box
             self.backdrop_text = self.name[5:-1]
+            self.variables = get_text_variables(self.backdrop_text, self.level)
         elif self.name.startswith("backdrop"):
             self.backdrop_box = self.back_box
             if self.horizontal_offset is None:
@@ -368,6 +389,20 @@ class Overlay:
         """
 
         def get_and_save_image(image_url):
+            if not os.path.exists(self.library.overlay_folder) or not os.path.isdir(self.library.overlay_folder):
+                os.makedirs(self.library.overlay_folder, exist_ok=False)
+                logger.info(f"Creating Overlay Folder found at: {self.library.overlay_folder}")
+            clean_image_name, _ = util.validate_filename(self.name)
+            image_path = os.path.join(self.library.overlay_folder, f"{clean_image_name}.png")
+            # Reuse a still-fresh local copy instead of re-downloading every call - same expiration-day TTL cache.py uses everywhere else.
+            cache = getattr(self, "cache", None)
+            if cache and os.path.exists(image_path):
+                try:
+                    age_days = (time.time() - os.path.getmtime(image_path)) / 86400
+                except OSError:
+                    age_days = None
+                if age_days is not None and age_days <= cache.expiration:
+                    return image_path
             response = self.requests.get(image_url)
             if response.status_code == 404:
                 raise OverlayError(f"Overlay Error: Overlay Image not found at '{image_url}'")
@@ -375,11 +410,6 @@ class Overlay:
                 raise OverlayError(f"Overlay Error: Response code {response.status_code} received when attempting download of '{image_url}'")
             if "Content-Type" not in response.headers or response.headers["Content-Type"] != "image/png":
                 raise OverlayError(f"Overlay Error: Overlay image '{image_url}' is not a PNG filetype ")
-            if not os.path.exists(self.library.overlay_folder) or not os.path.isdir(self.library.overlay_folder):
-                os.makedirs(self.library.overlay_folder, exist_ok=False)
-                logger.info(f"Creating Overlay Folder found at: {self.library.overlay_folder}")
-            clean_image_name, _ = util.validate_filename(self.name)
-            image_path = os.path.join(self.library.overlay_folder, f"{clean_image_name}.png")
             if os.path.exists(image_path):
                 os.remove(image_path)
             with open(image_path, "wb") as handler:

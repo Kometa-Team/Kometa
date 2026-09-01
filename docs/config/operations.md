@@ -403,6 +403,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | --- | --- |
         | `tmdb` | Use TMDb for genres. |
         | `tvdb` | Use TVDb for genres. |
+        | `serializd` | Use Serializd for show genres. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
+        | `serializd_nanogenres` | Use Serializd's highest-voted nanogenres for shows. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
+        | `serializd_all` | Use both Serializd genres and its highest-voted nanogenres for shows. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
         | `imdb` | Use IMDb for genres. |
         | `omdb` | Use IMDb through OMDb for genres. Requires [OMDB key](../config/omdb.md). |
         | `anidb` | Use AniDB main tags for genres. |
@@ -515,13 +518,15 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         Use `ratings.audience`, `ratings.critic`, and `ratings.user` for item ratings. Use `ratings.episode_audience`, `ratings.episode_critic`, and `ratings.episode_user` for episode ratings.
 
-        ???+ warning "Important Note"
-
-            This does not affect the icons displayed in the Plex UI. This places the number of your choice in the relevant field in the Plex database. One primary use of this feature is to put ratings overlays on posters. More information on ratings can be found [here](../kometa/guides/ratings.md).
+        This does not affect the icons displayed in the Plex UI. This places the number of your choice in the relevant field in the Plex database. One primary use of this feature is to put ratings overlays on posters. More information on ratings can be found [here](../kometa/guides/ratings.md).
 
         ???+ tip "Note on `mdb` sources"
 
             MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+
+        ???+ warning "Trakt Authentication"
+
+            :lock: Trakt [authentication](authentication.md) is required for the `trakt_user` rating
 
         ??? example "Example Rating & Episode Rating Operations"
     
@@ -538,13 +543,13 @@ Several of these operations perform **mass** updates; these are just that, **mas
                     - omdb
                     - 2.0
                   user:
-                    - trakt_user
+                    - serializd
                     - 2.0
                   episode_audience:
                     - tmdb
                     - 2.0
                   episode_critic:
-                    - imdb
+                    - serializd
                     - 2.0
             ```
 
@@ -573,9 +578,10 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_tmdb` | Use TMDb rating through Plex. |
         | `plex_tomatoes` | Use Rotten Tomatoes rating through Plex. |
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
+        | `serializd` | Use the Serializd community show rating. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
-        | `trakt_user` | Use Trakt user's personal rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `trakt` | Use Trakt's public rating. |
+        | `trakt_user` | Use Trakt user's personal rating. :lock: Requires Trakt [authentication](authentication.md)authentication. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -587,8 +593,10 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `imdb` | Use IMDb rating. |
         | `plex_imdb` | Use IMDb rating through Plex. |
         | `plex_tmdb` | Use TMDb rating through Plex. |
+        | `serializd` | Use the Serializd community episode rating. Requires [Serializd authentication](../config/serializd.md). |
+        | `serializd_user` | Use the authenticated Serializd user's episode rating. Requires [Serializd authentication](../config/serializd.md). |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt rating. Requires [Trakt authentication](../config/trakt.md). |
+        | `trakt` | Use Trakt's public rating. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -771,6 +779,28 @@ Several of these operations perform **mass** updates; these are just that, **mas
           Music:
             operations:
               remove_title_parentheses: true
+        ```
+
+###### Sync Watchlist to Serializd
+
+??? info "`sync_watchlist_to_serializd` - Adds the Plex server owner's watched episodes to Serializd."
+    This show-library operation reads episode watched state for the owner authenticated by the configured Plex token and marks those episodes as watched for the authenticated [Serializd](serializd.md) account. Episodes are sent in season-level batches. The operation is additive: it does not mark any Serializd episodes unwatched.
+
+    When the Kometa cache is enabled, successfully sent episodes are recorded in the cache database and skipped on later runs. The cache record is scoped to the configured Serializd account. Failed requests are not cached and will be retried on the next run. If the cache is disabled or deleted, Plex-watched episodes will be sent again.
+
+    Plex exposes the most recent watch time as `lastViewedAt`, but Serializd's watched endpoint does not accept a watch date. Watched dates and repeat view history therefore cannot be transferred.
+
+    **Attribute:** `sync_watchlist_to_serializd`
+
+    **Accepted Values:** `true` or `false`.
+
+    ???+ example "Example"
+
+        ```yaml
+        libraries:
+          Shows:
+            operations:
+              sync_watchlist_to_serializd: true
         ```
 
 ###### Ignore Labels

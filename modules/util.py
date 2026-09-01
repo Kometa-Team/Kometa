@@ -1,4 +1,6 @@
 import glob
+import math
+import ntpath
 import os
 import re
 import signal
@@ -53,6 +55,20 @@ class FilterFailed(Failed):
 
 class Continue(Exception):
     pass
+
+
+def is_missing_rating(value):
+    return value is None or (isinstance(value, str) and value.strip().upper() in ["", "N/A"])
+
+
+def is_valid_rating(value, minimum=0, maximum=10):
+    if isinstance(value, bool) or is_missing_rating(value):
+        return False
+    try:
+        rating = float(value)
+    except (TypeError, ValueError, OverflowError):
+        return False
+    return math.isfinite(rating) and minimum <= rating <= maximum
 
 
 class Deleted(Exception):
@@ -424,6 +440,19 @@ def item_set(item, item_id):
     return {"title": item_title(item), "tmdb" if isinstance(item, Movie) else "tvdb": item_id}
 
 
+def media_dirname(path):
+    """Return the parent directory of a media path, using the path's own separator style.
+
+    Plex reports paths from the server's platform, which need not match Kometa's.
+    os.path.dirname returns "" for a Windows path on Linux, which callers read as
+    "no location found".
+    """
+    path = str(path)
+    if ntpath.splitdrive(path)[0] or path.startswith("\\\\") or ("\\" in path and "/" not in path):
+        return ntpath.dirname(path)
+    return os.path.dirname(path)
+
+
 def is_locked(filepath):
     """Check if a file is locked without consuming file descriptors.
 
@@ -695,31 +724,29 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 continue
             param = match.group(1)
             if run_time.startswith("hour"):
-                if "-" in run_time:
-                    start, end = param.split("-")
+                hour_pass = False
+                for ok_hour in param.split("|"):
                     try:
-                        start = int(start)
-                        end = int(end)
-                        if start != end and 0 <= start <= 23 and 0 <= end <= 23:
-                            schedule_str += f"\nScheduled to run between the {num2words(start, to='ordinal_num')} hour and the {num2words(end, to='ordinal_num')} hour"
-                            if end > start and start <= run_hour <= end:
-                                all_check += 1
-                            elif start > end and (start <= run_hour or run_hour <= end):
-                                all_check += 1
+                        if "-" in ok_hour:
+                            start, end = map(int, ok_hour.split("-"))
+                            if start != end and 0 <= start <= 23 and 0 <= end <= 23:
+                                schedule_str += f"\nScheduled to run between the {num2words(start, to='ordinal_num')} hour and the {num2words(end, to='ordinal_num')} hour"
+                                if (end > start and start <= run_hour <= end) or (start > end and (start <= run_hour or run_hour <= end)):
+                                    hour_pass = True
+                            else:
+                                raise ValueError
                         else:
-                            raise ValueError
+                            hour = int(ok_hour)
+                            if 0 <= hour <= 23:
+                                schedule_str += f"\nScheduled to run on the {num2words(hour, to='ordinal_num')} hour"
+                                if run_hour == hour:
+                                    hour_pass = True
+                            else:
+                                raise ValueError
                     except ValueError:
-                        logger.error(f"Schedule Error: hourly {start}-{end} each must be a different integer between 0 and 23")
-                else:
-                    try:
-                        if 0 <= int(param) <= 23:
-                            schedule_str += f"\nScheduled to run on the {num2words(param, to='ordinal_num')} hour"
-                            if run_hour == int(param):
-                                all_check += 1
-                        else:
-                            raise ValueError
-                    except ValueError:
-                        logger.error(f"Schedule Error: hourly {display} must be an integer between 0 and 23")
+                        logger.error(f"Schedule Error: hourly {display} must be an integer between 0 and 23 or a range of two different hours")
+                if hour_pass:
+                    all_check += 1
             elif run_time.startswith("week"):
                 ok_days = param.lower().split("|")
                 err = None
@@ -738,39 +765,53 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 if pass_day:
                     all_check += 1
             elif run_time.startswith("month"):
-                if param == "last":
-                    schedule_str += "\nScheduled monthly on the last day of the month"
-                    if current_time.day == last_day.day:
-                        all_check += 1
-                else:
+                month_pass = False
+                for ok_day in param.split("|"):
                     try:
-                        if 1 <= int(param) <= 31:
-                            schedule_str += f"\nScheduled monthly on the {num2words(param, to='ordinal_num')}"
-                            if current_time.day == int(param):
-                                all_check += 1
-                            elif int(param) > last_day.day:
+                        if ok_day == "last":
+                            schedule_str += "\nScheduled monthly on the last day of the month"
+                            if current_time.day == last_day.day:
+                                month_pass = True
+                        elif "-" in ok_day:
+                            start, end = ok_day.split("-", 1)
+                            start_day = int(start)
+                            end_day = 31 if end == "last" else int(end)
+                            if not 1 <= start_day <= end_day <= 31:
+                                raise ValueError
+                            end_display = "last day of the month" if end == "last" else num2words(end_day, to="ordinal_num")
+                            schedule_str += f"\nScheduled monthly between the {num2words(start_day, to='ordinal_num')} and {end_display}"
+                            range_end = last_day.day if end == "last" else end_day
+                            if start_day <= current_time.day <= range_end:
+                                month_pass = True
+                        else:
+                            day = int(ok_day)
+                            if not 1 <= day <= 31:
+                                raise ValueError
+                            schedule_str += f"\nScheduled monthly on the {num2words(day, to='ordinal_num')}"
+                            if current_time.day == day:
+                                month_pass = True
+                            elif day > last_day.day:
                                 logger.warning(
-                                    f"Schedule Warning: monthly({param}) will not run this month; "
-                                    f"{current_time.strftime('%B')} does not have a {num2words(param, to='ordinal_num')} day. "
+                                    f"Schedule Warning: monthly({day}) will not run this month; "
+                                    f"{current_time.strftime('%B')} does not have a {num2words(day, to='ordinal_num')} day. "
                                     f"Use monthly(last) if you want to schedule for the last day of every month."
                                 )
-                        else:
-                            raise ValueError
                     except ValueError:
-                        logger.error(f"Schedule Error: monthly {display} must be an integer between 1 and 31 or 'last'")
+                        logger.error(f"Schedule Error: monthly {display} must be a day from 1 to 31, 'last', or a range ending in a day or 'last'")
+                if month_pass:
+                    all_check += 1
             elif run_time.startswith("year"):
-                try:
-                    if "/" in param:
-                        opt = param.split("/")
-                        month = int(opt[0])
-                        day = int(opt[1])
+                year_pass = False
+                for ok_date in param.split("|"):
+                    try:
+                        month, day = map(int, ok_date.split("/"))
                         schedule_str += f"\nScheduled yearly on {pretty_months[month]} {num2words(day, to='ordinal_num')}"
                         if current_time.month == month and (current_time.day == day or (current_time.day == last_day.day and day > last_day.day)):
-                            all_check += 1
-                    else:
-                        raise ValueError
-                except ValueError:
-                    logger.error(f"Schedule Error: yearly {display} must be in the MM/DD format i.e. yearly(11/22)")
+                            year_pass = True
+                    except (KeyError, ValueError):
+                        logger.error(f"Schedule Error: yearly {display} must be in the MM/DD format i.e. yearly(11/22)")
+                if year_pass:
+                    all_check += 1
             elif run_time.startswith("date"):
                 try:
                     if "/" in param:

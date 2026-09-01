@@ -1,9 +1,8 @@
 name: Pyright Type Check
 
 on:
+  workflow_call:
   push:
-    branches: [nightly]
-  pull_request:
     branches: [nightly]
 
 jobs:

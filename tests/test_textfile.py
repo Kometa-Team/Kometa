@@ -3,7 +3,11 @@ import json
 import os
 import tempfile
 
+import pytest
+from ruamel.yaml import YAML
+
 from modules.textfile import TextFile
+from modules.util import Failed
 
 
 class FakeResponse:
@@ -310,3 +314,88 @@ def test_text_file_json_tmdb_id_returns_tmdb_show_for_show_library():
         ]
     finally:
         os.unlink(path)
+
+
+def _yaml_text(value):
+    return YAML(typ="safe").load(value)["text"]
+
+
+def test_text_accepts_scalar_with_yaml_comment():
+    value = _yaml_text("text: tt0079945 # Star Trek: The Motion Picture\n")
+
+    assert TextFile(FakeRequests({})).get_text_ids(value, is_movie=True) == [("tt0079945", "imdb")]
+
+
+def test_text_accepts_literal_multiline_string_and_preserves_order():
+    value = _yaml_text("""text: |-
+  tt0079945   # Star Trek: The Motion Picture
+  174         # assumed TMDb
+  tmdb:154
+  plex://movie/5d7768243c3c2a001fbca85b
+  5d776824880197001ec901ab
+""")
+
+    assert TextFile(FakeRequests({})).get_text_ids(value, is_movie=True) == [
+        ("tt0079945", "imdb"),
+        (174, "tmdb"),
+        (154, "tmdb"),
+        ("plex://movie/5d7768243c3c2a001fbca85b", "plex"),
+        ("5d776824880197001ec901ab", "plex"),
+    ]
+
+
+def test_text_accepts_yaml_list_with_strings_integers_and_multiline_entries():
+    value = _yaml_text("""text:
+  - tt0079945
+  - 174
+  - |-
+    tmdb:154
+    tvdb:361702
+""")
+
+    assert TextFile(FakeRequests({})).get_text_ids(value, is_movie=True) == [
+        ("tt0079945", "imdb"),
+        (174, "tmdb"),
+        (154, "tmdb"),
+        (361702, "tvdb"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("is_movie", "expected"),
+    [(True, [(174, "tmdb")]), (False, [(174, "tvdb")]), (None, [(174, "number")])],
+)
+def test_text_numeric_entries_follow_library_context(is_movie, expected):
+    assert TextFile(FakeRequests({})).get_text_ids(174, is_movie=is_movie) == expected
+
+
+def test_text_supports_json_list_urls_and_preserves_url_fragments():
+    text_builder = TextFile(FakeRequests({"https://example.com/list.json#fragment": ["tt1234567", {"tmdb_id": 67890}]}))
+
+    assert text_builder.get_text_ids("https://example.com/list.json#fragment", is_movie=True) == [("tt1234567", "imdb"), (67890, "tmdb")]
+
+
+def test_text_supports_show_parts():
+    text_builder = TextFile(FakeRequests({}))
+
+    assert text_builder.get_text_ids(["tvdb_season:12345/1", "tvdb_episode:12345-1-2"], is_movie=False) == [
+        ("12345_1", "tvdb_season"),
+        ("12345_1_2", "tvdb_episode"),
+    ]
+
+
+@pytest.mark.parametrize("value", [None, True, 1.5, {}, [["tt1234567"]]])
+def test_text_rejects_unsupported_yaml_types(value):
+    with pytest.raises(Failed, match=r"Text Error: text(?: item 1)? must be"):
+        TextFile(FakeRequests({})).validate_text(value)
+
+
+@pytest.mark.parametrize("value", ["", "# comment only", [], ["", "# comment only"]])
+def test_text_rejects_empty_or_comment_only_input(value):
+    with pytest.raises(Failed, match="Text Error: No IDs found"):
+        TextFile(FakeRequests({})).validate_text(value)
+
+
+def test_text_error_identifies_list_item_and_line():
+    with pytest.raises(Failed, match="Text Error: Line not supported in text item 2 line 2: invalid"):
+        TextFile(FakeRequests({})).get_text_ids(["tt1234567", "# comment\ninvalid"], is_movie=True)

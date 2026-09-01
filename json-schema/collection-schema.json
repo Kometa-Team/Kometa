@@ -104,6 +104,7 @@
                 "sync_missing_to_trakt_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
                 "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
+                "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
                 "test": { "type": "boolean" },
                 "tmdb_birthday": {
                     "type": "object", "additionalProperties": false,
@@ -144,6 +145,7 @@
                 "tmdb_summary": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
                 "trakt_description": { "type": "string" },
                 "yamtrack_description": { "type": "string" },
+                "flicklist_description": { "type": "string" },
                 "tvdb_description": { "type": "string" },
                 "tvdb_summary": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
 
@@ -184,6 +186,20 @@
                     ]
                 },
                 "plex_all": { "type": "boolean", "description": "Get every item in the library." },
+                "plex_id": {
+                    "description": "Plex metadata ID(s) or full plex:// GUID(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "plex_rating_key": {
+                    "description": "Plex rating key(s).",
+                    "oneOf": [
+                        { "type": "integer" }, { "type": "string" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "integer" }, { "type": "string" }] } }
+                    ]
+                },
                 "plex_search": {
                     "oneOf": [
                         { "$ref": "#/definitions/plex-filter-block" },
@@ -476,6 +492,15 @@
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_trending": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_rewatched": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_completed": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -521,6 +546,35 @@
                         { "$ref": "#/definitions/letterboxd-list-entry" },
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/letterboxd-list-entry" }] } }
                     ]
+                },
+                "serializd_list": {
+                    "description": "Serializd public list URL(s). Show libraries only.",
+                    "oneOf": [
+                        { "type": "string", "format": "uri", "pattern": "^https?://(www\\.)?serializd\\.com/list/(?:.+-)?[0-9]+/?$" },
+                        { "type": "array", "items": { "type": "string", "format": "uri", "pattern": "^https?://(www\\.)?serializd\\.com/list/(?:.+-)?[0-9]+/?$" } }
+                    ]
+                },
+                "serializd_watchlist": {
+                    "description": "Serializd username, 'me', or user watchlist URL(s). Show libraries only.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+                "serializd_trending": {
+                    "description": "Maximum number of shows from Serializd's Trending TV Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "serializd_popular": {
+                    "description": "Maximum number of shows from Serializd's Popular TV Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "serializd_featured": {
+                    "description": "Maximum number of shows from Serializd's Featured Shows chart.",
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "letterboxd_crew": {
                     "description": "Movies credited to a Letterboxd person in a selected role.",
@@ -572,6 +626,18 @@
                     "description": "YamTrack List URL(s).",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
+                "floppy_list": {
+                    "description": "Floppy List URL(s).",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
+                "floppy_list_details": {
+                    "description": "Floppy List URL(s). Also fetches the list description.",
+                    "$ref": "#/definitions/floppy-list-builder"
+                },
+                "floppy_tracked": {
+                    "description": "Floppy tracked items filtered by status and type.",
+                    "$ref": "#/definitions/floppy-tracked"
+                },
                 "yamtrack_list_details": {
                     "description": "YamTrack List URL(s). Also fetches description.",
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
@@ -579,6 +645,55 @@
                 "yamtrack_tracked": {
                     "description": "YamTrack tracked movies and shows filtered by status.",
                     "$ref": "#/definitions/yamtrack-tracked"
+                },
+                "flicklist_list": {
+                    "description": "FlickList List URL(s) or numeric id(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }
+                    ]
+                },
+                "flicklist_list_details": {
+                    "description": "FlickList List URL(s) or numeric id(s). Also fetches the list description.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }
+                    ]
+                },
+                "flicklist_user_lists": {
+                    "description": "Every movie/show across a FlickList user's public lists.",
+                    "type": "string"
+                },
+                "flicklist_watchlist": {
+                    "description": "FlickList personal watchlist for the configured API key.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+                },
+                "flicklist_favorites": {
+                    "description": "FlickList personal favorites for the configured API key.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+                },
+                "flicklist_watched": {
+                    "description": "FlickList personal watched history for the configured API key.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+                },
+                "flicklist_up_next": {
+                    "description": "FlickList next-unwatched-episode queue for the configured API key. Blank/true for all, or an integer limit. Show libraries only.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }, { "type": "integer", "minimum": 1 }]
+                },
+                "flicklist_tracked": {
+                    "description": "FlickList tracked shows for the configured API key. Show libraries only.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+                },
+                "flicklist_ratings": {
+                    "description": "FlickList personal ratings for the configured API key. Blank/true for all, a number as a minimum rating, or an object with minimum/maximum.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "null" },
+                        { "type": "number", "minimum": 0.5, "maximum": 10 },
+                        { "$ref": "#/definitions/flicklist-ratings-entry" }
+                    ]
                 },
 
                 "icheckmovies_list": {
@@ -658,8 +773,25 @@
                 "text_file": {
                     "description": "Path(s) to a plain-text file containing one IMDb/TMDb/TVDb ID per line.",
                     "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
+                        { "type": "string", "minLength": 1 },
+                        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+                    ]
+                },
+                "text": {
+                    "description": "Inline IDs using the same one-entry-per-line syntax as text_file.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "integer" },
+                        {
+                            "type": "array",
+                            "minItems": 1,
+                            "items": {
+                                "oneOf": [
+                                    { "type": "string", "minLength": 1 },
+                                    { "type": "integer" }
+                                ]
+                            }
+                        }
                     ]
                 },
 
@@ -1063,6 +1195,29 @@
                 "list_size": { "type": "integer", "minimum": 1 }
             }
         },
+        "tracearr-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_minimum": { "type": "integer", "minimum": 0 },
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "watched": { "type": "boolean" },
+                "minimum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "maximum_progress": { "type": "number", "minimum": 0, "maximum": 100 },
+                "transcode": { "type": "boolean" },
+                "video_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "audio_decision": { "type": "string", "enum": ["directplay", "copy", "transcode"] },
+                "transcode_reason": { "type": "string", "minLength": 1 },
+                "subtitle_decision": { "type": "string", "minLength": 1 },
+                "platform": { "type": "string", "minLength": 1 },
+                "device": { "type": "string", "minLength": 1 },
+                "resolution": { "type": "string", "minLength": 1 },
+                "source_video_codec": { "type": "string", "minLength": 1 },
+                "source_audio_codec": { "type": "string", "minLength": 1 },
+                "genre": { "type": "string", "minLength": 1 }
+            }
+        },
 
         "mdblist-list-entry": {
             "type": "object", "additionalProperties": false,
@@ -1172,6 +1327,63 @@
                 "incremental": { "type": "boolean" },
                 "note": { "type": "string" }
             }
+        },
+
+        "floppy-list-builder": {
+            "oneOf": [
+                { "type": "string" },
+                {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["url"],
+                    "properties": {
+                        "url": { "type": "string", "format": "uri" },
+                        "sync_tags": { "type": "boolean", "default": false }
+                    }
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "oneOf": [
+                            { "type": "string" },
+                            {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": ["url"],
+                                "properties": {
+                                    "url": { "type": "string", "format": "uri" },
+                                    "sync_tags": { "type": "boolean", "default": false }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+
+        "floppy-tracked": {
+            "description": "Floppy tracked status and media type filters.",
+            "oneOf": [
+                { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] },
+                { "type": "array", "items": { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] }, "minItems": 1 },
+                {
+                    "type": "object", "additionalProperties": false, "required": ["status"],
+                    "properties": {
+                        "status": {
+                            "oneOf": [
+                                { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] },
+                                { "type": "array", "items": { "type": "string", "enum": ["no_status", "completed", "in_progress", "planning", "paused", "dropped", "all"] }, "minItems": 1 }
+                            ]
+                        },
+                        "type": {
+                            "oneOf": [
+                                { "type": "string", "enum": ["movie", "show", "season", "anime"] },
+                                { "type": "array", "items": { "type": "string", "enum": ["movie", "show", "season", "anime"] }, "minItems": 1 }
+                            ]
+                        }
+                    }
+                }
+            ]
         },
 
         "yamtrack-tracked": {
@@ -1372,6 +1584,15 @@
             "type": "object", "additionalProperties": false,
             "properties": {
                 "limit": { "type": "integer", "minimum": 1, "maximum": 500 }
+            }
+        },
+
+        "flicklist-ratings-entry": {
+            "description": "flicklist_ratings object form — optional minimum/maximum rating.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "minimum": { "type": "number", "minimum": 0.5, "maximum": 10 },
+                "maximum": { "type": "number", "minimum": 0.5, "maximum": 10 }
             }
         },
 

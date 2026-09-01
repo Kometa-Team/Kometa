@@ -1,11 +1,6 @@
 name: Docker Base Image Build
 
 on:
-  push:
-    branches: [ nightly ]
-    paths:
-      - requirements.txt
-      - Dockerfile.base
   schedule:
     - cron: "0 5 * * 0"  # weekly on Sunday 5am UTC
   workflow_dispatch:
@@ -22,7 +17,7 @@ jobs:
           ref: nightly
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@v4.5.2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}

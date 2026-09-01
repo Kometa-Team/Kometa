@@ -10,7 +10,7 @@ from lxml import html
 from requests.exceptions import ConnectionError, RequestException
 from tenacity import retry, stop_after_attempt, wait_exponential
 
-from modules import util
+from modules import timings, util
 from modules.poster import ImageData
 from modules.util import Failed
 
@@ -71,11 +71,15 @@ class Version:
 
 
 class Requests:
+    # Kometa's own shipped assets (Default-Images, People-Images-*) don't need a per-run liveness check - unlike arbitrary user url_poster/url_background/url_logo/url_square_art values, the real staleness risk.
+    stable_asset_prefixes = ("https://raw.githubusercontent.com/Kometa-Team/",)
+
     def __init__(self, local, part, env_branch, git_branch, verify_ssl=True):
         self.local = Version(local, part)
         self.env_branch = env_branch
         self.git_branch = git_branch
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]
+        self._image_url_cache = {}  # Run-scoped memoization for get_image() - same URL within one run is always the same asset, no staleness risk.
         self._nightly = None
         self._develop = None
         self._master = None
@@ -92,7 +96,8 @@ class Requests:
         session = requests.Session()
         if not verify_ssl:
             self.no_verify_ssl(session)
-        return session
+        # Every consumer (plexapi/tmdbapis/arrapi/this module's get/post) rides through session.request, so one hook here times all HTTP traffic.
+        return timings.instrument_session(session)
 
     def no_verify_ssl(self, session=None):
         global_opt_out = session is None
@@ -108,6 +113,9 @@ class Requests:
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
         response = self.get_image(image_url, session=session)
+        if response is None:
+            # get_image() only returns None for validate_only stable-asset-prefix skips, which download_image() never requests - unreachable in practice, guarded so pyright can narrow response below.
+            raise Failed(f"Image Error: No response for Image URL: {image_url}")
         new_image = os.path.join(download_directory, f"{filename}") if filename else download_directory
         if response.headers["Content-Type"] == "image/jpeg":
             new_image += ".jpg"
@@ -119,8 +127,8 @@ class Requests:
             handler.write(response.content)
         return ImageData("asset_directory", new_image, prefix=f"{title}'s ", image_type=image_type, is_url=False)
 
-    def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False):
-        return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty)
+    def file_yaml(self, path_to_file, check_empty=False, create=False, start_empty=False, read_only=False):
+        return YAML(path=path_to_file, check_empty=check_empty, create=create, start_empty=start_empty, read_only=read_only)
 
     def get_yaml(self, url, headers=None, params=None, check_empty=False):
         response = self.get(url, headers=headers, params=params)
@@ -132,25 +140,35 @@ class Requests:
             raise Failed(f"URL Error: Too many requests -  {url}")
         if response.status_code >= 400:
             raise Failed(f"URL Error: {response.status_code} on {url}")
-        return YAML(input_data=response.content, check_empty=check_empty)
+        # get_yaml never sets a path, so save() was already a no-op here - read_only=True is a pure speed win (safe loader) plus a defensive guard against future misuse.
+        return YAML(input_data=response.content, check_empty=check_empty, read_only=True)
 
     def get_image(self, url, session=None, validate_only=False):
-        active_session = session if session is not None else self.session
-        request_headers = get_header(None, True, None)
-        try:
-            if validate_only:
-                response = active_session.head(url, headers=request_headers, timeout=DEFAULT_TIMEOUT, allow_redirects=True)
-            else:
-                response = active_session.get(url, headers=request_headers, timeout=DEFAULT_TIMEOUT)
-        except RequestException as e:
-            # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
-            raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
+        # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content (nightly's leaked version wrote this cache but never read it back).
+        cache_key = (url, validate_only)
+        if cache_key in self._image_url_cache:
+            return self._image_url_cache[cache_key]
+        # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
+        if validate_only and url.startswith(self.stable_asset_prefixes):
+            return None
+        # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
+        with timings.tag_context("image"):
+            try:
+                if validate_only:
+                    # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
+                    response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+                else:
+                    response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
+            except RequestException as e:
+                # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
+                raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
         if response.status_code == 404:
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
             raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
         if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.image_content_types:
             raise Failed("Image Not PNG, JPG, or WEBP")
+        self._image_url_cache[cache_key] = response
         return response
 
     def get_stream(self, url, location, info="Item"):
@@ -198,6 +216,10 @@ class Requests:
     @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
         return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
+
+    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    def head(self, url, headers=None, header=None, language=None):
+        return self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
 
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode("utf-8")
@@ -284,12 +306,15 @@ class Requests:
 
 
 class YAML:
-    def __init__(self, path=None, input_data=None, check_empty=False, create=False, start_empty=False):
+    def __init__(self, path=None, input_data=None, check_empty=False, create=False, start_empty=False, read_only=False):
         self.path = path
         self.input_data = input_data
-        self.yaml = ruamel.yaml.YAML()
-        self.yaml.width = 100000
-        self.yaml.indent(mapping=2, sequence=2)
+        self.read_only = read_only
+        # read_only loads use ruamel's safe loader instead of the default round-trip loader - skips comment/formatting-preservation bookkeeping that's pure overhead for files we never save() back out.
+        self.yaml = ruamel.yaml.YAML(typ="safe") if read_only else ruamel.yaml.YAML()
+        if not read_only:
+            self.yaml.width = 100000
+            self.yaml.indent(mapping=2, sequence=2)
         try:
             if input_data:
                 self.data = self.yaml.load(input_data)
@@ -320,6 +345,8 @@ class YAML:
             self.data = {}
 
     def save(self):
+        if self.read_only:
+            raise Failed("YAML Error: save() called on a read_only YAML object")
         if self.path:
             with open(self.path, "w", encoding="utf-8") as fp:
                 self.yaml.dump(self.data, fp)

@@ -30,6 +30,7 @@ SUPPRESS_STACKTRACE_PATTERNS = [
     r"Plex Error: .* not found",
     r"No matches found with regex pattern",
     r"No Items found in Plex",
+    r"Trakt Error: .*requires Trakt authentication",
 ]
 
 
@@ -60,6 +61,34 @@ def log_namer(default_name):
     log_file = os.path.basename(default_name)
     base, ext, num = log_file.split(".")
     return f"{log_path}/{base}-{num}.{ext}"
+
+
+class BufferedRotatingFileHandler(RotatingFileHandler):
+    """Flushes every FLUSH_EVERY records, or immediately for WARNING+, instead of after every single line. force_flush() bypasses buffering for callers that need the file complete right now (handler removal, close)."""
+
+    FLUSH_EVERY = 25
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._unflushed_count = 0
+        self._pending_level = 0
+
+    def emit(self, record):
+        self._pending_level = record.levelno
+        super().emit(record)
+
+    def flush(self):
+        self._unflushed_count += 1
+        if self._pending_level >= WARNING or self._unflushed_count >= self.FLUSH_EVERY:
+            self.force_flush()
+
+    def force_flush(self):
+        super().flush()
+        self._unflushed_count = 0
+
+    def close(self):
+        self.force_flush()
+        super().close()
 
 
 class MyLogger:
@@ -99,7 +128,7 @@ class MyLogger:
         self.saved_errors = []
 
     def _get_handler(self, log_file, count=3):
-        _handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
+        _handler = BufferedRotatingFileHandler(log_file, delay=True, mode="w", backupCount=count, encoding="utf-8")
         _handler.namer = log_namer
         self._formatter(handler=_handler)
         if os.path.isfile(log_file):
@@ -123,6 +152,7 @@ class MyLogger:
 
     def remove_main_handler(self):
         if self.main_handler is not None:
+            self.main_handler.force_flush()  # Buffered handler - make sure this scope's log file is complete before it's detached.
             self._logger.removeHandler(self.main_handler)
 
     def add_library_handler(self, library_key):
@@ -132,6 +162,7 @@ class MyLogger:
 
     def remove_library_handler(self, library_key):
         if library_key in self.library_handlers:
+            self.library_handlers[library_key].force_flush()  # Buffered handler - flush (not close, it's reused by re_add_library_handler).
             self._logger.removeHandler(self.library_handlers[library_key])
 
     def re_add_library_handler(self, library_key):
@@ -145,6 +176,7 @@ class MyLogger:
 
     def remove_playlists_handler(self):
         if self.playlists_handler is not None:
+            self.playlists_handler.force_flush()  # Buffered handler - make sure this scope's log file is complete before it's detached.
             self._logger.removeHandler(self.playlists_handler)
 
     def add_collection_handler(self, library_key, collection_key):
@@ -157,6 +189,7 @@ class MyLogger:
 
     def remove_collection_handler(self, library_key, collection_key):
         if library_key in self.collection_handlers and collection_key in self.collection_handlers[library_key]:
+            self.collection_handlers[library_key][collection_key].force_flush()  # Buffered handler - make sure this collection's log file is complete before it's detached.
             self._logger.removeHandler(self.collection_handlers[library_key][collection_key])
 
     def add_playlist_handler(self, playlist_key):
@@ -167,6 +200,7 @@ class MyLogger:
 
     def remove_playlist_handler(self, playlist_key):
         if playlist_key in self.playlist_handlers:
+            self.playlist_handlers[playlist_key].force_flush()  # Buffered handler - make sure this playlist's log file is complete before it's detached.
             self._logger.removeHandler(self.playlist_handlers[playlist_key])
 
     def _centered(self, text, sep=" ", side_space=True, left=False):
@@ -242,7 +276,12 @@ class MyLogger:
     def stacktrace(self, trace=False):
         stack = traceback.format_exc()
 
-        suppress_stacktrace_patterns = [r"Plex Error: .* not found", r"No matches found with regex pattern", r"Plex Error: No Items found in Plex"]
+        suppress_stacktrace_patterns = [
+            r"Plex Error: .* not found",
+            r"No matches found with regex pattern",
+            r"Plex Error: No Items found in Plex",
+            r"Trakt Error: .*requires Trakt authentication",
+        ]
 
         if any(re.search(pattern, stack) for pattern in suppress_stacktrace_patterns):
             return
@@ -279,6 +318,17 @@ class MyLogger:
             if variant not in self.secrets:
                 self.secrets.append(variant)
 
+    def redact(self, text):
+        text = str(text)
+        for secret in self.secrets:
+            if secret in text:
+                text = text.replace(secret, "(redacted)")
+        if "HTTPConnectionPool" in text:
+            text = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", text)
+        if "HTTPSConnectionPool" in text:
+            text = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", text)
+        return text
+
     def _log(self, level, msg, args, exc_info=None, extra=None, stack_info=False, stacklevel=1):
         trace = level == TRACE
         log_only = False
@@ -295,13 +345,7 @@ class MyLogger:
                     self._formatter(log_only=True, space=True)
             log_only = True
         else:
-            for secret in self.secrets:
-                if secret in msg:
-                    msg = msg.replace(secret, "(redacted)")
-            if "HTTPConnectionPool" in msg:
-                msg = re.sub("HTTPConnectionPool\\((.*?)\\)", "HTTPConnectionPool(redacted)", msg)
-            if "HTTPSConnectionPool" in msg:
-                msg = re.sub("HTTPSConnectionPool\\((.*?)\\)", "HTTPSConnectionPool(redacted)", msg)
+            msg = self.redact(msg)
             try:
                 if not _srcfile:
                     raise ValueError

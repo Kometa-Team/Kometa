@@ -7,16 +7,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
+- Consolidate item-specific IDs, titles, GUIDs, and URLs in end-of-run warning and error tables, derive missing-rating groups from active overlay sources, and move missing overlay template values into the Overlay Summary.
+
 ### Added
-- updated Trakt authentication docs to reflect new callback based method and remove mentions of inline Kometa authentication method.
+
+- Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
+- Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
+- Support the `folder_location` Plex search option in music-library track builders.
+- Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
 
 ### Fixed
 
+- Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
+- Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
+- Fix the `resolution` Defaults overlay file selecting the `-Dovetail` (resolution-paired) edition overlay instead of the plain one when `use_resolution: false` disables resolution overlays entirely, by no longer building the dovetail edition overlays in that case, and fix a related list-mutation-during-iteration bug in overlay suppress/group resolution that could skip a suppress rule for an overlay later in an item's match list.
+- Fixed `audio_codec` track builder
+- Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.
+- Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.
+- Fix `episode_*` ratings from producing a critical error when Trakt did not have an episode in its database
+- Fix DC-based lists in 'universe' Defaults file
+
+## [v2.4.8] - 2026-08-15
+
+### Fixed
+
+- Pushed 2.4.8 to resolve an issue in GitHub workflows that prevented docker builds from being deployed for nightly updates.
+ 
+### Added
+
+- Add `plex_id` and `plex_rating_key` builders for selecting Plex items directly by metadata ID, GUID, or rating key.
+- Add `audio_codec` as a Plex search and filter attribute for music tracks.
+
+### Changed
+
+- Allow pipe-separated hourly, monthly, and yearly schedule values. Monthly schedules also support inclusive ranges, such as `monthly(1-7)` and `monthly(25-last)`.
+
+## [v2.4.7] - 2026-08-12
+
+### Added
+
+- Added a fallback Trakt Client ID for "public" mode if the current Trakt credentials are invalid
+- Add a Floppy connector with `floppy_list`, `floppy_list_details` and `floppy_tracked` builders, optional API-token authentication for private lists, and `sync_tags` support for applying Floppy list tags as Plex item labels.
+- Add Floppy as a movie, show, and episode mass-rating source for Plex audience, critic, or user rating fields.
+- Add `floppy` as a direct Defaults ratings-overlay source for movies, shows, and episodes.
+- Add Tracearr connector support with history-based collection and playlist builders for popular, watched, trending, rewatched, completed, binged, most transcoded, watch time, in-progress, and full history views, including user-specific and playback-quality filters, direct movie provider-ID matching, v2 capability detection with v1 fallback, and in-run history reuse.
+- Add Serializd as a connector
+- Add `serializd` as a genre source for shows and episodes for the mass metadata update operation, includes nanogenres.
+- Add `serializd` as a source for show and episode audience, critic, and user mass metadata updates, and `serializd_user` for episodes only.
+- Add `sync_watchlist_to_serializd` show-library operation to mark the Plex server owner's watched episodes as watched in Serializd.
+- Add builders: `serializd_list`, `serializd_watchlist`, `serializd_trending`, `serializd_popular`, and `serializd_featured`
+- Add `serializd` as a direct rating source for show and episode-level Ratings Defaults overlays.
+- Add `sync_to_mdb_list` for synchronizing collections with MDBList static lists.
+
+### Fixed
+
+- Sort IMDb award years and multi-edition year values before resolving `starting`/`ending` ranges, so out-of-order repository entries do not cause `latest` ranges to include the wrong years.
+- Refresh an item's in-run Plex state after `mass_poster_update` removes its `Overlay` label, ensuring the following overlay pass detects the reset poster and reapplies its overlays instead of incorrectly skipping it.
+- Redact registered secrets from critical-error webhook messages before sending them to Discord, Slack, Notifiarr, or other webhook destinations. #3472
+- Make nightly Docker builds wait for, and use, the matching base image after dependency changes.
+- Accept all successful Trakt API responses so `sync_to_trakt_list` handles the `201 Created` returned when adding list items instead of marking the collection build as failed. #3453
+- Add `pyinstrument` to `requirements.txt` (it was only in `dev-requirements.txt`), so `KOMETA_PROFILE=pyinstrument` actually works in a normal/Docker install instead of silently no-opping.
+- Fix `folder_location`/`folder_location.not` smart_filter matching for show libraries, which previously failed with `plex_search attribute: folder_location not supported` (or, for `builder_level: episode`, `Unknown filter field "location"`) because the filter was being resolved against Plex's `show` libtype, which doesn't expose a folder filter; it's now resolved against the `episode` libtype instead, matching how Plex exposes it for shows. #3483
+- Lock the poster, background, logo, and square art fields after resetting them from a source, and check the logo's actual Plex field name (`clearLogo`, not `logo`), so subsequent runs with `ignore_locked: true` skip re-resetting instead of looping forever. #3487
+
+### Changed
+
+- Document Trakt's free connected-app limitation and identify which Trakt builders and account features require OAuth/VIP access versus public API access.
+- Migrate Trakt authentication documentation and shipped configuration examples from the legacy PIN/OAuth callback flow to Device Code Flow, including headless-server guidance and the optional `webhooks.trakt_pin` notification.
+- Batch Plex writes that were previously one API call per item: label/genre sync, `item_critic`/`audience`/`user_rating` updates, and title-parentheses removal now merge into shared `saveMultiEdits()`/`batchMultiEdits()` calls (respecting `plex_bulk_edit_batch_size`) instead of one `edit_tags()`/`editField()`/`editTitle()` call per item; label/genre and rating writes for the same item are further merged into a single PUT instead of one per attribute type, grouped by library and media type so mixed-library/mixed-type playlists route through the correct Plex connection. The overlay `Overlay` label add is batched the same way, flushing every `plex_bulk_edit_batch_size` items instead of only once at the very end of the run.
+- Reduce repeated in-run Plex/API lookups via caching: `modules/cache.py`'s ID-map queries (`query_tmdb_to_tvdb_map` and siblings, `query_guid_map`/`update_guid_map`) are memoized in-process; `check_filter` memoizes plain item-attribute reads (excluding writable fields), media-derived number filters (channels/height/width/aspect/versions/audio_language/subtitle_language/duration), and per-item seasons/episodes/albums/tracks sub-item listings, the last of which is now reused via `cached_item_subitems` at every remaining call site (including `overlays.py`'s runtime/total_runtime lookups) instead of re-querying Plex each time.
+- Reduce redundant network/image work: `Requests.get_image()` is memoized by URL for the run; validate-only image URL checks use HEAD instead of GET; validate-only checks are skipped entirely for Kometa's own GitHub-hosted assets; and fresh local overlay images are reused instead of being re-fetched from GitHub on every call.
+- `modules/request.py`: read-only file/URL YAML loads (that are never saved back) now use ruamel's safe loader, skipping comment/formatting-preservation bookkeeping that was pure overhead for these loads.
+- Dedupe forced Plex reloads for tag filters checked back-to-back in `check_filters`; snapshot the overlay backup folder once per run instead of calling `os.path.exists()` per item; buffer log file writes instead of flushing after every line (`WARNING` and above still flush immediately, and handler removal/close force a final flush so the file is always complete); early-exit `check_for_var`'s variable-resolution loop once a pass makes no substitutions, and skip its redundant second pass when no arithmetic `<<var+N>>` syntax is present.
+- Improve `audio_language`/`subtitle_language` `plex_search` matching (including the default `languages.yml` flag overlays) to recognize every locale- or region-tagged variant of a language that actually exists in the library (e.g. `es-419`, `en-US`, `spa`) instead of only an exact 2-letter match. A single `es`/`it`/`zh` filter now matches every variant Plex reports for that language, resolved with one lightweight, cached lookup of the library's language filter choices rather than a separate Plex query per variant.
+
+## [v2.4.6] - 2026-07-30
+
+### Added
+
+- Add `folder_location` and `folder_location.not` Plex search attributes for movie, show, and track-level music smart collections and Plex searches, using the root folders configured on the Plex library.
+- Add `--timings`/`--timing` (`KOMETA_TIMINGS`/`KOMETA_TIMING`) runtime support for diagnosing slow runs. When enabled, network calls, cache lookups, and major per-collection/per-library phases are timed; a summary prints to the log at the end of the run and a full per-source/per-library breakdown is exported as JSON/CSV to the logs directory. Disabled by default, with negligible overhead when off. Also adds an optional `KOMETA_PROFILE=pyinstrument` environment variable for deeper single-run profiling, writing an HTML report to the logs directory.
+- Add TVDB ID support to YamTrack builder, enabling import of TVDB show IDs from YamTrack lists and tracked pages alongside existing TMDb support.
+
+### Fixed
+
+- Send IMDb's web client identifier with GraphQL requests so `imdb_search` and IMDb-backed defaults are not rejected with HTTP 403; report HTTP and non-JSON GraphQL responses as contextual IMDb errors instead of uncaught JSON decoding tracebacks. #3444
+- Report IMDb chart GraphQL and HTML fallback failures as contextual IMDb errors instead of raising `IndexError` when the fallback page does not contain `__NEXT_DATA__` chart data. #3446
+- Batch collection and playlist `item_label`, `item_label.remove`, `item_label.sync`, and `non_item_remove_label` updates through Plex multi-edit requests, grouped by library and media type and split by `plex_bulk_edit_batch_size`, instead of sending one label request per item.
+- Fail Letterboxd collection validation when a configured list or watchlist cannot be loaded, preventing sync mode from emptying an existing collection after a blocked or unavailable source request.
 - Treat TMDb connection failures, timeouts, HTTP 408/429/5xx, and backend-unavailable responses as transient service failures: retry discovery, pagination, item requests, and lazy object hydration consistently; emit concise retry warnings instead of tracebacks; and surface exhausted retries as a service-unavailable error.
 - Add the affected URL and HTTP status to exhausted empty TVDb response warnings; limit empty documents to three attempts with short exponential delays while retaining six attempts and the existing delay for other transient failures; and open a run-scoped circuit after two distinct URLs exhaust retries so a systemic TVDb outage does not generate thousands of requests and hours of retry delays.
 - Stop ntfy from sending an access-test notification whenever Kometa initializes the ntfy client.
+- Restore per-item label removal when deleting smart-label collections, preventing an `AttributeError` from the removed `batch_edit_tags` API.
+- Dispatch the configured `delete` webhook after every successful Kometa-managed collection or playlist deletion instead of only for `delete_not_scheduled` and `delete_playlist`; suppress the event for playlist sync's internal delete-and-recopy step. #3420
+- Add a per-library mass image-operation summary grouped by operation, source, image type, media level, and result while retaining per-item success messages, and collapse repeated `No Reset Image Found` warnings by image type in the end-of-run summary.
 - `modules/plex.py`: standardize Plex API retry handling so known 400/404/401 responses and Kometa `Failed` exceptions remain terminal, while exhausted transient retries re-raise their underlying exception instead of becoming opaque `RetryError`; collection move failures also include the item title and original Plex response, and `query_collection`/`get_actor_id` convert terminal Plex responses into contextual Kometa errors.
-- Drop-in replacement for the jikan api
+- Added Drop-in replacement for the jikan api as it is being deprecated
+- Propagate the exit code from the worker process so `--validate` (and other runs) return a non-zero status on failure. Previously `start()` ran inside a `ProcessPoolExecutor` whose result was never retrieved, so a `sys.exit(1)` from a failed validation was swallowed and the parent always exited `0`, breaking CI usage.
+- Fix the startup requirements version check so each package is compared against its own pinned requirement. Previously `v1`/`v2` leaked between loop iterations and the package name lookup was case-sensitive, causing bogus messages such as `GitPython version: 3.1.55 does not match expected: 1.4.14`, where the expected value came from an unrelated package.
+- Resolve movie folder paths using the path style reported by the media server rather than the platform Kometa runs on. A Linux or Docker install pointed at a Plex server on Windows received paths such as `P:\Movies\Title\file.mkv`, which `os.path.dirname` reduced to an empty string, logging `Plex Error: No location found` for every movie and silently disabling `add_existing`, `upgrade_existing`, `monitor_existing`, `item_radarr_tag`, and `item_sonarr_tag`.
+- Fix `streaming` Defaults to more consistently use regional variants of Amazon, and stop trying to use `Originals` lists that do not exist
 
 ## [v2.4.5] - 2026-07-22
 
@@ -39,6 +132,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add Plex show edition support wherever movie editions are supported, including edition filters, metadata matching/editing, overlays, dynamic collections, and `item_edition`.
 
 ### Fixed
+
 - Allow all semantic Letterboxd discovery builders to use `collection_order: custom`, preserving Letterboxd's returned order in Plex collections.
 - Resolve TMDb episode ratings by Plex's episode-level `tmdb://` GUID before falling back to season and episode numbers, allowing alternate Plex episode orderings such as split-cour anime to map correctly; persist the direct episode ID in the existing TMDb episode cache for zero-request warm lookups.
 - `modules/request.py`/`modules/plex.py`: fix `get_image()` and `delete_user_playlist()` crashing a collection or playlist sync outright on a transient network failure (connection reset, timeout, plex.tv DNS resolution). Both now catch the underlying `requests` exception and raise `Failed`, matching how every other network-facing call in these modules already degrades.
@@ -82,21 +176,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Warn and skip `item_edition` edits when Plex Pass is unavailable instead of attempting the edit and surfacing a Plex 403 Forbidden error.
 - Fix the default AU content-rating overlay so the MA15+ badge matches both Plex rating spellings: canonical `au/MA 15+` from explicit TMDb Australian certifications and Plex-derived `au/MA15+` for titles without an AU certification.
 - Fix "Movies Added" report entries missing release year; titles now match the "Movies Missing"/"Movies Removed" format e.g. `The Grapes of Wrath (1939)`.
+- Fix `batchMultiEdits()` raising `BadRequest: Cannot mix items of different type` when a batched label/tag/rating write spanned more than one Plex object type (e.g. shows and seasons in the same overlay run).
 
 ### Changed
 
 - `modules/imdb.py`: IMDb-backed mass rating, genre, episode-rating, parental guide, chart, and keyword lookups now prefer the Kometa IMDb Service (`utilities.kometa.wiki/imdb-service`). If the service is unresponsive, Kometa logs the failure and falls back: ratings/genres/episode-ratings to the public IMDb TSV datasets (`title.ratings.tsv.gz`, `title.basics.tsv.gz`, `title.episode.tsv.gz`), parental guide/charts/keywords to GraphQL queries or HTML scraping.
-- Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
-- `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
-- `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
-- `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
-- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
 - Update requirements
 - Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).
 - `modules/request.py`: `get_stream` throttles its download-progress log updates to ~4 per second (plus a final 100% line) instead of logging once per 8 KB chunk.
 - `modules/cache.py`: the cache now holds one shared SQLite connection (WAL journal mode) for the life of the run instead of opening a new connection for every query — previously each of the ~60 cache methods opened a connection per call and never closed it, which added measurable overhead on large overlay runs. Transaction-per-block commit behaviour is unchanged.
-- Updated assets to accept all filenames and filetype extensions that Plex allows as per https://support.plex.tv/articles/200220677-local-media-assets-movies/
+- Updated assets to accept all filenames and filetype extensions that Plex allows as per <https://support.plex.tv/articles/200220677-local-media-assets-movies/>
 - Internal: replace `mypy` (which was running with `continue-on-error: true` and producing output nobody read) with `pyright` using a ratcheting baseline. `.pyright-baseline.json` pins the current per-file error counts; the new `pyright` CI job (powered by `scripts/pyright_baseline.py --check`) fails any PR that introduces new errors in a file but lets maintainers chip away at existing errors at their own pace. Today's baseline: 1223 errors across `modules/` + `kometa.py`. See `scripts/README.md` for the `--update` workflow.
 
 ### Security
@@ -270,7 +360,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...HEAD
+[v2.4.8]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...v2.4.8
+[v2.4.7]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...v2.4.7
+[v2.4.6]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6
 [v2.4.5]: https://github.com/Kometa-Team/Kometa/compare/v2.4.4...v2.4.5
 [v2.4.4]: https://github.com/Kometa-Team/Kometa/compare/v2.4.3...v2.4.4
 [v2.4.3]: https://github.com/Kometa-Team/Kometa/compare/v2.4.2...v2.4.3

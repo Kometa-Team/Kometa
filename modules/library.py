@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 
 from PIL import Image
 
-from modules import util
+from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
@@ -19,6 +19,7 @@ class Library(ABC):
         self.Radarr = None
         self.Sonarr = None
         self.Tautulli = None
+        self.Tracearr = None
         self.Webhooks = None
         self.Operations = Operations(config, self)
         self.Overlays = None
@@ -46,6 +47,8 @@ class Library(ABC):
         self.plex_map = {}
         self.plex_map_levels = set()
         self.cached_items = {}
+        # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
+        self.filter_attr_cache = {}
         self.run_again = []
         self.type = ""
         self.config = config
@@ -136,6 +139,7 @@ class Library(ABC):
         self.content_rating_mapper = params["content_rating_mapper"]
         self.changes_webhooks = params["changes_webhooks"]
         self.split_duplicates = params["split_duplicates"]  # TODO: Here or just in Plex?
+        self.sync_watchlist_to_serializd = params["sync_watchlist_to_serializd"]
         self.stats = {
             "created": 0,
             "modified": 0,
@@ -175,6 +179,7 @@ class Library(ABC):
             or self.mass_background_update
             or self.mass_logo_update
             or self.mass_square_art_update
+            or self.sync_watchlist_to_serializd
             else False
         )
         self.library_operation = (
@@ -289,6 +294,7 @@ class Library(ABC):
                     logger.info("")
                     logger.separator(f"Skipping {e} Image File")
 
+    @timings.timed("image_upload")
     def upload_images(self, item, poster=None, background=None, logo=None, square_art=None, overlay=False):
         poster_uploaded = False
         if poster is not None:

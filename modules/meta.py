@@ -4,9 +4,10 @@ import os
 import re
 from datetime import datetime
 
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from requests.exceptions import RequestException
 
-from modules import ergast, letterboxd, plex, util
+from modules import ergast, letterboxd, plex, timings, util
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
@@ -166,7 +167,8 @@ class DataFile:
                     raise Failed(f"File Error: Default does not exist {file_path}")
                 else:
                     raise Failed(f"File Error: File does not exist {content_path}")
-            yaml = self.config.Requests.file_yaml(content_path, check_empty=True)
+            # This branch is a local, never-saved file load (Default/Repo-sourced collection/overlay/playlist content) - safe to use the faster read_only loader.
+            yaml = self.config.Requests.file_yaml(content_path, check_empty=True, read_only=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
             return yaml.data
@@ -182,7 +184,8 @@ class DataFile:
             if url:
                 yaml_content = self.config.Requests.get_yaml(yaml_path, check_empty=True)
             else:
-                yaml_content = self.config.Requests.file_yaml(yaml_path, check_empty=True)
+                # Local translation file load, never saved - safe to use the faster read_only loader.
+                yaml_content = self.config.Requests.file_yaml(yaml_path, check_empty=True, read_only=True)
             if "variables" in yaml_content.data and yaml_content.data["variables"]:
                 for var_key, var_value in yaml_content.data["variables"].items():
                     if lib_type in var_value:
@@ -534,28 +537,40 @@ class DataFile:
 
                         if _debug:
                             logger.trace(f"Start {_method}: {_data}")
-                        try:
-                            for i_check in range(8):
-                                for option in optional:
-                                    if option not in variables and f"<<{option}>>" in str(_data):
-                                        raise Failed
-                                for option in [False, True]:
+                        with timings.track("check_for_var", library=self.library.name if self.library else None, collection=mapping_name):
+                            try:
+                                for i_check in range(8):
+                                    pass_start = _data  # Unchanged after a full pass means no nested vars are left to resolve, so stop early instead of burning the remaining passes.
+                                    for option in optional:
+                                        if option not in variables and f"<<{option}>>" in str(_data):
+                                            raise Failed
                                     for variable, variable_data in variables.items():
                                         if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
-                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=option)
+                                            _data = scan_text(_data, variable, variable_data.replace(",", ""), second=False)
                                         elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
                                             continue
                                         elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
-                                            _data = scan_text(_data, variable, variable_data, second=option)
-                                for dm, dd in default.items():
-                                    if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
-                                        continue
-                                    elif _method not in ["name", "summary"] or dm != "key_name":
-                                        _data = scan_text(_data, dm, dd)
-                        except Failed:
-                            if _debug:
-                                logger.trace(f"Failed {_method}: {_data}")
-                            raise
+                                            _data = scan_text(_data, variable, variable_data, second=False)
+                                    # second=True only matters for surviving <<var+N>>/<<var-N>> syntax - skip re-scanning every variable when it's not there; checked fresh so a substitution just introduced this pass still gets caught.
+                                    if re.search(r"<<\w+[+-]\d+>>", str(_data)):
+                                        for variable, variable_data in variables.items():
+                                            if (variable == "collection_name" or variable == "playlist_name") and _method in ["radarr_tag", "item_radarr_tag", "sonarr_tag", "item_sonarr_tag"]:
+                                                _data = scan_text(_data, variable, variable_data.replace(",", ""), second=True)
+                                            elif (variable == "name_format" and _method != "name") or (variable == "summary_format" and _method != "summary"):
+                                                continue
+                                            elif variable != "name" and (_method not in ["name", "summary"] or variable != "key_name"):
+                                                _data = scan_text(_data, variable, variable_data, second=True)
+                                    for dm, dd in default.items():
+                                        if (dm == "name_format" and _method != "name") or (dm == "summary_format" and _method != "summary"):
+                                            continue
+                                        elif _method not in ["name", "summary"] or dm != "key_name":
+                                            _data = scan_text(_data, dm, dd)
+                                    if _data == pass_start:
+                                        break
+                            except Failed:
+                                if _debug:
+                                    logger.trace(f"Failed {_method}: {_data}")
+                                raise
                         if _debug:
                             logger.trace(f"End {_method}: {_data}")
                         return _data
@@ -1060,7 +1075,10 @@ class MetadataFile(DataFile):
                             if event_id not in self.config.IMDb.git_events_validation:
                                 raise Failed(f"Config Error: {map_name} data only specific Event IDs work with imdb_awards. Event Options: [{', '.join([k for k in self.config.IMDb.git_events_validation])}]")
                             _, event_years = self.config.IMDb.get_event_years(event_id)
-                            year_options = [event_years[len(event_years) - i] for i in range(1, len(event_years) + 1)]
+                            year_options = sorted(
+                                event_years,
+                                key=lambda year: tuple(int(part) for part in str(year).split("-")),
+                            )
 
                             def get_position(attr):
                                 if attr not in award_methods:
@@ -1438,7 +1456,7 @@ class MetadataFile(DataFile):
                             self.collections[other_name] = col
                         for _, col in sync.items():
                             try:
-                                self.library.delete(col)
+                                self.library.delete_collection(col)
                                 logger.info(f"{map_name} Dynamic Collection: {col.title} Deleted")
                             except Failed as e:
                                 logger.error(e)
@@ -1819,6 +1837,41 @@ class MetadataFile(DataFile):
             except Failed as e:
                 logger.error(e)
 
+    def update_theme(self, item, group, methods):
+        if not (self.library.is_movie or self.library.is_show):
+            return False
+
+        def upload(**kwargs):
+            try:
+                self.library.upload_theme(item, **kwargs)
+            except (BadRequest, NotFound, Unauthorized, OSError, RequestException) as e:
+                logger.error(f"{self.type_str} Error: Theme failed to update: {e}")
+                return False
+            logger.info("Metadata: theme updated")
+            return True
+
+        if "url_theme" in methods:
+            url = group[methods["url_theme"]]
+            if url:
+                return upload(url=url)
+            logger.error(f"{self.type_str} Error: url_theme attribute is blank")
+
+        if "file_theme" in methods:
+            filepath = group[methods["file_theme"]]
+            if not filepath:
+                logger.error(f"{self.type_str} Error: file_theme attribute is blank")
+                return False
+            filepath = os.path.abspath(filepath)
+            if not os.path.exists(filepath):
+                logger.error(f"{self.type_str} Error: Theme Path Does Not Exist: {filepath}")
+                return False
+            if not os.path.isfile(filepath):
+                logger.error(f"{self.type_str} Error: Theme Path Is Not a File: {filepath}")
+                return False
+            return upload(filepath=filepath)
+
+        return False
+
     def update_metadata_item(self, item, mapping_name, meta, methods):
 
         updated = False
@@ -1977,6 +2030,8 @@ class MetadataFile(DataFile):
         asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
             updated = True
+        if self.update_theme(item, meta, methods):
+            updated = True
         if "f1_season" not in methods:
             logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
 
@@ -2015,7 +2070,7 @@ class MetadataFile(DataFile):
                 logger.error(f"{self.type_str} Error: seasons attribute must be a dictionary")
             else:
                 seasons = {}
-                for season in item.seasons():
+                for season in self.library.cached_item_subitems(item, "seasons"):
                     seasons[season.title] = season
                     seasons[int(season.index)] = season
                 for season_id, season_dict in meta[methods["seasons"]].items():
@@ -2082,7 +2137,7 @@ class MetadataFile(DataFile):
                             logger.error(f"{self.type_str} Error: episodes attribute must be a dictionary")
                         else:
                             episodes = {}
-                            for episode in season.episodes():
+                            for episode in self.library.cached_item_subitems(season, "episodes"):
                                 episodes[episode.title] = episode
                                 if episode.index:
                                     episodes[int(episode.index)] = episode
@@ -2178,7 +2233,7 @@ class MetadataFile(DataFile):
             elif not isinstance(meta[methods["albums"]], dict):
                 logger.error(f"{self.type_str} Error: albums attribute must be a dictionary")
             else:
-                albums = {album.title: album for album in item.albums()}
+                albums = {album.title: album for album in self.library.cached_item_subitems(item, "albums")}
                 for album_name, album_dict in meta[methods["albums"]].items():
                     updated = False
                     title = None
@@ -2218,7 +2273,7 @@ class MetadataFile(DataFile):
                             logger.error(f"{self.type_str} Error: tracks attribute must be a dictionary")
                         else:
                             tracks = {}
-                            for track in album.tracks():
+                            for track in self.library.cached_item_subitems(album, "tracks"):
                                 tracks[track.title] = track
                                 tracks[int(track.index)] = track
                             for track_num, track_dict in album_dict[album_methods["tracks"]].items():
@@ -2284,11 +2339,11 @@ class MetadataFile(DataFile):
             races = self.config.Ergast.get_races(f1_season, f1_language, round_prefix, shorten_gp)
             race_lookup = {r.round: r for r in races}
             logger.trace(race_lookup)
-            for season in item.seasons():
+            for season in self.library.cached_item_subitems(item, "seasons"):
                 if not season.seasonNumber:
                     continue
                 sprint_weekend = False
-                for episode in season.episodes():
+                for episode in self.library.cached_item_subitems(season, "episodes"):
                     if "sprint" in episode.locations[0].lower():
                         sprint_weekend = True
                         break
@@ -2301,7 +2356,7 @@ class MetadataFile(DataFile):
                     if ups:
                         updated = True
                     logger.info(f"Race {season.seasonNumber} of F1 Season {f1_season}: Metadata Update {'Complete' if updated else 'Not Needed'}")
-                    for episode in season.episodes():
+                    for episode in self.library.cached_item_subitems(season, "episodes"):
                         if len(episode.locations) > 0:
                             ep_title, session_date = race.session_info(episode.locations[0], sprint_weekend)
                             add_edit("title", episode, value=ep_title)

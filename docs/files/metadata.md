@@ -27,6 +27,7 @@ tags:
   - file_logo
   - file_poster
   - file_square_art
+  - file_theme
   - genre
   - keep_episodes
   - label
@@ -61,6 +62,7 @@ tags:
   - url_logo
   - url_poster
   - url_square_art
+  - url_theme
   - use_original_title
   - user_rating
   - writer
@@ -514,7 +516,7 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `style`          | List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated text of each Style Tag.          | `Artists`, `Albums`                                                     |
 | `writer`         | List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated text of each Writer Tag.         | `Movies`, `Episodes`                                                    |
 
-### Image Attributes
+### Image and Theme Attributes
 
 | Attribute         | <div style="width:365px">Allowed Values</div>    | Item Types                                                    |
 |:------------------|:-------------------------------------------------|:--------------------------------------------------------------|
@@ -522,10 +524,22 @@ You can add `.sync` to any tag attribute to sync all tags vs just appending the 
 | `file_poster`      | Path to image in the file system.                | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `file_logo`        | Path to image in the file system.                | `Movies`, `Shows`                                             |
 | `file_square_art`  | Path to image in the file system.                | `Movies`, `Shows`                                             |
+| `file_theme`       | Path to an MP3 theme file in the file system.    | `Movies`, `Shows`                                             |
 | `url_background`   | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_poster`       | URL of image publicly available on the internet. | `Movies`, `Shows`, `Seasons`, `Episodes`, `Artists`, `Albums` |
 | `url_logo`         | URL of image publicly available on the internet. | `Movies`, `Shows`                                             |
 | `url_square_art`   | URL of image publicly available on the internet. | `Movies`, `Shows`                                             |
+| `url_theme`        | URL of an MP3 theme file.                        | `Movies`, `Shows`                                             |
+
+When both `url_theme` and `file_theme` are specified, `url_theme` takes precedence.
+
+```yaml
+metadata:
+  The Expanse:
+    url_theme: https://example.com/themes/the-expanse.mp3
+  Dune (2021):
+    file_theme: /config/themes/dune.mp3
+```
 
 ### Advanced Attributes
 

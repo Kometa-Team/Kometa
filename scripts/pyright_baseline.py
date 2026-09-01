@@ -74,9 +74,9 @@ def errors_by_file(report: dict) -> dict[str, int]:
             continue
         path = Path(diag["file"])
         try:
-            rel = str(path.relative_to(repo_root))
+            rel = path.relative_to(repo_root).as_posix()  # forward slashes always, so the baseline is stable across Windows/Linux/Mac
         except ValueError:
-            rel = str(path)
+            rel = path.as_posix()
         counts[rel] += 1
     return dict(counts)
 

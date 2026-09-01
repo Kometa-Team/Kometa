@@ -29,6 +29,7 @@ libraries:
     - default: spirit
     - default: sundance
     - default: tautulli
+    - default: tracearr
     - default: imdb
     - default: trakt
     - default: anilist
@@ -180,6 +181,7 @@ libraries:
     - default: spirit
     - default: sundance
     - default: tautulli
+    - default: tracearr
     - default: imdb
     - default: trakt
     - default: anilist
@@ -290,6 +292,7 @@ libraries:
     - default: spirit
     - default: sundance
     - default: tautulli
+    - default: tracearr
     - default: imdb
     - default: trakt
     - default: anilist
@@ -473,6 +476,10 @@ tmdb:                            # REQUIRED for the script to run
 tautulli:                        # Can be individually specified per library as well
   url: http://192.168.1.12:8181
   apikey: Enter Tautulli API Key
+tracearr:                        # Can be individually specified per library as well
+  url: http://192.168.1.14:3019
+  apikey: trr_pub_Enter_Tracearr_API_Key
+  server_id: 550e8400-e29b-41d4-a716-446655440000  # Optional unless server name matching is ambiguous
 github:
   token: Enter GitHub Personal Access Token
 omdb:
@@ -526,7 +533,6 @@ sonarr:                          # Can be individually specified per library as 
 trakt:
   client_id: Enter Trakt Client ID
   client_secret: Enter Trakt Client Secret
-  pin:
   authorization:
     # everything below is autofilled by the script
     access_token:

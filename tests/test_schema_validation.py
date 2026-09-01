@@ -60,6 +60,30 @@ def test_at_least_one_schema_exists() -> None:
     assert SCHEMA_FILES, f"no *-schema.json files found in {SCHEMA_DIR}"
 
 
+def test_metadata_schema_accepts_movie_and_show_themes() -> None:
+    with (SCHEMA_DIR / "metadata-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    metadata = {
+        "metadata": {
+            "Movie": {"url_theme": "https://example.com/movie-theme.mp3"},
+            "Show": {"file_theme": "/config/themes/show-theme.mp3"},
+        }
+    }
+
+    assert list(Draft7Validator(schema).iter_errors(metadata)) == []
+
+
+def test_metadata_schema_rejects_season_themes() -> None:
+    with (SCHEMA_DIR / "metadata-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    metadata = {"metadata": {"Show": {"seasons": {1: {"url_theme": "https://example.com/season-theme.mp3"}}}}}
+    errors = list(Draft7Validator(schema).iter_errors(metadata))
+
+    assert any("url_theme" in error.message for error in errors)
+
+
 # ── 2. Defaults must be parseable YAML ────────────────────────────────────────
 
 
@@ -79,3 +103,20 @@ def test_default_file_is_valid_yaml(yaml_path: Path) -> None:
 def test_at_least_one_default_exists() -> None:
     """Defensive: catch a layout change that hides all defaults from us."""
     assert DEFAULT_YAML_FILES, f"no YAML files found under {DEFAULTS_DIR}"
+
+
+def test_tracearr_default_uses_short_trending_window_without_raw_history_and_sets_logos() -> None:
+    with (DEFAULTS_DIR / "chart" / "tracearr.yml").open(encoding="utf-8") as fh:
+        tracearr_default = yaml.safe_load(fh)
+
+    collections = tracearr_default["collections"]
+    tracearr_template = tracearr_default["templates"]["tracearr"]
+    assert tracearr_template["default"]["list_minimum"] == 0
+    assert tracearr_template["default"]["list_minimum_<<key>>"] == "<<list_minimum>>"
+    assert tracearr_template["tracearr_<<type>>"]["list_minimum"] == "<<list_minimum_<<key>>>>"
+    assert collections["Tracearr Trending"]["variables"]["list_days"] == 7
+    assert "Tracearr History" not in collections
+    expected_logo = "https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/tracearr.png"
+    for collection in collections.values():
+        shared_template = next(template for template in collection["template"] if template["name"] == "shared")
+        assert shared_template["url_logo"] == expected_logo

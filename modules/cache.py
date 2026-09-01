@@ -6,11 +6,26 @@ import sqlite3
 from contextlib import closing
 from datetime import datetime, timedelta
 
-from modules import util
+from modules import timings, util
 
 logger = util.logger
 
 SQL_IDENTIFIER_RE = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+
+
+def _ratings_valid(provider, values, cached=False):
+    invalid = [(field, value, maximum) for field, value, maximum in values if value is not None and not util.is_valid_rating(value, maximum=maximum)]
+    if logger:
+        action = "cached value will be evicted" if cached else "response will not be cached"
+        for field, value, maximum in invalid:
+            logger.warning(f"{provider} Warning: {field} rating value {value} is invalid; expected a finite value from 0 to {maximum}; {action}")
+    return not invalid
+
+
+def _object_ratings_valid(provider, obj, fields):
+    if not getattr(obj, "ratings_valid", True):
+        return False
+    return _ratings_valid(provider, [(field.removesuffix("_rating"), getattr(obj, field, None), maximum) for field, maximum in fields])
 
 
 def sql_identifier(name):
@@ -20,11 +35,16 @@ def sql_identifier(name):
     return str(name)
 
 
+@timings.wrap_cache_methods
 class Cache:
     def __init__(self, config_path, expiration):
         self.cache_path = f"{os.path.splitext(config_path)[0]}.cache"
         self.expiration = expiration
         self._connection = None
+        # In-process memoization for _query_map/_update_map's ID lookups, keyed per map_name - avoids repeat SQLite round-trips for the same ID within one run.
+        self._map_cache = {}
+        # Same idea for query_guid_map/update_guid_map, which use their own SQL, not _query_map - keyed by plex_guid, caches the raw row so expiration still recomputes fresh each call.
+        self._guid_map_cache = {}
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='guid_map'")
@@ -279,6 +299,14 @@ class Cache:
                     key INTEGER PRIMARY KEY,
                     tvdb_id TEXT,
                     library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS serializd_watched_sync (
+                    key INTEGER PRIMARY KEY,
+                    account TEXT,
+                    tmdb_id INTEGER,
+                    season_number INTEGER,
+                    episode_number INTEGER,
+                    synced_at TEXT,
+                    UNIQUE(account, tmdb_id, season_number, episode_number))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS list_cache (
                     key INTEGER PRIMARY KEY,
                     list_type TEXT,
@@ -419,16 +447,22 @@ class Cache:
         imdb_id = None
         media_type = None
         expired = None
-        with self.connection as connection:
-            with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
-                row = cursor.fetchone()
-                if row:
-                    time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    id_to_return = util.get_list(row["t_id"], int_list=True)
-                    imdb_id = util.get_list(row["imdb_id"])
-                    media_type = row["media_type"]
-                    expired = time_between_insertion.days > self.expiration
+        if plex_guid in self._guid_map_cache:
+            row = self._guid_map_cache[plex_guid]
+        else:
+            with self.connection as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute("SELECT * FROM guids_map WHERE plex_guid = ?", (plex_guid,))
+                    fetched = cursor.fetchone()
+                    # Copy to a plain dict so it survives after the cursor/connection context closes.
+                    row = dict(fetched) if fetched else None
+            self._guid_map_cache[plex_guid] = row
+        if row:
+            time_between_insertion = datetime.now() - datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            id_to_return = util.get_list(row["t_id"], int_list=True)
+            imdb_id = util.get_list(row["imdb_id"])
+            media_type = row["media_type"]
+            expired = time_between_insertion.days > self.expiration
         return id_to_return, imdb_id, media_type, expired
 
     def update_guid_map(self, plex_guid, t_id, imdb_id, expired, media_type):
@@ -442,6 +476,8 @@ class Cache:
                 else:
                     sql = "UPDATE guids_map SET t_id = ?, imdb_id = ?, expiration_date = ?, media_type = ? WHERE plex_guid = ?"
                     cursor.execute(sql, (t_id, imdb_id, expiration_date.strftime("%Y-%m-%d"), media_type, plex_guid))
+        # Invalidate any memoized query_guid_map read this write could have made stale.
+        self._guid_map_cache.pop(plex_guid, None)
 
     def query_imdb_to_tmdb_map(self, _id, imdb=True, media_type=None, return_type=False):
         from_id = "imdb_id" if imdb else "tmdb_id"
@@ -480,46 +516,59 @@ class Cache:
         self._update_map("mojo_map", "mojo_url", mojo_url, "imdb_id", imdb_id, expired)
 
     def _query_map(self, map_name, _id, from_id, to_id, media_type=None, return_type=False):
-        map_name, from_id = sql_identifier(map_name), sql_identifier(from_id)
+        map_name_sql, from_id_sql = sql_identifier(map_name), sql_identifier(from_id)
         id_to_return = None
         expired = None
         out_type = None
-        with self.connection as connection:
-            with closing(connection.cursor()) as cursor:
-                if media_type is None:
-                    cursor.execute(f"SELECT * FROM {map_name} WHERE {from_id} = ?", (_id,))  # nosec B608 - identifiers validated by sql_identifier()
-                else:
-                    cursor.execute(f"SELECT * FROM {map_name} WHERE {from_id} = ? AND media_type = ?", (_id, media_type))  # nosec B608 - identifiers validated by sql_identifier()
-                row = cursor.fetchone()
-                if row and row[to_id]:
-                    datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
-                    time_between_insertion = datetime.now() - datetime_object
-                    if "_" in row[to_id]:
-                        id_to_return = row[to_id]
+        cache_key = (from_id, to_id, _id, media_type)
+        table_cache = self._map_cache.setdefault(map_name, {})
+        if cache_key in table_cache:
+            row = table_cache[cache_key]
+        else:
+            with self.connection as connection:
+                with closing(connection.cursor()) as cursor:
+                    if media_type is None:
+                        cursor.execute(f"SELECT * FROM {map_name_sql} WHERE {from_id_sql} = ?", (_id,))  # nosec B608 - identifiers validated by sql_identifier()
                     else:
-                        try:
-                            id_to_return = int(row[to_id])
-                        except ValueError:
-                            id_to_return = row[to_id]
-                    expired = time_between_insertion.days > self.expiration
-                    out_type = row["media_type"] if return_type else None
+                        cursor.execute(f"SELECT * FROM {map_name_sql} WHERE {from_id_sql} = ? AND media_type = ?", (_id, media_type))  # nosec B608 - identifiers validated by sql_identifier()
+                    fetched = cursor.fetchone()
+                    # Copy to a plain dict so it survives after the cursor/connection context closes.
+                    row = dict(fetched) if fetched else None
+            table_cache[cache_key] = row
+        if row and row[to_id]:
+            datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            time_between_insertion = datetime.now() - datetime_object
+            if "_" in row[to_id]:
+                id_to_return = row[to_id]
+            else:
+                try:
+                    id_to_return = int(row[to_id])
+                except ValueError:
+                    id_to_return = row[to_id]
+            expired = time_between_insertion.days > self.expiration
+            out_type = row["media_type"] if return_type else None
         if return_type:
             return id_to_return, out_type, expired
         else:
             return id_to_return, expired
 
     def _update_map(self, map_name, val1_name, val1, val2_name, val2, expired, media_type=None):
-        map_name, val1_name, val2_name = sql_identifier(map_name), sql_identifier(val1_name), sql_identifier(val2_name)
+        map_name_sql, val1_name_sql, val2_name_sql = sql_identifier(map_name), sql_identifier(val1_name), sql_identifier(val2_name)
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute(f"INSERT OR IGNORE INTO {map_name}({val1_name}) VALUES(?)", (val1,))
+                cursor.execute(f"INSERT OR IGNORE INTO {map_name_sql}({val1_name_sql}) VALUES(?)", (val1,))
                 if media_type is None:
-                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ? WHERE {val1_name} = ?"  # nosec B608 - identifiers validated by sql_identifier()
+                    sql = f"UPDATE {map_name_sql} SET {val2_name_sql} = ?, expiration_date = ? WHERE {val1_name_sql} = ?"  # nosec B608 - identifiers validated by sql_identifier()
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), val1))
                 else:
-                    sql = f"UPDATE {map_name} SET {val2_name} = ?, expiration_date = ?, media_type = ? WHERE {val1_name} = ?"  # nosec B608 - identifiers validated by sql_identifier()
+                    sql = f"UPDATE {map_name_sql} SET {val2_name_sql} = ?, expiration_date = ?, media_type = ? WHERE {val1_name_sql} = ?"  # nosec B608 - identifiers validated by sql_identifier()
                     cursor.execute(sql, (val2, expiration_date.strftime("%Y-%m-%d"), media_type, val1))
+        # Invalidate any memoized _query_map reads this write could have made stale, in either lookup direction.
+        table_cache = self._map_cache.get(map_name)
+        if table_cache:
+            for key in [k for k in table_cache if k[2] in (val1, val2)]:
+                del table_cache[key]
 
     def query_omdb(self, imdb_id, expiration):
         omdb_dict = {}
@@ -529,6 +578,9 @@ class Cache:
                 cursor.execute("SELECT * FROM omdb_data3 WHERE imdb_id = ?", (imdb_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("OMDb", [("imdb", row["imdb_rating"], 10), ("metacritic", row["metacritic_rating"], 100)], cached=True):
+                        cursor.execute("DELETE FROM omdb_data3 WHERE imdb_id = ?", (imdb_id,))
+                        return {}, None
                     omdb_dict["imdbID"] = row["imdb_id"] if row["imdb_id"] else None
                     omdb_dict["Title"] = row["title"] if row["title"] else None
                     omdb_dict["Year"] = row["year"] if row["year"] else None
@@ -549,6 +601,8 @@ class Cache:
         return omdb_dict, expired
 
     def update_omdb(self, expired, omdb, expiration):
+        if not _object_ratings_valid("OMDb", omdb, [("imdb_rating", 10), ("metacritic_rating", 100), ("rotten_tomatoes", 100)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -586,6 +640,25 @@ class Cache:
                 cursor.execute("SELECT * FROM mdb_data5 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid(
+                        "MDBList",
+                        [
+                            ("score", row["score"], 100),
+                            ("average", row["average"], 100),
+                            ("imdb", row["imdb_rating"], 10),
+                            ("metacritic", row["metacritic_rating"], 100),
+                            ("metacriticuser", row["metacriticuser_rating"], 10),
+                            ("trakt", row["trakt_rating"], 100),
+                            ("tomatoes", row["tomatoes_rating"], 100),
+                            ("tomatoesaudience", row["tomatoesaudience_rating"], 100),
+                            ("tmdb", row["tmdb_rating"], 100),
+                            ("letterboxd", row["letterboxd_rating"], 5),
+                            ("myanimelist", row["myanimelist_rating"], 10),
+                        ],
+                        cached=True,
+                    ):
+                        cursor.execute("DELETE FROM mdb_data5 WHERE key_id = ?", (key_id,))
+                        return {}, None
                     mdb_dict["title"] = row["title"] if row["title"] else None
                     mdb_dict["year"] = row["year"] if row["year"] else None
                     mdb_dict["released"] = row["released"] if row["released"] else None
@@ -616,6 +689,24 @@ class Cache:
         return mdb_dict, expired
 
     def update_mdb(self, expired, key_id, mdb, expiration):
+        if not _object_ratings_valid(
+            "MDBList",
+            mdb,
+            [
+                ("score", 100),
+                ("average", 100),
+                ("imdb_rating", 10),
+                ("metacritic_rating", 100),
+                ("metacriticuser_rating", 10),
+                ("trakt_rating", 100),
+                ("tomatoes_rating", 100),
+                ("tomatoesaudience_rating", 100),
+                ("tmdb_rating", 100),
+                ("letterboxd_rating", 5),
+                ("myanimelist_rating", 10),
+            ],
+        ):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -664,6 +755,9 @@ class Cache:
                 cursor.execute("SELECT * FROM anidb_data4 WHERE anidb_id = ?", (anidb_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("AniDB", [("rating", row["rating"], 10), ("average", row["average"], 10), ("score", row["score"], 10)], cached=True):
+                        cursor.execute("DELETE FROM anidb_data4 WHERE anidb_id = ?", (anidb_id,))
+                        return {}, None
                     anidb_dict["main_title"] = row["main_title"]
                     anidb_dict["titles"] = row["titles"] if row["titles"] else None
                     anidb_dict["studio"] = row["studio"] if row["studio"] else None
@@ -682,6 +776,8 @@ class Cache:
         return anidb_dict, expired
 
     def update_anidb(self, expired, anidb_id, anidb, expiration):
+        if not _object_ratings_valid("AniDB", anidb, [("rating", 10), ("average", 10), ("score", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -715,6 +811,9 @@ class Cache:
                 cursor.execute("SELECT * FROM mal_data4 WHERE mal_id = ?", (mal_id,))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("MyAnimeList", [("score", row["score"], 10)], cached=True):
+                        cursor.execute("DELETE FROM mal_data4 WHERE mal_id = ?", (mal_id,))
+                        return {}, None
                     mal_dict["title"] = row["title"]
                     mal_dict["title_english"] = row["title_english"] if row["title_english"] else None
                     mal_dict["title_japanese"] = row["title_japanese"] if row["title_japanese"] else None
@@ -736,6 +835,8 @@ class Cache:
         return mal_dict, expired
 
     def update_mal(self, expired, mal_id, mal, expiration):
+        if not _object_ratings_valid("MyAnimeList", mal, [("score", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -775,6 +876,9 @@ class Cache:
                 cursor.execute("SELECT * FROM tmdb_movie_data2 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                        cursor.execute("DELETE FROM tmdb_movie_data2 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
+                        return {}, None
                     tmdb_dict["title"] = row["title"] if row["title"] else ""
                     tmdb_dict["original_title"] = row["original_title"] if row["original_title"] else ""
                     tmdb_dict["studio"] = row["studio"] if row["studio"] else ""
@@ -798,6 +902,8 @@ class Cache:
         return tmdb_dict, expired
 
     def update_tmdb_movie(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -842,6 +948,9 @@ class Cache:
                 cursor.execute("SELECT * FROM tmdb_show_data4 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
                 row = cursor.fetchone()
                 if row:
+                    if not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                        cursor.execute("DELETE FROM tmdb_show_data4 WHERE tmdb_id = ? AND language = ?", (tmdb_id, language))
+                        return {}, None
                     tmdb_dict["title"] = row["title"] if row["title"] else ""
                     tmdb_dict["original_title"] = row["original_title"] if row["original_title"] else ""
                     tmdb_dict["studio"] = row["studio"] if row["studio"] else ""
@@ -869,6 +978,8 @@ class Cache:
         return tmdb_dict, expired
 
     def update_tmdb_show(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -936,6 +1047,9 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT * FROM tmdb_episode_data2 WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ?", (tmdb_id, season_number, episode_number, language))
                 row = cursor.fetchone()
+                if row and not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                    cursor.execute("DELETE FROM tmdb_episode_data2 WHERE tmdb_id = ? AND season_number = ? AND episode_number = ? AND language = ?", (tmdb_id, season_number, episode_number, language))
+                    return {}, None
         return self._parse_tmdb_episode_row(row, expiration)
 
     def query_tmdb_episode_by_id(self, episode_id, language, expiration):
@@ -943,9 +1057,14 @@ class Cache:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("SELECT * FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (episode_id, language))
                 row = cursor.fetchone()
+                if row and not _ratings_valid("TMDb", [("vote_average", row["vote_average"], 10)], cached=True):
+                    cursor.execute("DELETE FROM tmdb_episode_data2 WHERE episode_id = ? AND language = ?", (episode_id, language))
+                    return {}, None
         return self._parse_tmdb_episode_row(row, expiration)
 
     def update_tmdb_episode(self, expired, obj, language, expiration):
+        if not _object_ratings_valid("TMDb", obj, [("vote_average", 10)]):
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
@@ -1224,6 +1343,25 @@ class Cache:
     def update_sonarr_adds(self, tvdb_id, library):
         return self.update_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
 
+    def query_serializd_watched(self, account, tmdb_id, season_number):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute(
+                    "SELECT episode_number FROM serializd_watched_sync WHERE account = ? AND tmdb_id = ? AND season_number = ?",
+                    (account, tmdb_id, season_number),
+                )
+                return [int(row["episode_number"]) for row in cursor]
+
+    def update_serializd_watched(self, account, tmdb_id, season_number, episode_numbers):
+        synced_at = datetime.now().isoformat(timespec="seconds")
+        rows = [(account, tmdb_id, season_number, episode_number, synced_at) for episode_number in set(episode_numbers)]
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(
+                    "INSERT OR IGNORE INTO serializd_watched_sync(account, tmdb_id, season_number, episode_number, synced_at) VALUES(?, ?, ?, ?, ?)",
+                    rows,
+                )
+
     def update_arr_adds(self, t_id, library, arr, id_type):
         arr, id_type = sql_identifier(arr), sql_identifier(id_type)
         with self.connection as connection:
@@ -1378,6 +1516,10 @@ class Cache:
                 row = cursor.fetchone()
                 if row:
                     value = row["value"]
+                    if data_type.endswith("_rating") and not util.is_valid_rating(value):
+                        logger.warning(f"Overlay Cache Warning: {data_type} value {value} is invalid; expected a finite value from 0 to 10; cached value will be evicted")
+                        cursor.execute("DELETE FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), data_type))
+                        return None, None
                     if row["expiration_date"]:
                         datetime_object = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
                         time_between_insertion = datetime.now() - datetime_object
@@ -1391,10 +1533,17 @@ class Cache:
                 cursor.execute("SELECT * FROM overlay_value_cache WHERE rating_key = ?", (str(rating_key),))
                 for row in cursor.fetchall():
                     if row:
-                        values[row["type"]] = row["value"]
+                        if row["type"].endswith("_rating") and not util.is_valid_rating(row["value"]):
+                            logger.warning(f"Overlay Cache Warning: {row['type']} value {row['value']} is invalid; expected a finite value from 0 to 10; cached value will be evicted")
+                            cursor.execute("DELETE FROM overlay_value_cache WHERE rating_key = ? AND type = ?", (str(rating_key), row["type"]))
+                        else:
+                            values[row["type"]] = row["value"]
         return values
 
     def update_overlay_value_cache(self, expired, rating_key, data_type, value):
+        if data_type.endswith("_rating") and not util.is_valid_rating(value):
+            logger.warning(f"Overlay Cache Warning: {data_type} value {value} is invalid; expected a finite value from 0 to 10; value will not be cached")
+            return
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, self.expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:

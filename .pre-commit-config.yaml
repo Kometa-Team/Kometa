@@ -21,7 +21,8 @@ repos:
     hooks:
       - id: pyspelling
         name: pyspelling
-        entry: python .github/scripts/spellcheck_staged.py
+        entry: pyspelling --config .spellcheck.yml
         language: python
         additional_dependencies: [pyspelling]
         types: [markdown]
+        pass_filenames: false

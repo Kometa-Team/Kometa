@@ -6,12 +6,17 @@ loading logic that can be tested without real Plex/GitHub connections.
 
 from __future__ import annotations
 
+from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.exceptions import BadRequest
+from requests.exceptions import RequestException
+from ruamel.yaml import YAML
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.meta import DataFile
+from modules.meta import DataFile, MetadataFile
 from tests.conftest import FakeLogger, FakeRequests
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -20,7 +25,15 @@ from tests.conftest import FakeLogger, FakeRequests
 
 
 def make_datafile(**attrs) -> DataFile:
-    """Create a minimal DataFile via ``DataFile.__new__``."""
+    """Create a minimal DataFile via ``DataFile.__new__``.
+
+    Also patches ``modules.meta.logger`` to a ``FakeLogger`` - meta.py captures
+    ``logger = util.logger`` at import time, so the autouse ``patch_util_logger``
+    fixture (which only patches ``modules.util.logger``) doesn't reach it.
+    """
+    import modules.meta as meta_module
+
+    meta_module.logger = FakeLogger()
     df = DataFile.__new__(DataFile)
     defaults = {
         "config": MagicMock(),
@@ -37,6 +50,111 @@ def make_datafile(**attrs) -> DataFile:
     for key, value in defaults.items():
         setattr(df, key, value)
     return df
+
+
+def make_metadata_file(library):
+    import modules.meta as meta_module
+
+    test_logger = FakeLogger()
+    meta_module.logger = test_logger
+    metadata_file = MetadataFile.__new__(MetadataFile)
+    metadata_file.library = library
+    metadata_file.type_str = "Metadata File"
+    return metadata_file, test_logger
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# update_theme
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestUpdateTheme:
+    @staticmethod
+    def _library(is_movie=True, is_show=False):
+        return SimpleNamespace(is_movie=is_movie, is_show=is_show, upload_theme=MagicMock())
+
+    def test_uploads_url_theme_for_movie(self):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=101)
+
+        updated = metadata_file.update_theme(item, {"url_theme": "https://example.com/theme.mp3"}, {"url_theme": "url_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, url="https://example.com/theme.mp3")
+        assert "Metadata: theme updated" in test_logger.info_messages
+
+    def test_uploads_file_theme_for_show(self, tmp_path):
+        library = self._library(is_movie=False, is_show=True)
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=202)
+        theme_path = tmp_path / "theme.mp3"
+        theme_path.write_bytes(b"theme data")
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(theme_path)}, {"file_theme": "file_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, filepath=str(theme_path.resolve()))
+
+    def test_url_theme_takes_precedence_over_file_theme(self):
+        library = self._library()
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=303)
+        group = {"url_theme": "https://example.com/theme.mp3", "file_theme": "/missing/theme.mp3"}
+
+        updated = metadata_file.update_theme(item, group, {"url_theme": "url_theme", "file_theme": "file_theme"})
+
+        assert updated is True
+        library.upload_theme.assert_called_once_with(item, url="https://example.com/theme.mp3")
+
+    def test_missing_file_theme_is_not_uploaded(self, tmp_path):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=404)
+        theme_path = tmp_path / "missing.mp3"
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(theme_path)}, {"file_theme": "file_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
+        assert f"Metadata File Error: Theme Path Does Not Exist: {theme_path}" in test_logger.error_messages
+
+    def test_directory_theme_path_is_not_uploaded(self, tmp_path):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=405)
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(tmp_path)}, {"file_theme": "file_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
+        assert f"Metadata File Error: Theme Path Is Not a File: {tmp_path}" in test_logger.error_messages
+
+    @pytest.mark.parametrize("error", [BadRequest("Plex rejected theme"), OSError("Theme file read failed"), RequestException("Theme request failed")])
+    def test_failed_upload_does_not_prevent_later_theme_updates(self, error):
+        library = self._library()
+        library.upload_theme.side_effect = [error, None]
+        metadata_file, test_logger = make_metadata_file(library)
+        group = {"url_theme": "https://example.com/theme.mp3"}
+        methods = {"url_theme": "url_theme"}
+
+        first_updated = metadata_file.update_theme(SimpleNamespace(ratingKey=406), group, methods)
+        second_updated = metadata_file.update_theme(SimpleNamespace(ratingKey=407), group, methods)
+
+        assert first_updated is False
+        assert second_updated is True
+        assert library.upload_theme.call_count == 2
+        assert any(f"Theme failed to update: {error}" in message for message in test_logger.error_messages)
+
+    def test_does_not_upload_theme_for_unsupported_item_type(self):
+        library = self._library(is_movie=False, is_show=False)
+        metadata_file, _ = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=505)
+
+        updated = metadata_file.update_theme(item, {"url_theme": "https://example.com/theme.mp3"}, {"url_theme": "url_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -106,6 +224,108 @@ class TestApplyTemplate:
 
         with pytest.raises(Failed, match="not found"):
             df.apply_template("test", "test", {}, [{"name": "missing"}], {})
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# apply_template — nested <<var>> resolution (check_for_var early-exit fix)
+#
+# check_for_var resolves nested "<<var>>" chains over a handful of passes,
+# now stopping early once a pass makes no changes instead of always running
+# a fixed 8. These tests exercise multi-level chains to confirm the early
+# exit doesn't cut resolution off before it's actually done - correctness
+# here matters more than measuring the iteration count directly, since
+# check_for_var/scan_text are closures with no seam to hook a counter into.
+# Iteration-count behavior itself is covered separately by a standalone
+# before/after harness (see perf-results-log.md 2026-07-10 entry).
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestApplyTemplateNestedVarResolution:
+    def test_two_level_chain_fully_resolves(self):
+        """var1 references var2, which is a plain value - needs 2 passes to fully resolve."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "<<var2>>-suffix", "var2": "final"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "final-suffix"
+
+    def test_three_level_chain_fully_resolves(self):
+        """var1 -> var2 -> var3 -> literal, needs 3 passes - well within the early-exit budget."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "<<var2>>", "var2": "<<var3>>", "var3": "literal"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "literal"
+
+    def test_single_pass_value_unaffected(self):
+        """A plain value with no nested vars must still resolve correctly in one pass."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "plain value"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "plain value"
+
+    def test_unresolvable_var_left_as_literal_placeholder(self):
+        """A variable that never resolves must stop (not error) and keep the literal placeholder,
+        same as the old always-8-passes behavior - proves early exit doesn't mistake 'no progress'
+        for a crash or an infinite loop."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<never_defined>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "irrelevant"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "<<never_defined>>"
+
+    def test_arithmetic_suffix_var_plus_n_still_resolves(self):
+        """<<var+N>> arithmetic relies on the loop's second=True pass - must still work post-fix."""
+        df = make_datafile(templates={"tpl": ({"summary": "<<var1+3>>"}, {})})
+        template_call = [{"name": "tpl", "var1": "5"}]
+
+        result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
+
+        assert result["summary"] == "8"
+
+
+class TestResolutionEditionDovetailTemplate:
+    @staticmethod
+    def _apply_edition_template(*, overlay_type, use_resolution=None):
+        resolution_path = Path(__file__).resolve().parents[1] / "defaults" / "overlays" / "resolution.yml"
+        with resolution_path.open(encoding="utf-8") as handle:
+            edition_template = YAML(typ="safe").load(handle)["templates"]["edition"]
+
+        df = make_datafile(
+            data_type="Overlay",
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            templates={"edition": (edition_template, {})},
+        )
+        variables = {
+            "name": "edition",
+            "key": "imax",
+            "search": "IMAX",
+            "type": overlay_type,
+            "allowed_libraries": "movie",
+        }
+        if use_resolution is not None:
+            variables["use_resolution"] = use_resolution
+
+        return df.apply_template("IMAX", "IMAX", {}, [variables], {})
+
+    @pytest.mark.parametrize(
+        ("use_resolution", "expected"),
+        [(None, ["movie"]), (True, ["movie", True]), (False, ["movie", False])],
+    )
+    def test_dovetail_follows_use_resolution(self, use_resolution, expected):
+        result = self._apply_edition_template(overlay_type="edition_dovetail", use_resolution=use_resolution)
+
+        assert result["run_definition"] == expected
+
+    def test_plain_edition_is_not_disabled_with_resolution(self):
+        result = self._apply_edition_template(overlay_type="edition", use_resolution=False)
+
+        assert result["run_definition"] == ["movie"]
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+from urllib.parse import urlencode
 
 from modules import util
 from modules.util import Failed, LimitReached
@@ -47,25 +48,32 @@ headers = {"User-Agent": "Kometa"}
 class MDbObj:
     def __init__(self, data):
         self._data = data
+        self._invalid_rating_values = []
+
+        def _rating(source, value, maximum, is_int=True):
+            parsed = util.check_num(value, is_int=is_int)
+            if not util.is_missing_rating(value) and not util.is_valid_rating(value, maximum=maximum):
+                self._invalid_rating_values.append((source, value))
+            return parsed
+
         self.title = data.get("title")
         self.year = util.check_num(data.get("release_year") or data.get("year"))
         self.type = data.get("mediatype") or data.get("type")
-        self.tmdbid = util.check_num(data.get("id") or data.get("tmdbid"))
-        self.imdbid = data.get("imdbid")
+        self.tmdbid = util.check_num(data.get("tmdbid") or data.get("tmdb_id") or data.get("id"))
+        self.imdbid = data.get("imdbid") or data.get("imdb_id")
 
         try:
-            self.released = datetime.strptime(data["released"], "%Y-%m-%d")
+            self.released = datetime.strptime(data.get("released"), "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released = None
         try:
-            self.released_digital = datetime.strptime(data["released_digital"], "%Y-%m-%d")
+            self.released_digital = datetime.strptime(data.get("released_digital"), "%Y-%m-%d")
         except (ValueError, TypeError):
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
-        self.tmdbid = util.check_num(data.get("tmdbid"))
-        self.score = util.check_num(data.get("score"))
-        self.average = util.check_num(data.get("score_average"))
+        self.score = _rating("score", data.get("score"), 100)
+        self.average = _rating("average", data.get("score_average"), 100)
 
         self.imdb_rating = None
         self.metacritic_rating = None
@@ -78,26 +86,33 @@ class MDbObj:
         self.myanimelist_rating = None
         for rating in data.get("ratings", []):
             if rating["source"] == "imdb":
-                self.imdb_rating = util.check_num(rating["value"], is_int=False)
+                self.imdb_rating = _rating("imdb", rating["value"], 10, is_int=False)
             elif rating["source"] == "metacritic":
-                self.metacritic_rating = util.check_num(rating["value"])
+                self.metacritic_rating = _rating("metacritic", rating["value"], 100)
             elif rating["source"] == "metacriticuser":
-                self.metacriticuser_rating = util.check_num(rating["value"], is_int=False)
+                self.metacriticuser_rating = _rating("metacriticuser", rating["value"], 10, is_int=False)
             elif rating["source"] == "trakt":
-                self.trakt_rating = util.check_num(rating["value"])
+                self.trakt_rating = _rating("trakt", rating["value"], 100)
             elif rating["source"] == "tomatoes":
-                self.tomatoes_rating = util.check_num(rating["value"])
+                self.tomatoes_rating = _rating("tomatoes", rating["value"], 100)
             elif rating["source"] in ("tomatoesaudience", "popcorn"):
-                self.tomatoesaudience_rating = util.check_num(rating["value"])
+                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating["value"], 100)
             elif rating["source"] == "tmdb":
-                self.tmdb_rating = util.check_num(rating["value"])
+                self.tmdb_rating = _rating("tmdb", rating["value"], 100)
             elif rating["source"] == "letterboxd":
-                self.letterboxd_rating = util.check_num(rating["value"], is_int=False)
+                self.letterboxd_rating = _rating("letterboxd", rating["value"], 5, is_int=False)
             elif rating["source"] == "myanimelist":
-                self.myanimelist_rating = util.check_num(rating["value"], is_int=False)
+                self.myanimelist_rating = _rating("myanimelist", rating["value"], 10, is_int=False)
         self.content_rating = data.get("certification")
         self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
+        if logger:
+            for source, value in self._invalid_rating_values:
+                logger.warning(f"MDBList Warning: {source} rating value {value} is invalid; expected a finite value in the provider's supported range; response will not be cached")
+
+    @property
+    def ratings_valid(self):
+        return not self._invalid_rating_values
 
 
 class MDBList:
@@ -113,6 +128,7 @@ class MDBList:
         self.api_request_count = 0
         self.supporter = False
         self.rating_id_limit = 10
+        self._run_cache = {}
 
     def add_key(self, apikey, expiration):
         self.apikey = apikey
@@ -147,7 +163,34 @@ class MDBList:
     def has_key(self):
         return self.apikey is not None
 
-    def _request(self, url, params=None):
+    @staticmethod
+    def _cache_key(media_provider, media_type, media_id):
+        if media_provider == "imdb":
+            return media_id
+        if media_provider == "tmdb":
+            return f"{'tm' if media_type == 'movie' else 'ts'}{media_id}"
+        if media_provider == "tvdb":
+            return f"{'tvm' if media_type == 'movie' else 'tvs'}{media_id}"
+        raise Failed("MDBList Error: media_provider, media_type, media_id Required")
+
+    @staticmethod
+    def _response_id(data, media_provider):
+        ids = data.get("ids") or {}
+        aliases = {
+            "imdb": ("imdbid", "imdb_id"),
+            "tmdb": ("tmdbid", "tmdb_id"),
+            "tvdb": ("tvdbid", "tvdb_id"),
+        }
+        for field in aliases[media_provider]:
+            if data.get(field) is not None:
+                return data[field]
+        if ids.get(media_provider) is not None:
+            return ids[media_provider]
+        if media_provider == "tmdb" and data.get("id") is not None:
+            return data["id"]
+        return None
+
+    def _request(self, url, params=None, json_data=None):
         final_params = {"apikey": self.apikey}
         if params:
             final_params.update(params)
@@ -155,9 +198,14 @@ class MDBList:
         # Respect API Rate limits
         time.sleep(0.2 if self.supporter else 1.0)
 
-        response = self.requests.get(url, params=final_params)
+        if json_data is not None:
+            separator = "&" if "?" in url else "?"
+            post_url = f"{url}{separator}{urlencode(final_params)}"
+            response = self.requests.post(post_url, json=json_data)
+        else:
+            response = self.requests.get(url, params=final_params)
 
-        if response.status_code != 200:
+        if not 200 <= response.status_code < 300:
             raise Failed(f"MDBList Error: {response.status_code} - {response.text}")
 
         json_data = response.json()
@@ -170,32 +218,99 @@ class MDBList:
         return json_data, response.headers
 
     def get_item(self, media_provider=None, media_type=None, media_id=None, ignore_cache=False):
-
-        is_movie = media_type == "movie"
-
-        if media_provider == "imdb":
-            key = media_id
-        elif media_provider == "tmdb":
-            key = f"{'tm' if is_movie else 'ts'}{media_id}"
-        elif media_provider == "tvdb":
-            key = f"{'tvm' if is_movie else 'tvs'}{media_id}"
-        else:
-            raise Failed("MDBList Error: media_provider, media_type, media_id Required")
+        key = self._cache_key(media_provider, media_type, media_id)
 
         expired = None
 
         item_url = f"{api_url}{media_provider}/{media_type}/{media_id}/"
 
+        if not ignore_cache and key in self._run_cache:
+            return self._run_cache[key]
         if self.cache and not ignore_cache:
             mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
             if mdb_dict and expired is False:
-                return MDbObj(mdb_dict)
+                mdb = MDbObj(mdb_dict)
+                if mdb.ratings_valid:
+                    self._run_cache[key] = mdb
+                    return mdb
+                expired = True
         logger.trace(f"ID: {key}")
         mdb_tuple = self._request(item_url, params={})
         mdb = MDbObj(mdb_tuple[0])
-        if self.cache and not ignore_cache:
+        if self.cache and not ignore_cache and mdb.ratings_valid:
             self.cache.update_mdb(expired, key, mdb, self.expiration)
+        if not ignore_cache and mdb.ratings_valid:
+            self._run_cache[key] = mdb
         return mdb
+
+    def get_items(self, media_provider, media_type, media_ids, batch_size=100):
+        """Return MDBList data for many provider IDs, fetching cache misses in bulk.
+
+        LimitReached intentionally propagates after preserving completed batches in
+        the run and persistent caches; callers stop further prefetch work when it does.
+        """
+        if media_provider not in ("imdb", "tmdb", "tvdb") or media_type not in ("movie", "show"):
+            raise Failed("MDBList Error: media_provider and media_type Required")
+        if batch_size < 1 or batch_size > 100:
+            raise Failed(f"MDBList Error: batch_size must be between 1 and 100, not {batch_size}")
+
+        unique_ids = list(dict.fromkeys(media_ids))
+        results = {}
+        pending = []
+        expired_by_id = {}
+        for media_id in unique_ids:
+            key = self._cache_key(media_provider, media_type, media_id)
+            if key in self._run_cache:
+                results[media_id] = self._run_cache[key]
+                continue
+            expired = None
+            if self.cache:
+                mdb_dict, expired = self.cache.query_mdb(key, self.expiration)
+                if mdb_dict and expired is False:
+                    mdb = MDbObj(mdb_dict)
+                    if mdb.ratings_valid:
+                        self._run_cache[key] = mdb
+                        results[media_id] = mdb
+                        continue
+                    expired = True
+            pending.append(media_id)
+            expired_by_id[media_id] = expired
+
+        requested_ids = {str(media_id): media_id for media_id in pending}
+        item_url = f"{api_url}{media_provider}/{media_type}/"
+        for batch_start in range(0, len(pending), batch_size):
+            batch = pending[batch_start : batch_start + batch_size]
+            response, _ = self._request(item_url, json_data={"ids": batch})
+            if not isinstance(response, list):
+                raise Failed("MDBList Error: Batch response must be a list")
+            for data in response:
+                response_id = self._response_id(data, media_provider)
+                media_id = requested_ids.get(str(response_id))
+                if media_id is None:
+                    logger.warning(f"MDBList Warning: Ignoring unexpected {media_provider} ID in batch response: {response_id}")
+                    continue
+                mdb = MDbObj(data)
+                results[media_id] = mdb
+                key = self._cache_key(media_provider, media_type, media_id)
+                if mdb.ratings_valid:
+                    self._run_cache[key] = mdb
+                    if self.cache:
+                        self.cache.update_mdb(expired_by_id[media_id], key, mdb, self.expiration)
+        missing_ids = [media_id for media_id in pending if media_id not in results]
+        if missing_ids and logger:
+            sample = ", ".join(str(media_id) for media_id in missing_ids[:10])
+            suffix = "..." if len(missing_ids) > 10 else ""
+            logger.warning(f"MDBList Warning: Batch lookup returned no data for {len(missing_ids)} of {len(pending)} requested {media_provider} IDs: {sample}{suffix}")
+        return results
+
+    def cache_item_alias(self, media_provider, media_type, media_id, mdb):
+        key = self._cache_key(media_provider, media_type, media_id)
+        if not mdb.ratings_valid:
+            return
+        self._run_cache[key] = mdb
+        if self.cache:
+            _, expired = self.cache.query_mdb(key, self.expiration)
+            self.cache.update_mdb(expired, key, mdb, self.expiration)
 
     def get_imdb(self, imdb_id):
         return self.get_item(media_provider="imdb", media_type="movie", media_id=imdb_id)
@@ -205,6 +320,78 @@ class MDBList:
 
     def get_movie(self, tmdb_id):
         return self.get_item(media_provider="tmdb", media_type="movie", media_id=tmdb_id)
+
+    def sync_list(self, slug, ids, mode="sync", removal_types=None):
+        """Update a user-owned static list using MDBList's list item API.
+
+        ``slug`` is the exact list name. MDBList resolves it to the user's
+        numeric list id; write endpoints then require the id and a payload
+        containing ``tmdb`` identifiers grouped under movies and shows.
+        ``removal_types`` optionally limits removals to the supplied media types.
+        """
+        if mode not in ("sync", "append"):
+            raise Failed(f"MDBList Error: invalid sync mode: {mode}")
+        lists, _ = self._request(f"{api_url}lists/user")
+        lists = lists if isinstance(lists, list) else lists.get("lists", [])
+        matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+        if len(matches) > 1:
+            raise Failed(f"MDBList Error: Multiple lists named '{slug}' found")
+        if not matches:
+            created, _ = self._request(f"{api_url}lists/user/add", json_data={"name": slug})
+            if isinstance(created, dict):
+                list_id = created.get("id") or (created.get("list") or {}).get("id")
+            else:
+                list_id = None
+            if not list_id:
+                lists, _ = self._request(f"{api_url}lists/user")
+                lists = lists if isinstance(lists, list) else lists.get("lists", [])
+                matches = [item for item in lists if isinstance(item, dict) and item.get("name") == slug]
+                list_id = matches[0].get("id") if len(matches) == 1 else None
+            if not list_id:
+                raise Failed(f"MDBList Error: could not create list: {slug}")
+        else:
+            list_id = matches[0].get("id")
+
+        existing = []
+        if mode == "sync":
+            existing = self.get_tmdb_ids("mdblist_list", {"id": list_id}, is_movie=None)
+        payload = {"movies": [], "shows": []}
+        for item_id, item_type in ids:
+            key = "movies" if item_type == "tmdb" else "shows"
+            payload[key].append({"tmdb": int(item_id)})
+        payload = {key: value for key, value in payload.items() if value}
+
+        def update_items(action, item_payload, processed, total):
+            if not item_payload:
+                return processed
+            result, _ = self._request(f"{api_url}lists/{list_id}/items/{action}", json_data=item_payload)
+            logger.trace(f"MDBList {action.capitalize()} Response: {result}")
+            processed += sum(len(value) for value in item_payload.values())
+            item_type = "movies" if "movies" in item_payload else "shows"
+            action_name = "Added to" if action == "add" else "Removed from"
+            logger.info(f"{action_name} MDBList ({item_type}): {processed}/{total}")
+            return processed
+
+        if mode == "sync":
+            remove_payload = {"movies": [], "shows": []}
+            for item_id, item_type in existing:
+                if removal_types is None or item_type in removal_types:
+                    key = "movies" if item_type == "tmdb" else "shows"
+                    remove_payload[key].append({"tmdb": int(item_id)})
+            remove_payload = {key: value for key, value in remove_payload.items() if value}
+            if remove_payload:
+                total = sum(len(value) for value in remove_payload.values())
+                processed = 0
+                for key, value in remove_payload.items():
+                    for start in range(0, len(value), 100):
+                        processed = update_items("remove", {key: value[start : start + 100]}, processed, total)
+        if payload:
+            total = sum(len(value) for value in payload.values())
+            processed = 0
+            for key, value in payload.items():
+                for start in range(0, len(value), 100):
+                    processed = update_items("add", {key: value[start : start + 100]}, processed, total)
+        logger.info(f"MDBList list {slug} updated ({mode})")
 
     def validate_mdblist_lists(self, error_type, mdb_lists):
         valid_lists = []
@@ -228,12 +415,16 @@ class MDBList:
 
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
 
-        list_path = data["url"].split("/lists/")[-1].strip("/")
-
-        external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
-
-        items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
-        meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
+        list_id = data.get("id")
+        if list_id:
+            external_id = None
+            items_url = f"{api_url}lists/{list_id}/items/"
+            meta_url = f"{api_url}lists/{list_id}"
+        else:
+            list_path = data["url"].split("/lists/")[-1].strip("/")
+            external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
+            items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+            meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
 
         sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
@@ -307,10 +498,10 @@ class MDBList:
             if total_count:
                 percent = min(int((len(results) / total_count) * 100), 100)
                 suffix = "..." if has_more else " - Complete"
-                logger.info(f"MDBList Sync Progress: {len(results)}/{total_count} ({percent}%){suffix}")
+                logger.info(f"Reading current MDBList items: {len(results)}/{total_count} ({percent}%){suffix}")
             else:
                 suffix = "..." if has_more else ""
-                logger.info(f"MDBList Sync Progress: {len(results)} items fetched{suffix}")
+                logger.info(f"Reading current MDBList items: {len(results)} found{suffix}")
 
             if len(items) == 0:  # type: ignore
                 break

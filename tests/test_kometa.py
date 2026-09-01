@@ -12,6 +12,8 @@ from __future__ import annotations
 import ast
 import re
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KOMETA_PY = REPO_ROOT / "kometa.py"
@@ -22,6 +24,41 @@ def _module_ast() -> ast.Module:
     return ast.parse(KOMETA_PY.read_text(encoding="utf-8"))
 
 
+def _process_pool_context(multiprocessing):
+    """Load the context-selection helper without importing kometa.py."""
+    for node in _module_ast().body:
+        if isinstance(node, ast.FunctionDef) and node.name == "_process_pool_context":
+            helper_module = ast.Module(body=[node], type_ignores=[])
+            namespace = {"multiprocessing": multiprocessing}
+            exec(compile(helper_module, str(KOMETA_PY), "exec"), namespace)
+            return namespace["_process_pool_context"]()
+    raise AssertionError("_process_pool_context was not found in kometa.py")
+
+
+def test_process_pool_uses_fork_instead_of_forkserver() -> None:
+    expected_context = object()
+    multiprocessing = SimpleNamespace(
+        get_start_method=MagicMock(return_value="forkserver"),
+        get_all_start_methods=MagicMock(return_value=["forkserver", "fork", "spawn"]),
+        get_context=MagicMock(return_value=expected_context),
+    )
+
+    assert _process_pool_context(multiprocessing) is expected_context
+    multiprocessing.get_context.assert_called_once_with("fork")
+
+
+def test_process_pool_preserves_spawn_when_fork_is_unavailable() -> None:
+    multiprocessing = SimpleNamespace(
+        get_start_method=MagicMock(return_value="spawn"),
+        get_all_start_methods=MagicMock(return_value=["spawn"]),
+        get_context=MagicMock(),
+    )
+
+    assert _process_pool_context(multiprocessing) is None
+    multiprocessing.get_all_start_methods.assert_not_called()
+    multiprocessing.get_context.assert_not_called()
+
+
 def _summary_log_groups() -> list[tuple[str, str]]:
     """Extract the summary grouping rules without importing kometa.py."""
     for node in ast.walk(_module_ast()):
@@ -30,11 +67,32 @@ def _summary_log_groups() -> list[tuple[str, str]]:
     raise AssertionError("summary_log_groups was not found in kometa.py")
 
 
+def _other_log_groups() -> list[tuple[str, str]]:
+    """Extract literal named summary rules without importing kometa.py."""
+    for node in ast.walk(_module_ast()):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "other_log_groups" for target in node.targets):
+            groups = []
+            for element in node.value.elts:
+                try:
+                    groups.append(ast.literal_eval(element))
+                except ValueError:
+                    pass  # Rating-source groups are generated dynamically from modules.overlay.
+            return groups
+    raise AssertionError("other_log_groups was not found in kometa.py")
+
+
 def _summarize_log_message(message: str) -> str:
     for pattern, replacement in _summary_log_groups():
         if re.match(pattern, message):
             return replacement
     return message
+
+
+def _named_log_group(message: str) -> tuple[str, str] | None:
+    for key, pattern in _other_log_groups():
+        if message.startswith(key) and (match := re.match(pattern, message)):
+            return key, match.group(1)
+    return None
 
 
 def test_issue_3244_resource_import_is_guarded() -> None:
@@ -134,13 +192,40 @@ def test_overlay_summary_uses_warning_labeling() -> None:
     messages for missing ratings.
     """
     text = KOMETA_PY.read_text(encoding="utf-8")
-    assert "(\"Overlay Warning: No 'anidb_average_rating' found\"," in text
+    assert 'for rating_source in ["audience_rating", "critic_rating", "user_rating", *rating_sources]' in text
     assert 'logger.separator("Overlay Summary", space=False, border=False)' in text
     assert 'logger.info("Count | Message")' in text
     assert 'logger.separator("Convert Summary", space=False, border=False)' in text
     assert 'return f"{message} for {source}"' in text
     assert 'r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"' in text
     assert "Plex Error: resolution: No matches found with regex pattern" not in text
+
+
+def test_overlay_summary_groups_follow_current_rating_sources() -> None:
+    """The generated groups must follow active sources instead of a stale manual copy."""
+    overlay_tree = ast.parse((REPO_ROOT / "modules" / "overlay.py").read_text(encoding="utf-8"))
+    sources = None
+    for node in ast.walk(overlay_tree):
+        if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "rating_sources" for target in node.targets):
+            sources = ast.literal_eval(node.value)
+            break
+    assert sources is not None
+    assert "floppy_rating" in sources
+    assert "serializd_rating" in sources
+    assert "plex_user_rating" not in sources
+
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert "from modules.overlay import rating_sources" in text
+    assert "re.escape(rating_source)" in text
+    assert "plex_user_rating" not in text
+
+
+def test_stale_summary_rules_are_removed() -> None:
+    """Rules without current emitters should not linger in the summary catalog."""
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert "Convert Warning: No MyAnimeList Found for AniDB ID:" not in text
+    assert 'r".+ Error: No Filter Created"' not in text
+    assert "Trakt Error: No TVDb ID found for" not in text
 
 
 def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
@@ -154,6 +239,16 @@ def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
     assert 'key == "Overlays Attempted on"' in text
 
 
+def test_missing_overlay_template_values_are_grouped_by_placeholder() -> None:
+    """Generic text-overlay misses belong in Overlay Summary, grouped by template value."""
+    assert _named_log_group("Overlay Error: No '<<user_rating>>' found") == ("Overlay Error: No '", "<<user_rating>>")
+    assert _named_log_group("Overlay Error: No '<<critic_rating>>' found") == ("Overlay Error: No '", "<<critic_rating>>")
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert 'key.startswith(("Overlay Warning", "Overlay Error"))' in text
+    assert 'other_message[key]["name_counts"][_name] += 1' in text
+    assert "Overlay Warning: No '{template_value}' found" in text
+
+
 def test_letterboxd_tmdb_failures_are_summarized() -> None:
     """Regression for repeated Letterboxd per-item TMDb lookup noise.
 
@@ -164,6 +259,22 @@ def test_letterboxd_tmdb_failures_are_summarized() -> None:
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert 'r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\\."' in text
     assert 'r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\\."' in text
+
+
+def test_dynamic_run_summary_messages_are_consolidated() -> None:
+    """IDs, titles, GUIDs, and URLs from the supplied large log should not create one row each."""
+    cases = {
+        "Config Warning: Skipping duplicate collection: Pusher": "Config Warning: Skipping duplicate collection",
+        "MDBList Warning: Batch lookup returned no data for 6 of 6 requested tmdb IDs: 584729, 586152": "MDBList Warning: Batch lookup returned no data for requested IDs",
+        "No MdbItem for 4k77 DNR (Guid: local://597050)": "MDBList Warning: No item found",
+        "Letterboxd Warning: letterboxdpy does not reliably support films page https://letterboxd.com/user/films/rated/5/; using Kometa fallback parsing.": "Letterboxd Warning: Using fallback films-page parsing",
+        "Letterboxd Warning: cloudscraper hit a Cloudflare challenge for https://letterboxd.com/user/list/example/; retrying with curl_cffi.": "Letterboxd Warning: Cloudflare challenge; retrying with curl_cffi",
+        "TMDb Error: No Movie found for TMDb ID: 1710116": "TMDb Error: No Movie found for TMDb ID",
+        "TMDb Error: No Movie found for TMDb ID 1710116: (404 [Not Found]) Requested Item Not Found": "TMDb Error: No Movie found for TMDb ID",
+        "TMDb Error: No Episode found for TMDb ID 330444 Season 1931 Episode 17: (404 [Not Found]) Requested Item Not Found": "TMDb Error: No Episode found for TMDb ID",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
 
 
 def test_asset_paths_and_warnings_are_summarized() -> None:
@@ -179,6 +290,27 @@ def test_asset_paths_and_warnings_are_summarized() -> None:
     }
     for message, expected in cases.items():
         assert _summarize_log_message(message) == expected
+
+
+def test_reset_image_warnings_are_summarized() -> None:
+    """Reset misses with item labels should collapse by image type."""
+    cases = {
+        "Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "Season 06 Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "S03E02 Poster | No Reset Image Found": "Poster Warning: No Reset Image Found",
+        "Example Background | No Reset Image Found": "Background Warning: No Reset Image Found",
+        "Example Logo | No Reset Image Found": "Logo Warning: No Reset Image Found",
+        "Example Square Art | No Reset Image Found": "Square Art Warning: No Reset Image Found",
+    }
+    for message, expected in cases.items():
+        assert _summarize_log_message(message) == expected
+
+
+def test_summary_parser_preserves_internal_pipe_delimiters() -> None:
+    """Messages such as ``S03E02 Poster | No Reset Image Found`` must not be truncated to the item label."""
+    text = KOMETA_PY.read_text(encoding="utf-8")
+    assert 'log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()' in text
+    assert 'log_line.split("|")[1].strip()' not in text
 
 
 def test_missing_tmdb_collections_are_summarized() -> None:

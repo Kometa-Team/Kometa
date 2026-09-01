@@ -34,7 +34,6 @@ tmdb:
 trakt:
   client_id: YOUR_TRAKT_CLIENT_ID
   client_secret: YOUR_TRAKT_CLIENT_SECRET
-  pin: YOUR_TRAKT_PIN
 
 mal:
   client_id: YOUR_MAL_CLIENT_ID
@@ -43,6 +42,11 @@ mal:
 tautulli:
   url: http://192.168.1.12:8181
   apikey: YOUR_TAUTULLI_API_KEY
+
+tracearr:
+  url: http://192.168.1.12:3019
+  apikey: trr_pub_YOUR_TRACEARR_API_KEY
+  server_id: 550e8400-e29b-41d4-a716-446655440000
 
 radarr:
   url: http://192.168.1.12:7878
@@ -206,6 +210,7 @@ libraries:
       - file: json-schema/builders/radarr.yml
       - file: json-schema/builders/sonarr.yml
       - file: json-schema/builders/tautulli.yml
+      - file: json-schema/builders/tracearr.yml
       - file: json-schema/builders/tmdb.yml
       - file: json-schema/builders/trakt.yml
       - file: json-schema/builders/tvdb.yml
@@ -2149,6 +2154,7 @@ libraries:
           url_poster_separator: https://example.com/separator.jpg
           use_all: false
       - default: tautulli
+      - default: tracearr
         template_variables:
           limit: 100
           limit_popular: 50

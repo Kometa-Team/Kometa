@@ -83,6 +83,7 @@ class AniDBObj:
         self._anidb = anidb
         self.anidb_id = anidb_id
         self._data = data
+        self._invalid_rating_values = []
 
         # def _parse(self, field_name, xpath, is_dict=False):
         #     # Find all elements matching the XPath
@@ -190,6 +191,13 @@ class AniDBObj:
         self.rating = _parse("rating", "//ratings/permanent/text()", is_float=True)
         self.average = _parse("average", "//ratings/temporary/text()", is_float=True)
         self.score = _parse("score", "//ratings/review/text()", is_float=True)
+        for source, xpath in [("rating", "//ratings/permanent/text()"), ("average", "//ratings/temporary/text()"), ("score", "//ratings/review/text()")]:
+            raw_values = [data.get(source)] if isinstance(data, dict) else data.xpath(xpath)
+            if raw_values and not util.is_missing_rating(raw_values[0]) and not util.is_valid_rating(raw_values[0]):
+                self._invalid_rating_values.append((source, raw_values[0]))
+        if logger:
+            for source, value in self._invalid_rating_values:
+                logger.warning(f"AniDB Warning: {source} value {value} is invalid; expected a finite rating from 0 to 10; response will not be cached")
         self.released = _parse("released", "//startdate/text()", is_date=True)
 
         self.tags = _parse("tags", "//anime/tags/tag", is_dict=True)
@@ -207,6 +215,10 @@ class AniDBObj:
                 self.tmdb_id = int(item)
             elif isinstance(item, str):
                 self.tmdb_type = item
+
+    @property
+    def ratings_valid(self):
+        return not self._invalid_rating_values
 
 
 class AniDB:
@@ -406,7 +418,11 @@ class AniDB:
         obj = AniDBObj(self, anidb_id, data_source)
 
         # 4. Update Module Cache
-        if self.cache and not ignore_cache:
+        if not obj.ratings_valid:
+            cache_file = f"config/anidb_cache/anime_{anidb_id}.xml"
+            if os.path.exists(cache_file):
+                os.remove(cache_file)
+        elif self.cache and not ignore_cache:
             self.cache.update_anidb(expired, anidb_id, obj, self.expiration)
         return obj
 

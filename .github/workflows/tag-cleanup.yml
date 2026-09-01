@@ -13,10 +13,12 @@ jobs:
 
       - name: Get Tag Name
         id: get-tag-name
+        env:
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
-          branch_name="${{ github.event.pull_request.head.ref }}"
+          branch_name="${GITHUB_HEAD_REF}"
           branch_name=$(echo "${branch_name}" | sed 's/[^a-zA-Z0-9._-]/-/g')
-          repo_name=${{ github.event.pull_request.head.repo.full_name }}
+          repo_name="${HEAD_REPO}"
           base_name="${repo_name%/*}"
           if [[ "${branch_name}" =~ ^(master|develop|nightly)$ ]]; then
               tag_name="${base_name}"

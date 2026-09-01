@@ -23,7 +23,7 @@ hide:
 | `discovery+ Shows`            | `discovery`   | Collection of Shows Streaming on discovery+.            |
 | `Disney+ Movies/Shows`        | `disney`      | Collection of Movies/Shows Streaming on Disney+.        |
 | `Filmin Movies/Shows`         | `filmin`      | Collection of Movies/Shows Streaming on Filmin.         |
-| `Hayu Shows`                  | `hayu`        | Collection of Shows Streaming on Hulu.                  |
+| `Hayu Shows`                  | `hayu`        | Collection of Shows Streaming on hayu.                  |
 | `HBO Max Movies/Shows`        | `hbomax`      | Collection of Movies/Shows Streaming on HBO Max.        |
 | `Hulu Movies/Shows`           | `hulu`        | Collection of Movies/Shows Streaming on Hulu.           |
 | `ITVX Movies/Shows`           | `itvx`        | Collection of Movies/Shows Streaming on ITVX.           |

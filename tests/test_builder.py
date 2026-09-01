@@ -15,6 +15,7 @@ from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
+from modules.util import Failed
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -77,6 +78,10 @@ class FakeTVDbLibrary:
             raise AssertionError(f"Unexpected rating key: {rating_key}")
         return self._show_item
 
+    def cached_item_subitems(self, item, method_name):
+        # Mirrors the real Plex.cached_item_subitems() contract (modules/plex.py) without the memoization - these tests don't depend on cache identity, just the same seasons()/episodes() results.
+        return list(getattr(item, method_name)())
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -106,6 +111,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "name": "Test Collection",
         "builders": [],
         "items": [],
+        "mdb_list_arr_ids": None,
         "item_details": {},
         "asset_directory": None,
         "radarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
@@ -138,6 +144,21 @@ def _episode_builder(library) -> CollectionBuilder:
     )
 
 
+def test_load_collection_items_rejects_empty_standard_mdblist_sync(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, sync_to_mdb_list={"name": "List", "mode": "sync"})
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
+
+def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, sync_to_mdb_list={"name": "List", "mode": "sync"}, mdb_list_arr_ids=[])
+
+    builder.load_collection_items()
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # custom_sort_builders
 # ═══════════════════════════════════════════════════════════════════════
@@ -146,6 +167,55 @@ def _episode_builder(library) -> CollectionBuilder:
 @pytest.mark.parametrize("method", builder_module.letterboxd.semantic_builders)
 def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
+
+
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress"])
+def test_tracearr_activity_builders_support_custom_sort(method):
+    assert method in builder_module.tracearr.builders
+    assert method in custom_sort_builders
+    assert method in builder_module.playlist_attributes
+
+
+def test_tracearr_parser_supports_user_and_quality_filters():
+    builder = make_builder()
+
+    builder._tracearr(
+        "tracearr_watch_time",
+        {
+            "user": "Anthony",
+            "watched": True,
+            "minimum_progress": 25,
+            "maximum_progress": 90,
+            "transcode": True,
+            "video_decision": "transcode",
+            "platform": "Apple TV",
+        },
+    )
+
+    _, data = builder.builders[0]
+    assert data["list_type"] == "watch_time"
+    assert data["user"] == "Anthony"
+    assert data["minimum_progress"] == 25
+    assert data["maximum_progress"] == 90
+    assert data["transcode"] is True
+
+
+def test_tracearr_in_progress_requires_user():
+    builder = make_builder(playlist=True)
+
+    with pytest.raises(Failed, match="requires user"):
+        builder._tracearr("tracearr_in_progress", {"list_days": 30})
+
+
+def test_tracearr_in_progress_sets_progress_defaults():
+    builder = make_builder(playlist=True)
+
+    builder._tracearr("tracearr_in_progress", {"user": "Anthony"})
+
+    _, data = builder.builders[0]
+    assert data["watched"] is False
+    assert data["minimum_progress"] == 1
+    assert data["maximum_progress"] == 84
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -181,6 +251,110 @@ class TestFindPlexKeys:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# validate_attribute — audio_language / subtitle_language
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeLangLibrary:
+    """Stands in for the Plex library used by validate_attribute's language handling."""
+
+    def __init__(self, language_map, search_choices=None, names=None):
+        # language_map: {"audio_language": {"es": ["es-419", "spa"]}, ...}
+        self.language_map = language_map
+        self.search_choices = search_choices or {}
+        self.names = names or {}
+        self.get_tags_calls = []
+        self.get_search_choices_calls = []
+
+    def get_search_choices(self, attribute, title=True, name_pairs=False, libtype=None):
+        self.get_search_choices_calls.append(attribute)
+        return self.search_choices.get(attribute, {}), self.names.get(attribute, [])
+
+    def get_language_search_values(self, attribute, code):
+        self.get_tags_calls.append((attribute, code))
+        return self.language_map.get(attribute, {}).get(code, [])
+
+
+def make_lang_builder(library, **attrs) -> CollectionBuilder:
+    defaults = {"details": {"show_options": False}, "ignore_blank_results": False}
+    defaults.update(attrs)
+    return make_builder(library=library, **defaults)
+
+
+class TestValidateAttributeLanguage:
+    def test_expands_base_code_to_every_library_variant_for_plex_search(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "es-MX", "spa"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es", True, plex_search=True)
+        assert result == [("es", ["es-419", "es-MX", "spa"])]
+
+    def test_does_not_call_the_uncached_get_search_choices_for_plex_search_language(self):
+        """The generic (uncached) listFilterChoices lookup must be skipped entirely for
+        audio_language/subtitle_language under plex_search — get_language_search_values (cached)
+        is the only choices lookup that should fire."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert library.get_search_choices_calls == []
+
+    def test_subtitle_language_uses_its_own_cache_key(self):
+        library = FakeLangLibrary({"subtitle_language": {"fr": ["fr-CA", "fre"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("subtitle_language", "", "subtitle_language", "fr", True, plex_search=True)
+        assert result == [("fr", ["fr-CA", "fre"])]
+        assert library.get_tags_calls == [("subtitle_language", "fr")]
+
+    def test_is_case_insensitive(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "ES", True, plex_search=True)
+        assert result == [("ES", "es-419")]
+
+    def test_exact_locale_value_passes_through_as_a_single_variant(self):
+        """When the library resolves a code to a single exact variant (e.g. the user configured
+        the specific locale "es-419" rather than the base "es"), only that variant is used."""
+        library = FakeLangLibrary({"audio_language": {"es-419": ["es-419"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=True)
+        assert result == [("es-419", "es-419")]
+
+    def test_multiple_configured_languages_each_expand_independently(self):
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419", "spa"], "en": ["en-US"]}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", ["es", "en"], True, plex_search=True)
+        assert result == [("es", ["es-419", "spa"]), ("en", "en-US")]
+
+    def test_raises_filter_failed_when_language_not_present_in_library(self):
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library)
+        with pytest.raises(builder_module.FilterFailed):
+            builder.validate_attribute("audio_language", "", "audio_language", "zh", True, plex_search=True)
+
+    def test_logs_instead_of_raising_when_validate_is_false_and_ignoring_blank_results(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = FakeLangLibrary({"audio_language": {}})
+        builder = make_lang_builder(library, ignore_blank_results=True)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "zh", False, plex_search=True)
+        assert result == []
+
+    def test_non_plex_search_path_is_unaffected_and_uses_exact_choices_only(self):
+        """The filters: (client-side) path doesn't go through get_language_search_values."""
+        library = FakeLangLibrary({"audio_language": {"es": ["es-419"]}}, search_choices={"audio_language": {"es-419": "es-419"}})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", "", "audio_language", "es-419", True, plex_search=False)
+        assert result == ["es-419"]
+        assert library.get_tags_calls == []
+
+    def test_regex_on_plex_search_language_matches_against_the_raw_locale_tagged_key(self):
+        """The .regex branch only ever reads names (title, key) pairs, never a stripped value,
+        so a locale-tagged key like "es-ES" is returned as-is rather than normalized to "es"."""
+        library = FakeLangLibrary({}, names={"audio_language": [("Spanish", "es-ES")]})
+        builder = make_lang_builder(library)
+        result = builder.validate_attribute("audio_language", ".regex", "audio_language", "Span", True, plex_search=True)
+        assert result == [("Spanish", "es-ES")]
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # _rating_key_is_ignored
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -211,6 +385,33 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_mdblist_value_prefetch_runs_after_standard_filters(self, monkeypatch):
+        class FakeMovie:
+            def __init__(self, rating_key):
+                self.ratingKey = rating_key
+                self.title = f"Movie {rating_key}"
+
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        items = {1: FakeMovie(1), 2: FakeMovie(2)}
+        library = MagicMock()
+        library.fetch_item.side_effect = lambda rating_key: items[rating_key]
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(Cache=None),
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+            check_filters=MagicMock(side_effect=[False, True]),
+        )
+        builder.check_value_filter = MagicMock(return_value=True)
+
+        builder.filter_and_save_items([(1, "ratingKey"), (2, "ratingKey")])
+
+        library.prefetch_mdblist.assert_called_once_with([items[2]])
+        assert builder.check_filters.call_count == 2
+        builder.check_value_filter.assert_called_once_with(items[2])
+        assert builder.found_items == [items[2]]
+
     def test_ratingkey_items_respect_shared_ignore_ids(self, monkeypatch):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
 
@@ -283,6 +484,50 @@ class TestFilterAndSaveItems:
         assert builder.found_items == [ep1, ep2]
 
 
+class TestMDBListValueFilterPrefetch:
+    def test_skips_items_with_fresh_overlay_values(self):
+        cache = MagicMock()
+        cache.query_overlay_value_cache.side_effect = [("7.5", False), (None, None)]
+        library = MagicMock()
+        first = SimpleNamespace(ratingKey=1)
+        second = SimpleNamespace(ratingKey=2)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache, MDBList=SimpleNamespace(limit=False)),
+            library=library,
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([first, second])
+
+        library.prefetch_mdblist.assert_called_once_with([second])
+
+    def test_ignores_non_mdblist_value_filters(self):
+        library = MagicMock()
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None, MDBList=SimpleNamespace(limit=False)),
+            library=library,
+            value_filters=[("tmdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([SimpleNamespace(ratingKey=1)])
+
+        library.prefetch_mdblist.assert_not_called()
+
+    def test_skips_cache_work_after_mdblist_limit_is_reached(self):
+        cache = MagicMock()
+        library = MagicMock()
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache, MDBList=SimpleNamespace(limit=True)),
+            library=library,
+            value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_mdblist_value_filters([SimpleNamespace(ratingKey=1)])
+
+        cache.query_overlay_value_cache.assert_not_called()
+        library.prefetch_mdblist.assert_not_called()
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # _log_episode_count
 # ═══════════════════════════════════════════════════════════════════════
@@ -328,6 +573,182 @@ class TestTextfile:
 
     def test_is_allowed_for_episode_or_season_collections(self):
         assert "text_file" in parts_collection_valid
+
+    def test_registers_inline_text_without_file_validation(self):
+        text_file = MagicMock()
+        text_file.validate_text.return_value = ["tt1234567", 12345]
+        builder = make_builder()
+        builder.config = SimpleNamespace(TextFile=text_file)
+
+        builder._textfile("text", ["tt1234567", 12345])
+
+        assert builder.builders == [("text", ["tt1234567", 12345])]
+        text_file.validate_text.assert_called_once_with(["tt1234567", 12345])
+        text_file.validate_file.assert_not_called()
+
+    def test_inline_text_supports_custom_sort_and_show_parts(self):
+        assert "text" in custom_sort_builders
+        assert "text" in parts_collection_valid
+
+    def test_value_filter_is_allowed_for_episode_overlays(self):
+        assert "value_filter" in parts_collection_valid
+
+
+# ═══════════════════════════════════════════════
+# Direct Plex ID builders
+# ═══════════════════════════════════════════════
+
+
+class TestDirectPlexBuilders:
+    def test_normalizes_rating_key_scalar_and_list(self):
+        builder = make_builder()
+        builder._plex("plex_rating_key", 123)
+        builder._plex("plex_rating_key", ["456", 789])
+        assert builder.builders == [("plex_rating_key", [123]), ("plex_rating_key", [456, 789])]
+
+    def test_normalizes_metadata_ids_and_guids(self):
+        builder = make_builder()
+        builder._plex("plex_id", ["63E3EEDD166819851638A316", "plex://episode/63e3eedd166819851638a317"])
+        assert builder.builders == [("plex_id", ["63e3eedd166819851638a316", "plex://episode/63e3eedd166819851638a317"])]
+
+    @pytest.mark.parametrize("method,value", [("plex_rating_key", "abc"), ("plex_id", "not-a-plex-id"), ("plex_id", None)])
+    def test_rejects_invalid_values(self, method, value):
+        builder = make_builder()
+        with pytest.raises(builder_module.BuilderValidationError):
+            builder._plex(method, value)
+
+    def test_are_available_to_part_collections_but_not_custom_sort(self):
+        for method in ["plex_id", "plex_rating_key"]:
+            assert method in parts_collection_valid
+            assert method not in custom_sort_builders
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# Batched item labels
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class BatchLabelLibrary:
+    def __init__(self, section_id, batch_size=None):
+        self.Plex = SimpleNamespace(key=section_id, batchMultiEdits=MagicMock(), editTags=MagicMock())
+        self.plex_bulk_edit_batch_size = batch_size
+        self.cached_items = {}
+        self._save_multi_edits_with_retry = MagicMock()
+        self.edit_tags = MagicMock()
+        self.tag_edit = MagicMock()
+        self.search = MagicMock(return_value=[])
+        self.Radarr = None
+        self.Sonarr = None
+        self.is_movie = True
+        self.is_show = False
+        self.movie_rating_key_map = {}
+        self.show_rating_key_map = {}
+
+    @staticmethod
+    def reload(item):
+        return item
+
+    @staticmethod
+    def item_labels(item):
+        return item.labels
+
+
+def label_item(rating_key, labels=None, section_id=1, item_type="movie"):
+    return SimpleNamespace(
+        ratingKey=rating_key,
+        title=f"Item {rating_key}",
+        labels=[SimpleNamespace(tag=label) for label in labels or []],
+        librarySectionID=section_id,
+        type=item_type,
+        locations=[],
+    )
+
+
+class TestBatchedItemLabels:
+    @pytest.fixture(autouse=True)
+    def _logger(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    def test_adds_labels_in_configured_batches(self):
+        library = BatchLabelLibrary(1, batch_size=2)
+        items = [label_item(i) for i in range(1, 6)]
+        library.cached_items = {item.ratingKey: (item, True) for item in items}
+        builder = make_builder(library=library, libraries=[library], items=items, item_details={"item_label": ["Favorite"]})
+
+        builder.update_item_details()
+
+        assert [call.args[0] for call in library.Plex.batchMultiEdits.call_args_list] == [items[:2], items[2:4], items[4:]]
+        assert library.Plex.editTags.call_args_list == [
+            (("label", "Favorite"), {"remove": False}),
+            (("label", "Favorite"), {"remove": False}),
+            (("label", "Favorite"), {"remove": False}),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 3
+        assert library.cached_items == {}
+        assert all(call.args[0] == "genre" for call in library.edit_tags.call_args_list)
+
+    def test_removes_only_items_that_have_the_label(self):
+        library = BatchLabelLibrary(1)
+        first = label_item(1, ["Favorite", "Keep"])
+        second = label_item(2, ["Keep"])
+        builder = make_builder(library=library, libraries=[library], items=[first, second], item_details={"item_label.remove": ["Favorite"]})
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([first])
+        library.Plex.editTags.assert_called_once_with("label", "Favorite", remove=True)
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_sync_groups_each_label_delta(self):
+        library = BatchLabelLibrary(1)
+        first = label_item(1, ["A", "B"])
+        second = label_item(2, ["B", "C"])
+        builder = make_builder(library=library, libraries=[library], items=[first, second], item_details={"item_label.sync": ["A", "C"]})
+
+        builder.update_item_details()
+
+        assert [call.args[0] for call in library.Plex.batchMultiEdits.call_args_list] == [[first], [second], [first, second]]
+        assert library.Plex.editTags.call_args_list == [
+            (("label", "C"), {"remove": False}),
+            (("label", "A"), {"remove": False}),
+            (("label", "B"), {"remove": True}),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 3
+
+    def test_batches_non_item_label_removals_and_excludes_collection_items(self):
+        library = BatchLabelLibrary(1)
+        collection_item = label_item(1, ["Cleanup"])
+        non_item = label_item(2, ["Keep", "Cleanup"])
+        library.search.return_value = [collection_item, non_item]
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[collection_item],
+            item_details={"non_item_remove_label": ["Cleanup", "Not Present"]},
+        )
+
+        builder.update_item_details()
+
+        library.search.assert_called_once_with(label=["Cleanup", "Not Present"], libtype="movie")
+        library.Plex.batchMultiEdits.assert_called_once_with([non_item])
+        library.Plex.editTags.assert_called_once_with("label", "Cleanup", remove=True)
+        library._save_multi_edits_with_retry.assert_called_once()
+        assert all(call.args[0] == "genre" for call in library.edit_tags.call_args_list)
+
+    def test_separates_playlist_libraries_and_item_types(self):
+        first_library = BatchLabelLibrary(1)
+        second_library = BatchLabelLibrary(2)
+        movie = label_item(1, section_id=1)
+        episode = label_item(2, section_id=1, item_type="episode")
+        other_movie = label_item(3, section_id=2)
+        builder = make_builder(library=first_library, libraries=[first_library, second_library])
+
+        builder._batch_item_label_edits({"add": {"Shared": [movie, episode, other_movie]}, "remove": {}})
+
+        assert [call.args[0] for call in first_library.Plex.batchMultiEdits.call_args_list] == [[movie], [episode]]
+        second_library.Plex.batchMultiEdits.assert_called_once_with([other_movie])
+        assert first_library._save_multi_edits_with_retry.call_count == 2
+        second_library._save_multi_edits_with_retry.assert_called_once()
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -424,6 +845,104 @@ class TestTvdbOutageResilience:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# update_item_details — rating batching
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestRatingBatching:
+    # Rating batching goes through the same per-library/per-type grouping as label batching (see TestBatchedItemLabels
+    # / BatchLabelLibrary), so mixed-library playlists route through the right library's Plex connection.
+    @staticmethod
+    def _library(section_id=1):
+        return SimpleNamespace(
+            name="Test Library",
+            Plex=SimpleNamespace(key=section_id, batchMultiEdits=MagicMock(), editField=MagicMock()),
+            plex_bulk_edit_batch_size=None,
+            cached_items={},
+            _save_multi_edits_with_retry=MagicMock(),
+            reload=lambda item: item,
+            item_labels=lambda item: [],
+            show_rating_key_map={},
+            movie_rating_key_map={},
+            is_movie=True,
+            is_show=False,
+            Radarr=None,
+            Sonarr=None,
+        )
+
+    def test_only_items_needing_change_are_batched(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        needs_change = SimpleNamespace(ratingKey=1, title="Needs Change", rating=None, librarySectionID=1, type="movie")
+        already_set = SimpleNamespace(ratingKey=2, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[needs_change, already_set],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_called_once_with([needs_change])
+        library.Plex.editField.assert_called_once_with("rating", 5.5)
+        library._save_multi_edits_with_retry.assert_called_once()
+
+    def test_multiple_rating_attrs_batched_separately(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Example", rating=None, userRating=None, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5, "item_user_rating": 7.0},
+        )
+
+        builder.update_item_details()
+
+        assert library.Plex.editField.call_args_list == [
+            (("rating", 5.5),),
+            (("userRating", 7.0),),
+        ]
+        assert library._save_multi_edits_with_retry.call_count == 2
+
+    def test_no_items_need_change_skips_batch_call(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library()
+        item = SimpleNamespace(ratingKey=1, title="Already Set", rating=5.5, librarySectionID=1, type="movie")
+        builder = make_builder(
+            library=library,
+            libraries=[library],
+            items=[item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        library.Plex.batchMultiEdits.assert_not_called()
+        library.Plex.editField.assert_not_called()
+
+    def test_separates_playlist_libraries_for_ratings(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        first_library = self._library(section_id=1)
+        second_library = self._library(section_id=2)
+        first_item = SimpleNamespace(ratingKey=1, title="First", rating=None, librarySectionID=1, type="movie")
+        second_item = SimpleNamespace(ratingKey=2, title="Second", rating=None, librarySectionID=2, type="movie")
+        builder = make_builder(
+            library=first_library,
+            libraries=[first_library, second_library],
+            items=[first_item, second_item],
+            item_details={"item_critic_rating": 5.5},
+        )
+
+        builder.update_item_details()
+
+        first_library.Plex.batchMultiEdits.assert_called_once_with([first_item])
+        second_library.Plex.batchMultiEdits.assert_called_once_with([second_item])
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -445,7 +964,7 @@ class TestDelete:
 
                 self.Webhooks = _Webhooks(self)
 
-            def delete(self, item):
+            def delete_collection(self, item):
                 self.deleted_items.append(item)
 
             def item_reload(self, item):
@@ -462,12 +981,26 @@ class TestDelete:
         assert builder.library.deleted_items == [builder.obj]
         assert builder.library.webhook_calls == 0
 
-    def test_smart_label_collection_does_not_delete(self):
-        """Smart label collections are not deleted from Plex."""
-        builder = make_builder(smart_label_collection=True, obj=SimpleNamespace(title="Smart"))
-        # delete() calls self.library.search — skip that path
-        # Smart label collections should not change deleted flag
-        assert builder.deleted is False
+    def test_smart_label_collection_removes_labels_before_delete(self):
+        items = [SimpleNamespace(title="First"), SimpleNamespace(title="Second")]
+        library = MagicMock()
+        library.search.return_value = items
+        builder = make_builder(
+            library=library,
+            name="Smart",
+            smart_label_collection=True,
+            obj=SimpleNamespace(title="Smart"),
+        )
+
+        assert builder.delete() == "Collection Smart deleted"
+
+        library.search.assert_called_once_with(label="Smart", libtype="movie")
+        assert library.edit_tags.call_args_list == [
+            (("label", items[0]), {"remove_tags": "Smart"}),
+            (("label", items[1]), {"remove_tags": "Smart"}),
+        ]
+        library.delete_collection.assert_called_once_with(builder.obj)
+        assert builder.deleted is True
 
     def test_no_obj_returns_empty_string(self):
         builder = make_builder(obj=None)
@@ -477,6 +1010,85 @@ class TestDelete:
 # ═══════════════════════════════════════════════════════════════════════
 # gather_ids
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestGatherIds:
+    @pytest.mark.parametrize(("playlist", "is_movie"), [(False, True), (True, None)])
+    def test_dispatches_inline_text_builder_with_library_context(self, playlist, is_movie):
+        text_file = MagicMock()
+        text_file.get_text_ids.return_value = [(12345, "tmdb")]
+        library = SimpleNamespace(type="Movie", is_movie=True)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None, TextFile=text_file),
+            library=library,
+            playlist=playlist,
+            details={"cache_builders": 0},
+        )
+
+        assert builder.gather_ids("text", [12345]) == [(12345, "tmdb")]
+        text_file.get_text_ids.assert_called_once_with([12345], is_movie)
+
+    def test_dispatches_tracearr_builder(self):
+        tracearr = MagicMock()
+        tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
+        library = SimpleNamespace(Tracearr=tracearr)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            libraries=[library],
+            playlist=False,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "ratingKey")]
+        tracearr.get_rating_keys.assert_called_once_with(value)
+
+    def test_playlist_queries_tracearr_server_once_for_movie_and_show_libraries(self):
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.get_rating_keys.return_value = [(101, "tmdb")]
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+
+        movie_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
+        libraries = [movie_library, show_library]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=movie_library,
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+        value = {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0}
+
+        assert builder.gather_ids("tracearr_history", value) == [(101, "tmdb")]
+        first_connector.get_rating_keys.assert_called_once_with(value, is_playlist=True, libraries=[movie_library, show_library])
+
+    def test_playlist_rejects_multiple_tracearr_servers(self):
+        first_server = SimpleNamespace(machineIdentifier="plex-server-1")
+        first_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-1")
+        first_connector.library = SimpleNamespace(PlexServer=first_server)
+        second_server = SimpleNamespace(machineIdentifier="plex-server-2")
+        second_connector = MagicMock(api="http://tracearr/api/v1/public", server_id="tracearr-server-2")
+        second_connector.library = SimpleNamespace(PlexServer=second_server)
+        libraries = [
+            SimpleNamespace(Tracearr=first_connector, PlexServer=first_server),
+            SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
+        ]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=libraries[0],
+            libraries=libraries,
+            playlist=True,
+            details={"cache_builders": 0},
+        )
+
+        with pytest.raises(Failed, match="only combine libraries from one Plex server"):
+            builder.gather_ids(
+                "tracearr_history",
+                {"list_type": "history", "list_days": 30, "list_size": 10, "list_minimum": 0},
+            )
 
 
 class TestBuildFilter:
@@ -493,6 +1105,163 @@ class TestBuildFilter:
 
         with pytest.raises(util.BuilderValidationError, match="must be a dictionary"):
             builder.build_filter("tmdb", "not_a_dict")
+
+    @pytest.mark.parametrize(
+        ("attribute", "expected_filter"),
+        [
+            ("folder_location", "source=7"),
+            ("folder_location.not", "source!=7"),
+        ],
+    )
+    def test_builds_folder_location_smart_filter(self, attribute, expected_filter):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = True
+        library.is_show = False
+        library.is_music = False
+        library.Plex = SimpleNamespace(
+            TYPE="movie",
+            listFilters=lambda libtype: [SimpleNamespace(filter="source", title="Folder Location")],
+        )
+        library.get_search_choices = MagicMock(return_value=({"/media/movies": 7}, ["/media/movies"]))
+        builder = make_builder(
+            library=library,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {attribute: "/media/movies"}},
+            default_sort="random",
+        )
+
+        assert expected_filter in url
+        assert "Folder Location" in details
+        library.get_search_choices.assert_called_once_with("folder_location", title=False, libtype="movie")
+
+    def test_builds_track_folder_location_smart_filter(self):
+        import modules.plex as plex_module
+
+        list_filters = MagicMock(return_value=[SimpleNamespace(filter="source", title="Folder Location")])
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = False
+        library.is_show = False
+        library.is_music = True
+        library.Plex = SimpleNamespace(TYPE="artist", listFilters=list_filters)
+        library.get_tags = MagicMock(return_value=[SimpleNamespace(title="/media/music", key="12")])
+        builder = make_builder(
+            library=library,
+            builder_level="track",
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"folder_location": "/media/music"}},
+            default_sort="random",
+        )
+
+        assert "source=12" in url
+        assert "Folder Location" in details
+        assert list_filters.call_count == 2
+        list_filters.assert_called_with("track")
+        library.get_tags.assert_called_once_with("track.source")
+
+    def test_builds_track_audio_codec_smart_filter(self):
+        import modules.plex as plex_module
+
+        library = plex_module.Plex.__new__(plex_module.Plex)
+        library.is_movie = False
+        library.is_show = False
+        library.is_music = True
+        library.Plex = SimpleNamespace(TYPE="artist", listFilters=lambda libtype: [SimpleNamespace(filter="media.audioCodec", title="Audio Codec")])
+        builder = make_builder(
+            library=library,
+            builder_level="track",
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_codec.is": "mp3"}},
+            default_sort="random",
+        )
+
+        assert "media.audioCodec=mp3" in url
+        assert "media.audioCodec%3D=mp3" not in url
+        assert "Audio Codec is mp3" in details
+
+    @pytest.mark.parametrize("builder_level", ["artist", "album"])
+    def test_rejects_folder_location_above_track_level_in_music_library(self, builder_level):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value.removesuffix(".not"), ".not" if value.endswith(".not") else "", value),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level=builder_level,
+            details={"show_options": False},
+        )
+
+        with pytest.raises(builder_module.BuilderValidationError, match="does not work for music libraries"):
+            builder.build_filter(
+                "smart_filter",
+                {"all": {"folder_location": "/media/music"}},
+                default_sort="random",
+            )
+
+    @staticmethod
+    def _split(value):
+        attribute = value.removesuffix(".not")
+        modifier = ".not" if value.endswith(".not") else ""
+        return attribute, modifier, value
+
+    def test_language_variants_are_ored_not_anded_under_plex_search_all(self):
+        """Regression: a base language code (e.g. "de") that expands to multiple Plex locale
+        variants (e.g. "de", "de-DE") must be OR'd together, since an item can only ever carry
+        one variant at a time. AND-ing them (the #3440 regression) produces a filter that can
+        never match, silently dropping every item from the overlay/collection."""
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, _details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language": "de"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage=de&or=1&audioLanguage=de-DE&pop=1" in url
+        assert "audioLanguage=de&and=1&audioLanguage=de-DE" not in url
+
+    def test_negated_language_variants_are_anded_under_plex_search_all(self):
+        """Excluding a language must exclude every one of its variants: audioLanguage!=de AND
+        audioLanguage!=de-DE (De Morgan's), not an OR of negatives which would only require an
+        item to fail to match one of the two variants."""
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, _details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language.not": "de"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage!=de&and=1&audioLanguage!=de-DE&pop=1" in url
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -619,3 +1388,8 @@ class TestDispatchTables:
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
         assert "trakt" in text, "all_builders missing trakt-related entries"
         assert "imdb" in text, "all_builders missing imdb-related entries"
+        assert "serializd_list" in all_builders
+        assert "serializd_watchlist" in all_builders
+        assert "serializd_trending" in all_builders
+        assert "serializd_popular" in all_builders
+        assert "serializd_featured" in all_builders

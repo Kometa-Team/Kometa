@@ -168,6 +168,7 @@
         | `country`                                                                                        | Uses the country tags to match                                              | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `decade` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }       | Uses the year tag to match the decade                                       | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `director`                                                                                       | Uses the director tags to match                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+        | `folder_location`                                                                                | Uses the Plex library root folder location to match                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
         | `genre`                                                                                          | Uses the genre tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `label`                                                                                          | Uses the label tags to match for top level collections                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
         | `season_label`                                                                                   | Uses the label tags to match for season collections                         |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -200,10 +201,13 @@
         :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }You can use `current_year` to have Kometa use the current years value. This can be combined with a 
         `-#` at the end to subtract that number of years. i.e. `current_year-2`
 
+        `folder_location` values must match a root folder configured in the Plex library. Plex does not expose nested
+        subfolders as Folder Location filter choices. In music libraries, `folder_location` is only available with
+        `builder_level: track`.
+
         ???+ tip "Tag Filter Modifiers" 
 
             | Tag Modifier | Description                                                            | Plex Web UI Display |
             |:-------------|:-----------------------------------------------------------------------|:-------------------:|
             | No Modifier  | Matches every item where the attribute matches the given string        |        `is`         |
             | `.not`       | Matches every item where the attribute does not match the given string |      `is not`       |
-

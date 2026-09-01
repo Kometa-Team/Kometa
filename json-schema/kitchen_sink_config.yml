@@ -105,6 +105,7 @@ libraries:
     - default: myanimelist                          # MAL Charts (Popular, Trending, etc.)
     - default: other_chart                          # Other Charts (Popular, Trending, etc.)
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
+    - default: tracearr                             # Tracearr Charts (Watch History)
     - default: tmdb                                 # TMDb Charts (Popular, Trending, etc.)
     - default: trakt                                # Trakt Charts (Popular, Trending, etc.)
     - default: basic                                # Some basic chart collections based on recently released media in your library
@@ -419,6 +420,7 @@ libraries:
     - default: myanimelist                          # MAL Charts (Popular, Trending, etc.)
     - default: other_chart                          # Other Charts (Popular, Trending, etc.)
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
+    - default: tracearr                             # Tracearr Charts (Watch History)
     - default: tmdb                                 # TMDb Charts (Popular, Trending, etc.)
     - default: trakt                                # Trakt Charts (Popular, Trending, etc.)
     - default: basic                                # Some basic chart collections based on recently released media in your library
@@ -890,6 +892,10 @@ tmdb:                                               # REQUIRED for the script to
 tautulli:                                           # Can be individually specified per library as well
   url: http://10.10.10.10:1234
   apikey: THIS_IS_A_FAKE_TOKEN
+tracearr:                                           # Can be individually specified per library as well
+  url: http://10.10.10.11:3019
+  apikey: trr_pub_THIS_IS_A_FAKE_TOKEN
+  server_id: 550e8400-e29b-41d4-a716-446655440000  # Optional unless server name matching is ambiguous
 omdb:
   apikey: THIS_IS_A_FAKE_TOKEN
   cache_expiration: 60
@@ -948,7 +954,6 @@ trakt:
     refresh_token: (redacted)
     scope: public
     created_at: 1707086446
-  pin:
 ############################################
 mal:
   client_id: (redacted)

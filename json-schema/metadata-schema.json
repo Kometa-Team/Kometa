@@ -144,6 +144,8 @@
                 "url_poster": { "anyOf": [{ "type": "string", "format": "uri" }, { "type": "null" }], "description": "URL of poster image." },
                 "file_background": { "type": "string", "description": "Path to background image in the file system." },
                 "url_background": { "type": "string", "format": "uri", "description": "URL of background image." },
+                "file_theme": { "type": "string", "description": "Path to an MP3 theme file for a movie or show." },
+                "url_theme": { "type": "string", "format": "uri", "description": "URL of an MP3 theme file for a movie or show." },
 
                 "metadata_language": {
                     "description": "Metadata language (requires New Plex Agent).",

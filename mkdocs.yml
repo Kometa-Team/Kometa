@@ -179,6 +179,7 @@ nav:
       - TMDb: config/tmdb.md
     - OPTIONAL CONNECTIONS:
       - Tautulli: config/tautulli.md
+      - Tracearr: config/tracearr.md
       - Github: config/github.md
       - OMDb: config/omdb.md
       - MDBList: config/mdblist.md
@@ -187,11 +188,14 @@ nav:
       - ntfy: config/ntfy.md
       - Apprise: config/apprise.md
       - Simkl: config/simkl.md
+      - Serializd: config/serializd.md
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
       - Trakt: config/trakt.md
+      - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
+      - FlickList: config/flicklist.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
       - Webhooks: config/webhooks.md
@@ -233,6 +237,7 @@ nav:
       - Simkl Charts: defaults/chart/simkl.md
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
+      - Tracearr Charts: defaults/chart/tracearr.md
       - Trakt Charts: defaults/chart/trakt.md
       - Other Charts: defaults/chart/other.md
     - Content:
@@ -328,6 +333,8 @@ nav:
         - Overview: files/builders/plex/overview.md
         - Smart Filter: files/builders/plex/smart-filter.md
         - All: files/builders/plex/all.md
+        - ID: files/builders/plex/id.md
+        - Rating Key: files/builders/plex/rating-key.md
         - Collectionless: files/builders/plex/collectionless.md
         - Pilots: files/builders/plex/pilots.md
         - Search: files/builders/plex/search.md
@@ -384,6 +391,9 @@ nav:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md
         - Watched: files/builders/tautulli/watched.md
+      - Tracearr:
+        - Overview: files/builders/tracearr/overview.md
+        - History: files/builders/tracearr/history.md
       - Radarr:
         - Overview: files/builders/radarr/overview.md
         - All: files/builders/radarr/all.md
@@ -399,6 +409,20 @@ nav:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
         - Tracked: files/builders/yamtrack/tracked.md
+      - FlickList:
+        - Overview: files/builders/flicklist/overview.md
+        - List: files/builders/flicklist/list.md
+        - Personal: files/builders/flicklist/personal.md
+        - Ratings: files/builders/flicklist/ratings.md
+      - Serializd:
+        - Overview: files/builders/serializd/overview.md
+        - Charts: files/builders/serializd/charts.md
+        - List: files/builders/serializd/list.md
+        - Watchlist: files/builders/serializd/watchlist.md
+      - Floppy:
+        - Overview: files/builders/floppy/overview.md
+        - List: files/builders/floppy/list.md
+        - Tracked: files/builders/floppy/tracked.md
       - Letterboxd:
         - Overview: files/builders/letterboxd/overview.md
         - List: files/builders/letterboxd/list.md
@@ -423,8 +447,9 @@ nav:
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md
-      - Text File:
+      - Text:
         - Overview: files/builders/textfile/overview.md
+        - Text: files/builders/textfile/text.md
         - Text File: files/builders/textfile/text-file.md
       - AniDB:
         - Overview: files/builders/anidb/overview.md

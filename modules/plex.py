@@ -4,6 +4,7 @@ import time
 from datetime import datetime, timedelta
 from xml.etree.ElementTree import ParseError
 
+import langcodes
 import plexapi
 from PIL import Image
 from plexapi import utils  # type: ignore[attr-defined]  # utils is not re-exported from plexapi.__init__
@@ -17,7 +18,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
 
-from modules import builder, util
+from modules import builder, timings, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
@@ -53,7 +54,7 @@ def _plex_timeout_before_sleep(retry_state):
         logger.info(f"Plex Error: retrying {label} in {int(retry_state.next_action.sleep)} seconds.")
 
 
-builders = ["plex_all", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
+builders = ["plex_all", "plex_id", "plex_rating_key", "plex_watchlist", "plex_pilots", "plex_collectionless", "plex_search"]
 library_types = ["movie", "show", "artist"]
 asset_image_extensions = (".jpg", ".jpeg", ".png", ".webp", ".tbn")
 search_translation = {
@@ -135,6 +136,19 @@ search_translation = {
     "track_source": "track.source",
     "track_label": "track.label",
 }
+
+
+def base_language_code(value):
+    """Reduce a language value in any common form down to its base ISO 639-1 code ("es", "en"):
+    a 3-letter ISO 639-2/3 code, including bibliographic/terminological pairs that differ from
+    their ISO 639-1 equivalent (e.g. "chi" -> "zh", "deu"/"ger" -> "de"), or a BCP-47/POSIX locale
+    tag (e.g. "es-419", "en_US"). Falls back to the value unchanged if it can't be parsed."""
+    if not value:
+        return value
+    try:
+        return langcodes.Language.get(str(value)).language or value
+    except ValueError:
+        return value
 
 
 def get_asset_image_matches(file_filter, file_name):
@@ -374,8 +388,45 @@ item_advance_keys = {
     "item_subtitle_mode": ("subtitleMode", subtitle_mode_options),
 }
 new_plex_agents = ["tv.plex.agents.movie", "tv.plex.agents.series"]
-and_searches = ["title.and", "studio.and", "actor.and", "audio_language.and", "collection.and", "content_rating.and", "country.and", "director.and", "genre.and", "label.and", "network.and", "producer.and", "subtitle_language.and", "writer.and"]
-or_searches = ["title", "studio", "actor", "audio_language", "collection", "content_rating", "country", "director", "genre", "label", "network", "producer", "subtitle_language", "writer", "decade", "resolution", "year", "episode_title", "episode_year"]
+and_searches = [
+    "title.and",
+    "studio.and",
+    "actor.and",
+    "audio_language.and",
+    "collection.and",
+    "content_rating.and",
+    "country.and",
+    "director.and",
+    "folder_location.and",
+    "genre.and",
+    "label.and",
+    "network.and",
+    "producer.and",
+    "subtitle_language.and",
+    "writer.and",
+]
+or_searches = [
+    "title",
+    "studio",
+    "actor",
+    "audio_language",
+    "collection",
+    "content_rating",
+    "country",
+    "director",
+    "folder_location",
+    "genre",
+    "label",
+    "network",
+    "producer",
+    "subtitle_language",
+    "writer",
+    "decade",
+    "resolution",
+    "year",
+    "episode_title",
+    "episode_year",
+]
 movie_only_searches = [
     "director",
     "director.not",
@@ -453,7 +504,7 @@ show_only_searches = [
     "episode_unmatched",
     "show_unmatched",
 ]
-string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title", "audio_codec"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
@@ -497,7 +548,7 @@ number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "tr
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
 float_modifiers = number_modifiers + [".rated"]
-search_display = {"added": "Date Added", "release": "Release Date", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
+search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
     "actor",
     "episode_actor",
@@ -506,6 +557,7 @@ tag_attributes = [
     "content_rating",
     "country",
     "director",
+    "folder_location",
     "genre",
     "label",
     "season_label",
@@ -548,6 +600,7 @@ searches = (
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
     "title.desc": "titleSort%3Adesc",
@@ -767,6 +820,7 @@ class Plex(Library):
         logger.secret(self.token)
         try:
             self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
+            timings.registry.set_plex_hostname(urlparse(self.url).hostname)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
             logger.info(f"Connected to server {self.PlexServer.friendlyName} version {self.PlexServer.version}")
@@ -828,6 +882,7 @@ class Plex(Library):
         self._users = []
         self._all_items = []
         self._account = None
+        self._language_choice_cache = {}
         self.agent = self.Plex.agent
         self.scanner = self.Plex.scanner
         source_setting = next((s for s in self.Plex.settings() if s.id in ["ratingsSource"]), None)  # type: ignore[union-attr]
@@ -853,8 +908,8 @@ class Plex(Library):
     def notify(self, text, collection=None, critical=True):
         self.config.notify(text, server=self.PlexServer.friendlyName, library=self.name, collection=collection, critical=critical)
 
-    def notify_delete(self, message):
-        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=self.name)
+    def notify_delete(self, message, playlist=False):
+        self.config.notify_delete(message, server=self.PlexServer.friendlyName, library=None if playlist else self.name)
 
     def set_server_preroll(self, preroll):
         self.PlexServer.settings.get("cinemaTrailersPrerollID").set(preroll)
@@ -937,12 +992,13 @@ class Plex(Library):
             self._all_items = results
         return results
 
-    def upload_theme(self, collection, url=None, filepath=None):
-        key = f"/library/metadata/{collection.ratingKey}/themes"
+    def upload_theme(self, item, url=None, filepath=None):
+        key = f"/library/metadata/{item.ratingKey}/themes"
         if url:
             self.PlexServer.query(f"{key}?url={quote_plus(url)}", method=self.PlexServer._session.post)
         elif filepath:
-            self.PlexServer.query(key, method=self.PlexServer._session.post, data=open(filepath, "rb").read())
+            with open(filepath, "rb") as theme_file:
+                self.PlexServer.query(key, method=self.PlexServer._session.post, data=theme_file.read())
 
     @PLEX_RETRY
     def create_playlist(self, name, items):
@@ -960,12 +1016,21 @@ class Plex(Library):
     def query(self, method):
         return method()
 
-    def delete(self, obj):
+    def delete(self, obj, notify=True, delete_message=None):
         try:
-            return self.query(obj.delete)
+            result = self.query(obj.delete)
         except Exception:
             logger.stacktrace()
             raise Failed(f"Plex Error: Failed to delete {obj.title}")
+        if notify:
+            is_playlist = isinstance(obj, Playlist) or getattr(obj, "type", None) == "playlist"
+            self.notify_delete(delete_message or f"{'Playlist' if is_playlist else 'Collection'} {obj.title} deleted", playlist=is_playlist)
+        return result
+
+    def delete_collection(self, obj, notify=True, delete_message=None):
+        result = self.delete(obj, notify=notify, delete_message=delete_message)
+        self.stats["deleted"] += 1
+        return result
 
     @PLEX_RETRY
     def query_data(self, method, data):
@@ -1114,10 +1179,27 @@ class Plex(Library):
             if not is_full or force:
                 self.item_reload(item)
                 self.cached_items[item.ratingKey] = (item, True)
+                # A real reload means this item's data may have changed - drop any cached_item_attr() reads for it so check_filter re-reads fresh values.
+                for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                    del self.filter_attr_cache[key]
         except (BadRequest, NotFound) as e:
             logger.stacktrace()
             raise Failed(f"Item Failed to Load: {e}")
         return item
+
+    def cached_item_attr(self, item, attr):
+        # Memoizes a plain item.<attr> read for the rest of the run - safe because reload() above already clears this item's entries the moment a real reload happens, so a cached value is exactly as fresh as reading the attribute directly would be.
+        cache_key = (item.ratingKey, attr)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = getattr(item, attr)
+        return self.filter_attr_cache[cache_key]
+
+    def cached_item_subitems(self, item, method_name):
+        # Memoizes item.<method_name>() (seasons/episodes/albums/tracks) - same cache/purge contract as cached_item_attr() above. Kometa never adds/removes these itself, so a cached listing is exactly as fresh as a live re-fetch within one run.
+        cache_key = (item.ratingKey, method_name)
+        if cache_key not in self.filter_attr_cache:
+            self.filter_attr_cache[cache_key] = list(getattr(item, method_name)())
+        return self.filter_attr_cache[cache_key]
 
     @PLEX_RETRY
     def edit_query(self, item, edits, advanced=False):
@@ -1203,29 +1285,75 @@ class Plex(Library):
         except (BadRequest, NotFound, Unauthorized) as e:
             raise Failed(f"Plex Error: Failed to find person ID for '{name}': {e}") from e
 
-    def get_search_choices(self, search_name, title=True, name_pairs=False):
+    @PLEX_RETRY
+    def get_search_key(self, search_name, libtype=None):
         final_search = search_translation[search_name] if search_name in search_translation else search_name
         final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
-        final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+        if search_name in ["folder_location", "audio_codec"]:
+            filter_type = "track" if search_name == "audio_codec" else libtype or self.Plex.TYPE
+            if self.is_show and filter_type == "show":
+                filter_type = "episode"  # Plex only exposes a folder filter for shows at the episode libtype
+            filters = self.Plex.listFilters(filter_type)
+            try:
+                filter_field = next(
+                    f
+                    for f in filters
+                    if (search_name == "folder_location" and (f.filter == "source" or str(f.title).lower().replace(" ", "_") == "folder_location")) or (search_name == "audio_codec" and str(f.title).lower().replace(" ", "_") == "audio_codec")
+                )
+            except StopIteration:
+                available_filters = [f.filter for f in filters]
+                raise NotFound(f'Unknown filter field "{search_name}" for libtype "{filter_type}". Available filters: {available_filters}') from None
+            # Prefix so get_tags() resolves against "episode" instead of self.Plex.TYPE ("show")
+            return f"episode.{filter_field.filter}" if self.is_show and filter_type == "episode" else filter_field.filter
+        return final_search
+
+    def get_search_choices(self, search_name, title=True, name_pairs=False, libtype=None):
+        final_search = search_name
         try:
+            final_search = self.get_search_key(search_name, libtype=libtype)
+            final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
             names = []
             choices = {}
             use_title = title and final_search not in ["contentRating", "audioLanguage", "subtitleLanguage", "resolution"]
-            is_episode_lang = final_search in ("episode.audioLanguage", "episode.subtitleLanguage")
-            for choice in self.get_tags(final_search):
+            choice_type = "track" if search_name == "folder_location" and getattr(self, "is_music", False) else libtype
+            tag_search = f"{choice_type}.{final_search}" if search_name == "folder_location" and choice_type and "." not in final_search else final_search
+            for choice in self.get_tags(tag_search):
                 if choice.title not in names:  # type: ignore[union-attr]
                     names.append((choice.title, choice.key) if name_pairs else choice.title)  # type: ignore[union-attr]
                 value = choice.title if use_title else choice.key  # type: ignore[union-attr]
-                # Strip region from episode language keys so "Spanish" maps to "es" not "es-ES" when multiple locale variants are returned.
-                title_value = value.split("-")[0] if (not use_title and is_episode_lang and "-" in str(value)) else value
-                choices[choice.title] = title_value  # type: ignore[union-attr]
+                choices[choice.title] = value  # type: ignore[union-attr]
                 choices[choice.key] = value  # type: ignore[union-attr]
-                choices[choice.title.lower()] = title_value  # type: ignore[union-attr]
+                choices[choice.title.lower()] = value  # type: ignore[union-attr]
                 choices[choice.key.lower()] = value  # type: ignore[union-attr]
             return choices, names
         except NotFound:
             logger.debug(f"Search Attribute: {final_search}")
             raise Failed(f"Plex Error: plex_search attribute: {search_name} not supported")
+
+    def get_language_search_values(self, search_name, code):
+        """Every Plex audioLanguage/subtitleLanguage filter value in this library that matches `code`:
+        if `code` is itself a specific value Plex reports (e.g. "es-419" or the 3-letter "spa"), only
+        that exact value is targeted; otherwise every variant that normalizes to it as a base ISO 639-1
+        code is returned (e.g. "es" -> ["es-419", "es-MX", "spa"]). Choices are fetched once per
+        library per run and cached."""
+        if search_name not in self._language_choice_cache:
+            final_search = search_translation[search_name] if search_name in search_translation else search_name
+            final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
+            final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
+            exact_map = {}
+            code_map = {}
+            try:
+                for choice in self.get_tags(final_search):
+                    key = choice.key.lower()  # type: ignore[union-attr]
+                    exact_map[key] = choice.key  # type: ignore[union-attr]
+                    code_map.setdefault(base_language_code(key), []).append(choice.key)  # type: ignore[union-attr]
+            except NotFound:
+                logger.debug(f"Search Attribute: {final_search}")
+            self._language_choice_cache[search_name] = (exact_map, code_map)
+        exact_map, code_map = self._language_choice_cache[search_name]
+        if code != base_language_code(code) and code in exact_map:
+            return [exact_map[code]]
+        return code_map.get(code, [])
 
     @PLEX_RETRY
     def get_tags(self, tag):
@@ -1272,9 +1400,9 @@ class Plex(Library):
             self._users = users
         return self._users
 
-    def delete_user_playlist(self, title, user):
+    def delete_user_playlist(self, title, user, notify=True):
         try:
-            self.delete(self.PlexServer.switchUser(user).playlist(title))
+            self.delete(self.PlexServer.switchUser(user).playlist(title), notify=notify, delete_message=f"Playlist {title} deleted on User {user}")
         except NotFound as e:
             raise Failed(e)
         except (ConnectionError, ConnectTimeout, ReadTimeout) as e:
@@ -1364,6 +1492,89 @@ class Plex(Library):
                 self._save_multi_edits_with_retry()
                 total_sent += len(chunk)
             logger.exorcise()
+
+    @staticmethod
+    def _group_items_by_type(items):
+        # batchMultiEdits() requires every item in one call to share the same Plex object type (mixed show/season raises BadRequest), so group before chunking.
+        groups = {}
+        order = []
+        for item in items:
+            item_type = getattr(item, "type", None)
+            if item_type not in groups:
+                groups[item_type] = []
+                order.append(item_type)
+            groups[item_type].append(item)
+        return [groups[t] for t in order]
+
+    def batch_add_label(self, items, label):
+        # Batches an additive-only label across items via batchMultiEdits, same mechanism as alter_collection.
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Adding label '{label}' to {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.addLabel(label)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
+
+    @staticmethod
+    def tag_diff(current_tags, add_tags=None, remove_tags=None, sync_tags=None):
+        # Same diffing logic edit_tags() uses per-item, extracted so callers can batch the result across items.
+        _add_tags = add_tags if add_tags else []
+        _remove_tags = remove_tags if remove_tags else []
+        _sync_tags = sync_tags if sync_tags else []
+        _add = [t for t in _add_tags + _sync_tags if t not in current_tags]
+        _remove = [t for t in current_tags if (sync_tags is not None and t not in _sync_tags) or t in _remove_tags]
+        return _add, _remove
+
+    def batch_edit_tags(self, items, attr, add_tags=None, remove_tags=None, locked=True):
+        # Batches label/genre add+remove across items; safe for a heterogeneous batch since Plex's batch edit is additive-per-item on add and targeted on remove.
+        if not items or (not add_tags and not remove_tags):
+            return
+        if attr not in ("label", "genre"):
+            raise NotImplementedError(f"batch_edit_tags: unsupported attr '{attr}' (only 'label'/'genre' verified so far)")
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing {attr} for {len(chunk)} items [{total_sent} so far]")
+                # addLabel/addGenre are only accessible after batchMultiEdits() is called, so access them inline here, not cached earlier.
+                self.Plex.batchMultiEdits(chunk)
+                if add_tags:
+                    if attr == "label":
+                        self.Plex.addLabel(list(add_tags), locked=locked)
+                    else:
+                        self.Plex.addGenre(list(add_tags), locked=locked)
+                if remove_tags:
+                    if attr == "label":
+                        self.Plex.removeLabel(list(remove_tags), locked=locked)
+                    else:
+                        self.Plex.removeGenre(list(remove_tags), locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
+
+    def batch_edit_field(self, items, field, value, locked=True):
+        # Batches a single scalar field to the same value across items via batchMultiEdits; only safe when every item in the batch shares one target value (e.g. item_critic/audience/user_rating, which set one value for a whole collection).
+        if not items:
+            return
+        batch_size = 100
+        total_sent = 0
+        for group in self._group_items_by_type(items):
+            for i in range(0, len(group), batch_size):
+                chunk = group[i : i + batch_size]
+                logger.ghost(f"Batch editing '{field}' for {len(chunk)} items [{total_sent} so far]")
+                self.Plex.batchMultiEdits(chunk)
+                self.Plex.editField(field, value, locked=locked)
+                self._save_multi_edits_with_retry()
+                total_sent += len(chunk)
+        logger.exorcise()
 
     def move_item(self, collection, item, after=None):
         key = f"{collection.key}/items/{item}/move"
@@ -1659,7 +1870,11 @@ class Plex(Library):
 
     def get_rating_keys(self, method, data, is_playlist=False, display=True):
         items = []
-        if method == "plex_all":
+        if method == "plex_rating_key":
+            return [(rating_key, "ratingKey") for rating_key in data]
+        elif method == "plex_id":
+            return [(plex_id, "plex") for plex_id in data]
+        elif method == "plex_all":
             logger.info(f"Processing Plex All {data.capitalize()}s")
             items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":
@@ -1801,12 +2016,7 @@ class Plex(Library):
         image_type = image_type or ("poster" if poster else "background")
         display_type = {"poster": "Poster", "background": "Background", "logo": "Logo", "square_art": "Square Art"}[image_type]
         text = f"{f'{title} ' if title else ''}{display_type}"
-        image_config = {
-            "poster": self.mass_poster_update,
-            "background": self.mass_background_update,
-            "logo": self.mass_logo_update,
-            "square_art": self.mass_square_art_update,
-        }[image_type]
+        image_config = getattr(self, f"mass_{image_type}_update")
         attr = image_config["source"]
         lang = image_config.get("language")
         resolved_attr = None
@@ -1817,32 +2027,36 @@ class Plex(Library):
             lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]
             if not hasattr(item, lock_method):
                 logger.warning(f"{text} | Lock Not Supported")
-                return
+                return "Lock", "Plex", "Failed"
             lock_method = getattr(item, lock_method)
             self.query(lock_method)
             logger.info(f"{text} | Locked")
+            return "Lock", "Plex", "Updated"
         elif attr == "unlock":
             unlock_method = {"poster": "unlockPoster", "background": "unlockArt", "logo": "unlockLogo", "square_art": "unlockSquareArt"}[image_type]
             if not hasattr(item, unlock_method):
                 logger.warning(f"{text} | Unlock Not Supported")
-                return
+                return "Unlock", "Plex", "Failed"
             unlock_method = getattr(item, unlock_method)
             self.query(unlock_method)
             logger.info(f"{text} | Unlocked")
+            return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
                 if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
                     image = tmdb
                     source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
                 if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
-                        return
+                        return "Reset", "Plex", "Failed"
                     images_method = getattr(item, images_method)
                     images = images_method()
                     temp_image = next((p for p in images), None)
@@ -1853,31 +2067,45 @@ class Plex(Library):
                             image = temp_image.key
                         location = "Plex"
             if image:
-                logger.info(f"{text} | Reset from {location}")
+                updated = True
                 if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
+                        updated = False
                 elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
+                        updated = False
                 elif image_type == "logo":
                     try:
                         self.upload_logo(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload logo: {e}")
+                        updated = False
                 else:
                     try:
                         self.upload_square_art(item, image, url=image_url)
                     except BadRequest as e:
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
+                        updated = False
+                if updated:
+                    logger.info(f"{text} | Reset from {location}")
+                    lock_method = {"poster": "lockPoster", "background": "lockArt", "logo": "lockLogo", "square_art": "lockSquareArt"}[image_type]  # lock the field so it isn't reset again next run
+                    if hasattr(item, lock_method):
+                        self.query(getattr(item, lock_method))
                 if poster and "Overlay" in [la.tag for la in self.item_labels(item)]:
                     logger.info(self.edit_tags("label", item, remove_tags="Overlay", do_print=False))
+                    self.cached_items.pop(item.ratingKey, None)
+                    for key in [k for k in self.filter_attr_cache if k[0] == item.ratingKey]:
+                        del self.filter_attr_cache[key]
+                return "Reset", source, "Updated" if updated else "Failed"
             else:
                 logger.warning(f"{text} | No Reset Image Found")
+                return "Reset", source, "Missing"
 
     def item_images(self, item, group, alias, initial=False, asset_location=None, asset_directory=None, title=None, image_name=None, folder_name=None, style_data=None):
         if title is None:
@@ -2149,6 +2377,50 @@ class Plex(Library):
             imdb_id = self.get_imdb_from_map(item)
         return tmdb_id, tvdb_id, imdb_id
 
+    def prefetch_mdblist(self, items):
+        if self.config.MDBList.limit is not False:
+            return
+        primary_ids = []
+        imdb_ids = []
+        imdb_by_primary_id = {}
+        seen_items = set()
+        for item in items:
+            item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id.ratingKey in seen_items:
+                continue
+            seen_items.add(item_to_id.ratingKey)
+            tmdb_id, tvdb_id, imdb_id = self.get_ids(item_to_id)
+            primary_id = tmdb_id if self.is_movie else tvdb_id
+            if primary_id:
+                primary_ids.append(primary_id)
+                if imdb_id:
+                    imdb_by_primary_id[primary_id] = imdb_id
+            elif imdb_id:
+                imdb_ids.append(imdb_id)
+
+        media_type = "movie" if self.is_movie else "show"
+        primary_provider = "tmdb" if self.is_movie else "tvdb"
+        if primary_ids:
+            try:
+                primary_results = self.config.MDBList.get_items(primary_provider, media_type, primary_ids)
+                imdb_ids.extend(imdb_by_primary_id[primary_id] for primary_id in primary_ids if primary_id not in primary_results and primary_id in imdb_by_primary_id)
+            except LimitReached as err:
+                logger.debug(err)
+                return
+            except Failed as err:
+                logger.error(str(err))
+                imdb_ids.extend(imdb_by_primary_id.values())
+        if imdb_ids and self.config.MDBList.limit is False:
+            try:
+                imdb_results = self.config.MDBList.get_items("imdb", media_type, list(dict.fromkeys(imdb_ids)))
+                for primary_id, imdb_id in imdb_by_primary_id.items():
+                    if imdb_id in imdb_results:
+                        self.config.MDBList.cache_item_alias(primary_provider, media_type, primary_id, imdb_results[imdb_id])
+            except LimitReached as err:
+                logger.debug(err)
+            except Failed as err:
+                logger.error(str(err))
+
     def get_ratings(self, item):
         ratings = {
             "plex_imdb": None,
@@ -2198,8 +2470,22 @@ class Plex(Library):
         if self.config.Cache:
             cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, variable_name)
             if cached_value is not None and not expired:
-                return float(cached_value)
+                if util.is_valid_rating(cached_value):
+                    return float(cached_value)
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {cached_value} is invalid; expected a finite value from 0 to 10; skipping")
         found_rating = None
+        cacheable = True
+
+        def _scale_rating(value, maximum, factor):
+            if util.is_missing_rating(value):
+                return None
+            if not util.is_valid_rating(value, maximum=maximum):
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {value} is invalid for the provider's 0 to {maximum} scale; expected a finite number; skipping")
+                return None
+            return float(value) * factor
+
         item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
         tmdb_id, tvdb_id, imdb_id = self.get_ids(item_to_id)
         if variable_name == "tmdb_rating":
@@ -2221,6 +2507,23 @@ class Plex(Library):
                 found_rating = self.config.IMDb.get_episode_rating(imdb_id, item.seasonNumber, item.episodeNumber)
             else:
                 found_rating = self.config.IMDb.get_rating(imdb_id)
+        elif variable_name == "floppy_rating":
+            if not getattr(self.config, "Floppy", None):
+                raise OverlayError("Overlay Error: Floppy is not configured in your config file")
+            floppy_tmdb_id = tmdb_id
+            if not self.is_movie and floppy_tmdb_id is None:
+                try:
+                    floppy_tmdb_id = self.config.TMDb.get_item(item_to_id, tmdb_id, tvdb_id, imdb_id, is_movie=False).tmdb_id
+                except Failed:
+                    pass
+            found_rating = self.config.Floppy.get_overlay_rating(
+                "episode" if isinstance(item, Episode) else "movie" if self.is_movie else "tv",
+                tmdb_id=floppy_tmdb_id,
+                tvdb_id=tvdb_id,
+                imdb_id=imdb_id,
+                season=item.seasonNumber if isinstance(item, Episode) else None,
+                episode=item.episodeNumber if isinstance(item, Episode) else None,
+            )
         elif variable_name == "trakt_user_rating":
             if getattr(self, "_trakt_user_ratings", None) is None:
                 self._trakt_user_ratings = self.config.Trakt.user_ratings(self.is_movie)
@@ -2236,6 +2539,23 @@ class Plex(Library):
                 found_rating = self.config.Trakt.get_rating(imdb_id, self.is_movie)
             else:
                 raise OverlayError("Overlay Error: No Trakt rating found")
+        elif variable_name == "serializd_rating":
+            if not self.config.Serializd:
+                raise OverlayError("Overlay Error: Serializd is not configured in your config file")
+            if not tmdb_id and tvdb_id:
+                tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
+            if not tmdb_id and imdb_id:
+                converted_id, converted_type = self.config.Convert.imdb_to_tmdb(imdb_id)
+                if converted_type == "show":
+                    tmdb_id = converted_id
+            if not tmdb_id:
+                raise MappingConvertError(f"Mapping/Convert Error: No TMDb ID for {item.title} (Guid: {item.guid})")
+            if isinstance(item, Episode):
+                found_rating = self.config.Serializd.get_episode_rating(tmdb_id, item.seasonNumber, item.episodeNumber)
+            elif self.is_show:
+                found_rating = self.config.Serializd.get_show_rating(tmdb_id)
+            else:
+                raise OverlayError("Overlay Error: Serializd ratings are only available for shows and episodes")
         elif str(variable_name).startswith("mdb"):
             mdb_item = None
             if self.config.MDBList.limit is False:
@@ -2272,28 +2592,29 @@ class Plex(Library):
                 if not mdb_item:
                     raise MappingConvertError(f"Mapping/Convert Error: No MdbItem for {item.title} (Guid: {item.guid})")
             if mdb_item:
+                cacheable = getattr(mdb_item, "ratings_valid", True)
                 if variable_name == "mdb_average_rating":
-                    found_rating = mdb_item.average / 10 if mdb_item.average else None
+                    found_rating = _scale_rating(mdb_item.average, 100, 0.1)
                 elif variable_name == "mdb_imdb_rating":
                     found_rating = mdb_item.imdb_rating if mdb_item.imdb_rating else None
                 elif variable_name == "mdb_metacritic_rating":
-                    found_rating = mdb_item.metacritic_rating / 10 if mdb_item.metacritic_rating else None
+                    found_rating = _scale_rating(mdb_item.metacritic_rating, 100, 0.1)
                 elif variable_name == "mdb_metacriticuser_rating":
                     found_rating = mdb_item.metacriticuser_rating if mdb_item.metacriticuser_rating else None
                 elif variable_name == "mdb_trakt_rating":
-                    found_rating = mdb_item.trakt_rating / 10 if mdb_item.trakt_rating else None
+                    found_rating = _scale_rating(mdb_item.trakt_rating, 100, 0.1)
                 elif variable_name == "mdb_tomatoes_rating":
-                    found_rating = mdb_item.tomatoes_rating / 10 if mdb_item.tomatoes_rating else None
+                    found_rating = _scale_rating(mdb_item.tomatoes_rating, 100, 0.1)
                 elif variable_name == "mdb_tomatoesaudience_rating":
-                    found_rating = mdb_item.tomatoesaudience_rating / 10 if mdb_item.tomatoesaudience_rating else None
+                    found_rating = _scale_rating(mdb_item.tomatoesaudience_rating, 100, 0.1)
                 elif variable_name == "mdb_tmdb_rating":
-                    found_rating = mdb_item.tmdb_rating / 10 if mdb_item.tmdb_rating else None
+                    found_rating = _scale_rating(mdb_item.tmdb_rating, 100, 0.1)
                 elif variable_name == "mdb_letterboxd_rating":
-                    found_rating = mdb_item.letterboxd_rating * 2 if mdb_item.letterboxd_rating else None
+                    found_rating = _scale_rating(mdb_item.letterboxd_rating, 5, 2)
                 elif variable_name == "mdb_myanimelist_rating":
                     found_rating = mdb_item.myanimelist_rating if mdb_item.myanimelist_rating else None
                 else:
-                    found_rating = mdb_item.score / 10 if mdb_item.score else None
+                    found_rating = _scale_rating(mdb_item.score, 100, 0.1)
         elif str(variable_name).startswith("omdb"):
             if not getattr(self.config, "OMDb", None):
                 raise OverlayError("Overlay Error: OMDb is not configured in your config file")
@@ -2304,10 +2625,11 @@ class Plex(Library):
             else:
                 try:
                     omdb_obj = self.config.OMDb.get_omdb(imdb_id, True)
+                    cacheable = getattr(omdb_obj, "ratings_valid", True)
                     if variable_name == "omdb_metascore_rating":
-                        found_rating = omdb_obj.metacritic_rating / 10 if omdb_obj.metacritic_rating else None
+                        found_rating = _scale_rating(omdb_obj.metacritic_rating, 100, 0.1)
                     elif variable_name == "omdb_tomatoes_rating":
-                        found_rating = omdb_obj.rotten_tomatoes / 10 if omdb_obj.rotten_tomatoes else None
+                        found_rating = _scale_rating(omdb_obj.rotten_tomatoes, 100, 0.1)
                     else:
                         found_rating = omdb_obj.imdb_rating if omdb_obj.imdb_rating else None
                 except Exception:
@@ -2320,6 +2642,7 @@ class Plex(Library):
                     raise OverlayError("Overlay Error: AniDB is not configured in your config file")
                 if anidb_id:
                     anidb_obj = self.config.AniDB.get_anime(anidb_id)
+                    cacheable = getattr(anidb_obj, "ratings_valid", True)
                     if variable_name == "anidb_rating_rating":
                         found_rating = anidb_obj.rating
                     elif variable_name == "anidb_average_rating":
@@ -2350,12 +2673,12 @@ class Plex(Library):
             except KeyError:
                 found_rating = None
         if found_rating is not None:
-            # Sources are inconsistent (e.g. IMDb returns a string); normalize to float so callers can compare numerically.
-            try:
-                found_rating = float(found_rating)
-            except (TypeError, ValueError):
+            if not util.is_valid_rating(found_rating):
+                if logger:
+                    logger.warning(f"Overlay Warning: {variable_name} value {found_rating} is invalid; expected a finite value from 0 to 10; skipping")
                 return None
-            if self.config.Cache:
+            found_rating = float(found_rating)
+            if self.config.Cache and cacheable:
                 self.config.Cache.update_overlay_value_cache(False, item.ratingKey, variable_name, found_rating)
         return found_rating
 
@@ -2501,13 +2824,17 @@ class Plex(Library):
         return attribute, modifier, final
 
     def check_filters(self, item, filters_in, current_time):
+        already_reloaded = False  # Same item can't change genre/label/collection mid-call, so only the first such filter needs to force a network reload.
         for filter_method, filter_data in filters_in:
             filter_attr, modifier, filter_final = self.split(filter_method)
-            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time) is False:
+            tag_filter = filter_attr in ["genre", "label", "collection"]
+            if self.check_filter(item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=tag_filter and not already_reloaded) is False:
                 return False
+            if tag_filter:
+                already_reloaded = True
         return True
 
-    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time):
+    def check_filter(self, item, filter_attr, modifier, filter_final, filter_data, current_time, force_reload=None):
         filter_actual = attribute_translation[filter_attr] if filter_attr in attribute_translation else filter_attr
         if isinstance(item, Movie):
             item_type = "movie"
@@ -2527,9 +2854,10 @@ class Plex(Library):
             return True
         if filter_attr not in builder.filters[item_type]:
             return True
-        item = self.reload(item, force=filter_attr in ["genre", "label", "collection"])
+        force = filter_attr in ["genre", "label", "collection"] if force_reload is None else force_reload  # Fallback preserves old always-force behavior for any future direct caller that skips check_filters.
+        item = self.reload(item, force=force)
         if filter_attr in builder.date_filters:
-            if util.is_date_filter(getattr(item, filter_actual), modifier, filter_data, filter_final, current_time):
+            if util.is_date_filter(self.cached_item_attr(item, filter_actual), modifier, filter_data, filter_final, current_time):
                 return False
         elif filter_attr in builder.string_filters:
             values = []
@@ -2547,21 +2875,23 @@ class Plex(Library):
                     if attr and attr not in values:
                         values.append(attr)
             elif filter_attr in ["filepath", "folder"]:
-                values = [loc for loc in item.locations if loc]
+                values = [loc for loc in self.cached_item_attr(item, "locations") if loc]
             elif filter_attr == "season_title":
                 values = [item.season().title]
             elif filter_attr == "show_title":
                 values = [item.show().title]
             else:
-                test_value = getattr(item, filter_actual)
+                # summary/editionTitle can be written by update_details with no cache eviction anywhere (unlike title/studio/content_rating's operations.py path, which does evict) - read live, not cached, for these two specifically.
+                test_value = getattr(item, filter_actual) if filter_actual in ("summary", "editionTitle") else self.cached_item_attr(item, filter_actual)
                 values = [test_value] if test_value else []
             if util.is_string_filter(values, modifier, filter_data):
                 return False
         elif filter_attr in builder.boolean_filters:
             filter_check = False
             if filter_attr == "has_collection":
-                filter_check = len(item.collections) > 0
+                filter_check = len(self.cached_item_attr(item, "collections")) > 0
             elif filter_attr == "has_edition":
+                # editionTitle can be written by update_details with no cache eviction anywhere - read live, not cached.
                 filter_check = True if item.editionTitle else False
             elif filter_attr == "has_stinger":
                 filter_check = False
@@ -2582,7 +2912,7 @@ class Plex(Library):
             if util.is_boolean_filter(filter_data, filter_check):
                 return False
         elif filter_attr == "history":
-            item_date = item.originallyAvailableAt
+            item_date = self.cached_item_attr(item, "originallyAvailableAt")
             if item_date is None:
                 return False
             elif filter_data == "day":
@@ -2601,13 +2931,13 @@ class Plex(Library):
                     return False
         elif filter_attr in ["seasons", "episodes", "albums", "tracks"]:
             if filter_attr == "seasons":
-                sub_items = item.seasons()
+                sub_items = self.cached_item_subitems(item, "seasons")
             elif filter_attr == "albums":
-                sub_items = item.albums()
+                sub_items = self.cached_item_subitems(item, "albums")
             elif filter_attr == "tracks":
-                sub_items = item.tracks()
+                sub_items = self.cached_item_subitems(item, "tracks")
             else:
-                sub_items = item.episodes()
+                sub_items = self.cached_item_subitems(item, "episodes")
             filters_in = []
             percentage = 60
             count = None
@@ -2636,33 +2966,41 @@ class Plex(Library):
                     if failures > failure_threshold:
                         return False
         elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-            test_number = []
-            if filter_attr in ["channels", "height", "width", "aspect"]:
-                test_number = 0
-                for media in item.media:
-                    attr = getattr(media, filter_actual)
-                    if attr and attr > test_number:
-                        test_number = attr
-            elif filter_attr == "stinger_rating":
-                test_number = None
-                if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
-                    test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
-            elif filter_attr == "versions":
-                test_number = len(item.media)
-            elif filter_attr == "audio_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([a.language for a in part.audioStreams()])
-            elif filter_attr == "subtitle_language":
-                for media in item.media:
-                    for part in media.parts:
-                        test_number.extend([s.language for s in part.subtitleStreams()])
-            elif filter_attr == "duration":
-                test_number = getattr(item, filter_actual)
-                if test_number:
-                    test_number /= 60000
+            # channels/height/width/aspect/versions/audio_language/subtitle_language/duration are media-file properties Kometa never writes - cache them; ratings/tmdb_* stay uncached since update_item_details can write those mid-run.
+            cacheable = filter_attr in ("channels", "height", "width", "aspect", "versions", "audio_language", "subtitle_language", "duration")
+            cache_key = (item.ratingKey, f"media_number:{filter_attr}")
+            if cacheable and cache_key in self.filter_attr_cache:
+                test_number = self.filter_attr_cache[cache_key]
             else:
-                test_number = getattr(item, filter_actual)
+                test_number = []
+                if filter_attr in ["channels", "height", "width", "aspect"]:
+                    test_number = 0
+                    for media in item.media:
+                        attr = getattr(media, filter_actual)
+                        if attr and attr > test_number:
+                            test_number = attr
+                elif filter_attr == "stinger_rating":
+                    test_number = None
+                    if item.ratingKey in self.movie_rating_key_map and self.movie_rating_key_map[item.ratingKey] in self.config.mediastingers:
+                        test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
+                elif filter_attr == "versions":
+                    test_number = len(item.media)
+                elif filter_attr == "audio_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([a.language for a in part.audioStreams()])
+                elif filter_attr == "subtitle_language":
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend([s.language for s in part.subtitleStreams()])
+                elif filter_attr == "duration":
+                    test_number = getattr(item, filter_actual)
+                    if test_number:
+                        test_number /= 60000
+                else:
+                    test_number = getattr(item, filter_actual)
+                if cacheable:
+                    self.filter_attr_cache[cache_key] = test_number
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                 test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
@@ -2684,7 +3022,8 @@ class Plex(Library):
             elif filter_attr in ["content_rating", "year", "rating"]:
                 attrs = [getattr(item, filter_actual)]
             elif filter_attr in ["actor", "country", "director", "genre", "label", "producer", "writer", "collection", "network"]:
-                attrs = [attr.tag for attr in getattr(item, filter_actual)]
+                # genre/label/collection are covered by check_filters' force-reload above; the other 6 here are never written by Kometa anywhere, so caching is safe for the whole set.
+                attrs = [attr.tag for attr in self.cached_item_attr(item, filter_actual)]
             else:
                 raise Failed(f"Filter Error: filter: {filter_final} not supported")
             if modifier == ".regex":
