@@ -199,6 +199,49 @@ def test_non_numeric_string_returns_none():
     cache.update_overlay_value_cache.assert_not_called()
 
 
+def test_out_of_range_cached_rating_is_rejected_and_reported(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(plex_module, "logger", logger)
+    cache = MagicMock()
+    cache.query_overlay_value_cache.return_value = (10.2, False)
+    plx = _make_plex(cache=cache, get_ratings=MagicMock(return_value={}))
+
+    result = plx.fetch_overlay_value(_item(), "plex_imdb_rating")
+
+    assert result is None
+    assert any("value 10.2 is invalid" in call.args[0] for call in logger.warning.call_args_list)
+    cache.update_overlay_value_cache.assert_not_called()
+
+
+def test_out_of_range_letterboxd_rating_is_not_rendered_or_cached(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(plex_module, "logger", logger)
+    cache = MagicMock()
+    cache.query_overlay_value_cache.return_value = (None, None)
+    plx = _make_plex(cache=cache, get_ids=MagicMock(return_value=(550, None, None)))
+    plx.config.MDBList = MagicMock(limit=False)
+    plx.config.MDBList.get_movie.return_value = SimpleNamespace(letterboxd_rating=5.1, ratings_valid=False)
+
+    result = plx.fetch_overlay_value(_item(), "mdb_letterboxd_rating")
+
+    assert result is None
+    assert any("provider's 0 to 5 scale" in call.args[0] for call in logger.warning.call_args_list)
+    cache.update_overlay_value_cache.assert_not_called()
+
+
+def test_valid_rating_from_tainted_provider_response_is_not_overlay_cached():
+    cache = MagicMock()
+    cache.query_overlay_value_cache.return_value = (None, None)
+    plx = _make_plex(cache=cache, get_ids=MagicMock(return_value=(550, None, None)))
+    plx.config.MDBList = MagicMock(limit=False)
+    plx.config.MDBList.get_movie.return_value = SimpleNamespace(imdb_rating=8.2, ratings_valid=False)
+
+    result = plx.fetch_overlay_value(_item(), "mdb_imdb_rating")
+
+    assert result == 8.2
+    cache.update_overlay_value_cache.assert_not_called()
+
+
 # ── None handling ──────────────────────────────────────────────────────────────
 
 

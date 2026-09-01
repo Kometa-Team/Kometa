@@ -13,6 +13,7 @@ class OMDbObj:
     def __init__(self, imdb_id, data):
         self._imdb_id = imdb_id
         self._data = data
+        self._invalid_rating_values = []
         if data["Response"] == "False":
             raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
 
@@ -51,11 +52,28 @@ class OMDbObj:
         except KeyError:
             pass
 
+        for source, value, maximum, replace in [
+            ("imdb", data.get("imdbRating"), 10, None),
+            ("metacritic", data.get("Metascore"), 100, None),
+            ("tomatoes", data.get("tempRT"), 100, "%"),
+        ]:
+            if replace and isinstance(value, str):
+                value = value.replace(replace, "")
+            if not util.is_missing_rating(value) and not util.is_valid_rating(value, maximum=maximum):
+                self._invalid_rating_values.append((source, value))
+
         self.imdb_id = _parse("imdbID")
         self.type = _parse("Type")
         self.series_id = _parse("seriesID")
         self.season_num = _parse("Season", is_int=True)
         self.episode_num = _parse("Episode", is_int=True)
+        if logger:
+            for source, value in self._invalid_rating_values:
+                logger.warning(f"OMDb Warning: {source} rating value {value} is invalid; expected a finite value in the provider's supported range; response will not be cached")
+
+    @property
+    def ratings_valid(self):
+        return not self._invalid_rating_values
 
 
 class OMDb:
@@ -73,12 +91,15 @@ class OMDb:
         if self.cache and not ignore_cache:
             omdb_dict, expired = self.cache.query_omdb(imdb_id, self.expiration)
             if omdb_dict and expired is False:
-                return OMDbObj(imdb_id, omdb_dict)
+                cached = OMDbObj(imdb_id, omdb_dict)
+                if cached.ratings_valid:
+                    return cached
+                expired = True
         logger.trace(f"IMDb ID: {imdb_id}")
         response = self.requests.get(base_url, params={"apikey": self.apikey, "i": imdb_id})
         if response.status_code < 400:
             omdb = OMDbObj(imdb_id, response.json())
-            if self.cache and not ignore_cache:
+            if self.cache and not ignore_cache and omdb.ratings_valid:
                 self.cache.update_omdb(expired, omdb, self.expiration)
             return omdb
         else:

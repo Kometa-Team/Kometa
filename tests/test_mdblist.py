@@ -81,6 +81,28 @@ class TestMDbObj:
         m = MDbObj({**self._BASE, "released": "2023-06-15", "released_digital": None})
         assert m.released == datetime(2023, 6, 15)
 
+    @pytest.mark.parametrize(
+        ("source", "value"),
+        [("letterboxd", 5.1), ("imdb", -0.1), ("metacritic", 101), ("myanimelist", "bad"), ("trakt", float("nan"))],
+    )
+    def test_marks_provider_native_rating_outside_its_scale_invalid(self, source, value, monkeypatch):
+        from modules.mdblist import MDbObj
+
+        logger = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logger)
+
+        m = MDbObj({**self._BASE, "ratings": [{"source": source, "value": value}]})
+
+        assert not m.ratings_valid
+        assert any("response will not be cached" in message for message in logger.warning_messages)
+
+    def test_missing_provider_ratings_are_not_treated_as_invalid(self):
+        from modules.mdblist import MDbObj
+
+        m = MDbObj({**self._BASE, "score": None, "ratings": [{"source": "imdb", "value": "N/A"}]})
+
+        assert m.ratings_valid
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # MDBList
@@ -149,6 +171,22 @@ class TestMDBList:
 
         assert result[101].title == "Cached"
         adapter._request.assert_not_called()
+        adapter.cache.update_mdb.assert_not_called()
+
+    def test_invalid_response_is_returned_but_not_cached_in_memory_or_sqlite(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter.cache.query_mdb.return_value = ({}, None)
+        adapter._request = MagicMock(
+            return_value=(
+                {"id": 101, "title": "Invalid", "released": None, "released_digital": None, "ratings": [{"source": "letterboxd", "value": 5.1}]},
+                {},
+            )
+        )
+
+        result = adapter.get_movie(101)
+
+        assert result.letterboxd_rating == 5.1
+        assert "tm101" not in adapter._run_cache
         adapter.cache.update_mdb.assert_not_called()
 
     def test_get_items_fetches_only_missing_and_expired_entries(self, adapter):
