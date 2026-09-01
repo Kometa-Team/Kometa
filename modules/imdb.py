@@ -216,7 +216,11 @@ genre_options = {
         "Game-Show",
     ]
 }
-interest_options = {
+# Fallback snapshot of IMDb's interest catalog (name -> in-id). Kometa prefers a live copy fetched
+# from interests_url at runtime (auto-refreshed by a scheduled Action in the IMDb-Interests repo); this
+# hardcoded map is only used when that fetch fails. Regenerate with the generator staged at
+# .github/imdb-interests-repo-files/generate_interests.py (which also produces the repo's INTERESTS.json).
+interest_options_fallback = {
     "action": "in0000001",
     "action_epic": "in0000002",
     "b_action": "in0000003",
@@ -428,6 +432,108 @@ interest_options = {
     "telenovela": "in0000210",
     "news": "in0000211",
     "short": "in0000212",
+    "arabic": "in0000213",
+    "bengali": "in0000214",
+    "cantonese": "in0000215",
+    "dutch": "in0000216",
+    "filipino": "in0000217",
+    "finnish": "in0000218",
+    "french": "in0000219",
+    "german": "in0000220",
+    "greek": "in0000221",
+    "hindi": "in0000222",
+    "italian": "in0000223",
+    "japanese": "in0000224",
+    "korean": "in0000225",
+    "mandarin": "in0000226",
+    "marathi": "in0000227",
+    "norwegian": "in0000228",
+    "persian": "in0000229",
+    "portuguese": "in0000230",
+    "punjabi": "in0000231",
+    "russian": "in0000232",
+    "spanish": "in0000233",
+    "swedish": "in0000234",
+    "tamil": "in0000235",
+    "telugu": "in0000236",
+    "thai": "in0000237",
+    "turkish": "in0000238",
+    "urdu": "in0000239",
+    "malayalam": "in0000240",
+    "kannada": "in0000241",
+    "danish": "in0000242",
+    "star_wars": "in0000243",
+    "dc": "in0000244",
+    "transformers": "in0000245",
+    "power_rangers": "in0000246",
+    "star_trek": "in0000247",
+    "marvel": "in0000248",
+    "lego": "in0000249",
+    "dragon_ball": "in0000250",
+    "one_piece": "in0000251",
+    "pokémon": "in0000252",
+    "rupaul's_drag_race": "in0000253",
+    "love_island": "in0000254",
+    "evangelion": "in0000255",
+    "gundam": "in0000256",
+    "kamen_rider": "in0000257",
+    "naruto": "in0000258",
+    "yu_gi_oh!": "in0000259",
+    "love_is_blind": "in0000261",
+    "90_day_fiancé": "in0000262",
+    "big_brother": "in0000263",
+    "degrassi": "in0000264",
+    "alien": "in0000265",
+    "james_bond": "in0000266",
+    "despicable_me": "in0000267",
+    "shrek": "in0000268",
+    "the_real_housewives": "in0000269",
+    "doctor_who": "in0000270",
+    "teenage_mutant_ninja_turtles": "in0000271",
+    "toy_story": "in0000272",
+    "fast_&_furious": "in0000273",
+    "breaking_bad": "in0000274",
+    "planet_of_the_apes": "in0000275",
+    "predator": "in0000276",
+    "saw": "in0000277",
+    "battlestar_galactica": "in0000278",
+    "the_lord_of_the_rings": "in0000279",
+    "masters_of_the_universe": "in0000280",
+    "harry_potter": "in0000281",
+    "the_walking_dead": "in0000282",
+    "jurassic_park": "in0000283",
+    "mission:_impossible": "in0000284",
+    "godzilla": "in0000285",
+    "terminator": "in0000286",
+    "the_conjuring_universe": "in0000287",
+    "spongebob_squarepants": "in0000288",
+    "the_chronicles_of_narnia": "in0000289",
+    "evil_dead": "in0000290",
+    "john_wick": "in0000291",
+    "scream": "in0000292",
+    "frozen": "in0000293",
+    "kung_fu_panda": "in0000294",
+    "stargate": "in0000295",
+    "blade_runner": "in0000296",
+    "dune": "in0000297",
+    "indiana_jones": "in0000298",
+    "super_mario_bros": "in0000299",
+    "the_witcher": "in0000300",
+    "spy_universe_yash_raj_films": "in0000301",
+    "pitch_perfect": "in0000302",
+    "the_hunger_games": "in0000303",
+    "the_matrix": "in0000304",
+    "maddock_horror_comedy_universe": "in0000305",
+    "golmaal": "in0000306",
+    "rohit_shetty_cop_universe": "in0000307",
+    "housefull": "in0000308",
+    "scooby_doo": "in0000309",
+    "micro_drama": "in0000310",
+    "buffyverse": "in0000311",
+    "avatar:_the_last_airbender": "in0000312",
+    "the_addams_family": "in0000313",
+    "resident_evil": "in0000314",
+    "jason_statham_action": "in0000315",
 }
 topic_options = {
     "alternate_version": "ALTERNATE_VERSION",
@@ -472,6 +578,7 @@ git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
 watchlist_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/WATCHLIST_HASH"
+interests_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Interests/main/INTERESTS.json"
 graphql_url = "https://api.graphql.imdb.com/"
 list_url = f"{base_url}/list/ls"
 
@@ -494,6 +601,7 @@ class IMDb:
         self._search_hash = None
         self._list_hash = None
         self._watchlist_hash = None
+        self._interest_options = None
 
     def _request(self, url, language=None, xpath=None, params=None, page_props=False):
         if logger:
@@ -558,6 +666,24 @@ class IMDb:
         if self._watchlist_hash is None:
             self._watchlist_hash = self.requests.get(watchlist_hash_url).text.strip()
         return self._watchlist_hash
+
+    @property
+    def interest_options(self):
+        """IMDb interest catalog (name -> in-id). Prefers a live copy fetched from interests_url
+        (auto-refreshed in the IMDb-Interests repo) and falls back to the bundled snapshot on any failure,
+        so a network/rate-limit hiccup can never break interest validation or search building."""
+        if self._interest_options is None:
+            try:
+                data = self.requests.get_json(interests_url)
+                if isinstance(data, dict) and data:
+                    self._interest_options = {str(k): str(v) for k, v in data.items()}
+                else:
+                    raise Failed("IMDb Error: interests catalog response was empty or malformed")
+            except Exception as e:
+                if logger:
+                    logger.debug(f"IMDb: Falling back to bundled interest catalog: {e}")
+                self._interest_options = dict(interest_options_fallback)
+        return self._interest_options
 
     def validate_imdb(self, err_type, method, imdb_dicts):
         valid_lists = []
@@ -675,7 +801,7 @@ class IMDb:
             check_constraint("title", [("", "searchTerm")], "titleTextConstraint")
             check_constraint(["rating", "votes"], [("gte", "min"), ("lte", "max")], "userRatingsConstraint", range_name=["aggregateRatingRange", "ratingsCountRange"])
             check_constraint("genre", [("", "all"), ("any", "any"), ("not", "exclude")], "genreConstraint", lower="GenreIds", translation=genre_options)
-            check_constraint("interests", [("", "all"), ("any", "any"), ("not", "exclude")], "interestConstraint", lower="InterestIds", translation=interest_options)
+            check_constraint("interests", [("", "all"), ("any", "any"), ("not", "exclude")], "interestConstraint", lower="InterestIds", translation=self.interest_options)
             check_constraint("topic", [("", "all"), ("any", "any"), ("not", "no")], "withTitleDataConstraint", lower="DataAvailable", translation=topic_options)
             check_constraint("alternate_version", [("", "all"), ("any", "any")], "alternateVersionMatchingConstraint", lower="AlternateVersionTextTerms")
             check_constraint("crazy_credit", [("", "all"), ("any", "any")], "crazyCreditMatchingConstraint", lower="CrazyCreditTextTerms")
