@@ -916,9 +916,11 @@ class IMDb:
             body = {"constraints": constraints, "sort": sort}
             if data.get("limit", 0) > 0:
                 body["limit"] = data["limit"]
-            logger.ghost("Querying Kometa IMDb Service")
+            if logger:
+                logger.ghost("Querying Kometa IMDb Service")
             response = self._service_post("search/advanced", body) or {}
-            logger.exorcise()
+            if logger:
+                logger.exorcise()
             imdb_ids = response.get("results", [])
             if not imdb_ids:
                 raise Failed("IMDb Error: No IMDb IDs Found")

@@ -694,6 +694,12 @@ def make_imdb_search(post_response=None, post_side_effect=None):
     return imdb
 
 
+@pytest.fixture(autouse=True)
+def _silence_logger(monkeypatch):
+    """Provide a logger for existing unguarded constraint-building traces."""
+    monkeypatch.setattr("modules.imdb.logger", MagicMock())
+
+
 def test_search_posts_constraints_sort_and_limit():
     """The search path splits _graphql_variables into constraints/sort and posts them."""
     imdb = make_imdb_search(post_response={"results": ["tt0111161", "tt0068646"], "total": 2, "cached": True})
@@ -716,9 +722,10 @@ def test_search_posts_constraints_sort_and_limit():
 
 
 def test_search_allows_missing_logger(monkeypatch):
-    """Advanced search must work before a module logger has been configured."""
+    """The service request's progress logging is optional."""
     monkeypatch.setattr("modules.imdb.logger", None)
     imdb = make_imdb_search(post_response={"results": ["tt0111161"], "total": 1, "cached": False})
+    imdb._graphql_variables = MagicMock(return_value={"locale": "en-US", "first": 250, "sortBy": "POPULARITY", "sortOrder": "ASC"})
 
     assert imdb._pagination({"limit": 1}, "search") == ["tt0111161"]
 
