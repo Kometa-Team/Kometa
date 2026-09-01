@@ -510,6 +510,7 @@ custom_sort_builders = [
     "tmdb_trending_daily",
     "tmdb_trending_weekly",
     "tmdb_discover",
+    "text",
     "text_file",
     "trakt_chart",
     "trakt_userlist",
@@ -627,6 +628,7 @@ parts_collection_valid = (
         "plex_search",
         "plex_id",
         "plex_rating_key",
+        "text",
         "text_file",
         "trakt_list",
         "trakt_list_details",
@@ -3251,6 +3253,8 @@ class CollectionBuilder:
         if method_name == "text_file":
             text_file_paths = self.config.TextFile.validate_file(method_data)
             self.builders.append((method_name, text_file_paths[0] if len(text_file_paths) == 1 else text_file_paths))
+        elif method_name == "text":
+            self.builders.append((method_name, self.config.TextFile.validate_text(method_data)))
 
     def _mdblist(self, method_name, method_data):
         for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
@@ -3772,11 +3776,13 @@ class CollectionBuilder:
             ids = self.config.ICheckMovies.get_imdb_ids(method, value)
         elif "letterboxd" in method:
             ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
-        elif method in textfile.builders:
+        elif method == "text_file":
             #  is_movie=None means playlist mode (movies + shows).
             # The target method MUST handle all three states correctly:
             # True = movie-only, False = show-only, None = both.
             ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
+        elif method == "text":
+            ids = self.config.TextFile.get_text_ids(value, self.library.is_movie if not self.playlist else None)
         elif "stevenlu" in method:
             ids = self.config.StevenLu.get_imdb_ids(method, value)
         elif "mojo" in method:

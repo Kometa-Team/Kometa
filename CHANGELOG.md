@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
 - Support the `folder_location` Plex search option in music-library track builders.
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.

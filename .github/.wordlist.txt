@@ -42,6 +42,7 @@ bitrateL
 BOING
 BoxOfficeMojo
 boxofficemojo
+booleans
 BPjM
 Bullmoose
 bullmoose
@@ -78,6 +79,8 @@ Crunchyroll
 customizable
 customizations
 d'Or
+deduplicate
+deduplication
 Deathday
 desc
 Dev
@@ -113,6 +116,7 @@ filetype
 Filmin
 filmin
 filmography
+filesystem
 FLAC
 fldb
 FlickList
@@ -209,6 +213,7 @@ metacritic
 metacriticuser
 Metascore
 metascore
+multiline
 minikube
 minimalistic
 mnt
@@ -255,6 +260,8 @@ plex
 Plex's
 plex's
 Plex’s
+PlexAPI
+PlexAPI's
 PNG
 png
 Pokémon
@@ -262,6 +269,7 @@ Portainer
 Powershell
 Pre
 pre
+precommit
 prepended
 Preroll
 preroll
@@ -392,6 +400,7 @@ URI
 UserList
 userlist
 UUID
+validator
 venv
 VSCode
 VSCodium
@@ -416,6 +425,7 @@ xmen
 XYZ
 YAML
 yaml
+YAML's
 YamTrack
 YML
 yml
