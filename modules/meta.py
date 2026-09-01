@@ -4,7 +4,8 @@ import os
 import re
 from datetime import datetime
 
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from requests.exceptions import RequestException
 
 from modules import ergast, letterboxd, plex, timings, util
 from modules.request import quote
@@ -1836,6 +1837,41 @@ class MetadataFile(DataFile):
             except Failed as e:
                 logger.error(e)
 
+    def update_theme(self, item, group, methods):
+        if not (self.library.is_movie or self.library.is_show):
+            return False
+
+        def upload(**kwargs):
+            try:
+                self.library.upload_theme(item, **kwargs)
+            except (BadRequest, NotFound, Unauthorized, OSError, RequestException) as e:
+                logger.error(f"{self.type_str} Error: Theme failed to update: {e}")
+                return False
+            logger.info("Metadata: theme updated")
+            return True
+
+        if "url_theme" in methods:
+            url = group[methods["url_theme"]]
+            if url:
+                return upload(url=url)
+            logger.error(f"{self.type_str} Error: url_theme attribute is blank")
+
+        if "file_theme" in methods:
+            filepath = group[methods["file_theme"]]
+            if not filepath:
+                logger.error(f"{self.type_str} Error: file_theme attribute is blank")
+                return False
+            filepath = os.path.abspath(filepath)
+            if not os.path.exists(filepath):
+                logger.error(f"{self.type_str} Error: Theme Path Does Not Exist: {filepath}")
+                return False
+            if not os.path.isfile(filepath):
+                logger.error(f"{self.type_str} Error: Theme Path Is Not a File: {filepath}")
+                return False
+            return upload(filepath=filepath)
+
+        return False
+
     def update_metadata_item(self, item, mapping_name, meta, methods):
 
         updated = False
@@ -1993,6 +2029,8 @@ class MetadataFile(DataFile):
 
         asset_location, folder_name, ups = self.library.item_images(item, meta, methods, initial=True, asset_directory=self.asset_directory + self.library.asset_directory if self.asset_directory else None, style_data=style_data)
         if ups:
+            updated = True
+        if self.update_theme(item, meta, methods):
             updated = True
         if "f1_season" not in methods:
             logger.info(f"{self.library.type}: {mapping_name} Metadata Update {'Complete' if updated else 'Not Needed'}")
