@@ -24,11 +24,7 @@ import requests
 GRAPHQL_URL = "https://api.graphql.imdb.com/"
 HEADERS = {"content-type": "application/json"}
 # One request pulls every category with all of its interests; these caps are generous ceilings.
-QUERY = (
-    "{ interestCategories(first: 200) { edges { node { "
-    "interests(first: 2000) { edges { node { id primaryText { text } } } } "
-    "} } } }"
-)
+QUERY = "{ interestCategories(first: 200) { edges { node { " "interests(first: 2000) { edges { node { id primaryText { text } } } } " "} } } }"
 
 
 def normalize(text):
