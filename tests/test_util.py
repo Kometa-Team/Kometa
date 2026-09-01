@@ -130,6 +130,26 @@ class TestCheckNum:
         assert check_num("") is None
 
 
+class TestRatingValidation:
+    @pytest.mark.parametrize("value", [0, 10, 7.5, "0", "10", "7.5"])
+    def test_accepts_finite_values_in_range(self, value):
+        from modules.util import is_valid_rating
+
+        assert is_valid_rating(value)
+
+    @pytest.mark.parametrize("value", [-0.1, 10.1, "not-a-rating", float("nan"), float("inf"), float("-inf"), None, "", "N/A", True, False, []])
+    def test_rejects_every_illegal_rating_shape(self, value):
+        from modules.util import is_valid_rating
+
+        assert not is_valid_rating(value)
+
+    def test_supports_provider_native_scale(self):
+        from modules.util import is_valid_rating
+
+        assert is_valid_rating(100, maximum=100)
+        assert not is_valid_rating(100.1, maximum=100)
+
+
 class TestGetIdFromImdbUrl:
     def test_full_url(self):
         from modules.util import get_id_from_imdb_url
