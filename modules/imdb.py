@@ -467,6 +467,7 @@ event_options = {
     "razzie": {"eventId": "ev0000558"},
 }
 base_url = "https://www.imdb.com"
+service_url = "https://utilities.kometa.wiki/imdb-service"
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
@@ -480,6 +481,9 @@ class IMDb:
         self.requests = requests
         self.cache = cache
         self.default_dir = default_dir
+        self._service_available = True
+        self._title_cache = {}
+        self._episode_ratings_cache = {}
         self._ratings = None
         self._genres = None
         self._episode_ratings = None
@@ -492,8 +496,9 @@ class IMDb:
         self._watchlist_hash = None
 
     def _request(self, url, language=None, xpath=None, params=None, page_props=False):
-        logger.trace(f"URL: {url}")
-        if params:
+        if logger:
+            logger.trace(f"URL: {url}")
+        if params and logger:
             logger.trace(f"Params: {params}")
         try:
             response = self.requests.get_cloudscrape_html(url, params=params, language=language)
@@ -518,6 +523,23 @@ class IMDb:
             return response.json()
         except ValueError as e:
             raise Failed("IMDb Error: GraphQL request returned a non-JSON response") from e
+
+    def _service_request(self, endpoint, not_found_ok=False):
+        url = f"{service_url}/{endpoint}"
+        try:
+            response = self.requests.get(url)
+        except Exception as e:
+            raise Failed(f"IMDb Service Error: {e}")
+        if response.status_code == 404 and not_found_ok:
+            return None
+        if response.status_code >= 400:
+            raise Failed(f"IMDb Service Error: {response.status_code} - {response.text}")
+        try:
+            return response.json()
+        except ValueError:
+            if logger:
+                logger.error(str(response.content))
+            raise Failed("IMDb Service Error: invalid JSON response")
 
     @property
     def search_hash(self):
@@ -791,13 +813,17 @@ class IMDb:
             raise Failed("IMDb Error: No IMDb IDs Found")
         return imdb_ids
 
-    def keywords(self, imdb_id, language, ignore_cache=False):
+    def _service_keywords(self, imdb_id):
+        """Fetch keyword relevance data from the Kometa IMDb Service."""
+        data = self._service_request(f"keywords/{imdb_id}", not_found_ok=True)
+        if not data:
+            return {}
+        keywords = data.get("keywords") or {}
+        return {k: tuple(v) if isinstance(v, list) else (0, 0) for k, v in keywords.items()}
+
+    def _scrape_keywords(self, imdb_id, language):
+        """Fallback: scrape keyword relevance data from IMDb's keywords page."""
         imdb_keywords = {}
-        expired = None
-        if self.cache and not ignore_cache:
-            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
-            if imdb_keywords and expired is False:
-                return imdb_keywords
         keywords = self._request(f"{base_url}/title/{imdb_id}/keywords", language=language, xpath="//td[@class='soda sodavote']")
         if not keywords:
             raise Failed(f"IMDb Error: No Item Found for IMDb ID: {imdb_id}")
@@ -812,9 +838,64 @@ class IMDb:
                     imdb_keywords[name] = (0, 0)
             else:
                 imdb_keywords[name] = (0, 0)
+        return imdb_keywords
+
+    def keywords(self, imdb_id, language, ignore_cache=False):
+        imdb_keywords = {}
+        expired = None
+        if self.cache and not ignore_cache:
+            imdb_keywords, expired = self.cache.query_imdb_keywords(imdb_id, self.cache.expiration)
+            if imdb_keywords and expired is False:
+                return imdb_keywords
+
+        if self._service_available:
+            try:
+                imdb_keywords = self._service_keywords(imdb_id)
+                if imdb_keywords and logger:
+                    logger.debug(f"IMDb keywords for {imdb_id} retrieved from Kometa IMDb Service")
+            except Failed as e:
+                self._service_unavailable(e)
+
+        if not imdb_keywords:
+            if logger:
+                logger.debug(f"IMDb keywords for {imdb_id} falling back to scraping")
+            imdb_keywords = self._scrape_keywords(imdb_id, language)
+
         if self.cache and not ignore_cache:
             self.cache.update_imdb_keywords(expired, imdb_id, imdb_keywords, self.cache.expiration)
         return imdb_keywords
+
+    def _service_parental(self, imdb_id):
+        data = self._service_request(f"parental/{imdb_id}", not_found_ok=True)
+        if not data:
+            return {}
+        guide = data.get("parental_guide") or {}
+        if not guide:
+            return {}
+        return {k: v for k, v in guide.items() if k in util.parental_types.values() and v}
+
+    def _graphql_parental(self, imdb_id):
+        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
+        response = self._graph_request({"query": gql}) or {}
+        data = response.get("data") or {}
+        title = data.get("title") or {}
+        parents_guide = title.get("parentsGuide") or {}
+        categories = parents_guide.get("categories") or []
+        parental_dict = {}
+        for cat in categories:
+            cat_text = ((cat or {}).get("category") or {}).get("text", "")
+            sev_text = ((cat or {}).get("severity") or {}).get("text", "")
+            if cat_text in util.parental_types and sev_text:
+                parental_dict[util.parental_types[cat_text]] = sev_text
+        return parental_dict
+
+    def _normalize_parental(self, parental_dict, imdb_id):
+        if parental_dict:
+            for _, v in util.parental_types.items():
+                if v not in parental_dict:
+                    parental_dict[v] = None
+            return parental_dict
+        raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
 
     def parental_guide(self, imdb_id, ignore_cache=False):
         parental_dict = {}
@@ -823,26 +904,34 @@ class IMDb:
             parental_dict, expired = self.cache.query_imdb_parental(imdb_id, self.cache.expiration)
             if parental_dict and expired is False:
                 return parental_dict
-        gql = f'{{ title(id: "{imdb_id}") {{ parentsGuide {{ categories {{ category {{ text }} severity {{ text }} }} }} }} }}'
-        response = self._graph_request({"query": gql}) or {}
-        data = response.get("data") or {}
-        title = data.get("title") or {}
-        parents_guide = title.get("parentsGuide") or {}
-        categories = parents_guide.get("categories") or []
-        for cat in categories:
-            cat_text = ((cat or {}).get("category") or {}).get("text", "")
-            sev_text = ((cat or {}).get("severity") or {}).get("text", "")
-            if cat_text in util.parental_types and sev_text:
-                parental_dict[util.parental_types[cat_text]] = sev_text
-        if parental_dict:
-            for _, v in util.parental_types.items():
-                if v not in parental_dict:
-                    parental_dict[v] = None
-        else:
-            raise Failed(f"IMDb Error: No Parental Guide Found for IMDb ID: {imdb_id}")
+
+        if self._service_available:
+            try:
+                parental_dict = self._service_parental(imdb_id)
+                if parental_dict and logger:
+                    logger.debug(f"IMDb parental guide for {imdb_id} retrieved from Kometa IMDb Service")
+            except Failed as e:
+                self._service_unavailable(e)
+
+        if not parental_dict:
+            if logger:
+                logger.debug(f"IMDb parental guide for {imdb_id} falling back to GraphQL")
+            parental_dict = self._graphql_parental(imdb_id)
+
+        parental_dict = self._normalize_parental(parental_dict, imdb_id)
         if self.cache and not ignore_cache:
             self.cache.update_imdb_parental(expired, imdb_id, parental_dict, self.cache.expiration)
         return parental_dict
+
+    def _service_chart(self, chart, limit=None):
+        """Fetch chart IMDb IDs from the Kometa IMDb Service."""
+        params = {}
+        if limit:
+            params["limit"] = limit
+        data = self._service_request(f"chart/{chart}", not_found_ok=True)
+        if not data:
+            return []
+        return [item["tconst"] for item in data.get("results", []) if item.get("tconst")]
 
     def _chart_graphql(self, chart):
         """Fetch chart IMDb IDs directly via the GraphQL API (no HTML scraping needed)."""
@@ -869,19 +958,34 @@ class IMDb:
     def _ids_from_chart(self, chart, language):
         if chart not in chart_urls:
             raise Failed(f"IMDb Error: chart: {chart} not ")
-        # Primary: use direct GraphQL API (bypasses HTML scraping issues)
+        # Primary: Kometa IMDb Service
+        if self._service_available:
+            try:
+                ids = self._service_chart(chart)
+                if ids:
+                    if logger:
+                        logger.debug(f"IMDb Service chart query returned {len(ids)} IDs for {chart}")
+                    return ids
+            except Failed as e:
+                self._service_unavailable(e)
+            except Exception as e:
+                if logger:
+                    logger.debug(f"IMDb Service chart query error for {chart}: {e}")
+        # Fallback: direct GraphQL API
         graphql_error: str | None = None
         if chart in chart_graphql_map:
             try:
                 ids = self._chart_graphql(chart)
                 if ids:
-                    logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
+                    if logger:
+                        logger.debug(f"GraphQL chart query returned {len(ids)} IDs for {chart}")
                     return ids
                 graphql_error = "returned no IMDb IDs"
             except Exception as e:
                 graphql_error = str(e)
-                logger.debug(f"GraphQL chart query error for {chart}: {e}")
-        # Fallback: HTML scraping via original xpath method
+                if logger:
+                    logger.debug(f"GraphQL chart query error for {chart}: {e}")
+        # Final fallback: HTML scraping via original xpath method
         script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
         if not script_results:
             message = f"IMDb Error: HTML fallback returned no chart data for {charts[chart]}"
@@ -925,6 +1029,59 @@ class IMDb:
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
+    def _service_title(self, imdb_id):
+        if imdb_id not in self._title_cache:
+            self._title_cache[imdb_id] = self._service_request(f"title/{imdb_id}", not_found_ok=True)
+        return self._title_cache[imdb_id]
+
+    def _service_unavailable(self, error):
+        self._service_available = False
+        if logger:
+            logger.warning(f"IMDb Service unavailable, falling back to TSV dataset: {error}")
+
+    def get_rating(self, imdb_id):
+        if not imdb_id:
+            return None
+        if self._service_available:
+            try:
+                data = self._service_title(imdb_id)
+                return data.get("averageRating") if data else None
+            except Failed as e:
+                self._service_unavailable(e)
+        return self.ratings.get(imdb_id) if self.ratings else None
+
+    def get_genres(self, imdb_id):
+        if not imdb_id:
+            return []
+        if self._service_available:
+            try:
+                data = self._service_title(imdb_id)
+                genres = data.get("genres") if data else None
+                return genres.split(",") if genres else []
+            except Failed as e:
+                self._service_unavailable(e)
+        return self.genres.get(imdb_id, []) if self.genres else []
+
+    def get_episode_rating(self, imdb_id, season_num, episode_num):
+        if not imdb_id:
+            return None
+        season_num = str(season_num)
+        episode_num = str(episode_num)
+        if self._service_available:
+            try:
+                if imdb_id not in self._episode_ratings_cache:
+                    self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}", not_found_ok=True)
+                data = self._episode_ratings_cache[imdb_id]
+                seasons = data.get("seasons", {}) if data else {}
+                season = seasons.get(season_num, {})
+                episode = season.get(episode_num, {})
+                return episode.get("averageRating")
+            except Failed as e:
+                self._service_unavailable(e)
+        if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
+            return None
+        return self.episode_ratings[imdb_id][season_num][episode_num]
+
     @overload
     def _interface(self, interface: Literal["ratings"]) -> dict[str, str]: ...
     @overload
@@ -941,6 +1098,7 @@ class IMDb:
         if os.path.exists(tsv):
             os.remove(tsv)
 
+        logger.info(f"Downloading IMDb {interface} dataset...")
         self.requests.get_stream(f"https://datasets.imdbws.com/title.{interface}.tsv.gz", gz, "IMDb Interface")
 
         with open(tsv, "wb") as f_out:
@@ -991,19 +1149,6 @@ class IMDb:
                 logger.ghost(f"Processing IMDb rating for episodes: {i / len(all_eps) * 100:6.2f}%")
             logger.exorcise()
         return self._episode_ratings
-
-    def get_rating(self, imdb_id):
-        return self.ratings[imdb_id] if imdb_id in self.ratings else None
-
-    def get_genres(self, imdb_id):
-        return self.genres[imdb_id] if imdb_id in self.genres else []
-
-    def get_episode_rating(self, imdb_id, season_num, episode_num):
-        season_num = str(season_num)
-        episode_num = str(episode_num)
-        if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:
-            return None
-        return self.episode_ratings[imdb_id][season_num][episode_num]
 
     def item_filter(self, imdb_info, filter_attr, modifier, filter_final, filter_data):
         if filter_attr == "imdb_keyword":

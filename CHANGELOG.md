@@ -180,6 +180,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- `modules/imdb.py`: IMDb-backed mass rating, genre, episode-rating, parental guide, chart, and keyword lookups now prefer the Kometa IMDb Service (`utilities.kometa.wiki/imdb-service`). If the service is unresponsive, Kometa logs the failure and falls back: ratings/genres/episode-ratings to the public IMDb TSV datasets (`title.ratings.tsv.gz`, `title.basics.tsv.gz`, `title.episode.tsv.gz`), parental guide/charts/keywords to GraphQL queries or HTML scraping.
 - Update requirements
 - Playlist `libraries` is now optional; when omitted, playlists use every library processed as part of the run. Defining `libraries` on a playlist still overrides that default.
 - `modules/request.py`: every outbound HTTP request now sends a 30-second per-socket timeout (`DEFAULT_TIMEOUT`), so a stalled external server can no longer hang a run indefinitely. Retries on `Requests.get`/`post` switch from a fixed 10-second wait (up to 50s of sleeping per failing URL) to exponential backoff capped at 10 seconds (~25s worst case, much less for transient blips).

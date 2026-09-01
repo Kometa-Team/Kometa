@@ -187,6 +187,7 @@ Linuxserver
 linuxserver
 linuxserver's
 localhost
+lookups
 Looper
 Lossy
 LSIO
@@ -376,6 +377,7 @@ TrueHD
 TrueNAS
 tt
 ttf
+tsv
 Tubi
 tubi
 TVDB
