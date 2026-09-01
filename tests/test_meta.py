@@ -11,6 +11,8 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.exceptions import BadRequest
+from requests.exceptions import RequestException
 from ruamel.yaml import YAML
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
@@ -116,6 +118,33 @@ class TestUpdateTheme:
         assert updated is False
         library.upload_theme.assert_not_called()
         assert f"Metadata File Error: Theme Path Does Not Exist: {theme_path}" in test_logger.error_messages
+
+    def test_directory_theme_path_is_not_uploaded(self, tmp_path):
+        library = self._library()
+        metadata_file, test_logger = make_metadata_file(library)
+        item = SimpleNamespace(ratingKey=405)
+
+        updated = metadata_file.update_theme(item, {"file_theme": str(tmp_path)}, {"file_theme": "file_theme"})
+
+        assert updated is False
+        library.upload_theme.assert_not_called()
+        assert f"Metadata File Error: Theme Path Is Not a File: {tmp_path}" in test_logger.error_messages
+
+    @pytest.mark.parametrize("error", [BadRequest("Plex rejected theme"), OSError("Theme file read failed"), RequestException("Theme request failed")])
+    def test_failed_upload_does_not_prevent_later_theme_updates(self, error):
+        library = self._library()
+        library.upload_theme.side_effect = [error, None]
+        metadata_file, test_logger = make_metadata_file(library)
+        group = {"url_theme": "https://example.com/theme.mp3"}
+        methods = {"url_theme": "url_theme"}
+
+        first_updated = metadata_file.update_theme(SimpleNamespace(ratingKey=406), group, methods)
+        second_updated = metadata_file.update_theme(SimpleNamespace(ratingKey=407), group, methods)
+
+        assert first_updated is False
+        assert second_updated is True
+        assert library.upload_theme.call_count == 2
+        assert any(f"Theme failed to update: {error}" in message for message in test_logger.error_messages)
 
     def test_does_not_upload_theme_for_unsupported_item_type(self):
         library = self._library(is_movie=False, is_show=False)

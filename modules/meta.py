@@ -4,7 +4,8 @@ import os
 import re
 from datetime import datetime
 
-from plexapi.exceptions import BadRequest, NotFound
+from plexapi.exceptions import BadRequest, NotFound, Unauthorized
+from requests.exceptions import RequestException
 
 from modules import ergast, letterboxd, plex, timings, util
 from modules.request import quote
@@ -1840,12 +1841,19 @@ class MetadataFile(DataFile):
         if not (self.library.is_movie or self.library.is_show):
             return False
 
+        def upload(**kwargs):
+            try:
+                self.library.upload_theme(item, **kwargs)
+            except (BadRequest, NotFound, Unauthorized, OSError, RequestException) as e:
+                logger.error(f"{self.type_str} Error: Theme failed to update: {e}")
+                return False
+            logger.info("Metadata: theme updated")
+            return True
+
         if "url_theme" in methods:
             url = group[methods["url_theme"]]
             if url:
-                self.library.upload_theme(item, url=url)
-                logger.info("Metadata: theme updated")
-                return True
+                return upload(url=url)
             logger.error(f"{self.type_str} Error: url_theme attribute is blank")
 
         if "file_theme" in methods:
@@ -1857,9 +1865,10 @@ class MetadataFile(DataFile):
             if not os.path.exists(filepath):
                 logger.error(f"{self.type_str} Error: Theme Path Does Not Exist: {filepath}")
                 return False
-            self.library.upload_theme(item, filepath=filepath)
-            logger.info("Metadata: theme updated")
-            return True
+            if not os.path.isfile(filepath):
+                logger.error(f"{self.type_str} Error: Theme Path Is Not a File: {filepath}")
+                return False
+            return upload(filepath=filepath)
 
         return False
 
