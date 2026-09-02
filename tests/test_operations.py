@@ -868,6 +868,22 @@ class TestFlushCombinedEdits:
         library.Plex.editField.assert_not_called()
         assert any("expected a finite number" in call.args[0] for call in ops_module.logger.warning.call_args_list)
 
+    def test_tmdb_parse_failure_skips_item_and_continues_mass_ratings(self):
+        broken = make_mass_edit_item(1, "Broken Show")
+        healthy = make_mass_edit_item(2, "Healthy Show")
+        library = make_mass_edit_library([broken, healthy], mass_audience_rating_update=["tmdb"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.side_effect = [(101, None, "tt0000101"), (102, None, "tt0000102")]
+        config = MagicMock()
+        config.TMDb.get_item.side_effect = [ops_module.Failed("TMDb Error: Failed to parse Show with TMDb ID 101"), SimpleNamespace(vote_average=8.0)]
+
+        Operations(config=config, library=library).run_operations()
+
+        assert config.TMDb.get_item.call_count == 2
+        library.Plex.editField.assert_called_once_with("audienceRating", "8.0")
+        ops_module.logger.error.assert_any_call("TMDb Error: Failed to parse Show with TMDb ID 101")
+
     def test_merges_multiple_attribute_types_into_one_put(self):
         """An item needing rating + audience rating + genre + content rating all changed in
         the same run gets ONE batchMultiEdits()/saveMultiEdits() PUT, not four."""

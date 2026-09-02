@@ -188,6 +188,69 @@ def test_show_hydration_retries_lazy_transient_502(monkeypatch):
     logger.stacktrace.assert_not_called()
 
 
+@pytest.mark.parametrize(
+    ("value_type", "aggregate_key"),
+    [
+        ("agg_tv_cast", "roles"),
+        ("agg_tv_crew", "jobs"),
+    ],
+)
+def test_aggregate_credits_skip_malformed_entries(monkeypatch, value_type, aggregate_key):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    captured = {}
+
+    def parent_parse(self, **kwargs):
+        captured.update(kwargs)
+        return "parsed"
+
+    monkeypatch.setattr(tmdb.TMDbAPIs, "_parse", parent_parse)
+    api = tmdb.KometaTMDbAPIs.__new__(tmdb.KometaTMDbAPIs)
+    valid_entry = {"character" if aggregate_key == "roles" else "job": "Presenter"}
+    original = {"id": 10, "name": "Example Person", aggregate_key: [valid_entry, ["malformed"], None]}
+
+    assert api._parse(data=original, value_type=value_type) == "parsed"
+    assert captured["data"][aggregate_key] == [valid_entry]
+    assert original[aggregate_key] == [valid_entry, ["malformed"], None]
+    logger.warning.assert_called_once()
+
+
+def test_show_hydration_wraps_unexpected_parser_errors(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    show = tmdb.TMDbShow.__new__(tmdb.TMDbShow)
+    show.tmdb_id = 500
+
+    class MalformedShow:
+        @property
+        def title(self):
+            raise AttributeError("'list' object has no attribute 'items'")
+
+    with pytest.raises(Failed, match=r"Failed to parse Show with TMDb ID 500.*list.*items"):
+        show._load_data(MalformedShow())
+
+    logger.stacktrace.assert_called_once_with()
+
+
+def test_episode_hydration_wraps_unexpected_parser_errors(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    episode = tmdb.TMDbEpisode.__new__(tmdb.TMDbEpisode)
+    episode.tmdb_id = 500
+    episode.season_number = 2
+    episode.episode_number = 3
+
+    class MalformedEpisode:
+        @property
+        def id(self):
+            raise AttributeError("'list' object has no attribute 'items'")
+
+    with pytest.raises(Failed, match=r"Failed to parse Episode with TMDb ID 500 Season 2 Episode 3.*list.*items"):
+        episode._load_data(MalformedEpisode())
+
+    logger.stacktrace.assert_called_once_with()
+
+
 def test_get_collection_raises_notfound_for_deleted_collection(monkeypatch):
     t = _bare_tmdb(monkeypatch)
 
