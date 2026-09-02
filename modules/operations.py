@@ -73,25 +73,6 @@ def _image_operation_summary_rows(counts):
     return [(*key, *(results[result] for result in ("Updated", "Skipped", "Missing", "Failed"))) for key, results in sorted(rows.items())]
 
 
-def _find_collection_trans_key(col_data):
-    # Return the translation_key string from collection YAML data, or None if absent.
-    if isinstance(col_data, dict):
-        if "translation_key" in col_data:
-            val = col_data["translation_key"]
-            if isinstance(val, str) and "<<" not in val:
-                return val
-        for v in col_data.values():
-            result = _find_collection_trans_key(v)
-            if result:
-                return result
-    elif isinstance(col_data, list):
-        for item in col_data:
-            result = _find_collection_trans_key(item)
-            if result:
-                return result
-    return None
-
-
 def _apply_collection_name_vars(value, variables, key_name=None, limit=None):
     if value is None:
         return None
@@ -1728,8 +1709,9 @@ class Operations:
             managed = self.library.delete_collections["managed"] if self.library.delete_collections else None
             configured = self.library.delete_collections["configured"] if self.library.delete_collections else None
             ignore_smart = self.library.delete_collections["ignore_empty_smart_collections"] if self.library.delete_collections else True
-            # Include mapping, explicit, English, and selected-language titles for every consumer of the configured-name set.
-            configured_names = self._configured_collection_names()
+            configured_names = set(self.library.collection_names)
+            if configured is not None:
+                configured_names = self._configured_collection_names()
 
             unmanaged_collections = []
             unconfigured_collections = []

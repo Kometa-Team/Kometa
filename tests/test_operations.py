@@ -972,61 +972,6 @@ class TestItemBatches:
         assert result == [[1], [2], [3]]
 
 
-class TestFindCollectionTransKey:
-    """Tests for operations._find_collection_trans_key recursive lookup."""
-
-    def test_top_level_string(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"translation_key": "movie_genre"}) == "movie_genre"
-
-    def test_nested_dict(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {"outer": {"inner": {"translation_key": "trending"}}}
-        assert _find_collection_trans_key(data) == "trending"
-
-    def test_inside_list(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {"items": [{"name": "a"}, {"translation_key": "comedy"}]}
-        assert _find_collection_trans_key(data) == "comedy"
-
-    def test_absent_returns_none(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"name": "foo", "count": 5}) is None
-
-    def test_unresolved_template_value_skipped(self):
-        """Values containing '<<' are template placeholders — must not match."""
-        from modules.operations import _find_collection_trans_key
-
-        # Skips the template placeholder and keeps recursing
-        assert _find_collection_trans_key({"translation_key": "<<key>>"}) is None
-
-    def test_non_string_value_skipped(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"translation_key": 42}) is None
-
-    def test_non_dict_non_list_input(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key("just a string") is None
-        assert _find_collection_trans_key(None) is None
-        assert _find_collection_trans_key(123) is None
-
-    def test_returns_first_match_depth_first(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {
-            "a": {"translation_key": "first"},
-            "b": {"translation_key": "second"},
-        }
-        # dict iteration order is insertion order in Python 3.7+
-        assert _find_collection_trans_key(data) == "first"
-
-
 class TestConfiguredCollectionNameAliases:
     @staticmethod
     def _objects(expanded, language="fr"):
@@ -1140,7 +1085,7 @@ class TestConfiguredCollectionNameAliases:
 
         assert "Top 0" in aliases
 
-    def test_operation_names_include_localized_aliases_without_delete_filter(self):
+    def test_operation_names_include_localized_aliases_with_configured_filter(self):
         config, library, metadata_file = self._objects({})
         metadata_file.collections = {"Chart Collections": {"translation_key": "separator", "key_name": "Chart"}}
         library.collection_names = ["Manual Collection"]
