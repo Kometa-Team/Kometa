@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Continue metadata and overlay processing when a Plex request times out while removing an existing `Overlay` label during image updates; log the failed image update instead of aborting the library run.
 - Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
 - Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
 - Fix the `resolution` Defaults overlay file selecting the `-Dovetail` (resolution-paired) edition overlay instead of the plain one when `use_resolution: false` disables resolution overlays entirely, by no longer building the dovetail edition overlays in that case, and fix a related list-mutation-during-iteration bug in overlay suppress/group resolution that could skip a suppress rule for an overlay later in an item's match list.

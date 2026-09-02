@@ -238,6 +238,29 @@ class TestImageUpdate:
         assert plex.filter_attr_cache == {(7, "labels"): ["Keep"]}
 
 
+class TestUploadImages:
+    def test_plex_timeout_removing_overlay_does_not_abort(self, monkeypatch):
+        import modules.library as library_module
+
+        test_logger = FakeLogger()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        plex = make_plex(config=SimpleNamespace(Cache=None))
+        plex.image_table_name = "images"
+        plex.show_asset_not_needed = False
+        plex.reload = MagicMock()
+        plex.item_labels = MagicMock(return_value=[SimpleNamespace(tag="Overlay")])
+        plex._upload_image = MagicMock()
+        item = make_plex_item(rating_key=123)
+        item.removeLabel.side_effect = ReadTimeout("Plex did not respond")
+        poster = SimpleNamespace(compare="poster", attribute="asset_directory", message="poster")
+
+        result = plex.upload_images(item, poster=poster, overlay=True)
+
+        assert result == (False, False, False, False)
+        plex._upload_image.assert_not_called()
+        assert "Metadata: asset_directory failed to update poster" in test_logger.error_messages
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # validate_image_size
 # ═══════════════════════════════════════════════════════════════════════
