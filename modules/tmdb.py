@@ -28,7 +28,11 @@ class Unavailable(ServiceError):
 
 
 class KometaTMDbAPIs(TMDbAPIs):
-    """Defensively normalize response shapes before tmdbapis parses them."""
+    """Defensively normalize response shapes before tmdbapis parses them.
+
+    This overrides a private tmdbapis 1.2.30 method and must be reviewed when
+    the pinned dependency version changes.
+    """
 
     def _parse(self, data=None, attrs=None, value_type="str", default_is_none=False, is_list=False, is_dict=False, extend=False, key=None):
         aggregate_key = "roles" if value_type == "agg_tv_cast" else "jobs" if value_type == "agg_tv_crew" else None
@@ -350,6 +354,11 @@ class TMDbEpisode:
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Episode with TMDb ID {self.tmdb_id} Season {self.season_number} Episode {self.episode_number}: {e}") from e
 
     @TMDB_RETRY
     def load_episode(self):
