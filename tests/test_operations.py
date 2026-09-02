@@ -497,7 +497,7 @@ def make_title_test_library(items):
 
 class TestRemoveTitleParenthesesBatching:
     def test_uses_limited_metadata_reload(self):
-        item = make_item(1, "Movie A")
+        item = make_item(1, "Show A")
         library = make_title_test_library([item])
         library.is_movie = False
         library.is_show = True
