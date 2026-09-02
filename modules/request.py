@@ -155,8 +155,6 @@ class Requests:
             raise Failed(f"URL Error: Unauthorized - {url}")
         if response.status_code == 404:
             raise Failed(f"URL Error: No file found at {url}")
-        if response.status_code == 429:
-            raise Failed(f"URL Error: Too many requests -  {url}")
         if response.status_code >= 400:
             raise Failed(f"URL Error: {response.status_code} on {url}")
         # get_yaml never sets a path, so save() was already a no-op here - read_only=True is a pure speed win (safe loader) plus a defensive guard against future misuse.
