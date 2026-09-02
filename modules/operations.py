@@ -39,6 +39,11 @@ tmdb_release_types = {
     "tmdb_tv": 6,
 }
 
+# Library operations do not inspect these potentially large show-level elements. Excluding
+# them keeps Plex from serializing an aggregated cast/crew/media payload before operations
+# such as show and season poster updates. Limited reloads are not cached as full objects.
+SHOW_OPERATION_RELOAD_EXCLUDE_ELEMENTS = "Media,Role,Director,Writer,Producer,Similar,Style,Mood,Format"
+
 
 def _item_batches(items_iterable, batch_size):
     for batch_num in range(0, math.ceil(len(items_iterable) / batch_size)):
@@ -262,7 +267,8 @@ class Operations:
                 logger.info("")
                 logger.info(f"({i}/{total_items}) {item.title}")
                 try:
-                    item = self.library.reload(item)
+                    reload_options = {"exclude_elements": SHOW_OPERATION_RELOAD_EXCLUDE_ELEMENTS} if self.library.is_show else {}
+                    item = self.library.reload(item, **reload_options)
                 except Failed as e:
                     logger.error(e)
                     continue
