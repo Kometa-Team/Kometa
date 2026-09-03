@@ -6,14 +6,14 @@ import re
 import signal
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from typing import TYPE_CHECKING, Literal, overload
 
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
 from plexapi.video import Episode, Movie, Season
-from requests.exceptions import HTTPError
 from tenacity import retry_if_exception
 from tenacity.wait import wait_base
 
@@ -111,7 +111,8 @@ class retry_if_http_429_error(retry_if_exception):
 
     def __init__(self):
         def is_http_429_error(exception: BaseException) -> bool:
-            return isinstance(exception, HTTPError) and exception.response is not None and exception.response.status_code == 429
+            response = getattr(exception, "response", None)
+            return response is not None and response.status_code == 429
 
         super().__init__(predicate=is_http_429_error)
 
@@ -120,15 +121,32 @@ class wait_for_retry_after_header(wait_base):
     def __init__(self, fallback):
         self.fallback = fallback
 
+    @staticmethod
+    def parse(retry_after, now=None):
+        if retry_after is None:
+            return None
+        try:
+            return max(0, int(retry_after))
+        except (TypeError, ValueError):
+            pass
+        try:
+            retry_at = parsedate_to_datetime(str(retry_after))
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=timezone.utc)
+            current = now or datetime.now(timezone.utc)
+            if current.tzinfo is None:
+                current = current.replace(tzinfo=timezone.utc)
+            return max(0, (retry_at - current).total_seconds())
+        except (TypeError, ValueError, OverflowError):
+            return None
+
     def __call__(self, retry_state):
         exc = retry_state.outcome.exception() if retry_state.outcome is not None else None
-        if isinstance(exc, HTTPError) and exc.response is not None:
-            retry_after = exc.response.headers.get("Retry-After", None)
-            try:
-                if retry_after is not None:
-                    return int(retry_after)
-            except (TypeError, ValueError):
-                pass
+        response = getattr(exc, "response", None)
+        if response is not None:
+            wait_time = self.parse(response.headers.get("Retry-After", None))
+            if wait_time is not None:
+                return wait_time
 
         return self.fallback(retry_state)
 
