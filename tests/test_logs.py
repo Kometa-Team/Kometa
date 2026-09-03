@@ -41,6 +41,22 @@ class TestMyLogger:
         # somehow pollute it by tripping over a recorded value.
         assert logger.info_center not in ["x"]
 
+    def test_ghost_writes_when_stdout_is_a_tty(self, logger, monkeypatch, capsys):
+        monkeypatch.setattr("sys.stdout.isatty", lambda: True)
+        logger.ghost("progress")
+        assert capsys.readouterr().out.endswith("\r")
+
+    def test_ghost_silent_when_stdout_is_not_a_tty(self, logger, monkeypatch, capsys):
+        # Regression test for #3542: non-TTY stdout must never get \r-only output.
+        monkeypatch.setattr("sys.stdout.isatty", lambda: False)
+        logger.ghost("progress")
+        assert capsys.readouterr().out == ""
+
+    def test_exorcise_silent_when_stdout_is_not_a_tty(self, logger, monkeypatch, capsys):
+        monkeypatch.setattr("sys.stdout.isatty", lambda: False)
+        logger.exorcise()
+        assert capsys.readouterr().out == ""
+
 
 class TestSecretRedaction:
     @pytest.fixture

@@ -296,7 +296,7 @@ class MyLogger:
         return display_title
 
     def ghost(self, text):
-        if not self.ignore_ghost:
+        if not self.ignore_ghost and sys.stdout.isatty():
             try:
                 print(self._space(f"| {text}"), end="\r")
             except UnicodeEncodeError:
@@ -305,7 +305,7 @@ class MyLogger:
             self.spacing = len(text) + 2
 
     def exorcise(self):
-        if not self.ignore_ghost:
+        if not self.ignore_ghost and sys.stdout.isatty():
             print(self._space(" "), end="\r")
             self.spacing = 0
 
