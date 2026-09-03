@@ -367,6 +367,23 @@ class FlickList:
             return self._parse_ids(self._request_list("/sync/tracked"), is_movie=False)
         raise Failed(f"FlickList Error: Method {method} not supported")
 
+    def user_ratings(self, is_movie):
+        """Mirrors Trakt.user_ratings: {tmdb_id: rating} for movies, {tvdb_id: rating} for shows."""
+        id_type = "tmdb" if is_movie else "tvdb"
+        ratings = {}
+        for item in self._request_list("/sync/ratings"):
+            item_media = str(item.get("media_type") or "").lower()
+            if is_movie and item_media != "movie":
+                continue
+            if not is_movie and item_media not in ("tv", "show"):
+                continue
+            rating = item.get("rating")
+            item_id = (item.get("ids") or {}).get(id_type)
+            if rating is None or not item_id:
+                continue
+            ratings[int(item_id)] = rating
+        return ratings
+
     def _resolve_list(self, list_id_or_name):
         """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
         as_id = None

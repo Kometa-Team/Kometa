@@ -331,6 +331,16 @@ class Operations:
                         raise Failed
                     return _trakt_ratings
 
+                _flicklist_ratings = None
+
+                def flicklist_ratings():
+                    nonlocal _flicklist_ratings
+                    if _flicklist_ratings is None:
+                        _flicklist_ratings = self.config.FlickList.user_ratings(self.library.is_movie)
+                    if not _flicklist_ratings:
+                        raise Failed
+                    return _flicklist_ratings
+
                 _tmdb_obj = None
 
                 def tmdb_obj():
@@ -595,6 +605,15 @@ class Operations:
                                         found_rating = self.config.Trakt.get_rating(imdb_id, self.library.is_movie)
                                     elif option == "trakt_user":
                                         _ratings = trakt_ratings()
+                                        _id = tmdb_id if self.library.is_movie else tvdb_id
+                                        if _id in _ratings:
+                                            found_rating = _ratings[_id]
+                                        else:
+                                            raise Failed
+                                    elif option == "flicklist_user":
+                                        if not self.config.FlickList:
+                                            raise Failed
+                                        _ratings = flicklist_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
                                         if _id in _ratings:
                                             found_rating = _ratings[_id]

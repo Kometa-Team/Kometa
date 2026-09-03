@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support the `folder_location` Plex search option in music-library track builders.
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
 - Add `sync_to_flicklist_list` and `sync_missing_to_flicklist_list` to sync a collection's contents to a FlickList list, mirroring `sync_to_trakt_list`/`sync_missing_to_trakt_list`.
+- Add `flicklist_user` as a mass rating source, using the FlickList user's personal ratings.
 
 ### Fixed
 
