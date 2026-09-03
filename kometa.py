@@ -1383,7 +1383,7 @@ def run_collection(config, library, metadata, requested_collections):
             if valid and run_item_details and arr_mdb_list_sync:
                 builder.sync_mdb_list()
 
-            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or (builder.sync_to_mdb_list and not arr_mdb_list_sync)):
+            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or builder.sync_to_flicklist_list or (builder.sync_to_mdb_list and not arr_mdb_list_sync)):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1396,6 +1396,8 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.sort_collection()
                     if builder.sync_to_trakt_list:
                         builder.sync_trakt_list()
+                    if builder.sync_to_flicklist_list:
+                        builder.sync_flicklist_list()
                     if builder.sync_to_mdb_list and not arr_mdb_list_sync:
                         builder.sync_mdb_list()
 
