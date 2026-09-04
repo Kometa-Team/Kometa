@@ -475,6 +475,28 @@ class TestGetYamlReadOnly:
         with pytest.raises(Failed, match="read_only"):
             result.save()
 
+    def test_rate_limit_error_includes_url(self):
+        from modules.util import Failed
+
+        req = make_requests()
+        url = "https://example.com/data.yml"
+        req.get = MagicMock(return_value=_FakeYamlResponse(status_code=429))
+        with pytest.raises(Failed, match=f"Too many requests - {url}"):
+            req.get_yaml(url)
+
+
+class TestGetJson:
+    def test_rate_limit_raises_failed_before_parsing_response(self):
+        from modules.util import Failed
+
+        req = make_requests()
+        url = "https://example.com/data.json"
+        response = MagicMock(status_code=429)
+        req.get = MagicMock(return_value=response)
+        with pytest.raises(Failed, match=f"Too many requests - {url}"):
+            req.get_json(url)
+        response.json.assert_not_called()
+
 
 class TestFileYamlReadOnlyPassthrough:
     """Requests.file_yaml()'s read_only kwarg must reach the underlying YAML object unchanged in both directions."""
