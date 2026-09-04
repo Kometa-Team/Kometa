@@ -21,7 +21,7 @@ import modules.operations as ops_module
 ops_module.logger = MagicMock()
 
 from modules.mdblist import MDBList  # noqa: E402 -- must follow logger patch above
-from modules.operations import Operations, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
+from modules.operations import Operations, _configured_collection_name_aliases, _image_operation_summary_rows  # noqa: E402 -- must follow logger patch above
 from modules.overlays import Overlays  # noqa: E402 -- must follow logger patch above
 from modules.plex import Plex  # noqa: E402 -- must follow logger patch above
 
@@ -972,59 +972,135 @@ class TestItemBatches:
         assert result == [[1], [2], [3]]
 
 
-class TestFindCollectionTransKey:
-    """Tests for operations._find_collection_trans_key recursive lookup."""
-
-    def test_top_level_string(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"translation_key": "movie_genre"}) == "movie_genre"
-
-    def test_nested_dict(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {"outer": {"inner": {"translation_key": "trending"}}}
-        assert _find_collection_trans_key(data) == "trending"
-
-    def test_inside_list(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {"items": [{"name": "a"}, {"translation_key": "comedy"}]}
-        assert _find_collection_trans_key(data) == "comedy"
-
-    def test_absent_returns_none(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"name": "foo", "count": 5}) is None
-
-    def test_unresolved_template_value_skipped(self):
-        """Values containing '<<' are template placeholders — must not match."""
-        from modules.operations import _find_collection_trans_key
-
-        # Skips the template placeholder and keeps recursing
-        assert _find_collection_trans_key({"translation_key": "<<key>>"}) is None
-
-    def test_non_string_value_skipped(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key({"translation_key": 42}) is None
-
-    def test_non_dict_non_list_input(self):
-        from modules.operations import _find_collection_trans_key
-
-        assert _find_collection_trans_key("just a string") is None
-        assert _find_collection_trans_key(None) is None
-        assert _find_collection_trans_key(123) is None
-
-    def test_returns_first_match_depth_first(self):
-        from modules.operations import _find_collection_trans_key
-
-        data = {
-            "a": {"translation_key": "first"},
-            "b": {"translation_key": "second"},
+class TestConfiguredCollectionNameAliases:
+    @staticmethod
+    def _objects(expanded, language="fr"):
+        english = {
+            "variables": {"library_translation": {"movie": "movie"}},
+            "key_names": {"chart": "Chart"},
+            "collections": {
+                "separator": {"name": "<<key_name>> Collections"},
+                "tmdb_popular": {"name": "TMDb Popular"},
+            },
         }
-        # dict iteration order is insertion order in Python 3.7+
-        assert _find_collection_trans_key(data) == "first"
+        french = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Classement"},
+            "collections": {
+                "separator": {"name": "Collections <<key_name>>"},
+                "tmdb_popular": {"name": "TMDb Populaire"},
+            },
+        }
+        german = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Rangliste"},
+            "collections": {"separator": {"name": "<<key_name>> Sammlungen"}},
+        }
+        spanish = {
+            "variables": {"library_translation": {"movie": "película"}},
+            "key_names": {"chart": "Clasificación"},
+            "collections": {"separator": {"name": "Colecciones de <<key_name>>"}},
+        }
+        japanese = {
+            "variables": {"library_translation": {"movie": "映画"}},
+            "key_names": {"chart": "ランキング"},
+            "collections": {"separator": {"name": "<<key_name>>コレクション"}},
+        }
+        italian = {
+            "variables": {"library_translation": {"movie": "film"}},
+            "key_names": {"chart": "Classifica"},
+            "collections": {},
+        }
+        translations = {"en": english, "fr": french, "de": german, "es": spanish, "ja": japanese, "it": italian}
+        config = MagicMock()
+        config.GitHub.translation_keys = list(translations)
+        config.GitHub.translation_yaml.side_effect = translations.__getitem__
+        library = SimpleNamespace(type="Movie")
+        metadata_file = SimpleNamespace(language=language, apply_template=MagicMock(return_value=expanded))
+        return config, library, metadata_file
+
+    def test_resolves_mapping_english_and_selected_language_names(self):
+        config, library, metadata_file = self._objects({"translation_key": "separator", "key_name": "Chart"})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", {"template": [{"name": "separator"}]})
+
+        assert aliases == {"Chart Collections", "Collections Classement"}
+        operations = make_ops(collections=[], collection_names=[])
+        french_collection = make_col("Collections Classement")
+        assert operations._should_be_deleted(french_collection, ["Kometa"], configured_in=False, managed_in=True, less_in=None, configured_names=aliases) is False
+
+    def test_includes_custom_name_override_and_translation_aliases(self):
+        custom_name = "🌍 Films populaires dans le monde"
+        config, library, metadata_file = self._objects({"name": custom_name, "translation_key": "tmdb_popular"})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "TMDb Popular", {"template": [{"name": "shared"}]})
+
+        assert aliases == {"TMDb Popular", "TMDb Populaire", custom_name}
+
+    def test_resolves_generated_dynamic_collection_without_reapplying_template(self):
+        config, library, metadata_file = self._objects({})
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert aliases == {"Chart Collections", "Collections Classement"}
+        metadata_file.apply_template.assert_not_called()
+
+    def test_resolves_selected_languages_without_language_specific_code(self):
+        expected_names = {
+            "fr": "Collections Classement",
+            "de": "Rangliste Sammlungen",
+            "es": "Colecciones de Clasificación",
+            "ja": "ランキングコレクション",
+        }
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        for language, expected_name in expected_names.items():
+            config, library, metadata_file = self._objects({}, language=language)
+            aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+            assert expected_name in aliases
+
+    def test_collection_language_override_takes_priority_over_file_language(self):
+        config, library, metadata_file = self._objects({}, language="fr")
+        collection_data = {"language": "ja", "translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert "ランキングコレクション" in aliases
+        assert "Collections Classement" not in aliases
+
+    def test_falls_back_to_english_when_selected_language_has_no_collection_name(self):
+        config, library, metadata_file = self._objects({}, language="it")
+        collection_data = {"translation_key": "separator", "key_name": "Chart"}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Chart Collections", collection_data)
+
+        assert aliases == {"Chart Collections"}
+
+    def test_zero_limit_is_substituted(self):
+        config, library, metadata_file = self._objects({})
+        collection_data = {"name": "Top <<limit>>", "limit": 0}
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Top", collection_data)
+
+        assert "Top 0" in aliases
+
+    def test_operation_names_include_localized_aliases_with_configured_filter(self):
+        config, library, metadata_file = self._objects({})
+        metadata_file.collections = {"Chart Collections": {"translation_key": "separator", "key_name": "Chart"}}
+        library.collection_names = ["Manual Collection"]
+        library.collection_files = [metadata_file]
+
+        configured_names = Operations(config, library)._configured_collection_names()
+
+        assert configured_names == {"Manual Collection", "Chart Collections", "Collections Classement"}
+
+    def test_keeps_mapping_name_when_name_resolution_fails(self):
+        config, library, metadata_file = self._objects({})
+
+        aliases = _configured_collection_name_aliases(config, library, metadata_file, "Manual Collection", {})
+
+        assert aliases == {"Manual Collection"}
 
 
 # ---------------------------------------------------------------------------
