@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.
 - Fix `episode_*` ratings from producing a critical error when Trakt did not have an episode in its database
 - Fix DC-based lists in 'universe' Defaults file
+- Fix ghost progress logging (e.g. `Parsing ID x/y`) writing carriage-return-only output regardless of whether stdout is a terminal, which collapses an entire run into a single unbounded log line for containerized/piped deployments; ghost output is now skipped when stdout is not a TTY. Fixes #3542.
 
 ## [v2.4.8] - 2026-08-15
 
