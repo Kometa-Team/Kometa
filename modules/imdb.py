@@ -649,6 +649,23 @@ class IMDb:
                 logger.error(str(response.content))
             raise Failed("IMDb Service Error: invalid JSON response")
 
+    def _service_post(self, endpoint, body, not_found_ok=False):
+        url = f"{service_url}/{endpoint}"
+        try:
+            response = self.requests.post(url, json=body)
+        except Exception as e:
+            raise Failed(f"IMDb Service Error: {e}")
+        if response.status_code == 404 and not_found_ok:
+            return None
+        if response.status_code >= 400:
+            raise Failed(f"IMDb Service Error: {response.status_code} - {response.text}")
+        try:
+            return response.json()
+        except ValueError:
+            if logger:
+                logger.error(str(response.content))
+            raise Failed("IMDb Service Error: invalid JSON response")
+
     @property
     def search_hash(self):
         if self._search_hash is None:
@@ -755,7 +772,7 @@ class IMDb:
         else:
             return "WatchListPageRefiner", self.watchlist_hash
 
-    def _graphql_json(self, data, list_type):
+    def _graphql_variables(self, data, list_type):
         page_limit = 250 if list_type == "search" else 100
         out = {
             "locale": "en-US",
@@ -869,6 +886,10 @@ class IMDb:
             out["sort"] = {"by": list_sort_by_options[sort_by], "order": sort_order.upper()}
 
         logger.trace(out)
+        return out
+
+    def _graphql_json(self, data, list_type):
+        out = self._graphql_variables(data, list_type)
         op, sha = self._json_operation(list_type)
         return {"operationName": op, "variables": out, "extensions": {"persistedQuery": {"version": 1, "sha256Hash": sha}}}
 
@@ -888,8 +909,24 @@ class IMDb:
         if list_type == "watchlist" and re.match(r"^p\.", data["user_id"]):
             data = {**data, "user_id": self._resolve_profile_id(data["user_id"])}
         is_list = list_type != "search"
+        if not is_list:
+            out = self._graphql_variables(data, "search")
+            constraints = {k: v for k, v in out.items() if k not in ("locale", "first", "sortBy", "sortOrder")}
+            sort = {"sortBy": out["sortBy"], "sortOrder": out["sortOrder"]}
+            body = {"constraints": constraints, "sort": sort}
+            if data.get("limit", 0) > 0:
+                body["limit"] = data["limit"]
+            if logger:
+                logger.ghost("Querying Kometa IMDb Service")
+            response = self._service_post("search/advanced", body) or {}
+            if logger:
+                logger.exorcise()
+            imdb_ids = response.get("results", [])
+            if not imdb_ids:
+                raise Failed("IMDb Error: No IMDb IDs Found")
+            return imdb_ids
         json_obj = self._graphql_json(data, list_type)
-        item_count = 100 if is_list else 250
+        item_count = 100
         imdb_ids = []
         logger.ghost("Parsing Page 1")
         response_json = self._graph_request(json_obj)
@@ -911,7 +948,7 @@ class IMDb:
         if list_type == "watchlist" and response_json["data"].get("predefinedList") is None:
             user_id = data["user_id"]
             raise Failed(f"IMDb Error: No public watchlist found for user '{user_id}'. " f"Ensure the watchlist exists and is set to public. " f"If your config uses a ur### ID, update it to the p.xxxxxxx format shown in your watchlist URL at imdb.com.")
-        search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+        search_data = response_json["data"][step]["titleListItemSearch"]
         total = search_data["total"]
         limit = data["limit"]
         if limit < 1 or total < limit:
@@ -921,16 +958,16 @@ class IMDb:
             remainder = item_count
         num_of_pages = math.ceil(int(limit) / item_count)
         end_cursor = search_data["pageInfo"]["endCursor"]
-        imdb_ids.extend([n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]])
+        imdb_ids.extend(n["listItem"]["id"] for n in search_data["edges"])
         if num_of_pages > 1:
             for i in range(2, num_of_pages + 1):
                 start_num = (i - 1) * item_count + 1
                 logger.ghost(f"Parsing Page {i}/{num_of_pages} {start_num}-{limit if i == num_of_pages else i * item_count}")
                 json_obj["variables"]["after"] = end_cursor
                 response_json = self._graph_request(json_obj)
-                search_data = response_json["data"][step]["titleListItemSearch"] if is_list else response_json["data"]["advancedTitleSearch"]
+                search_data = response_json["data"][step]["titleListItemSearch"]
                 end_cursor = search_data["pageInfo"]["endCursor"]
-                ids_found = [n["listItem"]["id"] if is_list else n["node"]["title"]["id"] for n in search_data["edges"]]
+                ids_found = [n["listItem"]["id"] for n in search_data["edges"]]
                 if i == num_of_pages:
                     ids_found = ids_found[:remainder]
                 imdb_ids.extend(ids_found)
