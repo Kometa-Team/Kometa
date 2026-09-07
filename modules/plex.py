@@ -1918,17 +1918,15 @@ class Plex(Library):
             for col in good_collections:
                 logger.info(col.title)
             logger.info("")
-            collection_indexes = [str(c.title).lower() for c in good_collections]
+            # Resolve membership via get_collection_items (handles smart collections) instead of item.collections tags, which Plex never sets for smart collections (#3537)
+            protected_keys = set()
+            for col in good_collections:
+                for member in self.get_collection_items(col, False):
+                    protected_keys.add(member.ratingKey)  # type: ignore[union-attr]
             all_items = self.get_all()
             for i, item in enumerate(all_items, 1):
                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
-                add_item = True
-                item = self.reload(item, force=True)
-                for collection in item.collections:
-                    if str(collection.tag).lower() in collection_indexes:
-                        add_item = False
-                        break
-                if add_item:
+                if item.ratingKey not in protected_keys:
                     items.append(item)
             logger.info(f"Processed {len(all_items)} {self.type}s")
         else:
@@ -2386,6 +2384,8 @@ class Plex(Library):
         seen_items = set()
         for item in items:
             item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id is None:
+                continue
             if item_to_id.ratingKey in seen_items:
                 continue
             seen_items.add(item_to_id.ratingKey)

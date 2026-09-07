@@ -34,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `episode_*` ratings from producing a critical error when Trakt did not have an episode in its database
 - Fix DC-based lists in 'universe' Defaults file
 - Fix ghost progress logging (e.g. `Parsing ID x/y`) writing carriage-return-only output regardless of whether stdout is a terminal, which collapses an entire run into a single unbounded log line for containerized/piped deployments; ghost output is now skipped when stdout is not a TTY. Fixes #3542.
+- Fix `plex_collectionless` never recognizing an item as belonging to a smart collection (used by most Defaults collection files, e.g. `genre`, `studio`, `audio_language`), since Plex does not tag items with smart collection membership; membership is now resolved from each retained collection's actual items instead of the item's own `collections` tag list. Fixes #3537.
+- Fix `prefetch_mdblist` raising when an orphaned Season/Episode's parent Show has been deleted from Plex (`item.show()` returning `None`); such items are now skipped instead of crashing the MDBList prefetch pass.
 
 ## [v2.4.8] - 2026-08-15
 
