@@ -12,7 +12,7 @@ jobs:
     steps:
 
       - name: Send Discord Release Notification
-        uses: Kometa-Team/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
         with:
           webhook_id_token: ${{ secrets.RELEASE_WEBHOOK }}
           release: true
