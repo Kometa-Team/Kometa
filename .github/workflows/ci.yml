@@ -27,11 +27,12 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     needs: [guard]
-    # Read-only: this job only diffs filenames and spellchecks markdown, no secrets needed.
+    # Read-only: this job diffs filenames, spellchecks markdown and verifies dependency files are current. No secrets needed.
     permissions:
       contents: read
     outputs:
       build: ${{ steps.list-changes.outputs.build }}
+      base: ${{ steps.list-changes.outputs.base }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,11 +52,15 @@ jobs:
         run: |
             readarray -t files <<< "${{ steps.get-changes.outputs.files }}"
             for file in "${files[@]}"; do
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]]; then
+                if [[ -n "$file" ]] && [[ "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|pyproject.toml|uv.lock|.dockerignore|Dockerfile).*$ ]]; then
                     echo "$file will trigger docker build"
                     echo "build=true" >> $GITHUB_OUTPUT
                 else
                     echo "$file will not trigger docker build"
+                fi
+                if [[ -n "$file" ]] && [[ "$file" =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock)$ ]]; then
+                    echo "$file will trigger base image build"
+                    echo "base=true" >> $GITHUB_OUTPUT
                 fi
             done
 
@@ -73,6 +78,21 @@ jobs:
           task_name: Markdown
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
 
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Verify uv.lock and requirements.txt are current
+        # uv.lock is the single source of truth for what gets installed; requirements.txt
+        # is generated from it. This fails the PR if either has drifted from pyproject.toml.
+        # The uv version is pinned so CI cannot rewrite the lockfile's revision header.
+        run: |
+          pip install uv==0.11.14
+          uv lock --check
+          uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
+          git diff --exit-code -- requirements.txt
+
   tests:
     needs: [guard]
     uses: ./.github/workflows/test.yml
@@ -80,6 +100,46 @@ jobs:
   pyright:
     needs: [guard]
     uses: ./.github/workflows/pyright.yml
+
+  docker-base-build:
+    runs-on: ubuntu-latest
+    needs: [guard, validate]
+    # Dockerfile.base is otherwise built only by docker-base.yml's weekly schedule, which
+    # checks out nightly -- so a change to it, or to the files it installs from, would not
+    # be exercised until after merge. Build only, never pushed; docker-build still consumes
+    # the published base image.
+    if: needs.validate.outputs.base == 'true'
+    permissions:
+      contents: read
+    steps:
+      - name: Check Out Repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - name: Build base image
+        env:
+          IMAGE: kometa-base-ci:${{ github.sha }}
+        run: docker buildx build --file ./Dockerfile.base --tag "$IMAGE" --load .
+
+      - name: Verify runtime dependencies resolve
+        env:
+          IMAGE: kometa-base-ci:${{ github.sha }}
+        run: docker run --rm "$IMAGE" python3 -c "import plexapi, requests, lxml, PIL, tmdbapis, serializd; print('imports ok')"
+
+      - name: Verify python3 resolves to the locked environment
+        # ENTRYPOINT calls python3 by name, so if PATH ever stops pointing at the venv the
+        # container would silently run without the locked dependencies.
+        env:
+          IMAGE: kometa-base-ci:${{ github.sha }}
+        run: |
+          resolved=$(docker run --rm "$IMAGE" sh -c 'command -v python3')
+          echo "python3 resolves to $resolved"
+          if [ "$resolved" != "/.venv/bin/python3" ]; then
+            echo "ERROR: expected /.venv/bin/python3"
+            exit 1
+          fi
 
   docker-build:
     runs-on: ubuntu-latest
@@ -320,7 +380,7 @@ jobs:
   # Single stable context for branch protection -- immune to job renames inside tests/pyright, and guard-skips count as pass, not pending.
   ci-status:
     runs-on: ubuntu-latest
-    needs: [guard, validate, tests, pyright]
+    needs: [guard, validate, tests, pyright, docker-base-build]
     if: always()
     steps:
       - name: Check required jobs
