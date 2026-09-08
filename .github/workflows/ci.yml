@@ -34,7 +34,7 @@ jobs:
       build: ${{ steps.list-changes.outputs.build }}
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -60,7 +60,7 @@ jobs:
             done
 
       - name: Get all changed files
-        uses: tj-actions/changed-files@v47
+        uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         id: changed_files
         with:
           files: |
@@ -68,7 +68,7 @@ jobs:
 
       - name: Run Spellcheck on changed files
         id: spellcheck
-        uses: rojopolis/spellcheck-github-actions@0.66.0
+        uses: rojopolis/spellcheck-github-actions@c1934c57e61c734261d7905b525486b12f8eb670 # 0.66.0
         with:
           task_name: Markdown
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
@@ -102,7 +102,7 @@ jobs:
     steps:
       # Default GITHUB_TOKEN is enough -- nothing gets pushed, so secrets.PAT no longer needs to be here.
       - name: Check Out Repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
@@ -138,19 +138,19 @@ jobs:
             echo "part-value=${COMMITS}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v4
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@master
+        uses: docker/setup-qemu-action@1f40c72289eff860ee54a304f1438e3cff362e0a # v4.3.0
         with:
           platforms: all
 
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         with:
           driver-opts: |
             image=moby/buildkit:v0.20.0
@@ -167,7 +167,7 @@ jobs:
             .
 
       - name: Discord Success Notification
-        uses: Kometa-Team/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
         if: success()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
@@ -180,7 +180,7 @@ jobs:
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
 
       - name: Discord Failure Notification
-        uses: Kometa-Team/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
         if: failure()
         with:
           webhook_id_token: ${{ secrets.BUILD_WEBHOOK }}
@@ -196,7 +196,7 @@ jobs:
       # Updates the same comment label-status posted -- one evolving comment per PR, not one per event.
       - name: Update label status comment with build result
         if: always()
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const marker = "<!-- kometa-docker-label-status -->";
@@ -231,7 +231,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Update label status comment
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
           script: |
             const marker = "<!-- kometa-docker-label-status -->";
@@ -279,7 +279,7 @@ jobs:
           echo "description=$body" >> $GITHUB_OUTPUT
 
       - name: Discord Testers Notification
-        uses: Kometa-Team/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
           message: 'The Kometa team are requesting <@&917323027438510110> to assist with testing an upcoming feature/bug fix.
@@ -304,7 +304,7 @@ jobs:
     if: github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'tester')
     steps:
       - name: Discord Testers Notification
-        uses: Kometa-Team/discord-notifications@master
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
         with:
           webhook_id_token: ${{ secrets.TESTERS_WEBHOOK }}
           message: 'New Commit Pushed to `${{ needs.docker-build.outputs.tag-name }}`: Part ${{ needs.docker-build.outputs.part-value }}'
