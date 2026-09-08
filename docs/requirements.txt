@@ -1,6 +1,6 @@
 mkdocs-material
 mkdocs-glightbox
-mkdocs-include-markdown-plugin @ git+https://github.com/Kometa-Team/mkdocs-include-markdown-plugin@master
+mkdocs-include-markdown-plugin @ git+https://github.com/Kometa-Team/mkdocs-include-markdown-plugin@027bca533839d23fdd7552d68d37d40d8dd40ec4
 jinja2
 markdown
 mkdocs
