@@ -16,6 +16,7 @@ docs
 json-schema
 json-schema/MODULE.md
 venv
+.venv
 .dockerignore
 .gitignore
 .readthedocs.yml
