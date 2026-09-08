@@ -41,8 +41,11 @@ class KometaTMDbAPIs(TMDbAPIs):
             valid_entries = [entry for entry in entries if isinstance(entry, dict)] if isinstance(entries, list) else []
             invalid_count = (len(entries) - len(valid_entries)) if isinstance(entries, list) else 1
             if invalid_count:
-                entry_name = "role" if aggregate_key == "roles" else "job"
-                logger.warning(f"TMDb Warning: Ignoring {invalid_count} malformed aggregate {entry_name}{'' if invalid_count == 1 else 's'} for {data.get('name') or data.get('id') or 'unknown credit'}")
+                credit_type = "cast role" if aggregate_key == "roles" else "crew job"
+                logger.debug(
+                    f"TMDb returned {invalid_count} invalid TV {credit_type} entr{'y' if invalid_count == 1 else 'ies'} for "
+                    f"{data.get('name') or data.get('id') or 'an unknown person'}; Kometa skipped {'it' if invalid_count == 1 else 'them'}. No user action is required."
+                )
                 data = {**data, aggregate_key: valid_entries}
         return super()._parse(data=data, attrs=attrs, value_type=value_type, default_is_none=default_is_none, is_list=is_list, is_dict=is_dict, extend=extend, key=key)  # pyright: ignore[reportAttributeAccessIssue]
 

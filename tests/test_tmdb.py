@@ -189,13 +189,13 @@ def test_show_hydration_retries_lazy_transient_502(monkeypatch):
 
 
 @pytest.mark.parametrize(
-    ("value_type", "aggregate_key"),
+    ("value_type", "aggregate_key", "credit_type"),
     [
-        ("agg_tv_cast", "roles"),
-        ("agg_tv_crew", "jobs"),
+        ("agg_tv_cast", "roles", "cast role"),
+        ("agg_tv_crew", "jobs", "crew job"),
     ],
 )
-def test_aggregate_credits_skip_malformed_entries(monkeypatch, value_type, aggregate_key):
+def test_aggregate_credits_skip_malformed_entries(monkeypatch, value_type, aggregate_key, credit_type):
     logger = MagicMock()
     monkeypatch.setattr(tmdb, "logger", logger)
     captured = {}
@@ -212,7 +212,8 @@ def test_aggregate_credits_skip_malformed_entries(monkeypatch, value_type, aggre
     assert api._parse(data=original, value_type=value_type) == "parsed"
     assert captured["data"][aggregate_key] == [valid_entry]
     assert original[aggregate_key] == [valid_entry, ["malformed"], None]
-    logger.warning.assert_called_once()
+    logger.debug.assert_called_once_with(f"TMDb returned 2 invalid TV {credit_type} entries for Example Person; Kometa skipped them. No user action is required.")
+    logger.warning.assert_not_called()
 
 
 def test_show_hydration_wraps_unexpected_parser_errors(monkeypatch):
