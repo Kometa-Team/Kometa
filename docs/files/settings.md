@@ -37,6 +37,8 @@ tags:
   - sync_to_trakt_list
   - sync_to_mdb_list
   - sync_missing_to_trakt_list
+  - sync_to_flicklist_list
+  - sync_missing_to_flicklist_list
   - run_definition
   - default_percent
   - ignore_blank_results
@@ -80,9 +82,11 @@ All the following attributes serve various functions as how the definition funct
 | `show_unfiltered`            | **Description:** definition level `show_unfiltered` toggle.<br>**Default:** `show_unfiltered` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `smart_label`                | **Description:** Adds a label to all items found by the builder, which is then used to create a Smart Collection searching for the label<br>See [Smart Label Definitions](#smart-label-defintiions) for more information and use-cases                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `sync_missing_to_trakt_list` | **Description:** Used to also sync missing items to the Trakt List specified by `sync_to_trakt_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `sync_missing_to_flicklist_list` | **Description:** Used to also sync missing items to the FlickList List specified by `sync_to_flicklist_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `sync_mode`                  | **Description:** Used to change how builders sync with this definition.<br>**Default:** `sync_mode` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `sync` or `append`<br>See main [settings page](../config/settings.md#sync-mode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `sync_to_trakt_list`         | **Description:** Used to specify a trakt list you want the definition synced to.<br>**Values:** Trakt List Slug you want to sync to                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `sync_to_mdb_list`           | **Description:** Syncs a collection to an MDBList static list by exact `name`, creating it when absent. Use a name directly or an object with `name` and optional `mode` (`sync` by default, or `append`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `sync_to_flicklist_list`     | **Description:** Syncs a collection to a FlickList list, by numeric list id or exact `name`. A matching list is used if found among your own FlickList lists; otherwise one is created. See [FlickList Sync Example](#flicklist-sync-example) below.<br>**Values:** FlickList list id (number) or list name (string)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `template`                   | **Description:** Used to specify a template and Template Variables to use for this definition. See the [Templates Page](templates.md) for more information.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `test`                       | **Description:** When running in Test Mode (`--run-tests` [option](../kometa/environmental.md)) only definitions with `test: true` will be run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
@@ -116,6 +120,39 @@ If a list with the name specified exists, it will be used. If no list exists, on
 The default `mode` is `sync`, which adds missing items and removes items no
 longer present in the collection. Use `append` to add items without removing
 existing list entries. Movies and shows are supported.
+
+### FlickList Sync Example
+
+`sync_to_flicklist_list` synchronizes a collection with a list in your FlickList account. The list is
+found by numeric id or exact name among your own lists, and created automatically when no match exists.
+
+```yaml
+collections:
+  Recently Added:
+    plex_search:
+      all:
+        added: 30
+    sync_to_flicklist_list: "Recently Added"
+
+  Missing Movies and Shows:
+    plex_search:
+      all:
+        added: 30
+    sync_to_flicklist_list: "Missing Movies and Shows"
+    sync_missing_to_flicklist_list: true
+```
+
+Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
+FlickList lists do not have a concept of individual seasons or episodes.
+
+Unlike `sync_to_trakt_list`, FlickList has no list-reorder endpoint, so `sync_to_flicklist_list` cannot
+preserve a collection's custom order on the FlickList side — items land in the list, but not necessarily
+in the same order as the Kometa collection.
+
+If Kometa cannot confidently match an item already in the FlickList list against the collection's current
+contents (for example, an item added to the list some other way that only carries an id type Kometa
+cannot resolve), that item is left in the list rather than removed. A stale, over-cautious leftover is
+preferred over the alternative of the sync deleting something it shouldn't have.
 
 ## Smart Label Definitions
 
