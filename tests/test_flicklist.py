@@ -537,3 +537,47 @@ def test_sync_list_logs_not_found_but_does_not_raise():
     )
     ids = [({"tmdb": 550}, "movie")]
     flicklist.sync_list(FakeConvert(), 4821, ids)  # should not raise
+
+
+# --- Layer 3: flicklist_user rating source ---
+
+
+def _rating(rating, tmdb=None, tvdb=None, media_type="movie"):
+    ids = {}
+    if tmdb is not None:
+        ids["tmdb"] = tmdb
+    if tvdb is not None:
+        ids["tvdb"] = tvdb
+    return {"ids": ids, "media_type": media_type, "rating": rating}
+
+
+def test_user_ratings_movies_keys_on_tmdb():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(8.5, tmdb=550)])])
+    assert flicklist.user_ratings(True) == {550: 8.5}
+
+
+def test_user_ratings_shows_keys_on_tvdb():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(9.0, tvdb=81189, media_type="show")])])
+    assert flicklist.user_ratings(False) == {81189: 9.0}
+
+
+def test_user_ratings_accepts_tv_and_show_media_type_interchangeably():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(7.0, tvdb=81189, media_type="tv")])])
+    assert flicklist.user_ratings(False) == {81189: 7.0}
+
+
+def test_user_ratings_skips_items_missing_the_relevant_id():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(8.0, media_type="movie")])])
+    assert flicklist.user_ratings(True) == {}
+
+
+def test_user_ratings_skips_items_with_no_rating():
+    flicklist = make_flicklist([FakeResponse(json_data=[{"ids": {"tmdb": 550}, "media_type": "movie", "rating": None}])])
+    assert flicklist.user_ratings(True) == {}
+
+
+def test_user_ratings_filters_out_the_other_media_type():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(8.0, tmdb=550, media_type="movie"), _rating(6.0, tvdb=81189, media_type="show")])])
+    assert flicklist.user_ratings(True) == {550: 8.0}
+    flicklist2 = make_flicklist([FakeResponse(json_data=[_rating(8.0, tmdb=550, media_type="movie"), _rating(6.0, tvdb=81189, media_type="show")])])
+    assert flicklist2.user_ratings(False) == {81189: 6.0}
