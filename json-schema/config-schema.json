@@ -13667,6 +13667,58 @@
       "patternProperties": {
         "^schedule_.+$": {
           "type": "string"
+        },
+        "^radarr_add_missing_.+$": {
+          "description": "Override Radarr add_missing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_folder_.+$": {
+          "description": "Override Radarr root_folder_path for a specific seasonal collection by key.",
+          "type": "string"
+        },
+        "^radarr_monitor_.+$": {
+          "description": "Override Radarr monitor for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_monitor_existing_.+$": {
+          "description": "Override Radarr monitor_existing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_search_.+$": {
+          "description": "Override Radarr search for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_tag_.+$": {
+          "description": "Override Radarr tag for a specific seasonal collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "^radarr_upgrade_existing_.+$": {
+          "description": "Override Radarr upgrade_existing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^item_radarr_tag_.+$": {
+          "description": "Override item_radarr_tag for a specific seasonal collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
       }
     },
