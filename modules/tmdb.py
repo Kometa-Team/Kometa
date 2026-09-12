@@ -707,6 +707,8 @@ class TMDb:
         if tmdb_id:
             try:
                 tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+            except NotFound as e:
+                logger.debug(str(e))
             except Failed as e:
                 logger.error(str(e))
         elif tvdb_id and not is_movie:
