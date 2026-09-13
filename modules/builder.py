@@ -4348,7 +4348,8 @@ class CollectionBuilder:
                                     sub_display = ""
                                     for variant in result:
                                         built_arg = build_url_arg(quote(str(variant)) if attr in plex.string_attributes else variant, arg_s=og_value)
-                                        sub_display += built_arg[1]
+                                        if not sub_display:
+                                            sub_display = built_arg[1]
                                         sub_results += f"{sub_conjunction if len(sub_results) > 0 else ''}{built_arg[0]}"
                                     display_add += sub_display
                                     results += f"{conjunction if len(results) > 0 else ''}push=1&{sub_results}pop=1&"
@@ -4527,6 +4528,7 @@ class CollectionBuilder:
                     if variants:
                         valid_list.append((fvalue, variants[0] if len(variants) == 1 else variants))
                         continue
+                    names = self.library.get_language_search_options(attribute)
                 elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
