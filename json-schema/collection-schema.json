@@ -503,6 +503,7 @@
                 "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched_media": { "$ref": "#/definitions/tracearr-watched-media-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -1218,6 +1219,15 @@
                 "source_video_codec": { "type": "string", "minLength": 1 },
                 "source_audio_codec": { "type": "string", "minLength": 1 },
                 "genre": { "type": "string", "minLength": 1 }
+            }
+        },
+        "tracearr-watched-media-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "min_state": { "type": "string", "enum": ["watched", "partial"] }
             }
         },
 

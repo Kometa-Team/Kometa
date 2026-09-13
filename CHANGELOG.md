@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Send explicitly configured `watched` filters to Tracearr's Public API v2 history endpoint, reducing history records transferred before Kometa applies its remaining filters.
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
 - Consolidate item-specific IDs, titles, GUIDs, and URLs in end-of-run warning and error tables, derive missing-rating groups from active overlay sources, and move missing overlay template values into the Overlay Summary.
 
 ### Added
 
+- Add the `tracearr_watched_media` builder for retrieving Tracearr's distinct watched or partially watched movie, show, and episode sets using provider-ID matching and the compact Public API v2 watched-media endpoint.
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
 - Support the `folder_location` Plex search option in music-library track builders.

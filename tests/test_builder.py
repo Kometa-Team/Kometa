@@ -169,7 +169,7 @@ def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
 
 
-@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress"])
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress", "tracearr_watched_media"])
 def test_tracearr_activity_builders_support_custom_sort(method):
     assert method in builder_module.tracearr.builders
     assert method in custom_sort_builders
@@ -216,6 +216,22 @@ def test_tracearr_in_progress_sets_progress_defaults():
     assert data["watched"] is False
     assert data["minimum_progress"] == 1
     assert data["maximum_progress"] == 84
+
+
+def test_tracearr_watched_media_parser_uses_distinct_defaults():
+    builder = make_builder()
+
+    builder._tracearr("tracearr_watched_media", {"user": "Anthony", "min_state": "partial"})
+
+    _, data = builder.builders[0]
+    assert data == {
+        "list_type": "watched_media",
+        "list_size": 10,
+        "list_days": None,
+        "min_state": "partial",
+        "user": "Anthony",
+        "builder_level": "movie",
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════

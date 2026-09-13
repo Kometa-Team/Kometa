@@ -561,6 +561,7 @@ custom_sort_builders = [
     "tracearr_transcoded",
     "tracearr_watch_time",
     "tracearr_in_progress",
+    "tracearr_watched_media",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -3323,6 +3324,17 @@ class CollectionBuilder:
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
             list_type = method_name.replace("tracearr_", "", 1)
+            if list_type == "watched_media":
+                final_dict = {
+                    "list_type": list_type,
+                    "list_size": util.parse(self.Type, "list_size", dict_data, datatype="int", methods=dict_methods, minimum=1, default=10, parent=method_name),
+                    "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, minimum=1, parent=method_name) if "list_days" in dict_methods else None,
+                    "min_state": util.parse(self.Type, "min_state", dict_data, methods=dict_methods, options=tracearr.watched_states, default="watched", parent=method_name),
+                    "user": util.parse(self.Type, "user", dict_data, methods=dict_methods, parent=method_name) if "user" in dict_methods else None,
+                    "builder_level": self.builder_level,
+                }
+                self.builders.append((method_name, final_dict))
+                continue
             final_dict = {
                 "list_type": list_type,
                 "list_days": util.parse(
