@@ -9,25 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Send explicitly configured `watched` filters to Tracearr's Public API v2 history endpoint, reducing history records transferred before Kometa applies its remaining filters.
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
 - Consolidate item-specific IDs, titles, GUIDs, and URLs in end-of-run warning and error tables, derive missing-rating groups from active overlay sources, and move missing overlay template values into the Overlay Summary.
 
 ### Added
 
+- Add the `tracearr_watched_media` builder for retrieving Tracearr's distinct watched or partially watched movie, show, and episode sets using provider-ID matching and the compact Public API v2 watched-media endpoint.
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
 - Support the `folder_location` Plex search option in music-library track builders.
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
+- Add `sync_to_flicklist_list` and `sync_missing_to_flicklist_list` to sync a collection's contents to a FlickList list, mirroring `sync_to_trakt_list`/`sync_missing_to_trakt_list`.
+- Add `flicklist_user` as a mass rating source, using the FlickList user's personal ratings.
 
 ### Fixed
 
 - Skip automatically discovered stale TMDb IDs during franchise discovery and TMDb-based Plex filtering without generating failure notifications. #3561
+- Reject malformed TVDb external IDs returned by TMDb so IMDb Defaults skip unmappable shows instead of later reporting a TVDb URL error. #3548
 - Continue metadata and overlay processing when a Plex request times out while removing an existing `Overlay` label during image updates; log the failed image update instead of aborting the library run.
 - Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
 - Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
 - Fix the `resolution` Defaults overlay file selecting the `-Dovetail` (resolution-paired) edition overlay instead of the plain one when `use_resolution: false` disables resolution overlays entirely, by no longer building the dovetail edition overlays in that case, and fix a related list-mutation-during-iteration bug in overlay suppress/group resolution that could skip a suppress rule for an overlay later in an item's match list.
 - Reduce Plex metadata reload payloads during library operations by excluding unused cast, crew, and media elements, aiming to prevent poster operations from failing on very large shows. #3519
-- Ignore invalid TMDb aggregate cast/crew role entries and isolate remaining TMDb object parsing failures to the affected item so mass rating operations and subsequent overlays continue; report skipped entries only in debug logs because the invalid data comes from TMDb and requires no user action. #3518
+- Ignore invalid TMDb aggregate cast/crew role entries and isolate remaining TMDb object parsing failures to the affected item so mass rating operations and subsequent overlays continue; report skipped entries only in trace logs because the invalid data comes from TMDb and requires no user action. #3518
 - Honor HTTP 429 `Retry-After` response headers across shared HTTP integrations, including Trakt rating updates, instead of immediately continuing with subsequent requests. #3525
 - Prevent `delete_collections` from treating configured collections with localized or custom-resolved titles as unconfigured when operations run before collections.
 - Fixed `audio_codec` track builder

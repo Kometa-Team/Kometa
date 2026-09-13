@@ -113,6 +113,47 @@ def test_dynamic_tmdb_collection_skips_plex_discovered_notfound(monkeypatch):
     assert "TMDb Error: No Movie found for TMDb ID: 1450305" in logger.debug_messages
 
 
+@pytest.mark.parametrize(
+    ("auto_type", "library_type", "is_movie"),
+    [("original_language", "Movie", True), ("origin_country", "Show", False)],
+)
+def test_dynamic_tmdb_attribute_discovery_ignores_notfound(auto_type, library_type, is_movie, monkeypatch):
+    monkeypatch.setattr("modules.meta.logger", FakeLogger())
+    monkeypatch.setattr(
+        DataFile,
+        "load_file",
+        lambda *args, **kwargs: {"dynamic_collections": {"TMDb Attributes": {"type": auto_type}}},
+    )
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+    library = SimpleNamespace(
+        type=library_type,
+        is_movie=is_movie,
+        is_show=not is_movie,
+        is_music=False,
+        agent="tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        get_all=MagicMock(return_value=[item]),
+        get_ids=MagicMock(return_value=(1450305, None, None)),
+        get_all_collections=MagicMock(return_value=[]),
+    )
+    tmdb_client = MagicMock()
+    tmdb_client.get_item.return_value = SimpleNamespace(
+        language_iso="en",
+        language_name="English",
+        countries=[SimpleNamespace(iso_3166_1="US", name="United States")],
+    )
+    config = SimpleNamespace(
+        GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]),
+        requested_files=[],
+        TMDb=tmdb_client,
+    )
+
+    MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    tmdb_client.get_item.assert_called_once_with(item, 1450305, None, None, is_movie=is_movie, ignore_not_found=True)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # update_theme
 # ═══════════════════════════════════════════════════════════════════════

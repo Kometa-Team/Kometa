@@ -425,6 +425,14 @@
             "works_with_playlists_and_custom_sort": "Yes"
         },
         {
+            "builder": "tracearr_watched_media",
+            "hyperlink": "https://kometa.wiki/en/nightly/files/builders/tracearr/history/#tracearr-watched-media",
+            "description": "Gets the distinct set of watched or partially watched Tracearr media",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
             "builder": "tracearr_trending",
             "hyperlink": "https://kometa.wiki/en/nightly/files/builders/tracearr/overview/",
             "description": "Gets the most active items from recent Tracearr watch history",

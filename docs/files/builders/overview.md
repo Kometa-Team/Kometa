@@ -161,6 +161,7 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:material-movie-search: Tracearr Popular](../tracearr/history) - Gets items based on unique users in Tracearr watch history
         - [:material-movie-search: Tracearr Watched](../tracearr/history) - Gets items based on completed Tracearr sessions
+        - [:material-movie-search: Tracearr Watched Media](../tracearr/history#tracearr-watched-media) - Gets the distinct set of watched or partially watched items
         - [:material-movie-search: Tracearr Trending](../tracearr/history) - Gets the most active items from recent Tracearr watch history
         - [:material-movie-search: Tracearr Rewatched](../tracearr/history) - Gets items repeatedly played by the same Tracearr user
         - [:material-movie-search: Tracearr Completed](../tracearr/history) - Gets the most recently completed items from Tracearr watch history

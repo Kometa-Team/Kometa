@@ -4,12 +4,13 @@ hide:
 ---
 # Tracearr History
 
-The Tracearr builders below use the Public API history endpoints and their pagination and filtering support. Kometa prefers `/api/v2/public/history` and automatically falls back to `/api/v1/public/history` when v2 is unavailable.
+Most Tracearr builders below use the Public API history endpoints and their pagination and filtering support. Kometa prefers `/api/v2/public/history` and automatically falls back to `/api/v1/public/history` when v2 is unavailable. `tracearr_watched_media` instead uses its purpose-built v2 endpoint when Tracearr advertises that capability.
 
 | Builder | Description |
 |:--------|:------------|
 | `tracearr_popular`  | Gets items watched by the most unique Tracearr users. |
 | `tracearr_watched`  | Gets items with the most completed Tracearr sessions. |
+| `tracearr_watched_media` | Gets Tracearr's distinct set of watched or partially watched items. Unlike `tracearr_watched`, this is not a chart ranked by completed sessions. |
 | `tracearr_trending` | Gets the most active items from recent Tracearr watch history. |
 | `tracearr_rewatched` | Gets items repeatedly played by the same Tracearr user. |
 | `tracearr_completed` | Gets the most recently completed items from the Tracearr watch history feed. |
@@ -47,6 +48,46 @@ Tracearr playlist builders can combine movie and show libraries from the same Pl
 Kometa probes Tracearr's v2 Public API when connecting. When v2 is available, Kometa uses its history identity fields to match each play to its originating Plex library and exact Plex rating key. Movie playlists use the provider IDs supplied by Tracearr directly. Tracearr versions without v2 automatically use the v1 endpoint, and title/year matching is retained for older history records without library identity. Friendly cross-account user matching requires Tracearr v2; the other filters use whichever fields are available from the installed Tracearr version.
 
 Identical history requests are reused during the same Kometa run, reducing repeated pagination and pressure on Tracearr's shared v2 API rate limit.
+
+## Tracearr Watched Media
+
+`tracearr_watched_media` uses `/api/v2/public/watched-media`, when provided by the installed Tracearr version. The endpoint returns compact, distinct media records rather than every playback session, permits up to 1,000 records per page, and supplies provider IDs for direct matching. Kometa checks Tracearr's v2 API specification for this individual capability because early Public API v2 releases do not include it.
+
+This builder is all-time by default. Set `list_days` to retain only records whose `last_watched_day` falls within that many days. Results remain ordered by most recent activity.
+
+| Attribute | Description | Required | Default |
+|:----------|:------------|:--------:|:-------:|
+| `list_size` | Maximum number of Movies, Shows, or Episodes to add. | :fontawesome-solid-circle-xmark:{ .red } | `10` |
+| `list_days` | Optionally limits results to media active within this many days. | :fontawesome-solid-circle-xmark:{ .red } | All time |
+| `user` | Limits watched state to one Tracearr identity. Accepts the same identity values as the history builders. | :fontawesome-solid-circle-xmark:{ .red } | All users |
+| `min_state` | Lowest state to include. `watched` returns completed media; `partial` includes both partially and completely watched media. | :fontawesome-solid-circle-xmark:{ .red } | `watched` |
+
+Movie libraries are matched by TMDb or IMDb ID. Show libraries are matched by TVDb, TMDb, or IMDb ID. With `builder_level: episode`, episodes are matched by the parent show's TVDb ID plus season and episode numbers, with an episode IMDb ID as a fallback. Mixed-library playlists request movies and shows separately and merge them into one recent-first result.
+
+```yaml
+collections:
+  Watched by Anthony:
+    sync_mode: sync
+    collection_order: custom
+    tracearr_watched_media:
+      user: Anthony
+      min_state: watched
+      list_size: 100
+```
+
+```yaml
+collections:
+  Recently Started:
+    sync_mode: sync
+    collection_order: custom
+    tracearr_watched_media:
+      user: Anthony
+      min_state: partial
+      list_days: 30
+      list_size: 50
+```
+
+## Tracearr History Builders
 
 `tracearr_binged` requires at least two distinct completed episodes and works with Show libraries. In playlists, it returns shows only.
 

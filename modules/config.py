@@ -190,6 +190,7 @@ mass_rating_options = {
     "imdb": "Use IMDb Rating",
     "trakt": "Use Trakt Rating",
     "trakt_user": "Use Trakt User Rating",
+    "flicklist_user": "Use FlickList User Rating",
     "serializd": "Use Serializd Rating",
     "floppy": "Use Floppy User Rating",
     "omdb": "Use IMDb Rating through OMDb",

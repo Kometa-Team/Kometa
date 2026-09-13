@@ -102,9 +102,11 @@
                 "show_missing": { "type": "boolean" },
                 "show_unfiltered": { "type": "boolean" },
                 "sync_missing_to_trakt_list": { "type": "boolean" },
+                "sync_missing_to_flicklist_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
                 "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
                 "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
+                "sync_to_flicklist_list": { "oneOf": [{ "type": "string" }, { "type": "integer" }], "description": "FlickList list id or name to sync this definition to. Created automatically if no matching list is found among your own lists." },
                 "test": { "type": "boolean" },
                 "tmdb_birthday": {
                     "type": "object", "additionalProperties": false,
@@ -501,6 +503,7 @@
                 "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched_media": { "$ref": "#/definitions/tracearr-watched-media-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -1216,6 +1219,15 @@
                 "source_video_codec": { "type": "string", "minLength": 1 },
                 "source_audio_codec": { "type": "string", "minLength": 1 },
                 "genre": { "type": "string", "minLength": 1 }
+            }
+        },
+        "tracearr-watched-media-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "min_state": { "type": "string", "enum": ["watched", "partial"] }
             }
         },
 

@@ -974,7 +974,7 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie", ignore_not_found=True)
                                 if tmdb_item and tmdb_item.language_iso:
                                     all_keys[tmdb_item.language_iso] = tmdb_item.language_name
                                     if tmdb_item.language_iso not in exclude and tmdb_item.language_name not in exclude:
@@ -986,7 +986,7 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie")
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=library.type == "Movie", ignore_not_found=True)
                                 if tmdb_item and tmdb_item.countries:
                                     for country in tmdb_item.countries:
                                         all_keys[country.iso_3166_1.lower()] = country.name

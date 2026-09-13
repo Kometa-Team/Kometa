@@ -558,6 +558,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `anidb_average` | Use AniDB average. |
         | `anidb_rating` | Use AniDB rating. |
         | `anidb_score` | Use AniDB review score. |
+        | `flicklist_user` | Use FlickList user's personal rating. Requires [FlickList key](../config/flicklist.md). |
         | `imdb` | Use IMDb rating. |
         | `mal` | Use MyAnimeList score. Requires [MyAnimeList authentication](../config/myanimelist.md). |
         | `mdb` | Use MDBList score. Requires [MDBList key](../config/mdblist.md). |

@@ -561,6 +561,7 @@ custom_sort_builders = [
     "tracearr_transcoded",
     "tracearr_watch_time",
     "tracearr_in_progress",
+    "tracearr_watched_media",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -661,6 +662,7 @@ parts_collection_valid = (
         "item_analyze",
         "sync_to_trakt_list",
         "sync_to_mdb_list",
+        "sync_to_flicklist_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1188,6 +1190,8 @@ class CollectionBuilder:
         self.mdb_list_arr_ids = None
         self.mdb_list_arr_removal_types = set()
         self.sync_missing_to_trakt_list = False
+        self.sync_to_flicklist_list = None
+        self.sync_missing_to_flicklist_list = False
         self.collection_poster = None
         self.collection_background = None
         self.collection_logo = None
@@ -1685,7 +1689,10 @@ class CollectionBuilder:
                     self._trakt(method_name, method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
-                elif method_name in flicklist.builders:
+                elif method_name in flicklist.builders or method_name in [
+                    "sync_to_flicklist_list",
+                    "sync_missing_to_flicklist_list",
+                ]:
                     self._flicklist(method_name, method_data)
                 elif method_name in serializd.builders:
                     self._serializd(method_name, method_data)
@@ -3317,6 +3324,17 @@ class CollectionBuilder:
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
             list_type = method_name.replace("tracearr_", "", 1)
+            if list_type == "watched_media":
+                final_dict = {
+                    "list_type": list_type,
+                    "list_size": util.parse(self.Type, "list_size", dict_data, datatype="int", methods=dict_methods, minimum=1, default=10, parent=method_name),
+                    "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, minimum=1, parent=method_name) if "list_days" in dict_methods else None,
+                    "min_state": util.parse(self.Type, "min_state", dict_data, methods=dict_methods, options=tracearr.watched_states, default="watched", parent=method_name),
+                    "user": util.parse(self.Type, "user", dict_data, methods=dict_methods, parent=method_name) if "user" in dict_methods else None,
+                    "builder_level": self.builder_level,
+                }
+                self.builders.append((method_name, final_dict))
+                continue
             final_dict = {
                 "list_type": list_type,
                 "list_days": util.parse(
@@ -3614,6 +3632,12 @@ class CollectionBuilder:
             self.builders.append((method_name, self.config.FlickList.validate_up_next(self.Type, method_data)))
         elif method_name == "flicklist_ratings":
             self.builders.append((method_name, self.config.FlickList.validate_ratings(self.Type, method_data)))
+        elif method_name == "sync_to_flicklist_list":
+            if isinstance(method_data, dict) or not str(method_data).strip():
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_flicklist_list requires a list id or name")
+            self.sync_to_flicklist_list = method_data
+        elif method_name == "sync_missing_to_flicklist_list":
+            self.sync_missing_to_flicklist_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
 
     def _serializd(self, method_name, method_data):
         if self.config.Serializd is None:
@@ -5727,6 +5751,35 @@ class CollectionBuilder:
             current_ids.extend([(mm, "tmdb") for mm in self.missing_movies])
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
+
+    def sync_flicklist_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
+        logger.info("")
+        if self.obj:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        current_ids = []
+        skipped_seasons_and_episodes = 0
+        for item in self.items:
+            for pl_library in self.libraries:
+                new_id = None
+                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                    new_id = ({"tmdb": pl_library.movie_rating_key_map[item.ratingKey]}, "movie")
+                elif isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                    new_id = ({"tvdb": pl_library.show_rating_key_map[item.ratingKey]}, "show")
+                elif isinstance(item, (Season, Episode)):
+                    skipped_seasons_and_episodes += 1
+                    break
+                if new_id:
+                    current_ids.append(new_id)
+                    break
+        if skipped_seasons_and_episodes:
+            logger.warning(f"FlickList Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); FlickList lists hold movies and shows only")
+        if self.sync_missing_to_flicklist_list:
+            current_ids.extend([({"tmdb": mm}, "movie") for mm in self.missing_movies])
+            current_ids.extend([({"tvdb": ms}, "show") for ms in self.missing_shows])
+        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, current_ids)
 
     def sync_mdb_list(self):
         if not self.sync_to_mdb_list:
