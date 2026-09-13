@@ -51,7 +51,7 @@ Identical history requests are reused during the same Kometa run, reducing repea
 
 ## Tracearr Watched Media
 
-`tracearr_watched_media` uses `/api/v2/public/watched-media`, when provided by the installed Tracearr version. The endpoint returns compact, distinct media records rather than every playback session, permits up to 1,000 records per page, and supplies provider IDs for direct matching. Kometa checks Tracearr's v2 OpenAPI document for this individual capability because early Public API v2 releases do not include it.
+`tracearr_watched_media` uses `/api/v2/public/watched-media`, when provided by the installed Tracearr version. The endpoint returns compact, distinct media records rather than every playback session, permits up to 1,000 records per page, and supplies provider IDs for direct matching. Kometa checks Tracearr's v2 API specification for this individual capability because early Public API v2 releases do not include it.
 
 This builder is all-time by default. Set `list_days` to retain only records whose `last_watched_day` falls within that many days. Results remain ordered by most recent activity.
 
