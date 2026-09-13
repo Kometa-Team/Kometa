@@ -589,12 +589,6 @@ class Overlays:
 
         for over_key, (item, over_names) in key_to_overlays.items():
             group_status = {}
-            for over_name in list(over_names):
-                if over_name not in over_names:
-                    continue
-                for suppress_name in properties[over_name].suppress:
-                    if suppress_name in over_names:
-                        key_to_overlays[over_key][1].remove(suppress_name)
             for over_name in over_names:
                 for overlay_group, group_names in overlay_groups.items():
                     if over_name in group_names:
@@ -603,13 +597,18 @@ class Overlays:
                         group_status[overlay_group].append(over_name)
             for gk, gv in group_status.items():
                 if len(gv) > 1:
-                    final = None
-                    for v in gv:
-                        if final is None or overlay_groups[gk][v] > overlay_groups[gk][final]:
-                            final = v
+                    highest_weight = max(overlay_groups[gk][v] for v in gv)
+                    # Tied weights retain the first overlay in definition order.
+                    final = next(v for v in gv if overlay_groups[gk][v] == highest_weight)
                     for v in gv:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
+            for over_name in list(over_names):
+                if over_name not in over_names:
+                    continue
+                for suppress_name in properties[over_name].suppress:
+                    if suppress_name in over_names:
+                        key_to_overlays[over_key][1].remove(suppress_name)
         return key_to_overlays, properties
 
     def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):

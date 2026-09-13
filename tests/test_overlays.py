@@ -150,6 +150,48 @@ class TestCompileOverlays:
 
         assert key_to_overlays[item.ratingKey][1] == ["Resolution-Dovetail", "Edition-Dovetail"]
 
+    def test_group_loser_does_not_suppress_an_overlay(self, monkeypatch):
+        test_logger = FakeLogger()
+        test_logger.separating_character = "="
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        item = SimpleNamespace(ratingKey=1)
+        overlay_names = ["Group-Loser", "Group-Winner", "Independent"]
+        suppressions = {
+            "Group-Loser": ["Independent"],
+            "Group-Winner": [],
+            "Independent": [],
+        }
+        groups = {
+            "Group-Loser": "group",
+            "Group-Winner": "group",
+            "Independent": None,
+        }
+        weights = {
+            "Group-Loser": 1,
+            "Group-Winner": 2,
+            "Independent": 0,
+        }
+
+        def builder_factory(_config, _overlay_file, name, _data, library, overlay):
+            overlay_object = SimpleNamespace(mapping_name=name, keys=[], suppress=suppressions[name], group=groups[name], weight=weights[name])
+            return SimpleNamespace(
+                overlay=overlay_object,
+                builders=[],
+                found_items=[item],
+                limit=None,
+                display_filters=lambda: None,
+            )
+
+        monkeypatch.setattr("modules.overlays.CollectionBuilder", builder_factory)
+        overlay_file = SimpleNamespace(overlays={name: {} for name in overlay_names})
+        library = MagicMock(overlay_files=[overlay_file])
+        library.get_item_display_title.return_value = "Test Movie"
+        overlays = make_overlays(library=library)
+
+        key_to_overlays, _ = overlays.compile_overlays()
+
+        assert key_to_overlays[item.ratingKey][1] == ["Group-Winner", "Independent"]
+
 
 class TestScanOverlayBackupExtensions:
     """Covers the listdir-snapshot helper that replaced up to 3 os.path.exists() calls per item

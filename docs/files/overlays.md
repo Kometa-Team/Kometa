@@ -630,7 +630,7 @@ overlays:
 
 ### Overlay Groups
 
-Overlay groups are defined by the name given to the `group` attribute. Only one overlay with the highest weight per group will be applied.
+Overlay groups are defined by the name given to the `group` attribute. Only one overlay with the highest weight per group will be applied. If multiple matching overlays share the highest weight, the first one defined is applied.
 
 This is an example where the Multi-Audio overlay will be applied over the Dual-Audio overlay for every item found by both. 
 
@@ -835,6 +835,8 @@ filters:
 ## Suppress Overlays
 
 You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
+
+Overlay groups are resolved before suppression, so only the winning overlay in each group can suppress another overlay. If two surviving overlays suppress each other, the first one defined is applied.
 
 So in this example if the `4K-HDR` overlay matches an item then the `4K` and `HDR` overlays will also match. The `suppress_overlays` attribute on `4K-HDR` will stop the overlays specified (`4K` and `HDR`) from also being applied. 
 
