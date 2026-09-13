@@ -229,7 +229,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Debug&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-db`/`--debug`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DEBUG`<a class="headerlink" href="#debug" title="Permanent link">¶</a>"
 
-    <div id="debug" />To increase the verbosity of the logs, set this flag to `true`.
+    <div id="debug" />To show debug messages in the command window or Docker console output, set this flag to `true`. Detailed log files such as `meta.log` include debug messages regardless of this setting so they retain the diagnostic information needed for troubleshooting.
 
     <hr style="margin: 0px;">
 

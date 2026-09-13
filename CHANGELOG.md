@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reject malformed TVDb external IDs returned by TMDb so IMDb Defaults skip unmappable shows instead of later reporting a TVDb URL error. #3548
+- Honor disabled debug mode in terminal and Docker console output while retaining diagnostic debug records in log files. #3568
 - Continue metadata and overlay processing when a Plex request times out while removing an existing `Overlay` label during image updates; log the failed image update instead of aborting the library run.
 - Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
 - Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
