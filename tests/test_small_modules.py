@@ -181,6 +181,7 @@ class TestTracearr:
         t.history_version = 2
         t.v2_paths = {"/api/v2/public/watched-media"}
         t._history_cache = {}
+        t._watched_media_page_cache = {}
         t._users_cache = None
         t._history_until = None
         t.apikey = "trr_pub_test"
@@ -310,6 +311,27 @@ class TestTracearr:
 
         assert result == [(101, "tmdb")]
         adapter._request.assert_called_once()
+
+    def test_watched_media_reuses_identical_pages_during_run(self, adapter):
+        today = datetime.now(timezone.utc).date().isoformat()
+        adapter._request = MagicMock(
+            return_value={
+                "data": [{"media_type": "movie", "title": "Movie", "tmdb_id": 101, "last_watched_day": today}],
+                "meta": {"nextCursor": None, "pageSize": 1000},
+            }
+        )
+        data = {"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "movie"}
+
+        assert adapter.get_rating_keys(data) == [(101, "tmdb")]
+        assert adapter.get_rating_keys(data) == [(101, "tmdb")]
+        adapter._request.assert_called_once()
+
+    def test_watched_media_rejects_unsupported_library_scope(self, adapter):
+        adapter.library.is_movie = False
+        adapter.library.is_show = False
+
+        with pytest.raises(Failed, match="does not support the selected library type and builder level"):
+            adapter.get_rating_keys({"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "movie"})
 
     def test_watched_media_episode_uses_show_tvdb_coordinates(self, adapter):
         item = {"show_tvdb_id": 303, "season_number": 2, "episode_number": 4, "imdb_id": "tt0000304"}

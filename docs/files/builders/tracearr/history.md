@@ -87,6 +87,8 @@ collections:
       list_size: 50
 ```
 
+## Tracearr History Builders
+
 `tracearr_binged` requires at least two distinct completed episodes and works with Show libraries. In playlists, it returns shows only.
 
 `tracearr_in_progress` requires Tracearr's v2 Public API. It examines the latest play for each movie or show so an older partial play is not returned after the user subsequently completed that item. Movies are matched by provider ID and shows add the exact unfinished episode using its Plex rating key. The builder is restricted to playlists to keep user-specific viewing activity out of shared Plex collections.

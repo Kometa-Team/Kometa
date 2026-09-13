@@ -36,6 +36,7 @@ class Tracearr:
         self.history_version = None
         self.v2_paths = set()
         self._history_cache = {}
+        self._watched_media_page_cache = {}
         self._users_cache = None
         self._history_until = None
         logger.secret(self.url)
@@ -190,7 +191,7 @@ class Tracearr:
 
     def _get_watched_media_rating_keys(self, data, is_playlist=False, libraries=None):
         endpoint = "/api/v2/public/watched-media"
-        if self.history_version != 2 or endpoint not in getattr(self, "v2_paths", set()):
+        if self.history_version != 2 or endpoint not in self.v2_paths:
             raise Failed("Tracearr Error: tracearr_watched_media requires a Tracearr version that provides /api/v2/public/watched-media")
 
         search_libraries = libraries if libraries else [self.library]
@@ -202,6 +203,8 @@ class Tracearr:
                 media_types.append("movie")
             if any(search_library.is_show for search_library in search_libraries):
                 media_types.append("show")
+        if not media_types:
+            raise Failed("Tracearr Error: tracearr_watched_media does not support the selected library type and builder level")
 
         list_size = int(data["list_size"])
         list_days = data.get("list_days")
@@ -226,7 +229,7 @@ class Tracearr:
             exhausted_by_cutoff = False
             while usable < list_size:
                 request_params = {**params, "cursor": cursor} if cursor else params
-                response = self._request("watched-media", params=request_params, api=self.history_api, allow_404=True)
+                response = self._fetch_watched_media_page(request_params)
                 if response is None:
                     raise Failed("Tracearr Error: tracearr_watched_media requires a Tracearr version that provides /api/v2/public/watched-media")
                 page_items = response.get("data")
@@ -239,6 +242,7 @@ class Tracearr:
                         skipped += 1
                         continue
                     if cutoff is not None and watched_day < cutoff:
+                        # Tracearr guarantees newest activity first across pages, so later pages cannot contain in-window data.
                         exhausted_by_cutoff = True
                         continue
                     item_id = self._watched_media_item_id(item, media_type)
@@ -270,6 +274,12 @@ class Tracearr:
         if skipped:
             logger.debug(f"Tracearr returned {skipped} watched media record{'s' if skipped != 1 else ''} without enough identity data to match; Kometa skipped {'them' if skipped != 1 else 'it'}")
         return rating_keys
+
+    def _fetch_watched_media_page(self, params):
+        cache_key = tuple(sorted(params.items()))
+        if cache_key not in self._watched_media_page_cache:
+            self._watched_media_page_cache[cache_key] = self._request("watched-media", params=params, api=self.history_api, allow_404=True)
+        return self._watched_media_page_cache[cache_key]
 
     @staticmethod
     def _watched_day(value):
