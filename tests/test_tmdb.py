@@ -212,7 +212,8 @@ def test_aggregate_credits_skip_malformed_entries(monkeypatch, value_type, aggre
     assert api._parse(data=original, value_type=value_type) == "parsed"
     assert captured["data"][aggregate_key] == [valid_entry]
     assert original[aggregate_key] == [valid_entry, ["malformed"], None]
-    logger.debug.assert_called_once_with(f"TMDb returned 2 invalid TV {credit_type} entries for Example Person; Kometa skipped them. No user action is required.")
+    logger.trace.assert_called_once_with(f"TMDb returned 2 invalid TV {credit_type} entries for Example Person; Kometa skipped them. No user action is required.")
+    logger.debug.assert_not_called()
     logger.warning.assert_not_called()
 
 
