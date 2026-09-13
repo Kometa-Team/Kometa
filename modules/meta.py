@@ -963,7 +963,7 @@ class MetadataFile(DataFile):
                             for i, item in enumerate(all_items, 1):
                                 logger.ghost(f"Processing: {i}/{len(all_items)} {item.title}")
                                 tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
-                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True)
+                                tmdb_item = config.TMDb.get_item(item, tmdb_id, tvdb_id, imdb_id, is_movie=True, ignore_not_found=True)
                                 if tmdb_item and tmdb_item.collection_id and tmdb_item.collection_name:
                                     all_keys[str(tmdb_item.collection_id)] = tmdb_item.collection_name
                                     if str(tmdb_item.collection_id) not in exclude and tmdb_item.collection_name not in exclude:
