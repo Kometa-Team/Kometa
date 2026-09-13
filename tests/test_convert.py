@@ -47,6 +47,13 @@ class TestConvert:
         assert adapter.tmdb_to_tvdb(12345, fail=False) is None
         adapter.cache.update_tmdb_to_tvdb_map.assert_not_called()
 
+    def test_tmdb_to_tvdb_rejects_non_decimal_unicode_digit(self, adapter):
+        adapter.cache.query_tmdb_to_tvdb_map.return_value = (None, None)
+        adapter.tmdb.convert_from.return_value = "²"
+
+        assert adapter.tmdb_to_tvdb(12345, fail=False) is None
+        adapter.cache.update_tmdb_to_tvdb_map.assert_not_called()
+
     def test_tmdb_to_tvdb_rechecks_malformed_cached_id(self, adapter):
         adapter.cache.query_tmdb_to_tvdb_map.return_value = ("tt3348258", False)
         adapter.tmdb.convert_from.return_value = 368207

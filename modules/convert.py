@@ -193,7 +193,7 @@ class Convert:
     def tmdb_to_tvdb(self, tmdb_id, fail=False):
         def normalize_tvdb_id(value):
             value = str(value).strip()
-            return int(value) if value.isdigit() else None
+            return int(value) if value.isdecimal() else None
 
         expired = False
         if self.cache:
