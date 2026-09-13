@@ -385,6 +385,33 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_imdb_show_with_malformed_tmdb_tvdb_id_is_skipped_as_conversion_warning(self, monkeypatch):
+        from modules.convert import Convert
+
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(imdb_map={}, show_map={})
+        converter = Convert.__new__(Convert)
+        converter.cache = MagicMock()
+        converter.cache.query_imdb_to_tmdb_map.return_value = (None, None, None)
+        converter.cache.query_tmdb_to_tvdb_map.return_value = (None, None)
+        converter.tmdb = MagicMock()
+        converter.tmdb.convert_imdb_to.return_value = (12345, "show")
+        converter.tmdb.convert_from.return_value = "tt3348258"
+        builder = make_builder(
+            builder_level="show",
+            library=library,
+            libraries=[library],
+            config=SimpleNamespace(Convert=converter),
+        )
+
+        builder.filter_and_save_items([("tt3348258", "imdb")])
+
+        assert builder.found_items == []
+        assert builder.missing_shows == []
+        assert logger.error_messages == []
+        assert "Convert Warning: No TVDb ID found for TMDb ID '12345'" in logger.warning_messages
+
     def test_mdblist_value_prefetch_runs_after_standard_filters(self, monkeypatch):
         class FakeMovie:
             def __init__(self, rating_key):
