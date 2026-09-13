@@ -1311,6 +1311,33 @@ class TestBuildFilter:
         assert "push=1&audioLanguage!=de&and=1&audioLanguage!=de-DE&pop=1" in url
         assert _details.count("Audio Language is not de") == 1
 
+    def test_language_names_preserve_variant_boolean_logic(self):
+        """Regression for the reported Dutch flag overlay: Plex-reported language names use OR
+        across positive variants and AND across excluded variants without duplicate summary lines."""
+        language_values = {
+            "dutch": ["nl", "nld"],
+            "english": ["en", "eng", "en-US"],
+        }
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: language_values.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language": "Dutch", "audio_language.not": "English"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage=nl&or=1&audioLanguage=nld&pop=1" in url
+        assert "push=1&audioLanguage!=en&and=1&audioLanguage!=eng&and=1&audioLanguage!=en-US&pop=1" in url
+        assert details.count("Audio Language is Dutch") == 1
+        assert details.count("Audio Language is not English") == 1
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # Dispatch table sanity tests
