@@ -42,7 +42,7 @@ class KometaTMDbAPIs(TMDbAPIs):
             invalid_count = (len(entries) - len(valid_entries)) if isinstance(entries, list) else 1
             if invalid_count:
                 credit_type = "cast role" if aggregate_key == "roles" else "crew job"
-                logger.debug(
+                logger.trace(
                     f"TMDb returned {invalid_count} invalid TV {credit_type} entr{'y' if invalid_count == 1 else 'ies'} for "
                     f"{data.get('name') or data.get('id') or 'an unknown person'}; Kometa skipped {'it' if invalid_count == 1 else 'them'}. No user action is required."
                 )
