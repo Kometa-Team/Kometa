@@ -191,13 +191,19 @@ class Convert:
 
     @timings.timed("convert_tmdb_to_tvdb")
     def tmdb_to_tvdb(self, tmdb_id, fail=False):
+        def normalize_tvdb_id(value):
+            value = str(value).strip()
+            return int(value) if value.isdigit() else None
+
         expired = False
         if self.cache:
             cache_id, expired = self.cache.query_tmdb_to_tvdb_map(tmdb_id, tmdb=True)
             if cache_id and not expired:
-                return cache_id
+                valid_cache_id = normalize_tvdb_id(cache_id)
+                if valid_cache_id:
+                    return valid_cache_id
         try:
-            tvdb_id = self.tmdb.convert_from(tmdb_id, "tvdb_id", False)
+            tvdb_id = normalize_tvdb_id(self.tmdb.convert_from(tmdb_id, "tvdb_id", False))
             if tvdb_id:
                 if self.cache:
                     self.cache.update_tmdb_to_tvdb_map(expired, tmdb_id, tvdb_id)
