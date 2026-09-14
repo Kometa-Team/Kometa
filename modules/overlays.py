@@ -595,16 +595,29 @@ class Overlays:
                         if overlay_group not in group_status:
                             group_status[overlay_group] = []
                         group_status[overlay_group].append(over_name)
-            group_highest_weights = {gk: max(overlay_groups[gk][v] for v in gv) for gk, gv in group_status.items()}
-            for over_name in list(over_names):
-                if over_name not in over_names:
-                    continue
-                over_obj = properties[over_name]
-                if over_obj.group and over_obj.weight < group_highest_weights[over_obj.group]:
-                    continue
-                for suppress_name in over_obj.suppress:
-                    if suppress_name in over_names:
-                        key_to_overlays[over_key][1].remove(suppress_name)
+            processed_suppressors = set()
+            while True:
+                group_highest_weights = {}
+                for group_name, group_overlays in group_status.items():
+                    remaining_group = [v for v in group_overlays if v in over_names]
+                    if remaining_group:
+                        group_highest_weights[group_name] = max(overlay_groups[group_name][v] for v in remaining_group)
+                eligible_suppressors = []
+                for over_name in over_names:
+                    if over_name in processed_suppressors:
+                        continue
+                    over_obj = properties[over_name]
+                    if not over_obj.group or over_obj.weight == group_highest_weights[over_obj.group]:
+                        eligible_suppressors.append(over_name)
+                if not eligible_suppressors:
+                    break
+                for over_name in eligible_suppressors:
+                    if over_name not in over_names:
+                        continue
+                    processed_suppressors.add(over_name)
+                    for suppress_name in properties[over_name].suppress:
+                        if suppress_name in over_names:
+                            key_to_overlays[over_key][1].remove(suppress_name)
             for gk, gv in group_status.items():
                 remaining = [v for v in gv if v in over_names]
                 if len(remaining) > 1:
