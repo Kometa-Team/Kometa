@@ -16,6 +16,7 @@ from requests.exceptions import RequestException
 from ruamel.yaml import YAML
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
+from modules import tmdb
 from modules.meta import DataFile, MetadataFile
 from tests.conftest import FakeLogger, FakeRequests
 
@@ -61,6 +62,96 @@ def make_metadata_file(library):
     metadata_file.library = library
     metadata_file.type_str = "Metadata File"
     return metadata_file, test_logger
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# dynamic tmdb_collection discovery
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def test_dynamic_tmdb_collection_skips_plex_discovered_notfound(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(tmdb, "logger", logger)
+    monkeypatch.setattr(
+        DataFile,
+        "load_file",
+        lambda *args, **kwargs: {"dynamic_collections": {"Franchises": {"type": "tmdb_collection"}}},
+    )
+    stale_item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+    valid_item = SimpleNamespace(title="Valid Movie", guid="plex://movie/valid")
+    library = SimpleNamespace(
+        type="Movie",
+        is_movie=True,
+        is_show=False,
+        is_music=False,
+        agent="tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        get_all=MagicMock(return_value=[stale_item, valid_item]),
+        get_ids=MagicMock(side_effect=[(1450305, None, None), (550, None, None)]),
+        get_all_collections=MagicMock(return_value=[]),
+    )
+    tmdb_client = tmdb.TMDb.__new__(tmdb.TMDb)
+    tmdb_client.config = SimpleNamespace(Convert=MagicMock())
+    tmdb_client.get_movie = MagicMock(
+        side_effect=[
+            tmdb.NotFound("TMDb Error: No Movie found for TMDb ID: 1450305"),
+            SimpleNamespace(collection_id=10, collection_name="Valid Franchise"),
+        ]
+    )
+    config = SimpleNamespace(
+        GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]),
+        requested_files=[],
+        TMDb=tmdb_client,
+    )
+
+    metadata_file = MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    assert "Valid Franchise" in metadata_file.collections
+    assert logger.error_messages == []
+    assert "TMDb Error: No Movie found for TMDb ID: 1450305" in logger.debug_messages
+
+
+@pytest.mark.parametrize(
+    ("auto_type", "library_type", "is_movie"),
+    [("original_language", "Movie", True), ("origin_country", "Show", False)],
+)
+def test_dynamic_tmdb_attribute_discovery_ignores_notfound(auto_type, library_type, is_movie, monkeypatch):
+    monkeypatch.setattr("modules.meta.logger", FakeLogger())
+    monkeypatch.setattr(
+        DataFile,
+        "load_file",
+        lambda *args, **kwargs: {"dynamic_collections": {"TMDb Attributes": {"type": auto_type}}},
+    )
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+    library = SimpleNamespace(
+        type=library_type,
+        is_movie=is_movie,
+        is_show=not is_movie,
+        is_music=False,
+        agent="tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        get_all=MagicMock(return_value=[item]),
+        get_ids=MagicMock(return_value=(1450305, None, None)),
+        get_all_collections=MagicMock(return_value=[]),
+    )
+    tmdb_client = MagicMock()
+    tmdb_client.get_item.return_value = SimpleNamespace(
+        language_iso="en",
+        language_name="English",
+        countries=[SimpleNamespace(iso_3166_1="US", name="United States")],
+    )
+    config = SimpleNamespace(
+        GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]),
+        requested_files=[],
+        TMDb=tmdb_client,
+    )
+
+    MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    tmdb_client.get_item.assert_called_once_with(item, 1450305, None, None, is_movie=is_movie, ignore_not_found=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════

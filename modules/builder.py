@@ -4818,6 +4818,9 @@ class CollectionBuilder:
                                     tmdb_item = self.config.TMDb.get_show(
                                         self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True),
                                     )
+                            except tmdb.NotFound as e:
+                                logger.debug(e)
+                                or_result = False
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False

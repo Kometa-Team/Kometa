@@ -37,6 +37,51 @@ def test_notfound_is_failed_subclass():
     assert issubclass(tmdb.NotFound, Failed)
 
 
+def test_get_item_treats_notfound_as_debug_miss_when_requested(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=tmdb.NotFound("TMDb movie is gone"))
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+
+    assert t.get_item(item, 1450305, None, None, ignore_not_found=True) is None
+    assert logger.debug_messages == ["TMDb movie is gone"]
+    assert logger.error_messages == []
+
+
+def test_get_item_keeps_notfound_as_error_by_default(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=tmdb.NotFound("TMDb movie is gone"))
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+
+    assert t.get_item(item, 1450305, None, None) is None
+    assert logger.debug_messages == []
+    assert logger.error_messages == ["TMDb movie is gone"]
+
+
+def test_get_item_keeps_other_plex_discovered_failures_as_errors(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=Failed("TMDb service failed"))
+    item = SimpleNamespace(title="Unavailable Movie", guid="plex://movie/unavailable")
+
+    assert t.get_item(item, 550, None, None) is None
+    assert logger.debug_messages == []
+    assert logger.error_messages == ["TMDb service failed"]
+
+
 def test_unavailable_is_service_error_subclass():
     assert issubclass(tmdb.Unavailable, ServiceError)
 

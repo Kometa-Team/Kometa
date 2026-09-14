@@ -401,6 +401,57 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    @staticmethod
+    def _tmdb_filter_builder(monkeypatch, tmdb_error):
+        class FakeMovie:
+            def __init__(self, rating_key):
+                self.ratingKey = rating_key
+                self.title = "Movie with stale TMDb GUID"
+
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        item = FakeMovie(101)
+        library = SimpleNamespace(
+            fetch_item=MagicMock(return_value=item),
+            reload=lambda value: value,
+            split=lambda method: (method, "", method),
+            movie_rating_key_map={101: 1450305},
+            show_rating_key_map={},
+            is_movie=True,
+        )
+        get_movie = MagicMock(side_effect=tmdb_error)
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(TMDb=SimpleNamespace(get_movie=get_movie)),
+            filters=[[("tmdb_keyword", ["aftercreditsstinger", "duringcreditsstinger"])]],
+        )
+        del builder.check_filters
+        return builder, logger, get_movie
+
+    def test_tmdb_filter_skips_notfound_item_at_debug_level(self, monkeypatch):
+        builder, logger, get_movie = self._tmdb_filter_builder(monkeypatch, builder_module.tmdb.NotFound("TMDb movie is gone"))
+
+        builder.filter_and_save_items([(101, "ratingKey")])
+
+        get_movie.assert_called_once_with(1450305)
+        assert builder.found_items == []
+        assert builder.filtered_keys == {101: "Movie with stale TMDb GUID"}
+        assert "TMDb movie is gone" in logger.debug_messages
+        assert logger.error_messages == []
+
+    def test_tmdb_filter_keeps_other_failures_as_errors(self, monkeypatch):
+        builder, logger, get_movie = self._tmdb_filter_builder(monkeypatch, Failed("TMDb service failed"))
+
+        builder.filter_and_save_items([(101, "ratingKey")])
+
+        get_movie.assert_called_once_with(1450305)
+        assert builder.found_items == []
+        assert builder.filtered_keys == {101: "Movie with stale TMDb GUID"}
+        assert "TMDb service failed" not in logger.debug_messages
+        assert logger.error_messages == ["TMDb service failed"]
+
     def test_imdb_show_with_malformed_tmdb_tvdb_id_is_skipped_as_conversion_warning(self, monkeypatch):
         from modules.convert import Convert
 
