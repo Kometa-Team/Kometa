@@ -836,7 +836,7 @@ filters:
 
 You can add `suppress_overlays` to an overlay definition and give it a list or comma separated string of overlay names you want suppressed from this item if this overlay is attached to the item.
 
-Overlay groups are resolved before suppression, so only the winning overlay in each group can suppress another overlay. If two surviving overlays suppress each other, the first one defined is applied.
+Only the highest-weight matching overlays in a group can suppress another overlay; all tied highest-weight overlays remain eligible to suppress. Suppression is resolved before the remaining group ties, allowing a plain overlay to replace an unpaired dovetail variant while preventing a lower-weight group loser from suppressing an unrelated overlay. If two eligible overlays suppress each other, the first one defined is applied.
 
 So in this example if the `4K-HDR` overlay matches an item then the `4K` and `HDR` overlays will also match. The `suppress_overlays` attribute on `4K-HDR` will stop the overlays specified (`4K` and `HDR`) from also being applied. 
 

@@ -150,6 +150,44 @@ class TestCompileOverlays:
 
         assert key_to_overlays[item.ratingKey][1] == ["Resolution-Dovetail", "Edition-Dovetail"]
 
+    @pytest.mark.parametrize(
+        ("dovetail", "plain", "counterpart"),
+        [
+            ("Resolution-Dovetail", "Resolution", "Edition"),
+            ("Edition-Dovetail", "Edition", "Resolution"),
+        ],
+    )
+    def test_unpaired_dovetail_falls_back_to_plain_overlay(self, monkeypatch, dovetail, plain, counterpart):
+        test_logger = FakeLogger()
+        test_logger.separating_character = "="
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        item = SimpleNamespace(ratingKey=1)
+        overlay_names = [dovetail, plain]
+        suppressions = {
+            dovetail: [counterpart],
+            plain: [dovetail],
+        }
+
+        def builder_factory(_config, _overlay_file, name, _data, library, overlay):
+            overlay_object = SimpleNamespace(mapping_name=name, keys=[], suppress=suppressions[name], group=plain.lower(), weight=1)
+            return SimpleNamespace(
+                overlay=overlay_object,
+                builders=[],
+                found_items=[item],
+                limit=None,
+                display_filters=lambda: None,
+            )
+
+        monkeypatch.setattr("modules.overlays.CollectionBuilder", builder_factory)
+        overlay_file = SimpleNamespace(overlays={name: {} for name in overlay_names})
+        library = MagicMock(overlay_files=[overlay_file])
+        library.get_item_display_title.return_value = "Standard Movie"
+        overlays = make_overlays(library=library)
+
+        key_to_overlays, _ = overlays.compile_overlays()
+
+        assert key_to_overlays[item.ratingKey][1] == [plain]
+
     def test_group_loser_does_not_suppress_an_overlay(self, monkeypatch):
         test_logger = FakeLogger()
         test_logger.separating_character = "="
