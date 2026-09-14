@@ -4,7 +4,7 @@ hide:
 ---
 # Plex All
 
-Finds every item in your library. Useful with [Filters](../filters.md).
+Finds every item in your library. Useful with [Filters](../../filters.md).
 
 The expected input is either true or false.
 

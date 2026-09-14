@@ -289,7 +289,7 @@
         {
             "builder": "plex_all",
             "hyperlink": "https://kometa.wiki/en/nightly/files/builders/plex/all/",
-            "description": "Gets every movie/show in your library. Useful with [Filters](../filters.md)",
+            "description": "Gets every movie/show in your library. Useful with [Filters](../../filters.md)",
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
             "works_with_playlists_and_custom_sort": "No"
