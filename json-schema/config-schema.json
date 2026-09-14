@@ -4621,6 +4621,33 @@
         }
       }
     },
+    "external-path-with-template-variables": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "file": {"type": "string"},
+        "folder": {"type": "string"},
+        "url": {"type": "string", "format": "uri", "pattern": "^(https?)://"},
+        "git": {"type": "string"},
+        "repo": {"type": "string"},
+        "schedule": {"type": "string"},
+        "asset_directory": {
+          "oneOf": [
+            {"type": "string"},
+            {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+          ]
+        },
+        "template_variables": {"type": "object", "additionalProperties": true}
+      },
+      "required": ["template_variables"],
+      "oneOf": [
+        {"required": ["file"]},
+        {"required": ["folder"]},
+        {"required": ["url"]},
+        {"required": ["git"]},
+        {"required": ["repo"]}
+      ]
+    },
     "metadata-files": {
       "title": "metadata_files",
       "additionalProperties": false,
@@ -4644,6 +4671,9 @@
           },
           {
             "$ref": "#/definitions/repo-path"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4690,6 +4720,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-collection-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4736,6 +4769,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-overlay-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4867,6 +4903,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-playlist-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
