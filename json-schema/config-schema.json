@@ -4903,6 +4903,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-playlist-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
