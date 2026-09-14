@@ -1503,6 +1503,40 @@ class TestGetLanguageSearchValues:
         plex.get_tags = MagicMock(return_value=[make_filter_choice("en-US")])
         assert plex.get_language_search_values("audio_language", "zh") == []
 
+    def test_matches_language_name_reported_by_plex(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nld", title="Dutch"),
+                make_filter_choice("eng", title="English"),
+            ]
+        )
+        assert plex.get_language_search_values("audio_language", "Dutch") == ["nl", "nld"]
+
+    def test_falls_back_from_three_letter_code_to_base_language_variants(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nl-NL", title="Dutch"),
+            ]
+        )
+        assert plex.get_language_search_values("audio_language", "nld") == ["nl", "nl-NL"]
+
+    def test_returns_cached_language_names_for_validation_errors(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nld", title="Dutch"),
+                make_filter_choice("eng", title="English"),
+            ]
+        )
+        plex.get_language_search_values("audio_language", "missing")
+        assert plex.get_language_search_options("audio_language") == ["Dutch", "English"]
+        plex.get_tags.assert_called_once()
+
     def test_caches_choices_and_only_queries_plex_once(self):
         plex = make_plex()
         plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419")])

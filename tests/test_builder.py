@@ -290,6 +290,9 @@ class FakeLangLibrary:
         self.get_tags_calls.append((attribute, code))
         return self.language_map.get(attribute, {}).get(code, [])
 
+    def get_language_search_options(self, attribute):
+        return self.names.get(attribute, [])
+
 
 def make_lang_builder(library, **attrs) -> CollectionBuilder:
     defaults = {"details": {"show_options": False}, "ignore_blank_results": False}
@@ -341,9 +344,9 @@ class TestValidateAttributeLanguage:
         assert result == [("es", ["es-419", "spa"]), ("en", "en-US")]
 
     def test_raises_filter_failed_when_language_not_present_in_library(self):
-        library = FakeLangLibrary({"audio_language": {}})
-        builder = make_lang_builder(library)
-        with pytest.raises(builder_module.FilterFailed):
+        library = FakeLangLibrary({"audio_language": {}}, names={"audio_language": ["Dutch", "English"]})
+        builder = make_lang_builder(library, details={"show_options": True})
+        with pytest.raises(builder_module.FilterFailed, match=r"Options: \['Dutch', 'English'\]"):
             builder.validate_attribute("audio_language", "", "audio_language", "zh", True, plex_search=True)
 
     def test_logs_instead_of_raising_when_validate_is_false_and_ignoring_blank_results(self, monkeypatch):
@@ -1323,7 +1326,7 @@ class TestBuildFilter:
             is_show=False,
             is_music=False,
             split=self._split,
-            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+            get_language_search_values=lambda attribute, code: {"de": ["de-DE", "de"]}.get(code, []),
         )
         builder = make_builder(library=library, details={"show_options": False})
 
@@ -1333,8 +1336,10 @@ class TestBuildFilter:
             default_sort="random",
         )
 
-        assert "push=1&audioLanguage=de&or=1&audioLanguage=de-DE&pop=1" in url
+        assert "push=1&audioLanguage=de-DE&or=1&audioLanguage=de&pop=1" in url
         assert "audioLanguage=de&and=1&audioLanguage=de-DE" not in url
+        assert _details.count("Audio Language is de") == 1
+        assert "Audio Language is de-DE" not in _details
 
     def test_negated_language_variants_are_anded_under_plex_search_all(self):
         """Excluding a language must exclude every one of its variants: audioLanguage!=de AND
@@ -1356,6 +1361,34 @@ class TestBuildFilter:
         )
 
         assert "push=1&audioLanguage!=de&and=1&audioLanguage!=de-DE&pop=1" in url
+        assert _details.count("Audio Language is not de") == 1
+
+    def test_language_names_preserve_variant_boolean_logic(self):
+        """Regression for the reported Dutch flag overlay: Plex-reported language names use OR
+        across positive variants and AND across excluded variants without duplicate summary lines."""
+        language_values = {
+            "dutch": ["nl", "nld"],
+            "english": ["en", "eng", "en-US"],
+        }
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: language_values.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language": "Dutch", "audio_language.not": "English"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage=nl&or=1&audioLanguage=nld&pop=1" in url
+        assert "push=1&audioLanguage!=en&and=1&audioLanguage!=eng&and=1&audioLanguage!=en-US&pop=1" in url
+        assert details.count("Audio Language is Dutch") == 1
+        assert details.count("Audio Language is not English") == 1
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -1341,28 +1341,50 @@ class Plex(Library):
 
     def get_language_search_values(self, search_name, code):
         """Every Plex audioLanguage/subtitleLanguage filter value in this library that matches `code`:
-        if `code` is itself a specific value Plex reports (e.g. "es-419" or the 3-letter "spa"), only
-        that exact value is targeted; otherwise every variant that normalizes to it as a base ISO 639-1
-        code is returned (e.g. "es" -> ["es-419", "es-MX", "spa"]). Choices are fetched once per
-        library per run and cached."""
+        if `code` is a language name Plex reports or a specific value Plex reports (e.g. "es-419" or
+        the 3-letter "spa"), those values are targeted; otherwise every variant that normalizes to it
+        as a base ISO 639-1 code is returned (e.g. "es" -> ["es-419", "es-MX", "spa"]). Choices are
+        fetched once per library per run and cached."""
+        code = str(code).lower() if code else ""
         if search_name not in self._language_choice_cache:
             final_search = search_translation[search_name] if search_name in search_translation else search_name
             final_search = show_translation[final_search] if self.is_show and final_search in show_translation else final_search
             final_search = get_tags_translation[final_search] if final_search in get_tags_translation else final_search
             exact_map = {}
             code_map = {}
+            name_map = {}
+            names = []
             try:
                 for choice in self.get_tags(final_search):
                     key = choice.key.lower()  # type: ignore[union-attr]
+                    name = choice.title.lower()  # type: ignore[union-attr]
+                    base_code = base_language_code(key)
                     exact_map[key] = choice.key  # type: ignore[union-attr]
-                    code_map.setdefault(base_language_code(key), []).append(choice.key)  # type: ignore[union-attr]
+                    if choice.key not in code_map.setdefault(base_code, []):  # type: ignore[union-attr]
+                        code_map[base_code].append(choice.key)  # type: ignore[union-attr]
+                    if choice.key not in name_map.setdefault(name, []):  # type: ignore[union-attr]
+                        name_map[name].append(choice.key)  # type: ignore[union-attr]
+                    if choice.title not in names:  # type: ignore[union-attr]
+                        names.append(choice.title)  # type: ignore[union-attr]
             except NotFound:
                 logger.debug(f"Search Attribute: {final_search}")
-            self._language_choice_cache[search_name] = (exact_map, code_map)
-        exact_map, code_map = self._language_choice_cache[search_name]
-        if code != base_language_code(code) and code in exact_map:
+            self._language_choice_cache[search_name] = (exact_map, code_map, name_map, names)
+        exact_map, code_map, name_map, _ = self._language_choice_cache[search_name]
+        normalized_code = base_language_code(code)
+        if code == normalized_code and code in code_map:
+            return code_map[code]
+        if code != normalized_code and code in exact_map:
             return [exact_map[code]]
-        return code_map.get(code, [])
+        if code in name_map:
+            return name_map[code]
+        if len(code) == 3 and code.isalpha():
+            return code_map.get(normalized_code, [])
+        return []
+
+    def get_language_search_options(self, search_name):
+        if search_name not in self._language_choice_cache:
+            self.get_language_search_values(search_name, "")
+        return self._language_choice_cache[search_name][3]
 
     @PLEX_RETRY
     def get_tags(self, tag):
