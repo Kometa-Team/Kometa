@@ -452,7 +452,7 @@ def report_duplicate_collections(config):
             logger.warning(f"Plex Warning: Duplicate collection titles detected in {library_name} Library")
             for title, count in duplicate_titles:
                 logger.warning(f"  {count} instances: {title}")
-            logger.warning("If this is unexpected, consider checking Plex DBRepair.")
+            logger.warning("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.")
             logger.warning("")
 
 

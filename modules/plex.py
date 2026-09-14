@@ -1634,7 +1634,7 @@ class Plex(Library):
 
     def create_smart_collection(self, title, smart_type, uri_args, ignore_blank_results):
         existing_collection = self._collection_by_title(title)
-        if existing_collection:
+        if existing_collection is not None:
             logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
             return existing_collection
         if not ignore_blank_results:
@@ -1644,7 +1644,7 @@ class Plex(Library):
 
     def create_blank_collection(self, title):
         existing_collection = self._collection_by_title(title)
-        if existing_collection:
+        if existing_collection is not None:
             logger.warning(f"Plex Warning: Collection '{title}' already exists; skipping creation")
             return existing_collection
         args = {"type": 1 if self.is_movie else 2 if self.is_show else 8, "title": title, "smart": 0, "sectionId": self.Plex.key, "uri": f"{self.PlexServer._uriRoot()}/library/metadata"}

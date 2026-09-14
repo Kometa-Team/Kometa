@@ -159,6 +159,23 @@ def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
     builder.load_collection_items()
 
 
+def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    class EmptyCollection(SimpleNamespace):
+        def __len__(self):
+            return 0
+
+    collection = EmptyCollection(title="Existing Collection")
+    library = SimpleNamespace(get_collection_items=MagicMock(return_value=[]))
+    builder = make_builder(build_collection=True, obj=collection, library=library)
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
+    library.get_collection_items.assert_called_once_with(collection, False)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # custom_sort_builders
 # ═══════════════════════════════════════════════════════════════════════
