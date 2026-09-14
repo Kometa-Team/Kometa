@@ -1275,7 +1275,7 @@ class TestBuildFilter:
             is_show=False,
             is_music=False,
             split=self._split,
-            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+            get_language_search_values=lambda attribute, code: {"de": ["de-DE", "de"]}.get(code, []),
         )
         builder = make_builder(library=library, details={"show_options": False})
 
@@ -1285,9 +1285,10 @@ class TestBuildFilter:
             default_sort="random",
         )
 
-        assert "push=1&audioLanguage=de&or=1&audioLanguage=de-DE&pop=1" in url
+        assert "push=1&audioLanguage=de-DE&or=1&audioLanguage=de&pop=1" in url
         assert "audioLanguage=de&and=1&audioLanguage=de-DE" not in url
         assert _details.count("Audio Language is de") == 1
+        assert "Audio Language is de-DE" not in _details
 
     def test_negated_language_variants_are_anded_under_plex_search_all(self):
         """Excluding a language must exclude every one of its variants: audioLanguage!=de AND
