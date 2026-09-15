@@ -1108,8 +1108,8 @@ class ConfigFile:
 
             logger.info("Connecting to Trakt in public mode..." if "trakt" not in self.data else "Connecting to Trakt...")
             self.Trakt = None
+            trakt_data = self.data.get("trakt", {})
             try:
-                trakt_data = self.data.get("trakt", {})
                 self.Trakt = Trakt(
                     self.Requests,
                     self.read_only,
@@ -1125,7 +1125,12 @@ class ConfigFile:
                     logger.warning(e)
                 else:
                     logger.error(e)
-            logger.info(f"Trakt Connection {'Failed' if self.Trakt is None else 'Successful'}")
+            if self.Trakt is None:
+                logger.info("Trakt Connection Failed")
+            elif trakt_data.get("authorization") and not self.Trakt.authorization:
+                logger.info("Trakt Connection Successful (Public Mode - Authentication Failed, see error above)")
+            else:
+                logger.info("Trakt Connection Successful")
 
             logger.separator()
 
