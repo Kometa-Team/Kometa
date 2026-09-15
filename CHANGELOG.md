@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix playlists never being reordered after creation, where every move failed with a `404` on `/playlists/<id>/items/None/move` because updating the metadata of the items cleared the Plex playlist item IDs needed to reorder them. #2265
+- Refresh a playlist after successful moves so `sync_to_users` copies use its current post-move order instead of the cached pre-sort order.
 - Report "Trakt Connection Successful (Public Mode)" instead of a plain "Successful" when a configured Trakt authorization fails to refresh, so the run log doesn't contradict the authentication error logged just above it.
 - Treat empty Plex collections and playlists as existing objects so stale smart filters can be repaired and repeated runs do not create duplicate collections; also clarify that empty or stale smart collections can cause duplicate-title warnings. #3572
 - Skip automatically discovered stale TMDb IDs during franchise discovery and TMDb-based Plex filtering without generating failure notifications. #3561
