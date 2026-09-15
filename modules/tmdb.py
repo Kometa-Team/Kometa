@@ -39,13 +39,7 @@ class KometaTMDbAPIs(TMDbAPIs):
         if aggregate_key and isinstance(data, dict):
             entries = data.get(aggregate_key)
             valid_entries = [entry for entry in entries if isinstance(entry, dict)] if isinstance(entries, list) else []
-            invalid_count = (len(entries) - len(valid_entries)) if isinstance(entries, list) else 1
-            if invalid_count:
-                credit_type = "cast role" if aggregate_key == "roles" else "crew job"
-                logger.trace(
-                    f"TMDb returned {invalid_count} invalid TV {credit_type} entr{'y' if invalid_count == 1 else 'ies'} for "
-                    f"{data.get('name') or data.get('id') or 'an unknown person'}; Kometa skipped {'it' if invalid_count == 1 else 'them'}. No user action is required."
-                )
+            if not isinstance(entries, list) or len(valid_entries) != len(entries):
                 data = {**data, aggregate_key: valid_entries}
         return super()._parse(data=data, attrs=attrs, value_type=value_type, default_is_none=default_is_none, is_list=is_list, is_dict=is_dict, extend=extend, key=key)  # pyright: ignore[reportAttributeAccessIssue]
 
