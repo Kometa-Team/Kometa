@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Report "Trakt Connection Successful (Public Mode)" instead of a plain "Successful" when a configured Trakt authorization fails to refresh, so the run log doesn't contradict the authentication error logged just above it.
 - Treat empty Plex collections and playlists as existing objects so stale smart filters can be repaired and repeated runs do not create duplicate collections; also clarify that empty or stale smart collections can cause duplicate-title warnings. #3572
 - Skip automatically discovered stale TMDb IDs during franchise discovery and TMDb-based Plex filtering without generating failure notifications. #3561
 - Reject malformed TVDb external IDs returned by TMDb so IMDb Defaults skip unmappable shows instead of later reporting a TVDb URL error. #3548
