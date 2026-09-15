@@ -676,3 +676,141 @@ def test_interest_options_falls_back_on_empty_response():
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb.requests.get_json = MagicMock(return_value={})
     assert imdb.interest_options == interest_options_fallback
+
+
+# ---------------------------------------------------------------------------
+# Service-backed advanced search (imdb_search)
+# ---------------------------------------------------------------------------
+
+
+def make_imdb_search(post_response=None, post_side_effect=None):
+    """Return an IMDb instance with _service_post mocked for advanced search."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    if post_side_effect is not None:
+        imdb._service_post = MagicMock(side_effect=post_side_effect)
+    else:
+        imdb._service_post = MagicMock(return_value=post_response)
+    imdb._graph_request = MagicMock()
+    return imdb
+
+
+@pytest.fixture(autouse=True)
+def _silence_logger(monkeypatch):
+    """Provide a logger for existing unguarded constraint-building traces."""
+    monkeypatch.setattr("modules.imdb.logger", MagicMock())
+
+
+def test_search_posts_constraints_sort_and_limit():
+    """The search path splits _graphql_variables into constraints/sort and posts them."""
+    imdb = make_imdb_search(post_response={"results": ["tt0111161", "tt0068646"], "total": 2, "cached": True})
+    data = {"limit": 10, "type": ["movie"], "genre": ["drama"], "sort_by": "rating.desc"}
+    result = imdb._pagination(data, "search")
+    assert result == ["tt0111161", "tt0068646"]
+
+    endpoint, body = imdb._service_post.call_args[0]
+    assert endpoint == "search/advanced"
+    # locale/first/sortBy/sortOrder must NOT be inside constraints
+    for key in ("locale", "first", "sortBy", "sortOrder"):
+        assert key not in body["constraints"]
+    # constraint keys are present
+    assert "titleTypeConstraint" in body["constraints"]
+    assert "genreConstraint" in body["constraints"]
+    # sort is split out correctly
+    assert body["sort"] == {"sortBy": "USER_RATING", "sortOrder": "DESC"}
+    # limit passed through
+    assert body["limit"] == 10
+
+
+def test_search_allows_missing_logger(monkeypatch):
+    """The service request's progress logging is optional."""
+    monkeypatch.setattr("modules.imdb.logger", None)
+    imdb = make_imdb_search(post_response={"results": ["tt0111161"], "total": 1, "cached": False})
+    imdb._graphql_variables = MagicMock(return_value={"locale": "en-US", "first": 250, "sortBy": "POPULARITY", "sortOrder": "ASC"})
+
+    assert imdb._pagination({"limit": 1}, "search") == ["tt0111161"]
+
+
+def test_search_omits_limit_when_zero():
+    """A limit of 0 (Kometa's 'no limit') is omitted so the service uses its default."""
+    imdb = make_imdb_search(post_response={"results": ["tt0111161"], "total": 1, "cached": False})
+    data = {"limit": 0, "type": ["movie"]}
+    imdb._pagination(data, "search")
+    _, body = imdb._service_post.call_args[0]
+    assert "limit" not in body
+
+
+def test_search_returns_results_list():
+    imdb = make_imdb_search(post_response={"results": ["tt0111161", "tt0068646", "tt0071562"], "total": 3, "cached": True})
+    result = imdb._pagination({"limit": 250}, "search")
+    assert result == ["tt0111161", "tt0068646", "tt0071562"]
+
+
+def test_search_empty_results_raises_failed():
+    imdb = make_imdb_search(post_response={"results": [], "total": 0, "cached": False})
+    with pytest.raises(Failed, match="No IMDb IDs Found"):
+        imdb._pagination({"limit": 250}, "search")
+
+
+def test_search_none_response_raises_failed():
+    """A None from _service_post (e.g. 404) is coalesced to {} and raises No IMDb IDs Found."""
+    imdb = make_imdb_search(post_response=None)
+    with pytest.raises(Failed, match="No IMDb IDs Found"):
+        imdb._pagination({"limit": 250}, "search")
+
+
+def test_search_propagates_service_failure():
+    """A service Failed on the search path propagates (no fallback dataset exists)."""
+    imdb = make_imdb_search(post_side_effect=Failed("IMDb Service Error: 502 - Bad Gateway"))
+    with pytest.raises(Failed, match="502"):
+        imdb._pagination({"limit": 250}, "search")
+
+
+# ---------------------------------------------------------------------------
+# _service_post error handling (mirrors _service_request)
+# ---------------------------------------------------------------------------
+
+
+def _post_imdb(status_code=200, json_return=None, json_side_effect=None, content=b"", raise_exc=None):
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    if raise_exc is not None:
+        imdb.requests.post.side_effect = raise_exc
+        return imdb
+    response = MagicMock()
+    response.status_code = status_code
+    response.content = content
+    response.text = content.decode() if isinstance(content, bytes) else str(content)
+    if json_side_effect is not None:
+        response.json.side_effect = json_side_effect
+    else:
+        response.json.return_value = json_return
+    imdb.requests.post.return_value = response
+    return imdb
+
+
+def test_service_post_returns_json_on_success():
+    imdb = _post_imdb(status_code=200, json_return={"results": ["tt0111161"]})
+    assert imdb._service_post("search/advanced", {"constraints": {}}) == {"results": ["tt0111161"]}
+    imdb.requests.post.assert_called_once()
+
+
+def test_service_post_404_not_found_ok_returns_none():
+    imdb = _post_imdb(status_code=404)
+    assert imdb._service_post("search/advanced", {}, not_found_ok=True) is None
+
+
+def test_service_post_error_status_raises_failed():
+    imdb = _post_imdb(status_code=502, content=b"Bad Gateway")
+    with pytest.raises(Failed, match="502"):
+        imdb._service_post("search/advanced", {})
+
+
+def test_service_post_invalid_json_raises_failed():
+    imdb = _post_imdb(status_code=200, json_side_effect=ValueError("no json"), content=b"not json")
+    with pytest.raises(Failed, match="invalid JSON"):
+        imdb._service_post("search/advanced", {})
+
+
+def test_service_post_connection_error_raises_failed():
+    imdb = _post_imdb(raise_exc=ConnectionError("Connection refused"))
+    with pytest.raises(Failed, match="IMDb Service Error"):
+        imdb._service_post("search/advanced", {})
