@@ -176,3 +176,14 @@ def test_create_smart_collection_skips_create_when_empty_collection_already_exis
     assert query_calls == []
     assert test_calls == []
     assert any("already exists; skipping creation" in msg for msg in logger.warning_messages)
+
+
+def test_smart_filter_returns_none_for_stale_collection_content(monkeypatch):
+    plex_module = _load_plex(monkeypatch)
+    monkeypatch.setattr(plex_module, "logger", FakeLogger())
+    plex = plex_module.Plex.__new__(plex_module.Plex)
+    stale_collection = SimpleNamespace(content="")
+
+    plex.get_collection = lambda *args, **kwargs: stale_collection
+
+    assert plex.smart_filter(stale_collection) is None
