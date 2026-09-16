@@ -43,6 +43,7 @@ dependencies = [
     "requests==2.34.2",
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
+    "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
     "setuptools==84.0.0",
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",
@@ -129,7 +130,7 @@ reportUnknownVariableType = "none"
 
 
 [tool.uv.sources]
-mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "master" }
+mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "027bca533839d23fdd7552d68d37d40d8dd40ec4" }
 
 [dependency-groups]
 dev = [
@@ -154,7 +155,7 @@ dev = [
     "requests==2.34.2",
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
-    "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git",
+    "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
     "setuptools==84.0.0",
     "tenacity==9.1.4",
     "tmdbapis==1.2.30",
