@@ -19,5 +19,11 @@ updates:
     target-branch: "nightly"
     assignees:
       - "meisnate12"
+    # Actions are pinned to commit SHAs, so every release produces an update.
+    # Grouping keeps that to one PR instead of one per action.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "salsify/action-detect-and-tag-new-version"
