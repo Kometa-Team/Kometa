@@ -1664,6 +1664,8 @@ class Plex(Library):
 
     def smart_filter(self, collection):
         smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
+        if not smart_filter or "?" not in smart_filter:
+            return None
         return smart_filter[smart_filter.index("?") :]
 
     def collection_visibility(self, collection):
@@ -1971,7 +1973,8 @@ class Plex(Library):
             return self.search(label=collection.title if isinstance(collection, Collection) else str(collection))
         elif isinstance(collection, (Collection, Playlist)):
             if collection.smart:
-                return self.fetchItems(self.smart_filter(collection))
+                smart_filter = self.smart_filter(collection)
+                return self.fetchItems(smart_filter) if smart_filter else []
             else:
                 return self.query(collection.items)
         else:
