@@ -1,13 +1,26 @@
 # syntax=docker/dockerfile:1.7
+# uv is itself a supply-chain dependency, so it is pinned by digest, not by tag.
+# It is bind-mounted into the build below rather than COPYed, so the 50MB binary
+# is available while installing but never becomes a layer in the shipped image.
+FROM ghcr.io/astral-sh/uv:0.11.14@sha256:1025398289b62de8269e70c45b91ffa37c373f38118d7da036fb8bb8efc85d97 AS uv
+
 FROM python:3.13-slim
 
 ENV TINI_VERSION=v0.19.0
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+# The venv is what "python3" resolves to in this image, so ENTRYPOINT needs no change.
+ENV PATH="/.venv/bin:$PATH"
+ENV UV_PROJECT_ENVIRONMENT=/.venv
+# Use the interpreter this image already ships rather than fetching another one.
+ENV UV_PYTHON_DOWNLOADS=never
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
-COPY requirements.txt /requirements.txt
-RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/root/.cache/pip,sharing=locked \
+COPY pyproject.toml uv.lock /
+RUN --mount=type=bind,from=uv,source=/uv,target=/usr/local/bin/uv \
+    --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     echo "**** install system packages ****" \
  && rm -f /etc/apt/apt.conf.d/docker-clean \
  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
@@ -19,9 +32,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
  && if [ -n "$runtime_libffi" ]; then apt-mark manual "$runtime_libffi"; fi \
  && wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-"$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
  && chmod +x /tini \
- && pip3 install --upgrade --requirement /requirements.txt \
+ && uv sync --locked --no-dev --no-install-project \
  && apt-get --purge autoremove gcc g++ libffi-dev libxml2-dev libxslt-dev libz-dev -y \
  && apt-get update \
  && apt-get check \
  && apt-get -f install \
- && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
+ && rm -rf /pyproject.toml /uv.lock /tmp/* /var/tmp/* /var/lib/apt/lists/*
