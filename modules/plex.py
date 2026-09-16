@@ -1973,7 +1973,8 @@ class Plex(Library):
             return self.search(label=collection.title if isinstance(collection, Collection) else str(collection))
         elif isinstance(collection, (Collection, Playlist)):
             if collection.smart:
-                return self.fetchItems(self.smart_filter(collection))
+                smart_filter = self.smart_filter(collection)
+                return self.fetchItems(smart_filter) if smart_filter else []
             else:
                 return self.query(collection.items)
         else:
