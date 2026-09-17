@@ -10,16 +10,37 @@ import pytest
 
 class TestMyLogger:
     @pytest.mark.parametrize(
-        ("is_debug", "expected_level"),
-        [(False, logging.INFO), (True, logging.DEBUG)],
+        ("is_debug", "is_trace", "expected_level"),
+        [(False, False, logging.INFO), (True, False, logging.DEBUG), (False, True, logging.DEBUG), (True, True, logging.DEBUG)],
     )
-    def test_command_handler_uses_debug_setting(self, tmp_path, is_debug, expected_level):
+    def test_command_handler_uses_debug_and_trace_settings(self, tmp_path, is_debug, is_trace, expected_level):
         from modules.logs import MyLogger
 
-        log = MyLogger(f"kometa-test-{is_debug}", str(tmp_path), 100, "=", True, is_debug, False, False)
+        log = MyLogger(f"kometa-test-{is_debug}-{is_trace}", str(tmp_path), 100, "=", True, is_debug, is_trace, False)
         try:
             assert log._logger.handlers[-1].level == expected_level
         finally:
+            for handler in list(log._logger.handlers):
+                log._logger.removeHandler(handler)
+                handler.close()
+
+    @pytest.mark.parametrize("is_trace", [False, True])
+    def test_trace_console_output_without_debug(self, tmp_path, capsys, is_trace):
+        from modules.logs import MyLogger
+
+        log = MyLogger(f"kometa-trace-console-{is_trace}", str(tmp_path), 100, "=", True, False, is_trace, False)
+        try:
+            log.add_main_handler()
+            message = "Rejected TMDb language configuration response: {'languages': []}"
+            log.trace(message)
+            log.remove_main_handler()
+
+            assert (message in capsys.readouterr().err) is is_trace
+            contents = (tmp_path / "logs" / "meta.log").read_text(encoding="utf-8") if (tmp_path / "logs" / "meta.log").exists() else ""
+            assert (message in contents) is is_trace
+        finally:
+            if log.main_handler is not None:
+                log.main_handler.close()
             for handler in list(log._logger.handlers):
                 log._logger.removeHandler(handler)
                 handler.close()

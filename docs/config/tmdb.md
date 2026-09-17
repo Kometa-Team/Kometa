@@ -6,6 +6,8 @@ hide:
 ---
 # TMDb Attributes
 
+If TMDb returns incomplete or malformed language configuration during startup, Kometa retries the configuration request up to three times, waiting five seconds between attempts. If all attempts fail, the error asks you to try again later; changing your configured language is not required. Enable trace logging to see each rejected configuration response. Invalid language settings and authentication failures are not retried by this check.
+
 Filling in your [TheMovieDb](https://www.themoviedb.org/) API key is mandatory in order to run Kometa. 
 
 A `tmdb` mapping is in the root of the config file, sampled below.
