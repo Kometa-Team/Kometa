@@ -17,6 +17,7 @@ jobs:
     outputs:
       build: ${{ steps.list-changes.outputs.build }}
       base: ${{ steps.list-changes.outputs.base }}
+      deps: ${{ steps.list-changes.outputs.deps }}
     steps:
 
       - name: Check Out Repo
@@ -34,15 +35,20 @@ jobs:
         id: list-changes
         run: |
             for file in ${{ steps.get-changes.outputs.files }}; do
-                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|.dockerignore|Dockerfile).*$ ]] ; then
+                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|pyproject.toml|uv.lock|.dockerignore|Dockerfile).*$ ]] ; then
                     echo "$file will trigger docker build"
                     echo "build=true" >> $GITHUB_OUTPUT
                 else
                     echo "$file will not trigger docker build"
                 fi
-                if [[ $file == "requirements.txt" || $file == "Dockerfile.base" ]]; then
+                # Matches ci.yml's validate job -- was missing pyproject.toml/uv.lock, so a pure dependency bump never rebuilt the base image.
+                if [[ $file =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock)$ ]]; then
                     echo "$file will trigger docker base build"
                     echo "base=true" >> $GITHUB_OUTPUT
+                fi
+                # pyproject.toml/uv.lock changing means requirements.txt and docs/requirements.txt need regenerating below.
+                if [[ $file =~ ^(pyproject\.toml|uv\.lock)$ ]]; then
+                    echo "deps=true" >> $GITHUB_OUTPUT
                 fi
             done
 
@@ -89,6 +95,14 @@ jobs:
           GITHUB_PAT: ${{ secrets.PAT2 }}
         run: python .github/python/update_sponsors.py
 
+      - name: Sync Dependency Exports
+        # Regenerates requirements.txt and docs/requirements.txt from uv.lock/pyproject.toml so they never drift after a merge.
+        if: needs.verify-changes.outputs.deps == 'true'
+        run: |
+          pip install uv==0.11.14
+          uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
+          uv export --format requirements-txt --no-hashes --only-group docs -o docs/requirements.txt
+
       - name: Update VERSION File
         id: update-version
         env:
@@ -133,6 +147,8 @@ jobs:
             git add README.md
             git add VERSION
             git add PART
+            git add requirements.txt
+            git add docs/requirements.txt
             # Normal follow-up commit + fast-forward push, no amend/force -- concurrency group above serializes runs so merges can't race each other.
             git commit -m "${new_msg}"
             git push origin nightly

@@ -93,6 +93,12 @@ jobs:
           uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
           git diff --exit-code -- requirements.txt
 
+      - name: Verify docs/requirements.txt is current
+        # docs/requirements.txt is a separate export (the docs dependency-group), not covered by the check above.
+        run: |
+          uv export --format requirements-txt --no-hashes --only-group docs -o docs/requirements.txt
+          git diff --exit-code -- docs/requirements.txt
+
   tests:
     needs: [guard]
     uses: ./.github/workflows/test.yml
