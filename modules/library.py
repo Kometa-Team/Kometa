@@ -613,7 +613,7 @@ class Library(ABC):
         items = self.get_all(load=True)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
-        if not self.is_music:
+        if not getattr(self, "is_music", False):
             self.map_guids(items)
         return items
 
