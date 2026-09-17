@@ -588,6 +588,35 @@ class Library(ABC):
             self.cached_items[item.ratingKey] = (item, False)
         return items
 
+    def refresh_item_cache_and_mappings(self):
+        """Reload library items and rebuild every rating-key-based lookup.
+
+        Plex can replace a metadata rating key when a duplicate item is split. Any
+        objects and provider-ID mappings collected before the split therefore point
+        at metadata endpoints that no longer exist and must be discarded together.
+        """
+        self.movie_map = {}
+        self.show_map = {}
+        self.imdb_map = {}
+        self.anidb_map = {}
+        self.reverse_anidb = {}
+        self.mal_map = {}
+        self.reverse_mal = {}
+        self.movie_rating_key_map = {}
+        self.show_rating_key_map = {}
+        self.imdb_rating_key_map = {}
+        self.plex_map = {}
+        self.plex_map_levels = set()
+        self.cached_items = {}
+        self.filter_attr_cache = {}
+
+        items = self.get_all(load=True)
+        for item in items:
+            self.cached_items[item.ratingKey] = (item, False)
+        if not self.is_music:
+            self.map_guids(items)
+        return items
+
     def map_guids(self, items):
         for i, item in enumerate(items, 1):
             if isinstance(item, tuple):

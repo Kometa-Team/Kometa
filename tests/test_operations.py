@@ -496,6 +496,32 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
+        stale_item = make_item(1, "Split Show")
+        stale_item.split = MagicMock()
+        fresh_item = make_item(2, "Split Show")
+        library = make_title_test_library([fresh_item])
+        library.split_duplicates = True
+        library.search.return_value = [stale_item]
+        library.refresh_item_cache_and_mappings.return_value = [fresh_item]
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        stale_item.split.assert_called_once_with()
+        library.refresh_item_cache_and_mappings.assert_called_once_with()
+        library.reload.assert_called_once_with(fresh_item)
+        library.get_all.assert_not_called()
+
+    def test_split_duplicates_does_not_refresh_when_plex_finds_none(self):
+        library = make_title_test_library([])
+        library.split_duplicates = True
+        library.search.return_value = []
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        library.refresh_item_cache_and_mappings.assert_not_called()
+        library.get_all.assert_called_once_with()
+
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")
         library = make_title_test_library([item])
