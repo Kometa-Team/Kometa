@@ -292,11 +292,14 @@ class Operations:
         def should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in):
             return self._should_be_deleted(col_in, labels_in, configured_in, managed_in, less_in, configured_names=configured_names)
 
+        refreshed_items = None
         if self.library.split_duplicates:
-            items = self.library.search(**{"duplicate": True})
-            for item in items:
+            duplicate_items = self.library.search(**{"duplicate": True})
+            for item in duplicate_items:
                 item.split()
                 logger.info(f"{item.title[:25]:<25} | Splitting")
+            if duplicate_items:
+                refreshed_items = self.library.refresh_item_cache_and_mappings()
 
         if self.library.update_blank_track_titles:
             tracks = self.library.get_all(builder_level="track")
@@ -313,7 +316,7 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-            items = self.library.get_all()
+            items = refreshed_items if refreshed_items is not None else self.library.get_all()
             total_items = len(items)
             self._prefetch_mdblist(items)
 

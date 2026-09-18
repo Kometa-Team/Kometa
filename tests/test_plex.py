@@ -824,6 +824,55 @@ class TestReload:
         assert plex.filter_attr_cache[(101, "genres")] == ["Action"]
 
 
+class TestRefreshItemCacheAndMappings:
+    def test_replaces_stale_items_and_all_rating_key_maps(self):
+        fresh_item = make_plex_item(rating_key=202)
+        plex = make_plex(is_movie=False, is_show=True)
+        plex.is_music = False
+        plex.get_all = MagicMock(return_value=[fresh_item])
+        plex.map_guids = MagicMock()
+        for attr in [
+            "movie_map",
+            "show_map",
+            "imdb_map",
+            "anidb_map",
+            "reverse_anidb",
+            "mal_map",
+            "reverse_mal",
+            "movie_rating_key_map",
+            "show_rating_key_map",
+            "imdb_rating_key_map",
+            "plex_map",
+        ]:
+            setattr(plex, attr, {101: "stale"})
+        plex.plex_map_levels = {"show"}
+        plex.cached_items = {101: (make_plex_item(rating_key=101), True)}
+        plex.filter_attr_cache = {(101, "genres"): ["stale"]}
+
+        result = plex.refresh_item_cache_and_mappings()
+
+        assert result == [fresh_item]
+        plex.get_all.assert_called_once_with(load=True)
+        plex.map_guids.assert_called_once_with([fresh_item])
+        assert plex.cached_items == {202: (fresh_item, False)}
+        assert plex.filter_attr_cache == {}
+        assert plex.plex_map_levels == set()
+        for attr in [
+            "movie_map",
+            "show_map",
+            "imdb_map",
+            "anidb_map",
+            "reverse_anidb",
+            "mal_map",
+            "reverse_mal",
+            "movie_rating_key_map",
+            "show_rating_key_map",
+            "imdb_rating_key_map",
+            "plex_map",
+        ]:
+            assert getattr(plex, attr) == {}
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # check_filters / check_filter reload dedup
 # ═══════════════════════════════════════════════════════════════════════
