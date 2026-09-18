@@ -3525,7 +3525,6 @@ class CollectionBuilder:
                 self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
     def _sync_to_mdb_list(self, method_data):
-        method_name = "sync_to_mdb_list"
         if isinstance(method_data, dict):
             name = method_data.get("name")
             mode = str(method_data.get("mode", "sync")).lower()
