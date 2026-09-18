@@ -68,7 +68,6 @@ This is the default Kometa collection ordering:
 | `tautulli`           | `020`              |
 | `tracearr`           | `020`              |
 | `tmdb`               | `020`              |
-| `trakt`              | `020`              |
 | `streaming`          | `030`              |
 | `universe`           | `040`              |
 | `network`            | `050`              |

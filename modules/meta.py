@@ -14,7 +14,7 @@ from modules.util import Failed, NotScheduled
 logger = util.logger
 
 all_auto = ["genre", "number", "custom"]
-ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "trakt_user_lists", "studio", "trakt_liked_lists", "trakt_people_list", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
+ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular_people", "studio", "subtitle_language", "audio_language", "resolution", "decade", "imdb_awards"]
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
     "Show": ["edition", "network", "origin_country", "episode_year"] + all_auto + ms_auto,
@@ -37,11 +37,8 @@ default_templates = {
     "original_language": {"plex_all": True, "filters": {"original_language": "<<value>>"}},
     "origin_country": {"plex_all": True, "filters": {"origin_country": "<<value>>"}},
     "tmdb_collection": {"tmdb_collection_details": "<<value>>", "minimum_items": 2},
-    "trakt_user_lists": {"trakt_list_details": "<<value>>"},
-    "trakt_liked_lists": {"trakt_list_details": "<<value>>"},
     "letterboxd_user_lists": {"letterboxd_list_details": "<<value>>"},
     "tmdb_popular_people": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
-    "trakt_people_list": {"tmdb_person": "<<value>>", "plex_search": {"all": {"actor": "tmdb"}}},
 }
 
 
@@ -171,7 +168,10 @@ class DataFile:
             yaml = self.config.Requests.file_yaml(content_path, check_empty=True, read_only=True)
         if not translation:
             logger.debug(f"File Loaded From: {content_path}")
-            return yaml.data
+            data, trakt_found = util.remove_trakt(yaml.data)
+            if trakt_found:
+                logger.error(util.TRAKT_REMOVAL_MESSAGE)
+            return data
         if "translations" not in yaml.data:
             raise Failed(f"URL Error: Top Level translations attribute not found in {content_path}")
         translations = {k: {"default": v} for k, v in yaml.data["translations"].items()}
@@ -820,8 +820,6 @@ class MetadataFile(DataFile):
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']].lower()} invalid Options: {auto[library.type]}")
                         elif dynamic[methods["type"]].lower() == "network" and library.agent not in plex.new_plex_agents:
                             raise Failed(f"Config Error: {map_name} type attribute: network only works with the New Plex TV Agent")
-                        elif dynamic[methods["type"]].lower().startswith("trakt") and not self.config.Trakt:
-                            raise Failed(f"Config Error: {map_name} type attribute: {dynamic[methods['type']]} requires trakt to be configured")
                         auto_type = dynamic[methods["type"]].lower()
                         og_exclude = []
                         if "exclude" in self.temp_vars:
@@ -1158,8 +1156,6 @@ class MetadataFile(DataFile):
                                 all_keys[k] = v
                                 if k not in exclude and v not in exclude:
                                     auto_list[k] = v
-                        elif auto_type == "trakt_liked_lists":
-                            _check_dict(self.config.Trakt.all_liked_lists())
                         elif auto_type == "letterboxd_user_lists":
                             dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict")
                             if "data" in self.temp_vars:
@@ -1184,24 +1180,6 @@ class MetadataFile(DataFile):
                             else:
                                 dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
                             _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
-                        elif auto_type in ["trakt_people_list", "trakt_user_lists"]:
-                            if "data" in self.temp_vars:
-                                dynamic_data = util.parse("Config", "data", self.temp_vars["data"], datatype="strlist")
-                            else:
-                                dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="strlist")
-                            if "remove_data" in self.temp_vars:
-                                for k in util.parse("Config", "remove_data", self.temp_vars["remove_data"], datatype="strlist"):
-                                    if k in dynamic_data:
-                                        dynamic_data.remove(k)
-                            if "append_data" in self.temp_vars:
-                                for k in util.parse("Config", "append_data", self.temp_vars["append_data"], datatype="strlist"):
-                                    if k not in dynamic_data:
-                                        dynamic_data.append(k)
-                            for option in dynamic_data:
-                                if auto_type == "trakt_user_lists":
-                                    _check_dict({self.config.Trakt.build_user_url(u[0], u[1]): u[2] for u in self.config.Trakt.all_user_lists(option)})
-                                else:
-                                    _check_dict(self.config.Trakt.get_people(option))
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
 

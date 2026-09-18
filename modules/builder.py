@@ -11,7 +11,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -42,7 +42,6 @@ all_builders = (
     + tracearr.builders
     + textfile.builders
     + tmdb.builders
-    + trakt.builders
     + tvdb.builders
     + yamtrack.builders
     + serializd.builders
@@ -87,7 +86,6 @@ movie_only_builders = [
     "tvdb_movie",
     "tvdb_movie_details",
     "tmdb_upcoming",
-    "trakt_boxoffice",
     "radarr_all",
     "radarr_taglist",
     "mojo_world",
@@ -105,7 +103,6 @@ summary_details = [
     "tmdb_biography",
     "tvdb_summary",
     "tvdb_description",
-    "trakt_description",
     "yamtrack_description",
     "floppy_description",
     "letterboxd_description",
@@ -1589,8 +1586,6 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: '{method_final}' attribute is blank")
                 elif self.playlist and method_name not in playlist_attributes:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
-                elif not self.config.Trakt and "trakt" in method_name:
-                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Trakt to be configured")
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
@@ -1681,12 +1676,8 @@ class CollectionBuilder:
                     self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders or method_name in [
-                    "sync_to_trakt_list",
-                    "sync_to_mdb_list",
-                    "sync_missing_to_trakt_list",
-                ]:
-                    self._trakt(method_name, method_data)
+                elif method_name == "sync_to_mdb_list":
+                    self._sync_to_mdb_list(method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
                 elif method_name in flicklist.builders or method_name in [
@@ -1845,11 +1836,6 @@ class CollectionBuilder:
             summary, _ = self.config.TVDb.get_list_description(method_data)
             if summary:
                 self.summaries[method_name] = summary
-        elif method_name == "trakt_description":
-            try:
-                self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
-            except Failed as e:
-                logger.error(f"Trakt Error: List description not found: {e}")
         elif method_name == "flicklist_description":
             try:
                 self.summaries[method_name] = self.config.FlickList.list_description(self.config.FlickList._parse_list_id(method_data))
@@ -3538,61 +3524,18 @@ class CollectionBuilder:
             for value in values:
                 self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
-    def _trakt(self, method_name, method_data):
-        if method_name.startswith("trakt_list"):
-            trakt_lists = self.config.Trakt.validate_list(method_data)
-            for trakt_list in trakt_lists:
-                self.builders.append(("trakt_list", trakt_list))
-            if method_name.endswith("_details"):
-                try:
-                    self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-                except Failed as e:
-                    logger.error(f"Trakt Error: List description not found: {e}")
-        elif method_name == "trakt_boxoffice":
-            if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
-                self.builders.append((method_name, 10))
-            else:
-                raise BuilderValidationError(f"{self.Type} Error: {method_name} must be set to true")
-        elif method_name == "trakt_recommendations":
-            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
-        elif method_name == "sync_to_trakt_list":
-            if method_data not in self.config.Trakt.slugs:
-                raise BuilderValidationError(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
-            self.sync_to_trakt_list = method_data
-        elif method_name == "sync_to_mdb_list":
-            if isinstance(method_data, dict):
-                name = method_data.get("name")
-                mode = str(method_data.get("mode", "sync")).lower()
-            else:
-                name, mode = method_data, "sync"
-            if not name:
-                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
-            if mode not in ("sync", "append"):
-                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
-            self.sync_to_mdb_list = {"name": str(name), "mode": mode}
-        elif method_name == "sync_missing_to_trakt_list":
-            self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
-        elif method_name in trakt.builders:
-            if method_name in ["trakt_chart", "trakt_userlist"]:
-                trakt_dicts = method_data
-                final_method = method_name
-            elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                trakt_dicts = []
-                for trakt_user in util.get_list(method_data, split=False) or []:
-                    trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
-                final_method = "trakt_userlist"
-            else:
-                terms = method_name.split("_")
-                trakt_dicts = {
-                    "chart": terms[1],
-                    "limit": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
-                    "time_period": terms[2] if len(terms) > 2 else None,
-                }
-                final_method = "trakt_chart"
-            if method_name != final_method:
-                logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
-            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
-                self.builders.append((final_method, trakt_dict))
+    def _sync_to_mdb_list(self, method_data):
+        method_name = "sync_to_mdb_list"
+        if isinstance(method_data, dict):
+            name = method_data.get("name")
+            mode = str(method_data.get("mode", "sync")).lower()
+        else:
+            name, mode = method_data, "sync"
+        if not name:
+            raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
+        if mode not in ("sync", "append"):
+            raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
+        self.sync_to_mdb_list = {"name": str(name), "mode": mode}
 
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:

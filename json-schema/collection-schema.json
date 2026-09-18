@@ -104,7 +104,6 @@
                 "sync_missing_to_trakt_list": { "type": "boolean" },
                 "sync_missing_to_flicklist_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
-                "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
                 "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
                 "sync_to_flicklist_list": { "oneOf": [{ "type": "string" }, { "type": "integer" }], "description": "FlickList list id or name to sync this definition to. Created automatically if no matching list is found among your own lists." },
                 "test": { "type": "boolean" },
@@ -458,39 +457,6 @@
                     "description": "IMDb Advanced Title Search.",
                     "$ref": "#/definitions/imdb-search-block"
                 },
-
-                "trakt_list": {
-                    "description": "Trakt List URL(s).",
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ]
-                },
-                "trakt_list_details": {
-                    "description": "Trakt List URL(s). Also fetches description.",
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ]
-                },
-                "trakt_chart": {
-                    "description": "Trakt chart query.",
-                    "oneOf": [
-                        { "$ref": "#/definitions/trakt-chart-entry" },
-                        { "type": "array", "items": { "$ref": "#/definitions/trakt-chart-entry" } }
-                    ]
-                },
-                "trakt_userlist": {
-                    "description": "Trakt User list(s).",
-                    "oneOf": [
-                        { "$ref": "#/definitions/trakt-userlist-entry" },
-                        { "type": "array", "items": { "$ref": "#/definitions/trakt-userlist-entry" } }
-                    ]
-                },
-                "trakt_recommendations": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Number of Trakt personal recommendations." },
-                "trakt_boxoffice": { "type": "boolean", "description": "Get Trakt's Top Box Office movies (always 10)." },
-                "trakt_trending": { "type": "integer", "minimum": 1 },
-                "trakt_popular": { "type": "integer", "minimum": 1 },
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },

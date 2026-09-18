@@ -14,7 +14,7 @@ Kometa is a Python CLI tool that gives users granular control over Plex media li
 - **Playlist management** — cross-library playlists
 - **Library operations** — mass updates, missing item reporting, and integration with Sonarr/Radarr
 
-Kometa connects to dozens of third-party services (TMDb, IMDb, Trakt, AniDB, MyAnimeList, TVDb, Letterboxd, etc.) to build dynamic collections and overlays. Users configure everything through YAML files.
+Kometa connects to dozens of third-party services (TMDb, IMDb, AniDB, MyAnimeList, TVDb, Letterboxd, etc.) to build dynamic collections and overlays. Users configure everything through YAML files.
 
 ---
 
@@ -89,7 +89,6 @@ See `dev-requirements.txt`:
 │   ├── request.py            # Requests wrapper: versioning, headers, retries
 │   ├── library.py            # Library abstraction helpers
 │   ├── tmdb.py               # TMDb API integration
-│   ├── trakt.py              # Trakt API integration
 │   ├── imdb.py               # IMDb scraping + GraphQL
 │   ├── anidb.py              # AniDB integration
 │   ├── anilist.py            # AniList integration
@@ -176,7 +175,7 @@ See `dev-requirements.txt`:
 ### Key Architecture
 
 - **Execution**: CLI args → config parsing → scheduler → per-library `CollectionBuilder` → overlays/metadata/operations.
-- **Builders**: Each data source (TMDb, Trakt, Plex) exposes builder names (e.g., `tmdb_collection`, `trakt_list`). `CollectionBuilder` dispatches dynamically.
+- **Builders**: Each data source (TMDb, Plex) exposes builder names (e.g., `tmdb_collection`, `trakt_list`). `CollectionBuilder` dispatches dynamically.
 - **Exception flow**: Custom exceptions (`Failed`, `NotScheduled`, `FilterFailed`) replace deep nesting for control flow.
 - **Caching**: SQLite in `modules/cache.py` caches API responses and overlay images with configurable TTL.
 - **Logging**: `MyLogger` singleton in `modules/logs.py` with trace mode and request logging.

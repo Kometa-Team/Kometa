@@ -368,7 +368,7 @@ class FlickList:
         raise Failed(f"FlickList Error: Method {method} not supported")
 
     def user_ratings(self, is_movie):
-        """Mirrors Trakt.user_ratings: {tmdb_id: rating} for movies, {tvdb_id: rating} for shows."""
+        """Return ratings keyed by TMDb ID for movies and TVDb ID for shows."""
         id_type = "tmdb" if is_movie else "tvdb"
         ratings = {}
         for item in self._request_list("/sync/ratings"):

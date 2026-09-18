@@ -107,7 +107,6 @@ libraries:
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
     - default: tracearr                             # Tracearr Charts (Watch History)
     - default: tmdb                                 # TMDb Charts (Popular, Trending, etc.)
-    - default: trakt                                # Trakt Charts (Popular, Trending, etc.)
     - default: basic                                # Some basic chart collections based on recently released media in your library
     - default: collectionless                       # Collectionless collection to help Show/Hide Movies/Shows properly in your library
     # - file: /config/metadata/both/birthday          # Actor birthdays
@@ -294,8 +293,6 @@ libraries:
         # font: config/metadata/overlays/fonts/Myriad Bold.otf
         # rating_source: TMDb
         # font: config/metadata/overlays/fonts/Avenir_95_Black.ttf
-        # rating_source: Trakt
-        # font: config/metadata/overlays/fonts/Claspo-ND-Medium.ttf
         # rating_source: Rotten
         # font: config/metadata/overlays/fonts/Adlib.ttf
     - default: resolution                           # 4K HDR, 1080P FHD, etc.
@@ -422,7 +419,6 @@ libraries:
     - default: tautulli                             # Tautulli Charts (Popular, Trending, etc.)
     - default: tracearr                             # Tracearr Charts (Watch History)
     - default: tmdb                                 # TMDb Charts (Popular, Trending, etc.)
-    - default: trakt                                # Trakt Charts (Popular, Trending, etc.)
     - default: basic                                # Some basic chart collections based on recently released media in your library
     - default: collectionless                       # Collectionless collection to help Show/Hide Movies/Shows properly in your library
     # - file: /config/metadata/both/birthday          # Actor birthdays
