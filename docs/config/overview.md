@@ -26,7 +26,7 @@ requirements for setup that can be found by clicking the links within the table 
 
 ???+ tip "Connectors"
 
-    Although most connectors are not required for core Kometa functionality, some (such as Trakt and MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
+    Although most connectors are not required for core Kometa functionality, some (such as MDBList) are commonly used for third-party lists, so we would recommend configuring This connector.
     
     Hover over the numbered icons for additional information
 

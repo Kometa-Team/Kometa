@@ -21,7 +21,7 @@
 Kometa is a powerful tool designed to give you complete control over your media libraries. With Kometa, you can take your customization to the next level, 
 with granular control over metadata, collections, overlays, and much more.
 
-Transform your media library with Kometa and discover its full potential! Connect to third-party services like TMDb, Trakt, and IMDb, among others, 
+Transform your media library with Kometa and discover its full potential! Connect to third-party services like TMDb and IMDb, among others,
 to create one-of-a-kind collections, overlays and more. Your media library will stand out and be tailored to your specific needs.
 
 ## What Can Kometa Do?
@@ -29,7 +29,7 @@ to create one-of-a-kind collections, overlays and more. Your media library will 
 <!--whatcanitdo-start-->
 Elevate your library with beautifully crafted metadata - customize artwork, titles, summaries, and more to create a stunning library.
 
-Harness the power of Trakt, TMDb, IMDb and more to create collections and overlays. Take advantage of pre-made modular Collections & Overlays to reduce the manual effort and get to the good stuff with less effort! You can see some example Collection images above and some example Overlay images below.
+Harness the power of TMDb, IMDb and more to create collections and overlays. Take advantage of pre-made modular Collections & Overlays to reduce the manual effort and get to the good stuff with less effort! You can see some example Collection images above and some example Overlay images below.
 
 Integrate with Sonarr and Radarr to automate your library growth.
 <!--whatcanitdo-end-->
@@ -97,11 +97,11 @@ If you are using unRAID, Kubernetes, QNAP, or Synology refer to the following ba
 ## Example Usage
 
 Kometa puts you in control of your media library by letting you create custom Collections that make discovering and organizing your content a breeze. 
-With powerful search and filtering options, you can build Collections based on popular builders like TMDb, IMDb, Trakt, and many more.
+With powerful search and filtering options, you can build Collections based on popular builders like TMDb, IMDb, and many more.
 
 Imagine having Collections like these at your fingertips:
 
-* Trending and Popular (based on TMDb, IMDb, Trakt, etc.)
+* Trending and Popular (based on TMDb, IMDb, and more)
 * Streaming Services (like Netflix, Disney+, and more)
 * Networks
 * Studios

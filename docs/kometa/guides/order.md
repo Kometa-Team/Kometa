@@ -211,13 +211,12 @@ Users aren't expected to understand what this does, but users can use the `sort_
       Movies:
         collection_files:
           - default: tmdb
-          - default: trakt
             template_variables:
               sort_prefix: ":" #(1)!
     ```
 
     1. Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), 
-    this will place the Trakt collections at the top of the list ahead of all other collections.
+    this will place the collections at the top of the list ahead of all other collections.
 
     ![example3](../../assets/images/kometa/guides/order/example3.jpg)
 
@@ -274,7 +273,7 @@ You can re-order collections within each Defaults File using the `order_<<key>>`
     libraries:
       Movies:
         collection_files:
-          - default: trakt
+          - default: imdb
             template_variables:
               sort_prefix: ":" #(1)!
           - default: tmdb
@@ -287,7 +286,7 @@ You can re-order collections within each Defaults File using the `order_<<key>>`
     ```
 
     1. Because the `:` character is a higher priority character than the default `! in the [Plex Sort Order](#plex-sort-order), 
-    this will place the Trakt collections at the top of the list ahead of all other collections.
+    this will place the IMDb collections at the top of the list ahead of all other collections.
     2. file has 5 collections, each with a defined key. I have reordered each of the collections to appear in the order that I specified.
 
     ![example](../../assets/images/kometa/guides/order/example4.jpg)

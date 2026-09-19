@@ -70,7 +70,7 @@ hide:
 
     === "Universe Collections"
         
-        The Universe collections are based on either Trakt lists or MDB lists.
+        The Universe collections are based on either IMDb or MDB lists.
 
     === "Default `data`"
     

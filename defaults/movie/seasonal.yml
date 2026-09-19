@@ -21,7 +21,6 @@ templates:
       tmdb_movie_<<key>>: <<tmdb_movie>>
       imdb_list_<<key>>: <<imdb_list>>
       imdb_search_<<key>>: <<imdb_search>>
-      trakt_list_<<key>>: <<trakt_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
       delete_collections_named_<<key>>: <<delete_collections_named>>
       letterboxd_list_<<key>>: <<letterboxd_list>>
@@ -36,7 +35,6 @@ templates:
       - limit
       - imdb_list
       - imdb_search
-      - trakt_list
       - mdblist_list
       - letterboxd_list
       - summary_format
@@ -57,7 +55,6 @@ templates:
     tmdb_movie: <<tmdb_movie_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
     imdb_search: <<imdb_search_<<key>>>>
-    trakt_list: <<trakt_list_<<key>>>>
     delete_collections_named: <<delete_collections_named_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     letterboxd_list: <<letterboxd_list_<<key>>>>

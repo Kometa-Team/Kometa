@@ -268,7 +268,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Content Rating & Mapping Operations"
 
@@ -340,7 +340,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Originally Available & Added At Operations"
 
@@ -522,11 +522,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         ???+ tip "Note on `mdb` sources"
 
-            MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
-
-        ???+ warning "Trakt Authentication"
-
-            :lock: Trakt [authentication](authentication.md) is required for the `trakt_user` rating
+            MDBList is not a live reflection of third-party sites such as CommonSense. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed.
 
         ??? example "Example Rating & Episode Rating Operations"
     
@@ -571,7 +567,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `mdb_tmdb` | Use TMDb rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `mdb_tomatoes` | Use Rotten Tomatoes rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `mdb_tomatoesaudience` | Use Rotten Tomatoes audience rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
-        | `mdb_trakt` | Use Trakt rating through MDBList. Requires [MDBList key](../config/mdblist.md). |
         | `omdb` | Use IMDb rating through OMDb. Requires [OMDB key](../config/omdb.md). |
         | `omdb_metascore` | Use Metacritic metascore through OMDb. Requires [OMDB key](../config/omdb.md). |
         | `omdb_tomatoes` | Use Rotten Tomatoes rating through OMDb. Requires [OMDB key](../config/omdb.md). |
@@ -581,8 +576,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
         | `serializd` | Use the Serializd community show rating. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt's public rating. |
-        | `trakt_user` | Use Trakt user's personal rating. :lock: Requires Trakt [authentication](authentication.md)authentication. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |
@@ -597,7 +590,6 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `serializd` | Use the Serializd community episode rating. Requires [Serializd authentication](../config/serializd.md). |
         | `serializd_user` | Use the authenticated Serializd user's episode rating. Requires [Serializd authentication](../config/serializd.md). |
         | `tmdb` | Use TMDb rating. |
-        | `trakt` | Use Trakt's public rating. |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |

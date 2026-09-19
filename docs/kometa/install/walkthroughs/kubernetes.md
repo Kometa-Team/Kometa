@@ -118,8 +118,6 @@ minimum requirement is the Kometa config, but the example here assumes you have 
 
 Here's a config map for the `config.yml` file for Kometa. Note there are many placeholders that will need update based on your environment and needs.
 
-Follow the [Trakt Attributes](../../../config/trakt.md) directions to authenticate through the Kometa Utilities website.
-
 ```yaml
 apiVersion: v1
 data:
@@ -230,15 +228,6 @@ apiVersion: v1
 data:
   movies.yaml: |
     collections:
-      Trakt Popular:
-        trakt_popular: 200
-        collection_order: custom
-        sync_mode: sync
-        sort_title: Traktpopular
-        summary: The most popular movies for all time.
-        radarr_add_missing: true
-        radarr_search: true
-        radarr_monitor: true
       Tautulli Most Popular Movies:
         sync_mode: sync
         collection_order: custom

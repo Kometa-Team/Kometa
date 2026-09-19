@@ -39,8 +39,6 @@ Kometa can dynamically create collections based on different criteria, such as
 [Star Wars](https://www.themoviedb.org/collection/10-star-wars-collection), 
 [Harry Potter](https://www.themoviedb.org/collection/1241), etc...)
 
-* Collections based on each of a Users Trakt Lists
-
 * Collections for the top `X` popular people on TMDb (Bruce Willis, Tom Hanks, etc...)
 
 * Collections for each decade represented in the library (Best of 1990s, Best of 2000s, etc...)
@@ -58,7 +56,7 @@ the built-in default template or a user defined custom template to dynamically c
 #### Collection Naming
 
 By default, the collections generated will be named for the thing being used to create them; things like genres, 
-countries, actors, or even Trakt List Names.
+countries or actors.
 
 To change the name of the collection, you can use dynamic collection attributes including `title_format`, 
 `remove_suffix`, `remove_prefix`, `key_name_override`, and `title_override` all detailed below.
@@ -475,14 +473,6 @@ by this dynamic collection.
     
     **Accepted Values:** `true` or `false`
 
-    ???+ example "Example"
-
-        ```yaml
-        dynamic_collections:
-          Trakt Liked Lists:          # mapping name does not matter just needs to be unique
-            type: trakt_liked_lists
-            sync: true
-        ```
 
 ??? blank "`include` - Used to define a specific list of keys to be made into collections.<a class="headerlink" href="#include" title="Permanent link">¶</a>"
 

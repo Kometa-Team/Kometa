@@ -47,7 +47,6 @@ plugins:
       'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
       'link.md': 'https://discord.com/invite/kometa-822460010649878528'
       'malauth.md': 'config/authentication.md'
-      'traktauth.md': 'config/authentication.md'
       'kometa/install/local.md': 'kometa/install/walkthroughs/local.md'
       'kometa/install/docker.md': 'kometa/install/walkthroughs/docker.md'
       'kometa/install/unraid.md': 'kometa/install/walkthroughs/unraid.md'
@@ -192,7 +191,6 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
-      - Trakt: config/trakt.md
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
@@ -238,7 +236,6 @@ nav:
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
       - Tracearr Charts: defaults/chart/tracearr.md
-      - Trakt Charts: defaults/chart/trakt.md
       - Other Charts: defaults/chart/other.md
     - Content:
       - Genres: defaults/both/genre.md
@@ -380,13 +377,6 @@ nav:
         - List: files/builders/imdb/list.md
         - Search: files/builders/imdb/search.md
         - Watchlist: files/builders/imdb/watchlist.md
-      - Trakt:
-        - Overview: files/builders/trakt/overview.md
-        - Box Office: files/builders/trakt/box-office.md
-        - Chart: files/builders/trakt/chart.md
-        - List: files/builders/trakt/list.md
-        - Recommendations: files/builders/trakt/recommendations.md
-        - UserList: files/builders/trakt/userlist.md
       - Tautulli:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md

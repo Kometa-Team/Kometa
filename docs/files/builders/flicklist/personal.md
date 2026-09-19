@@ -60,7 +60,7 @@ collections:
 
 !!! note "`flicklist_watchlist` covers more than "plan to watch""
 
-    FlickList's watchlist is richer than a Trakt-style plan-to-watch list: every item carries a
+    FlickList's watchlist stores more than a simple plan-to-watch state: every item carries a
     `status` of `plan_to_watch`, `watching`, `completed`, `on_hold`, or `dropped`. `flicklist_watchlist`
     currently returns the entire watchlist regardless of status - there is no way to filter to just
     one status yet. If you're looking for "shows I've marked completed" specifically, note that this
