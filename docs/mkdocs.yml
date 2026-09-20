@@ -67,9 +67,6 @@ extra:
   - name: Develop Docs
     link: /en/develop/
     lang: en
-  - name: Nightly Docs
-    link: /en/nightly/
-    lang: en
   social:
   - icon: fontawesome/solid/heart
     class: md-social__link heart

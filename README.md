@@ -5,7 +5,6 @@
 <a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/v/kometateam/kometa?label=docker&sort=semver&style=plastic" alt="Docker Image Version"></a>
 <a href="https://hub.docker.com/r/kometateam/kometa"><img src="https://img.shields.io/docker/pulls/kometateam/kometa?style=plastic" alt="Docker Pulls"></a>
 <a href="https://github.com/Kometa-Team/Kometa/tree/develop"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/develop?label=Commits%20in%20Develop&style=plastic" alt="Commits in Develop"></a>
-<a href="https://github.com/Kometa-Team/Kometa/tree/nightly"><img src="https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic" alt="Commits in Nightly"></a>
 
 <br>
 
@@ -117,11 +116,11 @@ But if you don't want to spend time manually creating Collections and Overlays, 
 <!--started-end-->
 ## Alternate Branches
 
-The Develop and Nightly branches are "beta" versions of Kometa that are updated more frequently than the stable version (Master branch). 
-These branches are where bug fixes, new features, and other changes are added before being released to the Master branch.
+The Develop branch is a "beta" version of Kometa that is updated more frequently than the stable version (Master branch). 
+It's where bug fixes, new features, and other changes are added before being released to the Master branch.
 
-However, these branches (especially Nightly) are recommended for more technical users who don't mind updating frequently to get the latest changes. 
-Keep in mind that these beta branches may have bugs or other issues that could cause problems with Kometa or your media server. 
+Develop is recommended for more technical users who don't mind updating frequently to get the latest changes. 
+Keep in mind that this beta branch may have bugs or other issues that could cause problems with Kometa or your media server. 
 So, if you're not comfortable with technical issues, it's best to stick with the Master branch.
 
 ### Develop Branch
@@ -171,56 +170,6 @@ git checkout master
 If switching to the develop branch, it is recommended to also use the [develop branch of the wiki](https://kometa.wiki/en/develop/), 
 which documents any changes made from the Master branch.
 <!--develop2-end-->
-
-### Nightly Branch
-
-<!--nightly-start-->
-[![Nightly GitHub commits since latest stable release (by SemVer)](https://img.shields.io/github/commits-since/Kometa-Team/Kometa/latest/nightly?label=Commits%20in%20Nightly&style=plastic)](https://github.com/Kometa-Team/Kometa/tree/nightly)
-
-**This branch will have squashed commits which can cause `git pull`/`git fetch` to error you can use `git reset origin/nightly --hard` to fix the branch.**
-
-There is also a [nightly](https://github.com/Kometa-Team/Kometa/tree/nightly) branch which will have the absolute latest version of the script, but it could easily break, 
-there is no guarantee that it even works, and any new features will not be documented until they have progressed enough to reach the develop branch.
-
-Switching to the `nightly` branch:
-<!--nightly-end-->
-
-<details>
-  <summary>Running in Docker (click to expand)</summary>
-
-<!--nightly-docker-start-->
-Add ":nightly" to the image name in your run command or configuration:
-
-```text
-kometateam/kometa:nightly
-```
-<!--nightly-docker-end-->
-
-</details>
-
-<details>
-  <summary>Running on the Host (click to expand)</summary>
-
-<!--nightly-host-start-->
-In the directory where you cloned Kometa:
-
-```bash
-git checkout nightly
-```
-
-To switch back:
-
-```bash
-git checkout master
-```
-<!--nightly-host-end-->
-
-</details>
-
-<!--nightly2-start-->
-As this branch is subject to extreme change, there is no promise of the feature being documented in the [nightly](https://kometa.wiki/en/nightly/) branch of the wiki and all 
-discussions relating to changes made in the nightly branch will be held within the [Kometa Discord Server](https://kometa.wiki/en/latest/discord/).
-<!--nightly2-end-->
 <!--discord-start-->
 ## Discord Support Server
 

@@ -29,7 +29,6 @@ hide:
         ```shell { .no-copy }
         kometateam/kometa:latest
         kometateam/kometa:develop
-        kometateam/kometa:nightly
         ```
 
     4. Then click Pull.
@@ -120,7 +119,6 @@ hide:
         The options are:
         - `latest`: most recent official release; typically the most stable
         - `develop`: development release, contains new features that haven't made it to latest yet, but may have minor problems
-        - `nightly`: bleeding-edge development version; latest fixes go here, but breakage should be expected.
 
         ![](./../../../assets/images/kometa/install/qnap/qnap3.png)
 
