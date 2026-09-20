@@ -42,7 +42,7 @@ jobs:
                     echo "$file will not trigger docker build"
                 fi
                 # Matches ci.yml's validate job -- was missing pyproject.toml/uv.lock, so a pure dependency bump never rebuilt the base image.
-                if [[ $file =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock)$ ]]; then
+                if [[ $file =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock|uv-bootstrap\.txt)$ ]]; then
                     echo "$file will trigger docker base build"
                     echo "base=true" >> $GITHUB_OUTPUT
                 fi
@@ -96,10 +96,11 @@ jobs:
         run: python .github/python/update_sponsors.py
 
       - name: Sync Dependency Exports
-        # Regenerates requirements.txt and docs/requirements.txt from uv.lock/pyproject.toml so they never drift after a merge.
+        # Regenerates requirements.txt, docs/requirements.txt and uv-bootstrap.txt from uv.lock/pyproject.toml so they never drift after a merge.
         if: needs.verify-changes.outputs.deps == 'true'
         run: |
-          pip install uv==0.11.14
+          pip install --require-hashes -r uv-bootstrap.txt
+          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o uv-bootstrap.txt
           uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
           uv export --format requirements-txt --no-hashes --only-group docs -o docs/requirements.txt
 
@@ -149,6 +150,7 @@ jobs:
             git add PART
             git add requirements.txt
             git add docs/requirements.txt
+            git add uv-bootstrap.txt
             # Normal follow-up commit + fast-forward push, no amend/force -- concurrency group above serializes runs so merges can't race each other.
             git commit -m "${new_msg}"
             git push origin nightly
