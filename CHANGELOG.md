@@ -16,7 +16,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support MDBList episode lists in episode-level collections.
 - Add the `tracearr_watched_media` builder for retrieving Tracearr's distinct watched or partially watched movie, show, and episode sets using provider-ID matching and the compact Public API v2 watched-media endpoint.
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
@@ -24,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
 - Add `sync_to_flicklist_list` and `sync_missing_to_flicklist_list` to sync a collection's contents to a FlickList list, mirroring `sync_to_trakt_list`/`sync_missing_to_trakt_list`.
 - Add `flicklist_user` as a mass rating source, using the FlickList user's personal ratings.
+- Support MDBList episode lists in episode-level collections.
 
 ### Fixed
 
