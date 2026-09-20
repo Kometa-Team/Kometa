@@ -11,6 +11,8 @@ hide:
  
 Finds every item in a [MDBList List](https://mdblist.com/toplists/).
 
+MDBList episode lists can create episode collections by setting `builder_level: episode`.
+
 The expected input is an MDBList List URL. Multiple values are supported **as a list only**; a comma-separated string will not work.
 
 The `sync_mode: sync` and `collection_order: custom` Setting are recommended since the lists are continuously updated and in a specific order.

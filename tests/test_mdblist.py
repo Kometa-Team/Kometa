@@ -157,6 +157,27 @@ class TestMDBList:
         )
         assert result[0]["sort_by"] == "score"
 
+    def test_get_tmdb_ids_returns_episode_ids(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(
+            side_effect=[
+                ({"items": 1}, {}),
+                (
+                    {
+                        "episodes": [
+                            {"show_id": 456, "season_number": 2, "episode_number": 3},
+                        ]
+                    },
+                    {"X-Has-More": "false"},
+                ),
+            ]
+        )
+
+        result = adapter.get_tmdb_ids("mdblist_list", {"url": "https://mdblist.com/lists/user/list"}, is_movie=False, is_episode=True)
+
+        assert result == [("456_2_3", "tmdb_episode")]
+        assert adapter._request.call_args_list[1].args[0].endswith("/items/episode")
+
     def test_add_key_raises_on_bad_api(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(side_effect=Failed("Invalid API key"))

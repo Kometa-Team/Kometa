@@ -413,7 +413,7 @@ class MDBList:
 
         return valid_lists
 
-    def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
+    def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
 
         list_id = data.get("id")
         if list_id:
@@ -436,7 +436,9 @@ class MDBList:
             "limit": 1000,
         }
 
-        if not external_id and is_movie is not None:
+        if not external_id and is_episode:
+            items_url = f"{items_url}episode"
+        elif not external_id and is_movie is not None:
             items_url = f"{items_url}movie" if is_movie else f"{items_url}show"
         else:
             params["unified"] = True
@@ -470,7 +472,9 @@ class MDBList:
 
                 items = []
                 if isinstance(page_data, dict):
-                    if is_movie:
+                    if is_episode:
+                        items = page_data.get("episodes", [])
+                    elif is_movie:
                         items = page_data.get("movies")
                     else:
                         items = page_data.get("shows")
@@ -486,6 +490,14 @@ class MDBList:
             for item in items:  # type: ignore
                 if 0 < limit_config <= len(results):
                     return results
+
+                if is_episode:
+                    show_id = util.check_num(item.get("show_id"))
+                    season_number = util.check_num(item.get("season_number"))
+                    episode_number = util.check_num(item.get("episode_number"))
+                    if show_id and season_number is not None and episode_number is not None:
+                        results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
+                    continue
 
                 tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
                 if tmdb_id:
