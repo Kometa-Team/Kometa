@@ -650,6 +650,7 @@ parts_collection_valid = (
         "item_refresh_delay",
         "imdb_list",
         "imdb_search",
+        "mdblist_list",
         "cache_builders",
         "url_theme",
         "file_theme",
@@ -3757,7 +3758,12 @@ class CollectionBuilder:
         elif "mdblist" in method:
             #  is_movie=None = playlist mode. Must return BOTH movie
             # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
-            ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
+            ids = self.config.MDBList.get_tmdb_ids(
+                method,
+                value,
+                self.library.is_movie if not self.playlist else None,
+                is_episode=self.builder_level == "episode",
+            )
         elif "simkl" in method:
             #  is_movie=None = playlist mode. Must return BOTH movie
             # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
@@ -3998,6 +4004,24 @@ class CollectionBuilder:
                                     items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
                                 except NotFound:
                                     self._log_missing_part(f"tvdb_episode:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                        if not found and tvdb_id not in self.missing_shows and self.do_missing:
+                            self.missing_shows.append(tvdb_id)
+                    elif id_type == "tmdb_episode" and (self.builder_level == "episode" or self.playlist):
+                        tmdb_id, season_num, episode_num = input_id.split("_")
+                        try:
+                            tvdb_id = self.config.Convert.tmdb_to_tvdb(int(tmdb_id), fail=True)
+                        except Failed as e:
+                            logger.warning(e)
+                            continue
+                        found = False
+                        for pl_library in self.libraries:
+                            if tvdb_id in pl_library.show_map:
+                                found = True
+                                show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
+                                try:
+                                    items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
+                                except NotFound:
+                                    self._log_missing_part(f"tmdb_episode:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                         if not found and tvdb_id not in self.missing_shows and self.do_missing:
                             self.missing_shows.append(tvdb_id)
                     elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"]:

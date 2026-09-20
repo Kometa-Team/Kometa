@@ -707,6 +707,9 @@ class TestTextfile:
     def test_value_filter_is_allowed_for_episode_overlays(self):
         assert "value_filter" in parts_collection_valid
 
+    def test_mdblist_list_is_allowed_for_episode_collections(self):
+        assert "mdblist_list" in parts_collection_valid
+
 
 # ═══════════════════════════════════════════════
 # Direct Plex ID builders
