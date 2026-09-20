@@ -40,10 +40,11 @@ bitrate
 bitrateH
 bitrateL
 BOING
+booleans
 BoxOfficeMojo
 boxofficemojo
-booleans
 BPjM
+BritBox
 Bullmoose
 bullmoose
 bw
@@ -79,9 +80,9 @@ Crunchyroll
 customizable
 customizations
 d'Or
+Deathday
 deduplicate
 deduplication
-Deathday
 desc
 Dev
 dev
@@ -112,11 +113,11 @@ Fi
 fi
 Filepath
 filepath
+filesystem
 filetype
 Filmin
 filmin
 filmography
-filesystem
 FLAC
 fldb
 FlickList
@@ -125,6 +126,7 @@ FlickList's
 FlixPatrol
 fontawesome
 FSK
+fuboTV
 Galician
 generalizable
 GID
@@ -160,6 +162,8 @@ Jinja
 JPG
 JSON
 json
+JustWatch
+Kanopy
 keepachangelog
 Kenobi
 kesleyalfa
@@ -214,7 +218,6 @@ metacritic
 metacriticuser
 Metascore
 metascore
-multiline
 minikube
 minimalistic
 mnt
@@ -224,6 +227,8 @@ Mojo's
 Mossi
 Movistar
 MPAA
+MUBI
+multiline
 MyAnimeList
 myanimelist
 MyAnimeList's
@@ -332,6 +337,7 @@ sonarr
 Springland
 SSL
 ssl
+Starz
 stdlib
 StevenLu
 StevenLu's
@@ -375,9 +381,9 @@ transcoded
 transcoding
 TrueHD
 TrueNAS
+tsv
 tt
 ttf
-tsv
 Tubi
 tubi
 TVDB
