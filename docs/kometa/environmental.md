@@ -223,7 +223,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             collections:
               Marvel Cinematic Universe:
                 test: true                  # HERE
-                trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+                mdblist_list: mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
                 smart_label: release.desc
             ```
 

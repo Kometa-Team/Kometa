@@ -34,9 +34,7 @@ tags:
   - test
   - tmdb_birthday
   - changes_webhooks
-  - sync_to_trakt_list
   - sync_to_mdb_list
-  - sync_missing_to_trakt_list
   - sync_to_flicklist_list
   - sync_missing_to_flicklist_list
   - run_definition
@@ -54,7 +52,7 @@ All the following attributes serve various functions as how the definition funct
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `blank_collection`           | **Description:** When set to true the collection will be created with no builders and no items added.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `build_collection`           | **Description:** When set to false the collection won't be created but items can still be added to Radarr/Sonarr. Does not work for playlists.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search`, `trakt_list`, or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                                                                                                                                                                                                |
+| `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search` or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                                                                                                                                                                                                |
 | `cache_builders`             | **Description:** Caches the items found by the builders for a number of days. This is useful if you run the same configuration on multiple libraries/servers in one run just set the value to `1`.<br>**Default:** `0` <br>**Values:** number 0 or greater                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `changes_webhooks`           | **Description:** Used to specify a definition changes webhook for just this definition.<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of webhooks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `default_percent`            | **Description:** Used to declare the default percent for `episodes`, `seasons`, `tracks`, and `albums` [special filters](filters.md#special-filters). See [Example](#default-percent-example) below.<br>**Default:** `50`.<br>**Values:** Integer between 1 and 100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -143,7 +141,7 @@ collections:
 Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
 FlickList lists do not have a concept of individual seasons or episodes.
 
-Unlike `sync_to_trakt_list`, FlickList has no list-reorder endpoint, so `sync_to_flicklist_list` cannot
+FlickList has no list-reorder endpoint, so `sync_to_flicklist_list` cannot
 preserve a collection's custom order on the FlickList side — items land in the list, but not necessarily
 in the same order as the Kometa collection.
 
@@ -168,7 +166,7 @@ Here is an example of a Smart Label definition being used to create a Smart Coll
 ```yaml
 collections:
   Marvel Cinematic Universe:
-    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
     smart_label: release.desc
 ```
 
@@ -196,7 +194,7 @@ Let's add some new criteria to our previous example:
 ```yaml
 collections:
   Unplayed Marvel Cinematic Universe with Robert Downey Jr:
-    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
     smart_label:
       sort_by: release.desc
       all:

@@ -262,7 +262,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip
 
-        `custom` cannot be used if more than one Builder is being used for the collection (such as `imdb_list` and `trakt_list` within the same collection).
+        `custom` cannot be used if more than one Builder is being used for the collection (such as `imdb_list` within the same collection).
 
     <hr style="margin: 0px;">
 

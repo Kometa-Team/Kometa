@@ -48,7 +48,6 @@ tags:
   - mdb_tmdb_rating
   - mdb_tomatoes_rating
   - mdb_tomatoesaudience_rating
-  - mdb_trakt_rating
   - name
   - omdb_rating
   - omdb_imdb_rating
@@ -81,7 +80,6 @@ tags:
   - total_runtime
   - total_runtimeH
   - total_runtimeM
-  - trakt_user_rating
   - url
   - user_rating
   - versions
@@ -805,7 +803,7 @@ value_filter:
 
 All values use Kometa's normalised **0–10 scale** regardless of source (e.g. a Rotten Tomatoes score of 79% is `7.9`). The default Fresh threshold used by the `ratings` defaults file is `6.0` (equivalent to 60%).
 
-Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `mdb_trakt_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `serializd_rating`, `tmdb_rating`, `trakt_rating`, `trakt_user_rating`.
+Supported variables: `anidb_average_rating`, `anidb_rating`, `anidb_score_rating`, `imdb_rating`, `mal_rating`, `mdb_average_rating`, `mdb_imdb_rating`, `mdb_letterboxd_rating`, `mdb_metacritic_rating`, `mdb_metacriticuser_rating`, `mdb_myanimelist_rating`, `mdb_rating`, `mdb_tmdb_rating`, `mdb_tomatoes_rating`, `mdb_tomatoesaudience_rating`, `omdb_rating`, `omdb_imdb_rating`, `omdb_metascore_rating`, `omdb_tomatoes_rating`, `plex_imdb_rating`, `plex_tmdb_rating`, `plex_tomatoes_rating`, `plex_tomatoesaudience_rating`, `serializd_rating`, `tmdb_rating`.
 
 ### Caching
 

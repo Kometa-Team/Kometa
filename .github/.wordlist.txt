@@ -333,6 +333,7 @@ Springland
 SSL
 ssl
 stdlib
+stealthgyro
 StevenLu
 StevenLu's
 stonecutter
