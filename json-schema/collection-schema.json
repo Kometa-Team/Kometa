@@ -533,6 +533,7 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/mdblist-list-entry" }] } }
                     ]
                 },
+                "mdblist_streaming": { "$ref": "#/definitions/mdblist-streaming-entry" },
 
                 "letterboxd_list": {
                     "description": "Letterboxd List URL(s).",
@@ -1238,6 +1239,16 @@
                 "url": { "type": "string", "format": "uri" },
                 "limit": { "type": "integer", "minimum": 1 },
                 "sort_by": { "type": "string" }
+            }
+        },
+        "mdblist-streaming-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "country": { "type": "string", "default": "US", "description": "Country code, locale, or name. Defaults to US." },
+                "period": { "oneOf": [{ "type": "integer", "enum": [1, 7, 30] }, { "type": "string", "enum": ["1", "7", "30", "daily", "weekly", "monthly"] }], "default": "daily" },
+                "provider": { "type": "string", "description": "JustWatch provider code or name. Omit or use all providers for all providers." },
+                "genre": { "type": "string", "description": "JustWatch genre code or name. Omit or use all genres for all genres." }
             }
         },
 

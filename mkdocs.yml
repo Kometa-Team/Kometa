@@ -405,6 +405,7 @@ nav:
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md
+        - Streaming: files/builders/mdblist/streaming.md
       - YamTrack:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md

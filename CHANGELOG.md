@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add the `mdblist_streaming` builder for MDBList's JustWatch streaming charts, with country, period, provider, and genre options.
 - Add the `tracearr_watched_media` builder for retrieving Tracearr's distinct watched or partially watched movie, show, and episode sets using provider-ID matching and the compact Public API v2 watched-media endpoint.
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
