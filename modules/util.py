@@ -36,6 +36,36 @@ if TYPE_CHECKING:
 else:
     logger = None
 
+TRAKT_REMOVAL_MESSAGE = "Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information"
+
+
+def remove_trakt(data):
+    """Remove retired Trakt configuration while preserving unrelated settings."""
+    if isinstance(data, dict):
+        cleaned = {}
+        found = False
+        for key, value in data.items():
+            if "trakt" in str(key).lower():
+                found = True
+                continue
+            value, value_found = remove_trakt(value)
+            found = found or value_found
+            if value is not None and not (value_found and isinstance(value, dict) and not value):
+                cleaned[key] = value
+        return cleaned, found
+    elif isinstance(data, list):
+        cleaned = []
+        found = False
+        for value in data:
+            value, value_found = remove_trakt(value)
+            found = found or value_found
+            if value is not None:
+                cleaned.append(value)
+        return cleaned, found
+    elif isinstance(data, str) and "trakt" in data.lower():
+        return None, True
+    return data, False
+
 
 class TimeoutExpired(Exception):
     pass

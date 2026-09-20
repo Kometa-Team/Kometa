@@ -25,7 +25,7 @@ but you will need to edit it to make it useful. The [Configuration](../../config
 
 ## Where to install Kometa
 
-Kometa communicates with all services [Plex, Radarr, Trakt, etc] via their network APIs, so Kometa does *not* have to be installed on the same machine as Plex. 
+Kometa communicates with services such as Plex and Radarr via their network APIs, so Kometa does *not* have to be installed on the same machine as Plex. 
 Kometa does not require [nor would it use] access to the file system behind your Plex libraries.
 
 Perhaps your Plex server is remote and you want to run Kometa on a machine in your home. That's fine. 

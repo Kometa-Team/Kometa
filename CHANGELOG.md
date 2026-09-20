@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Trakt functionality has been removed from Kometa following recent changes to their support of third-party apps and updates to their API and Developer guidances. Please see the FAQ page or Announcements channel in the Discord Server for further information
 - Send explicitly configured `watched` filters to Tracearr's Public API v2 history endpoint, reducing history records transferred before Kometa applies its remaining filters.
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
 - Consolidate item-specific IDs, titles, GUIDs, and URLs in end-of-run warning and error tables, derive missing-rating groups from active overlay sources, and move missing overlay template values into the Overlay Summary.

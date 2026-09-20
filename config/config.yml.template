@@ -178,17 +178,6 @@ sonarr:                            # Can be individually specified per library a
   sonarr_path:                     # This value is only needed in combination with the *_existing settings
   plex_path:                       # This value is only needed in combination with the *_existing settings
   ignore_cache: false
-trakt:
-  client_id:                       # Enter Trakt Client ID (Optional)
-  client_secret:                   # Enter Trakt Client Secret (Optional)
-  authorization:
-                                   # authorization section is autofilled by the script
-    access_token:
-    created_at:
-    expires_in:
-    refresh_token:
-    scope: public
-    token_type:
 mal:
   client_id:                       # Enter MyAnimeList Client ID (Optional)
   client_secret:                   # Enter MyAnimeList Client Secret (Optional)

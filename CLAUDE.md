@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What Kometa Is
 
-Kometa is a metadata editor for Plex media servers. It creates and manages collections, overlays, and metadata for movies/TV shows by pulling data from external services (TMDb, Trakt, IMDb, AniDB, MyAnimeList, Letterboxd, Radarr, Sonarr, etc.) and writing it back to Plex.
+Kometa is a metadata editor for Plex media servers. It creates and manages collections, overlays, and metadata for movies/TV shows by pulling data from external services (TMDb, IMDb, AniDB, MyAnimeList, Letterboxd, Radarr, Sonarr, etc.) and writing it back to Plex.
 
 ## Running Kometa
 

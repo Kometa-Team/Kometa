@@ -33,7 +33,6 @@ templates:
         conditions:
           - imdb_list_<<key>>.exists: false
             mdblist_list_<<key>>.exists: false
-            trakt_list_<<key>>.exists: false
             value: <<imdb_url>>
       mdblist_url:
         conditions:
@@ -46,13 +45,11 @@ templates:
       mdblist_list:
         conditions:
           - imdb_list_<<key>>.exists: false
-            trakt_list_<<key>>.exists: false
             mdblist_list_<<key>>.exists: false
             value: <<mdblist_url>>
     default:
       item_radarr_tag_<<key>>: <<item_radarr_tag>>
       item_sonarr_tag_<<key>>: <<item_sonarr_tag>>
-      trakt_list_<<key>>: <<trakt_list>>
       imdb_list_<<key>>: <<imdb_list>>
       mdblist_list_<<key>>: <<mdblist_list>>
       url_poster_<<key>>: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/playlist/<<mapping_name_encoded>>.jpg
@@ -69,7 +66,6 @@ templates:
       - sync_to_users
       - exclude_users
       - delete_playlist
-      - trakt_list
       - imdb_list
       - mdblist_list
       - libraries
@@ -79,7 +75,6 @@ templates:
     ignore_imdb_ids: <<ignore_imdb_ids>>
     item_radarr_tag: <<item_radarr_tag_<<key>>>>
     item_sonarr_tag: <<item_sonarr_tag_<<key>>>>
-    trakt_list: <<trakt_list_<<key>>>>
     mdblist_list: <<mdblist_list_<<key>>>>
     imdb_list: <<imdb_list_<<key>>>>
     cache_builders: 1

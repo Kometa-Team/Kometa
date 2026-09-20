@@ -77,7 +77,7 @@ an error when trying to run the file against your library.
 Whilst [Library Operations](../config/operations.md) are used to control library-wide operations, Collection Files can 
 be used as a method to perform more limited operations, such as:
 
-* Syncing collections with the source list if one is used (such as Trakt Lists, TMDb Lists, etc.)
+* Syncing collections with the source list if one is used (such as TMDb Lists).
 
 * Sending missing media to Sonarr/Radarr
 
@@ -98,16 +98,16 @@ Examples of these can be seen here
 
         ```yaml
         collections:
-          Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
+          Amazon Originals:
+            mdblist_list: https://mdblist.com/lists/k0meta/amazon-originals #(1)!
             sync_mode: append #(2!)
             collection_order: custom #(3)!
         ```
 
-        1. This is a Trakt List Builder, telling Kometa to build a collection based on the items in this list
+        1. This is a MDBList List Builder, telling Kometa to build a collection based on the items in this list
         2. If items are removed from the source list, having sync mode set to `append` means they will not be removed 
         from the collection in Plex. Set this to `sync` if you want the items removed in the collection too
-        3. Sort the collection in the order that it is received from the Trakt list
+        3. Sort the collection in the order that it is received from the list
 
     === "Example 2 - Send to Arr"
     
@@ -198,7 +198,5 @@ create collections based on a variety of different criteria, such as
 * Collections for each decade represented in the library (Best of 1990s, Best of 2000s etc.)
 
 * Collections for each of the moods/styles within a Music library (A Cappella, Pop Rock etc.)
-
-* Collections for each of a Trakt Users Lists.
 
 A full list of the available options is available on the [Dynamic Collections](dynamic.md) page

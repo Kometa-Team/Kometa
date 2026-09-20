@@ -34,7 +34,6 @@ from modules.tautulli import Tautulli
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
 from modules.tracearr import Tracearr
-from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
@@ -164,7 +163,6 @@ mass_image_options = {
     "unlock": "Unlock Image",
     "plex": "Use Plex Images",
     "tmdb": "Use TMDb Images",
-    "trakt": "Use Trakt Images",
     "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {
@@ -176,7 +174,6 @@ mass_episode_rating_options = {
     "plex_imdb": "Use IMDB Rating through Plex",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
     "serializd": "Use Serializd Rating",
     "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
@@ -188,8 +185,6 @@ mass_rating_options = {
     "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
-    "trakt_user": "Use Trakt User Rating",
     "flicklist_user": "Use FlickList User Rating",
     "serializd": "Use Serializd Rating",
     "floppy": "Use Floppy User Rating",
@@ -205,7 +200,6 @@ mass_rating_options = {
     "mdb_imdb": "Use IMDb Rating through MDBList",
     "mdb_metacritic": "Use Metacritic Rating through MDBList",
     "mdb_metacriticuser": "Use Metacritic User Rating through MDBList",
-    "mdb_trakt": "Use Trakt Rating through MDBList",
     "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDBList",
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDBList",
     "mdb_tmdb": "Use TMDb Rating through MDBList",
@@ -492,8 +486,6 @@ class ConfigFile:
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
             self.data["sonarr"] = temp
-        if "trakt" in self.data:
-            self.data["trakt"] = self.data.pop("trakt")
         if "mal" in self.data:
             self.data["mal"] = self.data.pop("mal")
 
@@ -512,6 +504,9 @@ class ConfigFile:
                 return next_data
 
         self.data = check_next(self.data)
+        self.data, trakt_found = util.remove_trakt(self.data)
+        if trakt_found:
+            logger.error(util.TRAKT_REMOVAL_MESSAGE)
 
         def check_for_attribute(
             data,
@@ -1103,34 +1098,6 @@ class ConfigFile:
                     logger.info("MDBList Connection Failed")
             else:
                 logger.info("mdblist attribute not found")
-
-            logger.separator()
-
-            logger.info("Connecting to Trakt in public mode..." if "trakt" not in self.data else "Connecting to Trakt...")
-            self.Trakt = None
-            trakt_data = self.data.get("trakt", {})
-            try:
-                self.Trakt = Trakt(
-                    self.Requests,
-                    self.read_only,
-                    {
-                        "client_id": check_for_attribute(self.data, "client_id", parent="trakt", default_is_none=True),
-                        "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", default_is_none=True),
-                        "config_path": self.config_path,
-                        "authorization": trakt_data.get("authorization"),
-                    },
-                )
-            except Failed as e:
-                if str(e).endswith("is blank"):
-                    logger.warning(e)
-                else:
-                    logger.error(e)
-            if self.Trakt is None:
-                logger.info("Trakt Connection Failed")
-            elif trakt_data.get("authorization") and not self.Trakt.authorization:
-                logger.info("Trakt Connection Successful (Public Mode - Authentication Failed, see error above)")
-            else:
-                logger.info("Trakt Connection Successful")
 
             logger.separator()
 
@@ -1951,8 +1918,6 @@ class ConfigFile:
                                 raise Failed(f"{source} without a successful AniDB Connection")
                             if source and str(source).startswith("mal") and self.MyAnimeList is None:
                                 raise Failed(f"{source} without a successful MyAnimeList Connection")
-                            if source and str(source).startswith("trakt") and self.Trakt is None:
-                                raise Failed(f"{source} without a successful Trakt Connection")
                     except Failed as e:
                         logger.error(f"Config Error: {mass_key} cannot use {e}")
                         params[mass_key] = None

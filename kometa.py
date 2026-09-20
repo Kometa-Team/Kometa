@@ -750,7 +750,6 @@ def start(attrs):
                 (r"TMDb Error: No Episode found for TMDb ID \d+ Season \d+ Episode \d+: .+", "TMDb Error: No Episode found for TMDb ID"),
                 (r"TMDb Error: No Movie found for TMDb ID:? \d+(?:: .+)?", "TMDb Error: No Movie found for TMDb ID"),
                 (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
-                (r"Trakt Error: No valid Trakt Lists in .+", "Trakt Error: No valid Trakt Lists"),
                 (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
                 (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
                 (r".*Background \| No Reset Image Found", "Background Warning: No Reset Image Found"),
@@ -1383,7 +1382,7 @@ def run_collection(config, library, metadata, requested_collections):
             if valid and run_item_details and arr_mdb_list_sync:
                 builder.sync_mdb_list()
 
-            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_trakt_list or builder.sync_to_flicklist_list or (builder.sync_to_mdb_list and not arr_mdb_list_sync)):
+            if valid and run_item_details and (builder.item_details or builder.custom_sort or builder.sync_to_flicklist_list or (builder.sync_to_mdb_list and not arr_mdb_list_sync)):
                 try:
                     builder.load_collection_items()
                 except Failed:
@@ -1394,8 +1393,6 @@ def run_collection(config, library, metadata, requested_collections):
                         builder.update_item_details()
                     if builder.custom_sort:
                         builder.sort_collection()
-                    if builder.sync_to_trakt_list:
-                        builder.sync_trakt_list()
                     if builder.sync_to_flicklist_list:
                         builder.sync_flicklist_list()
                     if builder.sync_to_mdb_list and not arr_mdb_list_sync:

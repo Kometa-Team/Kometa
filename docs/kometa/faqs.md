@@ -380,10 +380,8 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
 ### Errors & Issues
 
-??? question "How do I authenticate Trakt or MyAnimeList?"
+??? question "How do I authenticate MyAnimeList?"
 
-    Public Trakt features do not require OAuth. Features such as `me` lists, private lists, ratings, history, collection/watchlist data, recommendations, and list changes do require authentication. Free users can assign Kometa as their one Trakt connected app, but this may disconnect services such as MDBList. Trakt VIP users are largely unaffected. Authenticate through the [Kometa Utilities website](https://utilities.kometa.wiki).
-    
     MyAnimeList authentication can be completed through the online utility, which provides a completed configuration block to paste into `config.yml`.
     
     The scripts can be found here. Click the green play button, wait a little bit, then follow the prompts. 
@@ -413,6 +411,20 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 ## Knowledge Base
 
 This section aims to provide some insight as to articles/information that we feel is important to document as they may pop up infrequently but often enough to require entry here.
+
+### Trakt Removal in Kometa 2.4.9
+
+In September 2026, Trakt blocked API access for third-party services including MDBList and SIMKL with no prior notice.
+
+Trakt's new draft API Use Policy also prohibits using Trakt as an upstream data provider for another service and continuously synchronizing Trakt account data into a separate tracking or list platform. The restrictions were introduced with little or no advance notice to affected services. [Trakt API discussion](https://github.com/trakt/trakt-api/issues/933) · [Proposed API Use Policy](https://github.com/trakt/trakt-api/pull/941)
+
+In light of the above, and following a pattern of changes by Trakt (which you can read about [here](https://www.reddit.com/r/Simkl/comments/1wjv7i1/the_end_of_trakt_as_we_know_it_trakt_has/)), Kometa has decided to remove Trakt support in version 2.4.9. This includes the Trakt connection, builders, collection and playlist synchronization, artwork, ratings, operations, overlays, defaults, and related configuration attributes.
+
+Kometa logs the following error when it finds Trakt configuration and continues with the rest of the run:
+
+> Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information
+
+We suggest users remove Trakt from configuration files and instead use supported alternatives such as TMDb, IMDb, MDBList, SIMKL, FlickList, and other available builders where appropriate.
 
 ### Kometa 1.20 Release Changes
 
