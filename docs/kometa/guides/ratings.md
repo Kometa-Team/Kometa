@@ -27,7 +27,7 @@ The `ratings` default overlay now accepts source names directly in `rating1`, `r
             template_variables:
               rating1: plex_tomatoes
               rating2: mdb_metacritic
-              rating3: trakt
+              rating3: tmdb
     ```
 
 Kometa fetches Rotten Tomatoes (from Plex), Metacritic (via MDBList), and picks matching icons for each automatically.
@@ -72,7 +72,7 @@ All other supported values are fetched directly from their source or integration
 
 Most of these source keys are also used by the Mass Rating Update operations, but in the new setup they are used directly by the overlay instead of being written into Plex first. Two exceptions: the operations equivalent of `anidb` is named `anidb_rating`, and `omdb_imdb` has no operations equivalent — it's only available as a direct overlay source.
 
-Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, `imdb`, and `floppy` — anything else (`mdb_*`, `omdb_*`, `trakt`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
+Not every source works at every level. Episode overlays only support `audience`, `critic`, `user`, `tmdb`, `imdb`, and `floppy` — anything else (`mdb_*`, `omdb_*`, `anidb`, `mal`, `plex_*`) is silently skipped. Season overlays only support `user` and `tmdb`. If a rating overlay isn't showing up at those levels, check the source is on this shorter list first.
 
 ### Images
 
@@ -103,8 +103,8 @@ You can still override the image when you want a different display style:
         overlay_files:
           - default: ratings
             template_variables:
-              rating1: mdb_trakt
-              rating1_image: trakt
+              rating1: mdb_tomatoesaudience
+              rating1_image: rt_tomato
               rating2: tmdb
               rating3: imdb
     ```
@@ -132,8 +132,8 @@ By default, a rating at or above `6.0` (on Kometa's normalized 0–10 scale, so 
           - default: ratings
             template_variables:
               rating1: plex_tomatoes
-              rating2: mdb_metacritic
-              rating3: trakt
+              rating2: plex_tomatoesaudience
+              rating3: mdb_metacritic
               fresh_rating: 7.0
     ```
 
@@ -181,14 +181,14 @@ You still need Library Operations when your overlay uses `critic`, `audience`, o
               rating2: audience
               rating3: user
         operations:
-          mass_critic_rating_update: mdb_trakt
+          mass_critic_rating_update: imdb
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
 In that config, `rating1`, `rating2`, and `rating3` are not fetching TMDb or IMDb directly. They are reading Plex's critic, audience, and user rating slots. The `operations` block is what puts the selected external ratings into those Plex slots.
 
-This is **not** a recommended approach, as using Library Operations will increase runtimes. Instead, you should put the `mdb_trakt`, `tmdb` and `imdb` data into the `ratingX` values.
+This is **not** a recommended approach, as using Library Operations will increase runtimes. Instead, you should put the `tmdb` and `imdb` data into the `ratingX` values.
 
 ### Examples
 
@@ -424,18 +424,18 @@ Now, finally, let's make the poster rating images match the numbers we put in th
           - default: ratings
             template_variables:
               rating1: critic
-              rating1_image: trakt
+              rating1_image: imdb
               rating2: audience
               rating2_image: tmdb
               rating3: user
               rating3_image: imdb
         operations:
-          mass_critic_rating_update: mdb_trakt
+          mass_critic_rating_update: imdb
           mass_audience_rating_update: tmdb
           mass_user_rating_update: imdb
     ```
 
-    * `rating1_image` was changed to `trakt` from `rt_tomato`.
+    * `rating1_image` was changed to `imdb` from `rt_tomato`.
     * `rating2_image` was changed to `tmdb` from `rt_popcorn`.
     * `reapply_overlays: true` should NEVER be used in a live/production environment without a very specific reason. Make sure to switch this back to `false` when finished.
 

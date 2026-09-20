@@ -414,7 +414,7 @@ The Sort Orders available for "Manual" collections are outlined on the **[Plex S
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
         collection_order: added.desc
     ```
 
@@ -439,7 +439,7 @@ if you have a Smart Label collection, you can pass the `sort_by` value you want 
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
         smart_label: audience_rating.desc
     ```
 
@@ -452,14 +452,14 @@ The Sort Orders available for "Smart" collections are outlined on the **[Plex So
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
         smart_label: audience_rating.desc
     ```
 
     ```yaml
     collections:
       Marvel Cinematic Universe:
-        trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+        mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
         collection_order: added.desc
     ```
 

@@ -203,16 +203,6 @@ data:
       cutoff_search: false
       sonarr_path:
       plex_path:
-    trakt:
-      client_id: YOUR_CLIENT_ID_HERE
-      client_secret: YOUR_CLIENT_SECRET_HERE
-      authorization:
-          access_token: YOUR_ACCESS_TOKEN_HERE
-          token_type: Bearer
-          expires_in: 7889237
-          refresh_token: YOUR_REFERSH_TOKEN_HERE
-          scope: public
-          created_at: 1642462048
 kind: ConfigMap
 metadata:
   name: kometa-config

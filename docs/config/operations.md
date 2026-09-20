@@ -113,7 +113,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
                 original_title: mal_english
                 originally_available: tmdb
                 poster:
-                  source: trakt
+                  source: tmdb
                   seasons: true
                   episodes: false
                 ratings:
@@ -443,13 +443,11 @@ Several of these operations perform **mass** updates; these are just that, **mas
             operations:
               mass_metadata_update:
                 poster:
-                  source: trakt
+                  source: tmdb
                   seasons: true
                   episodes: true
                 background:
-                  source:
-                    - trakt
-                    - tmdb
+                  source: tmdb
                 logo:
                   source: tmdb
                   language: en
@@ -465,7 +463,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Poster Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `trakt` uses screenshots/title-card-style images for episodes. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
@@ -474,16 +472,16 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Background Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
-        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb` or `trakt`. **Default:** `true` | `true` or `false` |
+        | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `ignore_locked` | Skip updating if the background field is locked. **Default:** `false` | `true` or `false` |
         | `ignore_overlays` | Skip updating if the current background has an Overlay. **Default:** `false` | `true` or `false` |
 
         | Logo Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `trakt`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the logo update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for logo fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for language-neutral. |
         | `ignore_locked` | Skip updating if the logo field is locked. **Default:** `false` | `true` or `false` |
 

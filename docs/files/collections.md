@@ -141,8 +141,8 @@ Examples of these can be seen here
 
         ```yaml
         collections:
-          Christmas Extravaganza:
-            trakt_list: https://trakt.tv/users/k0meta/lists/christmas-extravaganza-non-tv-movie #(1)!
+          Christmas Top 100:
+            imdb_list: https://www.imdb.com/list/ls000096828 #(1)!
             schedule: range(12/01-12/31) #(2)!
             delete_not_scheduled: true #(3)!
         ```
@@ -170,7 +170,6 @@ It will sync the collections to the source lists, order them randomly, and apply
 ```yaml
 collections:
   Trending:
-    trakt_trending: 10
     tmdb_trending_daily: 10
     tmdb_trending_weekly: 10
     sort_title: +1_Trending

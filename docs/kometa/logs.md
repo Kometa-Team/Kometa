@@ -247,8 +247,7 @@ collections:   <<< THIS LINE WAS MISSING
   Cached for 30 Days:
     template: {name: Collection, source: Looper}
     summary: ""
-    trakt_list:
-      - https://trakt.tv/users/kesleyalfa/lists/year-2011
+    mdblist_list: mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
 ```
 
 YAML doesn't allow duplicate keys:
@@ -281,8 +280,7 @@ collections:   <<< THIS LINE WAS MISSING
     collection_order: custom                         <<<<  THIS KEY
     summary: ""
     collection_order: custom                         <<<<  DUPLICATED HERE
-    trakt_list:
-      - https://trakt.tv/users/kesleyalfa/lists/year-2011
+    mdblist_list: mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
 ```
 
 File is not where Kometa expects it:
