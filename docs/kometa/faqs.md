@@ -418,13 +418,13 @@ In September 2026, Trakt blocked API access for third-party services including M
 
 Trakt's new draft API Use Policy also prohibits using Trakt as an upstream data provider for another service and continuously synchronizing Trakt account data into a separate tracking or list platform. The restrictions were introduced with little or no advance notice to affected services. [Trakt API discussion](https://github.com/trakt/trakt-api/issues/933) · [Proposed API Use Policy](https://github.com/trakt/trakt-api/pull/941)
 
-To avoid depending on an integration whose access could be restricted without notice, and following a pattern of changes by Kometa which you can read about [here](https://www.reddit.com/r/Simkl/comments/1wjv7i1/the_end_of_trakt_as_we_know_it_trakt_has/), Kometa has decided to remove Trakt support in version 2.4.9. This includes the Trakt connection, builders, collection and playlist synchronization, artwork, ratings, operations, overlays, defaults, and related configuration attributes.
+In light of the above, and following a pattern of changes by Trakt (which you can read about [here](https://www.reddit.com/r/Simkl/comments/1wjv7i1/the_end_of_trakt_as_we_know_it_trakt_has/)), Kometa has decided to remove Trakt support in version 2.4.9. This includes the Trakt connection, builders, collection and playlist synchronization, artwork, ratings, operations, overlays, defaults, and related configuration attributes.
 
 Kometa logs the following error when it finds Trakt configuration and continues with the rest of the run:
 
 > Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information
 
-We suggest users remove Trakt from your configuration files and use supported alternatives such as TMDb, IMDb, MDBList, SIMKL, FlickList, and other available builders where appropriate.
+We suggest users remove Trakt from configuration files and instead use supported alternatives such as TMDb, IMDb, MDBList, SIMKL, FlickList, and other available builders where appropriate.
 
 ### Kometa 1.20 Release Changes
 
