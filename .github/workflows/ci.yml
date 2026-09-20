@@ -58,7 +58,7 @@ jobs:
                 else
                     echo "$file will not trigger docker build"
                 fi
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock)$ ]]; then
+                if [[ -n "$file" ]] && [[ "$file" =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock|uv-bootstrap\.txt)$ ]]; then
                     echo "$file will trigger base image build"
                     echo "base=true" >> $GITHUB_OUTPUT
                 fi
@@ -86,10 +86,12 @@ jobs:
       - name: Verify uv.lock and requirements.txt are current
         # uv.lock is the single source of truth for what gets installed; requirements.txt
         # is generated from it. This fails the PR if either has drifted from pyproject.toml.
-        # The uv version is pinned so CI cannot rewrite the lockfile's revision header.
+        # uv comes from uv-bootstrap.txt (the bootstrap group in pyproject.toml), so CI cannot rewrite the lockfile's revision header.
         run: |
-          pip install uv==0.11.14
+          pip install --require-hashes -r uv-bootstrap.txt
           uv lock --check
+          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o uv-bootstrap.txt
+          git diff --exit-code -- uv-bootstrap.txt
           uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
           git diff --exit-code -- requirements.txt
 
