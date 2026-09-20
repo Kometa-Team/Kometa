@@ -169,6 +169,14 @@
             "works_with_movies": "Yes",
             "works_with_shows": "Yes",
             "works_with_playlists_and_custom_sort": "Yes"
+        },
+        {
+            "builder": "mdblist_streaming",
+            "hyperlink": "https://kometa.wiki/en/nightly/files/builders/mdblist/streaming/",
+            "description": "Gets the JustWatch streaming chart from MDBList.",
+            "works_with_movies": "Yes",
+            "works_with_shows": "Yes",
+            "works_with_playlists_and_custom_sort": "No"
         }
     ],
     "MyAnimeList": [

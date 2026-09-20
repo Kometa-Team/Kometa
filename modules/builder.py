@@ -582,6 +582,7 @@ custom_sort_builders = [
     "tmdb_airing_today",
     "tmdb_on_the_air",
     "trakt_list",
+    "mdblist_streaming",
     "floppy_list",
     "floppy_tracked",
     "yamtrack_list",
@@ -3312,8 +3313,11 @@ class CollectionBuilder:
             self.builders.append((method_name, self.config.TextFile.validate_text(method_data)))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
-            self.builders.append((method_name, mdb_dict))
+        if method_name == "mdblist_streaming":
+            self.builders.append((method_name, self.config.MDBList.validate_mdblist_streaming(self.Type, method_data)))
+        else:
+            for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
+                self.builders.append((method_name, mdb_dict))
 
     def _simkl(self, method_name, method_data):
         self.builders.append((method_name, self.config.Simkl.validate_simkl_dict(self.Type, method_name, method_data)))
