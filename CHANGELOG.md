@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Log a concise error instead of a traceback when a collection or playlist cannot be loaded from Plex after being built.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed

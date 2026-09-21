@@ -1360,8 +1360,8 @@ def run_collection(config, library, metadata, requested_collections):
                     elif items_added > 0 or items_removed > 0:
                         library.stats["modified"] += 1
                         library.status[str(mapping_name)]["status"] = "Modified"
-                except Failed:
-                    logger.stacktrace()
+                except Failed as e:
+                    logger.error(e)
                     run_item_details = False
                     logger.info("")
                     logger.separator(f"No {builder.Type} to Update", space=False, border=False)
@@ -1584,8 +1584,8 @@ def run_playlists(config):
                         elif items_added > 0 or items_removed > 0:
                             stats["modified"] += 1
                             status[mapping_name]["status"] = "Modified"
-                    except Failed:
-                        logger.stacktrace()
+                    except Failed as e:
+                        logger.error(e)
                         run_item_details = False
                         logger.info("")
                         logger.separator("No Playlist to Update", space=False, border=False)
