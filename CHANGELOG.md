@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Handle missing TMDb season details during show metadata loading with a descriptive error instead of a traceback and a library-aborting critical error.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
