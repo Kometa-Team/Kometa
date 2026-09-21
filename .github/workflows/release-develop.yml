@@ -2,6 +2,8 @@ name: Develop Release
 
 on:
   workflow_dispatch: {}
+  push:
+    branches: [nightly]
 
 jobs:
   release-develop:
@@ -29,6 +31,10 @@ jobs:
             echo "Pushing Nightly (${hash}) to Develop"
             git push origin HEAD:refs/heads/develop
             echo "build=${hash}" >> $GITHUB_OUTPUT
+            value=$(cat VERSION)
+            echo "version=${value%-build*}" >> $GITHUB_OUTPUT
+            echo "build-value=${value#*-build}" >> $GITHUB_OUTPUT
+            echo "commit-msg=$(git log -1 HEAD --pretty=format:%s | sed -E 's/^\[[0-9]+\] //')" >> $GITHUB_OUTPUT
 
       - name: Discord Success Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
@@ -42,6 +48,21 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.GIT_NAME }}
           author_icon_url: ${{ vars.GIT_IMAGE }}
+
+      - name: Discord Develop Update Notification
+        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
+        if: success()
+        with:
+          webhook_id_token: ${{ secrets.DEVELOP_WEBHOOK }}
+          title: ${{ vars.NAME }} ${{ steps.forward.outputs.version }} Build ${{ steps.forward.outputs.build-value }}
+          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/commit/${{ steps.forward.outputs.build }}
+          description: ${{ steps.forward.outputs.commit-msg }}
+          message: "${{ vars.DEVELOP_ROLE }} - An update to ${{ vars.NAME }} has now been published and is available to users of the **develop** branch."
+          color: ${{ vars.COLOR_SUCCESS }}
+          username: ${{ vars.BOT_NAME }}
+          avatar_url: ${{ vars.BOT_IMAGE }}
+          author: ${{ vars.REPO_NAME }} Develop Release
+          author_icon_url: ${{ vars.RELEASE_IMAGE }}
 
       - name: Discord Failure Notification
         uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
