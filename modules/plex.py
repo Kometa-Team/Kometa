@@ -807,7 +807,8 @@ class TracedPlexServer(PlexServer):
         # Keep item paths visible without logging query parameters, headers, or bodies.
         path = urlparse(key).path
         verb = getattr(method, "__name__", "GET").upper() if method else "GET"
-        request = f"{verb} {path} (timeout: {timeout or self._timeout}s)"
+        effective_timeout = self._timeout if timeout is None else timeout
+        request = f"{verb} {path} (timeout: {effective_timeout}s)"
         logger.trace(f"Plex request starting: {request}")
         started = time.monotonic()
         try:
