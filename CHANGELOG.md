@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
