@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
