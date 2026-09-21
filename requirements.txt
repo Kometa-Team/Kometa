@@ -39,7 +39,7 @@ fastfingertips==0.1.4
     # via letterboxdpy
 gitdb==4.0.12
     # via gitpython
-gitpython==3.1.61
+gitpython==3.1.62
     # via kometa
 h11==0.16.0
     # via httpcore
