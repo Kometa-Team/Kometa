@@ -126,7 +126,7 @@ pyyaml-env-tag==1.1
     # via
     #   mkdocs
     #   properdocs
-regex==2026.9.3
+regex==2026.9.10
 requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
