@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Report artwork upload timeouts as Plex server errors without a traceback, while preserving retries and continuing with remaining artwork.
+### Changed
+
+- Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
 
 ## [v2.5.0] - 2026-09-21
 
