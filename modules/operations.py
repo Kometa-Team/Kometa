@@ -1565,6 +1565,8 @@ class Operations:
 
                         if len(item_edits) > 0:
                             logger.info(f"{item_edits[1:]}")
+                        else:
+                            logger.info("No Item Edits")
 
             if image_operation_counts:
                 logger.info("")

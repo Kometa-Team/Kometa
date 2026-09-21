@@ -3,7 +3,7 @@ import time
 from abc import ABC, abstractmethod
 
 from PIL import Image
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
@@ -312,6 +312,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {poster.attribute} {poster.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {poster.attribute} failed to update {poster.message}")
@@ -327,6 +329,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {background.prefix}background update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {background.attribute} {background.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
@@ -342,6 +346,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {logo.attribute} {logo.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {logo.attribute} failed to update {logo.message}")
@@ -357,6 +363,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {square_art.attribute} {square_art.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {square_art.attribute} failed to update {square_art.message}")

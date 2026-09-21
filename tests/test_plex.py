@@ -14,7 +14,7 @@ from unittest.mock import MagicMock
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Episode
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
@@ -239,6 +239,40 @@ class TestImageUpdate:
 
 
 class TestUploadImages:
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("timeout", [ReadTimeout, ConnectTimeout])
+    def test_upload_timeout_retries_and_logs_without_traceback(self, monkeypatch, artwork, method, timeout):
+        import modules.library as library_module
+
+        test_logger = MagicMock()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        cache = MagicMock()
+        cache.query_image_map.return_value = (None, None, None)
+        plex = make_plex(config=SimpleNamespace(Cache=cache), image_table_name="images")
+        plex.reload = MagicMock()
+        # Exercise the real retry policy without waiting between attempts.
+        monkeypatch.setattr(Plex._upload_image.retry, "wait", wait_none())
+        item = make_plex_item(rating_key=123)
+        getattr(item, method).side_effect = timeout("Plex did not respond")
+        image = SimpleNamespace(
+            compare="artwork",
+            attribute=f"url_{artwork}",
+            message="artwork URL",
+            is_url=True,
+            location="https://example.com/image.jpg",
+            is_poster=artwork == "poster",
+            is_background=artwork == "background",
+            is_square_art=artwork == "square_art",
+        )
+
+        result = plex.upload_images(item, **{artwork: image})
+
+        assert result == (False, False, False, False)
+        assert getattr(item, method).call_count == 6
+        test_logger.error.assert_called_once_with(f"Plex Error: Plex server timed out while updating url_{artwork} artwork URL")
+        test_logger.stacktrace.assert_not_called()
+        cache.update_image_map.assert_not_called()
+
     def test_plex_timeout_removing_overlay_does_not_abort(self, monkeypatch):
         import modules.library as library_module
 
@@ -258,7 +292,7 @@ class TestUploadImages:
 
         assert result == (False, False, False, False)
         plex._upload_image.assert_not_called()
-        assert "Metadata: asset_directory failed to update poster" in test_logger.error_messages
+        assert "Plex Error: Plex server timed out while updating asset_directory poster" in test_logger.error_messages
 
 
 # ═══════════════════════════════════════════════════════════════════════
