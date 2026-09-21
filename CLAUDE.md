@@ -51,7 +51,7 @@ Pre-commit hooks (black, isort, flake8, pyspelling) are configured in `.pre-comm
 - `CHANGELOG.md` follows [keepachangelog](https://keepachangelog.com/en/1.1.0/) format. All changes go under `## [Unreleased]` until a release is tagged.
 - `VERSION` is managed by GitHub workflows. The `release-master.yml` workflow controls version bumps (major/minor/patch). The nightly merge workflow auto-increments the `-buildXX` suffix on each merged PR.
 - Kometa follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). New features → minor bump; bug fixes only → patch; breaking changes → major.
-- See `CONTRIBUTING.md` for the full contributor guide (branching model, PR checklist, CHANGELOG.md section conventions).
+- See `.github/CONTRIBUTING.md` for the full contributor guide (branching model, PR checklist, CHANGELOG.md section conventions).
 
 ## Architecture
 

@@ -245,7 +245,7 @@ pip install -r docs/requirements.txt && mkdocs serve
 
 ## Contributing
 
-See `CONTRIBUTING.md` for the full guide. Key points for agents:
+See `.github/CONTRIBUTING.md` for the full guide. Key points for agents:
 
 1. All PRs target `nightly`.
 2. Update `CHANGELOG.md` under `## [Unreleased]` and docs where needed.

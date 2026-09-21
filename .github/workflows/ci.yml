@@ -57,6 +57,7 @@ jobs:
         uses: rojopolis/spellcheck-github-actions@c1934c57e61c734261d7905b525486b12f8eb670 # 0.66.0
         with:
           task_name: Markdown
+          config_path: .github/.spellcheck.yml
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
 
       - name: Set up Python

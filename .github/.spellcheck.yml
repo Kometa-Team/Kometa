@@ -1,6 +1,7 @@
 matrix:
 - name: Markdown
   sources:
+  - .github/CONTRIBUTING.md
   - '**/*.md|!AGENTS.md|!**/MODULE.md|!config/**|!test_venv/**|!.direnv/**|!.github/**|!.mypy_cache/**|!.pytest_cache/**|!.ruff_cache/**|!.vscode/**|!docs/superpowers/**|!docs/kometa/acknowledgements.md|!CHANGELOG.md'
   aspell:
     lang: en

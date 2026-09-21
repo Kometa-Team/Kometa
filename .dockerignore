@@ -20,7 +20,6 @@ venv
 .dockerignore
 .gitignore
 .readthedocs.yml
-.spellcheck.yml
 CHANGELOG.md
 Dockerfile
 LICENSE
