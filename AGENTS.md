@@ -72,7 +72,6 @@ The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install wit
 ├── requirements.txt          # Runtime dependencies (pinned)
 ├── pyproject.toml            # Tool configuration (black, isort, bandit)
 ├── Dockerfile                # Multi-stage-ish Docker build
-├── mkdocs.yml                # Documentation site configuration
 │
 ├── modules/                  # Core application code (~26k total lines)
 │   ├── config.py             # ConfigFile class: parses kometa config YAML
@@ -201,7 +200,7 @@ pytest
 prek run --all-files --show-diff-on-failure  # Runs black, isort, flake8, mypy, bandit
 
 # Docs
-pip install -r docs/requirements.txt && mkdocs serve
+pip install -r docs/requirements.txt && mkdocs serve -f docs/mkdocs.yml
 ```
 
 ---

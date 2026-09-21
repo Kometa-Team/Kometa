@@ -1,3 +1,8 @@
+# This file lives inside the docs tree, so docs_dir is its own directory and the build output goes back to the repo root.
+docs_dir: .
+site_dir: ../site
+exclude_docs: |
+  mkdocs.yml
 site_name: Kometa Wiki
 site_author: meisnate12
 site_description: Kometa is an open-source python project allowing you to unlock the potential of your media server.
@@ -9,7 +14,7 @@ theme:
   name: material
   logo: assets/images/icons/icon.png
   favicon: assets/images/icons/favicon.png
-  custom_dir: docs/overrides
+  custom_dir: overrides
   font:
     text: DM Sans
     code: Fira Code
@@ -119,7 +124,7 @@ extra_javascript:
 - https://unpkg.com/@popperjs/core@2
 - https://unpkg.com/tippy.js@6
 hooks:
-- docs/hooks/copyright.py
+- hooks/copyright.py
 
 nav:
 - KOMETA:
