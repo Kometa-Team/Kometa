@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.
 - Report artwork upload timeouts as Plex server errors without a traceback, while preserving retries and continuing with remaining artwork.
+
 ### Changed
 
 - Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
