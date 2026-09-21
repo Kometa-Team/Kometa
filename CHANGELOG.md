@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Report TMDb IDs that no longer exist as a concise error without a traceback, with a clearer message.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
