@@ -131,7 +131,7 @@ requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
     # via neoteroi-mkdocs
-selectolax==0.4.11
+selectolax==0.4.12
     # via mkdocs-glightbox
 six==1.17.0
     # via python-dateutil
