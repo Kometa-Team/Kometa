@@ -110,7 +110,7 @@ pygments==2.21.0
     # via
     #   mkdocs-material
     #   rich
-pymdown-extensions==11.0.2
+pymdown-extensions==12.0.1
     # via mkdocs-material
 python-dateutil==2.9.0.post0
     # via ghp-import
