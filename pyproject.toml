@@ -68,7 +68,7 @@ skips = ["B101"]
 #
 # Strategy: ratcheting baseline. We do NOT require zero errors. We require
 # that the error count does not GO UP on a PR. See:
-#   - .pyright-baseline.json (current accepted error count)
+#   - scripts/pyright/baseline.json (current accepted error count)
 #   - scripts/pyright_baseline.py (gate logic)
 #   - .github/workflows/pyright.yml (CI job)
 #
@@ -78,7 +78,7 @@ skips = ["B101"]
 # To silence a single line (use sparingly!):
 #   foo.bar  # pyright: ignore[reportOptionalMemberAccess]
 include = ["modules", "kometa.py"]
-stubPath = "stubs"
+stubPath = "scripts/pyright/stubs"
 exclude = [
     "**/__pycache__",
     "**/.*",
