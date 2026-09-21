@@ -1662,3 +1662,36 @@ class TestEdgeCases:
         collection = MagicMock()
         plex.collection_order_query(collection, "release")
         collection.sortUpdate.assert_called_once_with(sort="release")
+
+
+class TestCheckImageForOverlay:
+    @pytest.mark.parametrize("contents", [b"", b"<html>Upstream server error</html>"])
+    def test_unrecognized_download_is_a_handled_error(self, tmp_path, monkeypatch, contents):
+        path = tmp_path / "104617.jpg"
+        path.write_bytes(contents)
+        config = SimpleNamespace(Requests=MagicMock())
+        config.Requests.download_image.return_value = SimpleNamespace(location=str(path))
+        plex = make_plex(config=config)
+        logger = MagicMock()
+        monkeypatch.setattr("modules.library.logger", logger)
+
+        with pytest.raises(Failed) as caught:
+            plex.check_image_for_overlay("https://example.com/poster.jpg", str(tmp_path / "104617"))
+
+        assert str(path) in str(caught.value)
+        assert "unsupported image format or corrupt file" in str(caught.value)
+        assert "valid original poster" in str(caught.value)
+        assert path.read_bytes() == contents
+        logger.stacktrace.assert_not_called()
+
+    def test_valid_download_is_returned(self, tmp_path):
+        from PIL import Image
+
+        path = tmp_path / "104617.jpg"
+        Image.new("RGB", (2, 2)).save(path)
+        config = SimpleNamespace(Requests=MagicMock())
+        config.Requests.download_image.return_value = SimpleNamespace(location=str(path))
+        plex = make_plex(config=config)
+
+        assert plex.check_image_for_overlay("https://example.com/poster.jpg", str(tmp_path / "104617")) == str(path)
+        assert path.exists()

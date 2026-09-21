@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
 
+### Fixed
+
+- Report unrecognized downloaded overlay poster images with the file path and recovery guidance instead of a traceback, and continue processing other items.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
