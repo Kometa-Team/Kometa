@@ -9,8 +9,8 @@ deps=false
 while IFS= read -r file; do
   [[ -z "$file" ]] && continue
   case "$file" in
-    # base image inputs: only the runtime export changes what ships, uv.lock and pyproject.toml also cover the docs and dev groups
-    Dockerfile.base | uv-bootstrap.txt | requirements.txt)
+    # base image inputs: these change what ships in :base (uv.lock/pyproject.toml are handled below, via deps)
+    docker/Dockerfile.base | docker/uv-bootstrap.txt | requirements.txt)
       echo "$file will trigger base image build" >&2
       base=true
       ;;
@@ -27,6 +27,12 @@ while IFS= read -r file; do
       ;;
   esac
 done
+
+# pyproject.toml/uv.lock also gate the runtime dependency group (not just docs/dev), so a deps
+# change must rebuild the base image too, or requirements.txt can drift from what ships in :base
+if [[ "$deps" == true ]]; then
+  base=true
+fi
 
 # the nightly image is built FROM the base image, so a base change always rebuilds both
 if [[ "$base" == true ]]; then

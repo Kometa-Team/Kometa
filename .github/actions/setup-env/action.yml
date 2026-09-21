@@ -6,7 +6,7 @@ runs:
   steps:
     - name: Install uv from the hashed bootstrap export
       shell: bash
-      run: python -m pip install --require-hashes --disable-pip-version-check -r uv-bootstrap.txt
+      run: python -m pip install --require-hashes --disable-pip-version-check -r docker/uv-bootstrap.txt
 
     - name: Sync the locked dev environment
       shell: bash

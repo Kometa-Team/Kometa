@@ -78,11 +78,11 @@ jobs:
         run: python .github/python/update_sponsors.py
 
       - name: Sync Dependency Exports
-        # Regenerates requirements.txt, docs/requirements.txt and uv-bootstrap.txt from uv.lock/pyproject.toml so they never drift after a merge.
+        # Regenerates requirements.txt, docs/requirements.txt and docker/uv-bootstrap.txt from uv.lock/pyproject.toml so they never drift after a merge.
         if: needs.verify-changes.outputs.deps == 'true'
         run: |
-          pip install --require-hashes -r uv-bootstrap.txt
-          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o uv-bootstrap.txt
+          pip install --require-hashes -r docker/uv-bootstrap.txt
+          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o docker/uv-bootstrap.txt
           uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
           uv export --format requirements-txt --no-hashes --only-group docs -o docs/requirements.txt
 
@@ -132,7 +132,7 @@ jobs:
             git add PART
             git add requirements.txt
             git add docs/requirements.txt
-            git add uv-bootstrap.txt
+            git add docker/uv-bootstrap.txt
             # Normal follow-up commit + fast-forward push, no amend/force -- concurrency group above serializes runs so merges can't race each other.
             git commit -m "${new_msg}"
             git push origin nightly
@@ -170,7 +170,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: ./
-          file: ./Dockerfile.base
+          file: ./docker/Dockerfile.base
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: |
