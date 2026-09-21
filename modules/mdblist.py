@@ -3,9 +3,14 @@ from datetime import datetime
 from urllib.parse import urlencode
 
 from modules import util
-from modules.util import Failed, LimitReached
+from modules.util import Failed, LimitReached, ServiceError
 
 logger = util.logger
+
+
+class MDBListLimitReached(LimitReached, ServiceError):
+    """An expected MDBList quota failure, handled by both builders and rating callers."""
+
 
 # --- REQUIRED MODULE ATTRIBUTES ---
 builders = ["mdblist_list"]
@@ -204,6 +209,16 @@ class MDBList:
             response = self.requests.post(post_url, json=json_data)
         else:
             response = self.requests.get(url, params=final_params)
+
+        if response.status_code == 429:
+            try:
+                error = response.json().get("error", "")
+            except (ValueError, AttributeError):
+                error = ""
+            if "daily" in str(error).lower():
+                self.limit = True
+                raise MDBListLimitReached("MDBList Error: Daily API limit exceeded. Wait for the daily quota to reset or reduce API usage; check your MDBList account usage and plan limits.")
+            raise MDBListLimitReached("MDBList Error: API rate limit reached (HTTP 429). Wait before retrying and reduce request frequency.")
 
         if not 200 <= response.status_code < 300:
             raise Failed(f"MDBList Error: {response.status_code} - {response.text}")
@@ -452,6 +467,8 @@ class MDBList:
                 meta_data = meta_data[0]
             if isinstance(meta_data, dict):
                 total_count = int(meta_data.get("items", 0) or 0)
+        except MDBListLimitReached:
+            raise
         except Exception:
             pass
 
@@ -484,6 +501,8 @@ class MDBList:
 
                 elif isinstance(page_data, list):
                     items = page_data
+            except MDBListLimitReached:
+                raise
             except Exception as e:
                 raise Failed(f"MDBList Error: Could not fetch list items: {e}")
 
