@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Promote `develop` as the publicly documented beta branch; it now automatically mirrors `nightly` on every push instead of requiring a manual sync. `nightly` remains the active development branch but is no longer referenced in user-facing documentation.
 - Trakt functionality has been removed from Kometa following recent changes to their support of third-party apps and updates to their API and Developer guidances. Please see the FAQ page or Announcements channel in the Discord Server for further information
 - Send explicitly configured `watched` filters to Tracearr's Public API v2 history endpoint, reducing history records transferred before Kometa applies its remaining filters.
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
