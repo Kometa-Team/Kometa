@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
