@@ -26,31 +26,13 @@ jobs:
           fetch-depth: 0
           ref: nightly
 
-      - name: Get changes
-        id: get-changes
-        # Diffs the actual merge commit's own parents -- correct even if something else lands on nightly before this job runs.
-        run: echo "files=$(git diff --name-only ${{ github.event.pull_request.merge_commit_sha }}^1..${{ github.event.pull_request.merge_commit_sha }} | xargs)" >> $GITHUB_OUTPUT
-
       - name: List changed files
         id: list-changes
-        run: |
-            for file in ${{ steps.get-changes.outputs.files }}; do
-                if [[ $file =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|pyproject.toml|uv.lock|.dockerignore|Dockerfile).*$ ]] ; then
-                    echo "$file will trigger docker build"
-                    echo "build=true" >> $GITHUB_OUTPUT
-                else
-                    echo "$file will not trigger docker build"
-                fi
-                # Matches ci.yml's validate job -- was missing pyproject.toml/uv.lock, so a pure dependency bump never rebuilt the base image.
-                if [[ $file =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock|uv-bootstrap\.txt)$ ]]; then
-                    echo "$file will trigger docker base build"
-                    echo "base=true" >> $GITHUB_OUTPUT
-                fi
-                # pyproject.toml/uv.lock changing means requirements.txt and docs/requirements.txt need regenerating below.
-                if [[ $file =~ ^(pyproject\.toml|uv\.lock)$ ]]; then
-                    echo "deps=true" >> $GITHUB_OUTPUT
-                fi
-            done
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        # Diffs the actual merge commit's own parents -- correct even if something else lands on nightly before this job runs; file names go through stdin, never into shell source.
+        shell: bash
+        run: git diff --name-only "${MERGE_SHA}^1" "${MERGE_SHA}" | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
 
   increment-build:
     runs-on: ubuntu-latest

@@ -39,30 +39,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get changes
-        id: get-changes
-        # HEAD^1 is the base tip on the merge commit, so this is always the full PR-vs-base diff -- replaces the old labeled-vs-synchronize branching.
-        run: |
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          git diff --name-only HEAD^1 HEAD >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: List changed files
         id: list-changes
-        run: |
-            readarray -t files <<< "${{ steps.get-changes.outputs.files }}"
-            for file in "${files[@]}"; do
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|pyproject.toml|uv.lock|.dockerignore|Dockerfile).*$ ]]; then
-                    echo "$file will trigger docker build"
-                    echo "build=true" >> $GITHUB_OUTPUT
-                else
-                    echo "$file will not trigger docker build"
-                fi
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock|uv-bootstrap\.txt)$ ]]; then
-                    echo "$file will trigger base image build"
-                    echo "base=true" >> $GITHUB_OUTPUT
-                fi
-            done
+        # HEAD^1 is the base tip on the merge commit, so this is always the full PR-vs-base diff -- replaces the old labeled-vs-synchronize branching.
+        shell: bash
+        run: git diff --name-only HEAD^1 HEAD | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
 
       - name: Get all changed files
         uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
