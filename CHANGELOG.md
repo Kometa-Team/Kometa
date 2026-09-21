@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.0] - 2026-09-21
+
 ### Changed
 
 - Trakt functionality has been removed from Kometa following recent changes to their support of third-party apps and updates to their API and Developer guidances. Please see the FAQ page or Announcements channel in the Discord Server for further information
@@ -50,6 +52,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix ghost progress logging (e.g. `Parsing ID x/y`) writing carriage-return-only output regardless of whether stdout is a terminal, which collapses an entire run into a single unbounded log line for containerized/piped deployments; ghost output is now skipped when stdout is not a TTY. Fixes #3542.
 - Fix `plex_collectionless` never recognizing an item as belonging to a smart collection (used by most Defaults collection files, e.g. `genre`, `studio`, `audio_language`), since Plex does not tag items with smart collection membership; membership is now resolved from each retained collection's actual items instead of the item's own `collections` tag list. Fixes #3537.
 - Fix `prefetch_mdblist` raising when an orphaned Season/Episode's parent Show has been deleted from Plex (`item.show()` returning `None`); such items are now skipped instead of crashing the MDBList prefetch pass.
+
+## [v2.4.9] - 2026-09-21
+
+- No changes
 
 ## [v2.4.8] - 2026-08-15
 
@@ -382,7 +388,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...HEAD
+[v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
+[v2.4.9]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...v2.4.9
 [v2.4.8]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...v2.4.8
 [v2.4.7]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...v2.4.7
 [v2.4.6]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6
