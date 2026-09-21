@@ -49,14 +49,14 @@ See `requirements.txt` for the full pinned list. Notable ones:
 
 ### Development Dependencies
 
-See `dev-requirements.txt`:
+The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install with `uv sync --group dev`) pins:
 
 - `black==26.5.1`
-- `isort==8.0.1`
+- `isort==9.0.1`
 - `flake8==7.3.0`
-- `mypy==2.1.0`
+- `pyright==1.1.411`
 - `bandit==1.9.4`
-- `prek==0.4.5` (wrapper around the above)
+- `prek==0.5.2` (wrapper around the above)
 
 ---
 
@@ -70,7 +70,6 @@ See `dev-requirements.txt`:
 ├── CHANGELOG.md              # Release notes in keepachangelog format
 ├── CONTRIBUTING.md           # Contributor guide (branching, versioning, code style, PR checklist)
 ├── requirements.txt          # Runtime dependencies (pinned)
-├── dev-requirements.txt      # Lint / format / type-check dependencies
 ├── pyproject.toml            # Tool configuration (black, isort, bandit)
 ├── Dockerfile                # Multi-stage-ish Docker build
 ├── mkdocs.yml                # Documentation site configuration
@@ -188,7 +187,7 @@ See `dev-requirements.txt`:
 ```bash
 # Install
 pip install -r requirements.txt          # Runtime
-pip install -r dev-requirements.txt      # Development
+uv sync --group dev                      # Development (locked runtime + dev tools)
 
 # Run
 python kometa.py --run                   # One-shot

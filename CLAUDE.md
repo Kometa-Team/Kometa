@@ -34,7 +34,7 @@ Tests live in `tests/` — current files: `test_builder.py`, `test_textfile.py`,
 
 ## Linting & Formatting
 
-Dev tools are in `dev-requirements.txt`. Configuration is in `pyproject.toml` (line-length 256 for all tools).
+Dev tools live in the `dev` dependency group of `pyproject.toml` and are locked in `uv.lock` (`uv sync --group dev`). Configuration is in `pyproject.toml` (line-length 256 for all tools).
 
 ```bash
 black .

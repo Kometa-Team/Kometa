@@ -104,4 +104,3 @@ tests/**           linguist-detectable
 .dockerignore      export-ignore
 .envrc             export-ignore
 tests/             export-ignore
-dev-requirements.txt  export-ignore

@@ -31,9 +31,8 @@ The `VERSION` file in the repo root drives the build numbering. When the team de
 ## Setting up your environment
 
 ```bash
-# Clone and install dev dependencies
-pip install -r requirements.txt
-pip install -r dev-requirements.txt
+# Clone and install the locked runtime + dev dependencies (needs uv: https://docs.astral.sh/uv/)
+uv sync --group dev
 
 # Install pre-commit hooks (runs black, isort, flake8, and spellcheck automatically)
 pre-commit install

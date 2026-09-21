@@ -1,0 +1,22 @@
+name: Set up locked environment
+description: Installs uv from the hash-pinned bootstrap export, syncs uv.lock including the dev group and puts the virtualenv first on PATH; run actions/setup-python first.
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv from the hashed bootstrap export
+      shell: bash
+      run: python -m pip install --require-hashes --disable-pip-version-check -r uv-bootstrap.txt
+
+    - name: Sync the locked dev environment
+      shell: bash
+      run: uv sync --locked --group dev
+
+    - name: Put the virtualenv first on PATH
+      shell: bash
+      run: |
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          echo "${{ github.workspace }}/.venv/Scripts" >> "$GITHUB_PATH"
+        else
+          echo "${{ github.workspace }}/.venv/bin" >> "$GITHUB_PATH"
+        fi
