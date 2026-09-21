@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Trace Plex queries before they start and report completion or failure with elapsed time, making pending requests visible when diagnosing apparent hangs.
+
 ### Fixed
 
 - Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.

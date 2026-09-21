@@ -18,7 +18,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.plex import Plex
+from modules.plex import Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
 
@@ -1696,3 +1696,72 @@ class TestEdgeCases:
         collection = MagicMock()
         plex.collection_order_query(collection, "release")
         collection.sortUpdate.assert_called_once_with(sort="release")
+
+
+class TestTracedPlexServer:
+    @pytest.fixture
+    def server(self):
+        server = TracedPlexServer.__new__(TracedPlexServer)
+        server._baseurl = "http://plex.example:32400"
+        server._token = "private-token"
+        server._showSecrets = False
+        server._timeout = 60
+        server._session = MagicMock()
+        server._session.get.__name__ = "get"
+        return server
+
+    @pytest.mark.parametrize("timeout", [None, 15])
+    def test_logs_before_transport_and_after_response(self, monkeypatch, server, timeout):
+        test_logger = MagicMock(is_trace=True)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        monkeypatch.setattr("modules.plex.time.monotonic", MagicMock(side_effect=[10, 12.5]))
+        label = f"GET /library/metadata/77499 (timeout: {timeout or 60}s)"
+
+        def send(url, **kwargs):
+            test_logger.trace.assert_called_once_with(f"Plex request starting: {label}")
+            assert kwargs["timeout"] == (timeout or 60)
+            assert kwargs["headers"]["X-Plex-Token"] == "private-token"
+            assert kwargs["params"] == {"private": "query-secret"}
+            return SimpleNamespace(status_code=200, text='<MediaContainer size="0"/>')
+
+        server._session.get.side_effect = send
+        result = server.query("/library/metadata/77499?X-Plex-Token=url-secret", params={"private": "query-secret"}, timeout=timeout)
+
+        assert result.tag == "MediaContainer"
+        assert test_logger.trace.call_count == 2
+        test_logger.trace.assert_called_with(f"Plex request completed: {label} after 2.500s")
+        assert "secret" not in str(test_logger.trace.call_args_list)
+        assert "private-token" not in str(test_logger.trace.call_args_list)
+
+    @pytest.mark.parametrize("exception", [ReadTimeout, ConnectionError, BadRequest])
+    def test_failure_logs_elapsed_time_and_preserves_exception(self, monkeypatch, server, exception):
+        test_logger = MagicMock(is_trace=True)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        monkeypatch.setattr("modules.plex.time.monotonic", MagicMock(side_effect=[10, 70]))
+        error = exception("private exception details")
+
+        def post(url, **kwargs):
+            test_logger.trace.assert_called_once_with("Plex request starting: POST /library/metadata/77499/posters (timeout: 60s)")
+            assert kwargs["data"] == b"private body"
+            raise error
+
+        with pytest.raises(exception) as caught:
+            server.query("/library/metadata/77499/posters", method=post, data=b"private body")
+
+        assert caught.value is error
+        assert test_logger.trace.call_count == 2
+        test_logger.trace.assert_called_with(f"Plex request failed: POST /library/metadata/77499/posters (timeout: 60s) after 60.000s ({exception.__name__})")
+        test_logger.stacktrace.assert_not_called()
+        assert "private" not in str(test_logger.trace.call_args_list)
+
+    def test_trace_disabled_preserves_query_without_extra_logging(self, monkeypatch, server):
+        test_logger = MagicMock(is_trace=False)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        clock = MagicMock()
+        monkeypatch.setattr("modules.plex.time.monotonic", clock)
+        server._session.get.return_value = SimpleNamespace(status_code=200, text='<MediaContainer size="0"/>')
+
+        assert server.query("/library/metadata/77499").tag == "MediaContainer"
+
+        test_logger.trace.assert_not_called()
+        clock.assert_not_called()
