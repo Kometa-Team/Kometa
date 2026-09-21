@@ -68,10 +68,13 @@ The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install wit
 ├── VERSION                   # SemVer string (e.g., "2.4.0-build1") — drives nightly build numbering
 ├── PART                      # Build-part counter used by CI
 ├── CHANGELOG.md              # Release notes in keepachangelog format
-├── CONTRIBUTING.md           # Contributor guide (branching, versioning, code style, PR checklist)
 ├── requirements.txt          # Runtime dependencies (pinned)
-├── pyproject.toml            # Tool configuration (black, isort, bandit)
+├── pyproject.toml            # Project metadata, dependency groups (runtime, dev, docs) and tool configuration
+├── uv.lock                   # Locked dependency versions; requirements.txt and docs/requirements.txt are exported from it
 ├── Dockerfile                # Multi-stage-ish Docker build
+├── docker/                   # Dockerfile.base (dependency base image) and the hashed uv-bootstrap.txt it installs uv from
+├── scripts/                  # Dev tooling; pyright/ holds the ratcheting baseline and type stubs
+├── .github/                  # Workflows, CONTRIBUTING.md, spellcheck config, shared CI script and composite action
 │
 ├── modules/                  # Core application code (~26k total lines)
 │   ├── config.py             # ConfigFile class: parses kometa config YAML
@@ -137,6 +140,7 @@ The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install wit
 │   └── test_validator.py
 │
 ├── docs/                     # MkDocs source
+│   ├── mkdocs.yml            # MkDocs configuration (run `mkdocs serve -f docs/mkdocs.yml`)
 │   ├── requirements.txt      # Docs build dependencies
 │   ├── kometa/               # User-facing wiki pages
 │   ├── config/               # Config reference docs
