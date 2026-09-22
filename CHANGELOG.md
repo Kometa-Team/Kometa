@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.
 - Report artwork upload timeouts as Plex server errors without a traceback, while preserving retries and continuing with remaining artwork.
+- Handle missing TMDb season details during show metadata loading with a descriptive error instead of a traceback and a library-aborting critical error.
 
 ### Changed
 

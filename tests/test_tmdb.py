@@ -553,3 +553,35 @@ class TestTMDBObj:
         t.validate_tmdb = MagicMock(side_effect=tmdb.NotFound("gone"))
         with pytest.raises(tmdb.NotFound):
             t.validate_tmdb_ids("99999", "tmdb_movie")
+
+
+def test_show_missing_lazy_season_is_handled_without_traceback_or_cache_write(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t.cache = MagicMock()
+    t.cache.query_tmdb_show.return_value = (None, True)
+    t.language = "en"
+    t.expiration = 30
+
+    class MissingSeason:
+        season_number = 2
+        name = "Season 2"
+
+        @property
+        def vote_average(self):
+            raise TMDbApiNotFound("(404 [Not Found]) Requested Item Not Found")
+
+    data = MagicMock()
+    data.title = "Example Show"
+    data.origin_countries = []
+    data.seasons = [MissingSeason()]
+    t.TMDb = SimpleNamespace(tv_show=MagicMock(return_value=data))
+
+    with pytest.raises(Failed, match=r"Season 2 not found \(404\) for Example Show \(TMDb ID: 500\)"):
+        tmdb.TMDbShow(t, 500)
+
+    t.TMDb.tv_show.assert_called_once()
+    t.cache.update_tmdb_show.assert_not_called()
+    logger.stacktrace.assert_not_called()
+    logger.warning.assert_not_called()
