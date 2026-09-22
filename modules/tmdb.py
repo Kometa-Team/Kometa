@@ -568,7 +568,7 @@ class TMDb:
                 logger.error(e)
         if len(tmdb_values) == 0:
             if all_not_found:
-                raise NotFound(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
+                raise NotFound(f"TMDb Error: No {type_map[tmdb_method]} found on TMDb for ID(s) {tmdb_list}. Verify the ID(s) still exist and update your config.")
             raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
 

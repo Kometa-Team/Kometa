@@ -19,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report MDBList daily quota and rate limits with recovery guidance instead of nested errors and playlist tracebacks.
 - Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
 - Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
+- Report TMDb IDs that no longer exist as a concise error without a traceback, with a clearer message.
 
 ### Changed
 
 - Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
-
 
 ## [v2.5.0] - 2026-09-21
 
