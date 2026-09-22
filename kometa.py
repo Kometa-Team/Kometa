@@ -1633,7 +1633,8 @@ def run_playlists(config):
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
-                logger.stacktrace()
+                if not isinstance(e, ServiceError):
+                    logger.stacktrace()
                 logger.error(e)
                 status[mapping_name]["status"] = "Kometa Failure"
                 status[mapping_name]["errors"].append(e)

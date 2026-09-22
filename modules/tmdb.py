@@ -299,7 +299,12 @@ class TMDbShow(TMDBObj):
             loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else []  # noqa
             self.countries = [TMDbCountry(c) for c in loop]
             loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else []  # noqa
-            self.seasons = [TMDbSeason(s) for s in loop]
+            self.seasons = []
+            for season in loop:
+                try:
+                    self.seasons.append(TMDbSeason(season))
+                except TMDbNotFound as e:
+                    raise Failed(f"TMDb Error: Season {season.season_number} not found (404) for {self.title} (TMDb ID: {self.tmdb_id}); unable to load show metadata") from e
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise

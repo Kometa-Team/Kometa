@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Trace Plex queries before they start and report completion or failure with elapsed time, making pending requests visible when diagnosing apparent hangs.
+
 ### Fixed
 
+- Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.
+- Report artwork upload timeouts as Plex server errors without a traceback, while preserving retries and continuing with remaining artwork.
+- Handle missing TMDb season details during show metadata loading with a descriptive error instead of a traceback and a library-aborting critical error.
+- Report MDBList daily quota and rate limits with recovery guidance instead of nested errors and playlist tracebacks.
+- Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
+- Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
 - Report TMDb IDs that no longer exist as a concise error without a traceback, with a clearer message.
+
+### Changed
+
+- Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
 
 ## [v2.5.0] - 2026-09-21
 
