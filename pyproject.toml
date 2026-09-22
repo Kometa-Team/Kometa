@@ -68,7 +68,7 @@ skips = ["B101"]
 #
 # Strategy: ratcheting baseline. We do NOT require zero errors. We require
 # that the error count does not GO UP on a PR. See:
-#   - .pyright-baseline.json (current accepted error count)
+#   - scripts/pyright/baseline.json (current accepted error count)
 #   - scripts/pyright_baseline.py (gate logic)
 #   - .github/workflows/pyright.yml (CI job)
 #
@@ -78,7 +78,7 @@ skips = ["B101"]
 # To silence a single line (use sparingly!):
 #   foo.bar  # pyright: ignore[reportOptionalMemberAccess]
 include = ["modules", "kometa.py"]
-stubPath = "stubs"
+stubPath = "scripts/pyright/stubs"
 exclude = [
     "**/__pycache__",
     "**/.*",
@@ -116,7 +116,7 @@ reportUnknownVariableType = "none"
 mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "027bca533839d23fdd7552d68d37d40d8dd40ec4" }
 
 [dependency-groups]
-# uv itself, installed by Dockerfile.base and CI via the hashed export in uv-bootstrap.txt. Not a default group, so never synced.
+# uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
 bootstrap = ["uv==0.12.16"]
 
 # Documentation toolchain. Not installed at runtime -- nothing in modules/ or
@@ -144,8 +144,12 @@ docs = [
 
 dev = [
     "arrapi==1.4.14",
+    "bandit==1.9.4",
+    "black==26.5.1",
     "cloudscraper==1.2.71",
+    "flake8==7.3.0",
     "gitpython==3.1.62",
+    "isort==9.0.1",
     "letterboxdpy==6.5.7",
     "lxml==6.1.3",
     "num2words==0.5.14",
@@ -153,7 +157,9 @@ dev = [
     "pathvalidate==3.3.1",
     "pillow==12.3.0",
     "plexapi==4.18.2",
+    "prek==0.5.2",
     "psutil==7.2.2",
+    "pyright==1.1.411",
     "pytest==9.1.1",
     "pytest-cov>=7.0.0",
     "responses>=0.25.0",

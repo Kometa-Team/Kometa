@@ -103,6 +103,4 @@ tests/**           linguist-detectable
 .gitignore         export-ignore
 .dockerignore      export-ignore
 .envrc             export-ignore
-.spellcheck.yml    export-ignore
 tests/             export-ignore
-dev-requirements.txt  export-ignore

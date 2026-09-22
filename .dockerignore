@@ -20,11 +20,9 @@ venv
 .dockerignore
 .gitignore
 .readthedocs.yml
-.spellcheck.yml
 CHANGELOG.md
 Dockerfile
 LICENSE
-mkdocs.yml
 README.md
 test.py
 .agents

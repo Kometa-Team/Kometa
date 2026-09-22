@@ -39,30 +39,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Get changes
-        id: get-changes
-        # HEAD^1 is the base tip on the merge commit, so this is always the full PR-vs-base diff -- replaces the old labeled-vs-synchronize branching.
-        run: |
-          echo "files<<EOF" >> $GITHUB_OUTPUT
-          git diff --name-only HEAD^1 HEAD >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
       - name: List changed files
         id: list-changes
-        run: |
-            readarray -t files <<< "${{ steps.get-changes.outputs.files }}"
-            for file in "${files[@]}"; do
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(defaults|fonts|modules|kometa.py|requirements.txt|pyproject.toml|uv.lock|.dockerignore|Dockerfile).*$ ]]; then
-                    echo "$file will trigger docker build"
-                    echo "build=true" >> $GITHUB_OUTPUT
-                else
-                    echo "$file will not trigger docker build"
-                fi
-                if [[ -n "$file" ]] && [[ "$file" =~ ^(Dockerfile\.base|pyproject\.toml|uv\.lock|uv-bootstrap\.txt)$ ]]; then
-                    echo "$file will trigger base image build"
-                    echo "base=true" >> $GITHUB_OUTPUT
-                fi
-            done
+        # HEAD^1 is the base tip on the merge commit, so this is always the full PR-vs-base diff -- replaces the old labeled-vs-synchronize branching.
+        shell: bash
+        run: git diff --name-only HEAD^1 HEAD | bash .github/scripts/classify-changes.sh >> "$GITHUB_OUTPUT"
 
       - name: Get all changed files
         uses: tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96 # v47.0.6
@@ -76,6 +57,7 @@ jobs:
         uses: rojopolis/spellcheck-github-actions@c1934c57e61c734261d7905b525486b12f8eb670 # 0.66.0
         with:
           task_name: Markdown
+          config_path: .github/.spellcheck.yml
           source_files: ${{ steps.changed_files.outputs.all_changed_files }}
 
       - name: Set up Python
@@ -86,12 +68,12 @@ jobs:
       - name: Verify uv.lock and requirements.txt are current
         # uv.lock is the single source of truth for what gets installed; requirements.txt
         # is generated from it. This fails the PR if either has drifted from pyproject.toml.
-        # uv comes from uv-bootstrap.txt (the bootstrap group in pyproject.toml), so CI cannot rewrite the lockfile's revision header.
+        # uv comes from docker/uv-bootstrap.txt (the bootstrap group in pyproject.toml), so CI cannot rewrite the lockfile's revision header.
         run: |
-          pip install --require-hashes -r uv-bootstrap.txt
+          pip install --require-hashes -r docker/uv-bootstrap.txt
           uv lock --check
-          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o uv-bootstrap.txt
-          git diff --exit-code -- uv-bootstrap.txt
+          uv export --format requirements-txt --only-group bootstrap --no-emit-project -o docker/uv-bootstrap.txt
+          git diff --exit-code -- docker/uv-bootstrap.txt
           uv export --format requirements-txt --no-hashes --no-dev --no-emit-project -o requirements.txt
           git diff --exit-code -- requirements.txt
 
@@ -112,7 +94,7 @@ jobs:
   docker-base-build:
     runs-on: ubuntu-latest
     needs: [guard, validate]
-    # Dockerfile.base is otherwise built only by docker-base.yml's weekly schedule, which
+    # docker/Dockerfile.base is otherwise built only by docker-base.yml's weekly schedule, which
     # checks out nightly -- so a change to it, or to the files it installs from, would not
     # be exercised until after merge. Build only, never pushed; docker-build still consumes
     # the published base image.
@@ -129,7 +111,7 @@ jobs:
       - name: Build base image
         env:
           IMAGE: kometa-base-ci:${{ github.sha }}
-        run: docker buildx build --file ./Dockerfile.base --tag "$IMAGE" --load .
+        run: docker buildx build --file ./docker/Dockerfile.base --tag "$IMAGE" --load .
 
       - name: Verify runtime dependencies resolve
         env:

@@ -15,7 +15,7 @@ Usage:
     # Show what's in the baseline
     python scripts/pyright_baseline.py --show
 
-The baseline lives at .pyright-baseline.json and tracks per-file error
+The baseline lives at scripts/pyright/baseline.json and tracks per-file error
 counts. This means:
 
   * Adding a new error to ANY file fails CI.
@@ -42,7 +42,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-BASELINE_PATH = Path(__file__).resolve().parent.parent / ".pyright-baseline.json"
+BASELINE_PATH = Path(__file__).resolve().parent / "pyright" / "baseline.json"
 
 
 def run_pyright() -> dict:

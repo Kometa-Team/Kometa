@@ -39,17 +39,8 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Cache pip
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-lint-${{ hashFiles('requirements.txt', 'dev-requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-lint-
-
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Black check
         run: black --check --diff modules/ tests/ *.py
@@ -84,17 +75,8 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Cache pip
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-test-${{ hashFiles('requirements.txt', 'dev-requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-test-
-
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Run pytest with coverage
         run: |
@@ -158,9 +140,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Run regression tests
         run: |
@@ -203,9 +183,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Validate schemas and defaults
         run: |
@@ -234,9 +212,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Import every module under modules/
         run: |
@@ -259,9 +235,7 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r dev-requirements.txt
+        uses: ./.github/actions/setup-env
 
       - name: Run tests with timeout enforcement
         run: |

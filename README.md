@@ -252,7 +252,7 @@ For support on any of the above, visit the [Discord server](https://kometa.wiki/
 
 ## Contributing
 
-Pull Requests are greatly encouraged. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a PR — it covers branching, versioning, code style, and the changelog process.
+Pull Requests are greatly encouraged. Please read [CONTRIBUTING.md](.github/CONTRIBUTING.md) before opening a PR — it covers branching, versioning, code style, and the changelog process.
 
 <!--sponsor-start-->
 ## GitHub Sponsors

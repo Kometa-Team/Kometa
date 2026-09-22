@@ -44,7 +44,7 @@ formatting changes and refactors.
 
 | Situation | What to do |
 | --- | --- |
-| You fixed real pyright errors in your PR | `python scripts/pyright_baseline.py --regenerate`, commit the new `.pyright-baseline.json` |
+| You fixed real pyright errors in your PR | `python scripts/pyright_baseline.py --regenerate`, commit the new `scripts/pyright/baseline.json` |
 | You moved code between files | Same — net delta is what matters |
 | You're intentionally accepting a NEW error | Don't. Either fix it, suppress just that line with `# pyright: ignore[ruleName]`, or open an issue and discuss |
 | You added a new module | Run `--regenerate`; the new file appears with its starting count |
