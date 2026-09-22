@@ -283,6 +283,7 @@ from modules.builder import CollectionBuilder  # noqa: E402
 from modules.config import ConfigFile  # noqa: E402
 from modules.overlay import rating_sources  # noqa: E402
 from modules.request import Requests  # noqa: E402
+from modules.tmdb import NotFound as TMDbNotFound  # noqa: E402
 from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, OverlayError, ServiceError  # noqa: E402
 
 plex_maintenance_error = "Plex Critical Error: Response 503 (service_unavailable) received. Plex may be running startup or maintenance tasks. Kometa cannot proceed until this is complete"
@@ -1360,8 +1361,8 @@ def run_collection(config, library, metadata, requested_collections):
                     elif items_added > 0 or items_removed > 0:
                         library.stats["modified"] += 1
                         library.status[str(mapping_name)]["status"] = "Modified"
-                except Failed:
-                    logger.stacktrace()
+                except Failed as e:
+                    logger.error(e)
                     run_item_details = False
                     logger.info("")
                     logger.separator(f"No {builder.Type} to Update", space=False, border=False)
@@ -1431,6 +1432,11 @@ def run_collection(config, library, metadata, requested_collections):
         except ServiceError as e:
             logger.error(e)
             library.status[str(mapping_name)]["status"] = "Service Error"
+            library.status[str(mapping_name)]["errors"].append(e)
+        except TMDbNotFound as e:
+            library.notify(e, collection=mapping_name)
+            logger.error(e)
+            library.status[str(mapping_name)]["status"] = "TMDb Not Found"
             library.status[str(mapping_name)]["errors"].append(e)
         except Failed as e:
             library.notify(e, collection=mapping_name)
@@ -1584,8 +1590,8 @@ def run_playlists(config):
                         elif items_added > 0 or items_removed > 0:
                             stats["modified"] += 1
                             status[mapping_name]["status"] = "Modified"
-                    except Failed:
-                        logger.stacktrace()
+                    except Failed as e:
+                        logger.error(e)
                         run_item_details = False
                         logger.info("")
                         logger.separator("No Playlist to Update", space=False, border=False)
@@ -1627,7 +1633,8 @@ def run_playlists(config):
                     status[mapping_name]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
-                logger.stacktrace()
+                if not isinstance(e, ServiceError):
+                    logger.stacktrace()
                 logger.error(e)
                 status[mapping_name]["status"] = "Kometa Failure"
                 status[mapping_name]["errors"].append(e)

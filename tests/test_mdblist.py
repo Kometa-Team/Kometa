@@ -396,3 +396,31 @@ class TestMDBList:
 
         remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
         assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
+
+
+@pytest.mark.parametrize("metadata_succeeds", [False, True])
+def test_daily_quota_preserved_during_list_loading(monkeypatch, metadata_succeeds):
+    from modules.mdblist import MDBList, MDBListLimitReached
+    from modules.util import ServiceError
+
+    monkeypatch.setattr("modules.mdblist.time.sleep", lambda _: None)
+    adapter = MDBList.__new__(MDBList)
+    adapter.apikey = "private-key"
+    adapter.supporter = False
+    adapter.limit = False
+    adapter.requests = MagicMock()
+    quota = MagicMock(status_code=429)
+    quota.json.return_value = {"error": "Daily API limit exceeded!"}
+    metadata = MagicMock(status_code=200)
+    metadata.json.return_value = {"items": 1}
+    adapter.requests.get.side_effect = [metadata, quota] if metadata_succeeds else [quota]
+
+    with pytest.raises(MDBListLimitReached) as caught:
+        adapter.get_tmdb_ids("mdblist_list", {"id": 123}, is_movie=True)
+
+    assert isinstance(caught.value, ServiceError)
+    assert isinstance(caught.value, LimitReached)
+    assert adapter.limit is True
+    assert "Wait for the daily quota to reset" in str(caught.value)
+    assert str(caught.value).count("MDBList Error:") == 1
+    assert adapter.requests.get.call_count == (2 if metadata_succeeds else 1)

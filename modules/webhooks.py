@@ -1,4 +1,8 @@
 from json import JSONDecodeError
+from urllib.parse import urlsplit
+
+from requests.exceptions import ConnectionError, InvalidSchema, InvalidURL, MissingSchema, RequestException, Timeout
+from tenacity import RetryError
 
 from modules import util
 from modules.util import Failed
@@ -101,6 +105,9 @@ class Webhooks:
         logger.trace(f"JSON: {json}")
         for webhook in list(set(webhooks)):
             response = None
+            # Webhook URLs can contain credentials in their path.
+            if webhook not in ("notifiarr", "gotify", "ntfy", "apprise"):
+                logger.secret(webhook)
             logger.trace(f"Webhook: {webhook}")
             if webhook == "notifiarr":
                 if self.notifiarr:
@@ -118,11 +125,37 @@ class Webhooks:
                 if self.apprise:
                     self.apprise.notification(json)
             else:
+                event = json.get("event", "unknown")
+                try:
+                    parsed = urlsplit(webhook)
+                    valid_url = parsed.scheme in ("http", "https") and bool(parsed.hostname) and not any(c.isspace() or c in "<>" for c in webhook)
+                    parsed.port  # Validate malformed port values before retrying a request.
+                except ValueError:
+                    valid_url = False
+                if not valid_url:
+                    logger.error(f"Webhook Error: Cannot send {event} notification: invalid webhook URL. Use a complete http:// or https:// URL without angle brackets or spaces; check your webhooks configuration.")
+                    continue
+                payload = json
                 if webhook.startswith("https://discord.com/api/webhooks"):
-                    json = self.discord(json)
+                    payload = self.discord(json)
                 elif webhook.startswith("https://hooks.slack.com/services"):
-                    json = self.slack(json)
-                response = self.requests.post(webhook, json=json)
+                    payload = self.slack(json)
+                try:
+                    response = self.requests.post(webhook, json=payload)
+                except (RequestException, RetryError) as error:
+                    cause = error.last_attempt.exception() if isinstance(error, RetryError) else error
+                    if not isinstance(cause, RequestException):
+                        raise
+                    if isinstance(cause, (InvalidSchema, InvalidURL, MissingSchema)):
+                        detail = "invalid webhook URL; check your webhooks configuration"
+                    elif isinstance(cause, Timeout):
+                        detail = "webhook server timed out; check service availability and try again later"
+                    elif isinstance(cause, ConnectionError):
+                        detail = "could not connect to the webhook server; check the address, network connection, and TLS configuration"
+                    else:
+                        detail = "HTTP request failed; check the webhook URL and service availability"
+                    logger.error(f"Webhook Error: Could not deliver {event} notification: {detail}.")
+                    continue
             if response is not None:
                 try:
                     response_json = response.json()

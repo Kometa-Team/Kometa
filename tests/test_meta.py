@@ -380,6 +380,33 @@ class TestApplyTemplateNestedVarResolution:
         assert result["summary"] == "8"
 
 
+class TestStreamingTemplate:
+    @pytest.mark.parametrize("library_type", ["Movie", "Show"])
+    @pytest.mark.parametrize("region, provider", [(None, 9), ("US", 9), ("AT", 9), ("DE", 9), ("GB", 9), ("JP", 9), ("FR", 119), ("CA", 119)])
+    def test_prime_video_provider_matches_effective_region(self, library_type, region, provider):
+        streaming_path = Path(__file__).resolve().parents[1] / "defaults" / "both" / "streaming.yml"
+        with streaming_path.open(encoding="utf-8") as handle:
+            streaming = YAML(typ="safe").load(handle)
+
+        df = make_datafile(
+            library=SimpleNamespace(type=library_type, name="Streaming"),
+            templates={"streaming": (streaming["templates"]["streaming"], {})},
+        )
+        variables = {
+            "name": "streaming",
+            "key": "amazon",
+            "tmdb_key": streaming["dynamic_collections"]["Streaming"]["template_variables"]["tmdb_key"]["amazon"],
+            "originals_only": False,
+        }
+        if region is not None:
+            variables["region"] = region
+
+        result = df.apply_template("Prime Video", "amazon", {}, [variables], {})
+
+        assert result["tmdb_discover"]["watch_region"] == (region or "US")
+        assert str(result["tmdb_discover"]["with_watch_providers"]) == str(provider)
+
+
 class TestResolutionEditionDovetailTemplate:
     @staticmethod
     def _apply_edition_template(*, overlay_type, use_resolution=None):

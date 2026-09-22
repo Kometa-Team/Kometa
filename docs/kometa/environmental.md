@@ -251,6 +251,8 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
     <div id="trace" />To increase the verbosity of the logs even more than [debug](#debug), set this flag to `true`.
 
+    Trace logs include a message before each Plex request with its method, item path, and configured timeout, followed by completion or failure and elapsed time. If a run appears stuck, a `Plex request starting` line without a matching completion or failure identifies the pending query. Query parameters, headers, and request bodies are omitted. The timeout applies to connection and read operations; it is not a total request deadline.
+
     <hr style="margin: 0px;">
 
     **Shell Flags:** `-tr` or `--trace` (ex. `--trace`)
