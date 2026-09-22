@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
 - Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
 - Report TMDb IDs that no longer exist as a concise error without a traceback, with a clearer message.
+- Log a concise error instead of a traceback when a collection or playlist cannot be loaded from Plex after being built.
 
 ### Changed
 
