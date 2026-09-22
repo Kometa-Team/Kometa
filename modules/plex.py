@@ -799,6 +799,27 @@ watchlist_sorts = {
 MAX_IMAGE_SIZE = 10480000  # a little less than 10MB
 
 
+class TracedPlexServer(PlexServer):
+    def query(self, key, method=None, headers=None, params=None, timeout=None, **kwargs):
+        if not logger.is_trace:
+            return super().query(key, method=method, headers=headers, params=params, timeout=timeout, **kwargs)
+
+        # Keep item paths visible without logging query parameters, headers, or bodies.
+        path = urlparse(key).path
+        verb = getattr(method, "__name__", "GET").upper() if method else "GET"
+        effective_timeout = self._timeout if timeout is None else timeout
+        request = f"{verb} {path} (timeout: {effective_timeout}s)"
+        logger.trace(f"Plex request starting: {request}")
+        started = time.monotonic()
+        try:
+            result = super().query(key, method=method, headers=headers, params=params, timeout=timeout, **kwargs)
+        except Exception as error:
+            logger.trace(f"Plex request failed: {request} after {time.monotonic() - started:.3f}s ({type(error).__name__})")
+            raise
+        logger.trace(f"Plex request completed: {request} after {time.monotonic() - started:.3f}s")
+        return result
+
+
 class Plex(Library):
     def __init__(self, config, params):
         super().__init__(config, params)
@@ -819,7 +840,7 @@ class Plex(Library):
         logger.secret(self.url)
         logger.secret(self.token)
         try:
-            self.PlexServer = PlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
+            self.PlexServer = TracedPlexServer(baseurl=self.url, token=self.token, session=self.session, timeout=self.timeout)
             timings.registry.set_plex_hostname(urlparse(self.url).hostname)
             plexapi.server.TIMEOUT = self.timeout  # pyright: ignore[reportOptionalMemberAccess,reportAttributeAccessIssue]
             os.environ["PLEXAPI_PLEXAPI_TIMEOUT"] = str(self.timeout)
