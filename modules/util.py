@@ -50,8 +50,10 @@ def remove_trakt(data):
                 continue
             value, value_found = remove_trakt(value)
             found = found or value_found
-            if value is not None and not (value_found and isinstance(value, dict) and not value):
-                cleaned[key] = value
+            # Only drop entries that trakt removal actually produced; keep pre-existing None/empty values intact
+            if value_found and (value is None or (isinstance(value, dict) and not value)):
+                continue
+            cleaned[key] = value
         return cleaned, found
     elif isinstance(data, list):
         cleaned = []
@@ -59,8 +61,9 @@ def remove_trakt(data):
         for value in data:
             value, value_found = remove_trakt(value)
             found = found or value_found
-            if value is not None:
-                cleaned.append(value)
+            if value_found and value is None:
+                continue
+            cleaned.append(value)
         return cleaned, found
     elif isinstance(data, str) and "trakt" in data.lower():
         return None, True
