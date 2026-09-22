@@ -299,7 +299,12 @@ class TMDbShow(TMDBObj):
             loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else []  # noqa
             self.countries = [TMDbCountry(c) for c in loop]
             loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else []  # noqa
-            self.seasons = [TMDbSeason(s) for s in loop]
+            self.seasons = []
+            for season in loop:
+                try:
+                    self.seasons.append(TMDbSeason(season))
+                except TMDbNotFound as e:
+                    raise Failed(f"TMDb Error: Season {season.season_number} not found (404) for {self.title} (TMDb ID: {self.tmdb_id}); unable to load show metadata") from e
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
@@ -563,7 +568,7 @@ class TMDb:
                 logger.error(e)
         if len(tmdb_values) == 0:
             if all_not_found:
-                raise NotFound(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
+                raise NotFound(f"TMDb Error: No {type_map[tmdb_method]} found on TMDb for ID(s) {tmdb_list}. Verify the ID(s) still exist and update your config.")
             raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
 

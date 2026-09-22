@@ -7,8 +7,10 @@ import re
 import shutil
 from typing import Literal, overload
 
+from lxml.etree import ParserError
+
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, ServiceError
 
 logger = util.logger
 
@@ -610,6 +612,8 @@ class IMDb:
             logger.trace(f"Params: {params}")
         try:
             response = self.requests.get_cloudscrape_html(url, params=params, language=language)
+        except ParserError as e:
+            raise ServiceError(f"IMDb Error: Empty or unreadable page returned by {url}. Retry later; if this persists, check that IMDb is accessible from the Kometa host.") from e
         except Exception as e:
             raise Failed(e)
         if page_props:
@@ -1112,7 +1116,10 @@ class IMDb:
                 if logger:
                     logger.debug(f"GraphQL chart query error for {chart}: {e}")
         # Final fallback: HTML scraping via original xpath method
-        script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
+        try:
+            script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
+        except ServiceError as e:
+            raise ServiceError(f"IMDb Chart '{charts[chart]}' could not be loaded. {e}") from e
         if not script_results:
             message = f"IMDb Error: HTML fallback returned no chart data for {charts[chart]}"
             if graphql_error:
