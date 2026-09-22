@@ -21,6 +21,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
 
+### Fixed
+
+- Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
+
 ## [v2.5.0] - 2026-09-21
 
 ### Changed
