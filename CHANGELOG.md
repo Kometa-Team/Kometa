@@ -18,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handle missing TMDb season details during show metadata loading with a descriptive error instead of a traceback and a library-aborting critical error.
 - Report MDBList daily quota and rate limits with recovery guidance instead of nested errors and playlist tracebacks.
 - Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
+- Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
 
 ### Changed
 
 - Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
+
 
 ## [v2.5.0] - 2026-09-21
 
