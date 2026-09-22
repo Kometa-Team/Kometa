@@ -39,7 +39,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region.not: [AT, DE, GB, JP, US]
+          - region.notdefault: [AT, DE, GB, JP, US]
             tmdb_key: [9]
             value: 119
 
