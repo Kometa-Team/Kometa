@@ -454,7 +454,7 @@ class MDBList:
         limit_config = data.get("limit", 0)
         has_more = True
 
-        params = {
+        params: dict[str, int | str] = {
             "limit": 1000,
         }
 
