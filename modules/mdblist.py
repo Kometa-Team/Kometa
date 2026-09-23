@@ -431,6 +431,7 @@ class MDBList:
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
 
         list_id = data.get("id")
+        official_slug = None
         if list_id:
             external_id = None
             items_url = f"{api_url}lists/{list_id}/items/"
@@ -438,8 +439,14 @@ class MDBList:
         else:
             list_path = data["url"].split("/lists/")[-1].strip("/")
             external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
-            items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
-            meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
+            official_parts = list_path.split("/")
+            official_slug = official_parts[-1] if len(official_parts) == 3 and official_parts[0] == "official" and official_parts[1] in ("movies", "shows") else None
+            if official_slug:
+                items_url = f"{api_url}lists/official/{official_slug}/items"
+                meta_url = f"{api_url}lists/official/{official_slug}"
+            else:
+                items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+                meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
 
         sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
@@ -451,7 +458,9 @@ class MDBList:
             "limit": 1000,
         }
 
-        if not external_id and is_episode:
+        if official_slug:
+            params["mediatype"] = "movie" if official_parts[1] == "movies" else "show"
+        elif not external_id and is_episode:
             items_url = f"{items_url}episode"
         elif not external_id and is_movie is not None:
             items_url = f"{items_url}movie" if is_movie else f"{items_url}show"
