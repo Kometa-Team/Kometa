@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.1] - 2026-09-24
+
 ### Added
 
 - Trace Plex queries before they start and report completion or failure with elapsed time, making pending requests visible when diagnosing apparent hangs.
@@ -408,7 +410,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...HEAD
+[v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
 [v2.4.9]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...v2.4.9
 [v2.4.8]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...v2.4.8
