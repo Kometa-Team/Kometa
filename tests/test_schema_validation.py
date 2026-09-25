@@ -18,6 +18,7 @@ focused test for it (see ``test_collection_schema.py`` for the pattern).
 
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -103,6 +104,39 @@ def test_default_file_is_valid_yaml(yaml_path: Path) -> None:
 def test_at_least_one_default_exists() -> None:
     """Defensive: catch a layout change that hides all defaults from us."""
     assert DEFAULT_YAML_FILES, f"no YAML files found under {DEFAULTS_DIR}"
+
+
+def test_rating_overlay_schema_matches_runtime_and_default() -> None:
+    """Rating overlay completions must reflect sources supported by code and ratings.yml."""
+    with (DEFAULTS_DIR / "overlays" / "ratings.yml").open(encoding="utf-8") as fh:
+        ratings_default = yaml.safe_load(fh)
+    direct_sources = ratings_default["templates"]["Rating"]["conditionals"]["plex_all"]["conditions"][0]["rating<<rating_num>>"]
+
+    overlay_tree = ast.parse((REPO_ROOT / "modules" / "overlay.py").read_text(encoding="utf-8"))
+    rating_sources = next(ast.literal_eval(node.value) for node in overlay_tree.body if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "rating_sources" for target in node.targets))
+    runtime_sources = [source.removesuffix("_rating") for source in rating_sources]
+    assert set(direct_sources) <= set(runtime_sources)
+
+    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+        config_schema = json.load(fh)
+
+    rating_groups = []
+
+    def find_rating_groups(value):
+        if isinstance(value, dict):
+            if all(key in value for key in ("rating1", "rating2", "rating3")):
+                rating_groups.append(value)
+            for child in value.values():
+                find_rating_groups(child)
+        elif isinstance(value, list):
+            for child in value:
+                find_rating_groups(child)
+
+    find_rating_groups(config_schema)
+    assert len(rating_groups) == 1
+    expected = ["critic", "audience", "user", *direct_sources]
+    for key in ("rating1", "rating2", "rating3"):
+        assert rating_groups[0][key]["enum"] == expected
 
 
 def test_seasonal_template_variables_accept_per_collection_use_flags() -> None:
