@@ -201,7 +201,7 @@ class Webhooks:
             if self.requests.local.main != self.requests.latest.main:
                 notes = self.config.GitHub.latest_release_notes()
             elif self.requests.local.build and self.requests.local.build < self.requests.latest.build:
-                notes = self.config.GitHub.get_commits(self.requests.local.build, nightly=self.requests.branch == "nightly")
+                notes = self.config.GitHub.get_commits(self.requests.local.build)
             self._request(self.version_webhooks, {"event": "version", "current": str(self.requests.local), "latest": str(self.requests.latest), "notes": notes})
 
     def end_time_hooks(self, start_time, end_time, run_time, stats):

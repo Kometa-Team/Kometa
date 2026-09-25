@@ -12,8 +12,8 @@ Thanks for taking the time to contribute! This document covers everything you ne
 
 | Branch | Purpose |
 | ------ | ------- |
-| `nightly` | Active development - all PRs target here |
-| `develop` | Pre-release staging |
+| `nightly` | Active development, internal only - all PRs target here |
+| `develop` | Public beta - auto-mirrors `nightly` on every push |
 | `master` | Stable releases only |
 
 Create your branch from `nightly` and keep it rebased against `nightly` before opening a PR.

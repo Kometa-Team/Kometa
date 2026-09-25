@@ -139,6 +139,27 @@ def test_rating_overlay_schema_matches_runtime_and_default() -> None:
         assert rating_groups[0][key]["enum"] == expected
 
 
+def test_seasonal_template_variables_accept_per_collection_use_flags() -> None:
+    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    seasonal_schema = schema["definitions"]["seasonal-template-vars"]
+    validator = Draft7Validator(seasonal_schema)
+    variables = {
+        "use_all": False,
+        "use_christmas": True,
+        "use_easter": True,
+        "use_father": True,
+        "use_halloween": True,
+        "use_mother": True,
+        "use_years": True,
+        "use_valentine": True,
+        "sort_by": "random",
+    }
+
+    assert list(validator.iter_errors(variables)) == []
+
+
 def test_tracearr_default_uses_short_trending_window_without_raw_history_and_sets_logos() -> None:
     with (DEFAULTS_DIR / "chart" / "tracearr.yml").open(encoding="utf-8") as fh:
         tracearr_default = yaml.safe_load(fh)

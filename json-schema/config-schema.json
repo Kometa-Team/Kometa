@@ -13716,6 +13716,10 @@
       "required": [],
       "dependentRequired": {},
       "patternProperties": {
+        "^use_(?!all$).+$": {
+          "description": "Disable a specific seasonal collection by key. Set to false to turn off.",
+          "type": "boolean"
+        },
         "^schedule_.+$": {
           "type": "string"
         },

@@ -229,7 +229,7 @@ pip install -r docs/requirements.txt && mkdocs serve -f docs/mkdocs.yml
 
 ## CI/CD & Deployment
 
-- **Branches**: `nightly` (dev) → `develop` (beta) → `master` (stable). **All PRs must target `nightly`.**
+- **Branches**: `nightly` (internal integration branch, not user-facing) → `develop` (public beta, auto-mirrors `nightly` on every push) → `master` (stable). **All PRs must target `nightly`.**
 - **Docker**: Multi-arch images at `kometateam/kometa:<tag>` via GitHub Actions on tag/push.
 - **Workflows**: Validation, Docker builds, releases. See `.github/workflows/` for details.
 
