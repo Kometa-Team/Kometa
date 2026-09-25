@@ -113,7 +113,7 @@ reportUnknownVariableType = "none"
 
 
 [tool.uv.sources]
-mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "027bca533839d23fdd7552d68d37d40d8dd40ec4" }
+mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-include-markdown-plugin", rev = "cb72c4ebc2c2650f70132f74adf3b4f4849ce333" }
 
 [dependency-groups]
 # uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
