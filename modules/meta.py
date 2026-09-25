@@ -1760,7 +1760,7 @@ class MetadataFile(DataFile):
                         item.extend(temp_items)
 
                     if not item:
-                        logger.warning(f"Skipping {mapping_name}: Item not found")
+                        logger.warning(f"Skipping {mapping_name}: Item not found in {self.type_str} '{self.get_file_name()}'")
                         continue
 
                 if not isinstance(item, list):

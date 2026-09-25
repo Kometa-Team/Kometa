@@ -688,6 +688,7 @@ def start(attrs):
 
             other_log_groups = [
                 ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
+                ("Skipping ", r"Skipping .+: Item not found in (.+)"),
                 *[(f"Overlay Warning: No '{rating_source}' found", rf"Overlay Warning: No '{re.escape(rating_source)}' found for (.*)") for rating_source in ["audience_rating", "critic_rating", "user_rating", *rating_sources]],
                 ("Overlay Error: No '", r"Overlay Error: No '(<<.+>>.*)' found$"),
                 ("Overlays Attempted on", r"Overlays Attempted on (.*): .+"),
@@ -853,6 +854,20 @@ def start(attrs):
                     else:
                         logger.info(f"{count:>5} | {convert_line}")
             if convert_title:
+                logger.info("")
+
+            item_not_found_title = False
+            for key, _ in other_log_groups:
+                if key == "Skipping " and key in other_message:
+                    if item_not_found_title is False:
+                        logger.separator("Item Not Found Summary", space=False, border=False)
+                        logger.info("")
+                        logger.info("Count | Message")
+                        logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
+                        item_not_found_title = True
+                    for source, count in other_message[key]["name_counts"].most_common():
+                        logger.info(f"{count:>5} | Skipping Item not found in {source}")
+            if item_not_found_title:
                 logger.info("")
 
             for err_type in ["WARNING", "ERROR", "CRITICAL"]:

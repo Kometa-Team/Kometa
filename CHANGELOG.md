@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a `settings.threading` config block (`workers`, `tmdb_pages`, `parallel_sources`, `prefetch_collection_children`) backed by a shared `ThreadPoolExecutor`, used to defer non-Plex `gather_ids` work and Plex item-reload batching off the main collection loop.
 - Add a `--delete-collections-labels` CLI flag (no short form - would collide with `-d`/`--divider`) that deletes all collections, same as `-dc`, and for any deleted collection whose title matches an existing Plex label of the same name (the Smart Label default), batch-removes that one label from just the items that have it - instead of `-dl`'s full library-wide, one-item-at-a-time label wipe.
+- Add an `Item Not Found Summary` section to the end-of-run report that groups `Skipping <title>: Item not found` warnings by the Metadata/Image file they came from, instead of listing every missing title as its own line in the Warning Summary.
 
 ### Fixed
 
