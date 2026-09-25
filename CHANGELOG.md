@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Default `settings.threading.workers` to 4 (was effectively single-threaded) and `settings.threading.prefetch_collection_children` to `true`, deferring a collection's `sync_collection` "what to remove" lookup and PMS's comma-separated `/library/metadata/{ids}` batch-read to the shared thread pool instead of blocking the main collection loop; the cache is now RLock-guarded (`_LockedConnection`) so concurrent worker threads can share one SQLite connection safely.
+
+### Added
+
+- Add a `settings.threading` config block (`workers`, `tmdb_pages`, `parallel_sources`, `prefetch_collection_children`) backed by a shared `ThreadPoolExecutor`, used to defer non-Plex `gather_ids` work and Plex item-reload batching off the main collection loop.
+- Add a `--delete-collections-labels` CLI flag (no short form - would collide with `-d`/`--divider`) that deletes all collections, same as `-dc`, and for any deleted collection whose title matches an existing Plex label of the same name (the Smart Label default), batch-removes that one label from just the items that have it - instead of `-dl`'s full library-wide, one-item-at-a-time label wipe.
+
+### Fixed
+
+- Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
+- Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.
+- Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
+
 ## [v2.5.1] - 2026-09-24
 
 ### Added

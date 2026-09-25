@@ -271,6 +271,7 @@ class Overlay:
                                 width = int(base_width * height / base_height)
                             if width and not height:
                                 height = int(base_height * width / base_width)
+                            assert width is not None and height is not None
                             self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
                         # Force image data to be loaded into memory before context closes
                         self.image.load()
@@ -369,6 +370,7 @@ class Overlay:
                             width = int(base_width * height / base_height)
                         if width and not height:
                             height = int(base_height * width / base_width)
+                        assert width is not None and height is not None
                         self.image = self.image.resize((width, height), Image.Resampling.LANCZOS)
                     if self.has_coordinates():
                         self.backdrop_box = self.image.size
