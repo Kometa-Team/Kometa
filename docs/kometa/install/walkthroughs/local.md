@@ -116,12 +116,6 @@ Now `git checkout` to the branch reflecting the version of the wiki you are read
     git checkout develop
     ```
 
-=== ":fontawesome-brands-github: nightly"
-    
-    ```shell
-    git checkout nightly
-    ```
-
 ???+ tip "Important Information"
 
     The rest of this walkthrough assumes you are staying in this directory in this terminal/Powershell window.
@@ -174,14 +168,10 @@ Presumably youâ€™re reading this because the other docs are unclear to you. Donâ
 
     No need to download a new ZIP, decompress it, etc.
 
-    Also, if you are asked to [or want to] switch to the latest develop or nightly code, you can do so with:
+    Also, if you are asked to [or want to] switch to the latest develop code, you can do so with:
 
     ```shell
     git checkout develop
-    ```
-
-    ```shell
-    git checkout nightly
     ```
 
 ---

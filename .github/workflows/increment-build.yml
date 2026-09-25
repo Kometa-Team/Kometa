@@ -252,28 +252,3 @@ jobs:
           avatar_url: ${{ vars.BOT_IMAGE }}
           author: ${{ vars.DOCKER_NAME }}
           author_icon_url: ${{ vars.DOCKER_IMAGE }}
-
-  commit-notification:
-    runs-on: ubuntu-latest
-    needs: [ increment-build, verify-changes, docker-build-base, docker-build-nightly ]
-    if: >-
-      always() &&
-      needs.verify-changes.outputs.build == 'true' &&
-      needs.increment-build.result == 'success' &&
-      needs.docker-build-nightly.result == 'success' &&
-      (needs.docker-build-base.result == 'success' || needs.docker-build-base.result == 'skipped')
-    steps:
-
-      - name: Send Discord Commit Notification
-        uses: Kometa-Team/discord-notifications@a85936f9279e70814cf315a0eaacc0063e98a087 # master
-        with:
-          webhook_id_token: ${{ secrets.NIGHTLY_WEBHOOK }}
-          title: ${{ vars.NAME }} ${{ needs.increment-build.outputs.version }} Build ${{ needs.increment-build.outputs.build-value }}
-          url: https://github.com/Kometa-Team/${{ vars.REPO_NAME }}/commit/${{ needs.increment-build.outputs.commit-hash }}
-          description: ${{ needs.increment-build.outputs.commit-msg }}
-          message: "${{ vars.NIGHTLY_ROLE }} - An update to ${{ vars.NAME }} has now been published and is available to users of the **nightly** branch."
-          color: ${{ vars.COLOR_SUCCESS }}
-          username: ${{ vars.BOT_NAME }}
-          avatar_url: ${{ vars.BOT_IMAGE }}
-          author: ${{ vars.REPO_NAME }} Nightly Release
-          author_icon_url: ${{ vars.RELEASE_IMAGE }}
