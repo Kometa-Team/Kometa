@@ -5751,9 +5751,13 @@ class CollectionBuilder:
                 else:
                     raise Failed(str(e))
             items = self.library.fetchItems(search_data[2])
+        if self.playlist and self.obj is not None:
+            # update_item_details() left plexapi's cached playlistItemIDs as None
+            self.library.query(self.obj.reload)
         total_items = len(items)
         previous = None
         sort_edit = False
+        moved = False
         for i, item in enumerate(items, 0):
             try:
                 if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
@@ -5761,10 +5765,14 @@ class CollectionBuilder:
                     self.library.moveItem(self.obj, item, previous)
                     logger.info(f"({i + 1}/{total_items}) Moving {util.item_title(item)} {text}")
                     sort_edit = True
+                    moved = True
                 previous = item
             except Failed:
                 logger.error(f"Failed to Move {util.item_title(item)}")
                 sort_edit = True
+        if moved and self.playlist and self.obj is not None:
+            # moveItem() leaves that same cache holding the pre-move order
+            self.library.query(self.obj.reload)
         if not sort_edit:
             logger.info("No Sorting Required")
 

@@ -1061,6 +1061,89 @@ class TestRatingBatching:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# sort_collection
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSortCollection:
+    def _library(self, move_side_effect=None):
+        library = MagicMock()
+        library.moveItem = MagicMock(side_effect=move_side_effect)
+        library.query = MagicMock(side_effect=lambda method: method())
+        return library
+
+    def _items(self, count):
+        return [SimpleNamespace(ratingKey=key, title=f"Item {key}") for key in range(1, count + 1)]
+
+    def _playlist_builder(self, library, items, obj):
+        return make_builder(playlist=True, Type="Playlist", obj=obj, library=library, custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+    def test_issue_2265_playlist_ids_are_refreshed_before_moving(self, monkeypatch):
+        """Regression test for #2265. update_item_details() blanks the playlistItemID plexapi
+        caches for each item, so every move went to /playlists/<id>/items/None/move."""
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        calls = []
+        playlist = SimpleNamespace(reload=lambda: calls.append("reload"))
+        library = self._library()
+        library.moveItem.side_effect = lambda *args: calls.append("move")
+        items = self._items(2)
+
+        self._playlist_builder(library, items, playlist).sort_collection()
+
+        assert calls[0] == "reload"
+        assert "move" in calls
+
+    def test_a_copy_taken_after_sorting_sees_the_post_move_order(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        items = self._items(3)
+        server_order = list(reversed(items))
+        cached_order = list(server_order)
+
+        def move(_obj, item, after):
+            server_order.remove(item)
+            server_order.insert(0 if after is None else server_order.index(after) + 1, item)
+
+        playlist = SimpleNamespace(reload=lambda: cached_order.__setitem__(slice(None), server_order))
+        library = self._library(move_side_effect=move)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=library, custom_sort="custom.asc", found_items=items, items=list(cached_order))
+
+        builder.sort_collection()
+
+        assert server_order == items
+        assert cached_order == items, "copyToUser() reads this cache, so a synced user would get the pre-sort order"
+
+    def test_a_sort_where_every_move_failed_does_not_reload_a_second_time(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = self._playlist_builder(self._library(move_side_effect=Failed("nope")), items, playlist)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_again_when_nothing_moved(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=self._library(), custom_sort="custom.asc", found_items=items, items=items)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_a_collection(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        collection = MagicMock()
+        items = self._items(2)
+        builder = make_builder(obj=collection, library=self._library(), custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+        builder.sort_collection()
+
+        collection.reload.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
