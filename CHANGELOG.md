@@ -68,6 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Show trace messages in terminal and Docker console output when `--trace` is enabled without `--debug`.
+- Retry incomplete or malformed TMDb language configuration during startup instead of reporting a valid language such as `en` as invalid, and log rejected responses at trace level.
 - Report "Trakt Connection Successful (Public Mode)" instead of a plain "Successful" when a configured Trakt authorization fails to refresh, so the run log doesn't contradict the authentication error logged just above it.
 - Treat empty Plex collections and playlists as existing objects so stale smart filters can be repaired and repeated runs do not create duplicate collections; also clarify that empty or stale smart collections can cause duplicate-title warnings. #3572
 - Stop crashing with `ValueError: substring not found` when repairing a stale smart collection whose stored filter is empty or missing a query string.
