@@ -157,6 +157,30 @@ class TestMDBList:
         )
         assert result[0]["sort_by"] == "score"
 
+    def test_validate_streaming_normalizes_options(self, adapter):
+        result = adapter.validate_mdblist_streaming(
+            "Collection",
+            {"country": "United Kingdom", "period": "7d", "provider": "Netflix", "genre": "Science Fiction"},
+        )
+
+        assert result == {"country": "GB", "period": "weekly", "provider": "nfx", "genre": "scf"}
+
+    def test_get_tmdb_ids_for_streaming_chart(self, adapter):
+        adapter._request = MagicMock(
+            return_value=(
+                {"results": [{"ids": {"tmdb": 101}}, {"tmdb_id": 202}, {"id": "invalid"}]},
+                {},
+            )
+        )
+
+        result = adapter.get_tmdb_ids("mdblist_streaming", {"country": "GB", "period": "weekly"}, is_movie=False)
+
+        assert result == [(101, "tmdb_show"), (202, "tmdb_show")]
+        adapter._request.assert_called_once_with(
+            "https://api.mdblist.com/justwatch/streaming-charts/show",
+            params={"country": "GB", "period": "weekly"},
+        )
+
     def test_get_tmdb_ids_returns_episode_ids(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(
