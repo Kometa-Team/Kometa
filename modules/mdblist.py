@@ -13,7 +13,7 @@ class MDBListLimitReached(LimitReached, ServiceError):
 
 
 # --- REQUIRED MODULE ATTRIBUTES ---
-builders = ["mdblist_list"]
+builders = ["mdblist_list", "mdblist_streaming"]
 sort_names = [
     "rank",
     "score",
@@ -48,6 +48,114 @@ base_url = "https://mdblist.com/lists/"
 api_url = "https://api.mdblist.com/"
 
 headers = {"User-Agent": "Kometa"}
+
+streaming_countries = {
+    "all": None,
+    "allcountries": None,
+    "us": "US",
+    "enus": "US",
+    "unitedstates": "US",
+    "gb": "GB",
+    "uk": "GB",
+    "engb": "GB",
+    "unitedkingdom": "GB",
+    "ca": "CA",
+    "enca": "CA",
+    "canada": "CA",
+    "au": "AU",
+    "enau": "AU",
+    "australia": "AU",
+    "de": "DE",
+    "dede": "DE",
+    "germany": "DE",
+}
+streaming_periods = {"1": "daily", "1d": "daily", "daily": "daily", "7": "weekly", "7d": "weekly", "weekly": "weekly", "30": "monthly", "30d": "monthly", "monthly": "monthly"}
+streaming_providers = {
+    "all": None,
+    "allproviders": None,
+    "nfx": "nfx",
+    "netflix": "nfx",
+    "amp": "amp",
+    "amazonprimevideo": "amp",
+    "atp": "atp",
+    "appletv": "atp",
+    "dnp": "dnp",
+    "disney": "dnp",
+    "mxx": "mxx",
+    "max": "mxx",
+    "hlu": "hlu",
+    "hulu": "hlu",
+    "pct": "pct",
+    "peacockpremium": "pct",
+    "pcp": "pcp",
+    "peacockpremiumplus": "pcp",
+    "ppp": "ppp",
+    "paramountpremium": "ppp",
+    "ppe": "ppe",
+    "paramountessential": "ppe",
+    "cru": "cru",
+    "crunchyroll": "cru",
+    "fuv": "fuv",
+    "fubotv": "fuv",
+    "acp": "acp",
+    "amc": "acp",
+    "shd": "shd",
+    "shudder": "shd",
+    "stz": "stz",
+    "starz": "stz",
+    "epx": "epx",
+    "mgm": "epx",
+    "dpu": "dpu",
+    "discovery": "dpu",
+    "mbi": "mbi",
+    "mubi": "mbi",
+    "crc": "crc",
+    "criterionchannel": "crc",
+    "act": "act",
+    "acorntv": "act",
+    "bbo": "bbo",
+    "britbox": "bbo",
+    "knp": "knp",
+    "kanopy": "knp",
+    "rkc": "rkc",
+    "therokuchannel": "rkc",
+    "ptv": "ptv",
+    "plutotv": "ptv",
+    "tbv": "tbv",
+    "tubi": "tbv",
+    "plx": "plx",
+    "plex": "plx",
+    "vuf": "vuf",
+    "fandangoathomefree": "vuf",
+}
+streaming_genres = {
+    "all": None,
+    "allgenres": None,
+    "act": "act",
+    "action": "act",
+    "ani": "ani",
+    "animation": "ani",
+    "cmy": "cmy",
+    "comedy": "cmy",
+    "crm": "crm",
+    "crime": "crm",
+    "doc": "doc",
+    "documentary": "doc",
+    "drm": "drm",
+    "drama": "drm",
+    "fnt": "fnt",
+    "fantasy": "fnt",
+    "hst": "hst",
+    "history": "hst",
+    "hrr": "hrr",
+    "horror": "hrr",
+    "rma": "rma",
+    "romance": "rma",
+    "scf": "scf",
+    "sciencefiction": "scf",
+    "trl": "trl",
+    "thriller": "trl",
+}
 
 
 class MDbObj:
@@ -428,7 +536,56 @@ class MDBList:
 
         return valid_lists
 
+    @staticmethod
+    def validate_mdblist_streaming(error_type, data):
+        if not isinstance(data, dict):
+            raise Failed(f"{error_type} Error: mdblist_streaming must be a mapping")
+
+        valid_attributes = {"country", "period", "provider", "genre"}
+        invalid_attributes = set(data) - valid_attributes
+        if invalid_attributes:
+            attributes = ", ".join(sorted(invalid_attributes))
+            raise Failed(f"{error_type} Error: mdblist_streaming has invalid attribute(s): {attributes}")
+
+        def resolve(attribute, value, options):
+            key = "".join(character for character in str(value).lower() if character.isalnum())
+            if key not in options:
+                raise Failed(f"{error_type} Error: mdblist_streaming {attribute} is invalid: {value}")
+            return options[key]
+
+        country = resolve("country", data.get("country", "US"), streaming_countries)
+        period = resolve("period", data.get("period", "daily"), streaming_periods)
+
+        streaming = {"period": period}
+        if country:
+            streaming["country"] = country
+        for attribute, options in (("provider", streaming_providers), ("genre", streaming_genres)):
+            if attribute in data:
+                value = resolve(attribute, data[attribute], options)
+                if value:
+                    streaming[attribute] = value
+        return streaming
+
     def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
+        if method == "mdblist_streaming":
+            if is_movie is None:
+                raise Failed("MDBList Error: mdblist_streaming can only be used with movie or show libraries")
+
+            media_type = "movie" if is_movie else "show"
+            response, _ = self._request(f"{api_url}justwatch/streaming-charts/{media_type}", params=data)
+            items = response.get("results", response.get("items", [])) if isinstance(response, dict) else response
+            if not isinstance(items, list):
+                raise Failed("MDBList Error: JustWatch streaming chart response must be a list")
+
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                ids = item.get("ids") or {}
+                tmdb_id = util.check_num(item.get("tmdb_id") or item.get("tmdbid") or ids.get("tmdb") or item.get("id"))
+                if tmdb_id:
+                    results.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
+            return results
 
         list_id = data.get("id")
         official_slug = None
