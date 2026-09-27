@@ -303,6 +303,33 @@ def test_high_volume_normalizations_do_not_overlap() -> None:
         assert sum(bool(re.match(pattern, message)) for pattern, _ in SUMMARY_NORMALIZATIONS) == 1
 
 
+def test_additional_item_messages_are_consolidated() -> None:
+    cases = [
+        (["No AniDB ID for Guid: plex://movie/1", "No AniDB ID for Guid: plex://movie/2"], "No AniDB ID for Guid"),
+        (["No Poster found to restore for Movie One", "No Poster found to restore for Movie Two"], "No Poster found to restore"),
+        (["Plex Warning: Show One has no Season 1 Episode 1", "Plex Warning: Show Two has no Season 1 Episode 1 "], "Plex Warning: No Season 1 Episode 1 found"),
+        (
+            [
+                "TMDb Error: Movie ID 101 missing on TMDb. Verify it still exists and update your config.",
+                "TMDb Error: Movie ID 202 missing on TMDb. Verify it still exists and update your config.",
+            ],
+            "TMDb Error: Movie ID missing on TMDb. Verify it still exists and update your config.",
+        ),
+        (
+            [
+                "MDBList Warning: Ignoring unexpected IMDb ID in batch response: tt0000001",
+                "MDBList Warning: Ignoring unexpected IMDb ID in batch response: tt0000002",
+            ],
+            "MDBList Warning: Ignoring unexpected IMDb ID in batch response",
+        ),
+    ]
+    for messages, expected in cases:
+        summary = RunLogSummary([])
+        for message in messages:
+            summary.add("WARNING", message)
+        assert summary.severity_rows("WARNING") == [(expected, 2)]
+
+
 def test_no_items_overlay_group_accepts_arbitrary_mapping_names() -> None:
     assert _section_rows("No Items found for Resolution") == [(1, "No Items found", ["Resolution"])]
 
