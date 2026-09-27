@@ -2,7 +2,7 @@ import os
 import time
 from abc import ABC, abstractmethod
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
@@ -525,8 +525,11 @@ class Library(ABC):
         while util.is_locked(image_path) and elapsed < timeout:
             time.sleep(0.1)
             elapsed += 0.1
-        with Image.open(image_path) as image:
-            exif_tags = image.getexif()
+        try:
+            with Image.open(image_path) as image:
+                exif_tags = image.getexif()
+        except UnidentifiedImageError as e:
+            raise Failed(f"Cannot read poster image '{image_path}': unsupported image format or corrupt file. Check the poster source and replace this file with a valid original poster before rerunning overlays.") from e
         if 0x04BC in exif_tags and exif_tags[0x04BC] == "overlay":
             os.remove(image_path)
             raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required.")
