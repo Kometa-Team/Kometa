@@ -1729,6 +1729,8 @@ class TestCheckImageForOverlay:
 
         assert plex.check_image_for_overlay("https://example.com/poster.jpg", str(tmp_path / "104617")) == str(path)
         assert path.exists()
+
+
 class TestTracedPlexServer:
     @pytest.fixture
     def server(self):
