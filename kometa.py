@@ -14,7 +14,7 @@ from typing import TypeAlias
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
-from modules.log_summary import RunLogSummary, SEVERITIES
+from modules.log_summary import SEVERITIES, RunLogSummary
 from modules.logs import MyLogger
 
 # Increase file descriptor limit to prevent exhaustion with large libraries.
