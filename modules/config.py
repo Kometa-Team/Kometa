@@ -1187,7 +1187,13 @@ class ConfigFile:
             self.Letterboxd = Letterboxd(self.Requests, self.Cache)
             self.BoxOfficeMojo = BoxOfficeMojo(self.Requests, self.Cache)
             self.StevenLu = StevenLu(self.Requests)
-            self.Simkl = Simkl(self.Requests, self.Cache)
+            self.Simkl = Simkl(
+                self.Requests,
+                self.Cache,
+                read_only=self.read_only,
+                config_path=self.config_path,
+                authorization=self.data.get("simkl"),
+            )
             self.Serializd = None
             if "serializd" in self.data:
                 logger.info("Connecting to Serializd...")
