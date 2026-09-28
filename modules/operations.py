@@ -433,6 +433,16 @@ class Operations:
                         raise Failed
                     return _flicklist_ratings
 
+                _wetrakr_ratings = None
+
+                def wetrakr_ratings():
+                    nonlocal _wetrakr_ratings
+                    if _wetrakr_ratings is None:
+                        _wetrakr_ratings = self.config.WeTrakr.user_ratings(self.library.is_movie)
+                    if not _wetrakr_ratings:
+                        raise Failed
+                    return _wetrakr_ratings
+
                 _tmdb_obj = None
 
                 def tmdb_obj():
@@ -706,6 +716,15 @@ class Operations:
                                         if not self.config.FlickList:
                                             raise Failed
                                         _ratings = flicklist_ratings()
+                                        _id = tmdb_id if self.library.is_movie else tvdb_id
+                                        if _id in _ratings:
+                                            found_rating = _ratings[_id]
+                                        else:
+                                            raise Failed
+                                    elif option == "wetrakr_user":
+                                        if not self.config.WeTrakr:
+                                            raise Failed
+                                        _ratings = wetrakr_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
                                         if _id in _ratings:
                                             found_rating = _ratings[_id]
