@@ -3,12 +3,10 @@ import hashlib
 import multiprocessing
 import os
 import platform
-import re
 import sys
 import sysconfig
 import time
 import uuid
-from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from typing import TypeAlias
@@ -16,6 +14,7 @@ from typing import TypeAlias
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
+from modules.log_summary import SEVERITIES, RunLogSummary
 from modules.logs import MyLogger
 
 # Increase file descriptor limit to prevent exhaustion with large libraries.
@@ -681,190 +680,47 @@ def start(attrs):
         if my_requests.newest:
             version_line = f"{version_line}        Newest Version: {my_requests.newest}"
         try:
-            log_data = {}
-            no_overlays = []  # noqa: F841
-            no_overlays_count = 0  # noqa: F841
-            convert_errors = {}  # noqa: F841
-
-            other_log_groups = [
-                ("No Items found for", r"No Items found for .* \(\d+\) (.*)"),
-                *[(f"Overlay Warning: No '{rating_source}' found", rf"Overlay Warning: No '{re.escape(rating_source)}' found for (.*)") for rating_source in ["audience_rating", "critic_rating", "user_rating", *rating_sources]],
-                ("Overlay Error: No '", r"Overlay Error: No '(<<.+>>.*)' found$"),
-                ("Overlays Attempted on", r"Overlays Attempted on (.*): .+"),
-                ("Convert Warning: No TVDb ID or IMDb ID found for AniDB ID", r"Convert Warning: No TVDb ID or IMDb ID found for AniDB ID '(.*)'"),
-                ("Convert Warning: No AniDB ID Found for AniList ID", r"Convert Warning: No AniDB ID Found for AniList ID '(.*)'"),
-                ("Convert Warning: No AniDB ID Found for MyAnimeList ID", r"Convert Warning: No AniDB ID Found for MyAnimeList ID '(.*)'"),
-                ("Convert Warning: No IMDb ID found for TMDb ID", r"Convert Warning: No IMDb ID found for TMDb ID '(.*)'"),
-                ("Convert Warning: No TMDb ID found for IMDb ID", r"Convert Warning: No TMDb ID found for IMDb ID '(.*)'"),
-                ("Convert Warning: No TVDb ID found for TMDb ID", r"Convert Warning: No TVDb ID found for TMDb ID '(.*)'"),
-                ("Convert Warning: No TMDb ID found for TVDb ID", r"Convert Warning: No TMDb ID found for TVDb ID '(.*)'"),
-                ("Convert Warning: No IMDb ID found for TVDb ID", r"Convert Warning: No IMDb ID found for TVDb ID '(.*)'"),
-                ("Convert Warning: No TVDb ID found for IMDb ID", r"Convert Warning: No TVDb ID found for IMDb ID '(.*)'"),
-                ("Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid", r"Convert Warning: No AniDB ID to Convert to MyAnimeList ID for Guid '(.*)'"),
-                ("Convert Error: No AniDB ID found for IMDb ID", r"Convert Error: No AniDB ID found for IMDb ID '(.*)'"),
-                ("Convert Error: No AniDB ID found for TVDb ID", r"Convert Error: No AniDB ID found for TVDb ID '(.*)'"),
-                ("Convert Error: No MyAnimeList ID found for AniDB ID", r"Convert Error: No MyAnimeList ID found for AniDB ID '(.*)'"),
-                ("Convert Error: No AniDB Anime found for AniDB ID", r"Convert Error: No AniDB Anime found for AniDB ID '(.*)'"),
-                ("Convert Error: No AniDB ID found for MyAnimeList ID", r"Convert Error: No AniDB ID found for MyAnimeList ID '(.*)'"),
-                ("Convert Error: No mapping found for AniDB ID", r"Convert Error: No mapping found for AniDB ID '(.*)'"),
-                ("Convert Error: No TVDb ID found for TMDb ID", r"Convert Error: No TVDb ID found for TMDb ID '(.*)'"),
-            ]
-            summary_log_groups = [
-                (r"AniDB Error: No valid AniDB IDs found in input: .+", "AniDB Error: No valid AniDB IDs found in input"),
-                (r"AniList Error: No valid AniList IDs in .+", "AniList Error: No valid AniList IDs"),
-                (r"Asset Warning: Asset Directory Not Found and Created: .+", "Asset Warning: Asset Directory Not Found and Created"),
-                (r"Asset Warning: No supported artwork found in the assets folder '.+'", "Asset Warning: No supported artwork found in the assets folder"),
-                (r"Asset Warning: No poster found for '.+' in the assets folder '.+'", "Asset Warning: No poster found in the assets folder"),
-                (r"Asset Warning: No poster '.+' found in the assets folders", "Asset Warning: No poster found in the assets folders"),
-                (r"Asset Warning: No poster or background found in an assets folder for '.+'", "Asset Warning: No poster or background found in an assets folder"),
-                (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
-                (r"Collection Error: No valid Plex Collections in .+", "Collection Error: No valid Plex Collections"),
-                (r"Config Warning: Skipping duplicate collection: .+", "Config Warning: Skipping duplicate collection"),
-                (r"(?:Collection|Playlist) Warning: tvdb_episode:\d+_\d+_\d+ -> .+ Season: \d+ Episode: \d+ Missing", "TVDb Episode Missing"),
-                (r"(?:Collection|Playlist) Warning: tvdb_season:\d+_\d+ -> .+ Season: \d+ Missing", "TVDb Season Missing"),
-                (r"(?:Collection|Playlist) Warning: imdb:tt\d+ -> .+ Season: \d+ Episode: \d+ Missing", "IMDb Episode Missing"),
-                (r".+ Error: Background Path Does Not Exist: .+", "Error: Background Path Does Not Exist"),
-                (r".+ Error: Logo Path Does Not Exist: .+", "Error: Logo Path Does Not Exist"),
-                (r".+ Error: Poster Path Does Not Exist: .+", "Error: Poster Path Does Not Exist"),
-                (r".+ Error: Square Art Path Does Not Exist: .+", "Error: Square Art Path Does Not Exist"),
-                (r".+ Error: Theme Path Does Not Exist: .+", "Error: Theme Path Does Not Exist"),
-                (r".+ Error: No builders were found", "Error: No builders were found"),
-                (r".+ Error: No Plex Filter Created", "Error: No Plex Filter Created"),
-                (r"Letterboxd Error: No List Items found in .+", "Letterboxd Error: No List Items found"),
-                (r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\.", "Letterboxd Error: TMDb Movie ID not found"),
-                (
-                    r"Letterboxd Warning: cloudscraper hit a Cloudflare challenge for .+; retrying with curl_cffi\.",
-                    "Letterboxd Warning: Cloudflare challenge; retrying with curl_cffi",
-                ),
-                (
-                    r"Letterboxd Warning: letterboxdpy does not reliably support films page .+; using Kometa fallback parsing\.",
-                    "Letterboxd Warning: Using fallback films-page parsing",
-                ),
-                (r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\.", "Letterboxd Warning: TMDb link is for a TV show, not a movie"),
-                (
-                    r"MDBList Warning: Batch lookup returned no data for \d+ of \d+ requested [A-Za-z]+ IDs: .+",
-                    "MDBList Warning: Batch lookup returned no data for requested IDs",
-                ),
-                (r"Mojo Error: No List Items found in .+", "Mojo Error: No List Items found"),
-                (r"No MdbItem for .+ \(Guid: .+\)", "MDBList Warning: No item found"),
-                (r"Text File Error: No IDs found at .+", "Text File Error: No IDs found"),
-                (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
-                (
-                    r"TMDb Error: Collection ID \d+ missing on TMDb; add '\d+' to the franchise exclude list if this is auto-built\.",
-                    "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built",
-                ),
-                (r"TMDb Error: No Episode found for TMDb ID \d+ Season \d+ Episode \d+: .+", "TMDb Error: No Episode found for TMDb ID"),
-                (r"TMDb Error: No Movie found for TMDb ID:? \d+(?:: .+)?", "TMDb Error: No Movie found for TMDb ID"),
-                (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
-                (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
-                (r".*Poster \| No Reset Image Found", "Poster Warning: No Reset Image Found"),
-                (r".*Background \| No Reset Image Found", "Background Warning: No Reset Image Found"),
-                (r".*Logo \| No Reset Image Found", "Logo Warning: No Reset Image Found"),
-                (r".*Square Art \| No Reset Image Found", "Square Art Warning: No Reset Image Found"),
-                (r".+ Warning: No Background Found at .+", "Warning: No Background Found"),
-                (r".+ Warning: No Logo Found at .+", "Warning: No Logo Found"),
-                (r".+ Warning: No Poster Found at .+", "Warning: No Poster Found"),
-                (r".+ Warning: No Square Art Found at .+", "Warning: No Square Art Found"),
-            ]
-            other_message = {}
-
+            details = run_args["trace"] or run_args["log-requests"]
+            log_summary = RunLogSummary(rating_sources, details=details)
             with open(logger.main_log, encoding="utf-8") as f:
                 for log_line in f:
-                    for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-                        if f"[{err_type}]" in log_line:
-                            log_line = log_line.split("|", 1)[1].rsplit("|", 1)[0].strip()
-                            other = False
-                            for key, reg in other_log_groups:
-                                if log_line.startswith(key):
-                                    match = re.match(reg, log_line)
-                                    if not match:
-                                        continue
-                                    other = True
-                                    _name = match.group(1)
-                                    if key not in other_message:
-                                        other_message[key] = {"list": [], "count": 0, "name_counts": Counter()}
-                                    other_message[key]["count"] += 1
-                                    other_message[key]["name_counts"][_name] += 1
-                                    if _name not in other_message[key]["list"]:
-                                        other_message[key]["list"].append(_name)
-                            if other is False:
-                                if not (run_args["trace"] or run_args["log-requests"]):
-                                    for reg, replacement in summary_log_groups:
-                                        if re.match(reg, log_line):
-                                            log_line = replacement
-                                            break
-                                if err_type not in log_data:
-                                    log_data[err_type] = []
-                                log_data[err_type].append(log_line)
+                    log_summary.add_formatted_line(log_line)
 
-            if log_data or other_message:
+            if log_summary.has_messages():
                 logger.separator(space=False)
                 logger.info("")
                 logger.info_center("The following errors and warnings were identified during the run.")
                 logger.info_center("Search your log for any of the messages below to find where they originated.")
                 logger.info("")
 
-            overlay_title = False
-            details = run_args["trace"] or run_args["log-requests"]
-            for key, _ in other_log_groups:
-                if (key == "No Items found for" or key.startswith(("Overlay Warning", "Overlay Error")) or key == "Overlays Attempted on") and key in other_message:
-                    if overlay_title is False:
-                        logger.separator("Overlay Summary", space=False, border=False)
-                        logger.info("")
-                        logger.info("Count | Message")
-                        logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
-                        overlay_title = True
-                    if key == "Overlay Error: No '":
-                        for template_value, count in other_message[key]["name_counts"].most_common():
-                            logger.info(f"{count:>5} | Overlay Warning: No '{template_value}' found")
-                        continue
-                    overlay_count = other_message[key]["count"]
-                    overlay_line = "No Items found" if key == "No Items found for" else key
-                    if details:
-                        logger.info(f"{overlay_count:>5} | {overlay_line}: {other_message[key]['list']}")
-                    else:
-                        logger.info(f"{overlay_count:>5} | {overlay_line}")
-            if overlay_title:
-                logger.info("")
-
-            convert_title = False
-
-            def convert_summary_title(key):
-                summary = key.split(": ", 1)[1].rstrip(":")
-                if " for " not in summary:
-                    return summary
-                message, source = summary.rsplit(" for ", 1)
-                source = source.replace(" ID", " IDs").replace(" Guid", " Guids")
-                return f"{message} for {source}"
-
-            for key, _ in other_log_groups:
-                if key.startswith(("Convert Warning", "Convert Error")) and key in other_message:
-                    if convert_title is False:
-                        logger.separator("Convert Summary", space=False, border=False)
-                        logger.info("")
-                        logger.info("Count | Message")
-                        logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
-                        convert_title = True
-                    count = other_message[key]["count"]
-                    convert_line = convert_summary_title(key)
-                    if details:
-                        logger.info(f"{count:>5} | {convert_line}:")
-                        logger.info(f"    {', '.join(other_message[key]['list'])}")
-                    else:
-                        logger.info(f"{count:>5} | {convert_line}")
-            if convert_title:
-                logger.info("")
-
-            for err_type in ["WARNING", "ERROR", "CRITICAL"]:
-                if err_type not in log_data:
+            for section, title in [("overlay", "Overlay Summary"), ("convert", "Convert Summary")]:
+                rows = list(log_summary.section_rows(section))
+                if not rows:
                     continue
-                logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
-
+                logger.separator(title, space=False, border=False)
                 logger.info("")
                 logger.info("Count | Message")
                 logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
-                for k, v in Counter(log_data[err_type]).most_common():
-                    logger.info(f"{v:>5} | {k}")
+                for count, message, row_details in rows:
+                    if details and row_details and section == "convert":
+                        logger.info(f"{count:>5} | {message}:")
+                        logger.info(f"    {', '.join(row_details)}")
+                    elif details and row_details:
+                        logger.info(f"{count:>5} | {message}: {row_details}")
+                    else:
+                        logger.info(f"{count:>5} | {message}")
+                logger.info("")
+
+            for err_type in SEVERITIES:
+                rows = log_summary.severity_rows(err_type)
+                if not rows:
+                    continue
+                logger.separator(f"{err_type.lower().capitalize()} Summary", space=False, border=False)
+                logger.info("")
+                logger.info("Count | Message")
+                logger.separator(f"{logger.separating_character * 5}|", space=False, border=False, side_space=False, left=True)
+                for message, count in rows:
+                    logger.info(f"{count:>5} | {message}")
                 logger.info("")
         except Failed as e:
             logger.stacktrace()
