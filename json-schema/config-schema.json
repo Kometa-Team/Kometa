@@ -58,6 +58,9 @@
     "flicklist": {
       "$ref": "#/definitions/flicklist-api"
     },
+    "wetrakr": {
+      "$ref": "#/definitions/wetrakr-api"
+    },
     "serializd": {
       "$ref": "#/definitions/serializd-api"
     },
@@ -1144,6 +1147,24 @@
       },
       "required": [],
       "title": "flicklist"
+    },
+    "wetrakr-api": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "title": "wetrakr"
     },
     "floppy-api": {
       "type": "object",

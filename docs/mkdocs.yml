@@ -196,6 +196,7 @@ nav:
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
+      - WeTrakr: config/wetrakr.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
       - Webhooks: config/webhooks.md
@@ -407,6 +408,11 @@ nav:
         - List: files/builders/flicklist/list.md
         - Personal: files/builders/flicklist/personal.md
         - Ratings: files/builders/flicklist/ratings.md
+      - WeTrakr:
+        - Overview: files/builders/wetrakr/overview.md
+        - List: files/builders/wetrakr/list.md
+        - Personal: files/builders/wetrakr/personal.md
+        - Ratings: files/builders/wetrakr/ratings.md
       - Serializd:
         - Overview: files/builders/serializd/overview.md
         - Charts: files/builders/serializd/charts.md
