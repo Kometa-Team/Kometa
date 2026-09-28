@@ -775,13 +775,13 @@ def test_connection_succeeds_without_a_username_in_the_response():
 
 
 def test_resolve_list_matches_by_numeric_id():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Watchlist"}], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Watchlist"}], headers={})], expires_at=_future())
     list_id, created = wetrakr._resolve_list(1003620444)
     assert (list_id, created) == (1003620444, False)
 
 
 def test_resolve_list_matches_by_exact_name():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Recently Added"}], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Recently Added"}], headers={})], expires_at=_future())
     list_id, created = wetrakr._resolve_list("Recently Added")
     assert (list_id, created) == (1003620444, False)
 
@@ -801,7 +801,7 @@ def test_resolve_list_creates_when_no_name_match_with_explicit_private_privacy()
 
 
 def test_resolve_list_unknown_id_raises_failed():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"id": 1, "name": "Other"}], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1, "name": "Other"}], headers={})], expires_at=_future())
     with pytest.raises(Failed, match="not found among your own lists"):
         wetrakr._resolve_list(1003620444)
 
@@ -904,7 +904,7 @@ def test_sync_list_current_item_with_only_imdb_matches_desired_tmdb_via_convert(
 
 
 def test_sync_list_logs_not_found_but_does_not_raise():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [
             FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
             FakeResponse(json_data=[], headers={}),
@@ -919,7 +919,7 @@ def test_sync_list_logs_not_found_but_does_not_raise():
 def test_sync_list_already_added_error_is_logged_at_debug_not_as_a_failure():
     # WeTrakr reports a dupe as an `errored` entry with "error": "Already added!" (not a separate
     # `existing` array like FlickList) - this must not be treated as a real error.
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [
             FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
             FakeResponse(json_data=[], headers={}),
@@ -932,7 +932,7 @@ def test_sync_list_already_added_error_is_logged_at_debug_not_as_a_failure():
 
 
 def test_sync_list_real_error_is_logged_but_does_not_raise():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [
             FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
             FakeResponse(json_data=[], headers={}),
@@ -945,7 +945,7 @@ def test_sync_list_real_error_is_logged_but_does_not_raise():
 
 
 def test_sync_batch_420_on_add_raises_failed():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [
             FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
             FakeResponse(json_data=[], headers={}),
