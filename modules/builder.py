@@ -730,6 +730,7 @@ parts_collection_valid = (
         "sync_to_trakt_list",
         "sync_to_mdb_list",
         "sync_to_flicklist_list",
+        "sync_to_wetrakr_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1259,6 +1260,8 @@ class CollectionBuilder:
         self.sync_missing_to_trakt_list = False
         self.sync_to_flicklist_list = None
         self.sync_missing_to_flicklist_list = False
+        self.sync_to_wetrakr_list = None
+        self.sync_missing_to_wetrakr_list = False
         self.collection_poster = None
         self.collection_background = None
         self.collection_logo = None
@@ -1757,7 +1760,10 @@ class CollectionBuilder:
                     "sync_missing_to_flicklist_list",
                 ]:
                     self._flicklist(method_name, method_data)
-                elif method_name in wetrakr.builders:
+                elif method_name in wetrakr.builders or method_name in [
+                    "sync_to_wetrakr_list",
+                    "sync_missing_to_wetrakr_list",
+                ]:
                     self._wetrakr(method_name, method_data)
                 elif method_name in serializd.builders:
                     self._serializd(method_name, method_data)
@@ -3687,6 +3693,12 @@ class CollectionBuilder:
             self.builders.append((method_name, self.config.WeTrakr.validate_tracking(self.Type, method_data)))
         elif method_name == "wetrakr_ratings":
             self.builders.append((method_name, self.config.WeTrakr.validate_ratings(self.Type, method_data)))
+        elif method_name == "sync_to_wetrakr_list":
+            if isinstance(method_data, dict) or not str(method_data).strip():
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_wetrakr_list requires a list id or name")
+            self.sync_to_wetrakr_list = method_data
+        elif method_name == "sync_missing_to_wetrakr_list":
+            self.sync_missing_to_wetrakr_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
 
     def _serializd(self, method_name, method_data):
         if self.config.Serializd is None:
@@ -5885,6 +5897,15 @@ class CollectionBuilder:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, self._tracker_sync_ids("FlickList", self.sync_missing_to_flicklist_list))
+
+    def sync_wetrakr_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to WeTrakr List {self.sync_to_wetrakr_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.WeTrakr.sync_list(self.config.Convert, self.sync_to_wetrakr_list, self._tracker_sync_ids("WeTrakr", self.sync_missing_to_wetrakr_list))
 
     def sync_mdb_list(self):
         if not self.sync_to_mdb_list:

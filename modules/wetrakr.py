@@ -397,3 +397,89 @@ class WeTrakr(tracker.TrackerAPI):
             self._log_info(f"Processing {pretty}")
             return self._ratings_ids(value, is_movie)
         raise Failed(f"WeTrakr Error: Method {method} not supported")
+
+    def _resolve_list(self, list_id_or_name):
+        """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
+        as_id = None
+        if isinstance(list_id_or_name, int) and not isinstance(list_id_or_name, bool):
+            as_id = list_id_or_name
+        else:
+            text = str(list_id_or_name).strip()
+            if text.isdigit():
+                as_id = int(text)
+        own_lists = self._request_list("/sync/lists")
+        if as_id is not None:
+            for entry in own_lists:
+                if entry.get("id") == as_id:
+                    return as_id, False
+            raise Failed(f"WeTrakr Error: List id {as_id} not found among your own lists")
+        name = str(list_id_or_name).strip()
+        for entry in own_lists:
+            if str(entry.get("name") or "").strip() == name:
+                return entry.get("id"), False
+        created = self._request("/sync/lists", json_data={"name": name, "privacy": "private"}, method="POST")
+        new_id = created.get("id") if created else None
+        if new_id is None:
+            raise Failed(f"WeTrakr Error: Could not create list '{name}'")
+        return new_id, True
+
+    def _sync_batch(self, list_id, action, payloads):
+        if not payloads:
+            return
+        path = f"/sync/lists/{list_id}/items" if action == "add" else f"/sync/lists/{list_id}/items/remove"
+        not_found_total = 0
+        errored_total = 0
+        already_total = 0
+        for start in range(0, len(payloads), sync_batch_size):
+            chunk = payloads[start : start + sync_batch_size]
+            grouped = {"movies": [], "shows": []}
+            for ids_block, media_type in chunk:
+                grouped["movies" if media_type == "movie" else "shows"].append({"ids": ids_block})
+            results = self._request(path, json_data=grouped, method="POST") or {}
+            not_found_items = [entry for entries in (results.get("notFound") or {}).values() for entry in entries]
+            errored_items = [entry for entries in (results.get("errored") or {}).values() for entry in entries]
+            already_items = [entry for entry in errored_items if entry.get("error") == "Already added!"]
+            real_errored_items = [entry for entry in errored_items if entry.get("error") != "Already added!"]
+            not_found_total += len(not_found_items)
+            errored_total += len(real_errored_items)
+            already_total += len(already_items)
+            # `added`/`removed` totals from the API are not reliable net-new/net-removed counts (duplicate submissions in one batch double-count) - the submitted count below is the trustworthy number.
+            if already_items and logger:
+                logger.debug(f"WeTrakr List: {len(already_items)} item(s) in this batch were already on the list: {already_items}")
+            if not_found_items and logger:
+                shown, remaining = not_found_items[:20], len(not_found_items) - 20
+                suffix = f" (+{remaining} more)" if remaining > 0 else ""
+                logger.error(f"WeTrakr Error: {len(not_found_items)} item(s) not found while syncing: {shown}{suffix}")
+            if real_errored_items and logger:
+                shown, remaining = real_errored_items[:20], len(real_errored_items) - 20
+                suffix = f" (+{remaining} more)" if remaining > 0 else ""
+                logger.error(f"WeTrakr Error: {len(real_errored_items)} item(s) errored while syncing: {shown}{suffix}")
+        if logger:
+            verb = "add" if action == "add" else "remove"
+            logger.info(f"WeTrakr List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found, {errored_total} errored, {already_total} already present)")
+
+    def sync_list(self, convert, list_id_or_name, ids):
+        """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie").
+
+        Matching is by candidate-key-set intersection via tracker.plan_list_sync - see its
+        docstring for why. This method keeps list resolution, the current-items fetch, logging
+        and batching; the diff itself lives in the shared layer.
+        """
+        list_id, created = self._resolve_list(list_id_or_name)
+        if created and logger:
+            logger.info(f"WeTrakr List '{list_id_or_name}' not found; created a new list (id {list_id})")
+        current_items = self._request_paginated(f"/sync/lists/{list_id}/items") or []
+        add, remove, unmatched = tracker.plan_list_sync(
+            ids,
+            current_items,
+            convert,
+            ids_of=lambda item: item.get("ids") or {},
+            type_of=self._type_of,
+            # WeTrakr's ids block only ever carries tmdb/tvdb/imdb/letterboxd (WETRAKR-API-CONTRACT.md #7) -
+            # unlike FlickList's fldb, there's no WeTrakr-native id to add as a candidate key here.
+            native_id_of=lambda ids_block: (None, None),
+        )
+        if unmatched and logger:
+            logger.warning(f"WeTrakr Warning: {unmatched} existing list item(s) had no usable id at all; leaving them in place")
+        self._sync_batch(list_id, "add", add)
+        self._sync_batch(list_id, "remove", remove)
