@@ -1,4 +1,5 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import ClassVar
 
 from modules import tracker, util
 from modules.util import Failed
@@ -21,7 +22,7 @@ class WeTrakr(tracker.TrackerAPI):
     service = "WeTrakr"
     base_url = base_url
     page_count_header = "X-Pagination-Page-Count"
-    page_params = {"limit": list_page_limit}
+    page_params: ClassVar[dict] = {"limit": list_page_limit}
 
     def __init__(self, requests, read_only, params):
         super().__init__(requests, read_only)
@@ -58,7 +59,7 @@ class WeTrakr(tracker.TrackerAPI):
         if not value:
             return None
         try:
-            return datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+            return datetime.fromisoformat(str(value))
         except ValueError:
             return None
 
@@ -72,10 +73,10 @@ class WeTrakr(tracker.TrackerAPI):
 
     def _ensure_fresh_before_run(self):
         if self.read_only:
-            if self.expires_at is not None and self.expires_at <= datetime.now(timezone.utc):
+            if self.expires_at is not None and self.expires_at <= datetime.now(UTC):
                 raise Failed("WeTrakr Error: token has expired and `read_only` is set, so Kometa cannot rotate it; re-auth via the Kometa Utilities WeTrakr page every 7 days, or turn off `read_only`")
             return
-        if self.expires_at is None or self.expires_at <= datetime.now(timezone.utc) + timedelta(seconds=refresh_margin_seconds):
+        if self.expires_at is None or self.expires_at <= datetime.now(UTC) + timedelta(seconds=refresh_margin_seconds):
             self._refresh_token()
 
     def _headers(self, anonymous=False):
@@ -147,7 +148,7 @@ class WeTrakr(tracker.TrackerAPI):
         self.access_token = data.get("access_token")
         self.refresh_token = data.get("new_refresh_token") or data.get("refresh_token")
         try:
-            self.expires_at = datetime.now(timezone.utc) + timedelta(seconds=int(data.get("expires_in")))
+            self.expires_at = datetime.now(UTC) + timedelta(seconds=int(data.get("expires_in")))
         except (TypeError, ValueError):
             self.expires_at = None
         if logger:

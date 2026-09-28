@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 
 import pytest
@@ -13,11 +13,11 @@ def _iso(dt):
 
 
 def _future(days=5):
-    return _iso(datetime.now(timezone.utc) + timedelta(days=days))
+    return _iso(datetime.now(UTC) + timedelta(days=days))
 
 
 def _past(days=1):
-    return _iso(datetime.now(timezone.utc) - timedelta(days=days))
+    return _iso(datetime.now(UTC) - timedelta(days=days))
 
 
 def auth(access="tok1", refresh="ref1", expires_at=None):
@@ -101,7 +101,7 @@ def test_refreshes_when_expires_at_missing():
 
 def test_refreshes_when_within_margin_even_though_not_yet_expired():
     # refresh_margin_seconds is 86400 (24h); an access token expiring in 1 hour should still trigger a proactive refresh.
-    soon = _iso(datetime.now(timezone.utc) + timedelta(hours=1))
+    soon = _iso(datetime.now(UTC) + timedelta(hours=1))
     wetrakr, requests = make_wetrakr(
         [
             FakeResponse(json_data={"access_token": "tok2", "new_refresh_token": "ref2", "expires_in": 604800}),
@@ -114,7 +114,7 @@ def test_refreshes_when_within_margin_even_though_not_yet_expired():
 
 
 def test_refresh_falls_back_to_refresh_token_key_when_new_refresh_token_absent():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [FakeResponse(json_data={"access_token": "tok2", "refresh_token": "ref2-fallback", "expires_in": 604800})],
         expires_at=None,
     )
@@ -148,7 +148,7 @@ def test_refresh_preserves_other_config_keys():
 
 
 def test_refresh_failure_raises_reauth_message():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=400, json_data={"error": "invalid_grant"})], expires_at=None)
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=400, json_data={"error": "invalid_grant"})], expires_at=None)
     with pytest.raises(Failed, match="re-run the Kometa Utilities"):
         wetrakr._refresh_token()
 
@@ -245,7 +245,7 @@ def test_anonymous_headers_omit_authorization():
 
 def test_quota_exceeded_fails_fast_without_sleeping():
     with patch("time.sleep") as mock_sleep:
-        wetrakr, requests = make_wetrakr([FakeResponse(status_code=429, json_data={"error": "QUOTA_EXCEEDED", "message": "daily limit hit"})], expires_at=_future())
+        wetrakr, _requests = make_wetrakr([FakeResponse(status_code=429, json_data={"error": "QUOTA_EXCEEDED", "message": "daily limit hit"})], expires_at=_future())
         with pytest.raises(Failed, match="daily quota exceeded"):
             wetrakr._request("/account/settings")
         mock_sleep.assert_not_called()
@@ -253,7 +253,7 @@ def test_quota_exceeded_fails_fast_without_sleeping():
 
 def test_per_minute_429_sleeps_the_rate_limit_reset_value_then_succeeds():
     with patch("time.sleep") as mock_sleep:
-        wetrakr, requests = make_wetrakr(
+        wetrakr, _requests = make_wetrakr(
             [
                 FakeResponse(status_code=429, json_data={"message": "Too many requests. Please slow down."}, headers={"RateLimit-Reset": "5"}),
                 FakeResponse(json_data={"id": 1, "info": {"username": "chris"}, "plan": "free"}),
@@ -266,7 +266,7 @@ def test_per_minute_429_sleeps_the_rate_limit_reset_value_then_succeeds():
 
 def test_429_without_rate_limit_reset_header_falls_back_to_default_wait():
     with patch("time.sleep") as mock_sleep:
-        wetrakr, requests = make_wetrakr(
+        wetrakr, _requests = make_wetrakr(
             [
                 FakeResponse(status_code=429, json_data={"message": "slow down"}, headers={}),
                 FakeResponse(json_data={"id": 1, "info": {"username": "chris"}, "plan": "free"}),
@@ -281,56 +281,56 @@ def test_429_without_rate_limit_reset_header_falls_back_to_default_wait():
 
 
 def test_401_raises_authorization_rejected_when_already_read_only():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=401, json_data={"message": "bad token"})], expires_at=_future(), read_only=True)
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=401, json_data={"message": "bad token"})], expires_at=_future(), read_only=True)
     with pytest.raises(Failed, match="authorization was rejected"):
         wetrakr._request("/account/settings")
 
 
 def test_400_on_lists_path_reports_private_or_friends_only():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=400, json_data={"message": "forbidden"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=400, json_data={"message": "forbidden"})], expires_at=_future())
     with pytest.raises(Failed, match="is private or friends-only"):
         wetrakr._request("/lists/13255")
 
 
 def test_400_off_the_lists_path_falls_back_to_generic_handling():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=400, json_data={"message": "bad request"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=400, json_data={"message": "bad request"})], expires_at=_future())
     with pytest.raises(Failed, match=r"\(400\) bad request"):
         wetrakr._request("/account/settings")
 
 
 def test_403_names_app_key_rejection():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=403, json_data={"message": "blocked"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=403, json_data={"message": "blocked"})], expires_at=_future())
     with pytest.raises(Failed, match="app key rejected or blocked at the edge"):
         wetrakr._request("/account/settings")
 
 
 def test_420_includes_upgrade_url_when_present():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=420, json_data={"message": "needs VIP", "upgrade": {"url": "https://wetrakr.com/upgrade"}})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=420, json_data={"message": "needs VIP", "upgrade": {"url": "https://wetrakr.com/upgrade"}})], expires_at=_future())
     with pytest.raises(Failed, match=r"needs VIP \(https://wetrakr.com/upgrade\)"):
         wetrakr._request("/account/settings")
 
 
 def test_420_without_upgrade_url_has_no_parenthetical_suffix():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=420, json_data={"message": "needs VIP"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=420, json_data={"message": "needs VIP"})], expires_at=_future())
     with pytest.raises(Failed) as excinfo:
         wetrakr._request("/account/settings")
     assert str(excinfo.value).endswith("needs VIP")
 
 
 def test_423_names_suspended_app_key():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=423, json_data={"message": "suspended"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=423, json_data={"message": "suspended"})], expires_at=_future())
     with pytest.raises(Failed, match="Kometa's WeTrakr app key is suspended"):
         wetrakr._request("/account/settings")
 
 
 def test_426_names_vip_requirement():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=426, json_data={"message": "VIP only endpoint"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=426, json_data={"message": "VIP only endpoint"})], expires_at=_future())
     with pytest.raises(Failed, match="needs WeTrakr VIP"):
         wetrakr._request("/account/settings")
 
 
 def test_unmapped_5xx_falls_through_to_generic_tracker_handling():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=500, json_data={"message": "server error"}, reason="Internal Server Error")], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=500, json_data={"message": "server error"}, reason="Internal Server Error")], expires_at=_future())
     with pytest.raises(Failed, match=r"\(500\) server error"):
         wetrakr._request("/account/settings")
 
@@ -372,13 +372,13 @@ def test_cursor_pagination_second_page_includes_after_param():
 
 
 def test_cursor_pagination_stops_on_204():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=204, content=b"", headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=204, content=b"", headers={})], expires_at=_future())
     items = wetrakr._request_cursor("/sync/favorites/movies")
     assert items == []
 
 
 def test_cursor_pagination_non_json_body_raises_failed():
-    wetrakr, requests = make_wetrakr([FakeResponse(content=b"not json", text="not json", raise_on_json=True)], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(content=b"not json", text="not json", raise_on_json=True)], expires_at=_future())
     with pytest.raises(Failed, match="non-JSON response body"):
         wetrakr._request_cursor("/sync/favorites/movies")
 
@@ -558,13 +558,13 @@ def test_list_ids_is_memoized_per_list_and_target():
 
 
 def test_user_lists_ids_raises_when_user_not_found():
-    wetrakr, requests = make_wetrakr([FakeResponse(status_code=404, json_data={"message": "not found"})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(status_code=404, json_data={"message": "not found"})], expires_at=_future())
     with pytest.raises(Failed, match="user 275 not found"):
         wetrakr._user_lists_ids(275, None)
 
 
 def test_user_lists_ids_raises_when_no_public_lists():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
     with pytest.raises(Failed, match="has no public lists"):
         wetrakr._user_lists_ids(275, None)
 
@@ -584,7 +584,7 @@ def test_user_lists_ids_skips_non_public_and_locked_lists():
 
 
 def test_user_lists_ids_dedupes_items_shared_across_lists():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [
             FakeResponse(json_data=[{"id": 1, "privacy": "public", "locked": False}, {"id": 2, "privacy": "public", "locked": False}], headers={}),
             FakeResponse(json_data=[{"type": "movie", "id": 10, "ids": {"tmdb": 550}}], headers={}),
@@ -623,7 +623,7 @@ def test_tracking_ids_show_library_requests_all_six_statuses():
 
 
 def test_tracking_ids_raises_when_no_statuses_valid_for_library():
-    wetrakr, requests = make_wetrakr([], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([], expires_at=_future())
     statuses = {"watching": True, "waiting": True, "paused": True, "planning": False, "watched": False, "dropped": False}
     with pytest.raises(Failed, match="no statuses valid for a movie library"):
         wetrakr._tracking_ids(statuses, True)
@@ -657,14 +657,14 @@ def test_ratings_ids_filters_by_minimum_and_maximum():
         {"type": "movie", "id": 2, "ids": {"tmdb": 2}, "rating": 7.5},
         {"type": "movie", "id": 3, "ids": {"tmdb": 3}, "rating": 9.5},
     ]
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=items, headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=items, headers={})], expires_at=_future())
     ids = wetrakr._ratings_ids({"minimum": 5, "maximum": 9}, None)
     assert ids == [(2, "tmdb")]
 
 
 def test_ratings_ids_skips_items_with_no_rating():
     items = [{"type": "movie", "id": 1, "ids": {"tmdb": 1}, "rating": None}]
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=items, headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=items, headers={})], expires_at=_future())
     assert wetrakr._ratings_ids({"minimum": None, "maximum": None}, None) == []
 
 
@@ -681,17 +681,17 @@ def test_ratings_ids_memoizes_the_underlying_fetch_across_filter_calls():
 
 
 def test_get_wetrakr_ids_dispatches_list_and_list_details_the_same_way():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "id": 1, "ids": {"tmdb": 550}}], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "id": 1, "ids": {"tmdb": 550}}], headers={})], expires_at=_future())
     assert wetrakr.get_wetrakr_ids("wetrakr_list", 13255, None) == [(550, "tmdb")]
 
 
 def test_get_wetrakr_ids_dispatches_list_details():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "id": 1, "ids": {"tmdb": 550}}], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "id": 1, "ids": {"tmdb": 550}}], headers={})], expires_at=_future())
     assert wetrakr.get_wetrakr_ids("wetrakr_list_details", 13255, None) == [(550, "tmdb")]
 
 
 def test_get_wetrakr_ids_dispatches_user_lists():
-    wetrakr, requests = make_wetrakr(
+    wetrakr, _requests = make_wetrakr(
         [FakeResponse(json_data=[{"id": 1, "privacy": "public", "locked": False}], headers={}), FakeResponse(json_data=[{"type": "movie", "id": 1, "ids": {"tmdb": 550}}], headers={})],
         expires_at=_future(),
     )
@@ -700,23 +700,23 @@ def test_get_wetrakr_ids_dispatches_user_lists():
 
 def test_get_wetrakr_ids_dispatches_tracking():
     responses = [FakeResponse(json_data=[], headers={}) for _ in range(6)]
-    wetrakr, requests = make_wetrakr(responses, expires_at=_future())
+    wetrakr, _requests = make_wetrakr(responses, expires_at=_future())
     statuses = WeTrakr.validate_tracking("Collection", None)
     assert wetrakr.get_wetrakr_ids("wetrakr_tracking", statuses, False) == []
 
 
 def test_get_wetrakr_ids_dispatches_favorites():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
     assert wetrakr.get_wetrakr_ids("wetrakr_favorites", True, None) == []
 
 
 def test_get_wetrakr_ids_dispatches_ratings():
-    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[], headers={})], expires_at=_future())
     assert wetrakr.get_wetrakr_ids("wetrakr_ratings", {"minimum": None, "maximum": None}, None) == []
 
 
 def test_get_wetrakr_ids_unsupported_method_raises_failed():
-    wetrakr, requests = make_wetrakr([], expires_at=_future())
+    wetrakr, _requests = make_wetrakr([], expires_at=_future())
     with pytest.raises(Failed, match="Method wetrakr_bogus not supported"):
         wetrakr.get_wetrakr_ids("wetrakr_bogus", None, None)
 
