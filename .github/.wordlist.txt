@@ -427,6 +427,7 @@ WEBP
 webserver
 WeTrakr
 wetrakr
+WeTrakr's
 whitespace
 wildcarded
 Wizarding
