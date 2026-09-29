@@ -4,7 +4,7 @@ FROM python:3.13-slim
 ENV TINI_VERSION=v0.19.0
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
-# The venv is what "python3" resolves to in this image, so ENTRYPOINT needs no change.
+# Prefer the venv for interactive shells and subprocesses; the app entrypoint also addresses it directly.
 ENV PATH="/.venv/bin:$PATH"
 ENV UV_PROJECT_ENVIRONMENT=/.venv
 # Use the interpreter this image already ships rather than fetching another one.
