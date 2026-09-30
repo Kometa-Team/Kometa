@@ -4,7 +4,7 @@ annotated-types==0.8.0
     # via pydantic
 anyio==4.15.1
     # via httpx
-apprise==1.13.1
+apprise==2.0.0
     # via kometa
 arrapi==1.4.14
     # via kometa
