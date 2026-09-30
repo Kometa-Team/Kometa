@@ -521,9 +521,14 @@ def test_validate_tracking_rejects_non_bool_non_dict():
 # --- list_description / _list_ids ---
 
 
-def test_list_description_returns_description_or_blank():
+def test_list_description_appends_wetrakr_credit_line():
     wetrakr, _ = make_wetrakr([FakeResponse(json_data={"description": "My favorite movies"})], expires_at=_future())
-    assert wetrakr.list_description(13255) == "My favorite movies"
+    assert wetrakr.list_description(13255) == "My favorite movies\n\nList from WeTrakr: https://wetrakr.com"
+
+
+def test_list_description_links_to_the_list_page_when_public():
+    wetrakr, _ = make_wetrakr([FakeResponse(json_data={"description": "My favorite movies", "privacy": "public"})], expires_at=_future())
+    assert wetrakr.list_description(13255) == "My favorite movies\n\nList from WeTrakr: https://wetrakr.com/lists/13255"
 
 
 def test_list_description_blank_when_missing():

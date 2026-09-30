@@ -303,7 +303,11 @@ class WeTrakr(tracker.TrackerAPI):
 
     def list_description(self, list_id):
         data = self._request(f"/lists/{list_id}") or {}
-        return data.get("description") or ""
+        description = data.get("description") or ""
+        if not description:
+            return ""
+        link = f"https://wetrakr.com/lists/{list_id}" if data.get("privacy") == "public" else "https://wetrakr.com"
+        return f"{description}\n\nList from WeTrakr: {link}"
 
     def _list_ids(self, list_id_or_url, is_movie):
         list_id = self._parse_list_id(list_id_or_url)
