@@ -1001,7 +1001,7 @@ def test_user_ratings_casts_the_id_to_int():
     wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": "550"}, "rating": 7.5}], headers={})], expires_at=_future())
     ratings = wetrakr.user_ratings(True)
     assert ratings == {550: 7.5}
-    assert isinstance(list(ratings.keys())[0], int)
+    assert isinstance(next(iter(ratings.keys())), int)
 
 
 def test_user_ratings_shares_the_per_run_memo_with_ratings_ids():
