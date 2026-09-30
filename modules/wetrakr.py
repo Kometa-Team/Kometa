@@ -252,20 +252,25 @@ class WeTrakr(tracker.TrackerAPI):
             raise Failed(f"{err_type} Error: No valid WeTrakr Lists")
         return valid_ids
 
-    @staticmethod
-    def _parse_user_id(value):
-        # wetrakr.com profile URLs are username-based (/user/<name>), not numeric, so a URL can't be parsed into an id either - see WETRAKR-INTEGRATION-PLAN.md #13 item 2.
+    def _parse_user_id(self, value):
+        # wetrakr.com profile URLs are username-based (/user/<name>), not numeric - strip to the trailing segment and resolve it as a username.
         text = str(value).strip() if not isinstance(value, bool) else ""
-        if not text.isdigit():
-            raise Failed("WeTrakr Error: wetrakr_user_lists needs a numeric WeTrakr user id; username lookup isn't available yet (WETRAKR-INTEGRATION-PLAN.md #13 item 2)")
-        return int(text)
+        if text.isdigit():
+            return int(text)
+        candidate = text.rstrip("/").rsplit("/", 1)[-1] if text else ""
+        if not candidate:
+            raise Failed(f"WeTrakr Error: Could not parse a user id or username from {value}")
+        return self._resolve_user_id(candidate)
 
-    @staticmethod
-    def validate_user_id(err_type, method_data):
-        try:
-            return WeTrakr._parse_user_id(method_data)
-        except Failed:
-            raise Failed(f"{err_type} Error: wetrakr_user_lists needs a numeric WeTrakr user id; username lookup isn't available yet (WETRAKR-INTEGRATION-PLAN.md #13 item 2)")
+    def _resolve_user_id(self, username):
+        results = self._memo(("user_search", username.lower()), lambda: self._request_list("/search", params={"filter_type": "user", "q": username}))
+        for entry in results:
+            if str(entry.get("username", "")).lower() == username.lower():
+                return entry.get("id")
+        raise Failed(f"WeTrakr Error: user {username} not found")
+
+    def validate_user_id(self, err_type, method_data):
+        return self._parse_user_id(method_data)
 
     @staticmethod
     def validate_flag(err_type, method_name, method_data):

@@ -51,9 +51,9 @@ collections:
 
 Finds the union of every item across a WeTrakr user's public lists.
 
-The expected input is the user's **numeric WeTrakr user id**, not a username or profile URL — WeTrakr profile
-URLs (`wetrakr.com/user/<username>`) are username-based and cannot currently be resolved to a numeric id. See
-the [known limitation](../../../config/wetrakr.md#known-limitation) on the config page.
+The input can be a numeric WeTrakr user id, a bare username, or a profile URL
+(`wetrakr.com/user/<username>`) — a username or URL is resolved to its numeric id via WeTrakr's search API,
+matched on an exact (case-insensitive) username.
 
 A user with many public lists means more requests; Kometa logs how many lists it found for that user before
 processing them. Locked or non-public lists in that user's list collection are skipped automatically.

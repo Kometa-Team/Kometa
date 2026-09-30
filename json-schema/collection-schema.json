@@ -684,7 +684,7 @@
                     ]
                 },
                 "wetrakr_user_lists": {
-                    "description": "Every movie/show across a WeTrakr user's public lists. Needs a numeric WeTrakr user id — username lookup isn't available yet.",
+                    "description": "Every movie/show across a WeTrakr user's public lists. Accepts a numeric user id, a username, or a profile URL.",
                     "oneOf": [{ "type": "string" }, { "type": "integer" }]
                 },
                 "wetrakr_favorites": {

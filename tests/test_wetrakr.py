@@ -450,21 +450,51 @@ def test_validate_lists_rejects_empty():
 
 
 def test_parse_user_id_accepts_numeric_int_and_string():
-    assert WeTrakr._parse_user_id(275) == 275
-    assert WeTrakr._parse_user_id("275") == 275
+    wetrakr, _requests = make_wetrakr([], expires_at=_future())
+    assert wetrakr._parse_user_id(275) == 275
+    assert wetrakr._parse_user_id("275") == 275
 
 
-def test_parse_user_id_rejects_username_or_profile_url():
-    with pytest.raises(Failed, match="numeric WeTrakr user id"):
-        WeTrakr._parse_user_id("https://wetrakr.com/user/elvis")
-    with pytest.raises(Failed, match="numeric WeTrakr user id"):
-        WeTrakr._parse_user_id("elvis")
+def test_parse_user_id_resolves_a_bare_username():
+    results = [
+        {"id": 44, "type": "user", "username": "elvis"},
+        {"id": 6777, "type": "user", "username": "elvin210"},
+    ]
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=results, headers={})], expires_at=_future())
+    assert wetrakr._parse_user_id("elvis") == 44
+    assert requests.gets[0][0].endswith("/search")
 
 
-def test_validate_user_id_prefixes_err_type():
-    with pytest.raises(Failed, match=r"^Collection Error: .*numeric WeTrakr user id"):
-        WeTrakr.validate_user_id("Collection", "elvis")
-    assert WeTrakr.validate_user_id("Collection", "275") == 275
+def test_parse_user_id_resolves_a_username_from_a_profile_url():
+    results = [{"id": 44, "type": "user", "username": "elvis"}]
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=results, headers={})], expires_at=_future())
+    assert wetrakr._parse_user_id("https://wetrakr.com/user/elvis") == 44
+
+
+def test_resolve_user_id_matches_case_insensitively():
+    results = [{"id": 1976, "type": "user", "username": "Elishaya13"}]
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=results, headers={})], expires_at=_future())
+    assert wetrakr._parse_user_id("elishaya13") == 1976
+
+
+def test_resolve_user_id_raises_when_no_exact_username_match():
+    results = [{"id": 6777, "type": "user", "username": "elvin210"}]
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=results, headers={})], expires_at=_future())
+    with pytest.raises(Failed, match="user elvis not found"):
+        wetrakr._parse_user_id("elvis")
+
+
+def test_resolve_user_id_memoizes_the_search():
+    results = [{"id": 44, "type": "user", "username": "elvis"}]
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=results, headers={})], expires_at=_future())
+    wetrakr._parse_user_id("elvis")
+    wetrakr._parse_user_id("elvis")
+    assert len(requests.gets) == 1
+
+
+def test_validate_user_id_delegates_to_parse_user_id():
+    wetrakr, _requests = make_wetrakr([], expires_at=_future())
+    assert wetrakr.validate_user_id("Collection", "275") == 275
 
 
 # --- validate_flag / validate_ratings (thin delegation to the shared Layer 0 functions) ---

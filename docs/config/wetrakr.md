@@ -46,8 +46,3 @@ midnight UTC, so Kometa fails that run immediately rather than sleeping through 
 running large `wetrakr_user_lists` or multi-status `wetrakr_tracking` builds regularly, keep an eye on how close
 to the daily quota a full run gets you.
 
-## Known limitation
-
-`wetrakr_user_lists` currently requires a numeric WeTrakr user id rather than a username — WeTrakr profile URLs
-(`wetrakr.com/user/<username>`) are username-based and can't be resolved to a numeric id yet. This is a known
-limitation, not a bug; it will be revisited once WeTrakr's search API reliably supports filtering to users.
