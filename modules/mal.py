@@ -6,7 +6,7 @@ from datetime import datetime
 from json import JSONDecodeError
 
 from modules import util
-from modules.util import Failed, TimeoutExpired
+from modules.util import Failed, ServiceError, TimeoutExpired
 
 logger = util.logger
 
@@ -212,11 +212,11 @@ class MyAnimeList:
             response = self.requests.get_json(url, headers={"Authorization": f"Bearer {token}"})
             logger.trace(f"Response: {response}")
             if "error" in response:
-                raise Failed(f"MyAnimeList Error: {response['error']}")
+                raise ServiceError(f"MyAnimeList Error: {response['error']}")
             else:
                 return response
         except JSONDecodeError:
-            raise Failed("MyAnimeList Error: Connection Failed")
+            raise ServiceError("MyAnimeList Error: Connection Failed")
 
     def _jikan_request(self, url, params=None):
         logger.trace(f"URL: {jikan_base_url}{url}")
@@ -227,6 +227,12 @@ class MyAnimeList:
                 time_check = time.time()
         data = self.requests.get_json(f"{jikan_base_url}{url}", params=params)
         self._delay = time.time()
+        if isinstance(data, dict) and "data" not in data and ("status" in data or "type" in data):
+            # Jikan error responses are shaped like {"status": 504, "type": "BadResponseException", "message": "...", "error": null}
+            # instead of raising an HTTP error, so they'd otherwise be silently treated as valid (empty) results.
+            status = data.get("status", "Unknown")
+            message = data.get("message") or data.get("type") or "Unknown Jikan Error"
+            raise ServiceError(f"MyAnimeList Error: Jikan API returned an error (status {status}): {message}. This is usually a temporary issue with Jikan/MyAnimeList; please try again later.")
         return data
 
     def _parse_request(self, url, node=False):
@@ -268,7 +274,7 @@ class MyAnimeList:
         if limit is not None:
             total_items = data["pagination"]["items"]["total"]
             if total_items == 0:
-                raise Failed("MyAnimeList Error: No MyAnimeList IDs for Search")
+                raise ServiceError("MyAnimeList Error: No MyAnimeList IDs for Search. This may be a genuinely empty result, or Jikan/MyAnimeList may be temporarily unavailable; please try again later.")
             if total_items < limit or limit <= 0:
                 limit = total_items
         per_page = len(data["data"])
@@ -278,7 +284,7 @@ class MyAnimeList:
         while current_page <= last_visible_page:
             if chances > 6:
                 logger.debug(data)
-                raise Failed("AniList Error: Connection Failed")
+                raise ServiceError("MyAnimeList Error: Connection Failed")
             start_num = (current_page - 1) * per_page + 1
             end_num = limit if limit and (current_page == last_visible_page or limit < start_num + per_page) else current_page * per_page
             logger.ghost(f"Parsing Page {current_page}/{last_visible_page} {start_num}-{end_num}")
@@ -307,7 +313,7 @@ class MyAnimeList:
         try:
             response = self._jikan_request(f"anime/{mal_id}")
         except JSONDecodeError:
-            raise Failed("MyAnimeList Error: JSON Decoding Failed")
+            raise ServiceError("MyAnimeList Error: JSON Decoding Failed")
         if "data" not in response:
             raise Failed(f"MyAnimeList Error: No Anime found for MyAnimeList ID: {mal_id}")
         mal = MyAnimeListObj(self, mal_id, response["data"])
