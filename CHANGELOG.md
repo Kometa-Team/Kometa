@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
 - Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.
 - Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
+- Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
 
 ## [v2.5.1] - 2026-09-24
 
