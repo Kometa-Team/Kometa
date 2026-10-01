@@ -174,7 +174,7 @@ class Operations:
 
     def _configured_collection_names(self):
         configured_names = set(self.library.collection_names)
-        for metadata_file in self.library.collection_files:
+        for metadata_file in self.library.configured_collection_metadata_files:
             for mapping_name, collection_data in (metadata_file.collections or {}).items():
                 try:
                     configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
