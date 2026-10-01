@@ -1164,11 +1164,12 @@ class TestConfiguredCollectionNameAliases:
 
         assert "Top 0" in aliases
 
-    def test_operation_names_include_localized_aliases_with_configured_filter(self):
+    def test_operation_names_include_localized_aliases_from_scheduled_out_files(self):
         config, library, metadata_file = self._objects({})
         metadata_file.collections = {"Chart Collections": {"translation_key": "separator", "key_name": "Chart"}}
         library.collection_names = ["Manual Collection"]
-        library.collection_files = [metadata_file]
+        library.collection_files = []
+        library.configured_collection_metadata_files = [metadata_file]
 
         configured_names = Operations(config, library)._configured_collection_names()
 

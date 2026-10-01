@@ -32,6 +32,8 @@ class Library(ABC):
         self.collection_images = {}
         self.queue_current = 0
         self.collection_files = []
+        # Includes parsed files which are configured but scheduled out of this run.
+        self.configured_collection_metadata_files = []
         self.metadata_files = []
         self.overlay_files = []
         self.images_files = []
@@ -234,6 +236,7 @@ class Library(ABC):
         for file_type, metadata_file, temp_vars, asset_directory in self.configured_collection_files:
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
+                self.configured_collection_metadata_files.append(meta_obj)
                 if meta_obj.collections:
                     self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
             except NotScheduled:
