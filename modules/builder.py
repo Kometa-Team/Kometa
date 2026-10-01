@@ -12,7 +12,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -110,6 +110,7 @@ all_builders = (
     + radarr.builders
     + sonarr.builders
     + flicklist.builders
+    + wetrakr.builders
 )
 show_only_builders = [
     *serializd.builders,
@@ -168,6 +169,7 @@ summary_details = [
     "letterboxd_description",
     "icheckmovies_description",
     "flicklist_description",
+    "wetrakr_description",
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
@@ -290,8 +292,11 @@ none_details = [
     "flicklist_up_next",
     "flicklist_tracked",
     "flicklist_ratings",
+    "wetrakr_favorites",
+    "wetrakr_tracking",
+    "wetrakr_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings"]
+none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",
@@ -661,6 +666,9 @@ custom_sort_builders = [
     "flicklist_watchlist",
     "flicklist_favorites",
     "flicklist_up_next",
+    "wetrakr_list",
+    "wetrakr_user_lists",
+    "wetrakr_favorites",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays", "value_filter"]
@@ -722,6 +730,7 @@ parts_collection_valid = (
         "sync_to_trakt_list",
         "sync_to_mdb_list",
         "sync_to_flicklist_list",
+        "sync_to_wetrakr_list",
     ]
     + episode_parts_only
     + summary_details
@@ -1251,6 +1260,8 @@ class CollectionBuilder:
         self.sync_missing_to_trakt_list = False
         self.sync_to_flicklist_list = None
         self.sync_missing_to_flicklist_list = False
+        self.sync_to_wetrakr_list = None
+        self.sync_missing_to_wetrakr_list = False
         self.collection_poster = None
         self.collection_background = None
         self.collection_logo = None
@@ -1650,6 +1661,8 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
+                elif not self.config.WeTrakr and "wetrakr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires WeTrakr to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
@@ -1747,6 +1760,11 @@ class CollectionBuilder:
                     "sync_missing_to_flicklist_list",
                 ]:
                     self._flicklist(method_name, method_data)
+                elif method_name in wetrakr.builders or method_name in [
+                    "sync_to_wetrakr_list",
+                    "sync_missing_to_wetrakr_list",
+                ]:
+                    self._wetrakr(method_name, method_data)
                 elif method_name in serializd.builders:
                     self._serializd(method_name, method_data)
                 elif method_name in floppy.builders:
@@ -1903,6 +1921,11 @@ class CollectionBuilder:
                 self.summaries[method_name] = self.config.FlickList.list_description(self.config.FlickList._parse_list_id(method_data))
             except Failed as e:
                 logger.error(f"FlickList Error: List description not found: {e}")
+        elif method_name == "wetrakr_description":
+            try:
+                self.summaries[method_name] = self.config.WeTrakr.list_description(self.config.WeTrakr._parse_list_id(method_data))
+            except Failed as e:
+                logger.error(f"WeTrakr Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -3646,6 +3669,37 @@ class CollectionBuilder:
         elif method_name == "sync_missing_to_flicklist_list":
             self.sync_missing_to_flicklist_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
 
+    def _wetrakr(self, method_name, method_data):
+        if self.config.WeTrakr is None:
+            raise BuilderValidationError(f"{self.Type} Error: wetrakr attribute not found in config")
+        if method_name in ("wetrakr_list", "wetrakr_list_details"):
+            wetrakr_lists = self.config.WeTrakr.validate_lists(self.Type, method_data)
+            for wetrakr_list in wetrakr_lists:
+                self.builders.append(("wetrakr_list", wetrakr_list))
+            if method_name.endswith("_details"):
+                try:
+                    description = self.config.WeTrakr.list_description(wetrakr_lists[0])
+                    if description:
+                        self.summaries[method_name] = description
+                except Failed as e:
+                    logger.error(f"WeTrakr Error: List description not found: {e}")
+        elif method_name == "wetrakr_user_lists":
+            user_id = self.config.WeTrakr.validate_user_id(self.Type, method_data)
+            self.builders.append((method_name, user_id))
+        elif method_name == "wetrakr_favorites":
+            if self.config.WeTrakr.validate_flag(self.Type, method_name, method_data):
+                self.builders.append((method_name, True))
+        elif method_name == "wetrakr_tracking":
+            self.builders.append((method_name, self.config.WeTrakr.validate_tracking(self.Type, method_data)))
+        elif method_name == "wetrakr_ratings":
+            self.builders.append((method_name, self.config.WeTrakr.validate_ratings(self.Type, method_data)))
+        elif method_name == "sync_to_wetrakr_list":
+            if isinstance(method_data, dict) or not str(method_data).strip():
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_wetrakr_list requires a list id or name")
+            self.sync_to_wetrakr_list = method_data
+        elif method_name == "sync_missing_to_wetrakr_list":
+            self.sync_missing_to_wetrakr_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
+
     def _serializd(self, method_name, method_data):
         if self.config.Serializd is None:
             raise BuilderValidationError(f"{self.Type} Error: serializd attribute not found in config")
@@ -3844,6 +3898,9 @@ class CollectionBuilder:
             elif "flicklist" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
                 ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "wetrakr" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries.
+                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "serializd" in method:
                 ids = self.config.Serializd.get_builder_ids(method, value)
             elif "floppy" in method:
@@ -5483,6 +5540,8 @@ class CollectionBuilder:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
         elif "flicklist_list_details" in self.summaries:
             summary = ("flicklist_list_details", self.summaries["flicklist_list_details"])
+        elif "wetrakr_list_details" in self.summaries:
+            summary = ("wetrakr_list_details", self.summaries["wetrakr_list_details"])
         elif "floppy_list_details" in self.summaries:
             summary = ("floppy_list_details", self.summaries["floppy_list_details"])
         elif "tmdb_list_details" in self.summaries:
@@ -5805,13 +5864,9 @@ class CollectionBuilder:
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
-    def sync_flicklist_list(self):
-        logger.info("")
-        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
-        logger.info("")
-        if self.obj is not None:
-            self.library.item_reload(self.obj)
-        self.load_collection_items()
+    def _tracker_sync_ids(self, service, include_missing):
+        """Provider-agnostic walk of self.items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
+        service names the tracker in the skip-count warning; include_missing extends the result with this collection's missing movies/shows."""
         current_ids = []
         skipped_seasons_and_episodes = 0
         for item in self.items:
@@ -5828,11 +5883,29 @@ class CollectionBuilder:
                     current_ids.append(new_id)
                     break
         if skipped_seasons_and_episodes:
-            logger.warning(f"FlickList Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); FlickList lists hold movies and shows only")
-        if self.sync_missing_to_flicklist_list:
+            logger.warning(f"{service} Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); {service} lists hold movies and shows only")
+        if include_missing:
             current_ids.extend([({"tmdb": mm}, "movie") for mm in self.missing_movies])
             current_ids.extend([({"tvdb": ms}, "show") for ms in self.missing_shows])
-        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, current_ids)
+        return current_ids
+
+    def sync_flicklist_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, self._tracker_sync_ids("FlickList", self.sync_missing_to_flicklist_list))
+
+    def sync_wetrakr_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to WeTrakr List {self.sync_to_wetrakr_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.WeTrakr.sync_list(self.config.Convert, self.sync_to_wetrakr_list, self._tracker_sync_ids("WeTrakr", self.sync_missing_to_wetrakr_list))
 
     def sync_mdb_list(self):
         if not self.sync_to_mdb_list:
