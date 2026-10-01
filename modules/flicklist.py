@@ -32,6 +32,9 @@ class FlickList(tracker.TrackerAPI):
             logger.secret(self.api_key)
         self.user_agent = f"Kometa/{self.requests.local} (+https://kometa.wiki)"
         self._me = None
+        self._ratings = None
+        self._ratings_error = None
+        self._user_ratings = {}
         # No network I/O here; modules/config.py calls test_connection() separately so a failed connect can be neutered without a half-built object.
 
     def test_connection(self):
@@ -204,7 +207,7 @@ class FlickList(tracker.TrackerAPI):
             minimum = value.get("minimum") if isinstance(value, dict) else None
             maximum = value.get("maximum") if isinstance(value, dict) else None
             filtered = []
-            for item in self._request_list("/sync/ratings"):
+            for item in self._all_ratings():
                 rating = item.get("rating")
                 if rating is None:
                     continue
@@ -223,11 +226,27 @@ class FlickList(tracker.TrackerAPI):
             return self._parse_ids(self._request_list("/sync/tracked"), is_movie=False)
         raise Failed(f"FlickList Error: Method {method} not supported")
 
+    def _all_ratings(self):
+        # One /sync/ratings read per run (a failed read is remembered too), so mass ratings never re-download the list per item.
+        if self._ratings_error is not None:
+            raise self._ratings_error
+        ratings = self._ratings
+        if ratings is None:
+            try:
+                ratings = self._request_list("/sync/ratings")
+            except Failed as e:
+                self._ratings_error = e
+                raise
+            self._ratings = ratings
+        return ratings
+
     def user_ratings(self, is_movie):
         """Return ratings keyed by TMDb ID for movies and TVDb ID for shows."""
+        if is_movie in self._user_ratings:
+            return self._user_ratings[is_movie]
         id_type = "tmdb" if is_movie else "tvdb"
         ratings = {}
-        for item in self._request_list("/sync/ratings"):
+        for item in self._all_ratings():
             item_media = str(item.get("media_type") or "").lower()
             if is_movie and item_media != "movie":
                 continue
@@ -238,6 +257,7 @@ class FlickList(tracker.TrackerAPI):
             if rating is None or not item_id:
                 continue
             ratings[int(item_id)] = rating
+        self._user_ratings[is_movie] = ratings
         return ratings
 
     def _resolve_list(self, list_id_or_name):
