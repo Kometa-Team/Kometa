@@ -969,3 +969,45 @@ def test_sync_batch_skips_the_call_entirely_when_there_is_nothing_to_send():
     wetrakr.sync_list(FakeConvert(), 1003620444, [])
     assert requests.posts == []  # resolve-list and current-items are both GETs; nothing to add or remove means no POST at all
     assert len(requests.gets) == 2
+
+
+# --- user_ratings (wetrakr_user rating source) ---
+
+
+def test_user_ratings_movies_keys_on_tmdb_and_uses_movies_target():
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": 550}, "rating": 8.5}], headers={})], expires_at=_future())
+    assert wetrakr.user_ratings(True) == {550: 8.5}
+    assert requests.gets[0][0].endswith("/sync/ratings/movies")
+
+
+def test_user_ratings_shows_keys_on_tvdb_and_uses_shows_target():
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"type": "show", "ids": {"tvdb": 81189}, "rating": 9.0}], headers={})], expires_at=_future())
+    assert wetrakr.user_ratings(False) == {81189: 9.0}
+    assert requests.gets[0][0].endswith("/sync/ratings/shows")
+
+
+def test_user_ratings_skips_items_missing_the_relevant_id():
+    # A show without a tvdb id is silently skipped (WETRAKR-INTEGRATION-PLAN.md #9) - a tmdb->tvdb fallback via Convert is a later part, not this one.
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "show", "ids": {"tmdb": 1396}, "rating": 8.0}], headers={})], expires_at=_future())
+    assert wetrakr.user_ratings(False) == {}
+
+
+def test_user_ratings_skips_items_with_no_rating():
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": 550}, "rating": None}], headers={})], expires_at=_future())
+    assert wetrakr.user_ratings(True) == {}
+
+
+def test_user_ratings_casts_the_id_to_int():
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": "550"}, "rating": 7.5}], headers={})], expires_at=_future())
+    ratings = wetrakr.user_ratings(True)
+    assert ratings == {550: 7.5}
+    assert isinstance(next(iter(ratings.keys())), int)
+
+
+def test_user_ratings_shares_the_per_run_memo_with_ratings_ids():
+    items = [{"type": "movie", "ids": {"tmdb": 550}, "rating": 8.0}]
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=items, headers={})], expires_at=_future())
+    wetrakr._ratings_ids({"minimum": None, "maximum": None}, True)
+    ratings = wetrakr.user_ratings(True)
+    assert ratings == {550: 8.0}
+    assert len(requests.gets) == 1  # the second call reused _ratings_ids' own memo entry rather than fetching again

@@ -398,6 +398,19 @@ class WeTrakr(tracker.TrackerAPI):
             return self._ratings_ids(value, is_movie)
         raise Failed(f"WeTrakr Error: Method {method} not supported")
 
+    def user_ratings(self, is_movie):
+        """Return ratings keyed by TMDb ID for movies and TVDb ID for shows. Shares the per-run memo with wetrakr_ratings; ratings are already 0-10 with one decimal, same scale as Plex - no conversion."""
+        id_type = "tmdb" if is_movie else "tvdb"
+        target = self._target_for(is_movie)
+        ratings = {}
+        for item in self._memo(("ratings", target), lambda: self._request_cursor(f"/sync/ratings/{target}")):
+            rating = item.get("rating")
+            item_id = (item.get("ids") or {}).get(id_type)
+            if rating is None or not item_id:
+                continue
+            ratings[int(item_id)] = rating
+        return ratings
+
     def _resolve_list(self, list_id_or_name):
         """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
         as_id = None

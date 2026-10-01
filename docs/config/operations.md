@@ -574,6 +574,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `plex_tomatoesaudience` | Use Rotten Tomatoes audience rating through Plex. |
         | `serializd` | Use the Serializd community show rating. Requires [Serializd authentication](../config/serializd.md) and is only available for show libraries. |
         | `tmdb` | Use TMDb rating. |
+        | `wetrakr_user` | Use WeTrakr user's personal rating. Requires [WeTrakr authorization](../config/wetrakr.md). |
         | `lock` | Lock the rating field. |
         | `unlock` | Unlock the rating field. |
         | `remove` | Remove rating and lock the field. |

@@ -5462,6 +5462,7 @@
                     "trakt",
                     "trakt_user",
                     "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5504,6 +5505,7 @@
                           "trakt",
                           "trakt_user",
                           "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
@@ -5555,6 +5557,7 @@
                     "trakt",
                     "trakt_user",
                     "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5597,6 +5600,7 @@
                           "trakt",
                           "trakt_user",
                           "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
@@ -5648,6 +5652,7 @@
                     "trakt",
                     "trakt_user",
                     "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5690,6 +5695,7 @@
                           "trakt",
                           "trakt_user",
                           "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
