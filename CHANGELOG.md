@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Normalize Letterboxd ratings returned by MDBList batch lookups to their native 0–5 scale, preventing doubled ratings in overlays and metadata updates. #3533
 - Keep localized collections from scheduled-out collection files classified as configured during `delete_collections` operations.
 - Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
 - Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.

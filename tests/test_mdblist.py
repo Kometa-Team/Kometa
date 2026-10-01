@@ -51,6 +51,13 @@ class TestMDbObj:
         assert m.metacritic_rating == 80
         assert m.tmdb_rating == 8
 
+    def test_preserves_single_item_letterboxd_native_scale(self):
+        from modules.mdblist import MDbObj
+
+        m = MDbObj({**self._BASE, "ratings": [{"source": "letterboxd", "value": 4.5}]})
+
+        assert m.letterboxd_rating == 4.5
+
     def test_handles_none_release_date(self):
         from modules.mdblist import MDbObj
 
@@ -271,6 +278,23 @@ class TestMDBList:
         assert {media_id: item.title for media_id, item in result.items()} == {101: "Cached", 202: "Refreshed", 303: "Fetched"}
         adapter._request.assert_called_once_with("https://api.mdblist.com/tmdb/movie/", json_data={"ids": [202, 303]})
         assert [call.args[:2] for call in adapter.cache.update_mdb.call_args_list] == [(True, "tm202"), (None, "tm303")]
+
+    @pytest.mark.parametrize(("batch_value", "expected"), [(9, 4.5), (4.6, 2.3)])
+    def test_get_items_normalizes_letterboxd_batch_rating_to_native_scale(self, adapter, batch_value, expected):
+        adapter.cache.query_mdb.return_value = ({}, None)
+        adapter._request = MagicMock(
+            return_value=(
+                [{"id": 101, "title": "Batch Item", "ratings": [{"source": "letterboxd", "value": batch_value}]}],
+                {},
+            )
+        )
+
+        result = adapter.get_items("tmdb", "movie", [101])
+
+        assert result[101].letterboxd_rating == expected
+        assert result[101].ratings_valid
+        assert adapter._run_cache["tm101"].letterboxd_rating == expected
+        assert adapter.cache.update_mdb.call_args.args[2].letterboxd_rating == expected
 
     def test_get_items_chunks_requests_at_one_hundred_ids(self, adapter):
         adapter.cache = None
