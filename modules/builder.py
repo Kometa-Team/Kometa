@@ -5805,13 +5805,9 @@ class CollectionBuilder:
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
-    def sync_flicklist_list(self):
-        logger.info("")
-        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
-        logger.info("")
-        if self.obj is not None:
-            self.library.item_reload(self.obj)
-        self.load_collection_items()
+    def _tracker_sync_ids(self, service, include_missing):
+        """Provider-agnostic walk of self.items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
+        service names the tracker in the skip-count warning; include_missing extends the result with this collection's missing movies/shows."""
         current_ids = []
         skipped_seasons_and_episodes = 0
         for item in self.items:
@@ -5828,11 +5824,20 @@ class CollectionBuilder:
                     current_ids.append(new_id)
                     break
         if skipped_seasons_and_episodes:
-            logger.warning(f"FlickList Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); FlickList lists hold movies and shows only")
-        if self.sync_missing_to_flicklist_list:
+            logger.warning(f"{service} Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); {service} lists hold movies and shows only")
+        if include_missing:
             current_ids.extend([({"tmdb": mm}, "movie") for mm in self.missing_movies])
             current_ids.extend([({"tvdb": ms}, "show") for ms in self.missing_shows])
-        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, current_ids)
+        return current_ids
+
+    def sync_flicklist_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, self._tracker_sync_ids("FlickList", self.sync_missing_to_flicklist_list))
 
     def sync_mdb_list(self):
         if not self.sync_to_mdb_list:
