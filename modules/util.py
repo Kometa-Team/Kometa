@@ -38,6 +38,13 @@ else:
 
 TRAKT_REMOVAL_MESSAGE = "Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information"
 
+# Retired Trakt rating-source option *values* - as opposed to TRAKT_KEYS below, these are values a
+# user could set for a mass_*_rating_update attribute (e.g. `audience: trakt`). Checked explicitly
+# during rating option validation so a config still carrying one of these gets the clear removal
+# message instead of config.py's generic rating-value parser trying (and failing) to read "trakt"
+# as a number between 0 and 10.
+RETIRED_TRAKT_RATING_VALUES = frozenset({"trakt", "trakt_user", "mdb_trakt"})
+
 # Retired Trakt config/builder attribute names, matched exactly (case-insensitive) against dict
 # keys only - not substring-matched and never checked against string values. A substring check
 # on values would false-positive on anything that merely mentions "trakt" without using it, e.g.

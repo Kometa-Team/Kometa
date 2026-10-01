@@ -1812,6 +1812,8 @@ class ConfigFile:
                                         elif op in ["mass_originally_available_update", "mass_added_at_update"]:
                                             final_list.append(util.validate_date(list_attr))
                                         elif op.endswith("rating_update"):
+                                            if str(list_attr).lower() in util.RETIRED_TRAKT_RATING_VALUES:
+                                                raise Failed(util.TRAKT_REMOVAL_MESSAGE)
                                             final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
                                         else:
                                             raise Failed(f"has an invalid value: {list_attr}")

@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
 - Read FlickList ratings once per run instead of once per library item, so `mass_user_rating_update: flicklist_user` and `flicklist_ratings` no longer exhaust FlickList's 1,000 requests/hour limit on larger libraries.
 - Stop the retired-Trakt config cleanup from discarding unrelated attributes that merely mention "trakt" in a string value (e.g. an `mdblist_list` URL whose slug references Trakt-sourced data, or `summary` prose) or an entire collection whose name contains "trakt", by matching only the actual Trakt builder/attribute key names instead of a substring check against every key and string value.
+- Report a `mass_*_rating_update`/`mass_*_episode_rating_update` value of the retired `trakt`, `trakt_user`, or `mdb_trakt` options with the Trakt-removal message instead of a confusing "must be a number between 0 and 10" error from the generic numeric-rating parser.
 
 ## [v2.5.1] - 2026-09-24
 
