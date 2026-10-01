@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix the `resolution` Defaults overlay file applying the `-Dovetail` variant to every DV HDR10+ item at 4K and 1080P, even without an edition, by matching the Dovetail weights to their plain counterparts. #3654
 - Normalize Letterboxd ratings returned by MDBList batch lookups to their native 0–5 scale, preventing doubled ratings in overlays and metadata updates. #3533
 - Keep localized collections from scheduled-out collection files classified as configured during `delete_collections` operations.
 - Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
