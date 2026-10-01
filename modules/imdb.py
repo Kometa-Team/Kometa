@@ -1178,7 +1178,7 @@ class IMDb:
         if self._service_available:
             try:
                 data = self._service_title(imdb_id)
-                return data.get("averageRating") if data else None
+                return data.get("averageRating") if isinstance(data, dict) else None
             except Failed as e:
                 self._service_unavailable(e)
         return self.ratings.get(imdb_id) if self.ratings else None
@@ -1189,7 +1189,7 @@ class IMDb:
         if self._service_available:
             try:
                 data = self._service_title(imdb_id)
-                genres = data.get("genres") if data else None
+                genres = data.get("genres") if isinstance(data, dict) else None
                 return genres.split(",") if genres else []
             except Failed as e:
                 self._service_unavailable(e)
@@ -1205,10 +1205,10 @@ class IMDb:
                 if imdb_id not in self._episode_ratings_cache:
                     self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}", not_found_ok=True)
                 data = self._episode_ratings_cache[imdb_id]
-                seasons = data.get("seasons", {}) if data else {}
-                season = seasons.get(season_num, {})
-                episode = season.get(episode_num, {})
-                return episode.get("averageRating")
+                seasons = data.get("seasons", {}) if isinstance(data, dict) else {}
+                season = seasons.get(season_num, {}) if isinstance(seasons, dict) else {}
+                episode = season.get(episode_num, {}) if isinstance(season, dict) else {}
+                return episode.get("averageRating") if isinstance(episode, dict) else None
             except Failed as e:
                 self._service_unavailable(e)
         if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
 - Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
 - Read FlickList ratings once per run instead of once per library item, so `mass_user_rating_update: flicklist_user` and `flicklist_ratings` no longer exhaust FlickList's 1,000 requests/hour limit on larger libraries.
+- Validate that OMDb, IMDb service, and MDBList rating/search responses are the expected object shape before indexing into them, reporting a clean error instead of an unhandled traceback when one of those APIs answers with an unexpected body (e.g. an error payload shaped as a list); remove dead rating/image lookup code left over from the Trakt removal that referenced the no-longer-existing `config.Trakt`.
 
 ## [v2.5.1] - 2026-09-24
 
