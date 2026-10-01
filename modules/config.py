@@ -39,6 +39,7 @@ from modules.tracearr import Tracearr
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
+from modules.wetrakr import WeTrakr
 from modules.yamtrack import YamTrack
 
 logger = util.logger
@@ -194,6 +195,7 @@ mass_rating_options = {
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
     "flicklist_user": "Use FlickList User Rating",
+    "wetrakr_user": "Use WeTrakr User Rating",
     "serializd": "Use Serializd Rating",
     "floppy": "Use Floppy User Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -1299,6 +1301,32 @@ class ConfigFile:
                 logger.info(f"FlickList Connection {'Failed' if self.FlickList is None else 'Successful'}")
             else:
                 logger.info("flicklist attribute not found")
+
+            logger.separator()
+
+            self.WeTrakr = None
+            if "wetrakr" in self.data:
+                logger.info("Connecting to WeTrakr...")
+                try:
+                    wetrakr_obj = WeTrakr(
+                        self.Requests,
+                        self.read_only,
+                        {
+                            "client_id": check_for_attribute(self.data, "client_id", parent="wetrakr", default_is_none=True),
+                            "config_path": self.config_path,
+                            "authorization": (self.data["wetrakr"]["authorization"] if "authorization" in self.data["wetrakr"] else None),
+                        },
+                    )
+                    wetrakr_obj.test_connection()
+                    self.WeTrakr = wetrakr_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"WeTrakr Connection {'Failed' if self.WeTrakr is None else 'Successful'}")
+            else:
+                logger.info("wetrakr attribute not found")
 
             logger.separator()
 

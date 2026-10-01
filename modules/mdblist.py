@@ -159,7 +159,7 @@ streaming_genres = {
 
 
 class MDbObj:
-    def __init__(self, data):
+    def __init__(self, data, batch=False):
         self._data = data
         self._invalid_rating_values = []
 
@@ -213,7 +213,10 @@ class MDbObj:
             elif rating["source"] == "tmdb":
                 self.tmdb_rating = _rating("tmdb", rating["value"], 100)
             elif rating["source"] == "letterboxd":
-                self.letterboxd_rating = _rating("letterboxd", rating["value"], 5, is_int=False)
+                letterboxd_value = rating["value"]
+                if batch and util.is_valid_rating(letterboxd_value, maximum=10):
+                    letterboxd_value = float(letterboxd_value) / 2
+                self.letterboxd_rating = _rating("letterboxd", letterboxd_value, 5, is_int=False)
             elif rating["source"] == "myanimelist":
                 self.myanimelist_rating = _rating("myanimelist", rating["value"], 10, is_int=False)
         self.content_rating = data.get("certification")
@@ -412,7 +415,7 @@ class MDBList:
                 if media_id is None:
                     logger.warning(f"MDBList Warning: Ignoring unexpected {media_provider} ID in batch response: {response_id}")
                     continue
-                mdb = MDbObj(data)
+                mdb = MDbObj(data, batch=True)
                 results[media_id] = mdb
                 key = self._cache_key(media_provider, media_type, media_id)
                 if mdb.ratings_valid:

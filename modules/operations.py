@@ -174,7 +174,7 @@ class Operations:
 
     def _configured_collection_names(self):
         configured_names = set(self.library.collection_names)
-        for metadata_file in self.library.collection_files:
+        for metadata_file in self.library.configured_collection_metadata_files:
             for mapping_name, collection_data in (metadata_file.collections or {}).items():
                 try:
                     configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
@@ -432,6 +432,16 @@ class Operations:
                     if not _flicklist_ratings:
                         raise Failed
                     return _flicklist_ratings
+
+                _wetrakr_ratings = None
+
+                def wetrakr_ratings():
+                    nonlocal _wetrakr_ratings
+                    if _wetrakr_ratings is None:
+                        _wetrakr_ratings = self.config.WeTrakr.user_ratings(self.library.is_movie)
+                    if not _wetrakr_ratings:
+                        raise Failed
+                    return _wetrakr_ratings
 
                 _tmdb_obj = None
 
@@ -706,6 +716,15 @@ class Operations:
                                         if not self.config.FlickList:
                                             raise Failed
                                         _ratings = flicklist_ratings()
+                                        _id = tmdb_id if self.library.is_movie else tvdb_id
+                                        if _id in _ratings:
+                                            found_rating = _ratings[_id]
+                                        else:
+                                            raise Failed
+                                    elif option == "wetrakr_user":
+                                        if not self.config.WeTrakr:
+                                            raise Failed
+                                        _ratings = wetrakr_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
                                         if _id in _ratings:
                                             found_rating = _ratings[_id]

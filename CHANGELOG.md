@@ -16,13 +16,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a `settings.threading` config block (`workers`, `tmdb_pages`, `parallel_sources`, `prefetch_collection_children`) backed by a shared `ThreadPoolExecutor`, used to defer non-Plex `gather_ids` work and Plex item-reload batching off the main collection loop.
 - Add a `--delete-collections-labels` CLI flag (no short form - would collide with `-d`/`--divider`) that deletes all collections, same as `-dc`, and for any deleted collection whose title matches an existing Plex label of the same name (the Smart Label default), batch-removes that one label from just the items that have it - instead of `-dl`'s full library-wide, one-item-at-a-time label wipe.
+- Add WeTrakr as a tracker connector (`wetrakr` config block, OAuth2 device-flow authorization via the Kometa Utilities website) with `wetrakr_list`, `wetrakr_list_details`, `wetrakr_user_lists`, `wetrakr_tracking`, `wetrakr_favorites`, and `wetrakr_ratings` builders, plus `sync_to_wetrakr_list`/`sync_missing_to_wetrakr_list` to sync a collection back to a WeTrakr list and `wetrakr_user` as a mass rating source; a list's description used as a collection summary (`wetrakr_description`, `wetrakr_list`/`wetrakr_list_details`) now carries a credit line linking back to WeTrakr, per their attribution terms. `wetrakr_user_lists` also accepts a bare username or profile URL now, resolved to a numeric user id via WeTrakr's search API.
 
 ### Fixed
 
 - Fix the `resolution` Defaults overlay file applying the `-Dovetail` variant to every DV HDR10+ item at 4K and 1080P, even without an edition, by matching the Dovetail weights to their plain counterparts. #3654
+- Normalize Letterboxd ratings returned by MDBList batch lookups to their native 0–5 scale, preventing doubled ratings in overlays and metadata updates. #3533
+- Keep localized collections from scheduled-out collection files classified as configured during `delete_collections` operations.
 - Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
 - Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.
 - Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
+- Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
 
 ## [v2.5.1] - 2026-09-24
 

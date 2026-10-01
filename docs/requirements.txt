@@ -13,7 +13,7 @@ certifi==2026.7.22
     #   httpcore
     #   httpx
     #   requests
-charset-normalizer==3.5.1
+charset-normalizer==3.5.2
     # via requests
 click==8.5.0
     # via
@@ -100,7 +100,7 @@ pathspec==1.1.1
     # via
     #   mkdocs
     #   properdocs
-platformdirs==4.11.15
+platformdirs==4.12.2
     # via
     #   mkdocs-get-deps
     #   properdocs
@@ -126,12 +126,12 @@ pyyaml-env-tag==1.1
     # via
     #   mkdocs
     #   properdocs
-regex==2026.9.10
+regex==2026.9.29
 requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
     # via neoteroi-mkdocs
-selectolax==0.4.12
+selectolax==0.4.13
     # via mkdocs-glightbox
 six==1.17.0
     # via python-dateutil
