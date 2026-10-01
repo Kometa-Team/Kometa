@@ -5,7 +5,7 @@ import pytest
 
 from modules.util import Failed
 from modules.wetrakr import WeTrakr
-from tests.tracker_fakes import FakeRequests, FakeResponse
+from tests.tracker_fakes import FakeConvert, FakeRequests, FakeResponse
 
 
 def _iso(dt):
@@ -769,3 +769,203 @@ def test_connection_succeeds_without_a_username_in_the_response():
     wetrakr, requests = make_wetrakr([FakeResponse(json_data={"id": 1})], expires_at=_future())
     wetrakr.test_connection()
     assert len(requests.gets) == 1
+
+
+# --- _resolve_list ---
+
+
+def test_resolve_list_matches_by_numeric_id():
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Watchlist"}], headers={})], expires_at=_future())
+    list_id, created = wetrakr._resolve_list(1003620444)
+    assert (list_id, created) == (1003620444, False)
+
+
+def test_resolve_list_matches_by_exact_name():
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Recently Added"}], headers={})], expires_at=_future())
+    list_id, created = wetrakr._resolve_list("Recently Added")
+    assert (list_id, created) == (1003620444, False)
+
+
+def test_resolve_list_creates_when_no_name_match_with_explicit_private_privacy():
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"id": 9310, "name": "New List"}),
+        ],
+        expires_at=_future(),
+    )
+    list_id, created = wetrakr._resolve_list("New List")
+    assert (list_id, created) == (9310, True)
+    create_call = requests.posts[0]
+    assert create_call[1] == {"name": "New List", "privacy": "private"}
+
+
+def test_resolve_list_unknown_id_raises_failed():
+    wetrakr, _requests = make_wetrakr([FakeResponse(json_data=[{"id": 1, "name": "Other"}], headers={})], expires_at=_future())
+    with pytest.raises(Failed, match="not found among your own lists"):
+        wetrakr._resolve_list(1003620444)
+
+
+def test_resolve_list_does_not_page_the_lists_call():
+    # WETRAKR-INTEGRATION-PLAN.md #8: "GET /sync/lists (not paged)" - a single call regardless of a page-count header.
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Watchlist"}], headers={"X-Pagination-Page-Count": "3"})], expires_at=_future())
+    wetrakr._resolve_list(1003620444)
+    assert len(requests.gets) == 1
+
+
+# --- sync_list / _sync_batch ---
+
+
+def test_sync_list_adds_new_items_and_removes_stale_ones():
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"type": "movie", "ids": {"tmdb": 999}}], headers={}),  # current items
+            FakeResponse(json_data={"added": {"total": 1, "movies": 1}}),  # add batch
+            FakeResponse(json_data={"removed": {"total": 1, "movies": 1}}),  # remove batch
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)
+    add_call = requests.posts[-2]
+    assert add_call[0].endswith("/sync/lists/1003620444/items")
+    assert add_call[1] == {"movies": [{"ids": {"tmdb": 550}}], "shows": []}
+    remove_call = requests.posts[-1]
+    assert remove_call[0].endswith("/sync/lists/1003620444/items/remove")
+    assert remove_call[1] == {"movies": [{"ids": {"tmdb": 999}}], "shows": []}
+    # WeTrakr removes via POST .../items/remove, never DELETE (unlike FlickList).
+    assert requests.deletes == []
+
+
+def test_sync_list_leaves_unmatched_current_items_alone():
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"type": "movie", "ids": {}}], headers={}),  # current items, no usable id
+            FakeResponse(json_data={"added": {"total": 1}}),  # add batch
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)
+    assert len(requests.posts) == 1  # just the add batch; no remove batch call at all since nothing was removable
+    assert requests.deletes == []
+
+
+def test_sync_list_chunks_batches_at_5000_items_and_keeps_body_under_1mb():
+    current_page = FakeResponse(json_data=[], headers={})
+    add_batches = [FakeResponse(json_data={"added": {"total": 5000}}), FakeResponse(json_data={"added": {"total": 1500}})]
+    wetrakr, requests = make_wetrakr([FakeResponse(json_data=[{"id": 1003620444, "name": "Big List"}], headers={}), current_page] + add_batches, expires_at=_future())
+    ids = [({"tmdb": i}, "movie") for i in range(6500)]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)
+    assert len(requests.posts) == 2
+    first_chunk = requests.posts[0][1]["movies"]
+    second_chunk = requests.posts[1][1]["movies"]
+    assert len(first_chunk) == 5000
+    assert len(second_chunk) == 1500
+    # Plan's own estimate: ~200KB at 5000 single-id items - comfortably under WeTrakr's 1MB body cap.
+    import json
+
+    assert len(json.dumps(requests.posts[0][1]).encode("utf-8")) < 1_000_000
+
+
+def test_sync_list_unresolved_tvdb_conversion_does_not_delete_the_matching_tmdb_item():
+    # Same D9 guarantee as FlickList's own test: a desired show that only carries tvdb this run
+    # (Convert missed) must not cause deletion of a current item that shares that tvdb id.
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"type": "show", "ids": {"tmdb": 1396, "tvdb": 81189}}], headers={}),  # current items
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tvdb": 81189}, "show")]  # Convert unavailable/misses -> FakeConvert() has no tvdb_to_tmdb_map entry
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)
+    # Nothing to add (already matched) and nothing to remove (still matched) - _sync_batch skips the call entirely for an empty payload.
+    assert requests.posts == []
+
+
+def test_sync_list_current_item_with_only_imdb_matches_desired_tmdb_via_convert():
+    # WeTrakr's ids block has no native id (unlike FlickList's fldb) - imdb->tmdb via Convert is the
+    # only bridge available when a current item carries only imdb.
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),  # _resolve_list
+            FakeResponse(json_data=[{"type": "movie", "ids": {"imdb": "tt0903747"}}], headers={}),  # current items
+        ],
+        expires_at=_future(),
+    )
+    convert = FakeConvert(imdb_to_tmdb_map={"tt0903747": (550, "movie")})
+    ids = [({"tmdb": 550}, "movie")]
+    wetrakr.sync_list(convert, 1003620444, ids)
+    # Nothing to add (already matched via the imdb->tmdb bridge) and nothing to remove - no POST at all.
+    assert requests.posts == []
+
+
+def test_sync_list_logs_not_found_but_does_not_raise():
+    wetrakr, _requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"added": {"total": 0}, "notFound": {"movies": [{"ids": {"imdb": "tt0000000"}}]}}),
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)  # should not raise
+
+
+def test_sync_list_already_added_error_is_logged_at_debug_not_as_a_failure():
+    # WeTrakr reports a dupe as an `errored` entry with "error": "Already added!" (not a separate
+    # `existing` array like FlickList) - this must not be treated as a real error.
+    wetrakr, _requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"added": {"total": 0}, "errored": {"movies": [{"ids": {"tmdb": 603}, "error": "Already added!"}]}}),
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 603}, "movie")]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)  # should not raise
+
+
+def test_sync_list_real_error_is_logged_but_does_not_raise():
+    wetrakr, _requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"added": {"total": 0}, "errored": {"movies": [{"ids": {"tmdb": 603}, "error": "Some other failure"}]}}),
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 603}, "movie")]
+    wetrakr.sync_list(FakeConvert(), 1003620444, ids)  # should not raise
+
+
+def test_sync_batch_420_on_add_raises_failed():
+    wetrakr, _requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(status_code=420, json_data={"message": "list item limit reached", "upgrade": {"url": "https://wetrakr.com/upgrade"}}),
+        ],
+        expires_at=_future(),
+    )
+    ids = [({"tmdb": 550}, "movie")]
+    with pytest.raises(Failed, match="list item limit reached"):
+        wetrakr.sync_list(FakeConvert(), 1003620444, ids)
+
+
+def test_sync_batch_skips_the_call_entirely_when_there_is_nothing_to_send():
+    wetrakr, requests = make_wetrakr(
+        [
+            FakeResponse(json_data=[{"id": 1003620444, "name": "My List"}], headers={}),
+            FakeResponse(json_data=[], headers={}),  # current items - nothing to remove, nothing desired to add
+        ],
+        expires_at=_future(),
+    )
+    wetrakr.sync_list(FakeConvert(), 1003620444, [])
+    assert requests.posts == []  # resolve-list and current-items are both GETs; nothing to add or remove means no POST at all
+    assert len(requests.gets) == 2
