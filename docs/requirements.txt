@@ -137,7 +137,7 @@ six==1.17.0
     # via python-dateutil
 typing-extensions==4.16.0 ; python_full_version < '3.15'
     # via anyio
-urllib3==2.7.0
+urllib3==2.8.0
     # via requests
 watchdog==6.0.0
     # via
