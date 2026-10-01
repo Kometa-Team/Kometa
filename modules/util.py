@@ -38,14 +38,58 @@ else:
 
 TRAKT_REMOVAL_MESSAGE = "Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information"
 
+# Retired Trakt config/builder attribute names, matched exactly (case-insensitive) against dict
+# keys only - not substring-matched and never checked against string values. A substring check
+# on values would false-positive on anything that merely mentions "trakt" without using it, e.g.
+# an mdblist_list URL whose slug happens to include "trakt", or prose in a summary attribute.
+TRAKT_KEYS = frozenset(
+    {
+        "trakt",  # legacy top-level API credentials block
+        "trakt_chart",
+        "trakt_userlist",
+        "trakt_list",
+        "trakt_list_details",
+        "trakt_watchlist",
+        "trakt_collection",
+        "trakt_trending",
+        "trakt_popular",
+        "trakt_boxoffice",
+        "trakt_collected_daily",
+        "trakt_collected_weekly",
+        "trakt_collected_monthly",
+        "trakt_collected_yearly",
+        "trakt_collected_all",
+        "trakt_recommendations",
+        "trakt_recommended_personal",
+        "trakt_recommended_daily",
+        "trakt_recommended_weekly",
+        "trakt_recommended_monthly",
+        "trakt_recommended_yearly",
+        "trakt_recommended_all",
+        "trakt_watched_daily",
+        "trakt_watched_weekly",
+        "trakt_watched_monthly",
+        "trakt_watched_yearly",
+        "trakt_watched_all",
+        "sync_to_trakt_list",
+        "sync_missing_to_trakt_list",
+    }
+)
+
 
 def remove_trakt(data):
-    """Remove retired Trakt configuration while preserving unrelated settings."""
+    """Remove retired Trakt configuration keys while preserving unrelated settings.
+
+    Only matches known Trakt config/builder attribute names (see TRAKT_KEYS) - it does not scan
+    or match on string values, so URLs, summaries, or collection names that simply mention
+    "trakt" (e.g. an MDBList list sourced from Trakt data, or a collection named "Trakt
+    Favorites") are left untouched.
+    """
     if isinstance(data, dict):
         cleaned = {}
         found = False
         for key, value in data.items():
-            if "trakt" in str(key).lower():
+            if isinstance(key, str) and key.lower() in TRAKT_KEYS:
                 found = True
                 continue
             value, value_found = remove_trakt(value)
@@ -65,8 +109,6 @@ def remove_trakt(data):
                 continue
             cleaned.append(value)
         return cleaned, found
-    elif isinstance(data, str) and "trakt" in data.lower():
-        return None, True
     return data, False
 
 

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
 - Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
 - Read FlickList ratings once per run instead of once per library item, so `mass_user_rating_update: flicklist_user` and `flicklist_ratings` no longer exhaust FlickList's 1,000 requests/hour limit on larger libraries.
+- Stop the retired-Trakt config cleanup from discarding unrelated attributes that merely mention "trakt" in a string value (e.g. an `mdblist_list` URL whose slug references Trakt-sourced data, or `summary` prose) or an entire collection whose name contains "trakt", by matching only the actual Trakt builder/attribute key names instead of a substring check against every key and string value.
 
 ## [v2.5.1] - 2026-09-24
 
