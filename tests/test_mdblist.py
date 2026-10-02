@@ -110,6 +110,23 @@ class TestMDbObj:
 
         assert m.ratings_valid
 
+    def test_non_dict_response_raises_failed_instead_of_attribute_error(self):
+        # MDBList unexpectedly answering with a non-object body (e.g. a bare list) must not
+        # raise AttributeError from calling .get() on it.
+        from modules.mdblist import MDbObj
+
+        with pytest.raises(Failed, match="Unexpected response format"):
+            MDbObj(["unexpected", "list", "response"])
+
+    def test_non_dict_ratings_entries_are_ignored(self):
+        from modules.mdblist import MDbObj
+
+        m = MDbObj({**self._BASE, "ratings": "not-a-list"})
+        assert m.imdb_rating is None
+
+        m = MDbObj({**self._BASE, "ratings": ["not-a-dict", {"source": "imdb", "value": "7.5"}]})
+        assert m.imdb_rating == 7.5
+
 
 # ═══════════════════════════════════════════════════════════════════════
 # MDBList
@@ -356,6 +373,19 @@ class TestMDBList:
 
         with pytest.raises(Failed, match="Batch response must be a list"):
             adapter.get_items("tmdb", "movie", [101])
+
+    def test_get_items_skips_non_dict_batch_entries(self, adapter, monkeypatch):
+        # A batch response list with a malformed (non-object) entry should be skipped with a
+        # warning rather than crashing the whole batch.
+        logger = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logger)
+        adapter.cache = None
+        adapter._request = MagicMock(return_value=(["not-a-dict", {"id": 101, "title": "Found", "released": None, "released_digital": None}], {}))
+
+        result = adapter.get_items("tmdb", "movie", [101])
+
+        assert list(result) == [101]
+        assert any("non-object entry" in message for message in logger.warning_messages)
 
     def test_bulk_results_feed_single_lookups_without_persistent_cache(self, adapter):
         adapter.cache = None

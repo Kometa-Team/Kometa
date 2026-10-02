@@ -160,6 +160,8 @@ streaming_genres = {
 
 class MDbObj:
     def __init__(self, data, batch=False):
+        if not isinstance(data, dict):
+            raise Failed(f"MDBList Error: Unexpected response format: {data}")
         self._data = data
         self._invalid_rating_values = []
 
@@ -175,13 +177,15 @@ class MDbObj:
         self.tmdbid = util.check_num(data.get("tmdbid") or data.get("tmdb_id") or data.get("id"))
         self.imdbid = data.get("imdbid") or data.get("imdb_id")
 
+        released = data.get("released")
         try:
-            self.released = datetime.strptime(data.get("released"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released = datetime.strptime(released, "%Y-%m-%d") if isinstance(released, str) else None
+        except ValueError:
             self.released = None
+        released_digital = data.get("released_digital")
         try:
-            self.released_digital = datetime.strptime(data.get("released_digital"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released_digital = datetime.strptime(released_digital, "%Y-%m-%d") if isinstance(released_digital, str) else None
+        except ValueError:
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
@@ -197,28 +201,31 @@ class MDbObj:
         self.tmdb_rating = None
         self.letterboxd_rating = None
         self.myanimelist_rating = None
-        for rating in data.get("ratings", []):
-            if rating["source"] == "imdb":
-                self.imdb_rating = _rating("imdb", rating["value"], 10, is_int=False)
-            elif rating["source"] == "metacritic":
-                self.metacritic_rating = _rating("metacritic", rating["value"], 100)
-            elif rating["source"] == "metacriticuser":
-                self.metacriticuser_rating = _rating("metacriticuser", rating["value"], 10, is_int=False)
-            elif rating["source"] == "trakt":
-                self.trakt_rating = _rating("trakt", rating["value"], 100)
-            elif rating["source"] == "tomatoes":
-                self.tomatoes_rating = _rating("tomatoes", rating["value"], 100)
-            elif rating["source"] in ("tomatoesaudience", "popcorn"):
-                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating["value"], 100)
-            elif rating["source"] == "tmdb":
-                self.tmdb_rating = _rating("tmdb", rating["value"], 100)
-            elif rating["source"] == "letterboxd":
-                letterboxd_value = rating["value"]
+        ratings_list = data.get("ratings", [])
+        for rating in ratings_list if isinstance(ratings_list, list) else []:
+            if not isinstance(rating, dict):
+                continue
+            if rating.get("source") == "imdb":
+                self.imdb_rating = _rating("imdb", rating.get("value"), 10, is_int=False)
+            elif rating.get("source") == "metacritic":
+                self.metacritic_rating = _rating("metacritic", rating.get("value"), 100)
+            elif rating.get("source") == "metacriticuser":
+                self.metacriticuser_rating = _rating("metacriticuser", rating.get("value"), 10, is_int=False)
+            elif rating.get("source") == "trakt":
+                self.trakt_rating = _rating("trakt", rating.get("value"), 100)
+            elif rating.get("source") == "tomatoes":
+                self.tomatoes_rating = _rating("tomatoes", rating.get("value"), 100)
+            elif rating.get("source") in ("tomatoesaudience", "popcorn"):
+                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating.get("value"), 100)
+            elif rating.get("source") == "tmdb":
+                self.tmdb_rating = _rating("tmdb", rating.get("value"), 100)
+            elif rating.get("source") == "letterboxd":
+                letterboxd_value = rating.get("value")
                 if batch and util.is_valid_rating(letterboxd_value, maximum=10):
-                    letterboxd_value = float(letterboxd_value) / 2
+                    letterboxd_value = float(str(letterboxd_value)) / 2
                 self.letterboxd_rating = _rating("letterboxd", letterboxd_value, 5, is_int=False)
-            elif rating["source"] == "myanimelist":
-                self.myanimelist_rating = _rating("myanimelist", rating["value"], 10, is_int=False)
+            elif rating.get("source") == "myanimelist":
+                self.myanimelist_rating = _rating("myanimelist", rating.get("value"), 10, is_int=False)
         self.content_rating = data.get("certification")
         self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
@@ -410,6 +417,9 @@ class MDBList:
             if not isinstance(response, list):
                 raise Failed("MDBList Error: Batch response must be a list")
             for data in response:
+                if not isinstance(data, dict):
+                    logger.warning(f"MDBList Warning: Ignoring unexpected non-object entry in {media_provider} batch response: {data}")
+                    continue
                 response_id = self._response_id(data, media_provider)
                 media_id = requested_ids.get(str(response_id))
                 if media_id is None:
