@@ -6,7 +6,9 @@ from urllib.parse import urlparse
 import httpx
 from serializd import SerializdClient
 from serializd.exceptions import SerializdError
+from tenacity import retry, stop_after_attempt, wait_exponential
 
+from modules import util
 from modules.util import Failed
 
 mobile_url = "https://serializd.onrender.com/mobile/page"
@@ -25,6 +27,12 @@ chart_endpoints = {
 list_url_pattern = re.compile(r"^/list/(?:[^/]+-)?(?P<list_id>\d+)/?$")
 watchlist_url_pattern = re.compile(r"^/user/(?P<username>[^/]+)/watchlist/?$")
 username_pattern = re.compile(r"^[A-Za-z0-9_.-]+$")
+
+
+def _serializd_retry_exhausted(retry_state):
+    error = retry_state.outcome.exception()
+    description = retry_state.kwargs.get("description") or (retry_state.args[2] if len(retry_state.args) > 2 else "request")
+    raise Failed(f"Serializd Error: Failed to fetch {description}: {error}") from error
 
 
 class Serializd:
@@ -100,6 +108,12 @@ class Serializd:
                 return float(review["rating"])
         raise Failed(f"Serializd Error: No user rating found for {description}")
 
+    @retry(
+        stop=stop_after_attempt(6),
+        wait=util.wait_for_retry_after_header(wait_exponential(multiplier=1, min=1, max=10)),
+        retry=util.retry_if_http_429_error(),
+        retry_error_callback=_serializd_retry_exhausted,
+    )
     def _get_json(self, url, description, params=None):
         try:
             response = self.client.session.get(url, **({"params": params} if params is not None else {}))
@@ -108,6 +122,10 @@ class Serializd:
             if not isinstance(data, dict):
                 raise ValueError("response was not a JSON object")
             return data
+        except httpx.HTTPStatusError as err:
+            if err.response.status_code == 429:
+                raise
+            raise Failed(f"Serializd Error: Failed to fetch {description}: {err}") from err
         except (httpx.HTTPError, SerializdError, ValueError, TypeError) as err:
             raise Failed(f"Serializd Error: Failed to fetch {description}: {err}") from err
 

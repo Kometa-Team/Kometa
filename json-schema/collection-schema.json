@@ -102,9 +102,12 @@
                 "show_missing": { "type": "boolean" },
                 "show_unfiltered": { "type": "boolean" },
                 "sync_missing_to_trakt_list": { "type": "boolean" },
+                "sync_missing_to_flicklist_list": { "type": "boolean" },
+                "sync_missing_to_wetrakr_list": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
-                "sync_to_trakt_list": { "type": "string", "description": "Trakt list slug to sync this definition to." },
                 "sync_to_mdb_list": { "oneOf": [{ "type": "string" }, { "type": "object", "required": ["name"], "properties": { "name": { "type": "string" }, "mode": { "type": "string", "enum": ["sync", "append"], "default": "sync" } }, "additionalProperties": false }], "description": "MDBList list name, optionally with sync or append mode." },
+                "sync_to_flicklist_list": { "oneOf": [{ "type": "string" }, { "type": "integer" }], "description": "FlickList list id or name to sync this definition to. Created automatically if no matching list is found among your own lists." },
+                "sync_to_wetrakr_list": { "oneOf": [{ "type": "string" }, { "type": "integer" }], "description": "WeTrakr list id or name to sync this definition to. Created automatically if no matching list is found among your own lists." },
                 "test": { "type": "boolean" },
                 "tmdb_birthday": {
                     "type": "object", "additionalProperties": false,
@@ -146,6 +149,7 @@
                 "trakt_description": { "type": "string" },
                 "yamtrack_description": { "type": "string" },
                 "flicklist_description": { "type": "string" },
+                "wetrakr_description": { "type": "string" },
                 "tvdb_description": { "type": "string" },
                 "tvdb_summary": { "oneOf": [{ "type": "string" }, { "type": "integer" }] },
 
@@ -457,39 +461,6 @@
                     "$ref": "#/definitions/imdb-search-block"
                 },
 
-                "trakt_list": {
-                    "description": "Trakt List URL(s).",
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ]
-                },
-                "trakt_list_details": {
-                    "description": "Trakt List URL(s). Also fetches description.",
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ]
-                },
-                "trakt_chart": {
-                    "description": "Trakt chart query.",
-                    "oneOf": [
-                        { "$ref": "#/definitions/trakt-chart-entry" },
-                        { "type": "array", "items": { "$ref": "#/definitions/trakt-chart-entry" } }
-                    ]
-                },
-                "trakt_userlist": {
-                    "description": "Trakt User list(s).",
-                    "oneOf": [
-                        { "$ref": "#/definitions/trakt-userlist-entry" },
-                        { "type": "array", "items": { "$ref": "#/definitions/trakt-userlist-entry" } }
-                    ]
-                },
-                "trakt_recommendations": { "type": "integer", "minimum": 1, "maximum": 100, "description": "Number of Trakt personal recommendations." },
-                "trakt_boxoffice": { "type": "boolean", "description": "Get Trakt's Top Box Office movies (always 10)." },
-                "trakt_trending": { "type": "integer", "minimum": 1 },
-                "trakt_popular": { "type": "integer", "minimum": 1 },
-
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
@@ -501,6 +472,7 @@
                 "tracearr_binged": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_transcoded": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_watch_time": { "$ref": "#/definitions/tracearr-builder-block" },
+                "tracearr_watched_media": { "$ref": "#/definitions/tracearr-watched-media-builder-block" },
 
                 "radarr_all": { "type": "boolean", "description": "Get all movies in Radarr." },
                 "radarr_taglist": {
@@ -530,6 +502,7 @@
                         { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/mdblist-list-entry" }] } }
                     ]
                 },
+                "mdblist_streaming": { "$ref": "#/definitions/mdblist-streaming-entry" },
 
                 "letterboxd_list": {
                     "description": "Letterboxd List URL(s).",
@@ -693,6 +666,48 @@
                         { "type": "null" },
                         { "type": "number", "minimum": 0.5, "maximum": 10 },
                         { "$ref": "#/definitions/flicklist-ratings-entry" }
+                    ]
+                },
+
+                "wetrakr_list": {
+                    "description": "WeTrakr List URL(s) or numeric id(s).",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }
+                    ]
+                },
+                "wetrakr_list_details": {
+                    "description": "WeTrakr List URL(s) or numeric id(s). Also fetches the list description.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "integer" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "integer" }] } }
+                    ]
+                },
+                "wetrakr_user_lists": {
+                    "description": "Every movie/show across a WeTrakr user's public lists. Accepts a numeric user id, a username, or a profile URL.",
+                    "oneOf": [{ "type": "string" }, { "type": "integer" }]
+                },
+                "wetrakr_favorites": {
+                    "description": "WeTrakr personal favorites for the configured account.",
+                    "oneOf": [{ "type": "boolean" }, { "type": "null" }]
+                },
+                "wetrakr_tracking": {
+                    "description": "WeTrakr personal tracking list for the configured account. Blank/true for every status, false to disable, or an object of statuses to include.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "null" },
+                        { "$ref": "#/definitions/wetrakr-tracking-entry" }
+                    ]
+                },
+                "wetrakr_ratings": {
+                    "description": "WeTrakr personal ratings for the configured account. Blank/true for all, a number as a minimum rating, or an object with minimum/maximum.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "null" },
+                        { "type": "number", "minimum": 0, "maximum": 10 },
+                        { "$ref": "#/definitions/wetrakr-ratings-entry" }
                     ]
                 },
 
@@ -1218,6 +1233,15 @@
                 "genre": { "type": "string", "minLength": 1 }
             }
         },
+        "tracearr-watched-media-builder-block": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "list_days": { "type": "integer", "minimum": 1 },
+                "list_size": { "type": "integer", "minimum": 1 },
+                "user": { "type": "string", "minLength": 1 },
+                "min_state": { "type": "string", "enum": ["watched", "partial"] }
+            }
+        },
 
         "mdblist-list-entry": {
             "type": "object", "additionalProperties": false,
@@ -1226,6 +1250,16 @@
                 "url": { "type": "string", "format": "uri" },
                 "limit": { "type": "integer", "minimum": 1 },
                 "sort_by": { "type": "string" }
+            }
+        },
+        "mdblist-streaming-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "country": { "type": "string", "default": "US", "description": "Country code, locale, or name. Defaults to US." },
+                "period": { "oneOf": [{ "type": "integer", "enum": [1, 7, 30] }, { "type": "string", "enum": ["1", "7", "30", "daily", "weekly", "monthly"] }], "default": "daily" },
+                "provider": { "type": "string", "description": "JustWatch provider code or name. Omit or use all providers for all providers." },
+                "genre": { "type": "string", "description": "JustWatch genre code or name. Omit or use all genres for all genres." }
             }
         },
 
@@ -1593,6 +1627,27 @@
             "properties": {
                 "minimum": { "type": "number", "minimum": 0.5, "maximum": 10 },
                 "maximum": { "type": "number", "minimum": 0.5, "maximum": 10 }
+            }
+        },
+
+        "wetrakr-ratings-entry": {
+            "description": "wetrakr_ratings object form — optional minimum/maximum rating (WeTrakr's scale is 0-10, one decimal).",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "minimum": { "type": "number", "minimum": 0, "maximum": 10 },
+                "maximum": { "type": "number", "minimum": 0, "maximum": 10 }
+            }
+        },
+        "wetrakr-tracking-entry": {
+            "description": "wetrakr_tracking object form — which tracking statuses to include.",
+            "type": "object", "additionalProperties": false,
+            "properties": {
+                "planning": { "type": "boolean" },
+                "watching": { "type": "boolean" },
+                "waiting": { "type": "boolean" },
+                "watched": { "type": "boolean" },
+                "paused": { "type": "boolean" },
+                "dropped": { "type": "boolean" }
             }
         },
 

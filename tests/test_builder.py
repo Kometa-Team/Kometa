@@ -7,6 +7,7 @@ filtering, deletion, and method dispatching.
 
 from __future__ import annotations
 
+import contextlib
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -159,6 +160,23 @@ def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
     builder.load_collection_items()
 
 
+def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    class EmptyCollection(SimpleNamespace):
+        def __len__(self):
+            return 0
+
+    collection = EmptyCollection(title="Existing Collection")
+    library = SimpleNamespace(get_collection_items=MagicMock(return_value=[]))
+    builder = make_builder(build_collection=True, obj=collection, library=library)
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
+    library.get_collection_items.assert_called_once_with(collection, False)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # custom_sort_builders
 # ═══════════════════════════════════════════════════════════════════════
@@ -169,7 +187,7 @@ def test_letterboxd_discovery_builders_support_custom_sort(method):
     assert method in custom_sort_builders
 
 
-@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress"])
+@pytest.mark.parametrize("method", ["tracearr_binged", "tracearr_transcoded", "tracearr_watch_time", "tracearr_in_progress", "tracearr_watched_media"])
 def test_tracearr_activity_builders_support_custom_sort(method):
     assert method in builder_module.tracearr.builders
     assert method in custom_sort_builders
@@ -216,6 +234,22 @@ def test_tracearr_in_progress_sets_progress_defaults():
     assert data["watched"] is False
     assert data["minimum_progress"] == 1
     assert data["maximum_progress"] == 84
+
+
+def test_tracearr_watched_media_parser_uses_distinct_defaults():
+    builder = make_builder()
+
+    builder._tracearr("tracearr_watched_media", {"user": "Anthony", "min_state": "partial"})
+
+    _, data = builder.builders[0]
+    assert data == {
+        "list_type": "watched_media",
+        "list_size": 10,
+        "list_days": None,
+        "min_state": "partial",
+        "user": "Anthony",
+        "builder_level": "movie",
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -274,6 +308,9 @@ class FakeLangLibrary:
         self.get_tags_calls.append((attribute, code))
         return self.language_map.get(attribute, {}).get(code, [])
 
+    def get_language_search_options(self, attribute):
+        return self.names.get(attribute, [])
+
 
 def make_lang_builder(library, **attrs) -> CollectionBuilder:
     defaults = {"details": {"show_options": False}, "ignore_blank_results": False}
@@ -325,9 +362,9 @@ class TestValidateAttributeLanguage:
         assert result == [("es", ["es-419", "spa"]), ("en", "en-US")]
 
     def test_raises_filter_failed_when_language_not_present_in_library(self):
-        library = FakeLangLibrary({"audio_language": {}})
-        builder = make_lang_builder(library)
-        with pytest.raises(builder_module.FilterFailed):
+        library = FakeLangLibrary({"audio_language": {}}, names={"audio_language": ["Dutch", "English"]})
+        builder = make_lang_builder(library, details={"show_options": True})
+        with pytest.raises(builder_module.FilterFailed, match=r"Options: \['Dutch', 'English'\]"):
             builder.validate_attribute("audio_language", "", "audio_language", "zh", True, plex_search=True)
 
     def test_logs_instead_of_raising_when_validate_is_false_and_ignoring_blank_results(self, monkeypatch):
@@ -385,6 +422,84 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    @staticmethod
+    def _tmdb_filter_builder(monkeypatch, tmdb_error):
+        class FakeMovie:
+            def __init__(self, rating_key):
+                self.ratingKey = rating_key
+                self.title = "Movie with stale TMDb GUID"
+
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        monkeypatch.setattr(builder_module, "Movie", FakeMovie)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        item = FakeMovie(101)
+        library = SimpleNamespace(
+            fetch_item=MagicMock(return_value=item),
+            reload=lambda value: value,
+            split=lambda method: (method, "", method),
+            movie_rating_key_map={101: 1450305},
+            show_rating_key_map={},
+            is_movie=True,
+        )
+        get_movie = MagicMock(side_effect=tmdb_error)
+        builder = make_builder(
+            library=library,
+            config=SimpleNamespace(TMDb=SimpleNamespace(get_movie=get_movie)),
+            filters=[[("tmdb_keyword", ["aftercreditsstinger", "duringcreditsstinger"])]],
+        )
+        del builder.check_filters
+        return builder, logger, get_movie
+
+    def test_tmdb_filter_skips_notfound_item_at_debug_level(self, monkeypatch):
+        builder, logger, get_movie = self._tmdb_filter_builder(monkeypatch, builder_module.tmdb.NotFound("TMDb movie is gone"))
+
+        builder.filter_and_save_items([(101, "ratingKey")])
+
+        get_movie.assert_called_once_with(1450305)
+        assert builder.found_items == []
+        assert builder.filtered_keys == {101: "Movie with stale TMDb GUID"}
+        assert "TMDb movie is gone" in logger.debug_messages
+        assert logger.error_messages == []
+
+    def test_tmdb_filter_keeps_other_failures_as_errors(self, monkeypatch):
+        builder, logger, get_movie = self._tmdb_filter_builder(monkeypatch, Failed("TMDb service failed"))
+
+        builder.filter_and_save_items([(101, "ratingKey")])
+
+        get_movie.assert_called_once_with(1450305)
+        assert builder.found_items == []
+        assert builder.filtered_keys == {101: "Movie with stale TMDb GUID"}
+        assert "TMDb service failed" not in logger.debug_messages
+        assert logger.error_messages == ["TMDb service failed"]
+
+    def test_imdb_show_with_malformed_tmdb_tvdb_id_is_skipped_as_conversion_warning(self, monkeypatch):
+        from modules.convert import Convert
+
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(imdb_map={}, show_map={})
+        converter = Convert.__new__(Convert)
+        converter.cache = MagicMock()
+        converter.cache.query_imdb_to_tmdb_map.return_value = (None, None, None)
+        converter.cache.query_tmdb_to_tvdb_map.return_value = (None, None)
+        converter.tmdb = MagicMock()
+        converter.tmdb.convert_imdb_to.return_value = (12345, "show")
+        converter.tmdb.convert_from.return_value = "tt3348258"
+        builder = make_builder(
+            builder_level="show",
+            library=library,
+            libraries=[library],
+            config=SimpleNamespace(Convert=converter),
+        )
+
+        builder.filter_and_save_items([("tt3348258", "imdb")])
+
+        assert builder.found_items == []
+        assert builder.missing_shows == []
+        assert logger.error_messages == []
+        assert "Convert Warning: No TVDb ID found for TMDb ID '12345'" in logger.warning_messages
+
     def test_mdblist_value_prefetch_runs_after_standard_filters(self, monkeypatch):
         class FakeMovie:
             def __init__(self, rating_key):
@@ -399,7 +514,7 @@ class TestFilterAndSaveItems:
         library.fetch_item.side_effect = lambda rating_key: items[rating_key]
         builder = make_builder(
             library=library,
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
             check_filters=MagicMock(side_effect=[False, True]),
         )
@@ -592,6 +707,9 @@ class TestTextfile:
 
     def test_value_filter_is_allowed_for_episode_overlays(self):
         assert "value_filter" in parts_collection_valid
+
+    def test_mdblist_list_is_allowed_for_episode_collections(self):
+        assert "mdblist_list" in parts_collection_valid
 
 
 # ═══════════════════════════════════════════════
@@ -943,6 +1061,89 @@ class TestRatingBatching:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# sort_collection
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSortCollection:
+    def _library(self, move_side_effect=None):
+        library = MagicMock()
+        library.moveItem = MagicMock(side_effect=move_side_effect)
+        library.query = MagicMock(side_effect=lambda method: method())
+        return library
+
+    def _items(self, count):
+        return [SimpleNamespace(ratingKey=key, title=f"Item {key}") for key in range(1, count + 1)]
+
+    def _playlist_builder(self, library, items, obj):
+        return make_builder(playlist=True, Type="Playlist", obj=obj, library=library, custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+    def test_issue_2265_playlist_ids_are_refreshed_before_moving(self, monkeypatch):
+        """Regression test for #2265. update_item_details() blanks the playlistItemID plexapi
+        caches for each item, so every move went to /playlists/<id>/items/None/move."""
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        calls = []
+        playlist = SimpleNamespace(reload=lambda: calls.append("reload"))
+        library = self._library()
+        library.moveItem.side_effect = lambda *args: calls.append("move")
+        items = self._items(2)
+
+        self._playlist_builder(library, items, playlist).sort_collection()
+
+        assert calls[0] == "reload"
+        assert "move" in calls
+
+    def test_a_copy_taken_after_sorting_sees_the_post_move_order(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        items = self._items(3)
+        server_order = list(reversed(items))
+        cached_order = list(server_order)
+
+        def move(_obj, item, after):
+            server_order.remove(item)
+            server_order.insert(0 if after is None else server_order.index(after) + 1, item)
+
+        playlist = SimpleNamespace(reload=lambda: cached_order.__setitem__(slice(None), server_order))
+        library = self._library(move_side_effect=move)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=library, custom_sort="custom.asc", found_items=items, items=list(cached_order))
+
+        builder.sort_collection()
+
+        assert server_order == items
+        assert cached_order == items, "copyToUser() reads this cache, so a synced user would get the pre-sort order"
+
+    def test_a_sort_where_every_move_failed_does_not_reload_a_second_time(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = self._playlist_builder(self._library(move_side_effect=Failed("nope")), items, playlist)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_again_when_nothing_moved(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=self._library(), custom_sort="custom.asc", found_items=items, items=items)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_a_collection(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        collection = MagicMock()
+        items = self._items(2)
+        builder = make_builder(obj=collection, library=self._library(), custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+        builder.sort_collection()
+
+        collection.reload.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -1019,7 +1220,7 @@ class TestGatherIds:
         text_file.get_text_ids.return_value = [(12345, "tmdb")]
         library = SimpleNamespace(type="Movie", is_movie=True)
         builder = make_builder(
-            config=SimpleNamespace(Cache=None, TextFile=text_file),
+            config=SimpleNamespace(Cache=None, TextFile=text_file, get_service_lock=lambda key: contextlib.nullcontext()),
             library=library,
             playlist=playlist,
             details={"cache_builders": 0},
@@ -1033,7 +1234,7 @@ class TestGatherIds:
         tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
         library = SimpleNamespace(Tracearr=tracearr)
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=library,
             libraries=[library],
             playlist=False,
@@ -1054,7 +1255,7 @@ class TestGatherIds:
         show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
         libraries = [movie_library, show_library]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=movie_library,
             libraries=libraries,
             playlist=True,
@@ -1077,7 +1278,7 @@ class TestGatherIds:
             SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
         ]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=libraries[0],
             libraries=libraries,
             playlist=True,
@@ -1229,7 +1430,7 @@ class TestBuildFilter:
             is_show=False,
             is_music=False,
             split=self._split,
-            get_language_search_values=lambda attribute, code: {"de": ["de", "de-DE"]}.get(code, []),
+            get_language_search_values=lambda attribute, code: {"de": ["de-DE", "de"]}.get(code, []),
         )
         builder = make_builder(library=library, details={"show_options": False})
 
@@ -1239,8 +1440,10 @@ class TestBuildFilter:
             default_sort="random",
         )
 
-        assert "push=1&audioLanguage=de&or=1&audioLanguage=de-DE&pop=1" in url
+        assert "push=1&audioLanguage=de-DE&or=1&audioLanguage=de&pop=1" in url
         assert "audioLanguage=de&and=1&audioLanguage=de-DE" not in url
+        assert _details.count("Audio Language is de") == 1
+        assert "Audio Language is de-DE" not in _details
 
     def test_negated_language_variants_are_anded_under_plex_search_all(self):
         """Excluding a language must exclude every one of its variants: audioLanguage!=de AND
@@ -1262,6 +1465,34 @@ class TestBuildFilter:
         )
 
         assert "push=1&audioLanguage!=de&and=1&audioLanguage!=de-DE&pop=1" in url
+        assert _details.count("Audio Language is not de") == 1
+
+    def test_language_names_preserve_variant_boolean_logic(self):
+        """Regression for the reported Dutch flag overlay: Plex-reported language names use OR
+        across positive variants and AND across excluded variants without duplicate summary lines."""
+        language_values = {
+            "dutch": ["nl", "nld"],
+            "english": ["en", "eng", "en-US"],
+        }
+        library = SimpleNamespace(
+            is_movie=True,
+            is_show=False,
+            is_music=False,
+            split=self._split,
+            get_language_search_values=lambda attribute, code: language_values.get(code, []),
+        )
+        builder = make_builder(library=library, details={"show_options": False})
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"all": {"audio_language": "Dutch", "audio_language.not": "English"}},
+            default_sort="random",
+        )
+
+        assert "push=1&audioLanguage=nl&or=1&audioLanguage=nld&pop=1" in url
+        assert "push=1&audioLanguage!=en&and=1&audioLanguage!=eng&and=1&audioLanguage!=en-US&pop=1" in url
+        assert details.count("Audio Language is Dutch") == 1
+        assert details.count("Audio Language is not English") == 1
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1381,15 +1612,138 @@ class TestDispatchTables:
         assert not overlap, f"Field names overlap between radarr_details and sonarr_details: {overlap}"
 
     def test_all_builders_contains_known_data_sources(self):
-        """Sanity: the master builder list mentions tmdb, trakt, imdb."""
+        """Sanity: the master builder list mentions core supported sources."""
         all_builders = builder_module.all_builders
         # all_builders is a tuple of strings — at minimum some core sources
         text = " ".join(str(b) for b in all_builders)
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
-        assert "trakt" in text, "all_builders missing trakt-related entries"
+        assert "trakt" not in text, "all_builders still exposes retired Trakt builders"
         assert "imdb" in text, "all_builders missing imdb-related entries"
         assert "serializd_list" in all_builders
         assert "serializd_watchlist" in all_builders
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _service_lock_key (Experiment C - per-service lock bucket classification)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestServiceLockKey:
+    @pytest.mark.parametrize(
+        "method, expected",
+        [
+            ("plex_all", "plex"),
+            ("plex_search", "plex"),
+            ("tautulli_popular", "tautulli"),
+            ("tracearr_watched", "tracearr"),
+            ("anidb_id", "anidb"),
+            ("anilist_id", "anilist"),
+            ("mal_id", "mal"),
+            ("tvdb_list", "tvdb"),
+            ("imdb_list", "imdb"),
+            ("icheckmovies_list", "icheckmovies"),
+            ("letterboxd_list", "letterboxd"),
+            ("stevenlu_popular", "stevenlu"),
+            ("mojo_yearly", "mojo"),
+            ("mdblist_list", "mdblist"),
+            ("simkl_list", "simkl"),
+            ("tmdb_discover", "tmdb"),
+            ("trakt_list", "trakt"),
+            ("yamtrack_list", "yamtrack"),
+            ("serializd_list", "serializd"),
+            ("floppy_tracked", "floppy"),
+            ("radarr_taglist", "radarr"),
+            ("sonarr_taglist", "sonarr"),
+        ],
+    )
+    def test_known_prefixes_map_to_expected_bucket(self, method, expected):
+        assert builder_module._service_lock_key(method) == expected
+
+    def test_textfile_builder_maps_to_textfile_bucket(self):
+        textfile_method = next(iter(builder_module.textfile.builders))
+        assert builder_module._service_lock_key(textfile_method) == "textfile"
+
+    def test_unrecognized_method_falls_into_other_not_bypassed(self):
+        """Unknown methods must still get a lock bucket ('other'), never bypass per-service locking entirely."""
+        assert builder_module._service_lock_key("some_never_seen_method") == "other"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _resolve_remove_item_map (prefetch_collection_children deferral)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeThreadPool:
+    def __init__(self):
+        self.submitted = []
+
+    def submit(self, fn, *args, **kwargs):
+        from concurrent.futures import Future
+
+        future = Future()
+        future.set_result(fn(*args, **kwargs))
+        self.submitted.append((fn, args, kwargs))
+        return future
+
+
+class TestResolveRemoveItemMap:
+    def _make(self, playlist, thread_pool, prefetch_enabled, items):
+        library = SimpleNamespace(get_collection_items=lambda obj, smart_label: items)
+        config = SimpleNamespace(thread_pool=thread_pool, general={"threading": {"prefetch_collection_children": prefetch_enabled}})
+        return make_builder(playlist=playlist, library=library, config=config, obj=SimpleNamespace(), smart_label_collection=False)
+
+    def test_toggle_off_returns_dict_directly_not_a_future(self):
+        """prefetch_collection_children:false must behave byte-identical to the pre-toggle code: eager dict, no Future."""
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=FakeThreadPool(), prefetch_enabled=False, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_thread_pool_none_returns_dict_directly_even_if_toggle_on(self):
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=None, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_toggle_on_submits_to_thread_pool_for_sync_collections(self):
+        from concurrent.futures import Future
+
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=False, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert isinstance(result, Future)
+        assert result.result() == {1: item}
+        assert len(pool.submitted) == 1
+
+    def test_playlists_always_fetch_eagerly_regardless_of_toggle(self):
+        """Playlists need len() immediately in __init__, so they must never be deferred to the thread_pool."""
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=True, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+        assert not pool.submitted
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _collection_child_count (None childCount on blank/separator collections)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCollectionChildCount:
+    def test_none_childcount_treated_as_zero(self):
+        """Plex returns None for childCount on genuinely-empty separator collections - must not raise/propagate None."""
+        obj = SimpleNamespace(childCount=None)
+        assert CollectionBuilder._collection_child_count(obj) == 0
+
+    def test_real_childcount_passes_through_unchanged(self):
+        obj = SimpleNamespace(childCount=7)
+        assert CollectionBuilder._collection_child_count(obj) == 7
+
+    def test_zero_childcount_stays_zero(self):
+        obj = SimpleNamespace(childCount=0)
+        assert CollectionBuilder._collection_child_count(obj) == 0

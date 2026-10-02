@@ -16,6 +16,7 @@ from requests.exceptions import RequestException
 from ruamel.yaml import YAML
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
+from modules import tmdb
 from modules.meta import DataFile, MetadataFile
 from tests.conftest import FakeLogger, FakeRequests
 
@@ -61,6 +62,96 @@ def make_metadata_file(library):
     metadata_file.library = library
     metadata_file.type_str = "Metadata File"
     return metadata_file, test_logger
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# dynamic tmdb_collection discovery
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def test_dynamic_tmdb_collection_skips_plex_discovered_notfound(monkeypatch):
+    logger = FakeLogger()
+    monkeypatch.setattr("modules.meta.logger", logger)
+    monkeypatch.setattr(tmdb, "logger", logger)
+    monkeypatch.setattr(
+        DataFile,
+        "load_file",
+        lambda *args, **kwargs: {"dynamic_collections": {"Franchises": {"type": "tmdb_collection"}}},
+    )
+    stale_item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+    valid_item = SimpleNamespace(title="Valid Movie", guid="plex://movie/valid")
+    library = SimpleNamespace(
+        type="Movie",
+        is_movie=True,
+        is_show=False,
+        is_music=False,
+        agent="tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        get_all=MagicMock(return_value=[stale_item, valid_item]),
+        get_ids=MagicMock(side_effect=[(1450305, None, None), (550, None, None)]),
+        get_all_collections=MagicMock(return_value=[]),
+    )
+    tmdb_client = tmdb.TMDb.__new__(tmdb.TMDb)
+    tmdb_client.config = SimpleNamespace(Convert=MagicMock())
+    tmdb_client.get_movie = MagicMock(
+        side_effect=[
+            tmdb.NotFound("TMDb Error: No Movie found for TMDb ID: 1450305"),
+            SimpleNamespace(collection_id=10, collection_name="Valid Franchise"),
+        ]
+    )
+    config = SimpleNamespace(
+        GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]),
+        requested_files=[],
+        TMDb=tmdb_client,
+    )
+
+    metadata_file = MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    assert "Valid Franchise" in metadata_file.collections
+    assert logger.error_messages == []
+    assert "TMDb Error: No Movie found for TMDb ID: 1450305" in logger.debug_messages
+
+
+@pytest.mark.parametrize(
+    ("auto_type", "library_type", "is_movie"),
+    [("original_language", "Movie", True), ("origin_country", "Show", False)],
+)
+def test_dynamic_tmdb_attribute_discovery_ignores_notfound(auto_type, library_type, is_movie, monkeypatch):
+    monkeypatch.setattr("modules.meta.logger", FakeLogger())
+    monkeypatch.setattr(
+        DataFile,
+        "load_file",
+        lambda *args, **kwargs: {"dynamic_collections": {"TMDb Attributes": {"type": auto_type}}},
+    )
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+    library = SimpleNamespace(
+        type=library_type,
+        is_movie=is_movie,
+        is_show=not is_movie,
+        is_music=False,
+        agent="tv.plex.agents.movie",
+        collections=[],
+        metadatas=[],
+        get_all=MagicMock(return_value=[item]),
+        get_ids=MagicMock(return_value=(1450305, None, None)),
+        get_all_collections=MagicMock(return_value=[]),
+    )
+    tmdb_client = MagicMock()
+    tmdb_client.get_item.return_value = SimpleNamespace(
+        language_iso="en",
+        language_name="English",
+        countries=[SimpleNamespace(iso_3166_1="US", name="United States")],
+    )
+    config = SimpleNamespace(
+        GitHub=SimpleNamespace(configs_url="", translation_keys=["en"]),
+        requested_files=[],
+        TMDb=tmdb_client,
+    )
+
+    MetadataFile(config, library, "File", "test.yml", {}, None, "collection")
+
+    tmdb_client.get_item.assert_called_once_with(item, 1450305, None, None, is_movie=is_movie, ignore_not_found=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -287,6 +378,132 @@ class TestApplyTemplateNestedVarResolution:
         result = df.apply_template("Test Name", "test_mapping", {}, template_call, {})
 
         assert result["summary"] == "8"
+
+
+class TestStreamingTemplate:
+    @pytest.mark.parametrize("library_type", ["Movie", "Show"])
+    @pytest.mark.parametrize("region, provider", [(None, 9), ("US", 9), ("AT", 9), ("DE", 9), ("GB", 9), ("JP", 9), ("FR", 119), ("CA", 119)])
+    def test_prime_video_provider_matches_effective_region(self, library_type, region, provider):
+        streaming_path = Path(__file__).resolve().parents[1] / "defaults" / "both" / "streaming.yml"
+        with streaming_path.open(encoding="utf-8") as handle:
+            streaming = YAML(typ="safe").load(handle)
+
+        df = make_datafile(
+            library=SimpleNamespace(type=library_type, name="Streaming"),
+            templates={"streaming": (streaming["templates"]["streaming"], {})},
+        )
+        variables = {
+            "name": "streaming",
+            "key": "amazon",
+            "tmdb_key": streaming["dynamic_collections"]["Streaming"]["template_variables"]["tmdb_key"]["amazon"],
+            "originals_only": False,
+        }
+        if region is not None:
+            variables["region"] = region
+
+        result = df.apply_template("Prime Video", "amazon", {}, [variables], {})
+
+        assert result["tmdb_discover"]["watch_region"] == (region or "US")
+        assert str(result["tmdb_discover"]["with_watch_providers"]) == str(provider)
+
+    @pytest.mark.parametrize(
+        ("template_variables", "expected"),
+        [
+            ({"limit": 50}, 50),
+            ({"limit": 50, "limit_amazon": 100}, 100),
+            ({"limit_amazon": 100}, 100),
+        ],
+    )
+    def test_keyed_limit_overrides_global_limit(self, template_variables, expected):
+        streaming_path = Path(__file__).resolve().parents[1] / "defaults" / "both" / "streaming.yml"
+        with streaming_path.open(encoding="utf-8") as handle:
+            streaming = YAML(typ="safe").load(handle)
+
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Streaming"),
+            temp_vars=template_variables,
+            templates={"streaming": (streaming["templates"]["streaming"], {})},
+        )
+        variables = {
+            "name": "streaming",
+            "key": "amazon",
+            "tmdb_key": streaming["dynamic_collections"]["Streaming"]["template_variables"]["tmdb_key"]["amazon"],
+            "originals_only": False,
+        }
+
+        result = df.apply_template("Prime Video", "amazon", {}, [variables], {})
+
+        assert result["limit"] == expected
+
+
+class TestBasedTemplateLimit:
+    @pytest.mark.parametrize(
+        ("template_variables", "expected"),
+        [
+            ({"limit": 50}, 50),
+            ({"limit": 50, "limit_books": 300}, 300),
+            ({"limit_books": 300}, 300),
+        ],
+    )
+    def test_keyed_limit_overrides_global_and_source_limit(self, template_variables, expected):
+        templates_path = Path(__file__).resolve().parents[1] / "defaults" / "templates.yml"
+        with templates_path.open(encoding="utf-8") as handle:
+            templates = YAML(typ="safe").load(handle)["templates"]
+
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            temp_vars=template_variables,
+            templates={name: (templates[name], {}) for name in ["based", "shared"]},
+        )
+        template_call = [
+            {"name": "based", "key": "books", "keywords": "based on book, based on novel"},
+            {"name": "shared", "key": "books"},
+        ]
+
+        result = df.apply_template("Based on a Book", "books", {}, template_call, {})
+
+        assert result["imdb_search"]["limit"] == expected
+        assert result["limit"] == expected
+
+
+class TestSharedTemplateLimit:
+    @staticmethod
+    def _apply_letterboxd_template(collection_name, template_variables):
+        root = Path(__file__).resolve().parents[1]
+        with (root / "defaults" / "chart" / "letterboxd.yml").open(encoding="utf-8") as handle:
+            letterboxd = YAML(typ="safe").load(handle)
+        with (root / "defaults" / "templates.yml").open(encoding="utf-8") as handle:
+            shared = YAML(typ="safe").load(handle)
+
+        collection = letterboxd["collections"][collection_name]
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            temp_vars=template_variables,
+            templates={
+                "letterboxd_list": (letterboxd["templates"]["letterboxd_list"], {}),
+                "shared": (shared["templates"]["shared"], {}),
+            },
+        )
+
+        return df.apply_template(collection_name, collection["variables"]["key"], {}, collection["template"][:2], collection["variables"])
+
+    @pytest.mark.parametrize(
+        ("collection_name", "template_variables", "expected"),
+        [
+            ("Letterboxd Top 500", {"limit": 50}, 50),
+            ("Letterboxd Top 500", {"limit": 50, "limit_top_500": 100}, 100),
+            ("Top 250 Horror", {"limit": 50, "limit_horror": 20}, 20),
+        ],
+    )
+    def test_keyed_limit_overrides_global_limit(self, collection_name, template_variables, expected):
+        result = self._apply_letterboxd_template(collection_name, template_variables)
+
+        assert result["limit"] == expected
+
+    def test_limit_remains_optional(self):
+        result = self._apply_letterboxd_template("Letterboxd Top 500", {})
+
+        assert "limit" not in result
 
 
 class TestResolutionEditionDovetailTemplate:

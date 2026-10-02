@@ -105,6 +105,7 @@ templates:
       visible_shared_<<key>>: <<visible_shared>>
       minimum_items_<<key>>: <<minimum_items>>
       hub_priority_<<key>>: <<hub_priority>>
+      limit_<<key>>: <<limit>>
     optional:
       - use_<<key>>
       - allowed_libraries
@@ -114,7 +115,6 @@ templates:
       - visible_shared
       - item_radarr_tag
       - item_sonarr_tag
-      - trakt_list
       - image
       - ignore_ids
       - ignore_imdb_ids
@@ -144,10 +144,9 @@ templates:
     key_name: <<key_name>>
     summary: <<summary_<<key>>>>
     name: <<name_<<key>>>>
-    limit: <<limit>>
+    limit: <<limit_<<key>>>>
     ignore_ids: <<ignore_ids>>
     ignore_imdb_ids: <<ignore_imdb_ids>>
-    trakt_list: <<trakt_list>>
     ignore_blank_results: true
     collection_mode: <<collection_mode>>
     visible_library: <<visible_library_<<key>>>>
@@ -169,11 +168,6 @@ templates:
     delete_collections_named: <<delete_collections_named>>
     schedule: <<schedule_<<key>>>>
 
-  trakt:
-    optional:
-      - trakt_list
-    trakt_list: <<trakt_list>>
-
   imdb:
     optional:
       - imdb_list
@@ -194,11 +188,12 @@ templates:
   based:
     default:
       limit: 200
+      limit_<<key>>: <<limit>>
       sort_by: release.desc
       sort_by_<<key>>: <<sort_by>>
     imdb_search:
       keyword.any: <<keywords>>
-      limit: <<limit>>
+      limit: <<limit_<<key>>>>
       type: <<type>>
       sort_by: popularity.asc
     conditionals:

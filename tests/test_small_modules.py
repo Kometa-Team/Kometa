@@ -5,7 +5,7 @@ All use ``__new__`` to bypass constructors that make API calls.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -179,7 +179,9 @@ class TestTracearr:
         t.api = f"{t.url}/api/v1/public"
         t.history_api = f"{t.url}/api/v2/public"
         t.history_version = 2
+        t.v2_paths = {"/api/v2/public/watched-media"}
         t._history_cache = {}
+        t._watched_media_page_cache = {}
         t._users_cache = None
         t._history_until = None
         t.apikey = "trr_pub_test"
@@ -237,6 +239,110 @@ class TestTracearr:
         assert params["server_id"] == self.SERVER_ID
         assert params["media_type"] == "movie"
         assert params["pageSize"] == 100
+
+    def test_history_sends_explicit_watched_filter_to_v2(self, adapter):
+        adapter._request = MagicMock(return_value={"data": [], "meta": {"nextCursor": None, "pageSize": 100}})
+
+        adapter.get_rating_keys({"list_type": "history", "list_size": 10, "list_days": 30, "list_minimum": 0, "watched": True})
+
+        assert adapter._request.call_args.kwargs["params"]["watched"] == "true"
+
+    def test_watched_media_uses_provider_ids_and_cursor_pagination(self, adapter):
+        today = datetime.now(timezone.utc).date().isoformat()
+        adapter._request = MagicMock(
+            side_effect=[
+                {
+                    "data": [
+                        {"media_type": "movie", "title": "First", "tmdb_id": 101, "imdb_id": "tt0000101", "last_watched_day": today},
+                        {"media_type": "movie", "title": "No IDs", "tmdb_id": None, "imdb_id": None, "last_watched_day": today},
+                    ],
+                    "meta": {"nextCursor": "next-page", "pageSize": 1000},
+                },
+                {
+                    "data": [{"media_type": "movie", "title": "Second", "tmdb_id": None, "imdb_id": "tt0000102", "last_watched_day": today}],
+                    "meta": {"nextCursor": None, "pageSize": 1000},
+                },
+            ]
+        )
+
+        result = adapter.get_rating_keys({"list_type": "watched_media", "list_size": 2, "list_days": None, "min_state": "partial", "user": None, "builder_level": "movie"})
+
+        assert result == [(101, "tmdb"), ("tt0000102", "imdb")]
+        first_call, second_call = adapter._request.call_args_list
+        assert first_call.kwargs["params"] == {"media_type": "movie", "server_id": self.SERVER_ID, "min_state": "partial", "pageSize": 1000}
+        assert second_call.kwargs["params"]["cursor"] == "next-page"
+        adapter.library.fetch_item.assert_not_called()
+        adapter.library.exact_search.assert_not_called()
+
+    def test_watched_media_mixed_playlist_merges_movie_and_show_by_activity(self, adapter):
+        yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).date().isoformat()
+        today = datetime.now(timezone.utc).date().isoformat()
+        show_library = MagicMock(is_movie=False, is_show=True)
+
+        def response(endpoint, params=None, **kwargs):
+            item = {"media_type": "movie", "title": "Movie", "tmdb_id": 101, "last_watched_day": yesterday} if params["media_type"] == "movie" else {"media_type": "show", "title": "Show", "tvdb_id": 202, "last_watched_day": today}
+            return {"data": [item], "meta": {"nextCursor": None, "pageSize": 1000}}
+
+        adapter._request = MagicMock(side_effect=response)
+
+        result = adapter.get_rating_keys(
+            {"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "show"},
+            is_playlist=True,
+            libraries=[adapter.library, show_library],
+        )
+
+        assert result == [(202, "tvdb"), (101, "tmdb")]
+        assert [call.kwargs["params"]["media_type"] for call in adapter._request.call_args_list] == ["movie", "show"]
+
+    def test_watched_media_list_days_stops_at_old_results(self, adapter):
+        today = datetime.now(timezone.utc).date().isoformat()
+        old_day = (datetime.now(timezone.utc) - timedelta(days=31)).date().isoformat()
+        adapter._request = MagicMock(
+            return_value={
+                "data": [
+                    {"media_type": "movie", "title": "Recent", "tmdb_id": 101, "last_watched_day": today},
+                    {"media_type": "movie", "title": "Old", "tmdb_id": 102, "last_watched_day": old_day},
+                ],
+                "meta": {"nextCursor": "not-needed", "pageSize": 1000},
+            }
+        )
+
+        result = adapter.get_rating_keys({"list_type": "watched_media", "list_size": 10, "list_days": 30, "min_state": "watched", "user": None, "builder_level": "movie"})
+
+        assert result == [(101, "tmdb")]
+        adapter._request.assert_called_once()
+
+    def test_watched_media_reuses_identical_pages_during_run(self, adapter):
+        today = datetime.now(timezone.utc).date().isoformat()
+        adapter._request = MagicMock(
+            return_value={
+                "data": [{"media_type": "movie", "title": "Movie", "tmdb_id": 101, "last_watched_day": today}],
+                "meta": {"nextCursor": None, "pageSize": 1000},
+            }
+        )
+        data = {"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "movie"}
+
+        assert adapter.get_rating_keys(data) == [(101, "tmdb")]
+        assert adapter.get_rating_keys(data) == [(101, "tmdb")]
+        adapter._request.assert_called_once()
+
+    def test_watched_media_rejects_unsupported_library_scope(self, adapter):
+        adapter.library.is_movie = False
+        adapter.library.is_show = False
+
+        with pytest.raises(Failed, match="does not support the selected library type and builder level"):
+            adapter.get_rating_keys({"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "movie"})
+
+    def test_watched_media_episode_uses_show_tvdb_coordinates(self, adapter):
+        item = {"show_tvdb_id": 303, "season_number": 2, "episode_number": 4, "imdb_id": "tt0000304"}
+
+        assert adapter._watched_media_item_id(item, "episode") == ("303_2_4", "tvdb_episode")
+
+    def test_watched_media_requires_advertised_endpoint(self, adapter):
+        adapter.v2_paths = set()
+
+        with pytest.raises(Failed, match="requires a Tracearr version that provides"):
+            adapter.get_rating_keys({"list_type": "watched_media", "list_size": 10, "list_days": None, "min_state": "watched", "user": None, "builder_level": "movie"})
 
     def test_show_history_requests_episodes_and_groups_by_show(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.tracearr.logger", FakeLogger())

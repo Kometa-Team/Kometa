@@ -6,14 +6,14 @@ import re
 import signal
 import sys
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from email.utils import parsedate_to_datetime
 from typing import TYPE_CHECKING, Literal, overload
 
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
 from plexapi.video import Episode, Movie, Season
-from requests.exceptions import HTTPError
 from tenacity import retry_if_exception
 from tenacity.wait import wait_base
 
@@ -35,6 +35,88 @@ if TYPE_CHECKING:
     logger: MyLogger
 else:
     logger = None
+
+TRAKT_REMOVAL_MESSAGE = "Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information"
+
+# Retired Trakt rating-source option *values* - as opposed to TRAKT_KEYS below, these are values a
+# user could set for a mass_*_rating_update attribute (e.g. `audience: trakt`). Checked explicitly
+# during rating option validation so a config still carrying one of these gets the clear removal
+# message instead of config.py's generic rating-value parser trying (and failing) to read "trakt"
+# as a number between 0 and 10.
+RETIRED_TRAKT_RATING_VALUES = frozenset({"trakt", "trakt_user", "mdb_trakt"})
+
+# Retired Trakt config/builder attribute names, matched exactly (case-insensitive) against dict
+# keys only - not substring-matched and never checked against string values. A substring check
+# on values would false-positive on anything that merely mentions "trakt" without using it, e.g.
+# an mdblist_list URL whose slug happens to include "trakt", or prose in a summary attribute.
+TRAKT_KEYS = frozenset(
+    {
+        "trakt",  # legacy top-level API credentials block
+        "trakt_chart",
+        "trakt_userlist",
+        "trakt_list",
+        "trakt_list_details",
+        "trakt_watchlist",
+        "trakt_collection",
+        "trakt_trending",
+        "trakt_popular",
+        "trakt_boxoffice",
+        "trakt_collected_daily",
+        "trakt_collected_weekly",
+        "trakt_collected_monthly",
+        "trakt_collected_yearly",
+        "trakt_collected_all",
+        "trakt_recommendations",
+        "trakt_recommended_personal",
+        "trakt_recommended_daily",
+        "trakt_recommended_weekly",
+        "trakt_recommended_monthly",
+        "trakt_recommended_yearly",
+        "trakt_recommended_all",
+        "trakt_watched_daily",
+        "trakt_watched_weekly",
+        "trakt_watched_monthly",
+        "trakt_watched_yearly",
+        "trakt_watched_all",
+        "sync_to_trakt_list",
+        "sync_missing_to_trakt_list",
+    }
+)
+
+
+def remove_trakt(data):
+    """Remove retired Trakt configuration keys while preserving unrelated settings.
+
+    Only matches known Trakt config/builder attribute names (see TRAKT_KEYS) - it does not scan
+    or match on string values, so URLs, summaries, or collection names that simply mention
+    "trakt" (e.g. an MDBList list sourced from Trakt data, or a collection named "Trakt
+    Favorites") are left untouched.
+    """
+    if isinstance(data, dict):
+        cleaned = {}
+        found = False
+        for key, value in data.items():
+            if isinstance(key, str) and key.lower() in TRAKT_KEYS:
+                found = True
+                continue
+            value, value_found = remove_trakt(value)
+            found = found or value_found
+            # Only drop entries that trakt removal actually produced; keep pre-existing None/empty values intact
+            if value_found and (value is None or (isinstance(value, dict) and not value)):
+                continue
+            cleaned[key] = value
+        return cleaned, found
+    elif isinstance(data, list):
+        cleaned = []
+        found = False
+        for value in data:
+            value, value_found = remove_trakt(value)
+            found = found or value_found
+            if value_found and value is None:
+                continue
+            cleaned.append(value)
+        return cleaned, found
+    return data, False
 
 
 class TimeoutExpired(Exception):
@@ -111,7 +193,8 @@ class retry_if_http_429_error(retry_if_exception):
 
     def __init__(self):
         def is_http_429_error(exception: BaseException) -> bool:
-            return isinstance(exception, HTTPError) and exception.response is not None and exception.response.status_code == 429
+            response = getattr(exception, "response", None)
+            return response is not None and response.status_code == 429
 
         super().__init__(predicate=is_http_429_error)
 
@@ -120,15 +203,32 @@ class wait_for_retry_after_header(wait_base):
     def __init__(self, fallback):
         self.fallback = fallback
 
+    @staticmethod
+    def parse(retry_after, now=None):
+        if retry_after is None:
+            return None
+        try:
+            return max(0, int(retry_after))
+        except (TypeError, ValueError):
+            pass
+        try:
+            retry_at = parsedate_to_datetime(str(retry_after))
+            if retry_at.tzinfo is None:
+                retry_at = retry_at.replace(tzinfo=timezone.utc)
+            current = now or datetime.now(timezone.utc)
+            if current.tzinfo is None:
+                current = current.replace(tzinfo=timezone.utc)
+            return max(0, (retry_at - current).total_seconds())
+        except (TypeError, ValueError, OverflowError):
+            return None
+
     def __call__(self, retry_state):
         exc = retry_state.outcome.exception() if retry_state.outcome is not None else None
-        if isinstance(exc, HTTPError) and exc.response is not None:
-            retry_after = exc.response.headers.get("Retry-After", None)
-            try:
-                if retry_after is not None:
-                    return int(retry_after)
-            except (TypeError, ValueError):
-                pass
+        response = getattr(exc, "response", None)
+        if response is not None:
+            wait_time = self.parse(response.headers.get("Retry-After", None))
+            if wait_time is not None:
+                return wait_time
 
         return self.fallback(retry_state)
 

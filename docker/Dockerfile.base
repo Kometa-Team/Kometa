@@ -4,10 +4,18 @@ FROM python:3.13-slim
 ENV TINI_VERSION=v0.19.0
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
+# The venv is what "python3" resolves to in this image, so ENTRYPOINT needs no change.
+ENV PATH="/.venv/bin:$PATH"
+ENV UV_PROJECT_ENVIRONMENT=/.venv
+# Use the interpreter this image already ships rather than fetching another one.
+ENV UV_PYTHON_DOWNLOADS=never
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
 
-COPY requirements.txt /requirements.txt
+# uv is pip-installed from hash-pinned docker/uv-bootstrap.txt (the uv image has no linux/arm/v7) and removed in the same RUN, so it never ships.
+COPY pyproject.toml uv.lock docker/uv-bootstrap.txt /
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    --mount=type=cache,target=/root/.cache/pip,sharing=locked \
+    --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     echo "**** install system packages ****" \
  && rm -f /etc/apt/apt.conf.d/docker-clean \
  && echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache \
@@ -19,9 +27,11 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
  && if [ -n "$runtime_libffi" ]; then apt-mark manual "$runtime_libffi"; fi \
  && wget -O /tini https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-"$(dpkg --print-architecture | awk -F- '{ print $NF }')" \
  && chmod +x /tini \
- && pip3 install --upgrade --requirement /requirements.txt \
+ && /usr/local/bin/pip install --no-cache-dir --disable-pip-version-check --root-user-action=ignore --require-hashes -r /uv-bootstrap.txt \
+ && uv sync --locked --no-dev --no-install-project \
+ && /usr/local/bin/pip uninstall -y --root-user-action=ignore uv \
  && apt-get --purge autoremove gcc g++ libffi-dev libxml2-dev libxslt-dev libz-dev -y \
  && apt-get update \
  && apt-get check \
  && apt-get -f install \
- && rm -rf /requirements.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*
+ && rm -rf /pyproject.toml /uv.lock /uv-bootstrap.txt /tmp/* /var/tmp/* /var/lib/apt/lists/*

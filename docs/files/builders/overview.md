@@ -36,20 +36,6 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    ![Trakt logo](../../assets/images/files/builders/trakt.png){ align=right }
-
-    **[Trakt](../trakt/overview)** builders grab items based on metadata and lists on Trakt.tv
-
-    [:octicons-home-16: View Builder](../trakt/overview){ .md-button .md-button--primary }
-
-    ??? quicklink "Popular Builders"
-
-        - [:simple-trakt: Trakt List](../trakt/list) - Gets  every movie/show in the Trakt List
-        - [:simple-trakt: Trakt Chart](../trakt/chart) - Gets every movie/show in the Trakt Chart
-        - [:simple-trakt: Trakt Recommendations](../trakt/recommendations) - Gets every movie/show in Trakt's Personal Recommendations for your User
-
-!!! builder
-
     ![MDBList logo](../../assets/images/files/builders/mdblist.png){ align=right }
 
     **[MDBList](../mdblist/overview)** builders grab items based on lists on MDBList.com
@@ -81,6 +67,17 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:octicons-list-ordered-16: FlickList List](../flicklist/list) - Gets every item in a FlickList list.
         - [:octicons-list-ordered-16: FlickList Watchlist](../flicklist/personal) - Gets the configured user's FlickList watchlist.
+
+!!! builder
+
+    **[WeTrakr](../wetrakr/overview)** builders grab lists and personal data from your configured WeTrakr account.
+
+    [:octicons-home-16: View Builder](../wetrakr/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: WeTrakr List](../wetrakr/list) - Gets every item in a WeTrakr list.
+        - [:octicons-list-ordered-16: WeTrakr Tracking](../wetrakr/personal) - Gets the configured user's WeTrakr tracking list.
 
 !!! builder
 
@@ -161,6 +158,7 @@ Builders use third-party services to source items to be added to the collection.
 
         - [:material-movie-search: Tracearr Popular](../tracearr/history) - Gets items based on unique users in Tracearr watch history
         - [:material-movie-search: Tracearr Watched](../tracearr/history) - Gets items based on completed Tracearr sessions
+        - [:material-movie-search: Tracearr Watched Media](../tracearr/history#tracearr-watched-media) - Gets the distinct set of watched or partially watched items
         - [:material-movie-search: Tracearr Trending](../tracearr/history) - Gets the most active items from recent Tracearr watch history
         - [:material-movie-search: Tracearr Rewatched](../tracearr/history) - Gets items repeatedly played by the same Tracearr user
         - [:material-movie-search: Tracearr Completed](../tracearr/history) - Gets the most recently completed items from Tracearr watch history

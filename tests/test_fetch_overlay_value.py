@@ -13,11 +13,14 @@ fetch_overlay_value lives in modules/plex.py. It:
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
+
 import modules.builder  # noqa: F401 -- pre-import to break plex<->builder circular import
 import modules.plex as plex_module
+import modules.tmdb as tmdb_module
 from modules.overlay import vars_by_type
 from modules.plex import Plex
-from modules.util import Failed
+from modules.util import Failed, MappingConvertError
 
 
 def _make_plex(cache=None, get_ids=None, get_ratings=None):
@@ -172,6 +175,22 @@ def test_floppy_rating_fetches_direct_decimal_value():
 
     assert plx.fetch_overlay_value(_item(), "floppy_rating") == 9.9
     floppy.get_overlay_rating.assert_called_once_with("movie", tmdb_id=550, tvdb_id=None, imdb_id="tt0137523", season=None, episode=None)
+
+
+def test_tmdb_rating_notfound_keeps_cause_at_error_level(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb_module, "logger", logger)
+    plx = _make_plex(cache=None, get_ids=MagicMock(return_value=(1450305, None, None)))
+    tmdb_client = tmdb_module.TMDb.__new__(tmdb_module.TMDb)
+    tmdb_client.config = SimpleNamespace(Convert=MagicMock())
+    tmdb_client.get_movie = MagicMock(side_effect=tmdb_module.NotFound("TMDb Error: No Movie found for TMDb ID: 1450305"))
+    plx.config.TMDb = tmdb_client
+
+    with pytest.raises(MappingConvertError, match="No TMDb ID for Test Movie"):
+        plx.fetch_overlay_value(_item(), "tmdb_rating")
+
+    logger.error.assert_called_once_with("TMDb Error: No Movie found for TMDb ID: 1450305")
+    logger.debug.assert_not_called()
 
 
 # ── Float normalization ────────────────────────────────────────────────────────

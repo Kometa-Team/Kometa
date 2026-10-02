@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+from json import JSONDecodeError
 from unittest.mock import MagicMock
 
 import pytest
 
 import modules.builder  # noqa: F401
+from modules.util import Failed
 from tests.conftest import FakeLogger, FakeResponse
 
 
@@ -59,3 +61,35 @@ class TestOMDb:
 
         assert result.ratings_valid
         adapter.cache.update_omdb.assert_called_once()
+
+    def test_non_object_response_raises_failed_instead_of_type_error(self, adapter, monkeypatch):
+        # OMDb (or an intermediary) occasionally answers with a JSON body that isn't the expected
+        # object shape (e.g. a bare list) - this must surface as a clean Failed, not an unhandled
+        # TypeError from indexing a list with a string key.
+        monkeypatch.setattr("modules.omdb.logger", FakeLogger())
+        adapter.requests.get.return_value = FakeResponse(["unexpected", "array", "response"], 200)
+
+        with pytest.raises(Failed, match="Unexpected response format"):
+            adapter.get_omdb("tt1", ignore_cache=True)
+
+    def test_response_missing_response_key_raises_failed(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.omdb.logger", FakeLogger())
+        adapter.requests.get.return_value = FakeResponse({"Title": "T"}, 200)
+
+        with pytest.raises(Failed, match="Unexpected response format"):
+            adapter.get_omdb("tt1", ignore_cache=True)
+
+    def test_invalid_json_on_success_status_raises_failed(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.omdb.logger", FakeLogger())
+        adapter.requests.get.return_value = FakeResponse(json_error=JSONDecodeError("msg", "doc", 0))
+
+        with pytest.raises(Failed, match="Invalid JSON response"):
+            adapter.get_omdb("tt1", ignore_cache=True)
+
+    def test_non_dict_ratings_list_entry_is_ignored(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.omdb.logger", FakeLogger())
+        adapter.requests.get.return_value = FakeResponse({"Title": "T", "imdbID": "tt1", "Response": "True", "Ratings": ["not-a-dict", {"Source": "Rotten Tomatoes", "Value": "80%"}]}, 200)
+
+        result = adapter.get_omdb("tt1", ignore_cache=True)
+
+        assert result.rotten_tomatoes == 80

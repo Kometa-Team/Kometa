@@ -18,9 +18,11 @@ builders = [
     "tracearr_transcoded",
     "tracearr_watch_time",
     "tracearr_in_progress",
+    "tracearr_watched_media",
 ]
 
 decisions = ["directplay", "copy", "transcode"]
+watched_states = ["watched", "partial"]
 
 
 class Tracearr:
@@ -32,7 +34,9 @@ class Tracearr:
         self.api = f"{self.url}/api/v1/public"
         self.history_api = f"{self.url}/api/v2/public"
         self.history_version = None
+        self.v2_paths = set()
         self._history_cache = {}
+        self._watched_media_page_cache = {}
         self._users_cache = None
         self._history_until = None
         logger.secret(self.url)
@@ -43,7 +47,10 @@ class Tracearr:
             raise Failed("Tracearr Error: API key must begin with 'trr_pub_'")
         health = self._request("health")
         self.server_id = self._resolve_server_id(health, params.get("server_id"))
-        self.history_version = 2 if self._request("docs", api=self.history_api, allow_404=True) is not None else 1
+        v2_docs = self._request("docs", api=self.history_api, allow_404=True)
+        self.history_version = 2 if v2_docs is not None else 1
+        if isinstance(v2_docs, dict) and isinstance(v2_docs.get("paths"), dict):
+            self.v2_paths = set(v2_docs["paths"])
         if self.history_version == 1:
             logger.warning("Tracearr Warning: Public API v2 is unavailable; using v1 without Plex library-aware matching or v2 filters")
 
@@ -78,6 +85,8 @@ class Tracearr:
 
     def get_rating_keys(self, data, is_playlist=False, libraries=None):
         list_type = data["list_type"]
+        if list_type == "watched_media":
+            return self._get_watched_media_rating_keys(data, is_playlist=is_playlist, libraries=libraries)
         if list_type == "in_progress" and self.history_version != 2:
             raise Failed("Tracearr Error: tracearr_in_progress requires Tracearr Public API v2")
         pretty = "History" if list_type == "history" else list_type.capitalize()
@@ -98,6 +107,8 @@ class Tracearr:
         }
         if user_id and self.history_version == 2:
             params["user_id"] = user_id
+        if data.get("watched") is not None and self.history_version == 2 and list_type != "in_progress":
+            params["watched"] = str(data["watched"]).lower()
         if is_playlist and list_type == "binged":
             params["media_type"] = "episode"
         elif not is_playlist and self.library.is_movie:
@@ -177,6 +188,126 @@ class Tracearr:
                 logger.error(Failed(f"Tracearr Error: {title}{display_year} not found in Plex"))
 
         return rating_keys
+
+    def _get_watched_media_rating_keys(self, data, is_playlist=False, libraries=None):
+        endpoint = "/api/v2/public/watched-media"
+        if self.history_version != 2 or endpoint not in self.v2_paths:
+            raise Failed("Tracearr Error: tracearr_watched_media requires a Tracearr version that provides /api/v2/public/watched-media")
+
+        search_libraries = libraries if libraries else [self.library]
+        if data.get("builder_level") == "episode":
+            media_types = ["episode"] if any(search_library.is_show for search_library in search_libraries) else []
+        else:
+            media_types = []
+            if any(search_library.is_movie for search_library in search_libraries):
+                media_types.append("movie")
+            if any(search_library.is_show for search_library in search_libraries):
+                media_types.append("show")
+        if not media_types:
+            raise Failed("Tracearr Error: tracearr_watched_media does not support the selected library type and builder level")
+
+        list_size = int(data["list_size"])
+        list_days = data.get("list_days")
+        cutoff = (datetime.now(timezone.utc) - timedelta(days=int(list_days))).date() if list_days is not None else None
+        user_id = self._resolve_user(data.get("user"))
+        logger.info(f"Processing Tracearr Watched Media: {list_size} {'Items' if is_playlist else 'Movies' if self.library.is_movie else 'Episodes' if data.get('builder_level') == 'episode' else 'Shows'}")
+
+        candidates = []
+        skipped = 0
+        for media_type in media_types:
+            params = {
+                "media_type": media_type,
+                "server_id": self.server_id,
+                "min_state": data["min_state"],
+                "pageSize": 1000,
+            }
+            if user_id:
+                params["user_id"] = user_id
+            cursor = None
+            cursors = set()
+            usable = 0
+            exhausted_by_cutoff = False
+            while usable < list_size:
+                request_params = {**params, "cursor": cursor} if cursor else params
+                response = self._fetch_watched_media_page(request_params)
+                if response is None:
+                    raise Failed("Tracearr Error: tracearr_watched_media requires a Tracearr version that provides /api/v2/public/watched-media")
+                page_items = response.get("data")
+                meta = response.get("meta")
+                if not isinstance(page_items, list) or not isinstance(meta, dict):
+                    raise Failed("Tracearr Error: /watched-media response must contain data and pagination metadata")
+                for item in page_items:
+                    watched_day = self._watched_day(item.get("last_watched_day"))
+                    if watched_day is None:
+                        skipped += 1
+                        continue
+                    if cutoff is not None and watched_day < cutoff:
+                        # Tracearr guarantees newest activity first across pages, so later pages cannot contain in-window data.
+                        exhausted_by_cutoff = True
+                        continue
+                    item_id = self._watched_media_item_id(item, media_type)
+                    if item_id is None:
+                        skipped += 1
+                        continue
+                    candidates.append((watched_day, item_id))
+                    usable += 1
+                    if usable >= list_size:
+                        break
+                if usable >= list_size or exhausted_by_cutoff:
+                    break
+                cursor = meta.get("nextCursor")
+                if cursor is None:
+                    break
+                if not isinstance(cursor, str) or not cursor or cursor in cursors:
+                    raise Failed("Tracearr Error: /watched-media response contains invalid pagination metadata")
+                cursors.add(cursor)
+
+        candidates.sort(key=lambda candidate: candidate[0], reverse=True)
+        rating_keys = []
+        seen = set()
+        for _, item_id in candidates:
+            if item_id not in seen:
+                rating_keys.append(item_id)
+                seen.add(item_id)
+            if len(rating_keys) >= list_size:
+                break
+        if skipped:
+            logger.debug(f"Tracearr returned {skipped} watched media record{'s' if skipped != 1 else ''} without enough identity data to match; Kometa skipped {'them' if skipped != 1 else 'it'}")
+        return rating_keys
+
+    def _fetch_watched_media_page(self, params):
+        cache_key = tuple(sorted(params.items()))
+        if cache_key not in self._watched_media_page_cache:
+            self._watched_media_page_cache[cache_key] = self._request("watched-media", params=params, api=self.history_api, allow_404=True)
+        return self._watched_media_page_cache[cache_key]
+
+    @staticmethod
+    def _watched_day(value):
+        try:
+            return datetime.strptime(str(value), "%Y-%m-%d").date()
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _watched_media_item_id(item, media_type):
+        if media_type == "movie":
+            if item.get("tmdb_id"):
+                return item["tmdb_id"], "tmdb"
+            if item.get("imdb_id"):
+                return item["imdb_id"], "imdb"
+        elif media_type == "show":
+            if item.get("tvdb_id"):
+                return item["tvdb_id"], "tvdb"
+            if item.get("tmdb_id"):
+                return item["tmdb_id"], "tmdb_show"
+            if item.get("imdb_id"):
+                return item["imdb_id"], "imdb"
+        elif media_type == "episode":
+            if item.get("show_tvdb_id") and item.get("season_number") is not None and item.get("episode_number") is not None:
+                return f"{item['show_tvdb_id']}_{item['season_number']}_{item['episode_number']}", "tvdb_episode"
+            if item.get("imdb_id"):
+                return item["imdb_id"], "imdb"
+        return None
 
     @staticmethod
     def _history_item_id(item):

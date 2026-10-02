@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, call, patch
 
 import httpx
 import pytest
+from tenacity import wait_none
 
 from modules.serializd import Serializd
 from modules.util import Failed
@@ -95,6 +96,33 @@ def test_returns_show_community_rating(client_class):
     assert serializd.get_show_rating(1429) == 9.07
     response.raise_for_status.assert_called_once()
     client_class.return_value.session.get.assert_called_once_with("https://serializd.onrender.com/mobile/page/show_v2_part_1/1429")
+
+
+@patch("modules.serializd.SerializdClient")
+def test_retries_show_rating_after_rate_limit(client_class, monkeypatch):
+    request = httpx.Request("GET", "https://serializd.onrender.com/mobile/page/show_v2_part_1/1429")
+    limited = httpx.Response(429, headers={"Retry-After": "30"}, request=request)
+    success = MagicMock()
+    success.json.return_value = {"averageRating": 9.07}
+    client_class.return_value.session.get.side_effect = [limited, success]
+    monkeypatch.setattr(Serializd._get_json.retry, "wait", wait_none())
+    serializd = Serializd("user@example.com", "secret")
+
+    assert serializd.get_show_rating(1429) == 9.07
+    assert client_class.return_value.session.get.call_count == 2
+
+
+@patch("modules.serializd.SerializdClient")
+def test_rate_limit_exhaustion_becomes_kometa_error(client_class, monkeypatch):
+    request = httpx.Request("GET", "https://serializd.onrender.com/mobile/page/show_v2_part_1/1429")
+    limited = httpx.Response(429, headers={"Retry-After": "invalid"}, request=request)
+    client_class.return_value.session.get.return_value = limited
+    monkeypatch.setattr(Serializd._get_json.retry, "wait", wait_none())
+    serializd = Serializd("user@example.com", "secret")
+
+    with pytest.raises(Failed, match="Failed to fetch TMDb Show ID 1429"):
+        serializd.get_show_rating(1429)
+    assert client_class.return_value.session.get.call_count == 6
 
 
 @patch("modules.serializd.SerializdClient")

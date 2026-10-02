@@ -9,26 +9,113 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Upgrade SIMKL authentication to AUTH V2 with access-token validation, refresh-on-failure, and an optional `force_refresh` setting.
+- Default `settings.threading.workers` to 4 (was effectively single-threaded) and `settings.threading.prefetch_collection_children` to `true`, deferring a collection's `sync_collection` "what to remove" lookup and PMS's comma-separated `/library/metadata/{ids}` batch-read to the shared thread pool instead of blocking the main collection loop; the cache is now RLock-guarded (`_LockedConnection`) so concurrent worker threads can share one SQLite connection safely.
+- Consolidate end-of-run log-summary routing and repeated high-volume item warnings, including metadata entries skipped because their titles were not found.
+
+### Added
+
+- Add a `settings.threading` config block (`workers`, `tmdb_pages`, `parallel_sources`, `prefetch_collection_children`) backed by a shared `ThreadPoolExecutor`, used to defer non-Plex `gather_ids` work and Plex item-reload batching off the main collection loop.
+- Add a `--delete-collections-labels` CLI flag (no short form - would collide with `-d`/`--divider`) that deletes all collections, same as `-dc`, and for any deleted collection whose title matches an existing Plex label of the same name (the Smart Label default), batch-removes that one label from just the items that have it - instead of `-dl`'s full library-wide, one-item-at-a-time label wipe.
+- Add WeTrakr as a tracker connector (`wetrakr` config block, OAuth2 device-flow authorization via the Kometa Utilities website) with `wetrakr_list`, `wetrakr_list_details`, `wetrakr_user_lists`, `wetrakr_tracking`, `wetrakr_favorites`, and `wetrakr_ratings` builders, plus `sync_to_wetrakr_list`/`sync_missing_to_wetrakr_list` to sync a collection back to a WeTrakr list and `wetrakr_user` as a mass rating source; a list's description used as a collection summary (`wetrakr_description`, `wetrakr_list`/`wetrakr_list_details`) now carries a credit line linking back to WeTrakr, per their attribution terms. `wetrakr_user_lists` also accepts a bare username or profile URL now, resolved to a numeric user id via WeTrakr's search API.
+
+### Fixed
+
+- Honor per-collection `limit_<<key>>` template variables across Defaults files, including Letterboxd charts, Based On collections, and Streaming collections.
+- Fix the `resolution` Defaults overlay file applying the `-Dovetail` variant to every DV HDR10+ item at 4K and 1080P, even without an edition, by matching the Dovetail weights to their plain counterparts. #3654
+- Normalize Letterboxd ratings returned by MDBList batch lookups to their native 0–5 scale, preventing doubled ratings in overlays and metadata updates. #3533
+- Keep localized collections from scheduled-out collection files classified as configured during `delete_collections` operations.
+- Replace a bare truthy check on a collection builder's Plex object with an explicit `is not None` check, avoiding a silent full Plex `items()` fetch through `Collection`/`Playlist.__len__` on any falsy-looking-but-real collection.
+- Guard against `None` `childCount` on blank/separator collections when computing the collection's starting item count.
+- Only fetch a parent item's `titleSort` when building a display title if sorted output was actually requested, instead of unconditionally.
+- Report Jikan/MyAnimeList search and lookup errors (including Jikan returning an error body for an unreachable MyAnimeList backend) as service errors with recovery guidance instead of a traceback, and fix an `mal_search` error that misidentified itself as an AniList error.
+- Read FlickList ratings once per run instead of once per library item, so `mass_user_rating_update: flicklist_user` and `flicklist_ratings` no longer exhaust FlickList's 1,000 requests/hour limit on larger libraries.
+- Validate that OMDb, IMDb service, and MDBList rating/search responses are the expected object shape before indexing into them, reporting a clean error instead of an unhandled traceback when one of those APIs answers with an unexpected body (e.g. an error payload shaped as a list); remove dead rating/image lookup code left over from the Trakt removal that referenced the no-longer-existing `config.Trakt`.
+- Stop the retired-Trakt config cleanup from discarding unrelated attributes that merely mention "trakt" in a string value (e.g. an `mdblist_list` URL whose slug references Trakt-sourced data, or `summary` prose) or an entire collection whose name contains "trakt", by matching only the actual Trakt builder/attribute key names instead of a substring check against every key and string value.
+- Report a `mass_*_rating_update`/`mass_*_episode_rating_update` value of the retired `trakt`, `trakt_user`, or `mdb_trakt` options with the Trakt-removal message instead of a confusing "must be a number between 0 and 10" error from the generic numeric-rating parser.
+
+## [v2.5.1] - 2026-09-24
+
+### Added
+
+- Trace Plex queries before they start and report completion or failure with elapsed time, making pending requests visible when diagnosing apparent hangs.
+
+### Fixed
+
+- Support MDBList official movie and show list URLs, including the Most Watched, Popular, Trending, and Anticipated lists.
+- Use Prime Video watch provider ID `9` for the streaming default when no region is specified, honoring the default US region.
+- Report artwork upload timeouts as Plex server errors without a traceback, while preserving retries and continuing with remaining artwork.
+- Handle missing TMDb season details during show metadata loading with a descriptive error instead of a traceback and a library-aborting critical error.
+- Report MDBList daily quota and rate limits with recovery guidance instead of nested errors and playlist tracebacks.
+- Report invalid webhook URLs and notification request failures without tracebacks, continuing with other webhooks instead of interrupting collection processing.
+- Report empty or unreadable IMDb chart pages as service errors with chart context and recovery guidance instead of a traceback.
+- Report TMDb IDs that no longer exist as a concise error without a traceback, with a clearer message.
+- Log a concise error instead of a traceback when a collection or playlist cannot be loaded from Plex after being built.
+- Stop the post-Trakt-removal config cleanup from discarding unrelated `null`/empty values throughout config, default, and overlay files, which caused conditionals like the `languages` overlay default's `back_radius` to fail validation with `each condition must have a result value`.
+
+### Changed
+
+- Log "No Item Edits" when episode rating operations queue no changes, matching the existing item operations message.
+
+### Fixed
+
+- Report unrecognized downloaded overlay poster images with the file path and recovery guidance instead of a traceback, and continue processing other items.
+
+## [v2.5.0] - 2026-09-21
+
+### Changed
+
+- Promote `develop` as the publicly documented beta branch; it now automatically mirrors `nightly` on every push instead of requiring a manual sync. `nightly` remains the active development branch but is no longer referenced in user-facing documentation.
+- Trakt functionality has been removed from Kometa following recent changes to their support of third-party apps and updates to their API and Developer guidances. Please see the FAQ page or Announcements channel in the Discord Server for further information
+- Send explicitly configured `watched` filters to Tracearr's Public API v2 history endpoint, reducing history records transferred before Kometa applies its remaining filters.
 - Fetch MDBList data in cache-aware batches of up to 100 items, substantially reducing API quota usage for library operations, direct rating overlays, and overlay value filters.
 - Consolidate item-specific IDs, titles, GUIDs, and URLs in end-of-run warning and error tables, derive missing-rating groups from active overlay sources, and move missing overlay template values into the Overlay Summary.
 
 ### Added
 
+- Add the `mdblist_streaming` builder for MDBList's JustWatch streaming charts, with country, period, provider, and genre options.
+- Add the `tracearr_watched_media` builder for retrieving Tracearr's distinct watched or partially watched movie, show, and episode sets using provider-ID matching and the compact Public API v2 watched-media endpoint.
 - Add the `text` builder for defining ordered IDs inline as a YAML scalar, literal multiline string, or list using the same identifier syntax as `text_file`.
 - Add `url_theme` and `file_theme` metadata attributes for uploading theme music to individual movies and shows.
 - Support the `folder_location` Plex search option in music-library track builders.
 - Add a FlickList connector (`flicklist` config attribute) with read-only `flicklist_list`, `flicklist_list_details`, `flicklist_user_lists`, `flicklist_watchlist`, `flicklist_favorites`, `flicklist_watched`, `flicklist_ratings`, `flicklist_up_next`, and `flicklist_tracked` builders, plus a `flicklist_description` summary source.
+- Add `sync_to_flicklist_list` and `sync_missing_to_flicklist_list` to sync a collection's contents to a FlickList list, mirroring `sync_to_trakt_list`/`sync_missing_to_trakt_list`.
+- Add `flicklist_user` as a mass rating source, using the FlickList user's personal ratings.
+- Support MDBList episode lists in episode-level collections.
 
 ### Fixed
 
+- Show trace messages in terminal and Docker console output when `--trace` is enabled without `--debug`.
+- Retry incomplete or malformed TMDb language configuration during startup instead of reporting a valid language such as `en` as invalid, and log rejected responses at trace level.
+- Fix playlists never being reordered after creation, where every move failed with a `404` on `/playlists/<id>/items/None/move` because updating the metadata of the items cleared the Plex playlist item IDs needed to reorder them. #2265
+- Refresh a playlist after successful moves so `sync_to_users` copies use its current post-move order instead of the cached pre-sort order.
+- Report "Trakt Connection Successful (Public Mode)" instead of a plain "Successful" when a configured Trakt authorization fails to refresh, so the run log doesn't contradict the authentication error logged just above it.
+- Treat empty Plex collections and playlists as existing objects so stale smart filters can be repaired and repeated runs do not create duplicate collections; also clarify that empty or stale smart collections can cause duplicate-title warnings. #3572
+- Stop crashing with `ValueError: substring not found` when repairing a stale smart collection whose stored filter is empty or missing a query string.
+- Skip automatically discovered stale TMDb IDs during franchise discovery and TMDb-based Plex filtering without generating failure notifications. #3561
+- Reject malformed TVDb external IDs returned by TMDb so IMDb Defaults skip unmappable shows instead of later reporting a TVDb URL error. #3548
+- Honor disabled debug mode in terminal and Docker console output while retaining diagnostic debug records in log files. #3568
+- Continue metadata and overlay processing when a Plex request times out while removing an existing `Overlay` label during image updates; log the failed image update instead of aborting the library run.
 - Skip nonnumeric, non-finite, negative, and above-range provider ratings instead of sending them to Plex or rendering them in rating overlays, and leave invalid provider and overlay values uncached so they remain visible on later runs.
 - Fix CLI arguments (e.g. `--config`) being silently reset to their defaults on Python 3.14, where the `ProcessPoolExecutor` running the actual work now defaults to the `forkserver` multiprocessing start method on Linux instead of `fork`.
-- Fix the `resolution` Defaults overlay file selecting the `-Dovetail` (resolution-paired) edition overlay instead of the plain one when `use_resolution: false` disables resolution overlays entirely, by no longer building the dovetail edition overlays in that case, and fix a related list-mutation-during-iteration bug in overlay suppress/group resolution that could skip a suppress rule for an overlay later in an item's match list.
+- Fix the `resolution` Defaults overlay file selecting unpaired `-Dovetail` variants when a resolution or edition counterpart is disabled or unmatched, while continuing to use paired Dovetail overlays when both match; also resolve overlay suppression without list-mutation skips or allowing lower-weight group losers to suppress other overlays.
+- Prevent Plex poster operations and later same-run processing from requesting invalid metadata by reducing show reload payloads and refreshing items plus rating-key mappings after `split_duplicates` replaces metadata records. #3519
+- Silently ignore invalid TMDb aggregate cast/crew role entries and isolate remaining TMDb object parsing failures to the affected item so mass rating operations and subsequent overlays continue; the invalid entries come from TMDb and require no user action. #3518
+- Honor HTTP 429 `Retry-After` response headers across shared HTTP integrations, including Trakt rating updates, instead of immediately continuing with subsequent requests. #3525
+- Prevent `delete_collections` from treating configured collections with localized or custom-resolved titles as unconfigured when operations run before collections.
 - Fixed `audio_codec` track builder
 - Include collections removed by the `delete_collections` library operation, the `--delete-collections` CLI option, dynamic collection sync, and `delete_collections_named` in the run-end notification total.
 - Fix `audio_language`/`subtitle_language` `plex_search` filters matching zero items whenever a library has multiple Plex-reported locale variants for the requested language (e.g. `de` + `de-DE`); the variants were being `AND` together into an impossible filter instead of `OR`. Regression from #3440.
+- Accept Plex-reported language names and fall back from three-letter language codes in `audio_language`/`subtitle_language` searches, show available languages for invalid values, and display expanded language variants once in filter summaries. #3570
 - Fix `episode_*` ratings from producing a critical error when Trakt did not have an episode in its database
 - Fix DC-based lists in 'universe' Defaults file
+- Fix ghost progress logging (e.g. `Parsing ID x/y`) writing carriage-return-only output regardless of whether stdout is a terminal, which collapses an entire run into a single unbounded log line for containerized/piped deployments; ghost output is now skipped when stdout is not a TTY. Fixes #3542.
+- Fix `plex_collectionless` never recognizing an item as belonging to a smart collection (used by most Defaults collection files, e.g. `genre`, `studio`, `audio_language`), since Plex does not tag items with smart collection membership; membership is now resolved from each retained collection's actual items instead of the item's own `collections` tag list. Fixes #3537.
+- Fix `prefetch_mdblist` raising when an orphaned Season/Episode's parent Show has been deleted from Plex (`item.show()` returning `None`); such items are now skipped instead of crashing the MDBList prefetch pass.
+
+## [v2.4.9] - 2026-09-21
+
+- No changes
 
 ## [v2.4.8] - 2026-08-15
 
@@ -362,7 +449,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...HEAD
+[v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
+[v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
+[v2.4.9]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...v2.4.9
 [v2.4.8]: https://github.com/Kometa-Team/Kometa/compare/v2.4.7...v2.4.8
 [v2.4.7]: https://github.com/Kometa-Team/Kometa/compare/v2.4.6...v2.4.7
 [v2.4.6]: https://github.com/Kometa-Team/Kometa/compare/v2.4.5...v2.4.6

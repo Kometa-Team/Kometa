@@ -6,6 +6,7 @@ from tenacity import RetryError, retry, retry_if_exception, stop_after_attempt, 
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
+from tmdbapis.objs.reload import Configuration
 
 from modules import util
 from modules.util import Failed, ServiceError
@@ -25,6 +26,60 @@ class NotFound(Failed):
 
 class Unavailable(ServiceError):
     """Raised when transient TMDb failures exhaust their retry budget."""
+
+
+class InvalidConfiguration(TMDbException):
+    """TMDb returned incomplete or malformed language configuration."""
+
+
+class KometaConfiguration(Configuration):
+    """Validate configuration before tmdbapis normalizes missing fields away."""
+
+    @retry(
+        retry=retry_if_exception(lambda e: isinstance(e, InvalidConfiguration)),
+        stop=stop_after_attempt(3),
+        wait=wait_fixed(5),
+        before_sleep=lambda state: logger.warning(f"TMDb returned incomplete or malformed language configuration (attempt {state.attempt_number}/3); retrying in 5 seconds."),
+        reraise=True,
+    )
+    def _full_load(self, partial=None):
+        data = super()._full_load(partial=partial)
+        languages = data.get("languages") if isinstance(data, dict) else None
+        translations = data.get("primary_translations") if isinstance(data, dict) else None
+        valid_languages = (
+            isinstance(languages, list)
+            and bool(languages)
+            and all(isinstance(entry, dict) and isinstance(entry.get("iso_639_1"), str) and re.fullmatch(r"[a-z]{2}", entry["iso_639_1"]) for entry in languages)
+            and any(entry["iso_639_1"] == "en" for entry in languages)
+        )
+        valid_translations = isinstance(translations, list) and bool(translations) and all(isinstance(entry, str) and re.fullmatch(r"[a-z]{2}-[A-Z]{2}", entry) for entry in translations)
+        if not valid_languages or not valid_translations:
+            logger.trace(f"Rejected TMDb language configuration response: {data!r}")
+            field = "languages" if not valid_languages else "primary_translations"
+            raise InvalidConfiguration(f"TMDb returned incomplete or malformed {field} configuration after repeated requests. Try running Kometa again later; this is not a language setting error.")
+        return data
+
+
+class KometaTMDbAPIs(TMDbAPIs):
+    """Defensively normalize response shapes before tmdbapis parses them.
+
+    This overrides a private tmdbapis 1.2.30 method and must be reviewed when
+    the pinned dependency version changes.
+    """
+
+    def configuration(self, reload=False):
+        if reload or self._config is None:
+            self._config = KometaConfiguration(self)
+        return self._config
+
+    def _parse(self, data=None, attrs=None, value_type="str", default_is_none=False, is_list=False, is_dict=False, extend=False, key=None):
+        aggregate_key = "roles" if value_type == "agg_tv_cast" else "jobs" if value_type == "agg_tv_crew" else None
+        if aggregate_key and isinstance(data, dict):
+            entries = data.get(aggregate_key)
+            valid_entries = [entry for entry in entries if isinstance(entry, dict)] if isinstance(entries, list) else []
+            if not isinstance(entries, list) or len(valid_entries) != len(entries):
+                data = {**data, aggregate_key: valid_entries}
+        return super()._parse(data=data, attrs=attrs, value_type=value_type, default_is_none=default_is_none, is_list=is_list, is_dict=is_dict, extend=extend, key=key)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 int_builders = ["tmdb_airing_today", "tmdb_popular", "tmdb_top_rated", "tmdb_now_playing", "tmdb_on_the_air", "tmdb_trending_daily", "tmdb_trending_weekly", "tmdb_upcoming"]
@@ -237,6 +292,11 @@ class TMDbMovie(TMDBObj):
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Movie with TMDb ID {self.tmdb_id}: {e}") from e
 
     @TMDB_RETRY
     def load_movie(self):
@@ -277,10 +337,20 @@ class TMDbShow(TMDBObj):
             loop = data.origin_countries if not isinstance(data, dict) else data["countries"].split("|") if data["countries"] else []  # noqa
             self.countries = [TMDbCountry(c) for c in loop]
             loop = data.seasons if not isinstance(data, dict) else data["seasons"].split("%|%") if data["seasons"] else []  # noqa
-            self.seasons = [TMDbSeason(s) for s in loop]
+            self.seasons = []
+            for season in loop:
+                try:
+                    self.seasons.append(TMDbSeason(season))
+                except TMDbNotFound as e:
+                    raise Failed(f"TMDb Error: Season {season.season_number} not found (404) for {self.title} (TMDb ID: {self.tmdb_id}); unable to load show metadata") from e
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Show with TMDb ID {self.tmdb_id}: {e}") from e
 
     @TMDB_RETRY
     def load_show(self):
@@ -324,6 +394,11 @@ class TMDbEpisode:
         except TMDbException as e:
             _log_tmdb_exception(self.tmdb_id, e)
             raise
+        except Failed:
+            raise
+        except Exception as e:
+            logger.stacktrace()
+            raise Failed(f"TMDb Error: Failed to parse Episode with TMDb ID {self.tmdb_id} Season {self.season_number} Episode {self.episode_number}: {e}") from e
 
     @TMDB_RETRY
     def load_episode(self):
@@ -349,7 +424,7 @@ class TMDb:
         self._complete_episode_id_maps = set()
         logger.secret(self.apikey)
         try:
-            self.TMDb = TMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
+            self.TMDb = KometaTMDbAPIs(self.apikey, language=self.language, session=self.requests.session)
         except TMDbException as e:
             raise Failed(f"TMDb Error: {e}")
         self.iso_3166_1 = {iso: i.name for iso, i in self.TMDb._iso_3166_1.items()}  # noqa
@@ -531,7 +606,7 @@ class TMDb:
                 logger.error(e)
         if len(tmdb_values) == 0:
             if all_not_found:
-                raise NotFound(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
+                raise NotFound(f"TMDb Error: No {type_map[tmdb_method]} found on TMDb for ID(s) {tmdb_list}. Verify the ID(s) still exist and update your config.")
             raise Failed(f"TMDb Error: No valid TMDb IDs in {tmdb_list}")
         return tmdb_values
 
@@ -658,7 +733,7 @@ class TMDb:
                 logger.info(f"Processing {pretty}: ({tmdb_id}) {tmdb_name} ({len(ids)} Item{'' if len(ids) == 1 else 's'})")
         return ids
 
-    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True):
+    def get_item(self, item, tmdb_id, tvdb_id, imdb_id, is_movie=True, ignore_not_found=False):
         tmdb_item = None
         if tvdb_id and not tmdb_id:
             tmdb_id = self.config.Convert.tvdb_to_tmdb(tvdb_id)
@@ -669,6 +744,11 @@ class TMDb:
         if tmdb_id:
             try:
                 tmdb_item = self.get_movie(tmdb_id) if is_movie else self.get_show(tmdb_id)
+            except NotFound as e:
+                if ignore_not_found:
+                    logger.debug(str(e))
+                else:
+                    logger.error(str(e))
             except Failed as e:
                 logger.error(str(e))
         elif tvdb_id and not is_movie:

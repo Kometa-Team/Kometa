@@ -15,6 +15,11 @@ class FakeLogger:
         return lambda *args, **kwargs: None
 
 
+class EmptyCollection(SimpleNamespace):
+    def __len__(self):
+        return 0
+
+
 def _load_plex(monkeypatch):
     monkeypatch.delitem(sys.modules, "modules.plex", raising=False)
     monkeypatch.delitem(sys.modules, "modules.builder", raising=False)
@@ -132,12 +137,12 @@ def test_get_collection_ignores_none_entries_in_full_collection_inventory(monkey
     assert plex.get_collection("Hidden Collection", force_search=True) is hidden_collection
 
 
-def test_create_blank_collection_skips_create_when_collection_already_exists(monkeypatch):
+def test_create_blank_collection_skips_create_when_empty_collection_already_exists(monkeypatch):
     plex_module = _load_plex(monkeypatch)
     logger = FakeLogger()
     monkeypatch.setattr(plex_module, "logger", logger)
     plex = plex_module.Plex.__new__(plex_module.Plex)
-    existing_collection = SimpleNamespace(title="Existing Collection")
+    existing_collection = EmptyCollection(title="Existing Collection")
     query_calls = []
 
     plex.get_collection = lambda *args, **kwargs: existing_collection
@@ -152,12 +157,12 @@ def test_create_blank_collection_skips_create_when_collection_already_exists(mon
     assert any("already exists; skipping creation" in msg for msg in logger.warning_messages)
 
 
-def test_create_smart_collection_skips_create_when_collection_already_exists(monkeypatch):
+def test_create_smart_collection_skips_create_when_empty_collection_already_exists(monkeypatch):
     plex_module = _load_plex(monkeypatch)
     logger = FakeLogger()
     monkeypatch.setattr(plex_module, "logger", logger)
     plex = plex_module.Plex.__new__(plex_module.Plex)
-    existing_collection = SimpleNamespace(title="Existing Collection")
+    existing_collection = EmptyCollection(title="Existing Collection")
     query_calls = []
     test_calls = []
 
@@ -171,3 +176,33 @@ def test_create_smart_collection_skips_create_when_collection_already_exists(mon
     assert query_calls == []
     assert test_calls == []
     assert any("already exists; skipping creation" in msg for msg in logger.warning_messages)
+
+
+def test_smart_filter_returns_none_for_stale_collection_content(monkeypatch):
+    plex_module = _load_plex(monkeypatch)
+    monkeypatch.setattr(plex_module, "logger", FakeLogger())
+    plex = plex_module.Plex.__new__(plex_module.Plex)
+    stale_collection = SimpleNamespace(content="")
+
+    plex.get_collection = lambda *args, **kwargs: stale_collection
+
+    assert plex.smart_filter(stale_collection) is None
+
+
+def test_get_collection_items_returns_no_items_for_stale_smart_collection(monkeypatch):
+    plex_module = _load_plex(monkeypatch)
+    monkeypatch.setattr(plex_module, "logger", FakeLogger())
+    collection_type = type("Collection", (), {})
+    monkeypatch.setattr(plex_module, "Collection", collection_type)
+    monkeypatch.setattr(plex_module, "Playlist", type("Playlist", (), {}))
+    plex = plex_module.Plex.__new__(plex_module.Plex)
+    stale_collection = collection_type()
+    stale_collection.smart = True
+    stale_collection.content = ""
+    fetch_calls = []
+
+    plex.get_collection = lambda *args, **kwargs: stale_collection
+    plex.fetchItems = lambda uri_args: fetch_calls.append(uri_args) or ["unexpected"]
+
+    assert plex.get_collection_items(stale_collection, smart_label_collection=False) == []
+    assert fetch_calls == []

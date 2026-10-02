@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+from email.utils import format_datetime
+from types import SimpleNamespace
 from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
+from requests.exceptions import HTTPError
+from tenacity import wait_none
 
 import modules.builder  # noqa: F401
 
@@ -192,23 +197,94 @@ class TestRetryPolicy:
     def test_get_uses_exponential_backoff(self):
         from tenacity import wait_exponential
 
+        from modules import util
         from modules.request import Requests
 
-        assert isinstance(Requests.get.retry.wait, wait_exponential)
+        assert isinstance(Requests.get.retry.wait, util.wait_for_retry_after_header)
+        assert isinstance(Requests.get.retry.wait.fallback, wait_exponential)
 
     def test_post_uses_exponential_backoff(self):
         from tenacity import wait_exponential
 
+        from modules import util
         from modules.request import Requests
 
-        assert isinstance(Requests.post.retry.wait, wait_exponential)
+        assert isinstance(Requests.post.retry.wait, util.wait_for_retry_after_header)
+        assert isinstance(Requests.post.retry.wait.fallback, wait_exponential)
 
     def test_head_uses_exponential_backoff(self):
         from tenacity import wait_exponential
 
+        from modules import util
         from modules.request import Requests
 
-        assert isinstance(Requests.head.retry.wait, wait_exponential)
+        assert isinstance(Requests.head.retry.wait, util.wait_for_retry_after_header)
+        assert isinstance(Requests.head.retry.wait.fallback, wait_exponential)
+
+    @staticmethod
+    def rate_limited_response(retry_after="30"):
+        response = MagicMock(status_code=429, reason="Too Many Requests", headers={"Retry-After": retry_after}, content=b"")
+        response.raise_for_status.side_effect = HTTPError(response=response)
+        return response
+
+    @pytest.mark.parametrize("method", ["get", "head", "post"])
+    def test_retries_rate_limits_for_shared_methods(self, monkeypatch, method):
+        from modules.request import Requests
+
+        limited = self.rate_limited_response()
+        success = SimpleNamespace(status_code=200)
+        req = make_requests()
+        req.session = MagicMock()
+        getattr(req.session, method).side_effect = [limited, success]
+        monkeypatch.setattr(getattr(Requests, method).retry, "wait", wait_none())
+
+        assert getattr(req, method)("https://example.com/rate-limited") is success
+        assert getattr(req.session, method).call_count == 2
+
+    def test_rate_limit_exhaustion_becomes_failed(self, monkeypatch):
+        from modules.request import Requests
+        from modules.util import Failed
+
+        limited = self.rate_limited_response()
+        req = make_requests()
+        req.session = MagicMock()
+        req.session.get.return_value = limited
+        monkeypatch.setattr(Requests.get.retry, "wait", wait_none())
+
+        with pytest.raises(Failed, match="Too many requests.*rate-limited"):
+            req.get("https://example.com/rate-limited")
+        assert req.session.get.call_count == 6
+
+    def test_non_rate_limit_response_is_not_retried(self):
+        unavailable = SimpleNamespace(status_code=503)
+        req = make_requests()
+        req.session = MagicMock()
+        req.session.get.return_value = unavailable
+
+        assert req.get("https://example.com/unavailable") is unavailable
+        req.session.get.assert_called_once()
+
+    @pytest.mark.parametrize(
+        ("retry_after", "expected"),
+        [
+            ("30", 30),
+            ("-10", 0),
+            ("invalid", None),
+            (None, None),
+        ],
+    )
+    def test_retry_after_seconds(self, retry_after, expected):
+        from modules.util import wait_for_retry_after_header
+
+        assert wait_for_retry_after_header.parse(retry_after) == expected
+
+    def test_retry_after_http_date(self):
+        from modules.util import wait_for_retry_after_header
+
+        now = datetime(2026, 8, 24, 22, 0, tzinfo=timezone.utc)
+        retry_after = format_datetime(now + timedelta(seconds=45), usegmt=True)
+
+        assert wait_for_retry_after_header.parse(retry_after, now=now) == 45
 
 
 class TestGetStream:

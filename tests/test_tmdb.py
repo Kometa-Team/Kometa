@@ -9,6 +9,98 @@ from modules import tmdb
 from modules.util import Failed, ServiceError
 
 
+@pytest.fixture
+def startup_configuration(monkeypatch):
+    from tmdbapis.api3 import API3
+
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(tmdb, "logger", FakeLogger())
+    monkeypatch.setattr(tmdb.logger, "trace", MagicMock())
+    monkeypatch.setattr(tmdb.KometaConfiguration._full_load.retry, "wait", wait_none())
+    data = {
+        "languages": [{"iso_639_1": "en", "english_name": "English", "name": "English"}],
+        "primary_translations": ["en-US"],
+        "countries": [{"iso_3166_1": "US", "english_name": "United States"}],
+        "images": {"secure_base_url": "https://image.tmdb.org/t/p/"},
+    }
+    request = MagicMock(return_value=data)
+    monkeypatch.setattr(API3, "configuration_get_api_configuration", request)
+    return data, request
+
+
+@pytest.mark.parametrize("language", ["en", "en-US"])
+def test_startup_accepts_valid_language_configuration(startup_configuration, language):
+    _, request = startup_configuration
+    api = tmdb.KometaTMDbAPIs("test-key", language=language)
+    assert api.language == language
+    assert request.call_count == 1
+    assert api.configuration() is api._config
+    assert request.call_count == 1
+    tmdb.logger.trace.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("languages", None),
+        ("languages", []),
+        ("languages", {}),
+        ("languages", [None]),
+        ("languages", [{}]),
+        ("languages", [{"iso_639_1": 123}]),
+        ("languages", [{"iso_639_1": "fr"}]),
+        ("primary_translations", None),
+        ("primary_translations", []),
+        ("primary_translations", [None]),
+        ("primary_translations", ["invalid"]),
+    ],
+)
+def test_startup_refetches_malformed_configuration(startup_configuration, field, value):
+    data, request = startup_configuration
+    rejected = {**data, field: value}
+    request.side_effect = [rejected, data]
+    api = tmdb.KometaTMDbAPIs("test-key", language="en")
+    assert api.language == "en"
+    assert request.call_count == 2
+    assert len(tmdb.logger.warning_messages) == 1
+    tmdb.logger.trace.assert_called_once_with(f"Rejected TMDb language configuration response: {rejected!r}")
+
+
+@pytest.mark.parametrize("response", [None, [], {}, {"languages": []}])
+def test_startup_configuration_failure_has_bounded_retries(startup_configuration, response):
+    _, request = startup_configuration
+    request.return_value = response
+    config = SimpleNamespace(Requests=SimpleNamespace(session=None), Cache=None)
+    with pytest.raises(Failed, match="not a language setting error"):
+        tmdb.TMDb(config, {"apikey": "test-key", "language": "en", "expiration": 60})
+    assert request.call_count == 3
+    assert len(tmdb.logger.warning_messages) == 2
+    assert tmdb.logger.trace.call_count == 3
+    tmdb.logger.trace.assert_called_with(f"Rejected TMDb language configuration response: {response!r}")
+
+
+def test_startup_does_not_retry_invalid_user_language(startup_configuration):
+    from tmdbapis import Invalid
+
+    _, request = startup_configuration
+    with pytest.raises(Invalid, match="Language: invalid"):
+        tmdb.KometaTMDbAPIs("test-key", language="invalid")
+    assert request.call_count == 1
+    assert tmdb.logger.warning_messages == []
+
+
+def test_startup_does_not_retry_authentication_failure(startup_configuration):
+    from tmdbapis import Unauthorized
+
+    _, request = startup_configuration
+    request.side_effect = Unauthorized("Invalid API key")
+    with pytest.raises(Unauthorized):
+        tmdb.KometaTMDbAPIs("test-key", language="en")
+    assert request.call_count == 1
+    assert tmdb.logger.warning_messages == []
+
+
 def _bare_tmdb(monkeypatch):
     from tests.conftest import FakeLogger
 
@@ -35,6 +127,51 @@ def _episode(episode_id, season_number, episode_number, vote_average):
 def test_notfound_is_failed_subclass():
     # Callers that keep catching every TMDb failure as Failed must still work.
     assert issubclass(tmdb.NotFound, Failed)
+
+
+def test_get_item_treats_notfound_as_debug_miss_when_requested(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=tmdb.NotFound("TMDb movie is gone"))
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+
+    assert t.get_item(item, 1450305, None, None, ignore_not_found=True) is None
+    assert logger.debug_messages == ["TMDb movie is gone"]
+    assert logger.error_messages == []
+
+
+def test_get_item_keeps_notfound_as_error_by_default(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=tmdb.NotFound("TMDb movie is gone"))
+    item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
+
+    assert t.get_item(item, 1450305, None, None) is None
+    assert logger.debug_messages == []
+    assert logger.error_messages == ["TMDb movie is gone"]
+
+
+def test_get_item_keeps_other_plex_discovered_failures_as_errors(monkeypatch):
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t = tmdb.TMDb.__new__(tmdb.TMDb)
+    t.config = SimpleNamespace(Convert=MagicMock())
+    t.get_movie = MagicMock(side_effect=Failed("TMDb service failed"))
+    item = SimpleNamespace(title="Unavailable Movie", guid="plex://movie/unavailable")
+
+    assert t.get_item(item, 550, None, None) is None
+    assert logger.debug_messages == []
+    assert logger.error_messages == ["TMDb service failed"]
 
 
 def test_unavailable_is_service_error_subclass():
@@ -186,6 +323,69 @@ def test_show_hydration_retries_lazy_transient_502(monkeypatch):
     assert data.vote_count_calls == 2
     logger.warning.assert_called_once()
     logger.stacktrace.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("value_type", "aggregate_key"),
+    [
+        ("agg_tv_cast", "roles"),
+        ("agg_tv_crew", "jobs"),
+    ],
+)
+def test_aggregate_credits_silently_skip_malformed_entries(monkeypatch, value_type, aggregate_key):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    captured = {}
+
+    def parent_parse(self, **kwargs):
+        captured.update(kwargs)
+        return "parsed"
+
+    monkeypatch.setattr(tmdb.TMDbAPIs, "_parse", parent_parse)
+    api = tmdb.KometaTMDbAPIs.__new__(tmdb.KometaTMDbAPIs)
+    valid_entry = {"character" if aggregate_key == "roles" else "job": "Presenter"}
+    original = {"id": 10, "name": "Example Person", aggregate_key: [valid_entry, ["malformed"], None]}
+
+    assert api._parse(data=original, value_type=value_type) == "parsed"
+    assert captured["data"][aggregate_key] == [valid_entry]
+    assert original[aggregate_key] == [valid_entry, ["malformed"], None]
+    assert logger.mock_calls == []
+
+
+def test_show_hydration_wraps_unexpected_parser_errors(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    show = tmdb.TMDbShow.__new__(tmdb.TMDbShow)
+    show.tmdb_id = 500
+
+    class MalformedShow:
+        @property
+        def title(self):
+            raise AttributeError("'list' object has no attribute 'items'")
+
+    with pytest.raises(Failed, match=r"Failed to parse Show with TMDb ID 500.*list.*items"):
+        show._load_data(MalformedShow())
+
+    logger.stacktrace.assert_called_once_with()
+
+
+def test_episode_hydration_wraps_unexpected_parser_errors(monkeypatch):
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    episode = tmdb.TMDbEpisode.__new__(tmdb.TMDbEpisode)
+    episode.tmdb_id = 500
+    episode.season_number = 2
+    episode.episode_number = 3
+
+    class MalformedEpisode:
+        @property
+        def id(self):
+            raise AttributeError("'list' object has no attribute 'items'")
+
+    with pytest.raises(Failed, match=r"Failed to parse Episode with TMDb ID 500 Season 2 Episode 3.*list.*items"):
+        episode._load_data(MalformedEpisode())
+
+    logger.stacktrace.assert_called_once_with()
 
 
 def test_get_collection_raises_notfound_for_deleted_collection(monkeypatch):
@@ -445,3 +645,35 @@ class TestTMDBObj:
         t.validate_tmdb = MagicMock(side_effect=tmdb.NotFound("gone"))
         with pytest.raises(tmdb.NotFound):
             t.validate_tmdb_ids("99999", "tmdb_movie")
+
+
+def test_show_missing_lazy_season_is_handled_without_traceback_or_cache_write(monkeypatch):
+    t = _bare_tmdb(monkeypatch)
+    logger = MagicMock()
+    monkeypatch.setattr(tmdb, "logger", logger)
+    t.cache = MagicMock()
+    t.cache.query_tmdb_show.return_value = (None, True)
+    t.language = "en"
+    t.expiration = 30
+
+    class MissingSeason:
+        season_number = 2
+        name = "Season 2"
+
+        @property
+        def vote_average(self):
+            raise TMDbApiNotFound("(404 [Not Found]) Requested Item Not Found")
+
+    data = MagicMock()
+    data.title = "Example Show"
+    data.origin_countries = []
+    data.seasons = [MissingSeason()]
+    t.TMDb = SimpleNamespace(tv_show=MagicMock(return_value=data))
+
+    with pytest.raises(Failed, match=r"Season 2 not found \(404\) for Example Show \(TMDb ID: 500\)"):
+        tmdb.TMDbShow(t, 500)
+
+    t.TMDb.tv_show.assert_called_once()
+    t.cache.update_tmdb_show.assert_not_called()
+    logger.stacktrace.assert_not_called()
+    logger.warning.assert_not_called()

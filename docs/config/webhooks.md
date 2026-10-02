@@ -112,7 +112,7 @@ The Version notification will be sent at the beginning of a run if there is a ne
   "event": "version",           // Event
   "current": str,               // Current Version
   "latest": str,                // Latest Version 
-  "notes": str                  // Sends the latest release notes or new commits to develop since your version
+  "notes": str                  // Sends the latest release notes or new commits since your version
 }
 ```
 

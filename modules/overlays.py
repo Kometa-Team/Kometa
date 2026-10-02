@@ -8,7 +8,7 @@ from plexapi.exceptions import BadRequest
 from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
-from modules.builder import CollectionBuilder
+from modules.builder import CollectionBuilder, prefetch_gather_ids
 from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
 
 logger = util.logger
@@ -108,6 +108,8 @@ class Overlays:
             timings.registry.library_ctx = self.library.name
             # Items freshly composed this run - flushed every plex_bulk_edit_batch_size items (if set), else once at the end.
             overlay_label_items = []
+            # Pre-warms reload data for every item in this overlay pass in batched requests instead of one per item - see plex.py's bulk_reload().
+            self.library.bulk_reload([item for item, _ in key_to_overlays.values()], force=self.library.reapply_overlays)
             for i, (over_key, (item, over_names)) in enumerate(sorted(key_to_overlays.items(), key=lambda io: self.library.get_item_display_title(io[1][0], sort=True)), 1):
                 item_title = self.library.get_item_display_title(item)
 
@@ -515,12 +517,16 @@ class Overlays:
 
                         builder.display_filters()
 
-                        for method, value in builder.builders:
+                        # Experiment C: non-Plex gather_ids calls for this overlay's builders start running in the background now; Plex-method builders (None here) still run inline below, on the main thread, in order.
+                        prefetched = prefetch_gather_ids(self.config, builder)
+                        for i, (method, value) in enumerate(builder.builders):
                             logger.debug("")
                             logger.debug(f"Builder: {method}: {value}")
                             logger.info("")
                             try:
-                                builder.filter_and_save_items(builder.gather_ids(method, value))
+                                pending = prefetched[i]
+                                ids = pending.result() if pending is not None else builder.gather_ids(method, value)
+                                builder.filter_and_save_items(ids)
                             except Failed as e:
                                 if builder.ignore_blank_results:
                                     logger.info("")
@@ -589,23 +595,42 @@ class Overlays:
 
         for over_key, (item, over_names) in key_to_overlays.items():
             group_status = {}
-            for over_name in list(over_names):
-                for suppress_name in properties[over_name].suppress:
-                    if suppress_name in over_names:
-                        key_to_overlays[over_key][1].remove(suppress_name)
             for over_name in over_names:
                 for overlay_group, group_names in overlay_groups.items():
                     if over_name in group_names:
                         if overlay_group not in group_status:
                             group_status[overlay_group] = []
                         group_status[overlay_group].append(over_name)
+            processed_suppressors = set()
+            while True:
+                group_highest_weights = {}
+                for group_name, group_overlays in group_status.items():
+                    remaining_group = [v for v in group_overlays if v in over_names]
+                    if remaining_group:
+                        group_highest_weights[group_name] = max(overlay_groups[group_name][v] for v in remaining_group)
+                eligible_suppressors = []
+                for over_name in over_names:
+                    if over_name in processed_suppressors:
+                        continue
+                    over_obj = properties[over_name]
+                    if not over_obj.group or over_obj.weight == group_highest_weights[over_obj.group]:
+                        eligible_suppressors.append(over_name)
+                if not eligible_suppressors:
+                    break
+                for over_name in eligible_suppressors:
+                    if over_name not in over_names:
+                        continue
+                    processed_suppressors.add(over_name)
+                    for suppress_name in properties[over_name].suppress:
+                        if suppress_name in over_names:
+                            key_to_overlays[over_key][1].remove(suppress_name)
             for gk, gv in group_status.items():
-                if len(gv) > 1:
-                    final = None
-                    for v in gv:
-                        if final is None or overlay_groups[gk][v] > overlay_groups[gk][final]:
-                            final = v
-                    for v in gv:
+                remaining = [v for v in gv if v in over_names]
+                if len(remaining) > 1:
+                    highest_weight = max(overlay_groups[gk][v] for v in remaining)
+                    # Tied weights retain the first overlay in definition order.
+                    final = next(v for v in remaining if overlay_groups[gk][v] == highest_weight)
+                    for v in remaining:
                         if final != v:
                             key_to_overlays[over_key][1].remove(v)
         return key_to_overlays, properties

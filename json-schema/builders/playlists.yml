@@ -310,47 +310,6 @@ playlists:
     sync_mode: sync
 
   # ---------------------------------------------------------------------------
-  # BUILDERS — Trakt
-  # ---------------------------------------------------------------------------
-  Trakt List:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_list: https://trakt.tv/users/garycrawfordgc/lists/letterboxd-top-250
-    sync_mode: sync
-
-  Trakt Userlist Watchlist:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_userlist:
-      userlist: watchlist
-      user: me
-      sort_by: rank
-    sync_mode: sync
-
-  Trakt Userlist Favorites:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_userlist:
-      userlist: favorites
-      sort_by: added
-    sync_mode: sync
-
-  Trakt Recommendations:
-    libraries:
-      - Movies
-      - TV Shows
-    trakt_recommendations: 40
-    sync_mode: sync
-
-  Trakt Boxoffice:
-    libraries: Movies
-    trakt_boxoffice: true
-    sync_mode: sync
-
-  # ---------------------------------------------------------------------------
   # BUILDERS — Tautulli
   # ---------------------------------------------------------------------------
   Tautulli Popular Playlist:

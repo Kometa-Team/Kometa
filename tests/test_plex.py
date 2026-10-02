@@ -14,11 +14,11 @@ from unittest.mock import MagicMock
 import pytest
 from plexapi.exceptions import BadRequest, NotFound
 from plexapi.video import Episode
-from requests.exceptions import ConnectionError, ReadTimeout
+from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.plex import Plex
+from modules.plex import Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
 
@@ -236,6 +236,63 @@ class TestImageUpdate:
         plex.edit_tags.assert_called_once_with("label", item, remove_tags="Overlay", do_print=False)
         assert plex.cached_items == {}
         assert plex.filter_attr_cache == {(7, "labels"): ["Keep"]}
+
+
+class TestUploadImages:
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("timeout", [ReadTimeout, ConnectTimeout])
+    def test_upload_timeout_retries_and_logs_without_traceback(self, monkeypatch, artwork, method, timeout):
+        import modules.library as library_module
+
+        test_logger = MagicMock()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        cache = MagicMock()
+        cache.query_image_map.return_value = (None, None, None)
+        plex = make_plex(config=SimpleNamespace(Cache=cache), image_table_name="images")
+        plex.reload = MagicMock()
+        # Exercise the real retry policy without waiting between attempts.
+        monkeypatch.setattr(Plex._upload_image.retry, "wait", wait_none())
+        item = make_plex_item(rating_key=123)
+        getattr(item, method).side_effect = timeout("Plex did not respond")
+        image = SimpleNamespace(
+            compare="artwork",
+            attribute=f"url_{artwork}",
+            message="artwork URL",
+            is_url=True,
+            location="https://example.com/image.jpg",
+            is_poster=artwork == "poster",
+            is_background=artwork == "background",
+            is_square_art=artwork == "square_art",
+        )
+
+        result = plex.upload_images(item, **{artwork: image})
+
+        assert result == (False, False, False, False)
+        assert getattr(item, method).call_count == 6
+        test_logger.error.assert_called_once_with(f"Plex Error: Plex server timed out while updating url_{artwork} artwork URL")
+        test_logger.stacktrace.assert_not_called()
+        cache.update_image_map.assert_not_called()
+
+    def test_plex_timeout_removing_overlay_does_not_abort(self, monkeypatch):
+        import modules.library as library_module
+
+        test_logger = FakeLogger()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        plex = make_plex(config=SimpleNamespace(Cache=None))
+        plex.image_table_name = "images"
+        plex.show_asset_not_needed = False
+        plex.reload = MagicMock()
+        plex.item_labels = MagicMock(return_value=[SimpleNamespace(tag="Overlay")])
+        plex._upload_image = MagicMock()
+        item = make_plex_item(rating_key=123)
+        item.removeLabel.side_effect = ReadTimeout("Plex did not respond")
+        poster = SimpleNamespace(compare="poster", attribute="asset_directory", message="poster")
+
+        result = plex.upload_images(item, poster=poster, overlay=True)
+
+        assert result == (False, False, False, False)
+        plex._upload_image.assert_not_called()
+        assert "Plex Error: Plex server timed out while updating asset_directory poster" in test_logger.error_messages
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -737,6 +794,14 @@ class TestSaveMultiEditsRetry:
 
 
 class TestReload:
+    def test_item_reload_can_exclude_unused_elements(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex()
+
+        plex.item_reload(item, exclude_elements="Media,Role")
+
+        assert item.reload.call_args.kwargs["excludeElements"] == "Media,Role"
+
     def test_reload_cached_item_does_not_refetch(self):
         item = make_plex_item(rating_key=101)
         plex = make_plex(cached_items={101: (item, True)})
@@ -753,6 +818,29 @@ class TestReload:
         assert result is item
         plex.item_reload.assert_called_once_with(item)
 
+    def test_limited_reload_is_not_cached_as_full(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, False)})
+        plex.item_reload = MagicMock()
+
+        plex.reload(item, exclude_elements="Media,Role")
+
+        plex.item_reload.assert_called_once_with(item, exclude_elements="Media,Role")
+        assert plex.cached_items[101] == (item, False)
+
+        plex.reload(item)
+        assert plex.item_reload.call_args_list[-1].args == (item,)
+        assert plex.cached_items[101] == (item, True)
+
+    def test_forced_limited_reload_downgrades_full_cache_entry(self):
+        item = make_plex_item(rating_key=101)
+        plex = make_plex(cached_items={101: (item, True)})
+        plex.item_reload = MagicMock()
+
+        plex.reload(item, force=True, exclude_elements="Media,Role")
+
+        assert plex.cached_items[101] == (item, False)
+
     def test_real_reload_clears_filter_attr_cache_for_that_item(self):
         item = make_plex_item(rating_key=101)
         plex = make_plex(filter_attr_cache={(101, "genres"): ["stale"], (202, "genres"): ["untouched"]})
@@ -768,6 +856,55 @@ class TestReload:
         plex.reload(item)
         plex.item_reload.assert_not_called()
         assert plex.filter_attr_cache[(101, "genres")] == ["Action"]
+
+
+class TestRefreshItemCacheAndMappings:
+    def test_replaces_stale_items_and_all_rating_key_maps(self):
+        fresh_item = make_plex_item(rating_key=202)
+        plex = make_plex(is_movie=False, is_show=True)
+        plex.is_music = False
+        plex.get_all = MagicMock(return_value=[fresh_item])
+        plex.map_guids = MagicMock()
+        for attr in [
+            "movie_map",
+            "show_map",
+            "imdb_map",
+            "anidb_map",
+            "reverse_anidb",
+            "mal_map",
+            "reverse_mal",
+            "movie_rating_key_map",
+            "show_rating_key_map",
+            "imdb_rating_key_map",
+            "plex_map",
+        ]:
+            setattr(plex, attr, {101: "stale"})
+        plex.plex_map_levels = {"show"}
+        plex.cached_items = {101: (make_plex_item(rating_key=101), True)}
+        plex.filter_attr_cache = {(101, "genres"): ["stale"]}
+
+        result = plex.refresh_item_cache_and_mappings()
+
+        assert result == [fresh_item]
+        plex.get_all.assert_called_once_with(load=True)
+        plex.map_guids.assert_called_once_with([fresh_item])
+        assert plex.cached_items == {202: (fresh_item, False)}
+        assert plex.filter_attr_cache == {}
+        assert plex.plex_map_levels == set()
+        for attr in [
+            "movie_map",
+            "show_map",
+            "imdb_map",
+            "anidb_map",
+            "reverse_anidb",
+            "mal_map",
+            "reverse_mal",
+            "movie_rating_key_map",
+            "show_rating_key_map",
+            "imdb_rating_key_map",
+            "plex_map",
+        ]:
+            assert getattr(plex, attr) == {}
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1266,6 +1403,49 @@ class TestBatchEditTags:
         assert called_chunks == [shows, seasons]
 
 
+class TestRemoveSmartLabelForCollection:
+    def test_no_matching_plex_label_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=False)
+        plex.search = MagicMock()
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_not_called()
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_but_no_labeled_items_is_noop(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        plex.search = MagicMock(return_value=[])
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 0
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_not_called()
+
+    def test_matching_label_batch_removes_from_labeled_items_only(self):
+        plex = make_plex()
+        plex.smart_label_check = MagicMock(return_value=True)
+        items = [make_plex_item(rating_key=i) for i in range(3)]
+        plex.search = MagicMock(return_value=items)
+        plex.batch_edit_tags = MagicMock()
+        collection = SimpleNamespace(title="Apple TV+")
+
+        result = plex.remove_smart_label_for_collection(collection)
+
+        assert result == 3
+        plex.smart_label_check.assert_called_once_with("Apple TV+")
+        plex.search.assert_called_once_with(label="Apple TV+")
+        plex.batch_edit_tags.assert_called_once_with(items, "label", remove_tags=["Apple TV+"])
+
+
 class TestBatchAddLabel:
     def test_noop_when_no_items(self):
         plex = make_plex()
@@ -1354,6 +1534,115 @@ class TestBatchEditField:
         assert mock_section.batchMultiEdits.call_count == 2
         called_chunks = [call.args[0] for call in mock_section.batchMultiEdits.call_args_list]
         assert called_chunks == [shows, seasons]
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# bulk_reload (batch-prefetch via PMS's comma-separated /library/metadata/{ids})
+# ═══════════════════════════════════════════════════════════════════════
+
+
+def make_batch_element(rating_key: int) -> MagicMock:
+    """A fake plexapi XML element as returned by PlexServer.query() for a batch metadata fetch."""
+    element = MagicMock()
+    element.attrib = {"ratingKey": str(rating_key)}
+    return element
+
+
+class TestBulkReload:
+    def test_ids_in_same_objects_out(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item2 = make_plex_item(rating_key=2, type="movie")
+        for item in (item1, item2):
+            item._buildDetailsKey = MagicMock(return_value="/library/metadata/1,2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1), make_batch_element(2)])
+        plex.item_reload = MagicMock()
+
+        plex.bulk_reload([item1, item2])
+
+        assert plex.cached_items[1] == (item1, True)
+        assert plex.cached_items[2] == (item2, True)
+        item1._invalidateCacheAndLoadData.assert_called_once()
+        item2._invalidateCacheAndLoadData.assert_called_once()
+        plex.item_reload.assert_not_called()
+
+    def test_missing_ratingkey_falls_back_to_single_item_reload(self):
+        """A dropped/invalid ratingKey in the batch response must still get reloaded, not silently skipped."""
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item2 = make_plex_item(rating_key=2, type="movie")
+        for item in (item1, item2):
+            item._buildDetailsKey = MagicMock(return_value="/library/metadata/1,2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+        plex.item_reload = MagicMock(side_effect=lambda i: i)
+
+        plex.bulk_reload([item1, item2])
+
+        plex.item_reload.assert_called_once_with(item2)
+        assert plex.cached_items[1] == (item1, True)
+        assert plex.cached_items[2] == (item2, True)
+
+    def test_whole_chunk_http_failure_falls_back_for_every_item(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(side_effect=BadRequest("boom"))
+        plex.item_reload = MagicMock(side_effect=lambda i: i)
+
+        plex.bulk_reload([item1])
+
+        plex.item_reload.assert_called_once_with(item1)
+        assert plex.cached_items[1] == (item1, True)
+
+    def test_skips_items_already_fully_cached_when_not_forced(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        plex = make_plex(cached_items={1: (item1, True)})
+        plex.PlexServer.query = MagicMock()
+
+        plex.bulk_reload([item1])
+
+        plex.PlexServer.query.assert_not_called()
+
+    def test_force_refetches_even_if_already_cached(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex(cached_items={1: (item1, True)})
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+
+        plex.bulk_reload([item1], force=True)
+
+        plex.PlexServer.query.assert_called_once()
+
+    def test_empty_items_is_a_noop(self):
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock()
+
+        plex.bulk_reload([])
+
+        plex.PlexServer.query.assert_not_called()
+
+    def test_mixed_types_are_batched_in_separate_requests(self):
+        movie = make_plex_item(rating_key=1, type="movie")
+        show = make_plex_item(rating_key=2, type="show")
+        movie._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        show._buildDetailsKey = MagicMock(return_value="/library/metadata/2")
+        plex = make_plex()
+        plex.PlexServer.query = MagicMock(side_effect=[[make_batch_element(1)], [make_batch_element(2)]])
+
+        plex.bulk_reload([movie, show])
+
+        assert plex.PlexServer.query.call_count == 2
+
+    def test_reloaded_item_clears_stale_filter_attr_cache(self):
+        item1 = make_plex_item(rating_key=1, type="movie")
+        item1._buildDetailsKey = MagicMock(return_value="/library/metadata/1")
+        plex = make_plex(filter_attr_cache={(1, "genres"): ["stale"], (2, "genres"): ["untouched"]})
+        plex.PlexServer.query = MagicMock(return_value=[make_batch_element(1)])
+
+        plex.bulk_reload([item1])
+
+        assert (1, "genres") not in plex.filter_attr_cache
+        assert (2, "genres") in plex.filter_attr_cache
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1449,6 +1738,40 @@ class TestGetLanguageSearchValues:
         plex.get_tags = MagicMock(return_value=[make_filter_choice("en-US")])
         assert plex.get_language_search_values("audio_language", "zh") == []
 
+    def test_matches_language_name_reported_by_plex(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nld", title="Dutch"),
+                make_filter_choice("eng", title="English"),
+            ]
+        )
+        assert plex.get_language_search_values("audio_language", "Dutch") == ["nl", "nld"]
+
+    def test_falls_back_from_three_letter_code_to_base_language_variants(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nl-NL", title="Dutch"),
+            ]
+        )
+        assert plex.get_language_search_values("audio_language", "nld") == ["nl", "nl-NL"]
+
+    def test_returns_cached_language_names_for_validation_errors(self):
+        plex = make_plex()
+        plex.get_tags = MagicMock(
+            return_value=[
+                make_filter_choice("nl", title="Dutch"),
+                make_filter_choice("nld", title="Dutch"),
+                make_filter_choice("eng", title="English"),
+            ]
+        )
+        plex.get_language_search_values("audio_language", "missing")
+        assert plex.get_language_search_options("audio_language") == ["Dutch", "English"]
+        plex.get_tags.assert_called_once()
+
     def test_caches_choices_and_only_queries_plex_once(self):
         plex = make_plex()
         plex.get_tags = MagicMock(return_value=[make_filter_choice("es-419")])
@@ -1525,3 +1848,105 @@ class TestEdgeCases:
         collection = MagicMock()
         plex.collection_order_query(collection, "release")
         collection.sortUpdate.assert_called_once_with(sort="release")
+
+
+class TestCheckImageForOverlay:
+    @pytest.mark.parametrize("contents", [b"", b"<html>Upstream server error</html>"])
+    def test_unrecognized_download_is_a_handled_error(self, tmp_path, monkeypatch, contents):
+        path = tmp_path / "104617.jpg"
+        path.write_bytes(contents)
+        config = SimpleNamespace(Requests=MagicMock())
+        config.Requests.download_image.return_value = SimpleNamespace(location=str(path))
+        plex = make_plex(config=config)
+        logger = MagicMock()
+        monkeypatch.setattr("modules.library.logger", logger)
+
+        with pytest.raises(Failed) as caught:
+            plex.check_image_for_overlay("https://example.com/poster.jpg", str(tmp_path / "104617"))
+
+        assert str(path) in str(caught.value)
+        assert "unsupported image format or corrupt file" in str(caught.value)
+        assert "valid original poster" in str(caught.value)
+        assert path.read_bytes() == contents
+        logger.stacktrace.assert_not_called()
+
+    def test_valid_download_is_returned(self, tmp_path):
+        from PIL import Image
+
+        path = tmp_path / "104617.jpg"
+        Image.new("RGB", (2, 2)).save(path)
+        config = SimpleNamespace(Requests=MagicMock())
+        config.Requests.download_image.return_value = SimpleNamespace(location=str(path))
+        plex = make_plex(config=config)
+
+        assert plex.check_image_for_overlay("https://example.com/poster.jpg", str(tmp_path / "104617")) == str(path)
+        assert path.exists()
+
+
+class TestTracedPlexServer:
+    @pytest.fixture
+    def server(self):
+        server = TracedPlexServer.__new__(TracedPlexServer)
+        server._baseurl = "http://plex.example:32400"
+        server._token = "private-token"
+        server._showSecrets = False
+        server._timeout = 60
+        server._session = MagicMock()
+        server._session.get.__name__ = "get"
+        return server
+
+    @pytest.mark.parametrize("timeout", [None, 15])
+    def test_logs_before_transport_and_after_response(self, monkeypatch, server, timeout):
+        test_logger = MagicMock(is_trace=True)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        monkeypatch.setattr("modules.plex.time.monotonic", MagicMock(side_effect=[10, 12.5]))
+        label = f"GET /library/metadata/77499 (timeout: {timeout or 60}s)"
+
+        def send(url, **kwargs):
+            test_logger.trace.assert_called_once_with(f"Plex request starting: {label}")
+            assert kwargs["timeout"] == (timeout or 60)
+            assert kwargs["headers"]["X-Plex-Token"] == "private-token"
+            assert kwargs["params"] == {"private": "query-secret"}
+            return SimpleNamespace(status_code=200, text='<MediaContainer size="0"/>')
+
+        server._session.get.side_effect = send
+        result = server.query("/library/metadata/77499?X-Plex-Token=url-secret", params={"private": "query-secret"}, timeout=timeout)
+
+        assert result.tag == "MediaContainer"
+        assert test_logger.trace.call_count == 2
+        test_logger.trace.assert_called_with(f"Plex request completed: {label} after 2.500s")
+        assert "secret" not in str(test_logger.trace.call_args_list)
+        assert "private-token" not in str(test_logger.trace.call_args_list)
+
+    @pytest.mark.parametrize("exception", [ReadTimeout, ConnectionError, BadRequest])
+    def test_failure_logs_elapsed_time_and_preserves_exception(self, monkeypatch, server, exception):
+        test_logger = MagicMock(is_trace=True)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        monkeypatch.setattr("modules.plex.time.monotonic", MagicMock(side_effect=[10, 70]))
+        error = exception("private exception details")
+
+        def post(url, **kwargs):
+            test_logger.trace.assert_called_once_with("Plex request starting: POST /library/metadata/77499/posters (timeout: 60s)")
+            assert kwargs["data"] == b"private body"
+            raise error
+
+        with pytest.raises(exception) as caught:
+            server.query("/library/metadata/77499/posters", method=post, data=b"private body")
+
+        assert caught.value is error
+        assert test_logger.trace.call_count == 2
+        test_logger.trace.assert_called_with(f"Plex request failed: POST /library/metadata/77499/posters (timeout: 60s) after 60.000s ({exception.__name__})")
+        test_logger.stacktrace.assert_not_called()
+        assert "private" not in str(test_logger.trace.call_args_list)
+
+    def test_trace_disabled_preserves_query_without_extra_logging(self, monkeypatch, server):
+        test_logger = MagicMock(is_trace=False)
+        monkeypatch.setattr("modules.plex.logger", test_logger)
+        clock = MagicMock()
+        monkeypatch.setattr("modules.plex.time.monotonic", clock)
+        server._session.get.return_value = SimpleNamespace(status_code=200, text='<MediaContainer size="0"/>')
+
+        assert server.query("/library/metadata/77499").tag == "MediaContainer"
+
+        test_logger.trace.assert_not_called()
+        clock.assert_not_called()

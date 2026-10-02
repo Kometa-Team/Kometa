@@ -164,7 +164,6 @@ hide:
 
         - `latest` - most recent official release; typically the most stable.
         - `develop` - development release, contains new features that haven't made it to latest yet, but may have minor problems.
-        - `nightly` - bleeding-edge development version; latest fixes go here, but breakage should be expected.
 
         ![Step 3](./../../../assets/images/kometa/install/synology/synology-05.png)
 

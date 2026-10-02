@@ -58,6 +58,9 @@
     "flicklist": {
       "$ref": "#/definitions/flicklist-api"
     },
+    "wetrakr": {
+      "$ref": "#/definitions/wetrakr-api"
+    },
     "serializd": {
       "$ref": "#/definitions/serializd-api"
     },
@@ -69,6 +72,9 @@
     },
     "playlist_files": {
       "$ref": "#/definitions/playlist-path"
+    },
+    "simkl": {
+      "$ref": "#/definitions/simkl-api"
     }
   },
   "required": [
@@ -1145,6 +1151,24 @@
       "required": [],
       "title": "flicklist"
     },
+    "wetrakr-api": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "client_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [],
+      "title": "wetrakr"
+    },
     "floppy-api": {
       "type": "object",
       "additionalProperties": false,
@@ -1194,13 +1218,49 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "user_token": {
+        "force_refresh": {
+          "type": "boolean",
+          "description": "Always refresh the AUTH V2 token before authentication."
+        },
+        "refresh_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Simkl AUTH V2 refresh token. Kometa automatically refreshes and saves access-token data."
+        },
+        "access_token": {
+          "type": "string",
+          "description": "Managed by Kometa; do not set manually."
+        },
+        "token_type": {
           "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "access_token_expires_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refresh_token_expires_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scope": {
+          "type": "string"
+        },
+        "user_token": {
+          "type": "string",
+          "description": "Obsolete AUTH V1 credential; replace with a new AUTH V2 refresh_token."
         }
       },
-      "required": [
-        "user_token"
-      ],
+      "required": [],
       "title": "simkl"
     },
     "ntfy-api": {
@@ -1978,6 +2038,28 @@
             "sync",
             "append"
           ]
+        },
+        "threading": {
+          "description": "Used to control Kometa's shared thread pool for concurrent processing.\nControls the shared thread pool Kometa uses to run some work concurrently instead of one call at a time.",
+          "type": "object",
+          "properties": {
+            "workers": {
+              "description": "Number of worker threads in the shared thread pool.",
+              "type": "integer",
+              "minimum": 1
+            },
+            "prefetch_collection_children": {
+              "description": "Defers a sync-enabled collection's \"what to remove\" lookup, and Plex item-reload batching in the operations and overlay loops, to the thread pool instead of blocking the main collection loop.",
+              "type": "boolean"
+            },
+            "tmdb_pages": {
+              "type": "string"
+            },
+            "parallel_sources": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
         },
         "minimum_items": {
           "description": "Used to control minimum items requires to build a collection/playlist.\nSet the minimum number of items that must be found in order to build or update a collection/playlist.",
@@ -4621,6 +4703,33 @@
         }
       }
     },
+    "external-path-with-template-variables": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "file": {"type": "string"},
+        "folder": {"type": "string"},
+        "url": {"type": "string", "format": "uri", "pattern": "^(https?)://"},
+        "git": {"type": "string"},
+        "repo": {"type": "string"},
+        "schedule": {"type": "string"},
+        "asset_directory": {
+          "oneOf": [
+            {"type": "string"},
+            {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+          ]
+        },
+        "template_variables": {"type": "object", "additionalProperties": true}
+      },
+      "required": ["template_variables"],
+      "oneOf": [
+        {"required": ["file"]},
+        {"required": ["folder"]},
+        {"required": ["url"]},
+        {"required": ["git"]},
+        {"required": ["repo"]}
+      ]
+    },
     "metadata-files": {
       "title": "metadata_files",
       "additionalProperties": false,
@@ -4644,6 +4753,9 @@
           },
           {
             "$ref": "#/definitions/repo-path"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4690,6 +4802,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-collection-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4736,6 +4851,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-overlay-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -4867,6 +4985,9 @@
           },
           {
             "$ref": "#/definitions/repo-path-playlist-with-template-variables"
+          },
+          {
+            "$ref": "#/definitions/external-path-with-template-variables"
           }
         ]
       }
@@ -5379,6 +5500,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5420,6 +5543,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
@@ -5470,6 +5595,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5511,6 +5638,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
@@ -5561,6 +5690,8 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
+                    "wetrakr_user",
                     "serializd",
                     "floppy",
                     "unlock"
@@ -5602,6 +5733,8 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
+                          "wetrakr_user",
                           "serializd",
                           "floppy",
                           "unlock"
@@ -5652,6 +5785,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
                     "serializd",
                     "serializd_user",
                     "floppy",
@@ -5694,6 +5828,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
                           "serializd",
                           "serializd_user",
                           "floppy",
@@ -5745,6 +5880,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
                     "serializd",
                     "serializd_user",
                     "floppy",
@@ -5787,6 +5923,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
                           "serializd",
                           "serializd_user",
                           "floppy",
@@ -5838,6 +5975,7 @@
                     "tmdb",
                     "trakt",
                     "trakt_user",
+                    "flicklist_user",
                     "serializd",
                     "serializd_user",
                     "floppy",
@@ -5880,6 +6018,7 @@
                           "tmdb",
                           "trakt",
                           "trakt_user",
+                          "flicklist_user",
                           "serializd",
                           "serializd_user",
                           "floppy",
@@ -13665,8 +13804,64 @@
       "required": [],
       "dependentRequired": {},
       "patternProperties": {
+        "^use_(?!all$).+$": {
+          "description": "Disable a specific seasonal collection by key. Set to false to turn off.",
+          "type": "boolean"
+        },
         "^schedule_.+$": {
           "type": "string"
+        },
+        "^radarr_add_missing_.+$": {
+          "description": "Override Radarr add_missing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_folder_.+$": {
+          "description": "Override Radarr root_folder_path for a specific seasonal collection by key.",
+          "type": "string"
+        },
+        "^radarr_monitor_.+$": {
+          "description": "Override Radarr monitor for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_monitor_existing_.+$": {
+          "description": "Override Radarr monitor_existing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_search_.+$": {
+          "description": "Override Radarr search for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^radarr_tag_.+$": {
+          "description": "Override Radarr tag for a specific seasonal collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
+        },
+        "^radarr_upgrade_existing_.+$": {
+          "description": "Override Radarr upgrade_existing for a specific seasonal collection by key.",
+          "type": "boolean"
+        },
+        "^item_radarr_tag_.+$": {
+          "description": "Override item_radarr_tag for a specific seasonal collection by key.",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         }
       }
     },
@@ -14038,7 +14233,32 @@
             "critic",
             "audience",
             "user",
-            "floppy"
+            "tmdb",
+            "imdb",
+            "floppy",
+            "serializd",
+            "omdb",
+            "omdb_imdb",
+            "omdb_metascore",
+            "omdb_tomatoes",
+            "mdb",
+            "mdb_average",
+            "mdb_imdb",
+            "mdb_metacritic",
+            "mdb_metacriticuser",
+            "mdb_tomatoes",
+            "mdb_tomatoesaudience",
+            "mdb_tmdb",
+            "mdb_letterboxd",
+            "mdb_myanimelist",
+            "anidb",
+            "anidb_average",
+            "anidb_score",
+            "mal",
+            "plex_imdb",
+            "plex_tmdb",
+            "plex_tomatoes",
+            "plex_tomatoesaudience"
           ]
         },
         "rating1_image": {
@@ -14094,7 +14314,32 @@
             "critic",
             "audience",
             "user",
-            "floppy"
+            "tmdb",
+            "imdb",
+            "floppy",
+            "serializd",
+            "omdb",
+            "omdb_imdb",
+            "omdb_metascore",
+            "omdb_tomatoes",
+            "mdb",
+            "mdb_average",
+            "mdb_imdb",
+            "mdb_metacritic",
+            "mdb_metacriticuser",
+            "mdb_tomatoes",
+            "mdb_tomatoesaudience",
+            "mdb_tmdb",
+            "mdb_letterboxd",
+            "mdb_myanimelist",
+            "anidb",
+            "anidb_average",
+            "anidb_score",
+            "mal",
+            "plex_imdb",
+            "plex_tmdb",
+            "plex_tomatoes",
+            "plex_tomatoesaudience"
           ]
         },
         "rating2_image": {
@@ -14150,7 +14395,32 @@
             "critic",
             "audience",
             "user",
-            "floppy"
+            "tmdb",
+            "imdb",
+            "floppy",
+            "serializd",
+            "omdb",
+            "omdb_imdb",
+            "omdb_metascore",
+            "omdb_tomatoes",
+            "mdb",
+            "mdb_average",
+            "mdb_imdb",
+            "mdb_metacritic",
+            "mdb_metacriticuser",
+            "mdb_tomatoes",
+            "mdb_tomatoesaudience",
+            "mdb_tmdb",
+            "mdb_letterboxd",
+            "mdb_myanimelist",
+            "anidb",
+            "anidb_average",
+            "anidb_score",
+            "mal",
+            "plex_imdb",
+            "plex_tmdb",
+            "plex_tomatoes",
+            "plex_tomatoesaudience"
           ]
         },
         "rating3_image": {

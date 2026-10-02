@@ -7,8 +7,10 @@ import re
 import shutil
 from typing import Literal, overload
 
+from lxml.etree import ParserError
+
 from modules import util
-from modules.util import Failed
+from modules.util import Failed, ServiceError
 
 logger = util.logger
 
@@ -610,6 +612,8 @@ class IMDb:
             logger.trace(f"Params: {params}")
         try:
             response = self.requests.get_cloudscrape_html(url, params=params, language=language)
+        except ParserError as e:
+            raise ServiceError(f"IMDb Error: Empty or unreadable page returned by {url}. Retry later; if this persists, check that IMDb is accessible from the Kometa host.") from e
         except Exception as e:
             raise Failed(e)
         if page_props:
@@ -1149,7 +1153,10 @@ class IMDb:
                 if logger:
                     logger.debug(f"GraphQL chart query error for {chart}: {e}")
         # Final fallback: HTML scraping via original xpath method
-        script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
+        try:
+            script_results = self._request(f"{base_url}/{chart_urls[chart]}", language=language, xpath="//script[@id='__NEXT_DATA__']/text()")
+        except ServiceError as e:
+            raise ServiceError(f"IMDb Chart '{charts[chart]}' could not be loaded. {e}") from e
         if not script_results:
             message = f"IMDb Error: HTML fallback returned no chart data for {charts[chart]}"
             if graphql_error:
@@ -1208,7 +1215,7 @@ class IMDb:
         if self._service_available:
             try:
                 data = self._service_title(imdb_id)
-                return data.get("averageRating") if data else None
+                return data.get("averageRating") if isinstance(data, dict) else None
             except Failed as e:
                 self._service_unavailable(e)
         return self.ratings.get(imdb_id) if self.ratings else None
@@ -1219,7 +1226,7 @@ class IMDb:
         if self._service_available:
             try:
                 data = self._service_title(imdb_id)
-                genres = data.get("genres") if data else None
+                genres = data.get("genres") if isinstance(data, dict) else None
                 return genres.split(",") if genres else []
             except Failed as e:
                 self._service_unavailable(e)
@@ -1235,10 +1242,10 @@ class IMDb:
                 if imdb_id not in self._episode_ratings_cache:
                     self._episode_ratings_cache[imdb_id] = self._service_request(f"episode-ratings/{imdb_id}", not_found_ok=True)
                 data = self._episode_ratings_cache[imdb_id]
-                seasons = data.get("seasons", {}) if data else {}
-                season = seasons.get(season_num, {})
-                episode = season.get(episode_num, {})
-                return episode.get("averageRating")
+                seasons = data.get("seasons", {}) if isinstance(data, dict) else {}
+                season = seasons.get(season_num, {}) if isinstance(seasons, dict) else {}
+                episode = season.get(episode_num, {}) if isinstance(season, dict) else {}
+                return episode.get("averageRating") if isinstance(episode, dict) else None
             except Failed as e:
                 self._service_unavailable(e)
         if imdb_id not in self.episode_ratings or season_num not in self.episode_ratings[imdb_id] or episode_num not in self.episode_ratings[imdb_id][season_num]:

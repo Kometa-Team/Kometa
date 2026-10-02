@@ -7,9 +7,11 @@ hide:
 
 ???+ tip "Note on `mdb` sources"
 
-     MDBList is not a live reflection of third-party sites such as CommonSense and Trakt. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa fetches and applies from MDBList may not be the same as you see if you visit those third-party sources directly.
+     MDBList is not a live reflection of third-party sites. The data on MDBList is often days, weeks and months out of date as it is only periodically refreshed. As such, the data that Kometa fetches and applies from MDBList may not be the same as you see if you visit those third-party sources directly.
  
 Finds every item in a [MDBList List](https://mdblist.com/toplists/).
+
+MDBList episode lists can create episode collections by setting `builder_level: episode`.
 
 The expected input is an MDBList List URL. Multiple values are supported **as a list only**; a comma-separated string will not work.
 

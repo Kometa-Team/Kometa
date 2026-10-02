@@ -7,8 +7,8 @@ import cloudscraper
 import requests
 import ruamel.yaml
 from lxml import html
-from requests.exceptions import ConnectionError, RequestException
-from tenacity import retry, stop_after_attempt, wait_exponential
+from requests.exceptions import ConnectionError, HTTPError, RequestException
+from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 
 from modules import timings, util
 from modules.poster import ImageData
@@ -22,6 +22,25 @@ image_content_types = ["image/png", "image/jpeg", "image/webp"]
 # stalled external server hangs the whole run (tenacity only retries on
 # raised exceptions, and a silent stall never raises).
 DEFAULT_TIMEOUT = 30
+
+
+def _request_retry_exhausted(retry_state):
+    exception = retry_state.outcome.exception()
+    response = getattr(exception, "response", None)
+    if isinstance(exception, HTTPError) and response is not None and response.status_code == 429:
+        url = retry_state.kwargs.get("url") or (retry_state.args[1] if len(retry_state.args) > 1 else getattr(response, "url", "Unknown"))
+        raise Failed(f"URL Error: Too many requests - {url}") from exception
+    raise RetryError(retry_state.outcome) from exception
+
+
+def _request_retry():
+    return retry(stop=stop_after_attempt(6), wait=util.wait_for_retry_after_header(wait_exponential(multiplier=1, min=1, max=10)), retry_error_callback=_request_retry_exhausted)
+
+
+def _raise_for_rate_limit(response):
+    if response.status_code == 429:
+        response.raise_for_status()
+    return response
 
 
 def get_header(headers, header, language):
@@ -81,7 +100,6 @@ class Requests:
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]
         self._image_url_cache = {}  # Run-scoped memoization for get_image() - same URL within one run is always the same asset, no staleness risk.
         self._nightly = None
-        self._develop = None
         self._master = None
         self._branch = None
         self._latest = None
@@ -136,8 +154,6 @@ class Requests:
             raise Failed(f"URL Error: Unauthorized - {url}")
         if response.status_code == 404:
             raise Failed(f"URL Error: No file found at {url}")
-        if response.status_code == 429:
-            raise Failed(f"URL Error: Too many requests -  {url}")
         if response.status_code >= 400:
             raise Failed(f"URL Error: {response.status_code} on {url}")
         # get_yaml never sets a path, so save() was already a no-op here - read_only=True is a pure speed win (safe loader) plus a defensive guard against future misuse.
@@ -213,13 +229,13 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
-        return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
+        return _raise_for_rate_limit(self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT))
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def head(self, url, headers=None, header=None, language=None):
-        return self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+        return _raise_for_rate_limit(self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True))
 
     def get_image_encoded(self, url):
         return base64.b64encode(self.get(url).content).decode("utf-8")
@@ -235,25 +251,26 @@ class Requests:
             logger.error(str(response.content))
             raise
 
-    @retry(stop=stop_after_attempt(6), wait=wait_exponential(multiplier=1, min=1, max=10))
+    @_request_retry()
     def post(self, url, data=None, json=None, headers=None, header=None, language=None):
-        return self.session.post(url, data=data, json=json, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT)
+        return _raise_for_rate_limit(self.session.post(url, data=data, json=json, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT))
 
     def has_new_version(self):
         return self.local and self.latest and self.local.main != self.latest.main or (self.local.build and self.local.build < self.latest.build)
 
     @property
     def branch(self):
+        # "develop" is kept as a recognized value here because installs still on that tag/branch genuinely
+        # report it via git_branch/env_branch - but develop is now just an automatic mirror of nightly (see
+        # release-develop.yml), so there's no longer a way to tell them apart by version/build number alone,
+        # and no need to: they're always identical.
         if self._branch is None:
             if self.git_branch in ["develop", "nightly"]:
                 self._branch = self.git_branch
             elif self.env_branch in ["develop", "nightly"]:
                 self._branch = self.env_branch
             elif self.local.build > 0:
-                if self.local.main != self.develop.main or self.local.build <= self.develop.build:
-                    self._branch = "develop"
-                else:
-                    self._branch = "nightly"
+                self._branch = "nightly"
             else:
                 self._branch = "master"
         return self._branch
@@ -261,13 +278,7 @@ class Requests:
     @property
     def latest(self):
         if self._latest is None:
-            if self.branch == "develop":
-                self._latest = self.develop
-            elif self.branch == "nightly":
-                self._latest = self.nightly
-            elif self.local.build > 0:
-                if self.local.main != self.develop.main or self.develop.build >= self.local.build:
-                    self._latest = self.develop
+            if self.branch in ("develop", "nightly"):
                 self._latest = self.nightly
             else:
                 self._latest = self.master
@@ -284,12 +295,6 @@ class Requests:
         if self._master is None:
             self._master = self._version("master")
         return self._master
-
-    @property
-    def develop(self):
-        if self._develop is None:
-            self._develop = self._version("develop")
-        return self._develop
 
     @property
     def nightly(self):

@@ -14,8 +14,10 @@ class OMDbObj:
         self._imdb_id = imdb_id
         self._data = data
         self._invalid_rating_values = []
+        if not isinstance(data, dict) or "Response" not in data:
+            raise Failed(f"OMDb Error: Unexpected response format for IMDb ID: {imdb_id}")
         if data["Response"] == "False":
-            raise Failed(f"OMDb Error: {data['Error']} IMDb ID: {imdb_id}")
+            raise Failed(f"OMDb Error: {data.get('Error', 'Unknown Error')} IMDb ID: {imdb_id}")
 
         def _parse(key, is_int=False, is_float=False, is_date=False, replace=None):
             try:
@@ -45,11 +47,11 @@ class OMDbObj:
         self.rotten_tomatoes = None
         try:
             for rating in data["Ratings"]:
-                if rating["Source"] == "Rotten Tomatoes":
+                if isinstance(rating, dict) and rating.get("Source") == "Rotten Tomatoes":
                     data["tempRT"] = rating["Value"]  # This is a hack to allow _parse to work without changes
                     self.rotten_tomatoes = _parse("tempRT", is_int=True, replace="%")
                     break
-        except KeyError:
+        except (KeyError, TypeError):
             pass
 
         for source, value, maximum, replace in [
@@ -97,16 +99,17 @@ class OMDb:
                 expired = True
         logger.trace(f"IMDb ID: {imdb_id}")
         response = self.requests.get(base_url, params={"apikey": self.apikey, "i": imdb_id})
+        try:
+            data = response.json()
+        except JSONDecodeError:
+            raise Failed(f"OMDb Error: Invalid JSON response: {response.content}")
         if response.status_code < 400:
-            omdb = OMDbObj(imdb_id, response.json())
+            omdb = OMDbObj(imdb_id, data)
             if self.cache and not ignore_cache and omdb.ratings_valid:
                 self.cache.update_omdb(expired, omdb, self.expiration)
             return omdb
         else:
-            try:
-                error = response.json()["Error"]
-                if error == "Request limit reached!":
-                    self.limit = True
-            except JSONDecodeError:
-                error = f"Invalid JSON: {response.content}"
+            error = data.get("Error", f"HTTP {response.status_code}") if isinstance(data, dict) else f"HTTP {response.status_code}"
+            if error == "Request limit reached!":
+                self.limit = True
             raise Failed(f"OMDb Error: {error}")

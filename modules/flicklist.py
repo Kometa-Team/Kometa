@@ -1,11 +1,11 @@
-import time
-
-from modules import util
+from modules import tracker, util
 from modules.util import Failed
 
 logger = util.logger
 
 base_url = "https://flicklist.tv/api/v3"
+sync_batch_size = 1000
+max_retry_after_seconds = 120.0
 builders = [
     "flicklist_list",
     "flicklist_list_details",
@@ -20,15 +20,21 @@ builders = [
 show_only_methods = ["flicklist_up_next", "flicklist_tracked"]
 
 
-class FlickList:
+class FlickList(tracker.TrackerAPI):
+    service = "FlickList"
+    base_url = base_url
+    page_count_header = "X-FlickList-Page-Count"
+
     def __init__(self, requests, read_only, params):
-        self.requests = requests
-        self.read_only = read_only
+        super().__init__(requests, read_only)
         self.api_key = params["api_key"]
         if logger:
             logger.secret(self.api_key)
         self.user_agent = f"Kometa/{self.requests.local} (+https://kometa.wiki)"
         self._me = None
+        self._ratings = None
+        self._ratings_error = None
+        self._user_ratings = {}
         # No network I/O here; modules/config.py calls test_connection() separately so a failed connect can be neutered without a half-built object.
 
     def test_connection(self):
@@ -44,153 +50,34 @@ class FlickList:
             headers["Authorization"] = f"Bearer {self.api_key}"
         return headers
 
-    @staticmethod
-    def _parse_error_body(response):
-        try:
-            payload = response.json()
-            return payload.get("detail") or payload.get("error") or response.reason
-        except ValueError:
-            return response.text[:200] if response.text else response.reason
-
-    def _send(self, path, url, headers, params, json_data, method):
-        attempts = 0
-        while True:
-            if method == "POST":
-                response = self.requests.post(url, json=json_data, headers=headers)
-            else:
-                response = self.requests.get(url, headers=headers, params=params)
-            if response.status_code != 429:
-                return response
-            attempts += 1
-            if attempts >= 3:
-                raise Failed(f"FlickList Error: Rate limited on {path} after 3 attempts this run; giving up for now")
-            retry_after = response.headers.get("Retry-After")
-            try:
-                wait_seconds = float(retry_after)
-            except (TypeError, ValueError):
-                wait_seconds = 60.0
-            if logger:
-                logger.warning(f"FlickList Warning: Rate limited on {path}; waiting {wait_seconds} seconds")
-            time.sleep(wait_seconds)
-
     def _raise_for_status(self, path, response, ignore_404):
         if response.status_code == 401:
             raise Failed("FlickList Error: API key was rejected; it may have been revoked. Mint a new one and update your config.")
         if response.status_code == 403:
             raise Failed(f"FlickList Error: API key is missing a required scope for {path}")
-        if response.status_code == 404 and ignore_404:
-            return True
-        if response.status_code >= 400:
-            raise Failed(f"FlickList Error: ({response.status_code}) {self._parse_error_body(response)}")
-        return False
+        return super()._raise_for_status(path, response, ignore_404)
 
-    def _request_raw(self, path, params=None, json_data=None, method="GET", anonymous=False, ignore_404=False):
-        """Single call, no pagination. Returns whatever the endpoint sends back (dict, list, or None on a swallowed 404)."""
-        url = f"{base_url}{path}"
-        if logger:
-            logger.trace(f"URL: {url}")
-            if params:
-                logger.trace(f"Params: {params}")
-            if json_data is not None:
-                logger.trace(f"JSON: {json_data}")
-        headers = self._headers(anonymous=anonymous)
-        response = self._send(path, url, headers, params, json_data, method)
-        if self._raise_for_status(path, response, ignore_404):
-            return None
-        if response.status_code == 204 or not response.content:
-            return None
-        try:
-            return response.json()
-        except ValueError:
-            raise Failed(f"FlickList Error: {path} returned a non-JSON response body")
-
-    def _request(self, path, params=None, json_data=None, method="GET", anonymous=False, ignore_404=False):
-        """Single-call request against an object-returning endpoint. Always returns a dict, or None when ignore_404 swallowed a 404."""
-        data = self._request_raw(path, params=params, json_data=json_data, method=method, anonymous=anonymous, ignore_404=ignore_404)
-        if data is None:
-            return None
-        return data if isinstance(data, dict) else {}
-
-    def _request_list(self, path, params=None, anonymous=False):
-        """Single-call request against an array-returning endpoint (the un-paginated 'None' family). Always returns a list; a 404/204/empty body is treated as an empty list."""
-        data = self._request_raw(path, params=params, anonymous=anonymous)
-        return data if isinstance(data, list) else []
-
-    def _request_paginated(self, path, params=None, anonymous=False, ignore_404=False):
-        """Multi-page request against the header-paginated family. Always returns a list, or None when ignore_404 swallowed a 404."""
-        url = f"{base_url}{path}"
-        if logger:
-            logger.trace(f"URL: {url}")
-            if params:
-                logger.trace(f"Params: {params}")
-        headers = self._headers(anonymous=anonymous)
-        results = []
-        page = 1
-        page_count = 1
-        while page <= page_count:
-            call_params = dict(params) if params else None
-            if page > 1:
-                call_params = call_params or {}
-                call_params["page"] = page
-            response = self._send(path, url, headers, call_params, None, "GET")
-            if self._raise_for_status(path, response, ignore_404):
-                return None
-            if response.status_code == 204 or not response.content:
-                return []
-            try:
-                data = response.json()
-            except ValueError:
-                raise Failed(f"FlickList Error: {path} returned a non-JSON response body")
-            if isinstance(data, list):
-                results.extend(data)
-            elif isinstance(data, dict):
-                results.append(data)
-            if page == 1:
-                if logger:
-                    logger.trace(f"Limit: {response.headers.get('X-FlickList-Limit')}")
-                try:
-                    page_count = int(response.headers.get("X-FlickList-Page-Count", 1))
-                except (TypeError, ValueError):
-                    page_count = 1
-            page += 1
-        return results
+    @staticmethod
+    def _type_of(item):
+        raw = str(item.get("media_type") or "").lower()
+        if raw == "movie":
+            return "movie"
+        if raw in ("tv", "show"):
+            return "show"
+        return None
 
     def _parse_ids(self, items, is_movie=None):
-        ids = []
-        seen = set()
-        for item in items or []:
-            ids_block = item.get("ids") or {}
-            media_type = str(item.get("media_type") or "").lower()
-            is_show = media_type in ("tv", "show")
-            is_item_movie = media_type == "movie"
-            if is_movie is True and not is_item_movie:
-                continue
-            if is_movie is False and not is_show:
-                continue
-            tmdb_id = ids_block.get("tmdb")
-            tvdb_id = ids_block.get("tvdb")
-            imdb_id = ids_block.get("imdb")
-            fldb_id = ids_block.get("fldb")
-            if is_item_movie and tmdb_id:
-                key = (int(tmdb_id), "tmdb")
-            elif is_show and tmdb_id:
-                key = (int(tmdb_id), "tmdb_show")
-            elif is_show and tvdb_id:
-                key = (int(tvdb_id), "tvdb")
-            elif imdb_id:
-                # Kometa's Convert layer resolves imdb-only ids downstream; a GET /v3/find/{id} call here would spend the one genuinely expensive read on every read, not just unresolved ones.
-                key = (str(imdb_id), "imdb")
-            else:
-                title = item.get("title") or item.get("name") or fldb_id or "Unknown"
-                if logger:
-                    logger.warning(f"FlickList Warning: No usable ID found for {title}; skipping")
-                continue
-            dedupe_key = fldb_id or key
-            if dedupe_key in seen:
-                continue
-            seen.add(dedupe_key)
-            ids.append(key)
-        return ids
+        return tracker.parse_ids(
+            items,
+            is_movie,
+            service=self.service,
+            type_of=self._type_of,
+            native_id_of=lambda item: (item.get("ids") or {}).get("fldb"),
+        )
+
+    @staticmethod
+    def _candidate_keys(ids_block, media_type, convert):
+        return tracker.candidate_keys(ids_block, media_type, convert, native=("fldb", ids_block.get("fldb")))
 
     @staticmethod
     def _normalize_watched_movie(item):
@@ -244,12 +131,7 @@ class FlickList:
 
     @staticmethod
     def validate_flag(err_type, method_name, method_data):
-        """True/blank enables the builder; explicit false just leaves it out, same as omitting the
-        attribute - erroring on `method_name: false` punished a value config.yml owners can reach
-        for naturally (e.g. templating a shared block where one library sets a flag off)."""
-        if method_data is None:
-            return True
-        return util.parse(err_type, method_name, method_data, datatype="bool", default=True)
+        return tracker.validate_flag(err_type, method_name, method_data)
 
     @staticmethod
     def validate_up_next(err_type, method_data):
@@ -265,20 +147,7 @@ class FlickList:
 
     @staticmethod
     def validate_ratings(err_type, method_data):
-        def to_float(value, label):
-            try:
-                return float(value)
-            except (TypeError, ValueError):
-                raise Failed(f"{err_type} Error: flicklist_ratings {label} must be a number")
-
-        if method_data is None or isinstance(method_data, bool):
-            return {"minimum": None, "maximum": None}
-        if isinstance(method_data, dict):
-            dict_methods = {dm.lower(): dm for dm in method_data}
-            minimum = to_float(method_data[dict_methods["minimum"]], "minimum") if "minimum" in dict_methods else None
-            maximum = to_float(method_data[dict_methods["maximum"]], "maximum") if "maximum" in dict_methods else None
-            return {"minimum": minimum, "maximum": maximum}
-        return {"minimum": to_float(method_data, "minimum"), "maximum": None}
+        return tracker.validate_rating_range(err_type, "flicklist_ratings", method_data)
 
     def _list_items(self, list_id):
         return self._request_paginated(f"/lists/{list_id}/items")
@@ -338,7 +207,7 @@ class FlickList:
             minimum = value.get("minimum") if isinstance(value, dict) else None
             maximum = value.get("maximum") if isinstance(value, dict) else None
             filtered = []
-            for item in self._request_list("/sync/ratings"):
+            for item in self._all_ratings():
                 rating = item.get("rating")
                 if rating is None:
                     continue
@@ -356,3 +225,115 @@ class FlickList:
             self._log_info(f"Processing {pretty}")
             return self._parse_ids(self._request_list("/sync/tracked"), is_movie=False)
         raise Failed(f"FlickList Error: Method {method} not supported")
+
+    def _all_ratings(self):
+        # One /sync/ratings read per run (a failed read is remembered too), so mass ratings never re-download the list per item.
+        if self._ratings_error is not None:
+            raise self._ratings_error
+        ratings = self._ratings
+        if ratings is None:
+            try:
+                ratings = self._request_list("/sync/ratings")
+            except Failed as e:
+                self._ratings_error = e
+                raise
+            self._ratings = ratings
+        return ratings
+
+    def user_ratings(self, is_movie):
+        """Return ratings keyed by TMDb ID for movies and TVDb ID for shows."""
+        if is_movie in self._user_ratings:
+            return self._user_ratings[is_movie]
+        id_type = "tmdb" if is_movie else "tvdb"
+        ratings = {}
+        for item in self._all_ratings():
+            item_media = str(item.get("media_type") or "").lower()
+            if is_movie and item_media != "movie":
+                continue
+            if not is_movie and item_media not in ("tv", "show"):
+                continue
+            rating = item.get("rating")
+            item_id = (item.get("ids") or {}).get(id_type)
+            if rating is None or not item_id:
+                continue
+            ratings[int(item_id)] = rating
+        self._user_ratings[is_movie] = ratings
+        return ratings
+
+    def _resolve_list(self, list_id_or_name):
+        """Returns (list_id, created). Matches an existing list by numeric id or exact name; creates one if no match."""
+        as_id = None
+        if isinstance(list_id_or_name, int) and not isinstance(list_id_or_name, bool):
+            as_id = list_id_or_name
+        else:
+            text = str(list_id_or_name).strip()
+            if text.isdigit():
+                as_id = int(text)
+        own_lists = self._request_paginated("/sync/lists") or []
+        if as_id is not None:
+            for entry in own_lists:
+                if entry.get("id") == as_id:
+                    return as_id, False
+            raise Failed(f"FlickList Error: List id {as_id} not found among your own lists")
+        name = str(list_id_or_name).strip()
+        for entry in own_lists:
+            if str(entry.get("name") or "").strip() == name:
+                return entry.get("id"), False
+        created = self._request("/sync/lists", json_data={"name": name, "privacy": "private"}, method="POST")
+        new_id = created.get("id") if created else None
+        if new_id is None:
+            raise Failed(f"FlickList Error: Could not create list '{name}'")
+        return new_id, True
+
+    @staticmethod
+    def _media_type_of(item):
+        raw = str(item.get("media_type") or "").lower()
+        return "show" if raw in ("tv", "show") else "movie"
+
+    def _sync_batch(self, list_id, action, payloads):
+        if not payloads:
+            return
+        method = "POST" if action == "add" else "DELETE"
+        not_found_total = 0
+        for start in range(0, len(payloads), sync_batch_size):
+            chunk = payloads[start : start + sync_batch_size]
+            results = self._request(f"/sync/lists/{list_id}/items", json_data={"items": chunk}, method=method) or {}
+            existing_items = results.get("existing") or []
+            not_found_items = results.get("not_found") or []
+            not_found_total += len(not_found_items)
+            # `added`/`removed` counts from the API are not reliable net-new/net-removed totals (duplicate submissions in one batch double-count) - the batch size below is the trustworthy number.
+            if existing_items and logger:
+                logger.debug(f"FlickList List: {len(existing_items)} item(s) in this batch were already present: {existing_items}")
+            if not_found_items and logger:
+                shown, remaining = not_found_items[:20], len(not_found_items) - 20
+                suffix = f" (+{remaining} more)" if remaining > 0 else ""
+                logger.error(f"FlickList Error: {len(not_found_items)} item(s) not found while syncing: {shown}{suffix}")
+        if logger:
+            verb = "add" if action == "add" else "remove"
+            logger.info(f"FlickList List: submitted {len(payloads)} item(s) to {verb} ({not_found_total} not found)")
+
+    def sync_list(self, convert, list_id_or_name, ids):
+        """ids: iterable of (ids_block, media_type) pairs, e.g. ({"tmdb": 550}, "movie").
+
+        Matching is by candidate-key-set intersection via tracker.plan_list_sync - see its
+        docstring for why. This method keeps list resolution, the current-items fetch, logging
+        and batching; the diff itself lives in the shared layer.
+        """
+        list_id, created = self._resolve_list(list_id_or_name)
+        if created and logger:
+            logger.info(f"FlickList List '{list_id_or_name}' not found; created a new list (id {list_id})")
+        current_items = self._request_paginated(f"/sync/lists/{list_id}/items") or []
+        add, remove, unmatched = tracker.plan_list_sync(
+            ids,
+            current_items,
+            convert,
+            ids_of=lambda item: item.get("ids") or {},
+            type_of=self._media_type_of,
+            native_id_of=lambda ids_block: ("fldb", ids_block.get("fldb")),
+        )
+        if unmatched and logger:
+            logger.warning(f"FlickList Warning: {unmatched} existing list item(s) had no usable id at all; leaving them in place")
+        add_payloads = [{"ids": ids_block, "media_type": media_type} for ids_block, media_type in add]
+        remove_payloads = [{"ids": item_ids, "media_type": media_type} for item_ids, media_type in remove]
+        self._sync_batch(list_id, "add", add_payloads)
+        self._sync_batch(list_id, "remove", remove_payloads)

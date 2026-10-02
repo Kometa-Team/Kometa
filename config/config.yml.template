@@ -88,6 +88,8 @@ settings:
   show_missing: true
   show_missing_assets: true
   save_report: false
+  # threading:
+  #   workers: 4
   tvdb_language: eng
   ignore_ids:
   ignore_imdb_ids:
@@ -122,8 +124,9 @@ mdblist:
   apikey:                          # Enter MDBList API Key (Optional)
   cache_expiration: 60
 simkl:
-  user_token:                      # Enter SIMKL User Token (Optional)
+  refresh_token:                   # Enter SIMKL AUTH V2 refresh token (Optional)
                                    # Get one at https://utilities.kometa.wiki/simkl-oauth
+  force_refresh: false             # Set true to always refresh before SIMKL authentication (Optional)
 serializd:
   email:                           # Enter Serializd account email (Optional)
   password:                        # Enter Serializd account password (Optional)
@@ -178,17 +181,6 @@ sonarr:                            # Can be individually specified per library a
   sonarr_path:                     # This value is only needed in combination with the *_existing settings
   plex_path:                       # This value is only needed in combination with the *_existing settings
   ignore_cache: false
-trakt:
-  client_id:                       # Enter Trakt Client ID (Optional)
-  client_secret:                   # Enter Trakt Client Secret (Optional)
-  authorization:
-                                   # authorization section is autofilled by the script
-    access_token:
-    created_at:
-    expires_in:
-    refresh_token:
-    scope: public
-    token_type:
 mal:
   client_id:                       # Enter MyAnimeList Client ID (Optional)
   client_secret:                   # Enter MyAnimeList Client Secret (Optional)

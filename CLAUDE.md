@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What Kometa Is
 
-Kometa is a metadata editor for Plex media servers. It creates and manages collections, overlays, and metadata for movies/TV shows by pulling data from external services (TMDb, Trakt, IMDb, AniDB, MyAnimeList, Letterboxd, Radarr, Sonarr, etc.) and writing it back to Plex.
+Kometa is a metadata editor for Plex media servers. It creates and manages collections, overlays, and metadata for movies/TV shows by pulling data from external services (TMDb, IMDb, AniDB, MyAnimeList, Letterboxd, Radarr, Sonarr, etc.) and writing it back to Plex.
 
 ## Running Kometa
 
@@ -34,7 +34,7 @@ Tests live in `tests/` — current files: `test_builder.py`, `test_textfile.py`,
 
 ## Linting & Formatting
 
-Dev tools are in `dev-requirements.txt`. Configuration is in `pyproject.toml` (line-length 256 for all tools).
+Dev tools live in the `dev` dependency group of `pyproject.toml` and are locked in `uv.lock` (`uv sync --group dev`). Configuration is in `pyproject.toml` (line-length 256 for all tools).
 
 ```bash
 black .
@@ -51,7 +51,7 @@ Pre-commit hooks (black, isort, flake8, pyspelling) are configured in `.pre-comm
 - `CHANGELOG.md` follows [keepachangelog](https://keepachangelog.com/en/1.1.0/) format. All changes go under `## [Unreleased]` until a release is tagged.
 - `VERSION` is managed by GitHub workflows. The `release-master.yml` workflow controls version bumps (major/minor/patch). The nightly merge workflow auto-increments the `-buildXX` suffix on each merged PR.
 - Kometa follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html). New features → minor bump; bug fixes only → patch; breaking changes → major.
-- See `CONTRIBUTING.md` for the full contributor guide (branching model, PR checklist, CHANGELOG.md section conventions).
+- See `.github/CONTRIBUTING.md` for the full contributor guide (branching model, PR checklist, CHANGELOG.md section conventions).
 
 ## Architecture
 

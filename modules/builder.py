@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from concurrent.futures import Future
 from datetime import datetime, timedelta
 
 from arrapi import ArrException
@@ -11,7 +12,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, trakt, tvdb, util, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -20,6 +21,65 @@ from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, 
 logger = util.logger
 
 mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
+
+
+def _service_lock_key(method):
+    # Experiment C: classifies method into a lock bucket, mirroring gather_ids' dispatch below; unrecognized methods fall into "other" so they're always locked.
+    if "plex" in method:
+        return "plex"
+    if "tautulli" in method:
+        return "tautulli"
+    if "tracearr" in method:
+        return "tracearr"
+    if "anidb" in method:
+        return "anidb"
+    if "anilist" in method:
+        return "anilist"
+    if "mal" in method:
+        return "mal"
+    if "tvdb" in method:
+        return "tvdb"
+    if "imdb" in method:
+        return "imdb"
+    if "icheckmovies" in method:
+        return "icheckmovies"
+    if "letterboxd" in method:
+        return "letterboxd"
+    if method in textfile.builders:
+        return "textfile"
+    if "stevenlu" in method:
+        return "stevenlu"
+    if "mojo" in method:
+        return "mojo"
+    if "mdblist" in method:
+        return "mdblist"
+    if "simkl" in method:
+        return "simkl"
+    if "tmdb" in method:
+        return "tmdb"
+    if "trakt" in method:
+        return "trakt"
+    if "yamtrack" in method:
+        return "yamtrack"
+    if "serializd" in method:
+        return "serializd"
+    if "floppy" in method:
+        return "floppy"
+    if "radarr" in method:
+        return "radarr"
+    if "sonarr" in method:
+        return "sonarr"
+    return "other"
+
+
+def prefetch_gather_ids(config, builder):
+    """Submits non-Plex gather_ids calls to the shared pool, aligned with builder.builders; Plex pairs get None (main-thread only) and so does everything if threading is off."""
+    pairs = builder.builders
+    if config.thread_pool is None or not config.general["threading"]["parallel_sources"]:
+        return [None] * len(pairs)
+    return [None if "plex" in method else config.thread_pool.submit(builder.gather_ids, method, value) for method, value in pairs]
+
+
 advance_new_agent = ["item_metadata_language", "item_use_original_title"]
 advance_show = [
     "item_episode_sorting",
@@ -42,7 +102,6 @@ all_builders = (
     + tracearr.builders
     + textfile.builders
     + tmdb.builders
-    + trakt.builders
     + tvdb.builders
     + yamtrack.builders
     + serializd.builders
@@ -51,6 +110,7 @@ all_builders = (
     + radarr.builders
     + sonarr.builders
     + flicklist.builders
+    + wetrakr.builders
 )
 show_only_builders = [
     *serializd.builders,
@@ -87,7 +147,6 @@ movie_only_builders = [
     "tvdb_movie",
     "tvdb_movie_details",
     "tmdb_upcoming",
-    "trakt_boxoffice",
     "radarr_all",
     "radarr_taglist",
     "mojo_world",
@@ -105,12 +164,12 @@ summary_details = [
     "tmdb_biography",
     "tvdb_summary",
     "tvdb_description",
-    "trakt_description",
     "yamtrack_description",
     "floppy_description",
     "letterboxd_description",
     "icheckmovies_description",
     "flicklist_description",
+    "wetrakr_description",
 ]
 poster_details = ["url_poster", "tmdb_poster", "tmdb_profile", "tvdb_poster", "file_poster"]
 background_details = ["url_background", "tmdb_background", "tvdb_background", "file_background"]
@@ -233,8 +292,11 @@ none_details = [
     "flicklist_up_next",
     "flicklist_tracked",
     "flicklist_ratings",
+    "wetrakr_favorites",
+    "wetrakr_tracking",
+    "wetrakr_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings"]
+none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",
@@ -525,6 +587,7 @@ custom_sort_builders = [
     "tmdb_airing_today",
     "tmdb_on_the_air",
     "trakt_list",
+    "mdblist_streaming",
     "floppy_list",
     "floppy_tracked",
     "yamtrack_list",
@@ -561,6 +624,7 @@ custom_sort_builders = [
     "tracearr_transcoded",
     "tracearr_watch_time",
     "tracearr_in_progress",
+    "tracearr_watched_media",
     "tautulli_popular",
     "tautulli_watched",
     "mdblist_list",
@@ -602,6 +666,9 @@ custom_sort_builders = [
     "flicklist_watchlist",
     "flicklist_favorites",
     "flicklist_up_next",
+    "wetrakr_list",
+    "wetrakr_user_lists",
+    "wetrakr_favorites",
 ]
 episode_parts_only = ["plex_pilots"]
 overlay_only = ["overlay", "suppress_overlays", "value_filter"]
@@ -652,6 +719,7 @@ parts_collection_valid = (
         "item_refresh_delay",
         "imdb_list",
         "imdb_search",
+        "mdblist_list",
         "cache_builders",
         "url_theme",
         "file_theme",
@@ -661,6 +729,8 @@ parts_collection_valid = (
         "item_analyze",
         "sync_to_trakt_list",
         "sync_to_mdb_list",
+        "sync_to_flicklist_list",
+        "sync_to_wetrakr_list",
     ]
     + episode_parts_only
     + summary_details
@@ -984,7 +1054,7 @@ class CollectionBuilder:
             logger.debug("Validating Method: only_run_on_create")
             logger.debug(f"Value: {data[methods['only_run_on_create']]}")
             self.only_run_on_create = util.parse(self.Type, "only_run_on_create", self.data, datatype="bool", methods=methods, default=False)
-        if self.obj and self.only_run_on_create:
+        if self.obj is not None and self.only_run_on_create:
             raise NotScheduled("Skipped because only_run_on_create is True and the collection already exists")
 
         if "allowed_library_types" in methods and "run_definition" not in methods:
@@ -1170,7 +1240,7 @@ class CollectionBuilder:
         self.notification_additions = []
         self.notification_removals = []
         self.items = []
-        self.remove_item_map = {}
+        self._remove_item_map = {}
         self.schedule = ""
         self.beginning_count = 0
         self.default_percent = 50
@@ -1188,6 +1258,10 @@ class CollectionBuilder:
         self.mdb_list_arr_ids = None
         self.mdb_list_arr_removal_types = set()
         self.sync_missing_to_trakt_list = False
+        self.sync_to_flicklist_list = None
+        self.sync_missing_to_flicklist_list = False
+        self.sync_to_wetrakr_list = None
+        self.sync_missing_to_wetrakr_list = False
         self.collection_poster = None
         self.collection_background = None
         self.collection_logo = None
@@ -1585,10 +1659,10 @@ class CollectionBuilder:
                     logger.warning(f"Collection Warning: '{method_final}' attribute is blank")
                 elif self.playlist and method_name not in playlist_attributes:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
-                elif not self.config.Trakt and "trakt" in method_name:
-                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Trakt to be configured")
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
+                elif not self.config.WeTrakr and "wetrakr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires WeTrakr to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
@@ -1677,16 +1751,20 @@ class CollectionBuilder:
                     self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
-                elif method_name in trakt.builders or method_name in [
-                    "sync_to_trakt_list",
-                    "sync_to_mdb_list",
-                    "sync_missing_to_trakt_list",
-                ]:
-                    self._trakt(method_name, method_data)
+                elif method_name == "sync_to_mdb_list":
+                    self._sync_to_mdb_list(method_data)
                 elif method_name in yamtrack.builders:
                     self._yamtrack(method_name, method_data)
-                elif method_name in flicklist.builders:
+                elif method_name in flicklist.builders or method_name in [
+                    "sync_to_flicklist_list",
+                    "sync_missing_to_flicklist_list",
+                ]:
                     self._flicklist(method_name, method_data)
+                elif method_name in wetrakr.builders or method_name in [
+                    "sync_to_wetrakr_list",
+                    "sync_missing_to_wetrakr_list",
+                ]:
+                    self._wetrakr(method_name, method_data)
                 elif method_name in serializd.builders:
                     self._serializd(method_name, method_data)
                 elif method_name in floppy.builders:
@@ -1786,31 +1864,31 @@ class CollectionBuilder:
         self.do_report = not self.config.no_report and (self.details["save_report"])
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]))
         if self.build_collection:
-            if self.obj and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
+            if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
                 logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
                 self.library.delete(self.obj)
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj:
+                if self.obj is not None:
                     if check_url != self.library.smart_filter(self.obj):
                         self.library.update_smart_collection(self.obj, check_url)
                         logger.info(f"Metadata: Smart Collection updated to {check_url}")
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
-            if self.obj:
+            if self.obj is not None:
                 self.exists = True
                 if self.sync or self.playlist:
-                    self.remove_item_map = {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+                    self._remove_item_map = self._resolve_remove_item_map()
                 if not self.smart:
-                    self.beginning_count = len(self.remove_item_map) if self.playlist else self.obj.childCount
+                    self.beginning_count = len(self.remove_item_map) if self.playlist else self._collection_child_count(self.obj)
         else:
             self.obj = None
             if self.sync:
                 logger.warning(f"{self.Type} Error: Sync Mode can only be append when using build_collection: false")
                 self.sync = False
             self.run_again = False
-        if self.non_existing is not False and self.obj:
+        if self.non_existing is not False and self.obj is not None:
             raise NotScheduled(self.non_existing)
 
         logger.info("")
@@ -1838,16 +1916,16 @@ class CollectionBuilder:
             summary, _ = self.config.TVDb.get_list_description(method_data)
             if summary:
                 self.summaries[method_name] = summary
-        elif method_name == "trakt_description":
-            try:
-                self.summaries[method_name] = self.config.Trakt.list_description(self.config.Trakt.validate_list(method_data)[0])
-            except Failed as e:
-                logger.error(f"Trakt Error: List description not found: {e}")
         elif method_name == "flicklist_description":
             try:
                 self.summaries[method_name] = self.config.FlickList.list_description(self.config.FlickList._parse_list_id(method_data))
             except Failed as e:
                 logger.error(f"FlickList Error: List description not found: {e}")
+        elif method_name == "wetrakr_description":
+            try:
+                self.summaries[method_name] = self.config.WeTrakr.list_description(self.config.WeTrakr._parse_list_id(method_data))
+            except Failed as e:
+                logger.error(f"WeTrakr Error: List description not found: {e}")
         elif method_name == "letterboxd_description":
             self.summaries[method_name] = self.config.Letterboxd.get_list_description(method_data, self.language)
         elif method_name == "icheckmovies_description":
@@ -3258,8 +3336,11 @@ class CollectionBuilder:
             self.builders.append((method_name, self.config.TextFile.validate_text(method_data)))
 
     def _mdblist(self, method_name, method_data):
-        for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
-            self.builders.append((method_name, mdb_dict))
+        if method_name == "mdblist_streaming":
+            self.builders.append((method_name, self.config.MDBList.validate_mdblist_streaming(self.Type, method_data)))
+        else:
+            for mdb_dict in self.config.MDBList.validate_mdblist_lists(self.Type, method_data):
+                self.builders.append((method_name, mdb_dict))
 
     def _simkl(self, method_name, method_data):
         self.builders.append((method_name, self.config.Simkl.validate_simkl_dict(self.Type, method_name, method_data)))
@@ -3317,6 +3398,17 @@ class CollectionBuilder:
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
             list_type = method_name.replace("tracearr_", "", 1)
+            if list_type == "watched_media":
+                final_dict = {
+                    "list_type": list_type,
+                    "list_size": util.parse(self.Type, "list_size", dict_data, datatype="int", methods=dict_methods, minimum=1, default=10, parent=method_name),
+                    "list_days": util.parse(self.Type, "list_days", dict_data, datatype="int", methods=dict_methods, minimum=1, parent=method_name) if "list_days" in dict_methods else None,
+                    "min_state": util.parse(self.Type, "min_state", dict_data, methods=dict_methods, options=tracearr.watched_states, default="watched", parent=method_name),
+                    "user": util.parse(self.Type, "user", dict_data, methods=dict_methods, parent=method_name) if "user" in dict_methods else None,
+                    "builder_level": self.builder_level,
+                }
+                self.builders.append((method_name, final_dict))
+                continue
             final_dict = {
                 "list_type": list_type,
                 "list_days": util.parse(
@@ -3520,61 +3612,17 @@ class CollectionBuilder:
             for value in values:
                 self.builders.append((method_name[:-8] if method_name in tmdb.details_builders else method_name, value))
 
-    def _trakt(self, method_name, method_data):
-        if method_name.startswith("trakt_list"):
-            trakt_lists = self.config.Trakt.validate_list(method_data)
-            for trakt_list in trakt_lists:
-                self.builders.append(("trakt_list", trakt_list))
-            if method_name.endswith("_details"):
-                try:
-                    self.summaries[method_name] = self.config.Trakt.list_description(trakt_lists[0])
-                except Failed as e:
-                    logger.error(f"Trakt Error: List description not found: {e}")
-        elif method_name == "trakt_boxoffice":
-            if util.parse(self.Type, method_name, method_data, datatype="bool", default=False):
-                self.builders.append((method_name, 10))
-            else:
-                raise BuilderValidationError(f"{self.Type} Error: {method_name} must be set to true")
-        elif method_name == "trakt_recommendations":
-            self.builders.append((method_name, util.parse(self.Type, method_name, method_data, datatype="int", default=10, maximum=100)))
-        elif method_name == "sync_to_trakt_list":
-            if method_data not in self.config.Trakt.slugs:
-                raise BuilderValidationError(f"{self.Type} Error: {method_data} invalid. Options {', '.join(self.config.Trakt.slugs)}")
-            self.sync_to_trakt_list = method_data
-        elif method_name == "sync_to_mdb_list":
-            if isinstance(method_data, dict):
-                name = method_data.get("name")
-                mode = str(method_data.get("mode", "sync")).lower()
-            else:
-                name, mode = method_data, "sync"
-            if not name:
-                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
-            if mode not in ("sync", "append"):
-                raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
-            self.sync_to_mdb_list = {"name": str(name), "mode": mode}
-        elif method_name == "sync_missing_to_trakt_list":
-            self.sync_missing_to_trakt_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
-        elif method_name in trakt.builders:
-            if method_name in ["trakt_chart", "trakt_userlist"]:
-                trakt_dicts = method_data
-                final_method = method_name
-            elif method_name in ["trakt_watchlist", "trakt_collection"]:
-                trakt_dicts = []
-                for trakt_user in util.get_list(method_data, split=False) or []:
-                    trakt_dicts.append({"userlist": method_name[6:], "user": trakt_user})
-                final_method = "trakt_userlist"
-            else:
-                terms = method_name.split("_")
-                trakt_dicts = {
-                    "chart": terms[1],
-                    "limit": util.parse(self.Type, method_name, method_data, datatype="int", default=10),
-                    "time_period": terms[2] if len(terms) > 2 else None,
-                }
-                final_method = "trakt_chart"
-            if method_name != final_method:
-                logger.warning(f"{self.Type} Warning: {method_name} will run as {final_method}")
-            for trakt_dict in self.config.Trakt.validate_chart(self.Type, final_method, trakt_dicts, self.library.is_movie):
-                self.builders.append((final_method, trakt_dict))
+    def _sync_to_mdb_list(self, method_data):
+        if isinstance(method_data, dict):
+            name = method_data.get("name")
+            mode = str(method_data.get("mode", "sync")).lower()
+        else:
+            name, mode = method_data, "sync"
+        if not name:
+            raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list requires a name")
+        if mode not in ("sync", "append"):
+            raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
+        self.sync_to_mdb_list = {"name": str(name), "mode": mode}
 
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:
@@ -3614,6 +3662,43 @@ class CollectionBuilder:
             self.builders.append((method_name, self.config.FlickList.validate_up_next(self.Type, method_data)))
         elif method_name == "flicklist_ratings":
             self.builders.append((method_name, self.config.FlickList.validate_ratings(self.Type, method_data)))
+        elif method_name == "sync_to_flicklist_list":
+            if isinstance(method_data, dict) or not str(method_data).strip():
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_flicklist_list requires a list id or name")
+            self.sync_to_flicklist_list = method_data
+        elif method_name == "sync_missing_to_flicklist_list":
+            self.sync_missing_to_flicklist_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
+
+    def _wetrakr(self, method_name, method_data):
+        if self.config.WeTrakr is None:
+            raise BuilderValidationError(f"{self.Type} Error: wetrakr attribute not found in config")
+        if method_name in ("wetrakr_list", "wetrakr_list_details"):
+            wetrakr_lists = self.config.WeTrakr.validate_lists(self.Type, method_data)
+            for wetrakr_list in wetrakr_lists:
+                self.builders.append(("wetrakr_list", wetrakr_list))
+            if method_name.endswith("_details"):
+                try:
+                    description = self.config.WeTrakr.list_description(wetrakr_lists[0])
+                    if description:
+                        self.summaries[method_name] = description
+                except Failed as e:
+                    logger.error(f"WeTrakr Error: List description not found: {e}")
+        elif method_name == "wetrakr_user_lists":
+            user_id = self.config.WeTrakr.validate_user_id(self.Type, method_data)
+            self.builders.append((method_name, user_id))
+        elif method_name == "wetrakr_favorites":
+            if self.config.WeTrakr.validate_flag(self.Type, method_name, method_data):
+                self.builders.append((method_name, True))
+        elif method_name == "wetrakr_tracking":
+            self.builders.append((method_name, self.config.WeTrakr.validate_tracking(self.Type, method_data)))
+        elif method_name == "wetrakr_ratings":
+            self.builders.append((method_name, self.config.WeTrakr.validate_ratings(self.Type, method_data)))
+        elif method_name == "sync_to_wetrakr_list":
+            if isinstance(method_data, dict) or not str(method_data).strip():
+                raise BuilderValidationError(f"{self.Type} Error: sync_to_wetrakr_list requires a list id or name")
+            self.sync_to_wetrakr_list = method_data
+        elif method_name == "sync_missing_to_wetrakr_list":
+            self.sync_missing_to_wetrakr_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
 
     def _serializd(self, method_name, method_data):
         if self.config.Serializd is None:
@@ -3738,94 +3823,100 @@ class CollectionBuilder:
             if list_key and expired is False:
                 logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
-        if "plex" in method:
-            ids = self.library.get_rating_keys(method, value, self.playlist)
-        elif "tautulli" in method:
-            ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
-        elif "tracearr" in method:
-            if self.playlist:
+        # Experiment C: serializes gather_ids calls per service - tmdbapis' shared _api.response isn't thread-safe, assume others are too until audited.
+        with self.config.get_service_lock(_service_lock_key(method)):
+            if "plex" in method:
+                ids = self.library.get_rating_keys(method, value, self.playlist)
+            elif "tautulli" in method:
+                ids = self.library.Tautulli.get_rating_keys(value, self.playlist)
+            elif "tracearr" in method:
+                if self.playlist:
+                    ids = []
+                    connectors = {}
+                    for pl_library in self.libraries:
+                        connector = pl_library.Tracearr
+                        if not connector:
+                            continue
+                        server_key = (connector.api, connector.server_id)
+                        connectors[server_key] = connector
+                    if len(connectors) > 1:
+                        raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
+                    for connector in connectors.values():
+                        machine_id = connector.library.PlexServer.machineIdentifier
+                        server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
+                        ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
+                else:
+                    ids = self.library.Tracearr.get_rating_keys(value)
+            elif "anidb" in method:
+                anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
+                ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
+            elif "anilist" in method:
+                anilist_ids = self.config.AniList.get_anilist_ids(method, value)
+                ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
+            elif "mal" in method:
+                mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
+                ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
+            elif "tvdb" in method:
+                ids = self.config.TVDb.get_tvdb_ids(method, value)
+            elif "imdb" in method:
+                ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
+            elif "icheckmovies" in method:
+                ids = self.config.ICheckMovies.get_imdb_ids(method, value)
+            elif "letterboxd" in method:
+                ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
+            elif method == "text_file":
+                # is_movie: True=movie-only, False=show-only, None=playlist mode (both) - get_ids must handle all three.
+                ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
+            elif method == "text":
+                ids = self.config.TextFile.get_text_ids(value, self.library.is_movie if not self.playlist else None)
+            elif "stevenlu" in method:
+                ids = self.config.StevenLu.get_imdb_ids(method, value)
+            elif "mojo" in method:
+                ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
+            elif "mdblist" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                ids = self.config.MDBList.get_tmdb_ids(
+                    method,
+                    value,
+                    self.library.is_movie if not self.playlist else None,
+                    is_episode=self.builder_level == "episode",
+                )
+            elif "simkl" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
+                ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "tmdb" in method:
+                ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
+            elif "trakt" in method:
+                ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
+            elif "yamtrack" in method:
+                if method == "yamtrack_tracked":
+                    ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    if mal_ids:
+                        ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+                else:
+                    ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "flicklist" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries.
+                ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "wetrakr" in method:
+                # is_movie=None = playlist mode; must return BOTH movie and show entries.
+                ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "serializd" in method:
+                ids = self.config.Serializd.get_builder_ids(method, value)
+            elif "floppy" in method:
+                if method == "floppy_tracked":
+                    ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
+                    if mal_ids:
+                        ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
+                else:
+                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
+            elif "radarr" in method:
+                ids = self.library.Radarr.get_tmdb_ids(method, value)
+            elif "sonarr" in method:
+                ids = self.library.Sonarr.get_tvdb_ids(method, value)
+            else:
                 ids = []
-                connectors = {}
-                for pl_library in self.libraries:
-                    connector = pl_library.Tracearr
-                    if not connector:
-                        continue
-                    server_key = (connector.api, connector.server_id)
-                    connectors[server_key] = connector
-                if len(connectors) > 1:
-                    raise Failed("Tracearr Error: Playlist builders can only combine libraries from one Plex server")
-                for connector in connectors.values():
-                    machine_id = connector.library.PlexServer.machineIdentifier
-                    server_libraries = [library for library in self.libraries if library.PlexServer.machineIdentifier == machine_id]
-                    ids.extend(connector.get_rating_keys(value, is_playlist=True, libraries=server_libraries))
-            else:
-                ids = self.library.Tracearr.get_rating_keys(value)
-        elif "anidb" in method:
-            anidb_ids = self.config.AniDB.get_anidb_ids(method, value)
-            ids = self.config.Convert.anidb_to_ids(anidb_ids, self.library)
-        elif "anilist" in method:
-            anilist_ids = self.config.AniList.get_anilist_ids(method, value)
-            ids = self.config.Convert.anilist_to_ids(anilist_ids, self.library)
-        elif "mal" in method:
-            mal_ids = self.config.MyAnimeList.get_mal_ids(method, value)
-            ids = self.config.Convert.myanimelist_to_ids(mal_ids, self.library)
-        elif "tvdb" in method:
-            ids = self.config.TVDb.get_tvdb_ids(method, value)
-        elif "imdb" in method:
-            ids = self.config.IMDb.get_imdb_ids(method, value, self.language)
-        elif "icheckmovies" in method:
-            ids = self.config.ICheckMovies.get_imdb_ids(method, value)
-        elif "letterboxd" in method:
-            ids = self.config.Letterboxd.get_tmdb_ids(method, value, self.language)
-        elif method == "text_file":
-            #  is_movie=None means playlist mode (movies + shows).
-            # The target method MUST handle all three states correctly:
-            # True = movie-only, False = show-only, None = both.
-            ids = self.config.TextFile.get_ids(value, self.library.is_movie if not self.playlist else None)
-        elif method == "text":
-            ids = self.config.TextFile.get_text_ids(value, self.library.is_movie if not self.playlist else None)
-        elif "stevenlu" in method:
-            ids = self.config.StevenLu.get_imdb_ids(method, value)
-        elif "mojo" in method:
-            ids = self.config.BoxOfficeMojo.get_imdb_ids(method, value)
-        elif "mdblist" in method:
-            #  is_movie=None = playlist mode. Must return BOTH movie
-            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
-            ids = self.config.MDBList.get_tmdb_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "simkl" in method:
-            #  is_movie=None = playlist mode. Must return BOTH movie
-            # and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
-            ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "tmdb" in method:
-            ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
-        elif "trakt" in method:
-            ids = self.config.Trakt.get_trakt_ids(method, value, self.library.is_movie)
-        elif "yamtrack" in method:
-            if method == "yamtrack_tracked":
-                ids, mal_ids = self.config.YamTrack.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
-                if mal_ids:
-                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
-            else:
-                ids = self.config.YamTrack.get_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "flicklist" in method:
-            #  is_movie=None = playlist mode; must return BOTH movie and show entries.
-            ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
-        elif "serializd" in method:
-            ids = self.config.Serializd.get_builder_ids(method, value)
-        elif "floppy" in method:
-            if method == "floppy_tracked":
-                ids, mal_ids = self.config.Floppy.get_tracked_ids(value, self.library.is_movie if not self.playlist else None)
-                if mal_ids:
-                    ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
-            else:
-                ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
-        elif "radarr" in method:
-            ids = self.library.Radarr.get_tmdb_ids(method, value)
-        elif "sonarr" in method:
-            ids = self.library.Sonarr.get_tvdb_ids(method, value)
-        else:
-            ids = []
-            logger.error(f"{self.Type} Error: {method} method not supported")
+                logger.error(f"{self.Type} Error: {method} method not supported")
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
@@ -4034,6 +4125,24 @@ class CollectionBuilder:
                                     self._log_missing_part(f"tvdb_episode:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
                         if not found and tvdb_id not in self.missing_shows and self.do_missing:
                             self.missing_shows.append(tvdb_id)
+                    elif id_type == "tmdb_episode" and (self.builder_level == "episode" or self.playlist):
+                        tmdb_id, season_num, episode_num = input_id.split("_")
+                        try:
+                            tvdb_id = self.config.Convert.tmdb_to_tvdb(int(tmdb_id), fail=True)
+                        except Failed as e:
+                            logger.warning(e)
+                            continue
+                        found = False
+                        for pl_library in self.libraries:
+                            if tvdb_id in pl_library.show_map:
+                                found = True
+                                show_item = pl_library.fetch_item(pl_library.show_map[tvdb_id][0])
+                                try:
+                                    items.append(show_item.episode(season=int(season_num), episode=int(episode_num)))
+                                except NotFound:
+                                    self._log_missing_part(f"tmdb_episode:{input_id}", f"{show_item.title} Season: {season_num} Episode: {episode_num} Missing")
+                        if not found and tvdb_id not in self.missing_shows and self.do_missing:
+                            self.missing_shows.append(tvdb_id)
                     elif id_type in ["tvdb", "tmdb_show", "tvdb_season", "tvdb_episode"]:
                         tvdb_season = None
                         if id_type == "tmdb_show":
@@ -4113,7 +4222,7 @@ class CollectionBuilder:
         if not items:
             self._log_episode_count(total_ids, unique_total=0)
             return None
-        name = self.obj.title if self.obj else self.name
+        name = self.obj.title if self.obj is not None else self.name
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
@@ -4324,7 +4433,8 @@ class CollectionBuilder:
                                     sub_display = ""
                                     for variant in result:
                                         built_arg = build_url_arg(quote(str(variant)) if attr in plex.string_attributes else variant, arg_s=og_value)
-                                        sub_display += built_arg[1]
+                                        if not sub_display:
+                                            sub_display = built_arg[1]
                                         sub_results += f"{sub_conjunction if len(sub_results) > 0 else ''}{built_arg[0]}"
                                     display_add += sub_display
                                     results += f"{conjunction if len(results) > 0 else ''}push=1&{sub_results}pop=1&"
@@ -4503,6 +4613,7 @@ class CollectionBuilder:
                     if variants:
                         valid_list.append((fvalue, variants[0] if len(variants) == 1 else variants))
                         continue
+                    names = self.library.get_language_search_options(attribute)
                 elif str(fvalue) in search_choices or str(fvalue).lower() in search_choices:
                     valid_value = search_choices[str(fvalue) if str(fvalue) in search_choices else str(fvalue).lower()]
                     valid_list.append((fvalue, valid_value) if plex_search else valid_value)
@@ -4617,7 +4728,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Adding to {self.name} {self.Type}", space=False, border=False)
         logger.info("")
-        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj else self.name, self.smart_label_collection)
+        name, collection_items = self.library.get_collection_name_and_items(self.obj if self.obj is not None else self.name, self.smart_label_collection)
         collection_item_keys = {ci.ratingKey for ci in collection_items}
         total = self.limit if self.limit and len(self.found_items) > self.limit else len(self.found_items)
         spacing = len(str(total)) * 2 + 1
@@ -4640,7 +4751,7 @@ class CollectionBuilder:
                 amount_added += 1
                 if self.details["changes_webhooks"]:
                     self.notification_additions.append(util.item_set(item, self.library.get_id_from_maps(item.ratingKey)))
-        if self.playlist and items_added and not self.obj:
+        if self.playlist and items_added and self.obj is None:
             self.obj = self.library.create_playlist(self.name, items_added)
             logger.info("")
             logger.info(f"Playlist: {self.name} created")
@@ -4794,6 +4905,9 @@ class CollectionBuilder:
                                     tmdb_item = self.config.TMDb.get_show(
                                         self.config.Convert.tvdb_to_tmdb(self.library.show_rating_key_map[item.ratingKey], fail=True),
                                     )
+                            except tmdb.NotFound as e:
+                                logger.debug(e)
+                                or_result = False
                             except Failed as e:
                                 logger.error(e)
                                 or_result = False
@@ -5044,7 +5158,7 @@ class CollectionBuilder:
 
     @timings.timed("load_collection_items")
     def load_collection_items(self):
-        if self.build_collection and self.obj:
+        if self.build_collection and self.obj is not None:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
@@ -5351,6 +5465,29 @@ class CollectionBuilder:
                 logger.stacktrace()
                 logger.error(f"Arr Error: {e}")
 
+    @property
+    def remove_item_map(self):
+        # Resolves the deferred thread_pool fetch (see __init__) on first real use - usually already done by the time add_to_collection() reaches it.
+        if isinstance(self._remove_item_map, Future):
+            self._remove_item_map = self._remove_item_map.result()
+        return self._remove_item_map
+
+    @remove_item_map.setter
+    def remove_item_map(self, value):
+        self._remove_item_map = value
+
+    def _resolve_remove_item_map(self):
+        # Playlists need len() below so they fetch eagerly; sync collections don't need this until add_to_collection(), so it's deferred to thread_pool when prefetch_collection_children is enabled - see remove_item_map property.
+        if not self.playlist and self.config.thread_pool is not None and self.config.general["threading"]["prefetch_collection_children"]:
+            obj, smart_label_collection = self.obj, self.smart_label_collection
+            return self.config.thread_pool.submit(lambda: {i.ratingKey: i for i in self.library.get_collection_items(obj, smart_label_collection)})
+        return {i.ratingKey: i for i in self.library.get_collection_items(self.obj, self.smart_label_collection)}
+
+    @staticmethod
+    def _collection_child_count(obj):
+        # Plex returns None for childCount on genuinely-empty separator collections - treat as 0, not a TypeError (builder.py fix, 2026-07-30).
+        return obj.childCount or 0
+
     @timings.timed("load_collection")
     def load_collection(self):
         if self.obj is None and self.smart_url:
@@ -5363,7 +5500,7 @@ class CollectionBuilder:
                 if not self.library.smart_label_check(self.name):
                     raise Failed
                 smart_type, _, self.smart_url = self.build_filter("smart_label", self.smart_label, default_sort="random")
-                if not self.obj:
+                if self.obj is None:
                     self.library.create_smart_collection(self.name, smart_type, self.smart_url, self.ignore_blank_results)
             except Failed:
                 raise Failed(f"{self.Type} Error: Label: {self.name} was not added to any items in the Library")
@@ -5403,6 +5540,8 @@ class CollectionBuilder:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
         elif "flicklist_list_details" in self.summaries:
             summary = ("flicklist_list_details", self.summaries["flicklist_list_details"])
+        elif "wetrakr_list_details" in self.summaries:
+            summary = ("wetrakr_list_details", self.summaries["wetrakr_list_details"])
         elif "floppy_list_details" in self.summaries:
             summary = ("floppy_list_details", self.summaries["floppy_list_details"])
         elif "tmdb_list_details" in self.summaries:
@@ -5675,9 +5814,13 @@ class CollectionBuilder:
                 else:
                     raise Failed(str(e))
             items = self.library.fetchItems(search_data[2])
+        if self.playlist and self.obj is not None:
+            # update_item_details() left plexapi's cached playlistItemIDs as None
+            self.library.query(self.obj.reload)
         total_items = len(items)
         previous = None
         sort_edit = False
+        moved = False
         for i, item in enumerate(items, 0):
             try:
                 if len(self.items) <= i or item.ratingKey != self.items[i].ratingKey:
@@ -5685,10 +5828,14 @@ class CollectionBuilder:
                     self.library.moveItem(self.obj, item, previous)
                     logger.info(f"({i + 1}/{total_items}) Moving {util.item_title(item)} {text}")
                     sort_edit = True
+                    moved = True
                 previous = item
             except Failed:
                 logger.error(f"Failed to Move {util.item_title(item)}")
                 sort_edit = True
+        if moved and self.playlist and self.obj is not None:
+            # moveItem() leaves that same cache holding the pre-move order
+            self.library.query(self.obj.reload)
         if not sort_edit:
             logger.info("No Sorting Required")
 
@@ -5696,7 +5843,7 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Syncing {self.name} {self.Type} to Trakt List {self.sync_to_trakt_list}", space=False, border=False)
         logger.info("")
-        if self.obj:
+        if self.obj is not None:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         current_ids = []
@@ -5725,6 +5872,49 @@ class CollectionBuilder:
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
+    def _tracker_sync_ids(self, service, include_missing):
+        """Provider-agnostic walk of self.items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
+        service names the tracker in the skip-count warning; include_missing extends the result with this collection's missing movies/shows."""
+        current_ids = []
+        skipped_seasons_and_episodes = 0
+        for item in self.items:
+            for pl_library in self.libraries:
+                new_id = None
+                if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                    new_id = ({"tmdb": pl_library.movie_rating_key_map[item.ratingKey]}, "movie")
+                elif isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                    new_id = ({"tvdb": pl_library.show_rating_key_map[item.ratingKey]}, "show")
+                elif isinstance(item, (Season, Episode)):
+                    skipped_seasons_and_episodes += 1
+                    break
+                if new_id:
+                    current_ids.append(new_id)
+                    break
+        if skipped_seasons_and_episodes:
+            logger.warning(f"{service} Warning: Skipped {skipped_seasons_and_episodes} season/episode item(s); {service} lists hold movies and shows only")
+        if include_missing:
+            current_ids.extend([({"tmdb": mm}, "movie") for mm in self.missing_movies])
+            current_ids.extend([({"tvdb": ms}, "show") for ms in self.missing_shows])
+        return current_ids
+
+    def sync_flicklist_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to FlickList List {self.sync_to_flicklist_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.FlickList.sync_list(self.config.Convert, self.sync_to_flicklist_list, self._tracker_sync_ids("FlickList", self.sync_missing_to_flicklist_list))
+
+    def sync_wetrakr_list(self):
+        logger.info("")
+        logger.separator(f"Syncing {self.name} {self.Type} to WeTrakr List {self.sync_to_wetrakr_list}", space=False, border=False)
+        logger.info("")
+        if self.obj is not None:
+            self.library.item_reload(self.obj)
+        self.load_collection_items()
+        self.config.WeTrakr.sync_list(self.config.Convert, self.sync_to_wetrakr_list, self._tracker_sync_ids("WeTrakr", self.sync_missing_to_wetrakr_list))
+
     def sync_mdb_list(self):
         if not self.sync_to_mdb_list:
             return
@@ -5738,7 +5928,7 @@ class CollectionBuilder:
                 removal_types=self.mdb_list_arr_removal_types,
             )
             return
-        if self.obj:
+        if self.obj is not None:
             self.library.item_reload(self.obj)
         self.load_collection_items()
         current_ids = []
@@ -5770,10 +5960,10 @@ class CollectionBuilder:
         return list(dict.fromkeys(current_ids))
 
     def delete(self):
-        title = self.obj.title if self.obj else self.name
+        title = self.obj.title if self.obj is not None else self.name
         if self.playlist:
             output = f"Deleting {self.Type} {title}"
-        elif self.obj:
+        elif self.obj is not None:
             output = f"{self.Type} {self.obj.title} deleted"
             if self.smart_label_collection:
                 for item in self.library.search(label=self.name, libtype=self.builder_level):
@@ -5792,14 +5982,14 @@ class CollectionBuilder:
                     output += f"\nPlaylist deleted on User {user}"
                 except Failed:
                     output += f"\nPlaylist not found on User {user}"
-        elif self.obj:
+        elif self.obj is not None:
             self.library.delete_collection(self.obj)
-        if self.obj:
+        if self.obj is not None:
             self.deleted = True
         return output
 
     def sync_playlist(self):
-        if self.obj and self.valid_users:
+        if self.obj is not None and self.valid_users:
             logger.info("")
             logger.separator("Syncing Playlist to Users", space=False, border=False)
             logger.info("")
@@ -5813,7 +6003,7 @@ class CollectionBuilder:
                     logger.info(f"Playlist: {self.name} synced to {user}")
 
     def exclude_admin_from_playlist(self):
-        if self.obj and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
+        if self.obj is not None and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
             logger.info("")
             logger.separator("Excluding Admin from Playlist", space=False, border=False)
             logger.info("")
@@ -5824,7 +6014,7 @@ class CollectionBuilder:
                 logger.info(f"Playlist: {self.name} not found on User {self.library.account.username}")
 
     def send_notifications(self, playlist=False):
-        if self.obj and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
+        if self.obj is not None and not self.deleted and self.details["changes_webhooks"] and (self.created or len(self.notification_additions) > 0 or len(self.notification_removals) > 0):
             self.library.item_reload(self.obj)
             try:
                 self.library.Webhooks.collection_hooks(

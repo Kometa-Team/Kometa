@@ -34,9 +34,11 @@ tags:
   - test
   - tmdb_birthday
   - changes_webhooks
-  - sync_to_trakt_list
   - sync_to_mdb_list
-  - sync_missing_to_trakt_list
+  - sync_to_flicklist_list
+  - sync_missing_to_flicklist_list
+  - sync_to_wetrakr_list
+  - sync_missing_to_wetrakr_list
   - run_definition
   - default_percent
   - ignore_blank_results
@@ -52,7 +54,7 @@ All the following attributes serve various functions as how the definition funct
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `blank_collection`           | **Description:** When set to true the collection will be created with no builders and no items added.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `build_collection`           | **Description:** When set to false the collection won't be created but items can still be added to Radarr/Sonarr. Does not work for playlists.<br>**Default:** `true`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search`, `trakt_list`, or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                                                                                                                                                                                                |
+| `builder_level`              | **Description:** Make season, episode, album or track collections/overlays from `plex_all`, `plex_search` or `imdb_list` Builders and Filters<br>**Values:**<table class="clearTable"><tr><td>`season`</td><td>Collection contains seasons</td></tr><tr><td>`episode`</td><td>Collection contains episodes</td></tr><tr><td>`album`</td><td>Collection contains albums</td></tr><tr><td>`track`</td><td>Collection contains tracks</td></tr></table>                                                                                                                                                                                                                                                                                                                                                |
 | `cache_builders`             | **Description:** Caches the items found by the builders for a number of days. This is useful if you run the same configuration on multiple libraries/servers in one run just set the value to `1`.<br>**Default:** `0` <br>**Values:** number 0 or greater                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `changes_webhooks`           | **Description:** Used to specify a definition changes webhook for just this definition.<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of webhooks                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 | `default_percent`            | **Description:** Used to declare the default percent for `episodes`, `seasons`, `tracks`, and `albums` [special filters](filters.md#special-filters). See [Example](#default-percent-example) below.<br>**Default:** `50`.<br>**Values:** Integer between 1 and 100                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
@@ -79,10 +81,12 @@ All the following attributes serve various functions as how the definition funct
 | `show_missing`               | **Description:** definition level `show_missing` toggle.<br>**Default:** `show_missing` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `show_unfiltered`            | **Description:** definition level `show_unfiltered` toggle.<br>**Default:** `show_unfiltered` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `smart_label`                | **Description:** Adds a label to all items found by the builder, which is then used to create a Smart Collection searching for the label<br>See [Smart Label Definitions](#smart-label-defintiions) for more information and use-cases                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| `sync_missing_to_trakt_list` | **Description:** Used to also sync missing items to the Trakt List specified by `sync_to_trakt_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `sync_missing_to_flicklist_list` | **Description:** Used to also sync missing items to the FlickList List specified by `sync_to_flicklist_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `sync_missing_to_wetrakr_list` | **Description:** Used to also sync missing items to the WeTrakr List specified by `sync_to_wetrakr_list`.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `sync_mode`                  | **Description:** Used to change how builders sync with this definition.<br>**Default:** `sync_mode` [settings value](../config/settings.md) in the Configuration File<br>**Values:** `sync` or `append`<br>See main [settings page](../config/settings.md#sync-mode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `sync_to_trakt_list`         | **Description:** Used to specify a trakt list you want the definition synced to.<br>**Values:** Trakt List Slug you want to sync to                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 | `sync_to_mdb_list`           | **Description:** Syncs a collection to an MDBList static list by exact `name`, creating it when absent. Use a name directly or an object with `name` and optional `mode` (`sync` by default, or `append`).                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `sync_to_flicklist_list`     | **Description:** Syncs a collection to a FlickList list, by numeric list id or exact `name`. A matching list is used if found among your own FlickList lists; otherwise one is created. See [FlickList Sync Example](#flicklist-sync-example) below.<br>**Values:** FlickList list id (number) or list name (string)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `sync_to_wetrakr_list`       | **Description:** Syncs a collection to a WeTrakr list, by numeric list id or exact `name`. A matching list is used if found among your own WeTrakr lists; otherwise one is created. Free WeTrakr accounts are limited to 5 lists of 250 items each. See [WeTrakr Sync Example](#wetrakr-sync-example) below.<br>**Values:** WeTrakr list id (number) or list name (string)                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `template`                   | **Description:** Used to specify a template and Template Variables to use for this definition. See the [Templates Page](templates.md) for more information.<br>**Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | `test`                       | **Description:** When running in Test Mode (`--run-tests` [option](../kometa/environmental.md)) only definitions with `test: true` will be run.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | `tmdb_birthday`              | **Description:** Controls if the Definition is run based on `tmdb_person`'s Birthday. Has 3 possible attributes `this_month`, `before` and `after`.<br>**Values:**<table class="clearTable"><tr><td>`this_month`</td><td>Run's if Birthday is in current Month</td><td>`true`/`false`</td></tr><tr><td>`before`</td><td>Run if X Number of Days before the Birthday</td><td>Number 0 or greater</td></tr><tr><td>`after`</td><td>Run if X Number of Days after the Birthday</td><td>Number 0 or greater</td></tr></table>                                                                                                                                                                                                                                                                                          |
@@ -117,6 +121,74 @@ The default `mode` is `sync`, which adds missing items and removes items no
 longer present in the collection. Use `append` to add items without removing
 existing list entries. Movies and shows are supported.
 
+### FlickList Sync Example
+
+`sync_to_flicklist_list` synchronizes a collection with a list in your FlickList account. The list is
+found by numeric id or exact name among your own lists, and created automatically when no match exists.
+
+```yaml
+collections:
+  Recently Added:
+    plex_search:
+      all:
+        added: 30
+    sync_to_flicklist_list: "Recently Added"
+
+  Missing Movies and Shows:
+    plex_search:
+      all:
+        added: 30
+    sync_to_flicklist_list: "Missing Movies and Shows"
+    sync_missing_to_flicklist_list: true
+```
+
+Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
+FlickList lists do not have a concept of individual seasons or episodes.
+
+FlickList has no list-reorder endpoint, so `sync_to_flicklist_list` cannot
+preserve a collection's custom order on the FlickList side — items land in the list, but not necessarily
+in the same order as the Kometa collection.
+
+If Kometa cannot confidently match an item already in the FlickList list against the collection's current
+contents (for example, an item added to the list some other way that only carries an id type Kometa
+cannot resolve), that item is left in the list rather than removed. A stale, over-cautious leftover is
+preferred over the alternative of the sync deleting something it shouldn't have.
+
+### WeTrakr Sync Example
+
+`sync_to_wetrakr_list` synchronizes a collection with a list in your WeTrakr account. The list is
+found by numeric id or exact name among your own lists, and created automatically when no match exists.
+
+```yaml
+collections:
+  Recently Added:
+    plex_search:
+      all:
+        added: 30
+    sync_to_wetrakr_list: "Recently Added"
+
+  Missing Movies and Shows:
+    plex_search:
+      all:
+        added: 30
+    sync_to_wetrakr_list: "Missing Movies and Shows"
+    sync_missing_to_wetrakr_list: true
+```
+
+Movies and shows are supported; season/episode-level collections are skipped with a single warning, since
+WeTrakr lists do not have a concept of individual seasons or episodes.
+
+Free WeTrakr accounts are limited to 5 lists of 250 items each; syncing a larger collection, or creating a
+6th list, fails with the account's own upgrade message rather than a generic error.
+
+This sync does not preserve a collection's custom order on the WeTrakr side — items land in the list, but
+not necessarily in the same order as the Kometa collection.
+
+If Kometa cannot confidently match an item already in the WeTrakr list against the collection's current
+contents (for example, an item added to the list some other way that only carries an id type Kometa
+cannot resolve), that item is left in the list rather than removed. A stale, over-cautious leftover is
+preferred over the alternative of the sync deleting something it shouldn't have.
+
 ## Smart Label Definitions
 
 Smart Labels are a process that Kometa uses to build [Smart Collections](builders/plex/overview.md#understanding-smart-vs-manual-collections) using non-Plex builders.
@@ -133,7 +205,7 @@ Here is an example of a Smart Label definition being used to create a Smart Coll
 ```yaml
 collections:
   Marvel Cinematic Universe:
-    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
     smart_label: release.desc
 ```
 
@@ -141,14 +213,14 @@ The above can also be defined as:
 ```yaml
 collections:
   Marvel Cinematic Universe:
-    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
     smart_label:
       sort_by: release.desc
       all:
         label: <<smart_label>>
 ```
 
-The processing for both of the above examples are identical: Kometa fetches all the items within that Trakt list and applies a 
+The processing for both of the above examples are identical: Kometa fetches all the items within that MDBList list and applies a 
 "Marvel Cinematic Universe" label to each of the items in Plex.
 
 It then uses the Smart Label definition (which is effectively a `smart_filter` builder) which searches for items which has the label of `<<smart_label>>` 
@@ -161,7 +233,7 @@ Let's add some new criteria to our previous example:
 ```yaml
 collections:
   Unplayed Marvel Cinematic Universe with Robert Downey Jr:
-    trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+    mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
     smart_label:
       sort_by: release.desc
       all:
