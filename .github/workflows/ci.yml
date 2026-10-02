@@ -119,8 +119,8 @@ jobs:
         run: docker run --rm "$IMAGE" python3 -c "import plexapi, requests, lxml, PIL, tmdbapis, serializd; print('imports ok')"
 
       - name: Verify python3 resolves to the locked environment
-        # ENTRYPOINT calls python3 by name, so if PATH ever stops pointing at the venv the
-        # container would silently run without the locked dependencies.
+        # Keep bare python3 commands used by interactive shells and subprocesses on the
+        # locked environment; the application entrypoint addresses the venv directly.
         env:
           IMAGE: kometa-base-ci:${{ github.sha }}
         run: |

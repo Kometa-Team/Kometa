@@ -124,11 +124,11 @@ hide:
 
     4. Change the container name if you wish.
 
-        Command line arguments can be entered in the "Entrypoint" field after `/tini -s python3 kometa.py --`  
+        Command line arguments can be entered in the "Entrypoint" field after `/tini -s /.venv/bin/python3 kometa.py --`
 
         IMPORTANT: **DO NOT REMOVE** ANY ELEMENT OF THAT TEXT. DO NOT ENTER ANYTHING INTO THE "Command" FIELD.
 
-        For example, you could enter the following into the "Entrypoint" field to make Kometa run immediately when the container starts up: `/tini -s python3 kometa.py -- --run`
+        For example, you could enter the following into the "Entrypoint" field to make Kometa run immediately when the container starts up: `/tini -s /.venv/bin/python3 kometa.py -- --run`
 
         Typically, in a Docker environment, this sort of thing is done via Environment Variables [the next step here]. 
         Editing the "Entrypoint" is not recommended, as it's easy to render the container non-functional if you are not sure what you're doing.
