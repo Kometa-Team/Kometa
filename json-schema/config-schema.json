@@ -72,6 +72,9 @@
     },
     "playlist_files": {
       "$ref": "#/definitions/playlist-path"
+    },
+    "simkl": {
+      "$ref": "#/definitions/simkl-api"
     }
   },
   "required": [
@@ -1215,13 +1218,49 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "user_token": {
+        "force_refresh": {
+          "type": "boolean",
+          "description": "Always refresh the AUTH V2 token before authentication."
+        },
+        "refresh_token": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Simkl AUTH V2 refresh token. Kometa automatically refreshes and saves access-token data."
+        },
+        "access_token": {
+          "type": "string",
+          "description": "Managed by Kometa; do not set manually."
+        },
+        "token_type": {
           "type": "string"
+        },
+        "expires_in": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "access_token_expires_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "refresh_token_expires_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scope": {
+          "type": "string"
+        },
+        "user_token": {
+          "type": "string",
+          "description": "Obsolete AUTH V1 credential; replace with a new AUTH V2 refresh_token."
         }
       },
-      "required": [
-        "user_token"
-      ],
+      "required": [],
       "title": "simkl"
     },
     "ntfy-api": {

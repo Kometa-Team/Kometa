@@ -224,6 +224,17 @@ SCHEMA_DIR = os.path.join(REPO_ROOT, "json-schema")
 _VALID_CONFIG_STUB = "plex:\n" "  url: http://localhost:32400\n" "  token: fake-token\n" "tmdb:\n" "  apikey: fake-apikey\n"
 
 
+def test_schema_accepts_simkl_auth_v2_refresh_token(tmp_path, monkeypatch):
+    monkeypatch.setattr(validator_module, "logger", FakeLogger())
+    config = _VALID_CONFIG_STUB + "simkl:\n  refresh_token: simkl_rt_example\n  force_refresh: true\n"
+    validator = make_validator(tmp_path, config, level="syntax", validate_schema=True, schema_path=SCHEMA_DIR)
+
+    passed, errors, warnings = validator.validate()
+
+    assert passed, f"Unexpected errors: {errors}"
+    assert errors == []
+
+
 def test_schema_valid_collection_file_passes(tmp_path, monkeypatch):
     monkeypatch.setattr(validator_module, "logger", FakeLogger())
     config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/good.yml\n"
