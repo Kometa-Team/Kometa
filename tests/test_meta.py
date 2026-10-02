@@ -436,6 +436,18 @@ class TestStreamingTemplate:
         assert result["limit"] == expected
 
 
+class TestNetworkDefault:
+    def test_starz_network_variants_use_canonical_collection(self):
+        network_path = Path(__file__).resolve().parents[1] / "defaults" / "show" / "network.yml"
+        with network_path.open(encoding="utf-8") as handle:
+            network = YAML(typ="safe").load(handle)
+
+        dynamic = network["dynamic_collections"]["Network"]
+
+        assert "Starz" in dynamic["include"]
+        assert dynamic["addons"]["Starz"] == ["STARZ", "Starz Encore", "STARZ Encore"]
+
+
 class TestBasedTemplateLimit:
     @pytest.mark.parametrize(
         ("template_variables", "expected"),
