@@ -24,7 +24,7 @@ flicklist:
 * **FlickList's own dashboard.** Any FlickList account can mint a key from Developer → Your Apps, no waiting or
   approval required. Read and write scopes are both selectable, and page size is configurable there (up to 500).
 * **Kometa Utilities.** A future addition to the [Kometa Utilities website](https://utilities.kometa.wiki), the
-  same site used to authenticate Plex, MyAnimeList, SIMKL, and Trakt, will offer a guided device-code flow that
+  same site used to authenticate Plex, MyAnimeList, and SIMKL will offer a guided device-code flow that
   mints a key and hands you a paste-ready `flicklist:` block. Not yet available; this page will be updated once
   it ships.
 

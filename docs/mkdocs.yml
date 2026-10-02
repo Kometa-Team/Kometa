@@ -1,3 +1,8 @@
+# This file lives inside the docs tree, so docs_dir is its own directory and the build output goes back to the repo root.
+docs_dir: .
+site_dir: ../site
+exclude_docs: |
+  mkdocs.yml
 site_name: Kometa Wiki
 site_author: meisnate12
 site_description: Kometa is an open-source python project allowing you to unlock the potential of your media server.
@@ -9,7 +14,7 @@ theme:
   name: material
   logo: assets/images/icons/icon.png
   favicon: assets/images/icons/favicon.png
-  custom_dir: docs/overrides
+  custom_dir: overrides
   font:
     text: DM Sans
     code: Fira Code
@@ -47,7 +52,6 @@ plugins:
       'redact.md': 'https://regex101.com/r/DMo1DQ/latest'
       'link.md': 'https://discord.com/invite/kometa-822460010649878528'
       'malauth.md': 'config/authentication.md'
-      'traktauth.md': 'config/authentication.md'
       'kometa/install/local.md': 'kometa/install/walkthroughs/local.md'
       'kometa/install/docker.md': 'kometa/install/walkthroughs/docker.md'
       'kometa/install/unraid.md': 'kometa/install/walkthroughs/unraid.md'
@@ -62,9 +66,6 @@ extra:
     lang: en
   - name: Develop Docs
     link: /en/develop/
-    lang: en
-  - name: Nightly Docs
-    link: /en/nightly/
     lang: en
   social:
   - icon: fontawesome/solid/heart
@@ -120,7 +121,7 @@ extra_javascript:
 - https://unpkg.com/@popperjs/core@2
 - https://unpkg.com/tippy.js@6
 hooks:
-- docs/hooks/copyright.py
+- hooks/copyright.py
 
 nav:
 - KOMETA:
@@ -192,10 +193,10 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
-      - Trakt: config/trakt.md
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
+      - WeTrakr: config/wetrakr.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
       - Webhooks: config/webhooks.md
@@ -238,7 +239,6 @@ nav:
       - Tautulli Charts: defaults/chart/tautulli.md
       - TMDb Charts: defaults/chart/tmdb.md
       - Tracearr Charts: defaults/chart/tracearr.md
-      - Trakt Charts: defaults/chart/trakt.md
       - Other Charts: defaults/chart/other.md
     - Content:
       - Genres: defaults/both/genre.md
@@ -380,13 +380,6 @@ nav:
         - List: files/builders/imdb/list.md
         - Search: files/builders/imdb/search.md
         - Watchlist: files/builders/imdb/watchlist.md
-      - Trakt:
-        - Overview: files/builders/trakt/overview.md
-        - Box Office: files/builders/trakt/box-office.md
-        - Chart: files/builders/trakt/chart.md
-        - List: files/builders/trakt/list.md
-        - Recommendations: files/builders/trakt/recommendations.md
-        - UserList: files/builders/trakt/userlist.md
       - Tautulli:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md
@@ -405,6 +398,7 @@ nav:
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md
+        - Streaming: files/builders/mdblist/streaming.md
       - YamTrack:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
@@ -414,6 +408,11 @@ nav:
         - List: files/builders/flicklist/list.md
         - Personal: files/builders/flicklist/personal.md
         - Ratings: files/builders/flicklist/ratings.md
+      - WeTrakr:
+        - Overview: files/builders/wetrakr/overview.md
+        - List: files/builders/wetrakr/list.md
+        - Personal: files/builders/wetrakr/personal.md
+        - Ratings: files/builders/wetrakr/ratings.md
       - Serializd:
         - Overview: files/builders/serializd/overview.md
         - Charts: files/builders/serializd/charts.md

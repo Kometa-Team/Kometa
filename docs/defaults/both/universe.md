@@ -17,7 +17,8 @@ hide:
 | `Arrowverse`                 | `arrow`     | Collection of Movies in the The Arrow Universe                    |
 | `Conjuring Universe`         | `conjuring` | Collection of Movies in the Conjuring Universe                    |
 | `DC Animated Universe`       | `dca`       | Collection of Movies in the DC Animated Universe                  |
-| `DC Extended Universe`       | `dcu`       | Collection of Movies in the DC Extended Universe                  |
+| `DC Extended Universe`       | `dceu`      | Collection of Movies in the DC Extended Universe                  |
+| `DC Universe`                | `dcu`       | Collection of Movies and Shows in the DC Universe                 |
 | `Fast & Furious`             | `fast`      | Collection of Movies in the Fast & Furious Universe               |
 | `In Association with Marvel` | `marvel`    | Collection of Movies in the Marvel Universe (but not part of MCU) |
 | `Marvel Cinematic Universe`  | `mcu`       | Collection of Movies in the Marvel Cinematic Universe             |
@@ -42,14 +43,14 @@ hide:
               radarr_add_missing: true #(3)!
               append_data:
                 monster: MonsterVerse #(4)!
-              trakt_list_monster: https://trakt.tv/users/rzepkowski/lists/monsterverse-movies #(5)!
+             imdb_list_monster: https://www.imdb.com/list/ls526556773/ #(5)!
     ```
 
     1. Use the salmon [Separator Style](../separators.md#separator-styles)
     2. Sort the Universe collections by release date
     3. Send missing items in your library from the source lists to Radarr
     4. Create a new universe called "MonsterVerse", the key for this universe will be "monster"
-    5. Add a trakt list to the "monster" key
+    5. Add an IMDb list to the "monster" key
 
 {% include-markdown "./../../templates/defaults/base/collection/variables_header.md" rewrite-relative-urls=false %}
     {%
@@ -70,7 +71,7 @@ hide:
 
     === "Universe Collections"
         
-        The Universe collections are based on either Trakt lists or MDB lists.
+        The Universe collections are based on either IMDb or MDB lists.
 
     === "Default `data`"
     

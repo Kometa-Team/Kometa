@@ -7,6 +7,7 @@ filtering, deletion, and method dispatching.
 
 from __future__ import annotations
 
+import contextlib
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -513,7 +514,7 @@ class TestFilterAndSaveItems:
         library.fetch_item.side_effect = lambda rating_key: items[rating_key]
         builder = make_builder(
             library=library,
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             value_filters=[("mdb_tomatoes_rating", "gte", 6.0)],
             check_filters=MagicMock(side_effect=[False, True]),
         )
@@ -706,6 +707,9 @@ class TestTextfile:
 
     def test_value_filter_is_allowed_for_episode_overlays(self):
         assert "value_filter" in parts_collection_valid
+
+    def test_mdblist_list_is_allowed_for_episode_collections(self):
+        assert "mdblist_list" in parts_collection_valid
 
 
 # ═══════════════════════════════════════════════
@@ -1057,6 +1061,89 @@ class TestRatingBatching:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# sort_collection
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSortCollection:
+    def _library(self, move_side_effect=None):
+        library = MagicMock()
+        library.moveItem = MagicMock(side_effect=move_side_effect)
+        library.query = MagicMock(side_effect=lambda method: method())
+        return library
+
+    def _items(self, count):
+        return [SimpleNamespace(ratingKey=key, title=f"Item {key}") for key in range(1, count + 1)]
+
+    def _playlist_builder(self, library, items, obj):
+        return make_builder(playlist=True, Type="Playlist", obj=obj, library=library, custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+    def test_issue_2265_playlist_ids_are_refreshed_before_moving(self, monkeypatch):
+        """Regression test for #2265. update_item_details() blanks the playlistItemID plexapi
+        caches for each item, so every move went to /playlists/<id>/items/None/move."""
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        calls = []
+        playlist = SimpleNamespace(reload=lambda: calls.append("reload"))
+        library = self._library()
+        library.moveItem.side_effect = lambda *args: calls.append("move")
+        items = self._items(2)
+
+        self._playlist_builder(library, items, playlist).sort_collection()
+
+        assert calls[0] == "reload"
+        assert "move" in calls
+
+    def test_a_copy_taken_after_sorting_sees_the_post_move_order(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        items = self._items(3)
+        server_order = list(reversed(items))
+        cached_order = list(server_order)
+
+        def move(_obj, item, after):
+            server_order.remove(item)
+            server_order.insert(0 if after is None else server_order.index(after) + 1, item)
+
+        playlist = SimpleNamespace(reload=lambda: cached_order.__setitem__(slice(None), server_order))
+        library = self._library(move_side_effect=move)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=library, custom_sort="custom.asc", found_items=items, items=list(cached_order))
+
+        builder.sort_collection()
+
+        assert server_order == items
+        assert cached_order == items, "copyToUser() reads this cache, so a synced user would get the pre-sort order"
+
+    def test_a_sort_where_every_move_failed_does_not_reload_a_second_time(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = self._playlist_builder(self._library(move_side_effect=Failed("nope")), items, playlist)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_again_when_nothing_moved(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        playlist = MagicMock()
+        items = self._items(2)
+        builder = make_builder(playlist=True, Type="Playlist", obj=playlist, library=self._library(), custom_sort="custom.asc", found_items=items, items=items)
+
+        builder.sort_collection()
+
+        assert playlist.reload.call_count == 1
+
+    def test_does_not_reload_a_collection(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        collection = MagicMock()
+        items = self._items(2)
+        builder = make_builder(obj=collection, library=self._library(), custom_sort="custom.asc", found_items=items, items=list(reversed(items)))
+
+        builder.sort_collection()
+
+        collection.reload.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # delete
 # ═══════════════════════════════════════════════════════════════════════
 
@@ -1133,7 +1220,7 @@ class TestGatherIds:
         text_file.get_text_ids.return_value = [(12345, "tmdb")]
         library = SimpleNamespace(type="Movie", is_movie=True)
         builder = make_builder(
-            config=SimpleNamespace(Cache=None, TextFile=text_file),
+            config=SimpleNamespace(Cache=None, TextFile=text_file, get_service_lock=lambda key: contextlib.nullcontext()),
             library=library,
             playlist=playlist,
             details={"cache_builders": 0},
@@ -1147,7 +1234,7 @@ class TestGatherIds:
         tracearr.get_rating_keys.return_value = [(101, "ratingKey")]
         library = SimpleNamespace(Tracearr=tracearr)
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=library,
             libraries=[library],
             playlist=False,
@@ -1168,7 +1255,7 @@ class TestGatherIds:
         show_library = SimpleNamespace(Tracearr=first_connector, PlexServer=first_server)
         libraries = [movie_library, show_library]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=movie_library,
             libraries=libraries,
             playlist=True,
@@ -1191,7 +1278,7 @@ class TestGatherIds:
             SimpleNamespace(Tracearr=second_connector, PlexServer=second_server),
         ]
         builder = make_builder(
-            config=SimpleNamespace(Cache=None),
+            config=SimpleNamespace(Cache=None, get_service_lock=lambda key: contextlib.nullcontext()),
             library=libraries[0],
             libraries=libraries,
             playlist=True,
@@ -1525,15 +1612,138 @@ class TestDispatchTables:
         assert not overlap, f"Field names overlap between radarr_details and sonarr_details: {overlap}"
 
     def test_all_builders_contains_known_data_sources(self):
-        """Sanity: the master builder list mentions tmdb, trakt, imdb."""
+        """Sanity: the master builder list mentions core supported sources."""
         all_builders = builder_module.all_builders
         # all_builders is a tuple of strings — at minimum some core sources
         text = " ".join(str(b) for b in all_builders)
         assert "tmdb" in text, "all_builders missing tmdb-related entries"
-        assert "trakt" in text, "all_builders missing trakt-related entries"
+        assert "trakt" not in text, "all_builders still exposes retired Trakt builders"
         assert "imdb" in text, "all_builders missing imdb-related entries"
         assert "serializd_list" in all_builders
         assert "serializd_watchlist" in all_builders
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _service_lock_key (Experiment C - per-service lock bucket classification)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestServiceLockKey:
+    @pytest.mark.parametrize(
+        "method, expected",
+        [
+            ("plex_all", "plex"),
+            ("plex_search", "plex"),
+            ("tautulli_popular", "tautulli"),
+            ("tracearr_watched", "tracearr"),
+            ("anidb_id", "anidb"),
+            ("anilist_id", "anilist"),
+            ("mal_id", "mal"),
+            ("tvdb_list", "tvdb"),
+            ("imdb_list", "imdb"),
+            ("icheckmovies_list", "icheckmovies"),
+            ("letterboxd_list", "letterboxd"),
+            ("stevenlu_popular", "stevenlu"),
+            ("mojo_yearly", "mojo"),
+            ("mdblist_list", "mdblist"),
+            ("simkl_list", "simkl"),
+            ("tmdb_discover", "tmdb"),
+            ("trakt_list", "trakt"),
+            ("yamtrack_list", "yamtrack"),
+            ("serializd_list", "serializd"),
+            ("floppy_tracked", "floppy"),
+            ("radarr_taglist", "radarr"),
+            ("sonarr_taglist", "sonarr"),
+        ],
+    )
+    def test_known_prefixes_map_to_expected_bucket(self, method, expected):
+        assert builder_module._service_lock_key(method) == expected
+
+    def test_textfile_builder_maps_to_textfile_bucket(self):
+        textfile_method = next(iter(builder_module.textfile.builders))
+        assert builder_module._service_lock_key(textfile_method) == "textfile"
+
+    def test_unrecognized_method_falls_into_other_not_bypassed(self):
+        """Unknown methods must still get a lock bucket ('other'), never bypass per-service locking entirely."""
+        assert builder_module._service_lock_key("some_never_seen_method") == "other"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _resolve_remove_item_map (prefetch_collection_children deferral)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class FakeThreadPool:
+    def __init__(self):
+        self.submitted = []
+
+    def submit(self, fn, *args, **kwargs):
+        from concurrent.futures import Future
+
+        future = Future()
+        future.set_result(fn(*args, **kwargs))
+        self.submitted.append((fn, args, kwargs))
+        return future
+
+
+class TestResolveRemoveItemMap:
+    def _make(self, playlist, thread_pool, prefetch_enabled, items):
+        library = SimpleNamespace(get_collection_items=lambda obj, smart_label: items)
+        config = SimpleNamespace(thread_pool=thread_pool, general={"threading": {"prefetch_collection_children": prefetch_enabled}})
+        return make_builder(playlist=playlist, library=library, config=config, obj=SimpleNamespace(), smart_label_collection=False)
+
+    def test_toggle_off_returns_dict_directly_not_a_future(self):
+        """prefetch_collection_children:false must behave byte-identical to the pre-toggle code: eager dict, no Future."""
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=FakeThreadPool(), prefetch_enabled=False, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_thread_pool_none_returns_dict_directly_even_if_toggle_on(self):
+        item = SimpleNamespace(ratingKey=1)
+        builder = self._make(playlist=False, thread_pool=None, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+
+    def test_toggle_on_submits_to_thread_pool_for_sync_collections(self):
+        from concurrent.futures import Future
+
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=False, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert isinstance(result, Future)
+        assert result.result() == {1: item}
+        assert len(pool.submitted) == 1
+
+    def test_playlists_always_fetch_eagerly_regardless_of_toggle(self):
+        """Playlists need len() immediately in __init__, so they must never be deferred to the thread_pool."""
+        item = SimpleNamespace(ratingKey=1)
+        pool = FakeThreadPool()
+        builder = self._make(playlist=True, thread_pool=pool, prefetch_enabled=True, items=[item])
+        result = builder._resolve_remove_item_map()
+        assert result == {1: item}
+        assert not pool.submitted
+
+
+# ═══════════════════════════════════════════════════════════════════════
+# _collection_child_count (None childCount on blank/separator collections)
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestCollectionChildCount:
+    def test_none_childcount_treated_as_zero(self):
+        """Plex returns None for childCount on genuinely-empty separator collections - must not raise/propagate None."""
+        obj = SimpleNamespace(childCount=None)
+        assert CollectionBuilder._collection_child_count(obj) == 0
+
+    def test_real_childcount_passes_through_unchanged(self):
+        obj = SimpleNamespace(childCount=7)
+        assert CollectionBuilder._collection_child_count(obj) == 7
+
+    def test_zero_childcount_stays_zero(self):
+        obj = SimpleNamespace(childCount=0)
+        assert CollectionBuilder._collection_child_count(obj) == 0

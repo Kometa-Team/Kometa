@@ -223,7 +223,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
             collections:
               Marvel Cinematic Universe:
                 test: true                  # HERE
-                trakt_list: https://trakt.tv/users/jawann2002/lists/marvel-cinematic-universe-movies?sort=rank,asc
+                mdblist_list: mdblist_list: https://mdblist.com/lists/stealthgyro/marvel-cinematic-universe-mcu
                 smart_label: release.desc
             ```
 
@@ -250,6 +250,8 @@ Kometa will load those environment variables when it starts up, and you don't ha
 ??? blank "Trace&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-tr`/`--trace`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TRACE`<a class="headerlink" href="#trace" title="Permanent link">¶</a>"
 
     <div id="trace" />To increase the verbosity of the logs even more than [debug](#debug), set this flag to `true`.
+
+    Trace logs include a message before each Plex request with its method, item path, and configured timeout, followed by completion or failure and elapsed time. If a run appears stuck, a `Plex request starting` line without a matching completion or failure identifies the pending query. Query parameters, headers, and request bodies are omitted. The timeout applies to connection and read operations; it is not a total request deadline.
 
     <hr style="margin: 0px;">
 
@@ -333,7 +335,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Timeout&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ti`/`--timeout`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_TIMEOUT`<a class="headerlink" href="#timeout" title="Permanent link">¶</a>"
 
-    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb, Radarr, and Trakt).
+    <div id="timeout" />Change the timeout in seconds for all non-Plex services (such as TMDb and Radarr).
     This will default to `180` when not specified and is overwritten by any timeouts mentioned for specific services in the Configuration File.
 
     <hr style="margin: 0px;">
@@ -362,7 +364,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
         set to false if your log file shows any errors similar to "SSL: CERTIFICATE_VERIFY_FAILED"
 
-        IMPORTANT: This will disable TLS checks for all outbound services (TMDb, Trakt, MAL, etc.). Only flip this switch if you are comfortable with this.
+        IMPORTANT: This will disable TLS checks for all outbound services (TMDb, MAL, etc.). Only flip this switch if you are comfortable with this.
 
     <hr style="margin: 0px;">
 
@@ -647,6 +649,32 @@ Kometa will load those environment variables when it starts up, and you don't ha
         === "Docker Environment"
             ```
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-labels
+            ```
+
+??? blank "Delete Collections + Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--delete-collections-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_COLLECTIONS_LABELS`<a class="headerlink" href="#delete-collections-labels" title="Permanent link">¶</a>"
+
+    <div id="delete-collections-labels" />Delete all collections in each library as the first step in the run, same as [Delete Collections](#delete-collections) above. For any deleted collection whose title matches an existing Plex label of the same name - the default for [Smart Label Collections](../files/settings/#smart-label-definitions) - also batch-removes that one label from just the items that currently have it, instead of the full library-wide label wipe [Delete Labels](#delete-labels) does.
+
+    ???+ note
+
+        This only detects Smart Label collections using the default label name (the collection's own title). A collection using a custom `smart_label` name won't be matched, since that name isn't known until the config is parsed - use [Delete Labels](#delete-labels) for those.
+
+        This flag has no short form - `-dc` and `-dl` are single-dash because they're exactly 2 characters (Kometa's own convention for short flags); anything longer would collide with an existing single-character flag (e.g. `-d`/`--divider`) when typed with a single dash. Use `--delete-collections-labels` or `--delete-collection-label` in full.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `--delete-collections-labels` or `--delete-collection-label` (ex. `--delete-collections-labels`)
+
+    **Environment Variable:** `KOMETA_DELETE_COLLECTIONS_LABELS` (ex. `KOMETA_DELETE_COLLECTIONS_LABELS=true`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --delete-collections-labels
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --delete-collections-labels
             ```
 
 ??? blank "Resume Run&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-re`/`--resume`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RESUME`<a class="headerlink" href="#resume" title="Permanent link">¶</a>"

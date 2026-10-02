@@ -496,6 +496,32 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
+        stale_item = make_item(1, "Split Show")
+        stale_item.split = MagicMock()
+        fresh_item = make_item(2, "Split Show")
+        library = make_title_test_library([fresh_item])
+        library.split_duplicates = True
+        library.search.return_value = [stale_item]
+        library.refresh_item_cache_and_mappings.return_value = [fresh_item]
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        stale_item.split.assert_called_once_with()
+        library.refresh_item_cache_and_mappings.assert_called_once_with()
+        library.reload.assert_called_once_with(fresh_item)
+        library.get_all.assert_not_called()
+
+    def test_split_duplicates_does_not_refresh_when_plex_finds_none(self):
+        library = make_title_test_library([])
+        library.split_duplicates = True
+        library.search.return_value = []
+
+        Operations(config=MagicMock(), library=library).run_operations()
+
+        library.refresh_item_cache_and_mappings.assert_not_called()
+        library.get_all.assert_called_once_with()
+
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")
         library = make_title_test_library([item])
@@ -886,6 +912,25 @@ class TestFlushCombinedEdits:
         library.Plex.editField.assert_not_called()
         assert any("expected a finite number" in call.args[0] for call in ops_module.logger.warning.call_args_list)
 
+    def test_missing_tmdb_season_continues_mass_studio_updates(self):
+        broken = make_mass_edit_item(1, "Broken Show")
+        healthy = make_mass_edit_item(2, "Healthy Show")
+        library = make_mass_edit_library([broken, healthy], mass_studio_update=["tmdb"])
+        library.is_movie = False
+        library.is_show = True
+        library.get_ids.side_effect = [(101, None, "tt0000101"), (102, None, "tt0000102")]
+        config = MagicMock()
+        message = "TMDb Error: Season 2 not found (404) for Broken Show (TMDb ID: 101); unable to load show metadata"
+        config.TMDb.get_item.side_effect = [ops_module.Failed(message), SimpleNamespace(studio="Example Studio")]
+
+        Operations(config=config, library=library).run_operations()
+
+        assert config.TMDb.get_item.call_count == 2
+        library.Plex.editField.assert_called_once_with("studio", "Example Studio")
+        ops_module.logger.error.assert_any_call(message)
+        ops_module.logger.stacktrace.assert_not_called()
+        ops_module.logger.critical.assert_not_called()
+
     def test_tmdb_parse_failure_skips_item_and_continues_mass_ratings(self):
         broken = make_mass_edit_item(1, "Broken Show")
         healthy = make_mass_edit_item(2, "Healthy Show")
@@ -1119,15 +1164,17 @@ class TestConfiguredCollectionNameAliases:
 
         assert "Top 0" in aliases
 
-    def test_operation_names_include_localized_aliases_with_configured_filter(self):
-        config, library, metadata_file = self._objects({})
+    @pytest.mark.parametrize(("language", "localized_name"), [("fr", "Collections Classement"), ("ja", "ランキングコレクション")])
+    def test_operation_names_include_localized_aliases_from_scheduled_out_files(self, language, localized_name):
+        config, library, metadata_file = self._objects({}, language=language)
         metadata_file.collections = {"Chart Collections": {"translation_key": "separator", "key_name": "Chart"}}
         library.collection_names = ["Manual Collection"]
-        library.collection_files = [metadata_file]
+        library.collection_files = []
+        library.configured_collection_metadata_files = [metadata_file]
 
         configured_names = Operations(config, library)._configured_collection_names()
 
-        assert configured_names == {"Manual Collection", "Chart Collections", "Collections Classement"}
+        assert configured_names == {"Manual Collection", "Chart Collections", localized_name}
 
     def test_keeps_mapping_name_when_name_resolution_fails(self):
         config, library, metadata_file = self._objects({})

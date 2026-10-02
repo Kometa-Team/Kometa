@@ -581,3 +581,26 @@ def test_user_ratings_filters_out_the_other_media_type():
     assert flicklist.user_ratings(True) == {550: 8.0}
     flicklist2 = make_flicklist([FakeResponse(json_data=[_rating(8.0, tmdb=550, media_type="movie"), _rating(6.0, tvdb=81189, media_type="show")])])
     assert flicklist2.user_ratings(False) == {81189: 6.0}
+
+
+def test_user_ratings_reads_the_endpoint_once_per_run():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(8.0, tmdb=550), _rating(6.0, tvdb=81189, media_type="show")])])
+    for _ in range(5):
+        assert flicklist.user_ratings(True) == {550: 8.0}
+    assert flicklist.user_ratings(False) == {81189: 6.0}
+    assert len(flicklist.requests.gets) == 1
+
+
+def test_ratings_builder_and_user_ratings_share_one_read():
+    flicklist = make_flicklist([FakeResponse(json_data=[_rating(8.0, tmdb=550)])])
+    assert flicklist.user_ratings(True) == {550: 8.0}
+    flicklist.get_flicklist_ids("flicklist_ratings", {"minimum": None, "maximum": None}, True)
+    assert len(flicklist.requests.gets) == 1
+
+
+def test_user_ratings_failure_is_remembered_not_retried_per_item():
+    flicklist = make_flicklist([FakeResponse(status_code=401, json_data={"error": "unauthorized"})])
+    for _ in range(3):
+        with pytest.raises(Failed):
+            flicklist.user_ratings(True)
+    assert len(flicklist.requests.gets) == 1

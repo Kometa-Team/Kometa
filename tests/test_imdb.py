@@ -472,6 +472,28 @@ def test_get_episode_rating_falls_back_to_tsv_on_service_failure():
     assert imdb._service_available is False
 
 
+def test_get_rating_non_dict_response_returns_none_without_crash():
+    # The IMDb service unexpectedly answering with a non-object body (e.g. a bare list)
+    # must not raise AttributeError from calling .get() on it.
+    imdb = make_imdb_service({"title/tt0111161": ["unexpected", "list", "response"]})
+    assert imdb.get_rating("tt0111161") is None
+
+
+def test_get_genres_non_dict_response_returns_empty_list():
+    imdb = make_imdb_service({"title/tt0111161": ["unexpected", "list", "response"]})
+    assert imdb.get_genres("tt0111161") == []
+
+
+def test_get_episode_rating_non_dict_response_returns_none():
+    imdb = make_imdb_service({"episode-ratings/tt0096697": ["unexpected", "list", "response"]})
+    assert imdb.get_episode_rating("tt0096697", 5, 12) is None
+
+
+def test_get_episode_rating_non_dict_seasons_returns_none():
+    imdb = make_imdb_service({"episode-ratings/tt0096697": {"seasons": "unexpected-string"}})
+    assert imdb.get_episode_rating("tt0096697", 5, 12) is None
+
+
 def test_get_rating_falls_back_on_non_http_failure():
     """Non-HTTP failures (connection errors, timeouts) should also trigger TSV fallback."""
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
@@ -676,3 +698,26 @@ def test_interest_options_falls_back_on_empty_response():
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb.requests.get_json = MagicMock(return_value={})
     assert imdb.interest_options == interest_options_fallback
+
+
+def test_chart_empty_document_is_contextual_service_error(monkeypatch):
+    from lxml import html
+
+    from modules.util import ServiceError
+
+    logger = MagicMock()
+    monkeypatch.setattr("modules.imdb.logger", logger)
+    requests = MagicMock()
+    requests.get_cloudscrape_html.side_effect = lambda *args, **kwargs: html.fromstring(b"")
+    imdb = IMDb(requests=requests, cache=None, default_dir="/tmp")
+    imdb._chart_graphql = MagicMock(side_effect=Failed("GraphQL unavailable"))
+
+    with pytest.raises(ServiceError) as caught:
+        imdb._ids_from_chart("popular_movies", "en")
+
+    message = str(caught.value)
+    assert "Most Popular Movies" in message
+    assert "Empty or unreadable page" in message
+    assert "Retry later" in message
+    assert "Kometa host" in message
+    logger.stacktrace.assert_not_called()

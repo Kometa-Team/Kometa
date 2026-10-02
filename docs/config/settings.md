@@ -262,7 +262,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip
 
-        `custom` cannot be used if more than one Builder is being used for the collection (such as `imdb_list` and `trakt_list` within the same collection).
+        `custom` cannot be used if more than one Builder is being used for the collection (such as `imdb_list` within the same collection).
 
     <hr style="margin: 0px;">
 
@@ -1079,23 +1079,54 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip "What does this mean?"
 
-        You have a Trakt list of ten movies. You run Kometa and create a collection from the list. The collection contains those ten movies.
+        You have a list of ten movies. You run Kometa and create a collection from the list. The collection contains those ten movies.
 
         Tomorrow the list contains a different ten movies. You run Kometa.
 
-        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, but they are the ones that are in the Trakt list today.
+        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, but they are the ones that are in the list today.
         The original ten have been removed from the collection.
 
         `sync_mode: append` - Kometa appends the ten new movies to the collection, which now has twenty movies in it.
 
         The next day five movies change in the list. You run Kometa.
 
-        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, the ones that are in the Trakt list today.
-        The five that are no longer in the Trakt list are removed from the collection.
+        `sync_mode: sync` - Kometa syncs the collection with the list, so the collection still has ten movies, the ones that are in the list today.
+        The five that are no longer in the list are removed from the collection.
 
         `sync_mode: append` - Kometa appends the five new movies to the collection, which now has twenty-five movies in it.
 
 
+
+??? blank "`threading` - Used to control Kometa's shared thread pool for concurrent processing.<a class="headerlink" href="#threading" title="Permanent link">¶</a>"
+
+    <div id="threading" />Controls the shared thread pool Kometa uses to run some work concurrently instead of one call at a time. See [Timing Instrumentation](../kometa/environmental.md#timings) if you want to measure the effect of these settings against your own library.
+
+    <hr style="margin: 0px;">
+
+    **Attribute:** `threading`
+
+    **Levels with this Attribute:** Global
+
+    **Accepted Values:** Dictionary :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-dictionaries" } of the sub-attributes below.
+
+    <table class="clearTable">
+      <tr><td>`workers`</td><td>Number of worker threads in the shared thread pool. Accepts any integer of `1` or greater.</td></tr>
+      <tr><td>`prefetch_collection_children`</td><td>Defers a sync-enabled collection's "what to remove" lookup, and Plex item-reload batching in the operations and overlay loops, to the thread pool instead of blocking the main collection loop. Accepts `true` or `false`.</td></tr>
+    </table>
+
+    **Default Value:** `workers: 4`, `prefetch_collection_children: true`
+
+    ???+ note "Other sub-attributes"
+
+        `threading` has a couple of additional experimental sub-attributes (`tmdb_pages`, `parallel_sources`) that are off by default and intentionally undocumented; they exist for internal bake-off testing and aren't expected to help most libraries. Leave them unset.
+
+    ???+ example "Example"
+
+        ```yaml
+        settings:
+          threading:
+            workers: 8
+        ```
 
 ??? blank "`tvdb_language` - Specify the language to query TVDb in.<a class="headerlink" href="#tvdb-language" title="Permanent link">¶</a>"
 

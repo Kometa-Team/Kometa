@@ -380,6 +380,132 @@ class TestApplyTemplateNestedVarResolution:
         assert result["summary"] == "8"
 
 
+class TestStreamingTemplate:
+    @pytest.mark.parametrize("library_type", ["Movie", "Show"])
+    @pytest.mark.parametrize("region, provider", [(None, 9), ("US", 9), ("AT", 9), ("DE", 9), ("GB", 9), ("JP", 9), ("FR", 119), ("CA", 119)])
+    def test_prime_video_provider_matches_effective_region(self, library_type, region, provider):
+        streaming_path = Path(__file__).resolve().parents[1] / "defaults" / "both" / "streaming.yml"
+        with streaming_path.open(encoding="utf-8") as handle:
+            streaming = YAML(typ="safe").load(handle)
+
+        df = make_datafile(
+            library=SimpleNamespace(type=library_type, name="Streaming"),
+            templates={"streaming": (streaming["templates"]["streaming"], {})},
+        )
+        variables = {
+            "name": "streaming",
+            "key": "amazon",
+            "tmdb_key": streaming["dynamic_collections"]["Streaming"]["template_variables"]["tmdb_key"]["amazon"],
+            "originals_only": False,
+        }
+        if region is not None:
+            variables["region"] = region
+
+        result = df.apply_template("Prime Video", "amazon", {}, [variables], {})
+
+        assert result["tmdb_discover"]["watch_region"] == (region or "US")
+        assert str(result["tmdb_discover"]["with_watch_providers"]) == str(provider)
+
+    @pytest.mark.parametrize(
+        ("template_variables", "expected"),
+        [
+            ({"limit": 50}, 50),
+            ({"limit": 50, "limit_amazon": 100}, 100),
+            ({"limit_amazon": 100}, 100),
+        ],
+    )
+    def test_keyed_limit_overrides_global_limit(self, template_variables, expected):
+        streaming_path = Path(__file__).resolve().parents[1] / "defaults" / "both" / "streaming.yml"
+        with streaming_path.open(encoding="utf-8") as handle:
+            streaming = YAML(typ="safe").load(handle)
+
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Streaming"),
+            temp_vars=template_variables,
+            templates={"streaming": (streaming["templates"]["streaming"], {})},
+        )
+        variables = {
+            "name": "streaming",
+            "key": "amazon",
+            "tmdb_key": streaming["dynamic_collections"]["Streaming"]["template_variables"]["tmdb_key"]["amazon"],
+            "originals_only": False,
+        }
+
+        result = df.apply_template("Prime Video", "amazon", {}, [variables], {})
+
+        assert result["limit"] == expected
+
+
+class TestBasedTemplateLimit:
+    @pytest.mark.parametrize(
+        ("template_variables", "expected"),
+        [
+            ({"limit": 50}, 50),
+            ({"limit": 50, "limit_books": 300}, 300),
+            ({"limit_books": 300}, 300),
+        ],
+    )
+    def test_keyed_limit_overrides_global_and_source_limit(self, template_variables, expected):
+        templates_path = Path(__file__).resolve().parents[1] / "defaults" / "templates.yml"
+        with templates_path.open(encoding="utf-8") as handle:
+            templates = YAML(typ="safe").load(handle)["templates"]
+
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            temp_vars=template_variables,
+            templates={name: (templates[name], {}) for name in ["based", "shared"]},
+        )
+        template_call = [
+            {"name": "based", "key": "books", "keywords": "based on book, based on novel"},
+            {"name": "shared", "key": "books"},
+        ]
+
+        result = df.apply_template("Based on a Book", "books", {}, template_call, {})
+
+        assert result["imdb_search"]["limit"] == expected
+        assert result["limit"] == expected
+
+
+class TestSharedTemplateLimit:
+    @staticmethod
+    def _apply_letterboxd_template(collection_name, template_variables):
+        root = Path(__file__).resolve().parents[1]
+        with (root / "defaults" / "chart" / "letterboxd.yml").open(encoding="utf-8") as handle:
+            letterboxd = YAML(typ="safe").load(handle)
+        with (root / "defaults" / "templates.yml").open(encoding="utf-8") as handle:
+            shared = YAML(typ="safe").load(handle)
+
+        collection = letterboxd["collections"][collection_name]
+        df = make_datafile(
+            library=SimpleNamespace(type="Movie", name="Movies"),
+            temp_vars=template_variables,
+            templates={
+                "letterboxd_list": (letterboxd["templates"]["letterboxd_list"], {}),
+                "shared": (shared["templates"]["shared"], {}),
+            },
+        )
+
+        return df.apply_template(collection_name, collection["variables"]["key"], {}, collection["template"][:2], collection["variables"])
+
+    @pytest.mark.parametrize(
+        ("collection_name", "template_variables", "expected"),
+        [
+            ("Letterboxd Top 500", {"limit": 50}, 50),
+            ("Letterboxd Top 500", {"limit": 50, "limit_top_500": 100}, 100),
+            ("Top 250 Horror", {"limit": 50, "limit_horror": 20}, 20),
+        ],
+    )
+    def test_keyed_limit_overrides_global_limit(self, collection_name, template_variables, expected):
+        result = self._apply_letterboxd_template(collection_name, template_variables)
+
+        assert result["limit"] == expected
+
+    def test_limit_remains_optional(self):
+        result = self._apply_letterboxd_template("Letterboxd Top 500", {})
+
+        assert "limit" not in result
+
+
 class TestResolutionEditionDovetailTemplate:
     @staticmethod
     def _apply_edition_template(*, overlay_type, use_resolution=None):

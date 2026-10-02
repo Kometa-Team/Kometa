@@ -3,12 +3,17 @@ from datetime import datetime
 from urllib.parse import urlencode
 
 from modules import util
-from modules.util import Failed, LimitReached
+from modules.util import Failed, LimitReached, ServiceError
 
 logger = util.logger
 
+
+class MDBListLimitReached(LimitReached, ServiceError):
+    """An expected MDBList quota failure, handled by both builders and rating callers."""
+
+
 # --- REQUIRED MODULE ATTRIBUTES ---
-builders = ["mdblist_list"]
+builders = ["mdblist_list", "mdblist_streaming"]
 sort_names = [
     "rank",
     "score",
@@ -44,9 +49,119 @@ api_url = "https://api.mdblist.com/"
 
 headers = {"User-Agent": "Kometa"}
 
+streaming_countries = {
+    "all": None,
+    "allcountries": None,
+    "us": "US",
+    "enus": "US",
+    "unitedstates": "US",
+    "gb": "GB",
+    "uk": "GB",
+    "engb": "GB",
+    "unitedkingdom": "GB",
+    "ca": "CA",
+    "enca": "CA",
+    "canada": "CA",
+    "au": "AU",
+    "enau": "AU",
+    "australia": "AU",
+    "de": "DE",
+    "dede": "DE",
+    "germany": "DE",
+}
+streaming_periods = {"1": "daily", "1d": "daily", "daily": "daily", "7": "weekly", "7d": "weekly", "weekly": "weekly", "30": "monthly", "30d": "monthly", "monthly": "monthly"}
+streaming_providers = {
+    "all": None,
+    "allproviders": None,
+    "nfx": "nfx",
+    "netflix": "nfx",
+    "amp": "amp",
+    "amazonprimevideo": "amp",
+    "atp": "atp",
+    "appletv": "atp",
+    "dnp": "dnp",
+    "disney": "dnp",
+    "mxx": "mxx",
+    "max": "mxx",
+    "hlu": "hlu",
+    "hulu": "hlu",
+    "pct": "pct",
+    "peacockpremium": "pct",
+    "pcp": "pcp",
+    "peacockpremiumplus": "pcp",
+    "ppp": "ppp",
+    "paramountpremium": "ppp",
+    "ppe": "ppe",
+    "paramountessential": "ppe",
+    "cru": "cru",
+    "crunchyroll": "cru",
+    "fuv": "fuv",
+    "fubotv": "fuv",
+    "acp": "acp",
+    "amc": "acp",
+    "shd": "shd",
+    "shudder": "shd",
+    "stz": "stz",
+    "starz": "stz",
+    "epx": "epx",
+    "mgm": "epx",
+    "dpu": "dpu",
+    "discovery": "dpu",
+    "mbi": "mbi",
+    "mubi": "mbi",
+    "crc": "crc",
+    "criterionchannel": "crc",
+    "act": "act",
+    "acorntv": "act",
+    "bbo": "bbo",
+    "britbox": "bbo",
+    "knp": "knp",
+    "kanopy": "knp",
+    "rkc": "rkc",
+    "therokuchannel": "rkc",
+    "ptv": "ptv",
+    "plutotv": "ptv",
+    "tbv": "tbv",
+    "tubi": "tbv",
+    "plx": "plx",
+    "plex": "plx",
+    "vuf": "vuf",
+    "fandangoathomefree": "vuf",
+}
+streaming_genres = {
+    "all": None,
+    "allgenres": None,
+    "act": "act",
+    "action": "act",
+    "ani": "ani",
+    "animation": "ani",
+    "cmy": "cmy",
+    "comedy": "cmy",
+    "crm": "crm",
+    "crime": "crm",
+    "doc": "doc",
+    "documentary": "doc",
+    "drm": "drm",
+    "drama": "drm",
+    "fnt": "fnt",
+    "fantasy": "fnt",
+    "hst": "hst",
+    "history": "hst",
+    "hrr": "hrr",
+    "horror": "hrr",
+    "rma": "rma",
+    "romance": "rma",
+    "scf": "scf",
+    "sciencefiction": "scf",
+    "trl": "trl",
+    "thriller": "trl",
+}
+
 
 class MDbObj:
-    def __init__(self, data):
+    def __init__(self, data, batch=False):
+        if not isinstance(data, dict):
+            raise Failed(f"MDBList Error: Unexpected response format: {data}")
         self._data = data
         self._invalid_rating_values = []
 
@@ -62,13 +177,15 @@ class MDbObj:
         self.tmdbid = util.check_num(data.get("tmdbid") or data.get("tmdb_id") or data.get("id"))
         self.imdbid = data.get("imdbid") or data.get("imdb_id")
 
+        released = data.get("released")
         try:
-            self.released = datetime.strptime(data.get("released"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released = datetime.strptime(released, "%Y-%m-%d") if isinstance(released, str) else None
+        except ValueError:
             self.released = None
+        released_digital = data.get("released_digital")
         try:
-            self.released_digital = datetime.strptime(data.get("released_digital"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released_digital = datetime.strptime(released_digital, "%Y-%m-%d") if isinstance(released_digital, str) else None
+        except ValueError:
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
@@ -84,25 +201,31 @@ class MDbObj:
         self.tmdb_rating = None
         self.letterboxd_rating = None
         self.myanimelist_rating = None
-        for rating in data.get("ratings", []):
-            if rating["source"] == "imdb":
-                self.imdb_rating = _rating("imdb", rating["value"], 10, is_int=False)
-            elif rating["source"] == "metacritic":
-                self.metacritic_rating = _rating("metacritic", rating["value"], 100)
-            elif rating["source"] == "metacriticuser":
-                self.metacriticuser_rating = _rating("metacriticuser", rating["value"], 10, is_int=False)
-            elif rating["source"] == "trakt":
-                self.trakt_rating = _rating("trakt", rating["value"], 100)
-            elif rating["source"] == "tomatoes":
-                self.tomatoes_rating = _rating("tomatoes", rating["value"], 100)
-            elif rating["source"] in ("tomatoesaudience", "popcorn"):
-                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating["value"], 100)
-            elif rating["source"] == "tmdb":
-                self.tmdb_rating = _rating("tmdb", rating["value"], 100)
-            elif rating["source"] == "letterboxd":
-                self.letterboxd_rating = _rating("letterboxd", rating["value"], 5, is_int=False)
-            elif rating["source"] == "myanimelist":
-                self.myanimelist_rating = _rating("myanimelist", rating["value"], 10, is_int=False)
+        ratings_list = data.get("ratings", [])
+        for rating in ratings_list if isinstance(ratings_list, list) else []:
+            if not isinstance(rating, dict):
+                continue
+            if rating.get("source") == "imdb":
+                self.imdb_rating = _rating("imdb", rating.get("value"), 10, is_int=False)
+            elif rating.get("source") == "metacritic":
+                self.metacritic_rating = _rating("metacritic", rating.get("value"), 100)
+            elif rating.get("source") == "metacriticuser":
+                self.metacriticuser_rating = _rating("metacriticuser", rating.get("value"), 10, is_int=False)
+            elif rating.get("source") == "trakt":
+                self.trakt_rating = _rating("trakt", rating.get("value"), 100)
+            elif rating.get("source") == "tomatoes":
+                self.tomatoes_rating = _rating("tomatoes", rating.get("value"), 100)
+            elif rating.get("source") in ("tomatoesaudience", "popcorn"):
+                self.tomatoesaudience_rating = _rating("tomatoesaudience", rating.get("value"), 100)
+            elif rating.get("source") == "tmdb":
+                self.tmdb_rating = _rating("tmdb", rating.get("value"), 100)
+            elif rating.get("source") == "letterboxd":
+                letterboxd_value = rating.get("value")
+                if batch and util.is_valid_rating(letterboxd_value, maximum=10):
+                    letterboxd_value = float(str(letterboxd_value)) / 2
+                self.letterboxd_rating = _rating("letterboxd", letterboxd_value, 5, is_int=False)
+            elif rating.get("source") == "myanimelist":
+                self.myanimelist_rating = _rating("myanimelist", rating.get("value"), 10, is_int=False)
         self.content_rating = data.get("certification")
         self.commonsense = bool(data.get("commonsense"))
         self.age_rating = data.get("age_rating")
@@ -205,6 +328,16 @@ class MDBList:
         else:
             response = self.requests.get(url, params=final_params)
 
+        if response.status_code == 429:
+            try:
+                error = response.json().get("error", "")
+            except (ValueError, AttributeError):
+                error = ""
+            if "daily" in str(error).lower():
+                self.limit = True
+                raise MDBListLimitReached("MDBList Error: Daily API limit exceeded. Wait for the daily quota to reset or reduce API usage; check your MDBList account usage and plan limits.")
+            raise MDBListLimitReached("MDBList Error: API rate limit reached (HTTP 429). Wait before retrying and reduce request frequency.")
+
         if not 200 <= response.status_code < 300:
             raise Failed(f"MDBList Error: {response.status_code} - {response.text}")
 
@@ -284,12 +417,15 @@ class MDBList:
             if not isinstance(response, list):
                 raise Failed("MDBList Error: Batch response must be a list")
             for data in response:
+                if not isinstance(data, dict):
+                    logger.warning(f"MDBList Warning: Ignoring unexpected non-object entry in {media_provider} batch response: {data}")
+                    continue
                 response_id = self._response_id(data, media_provider)
                 media_id = requested_ids.get(str(response_id))
                 if media_id is None:
                     logger.warning(f"MDBList Warning: Ignoring unexpected {media_provider} ID in batch response: {response_id}")
                     continue
-                mdb = MDbObj(data)
+                mdb = MDbObj(data, batch=True)
                 results[media_id] = mdb
                 key = self._cache_key(media_provider, media_type, media_id)
                 if mdb.ratings_valid:
@@ -413,9 +549,59 @@ class MDBList:
 
         return valid_lists
 
-    def get_tmdb_ids(self, method, data, is_movie=None, filters=None):
+    @staticmethod
+    def validate_mdblist_streaming(error_type, data):
+        if not isinstance(data, dict):
+            raise Failed(f"{error_type} Error: mdblist_streaming must be a mapping")
+
+        valid_attributes = {"country", "period", "provider", "genre"}
+        invalid_attributes = set(data) - valid_attributes
+        if invalid_attributes:
+            attributes = ", ".join(sorted(invalid_attributes))
+            raise Failed(f"{error_type} Error: mdblist_streaming has invalid attribute(s): {attributes}")
+
+        def resolve(attribute, value, options):
+            key = "".join(character for character in str(value).lower() if character.isalnum())
+            if key not in options:
+                raise Failed(f"{error_type} Error: mdblist_streaming {attribute} is invalid: {value}")
+            return options[key]
+
+        country = resolve("country", data.get("country", "US"), streaming_countries)
+        period = resolve("period", data.get("period", "daily"), streaming_periods)
+
+        streaming = {"period": period}
+        if country:
+            streaming["country"] = country
+        for attribute, options in (("provider", streaming_providers), ("genre", streaming_genres)):
+            if attribute in data:
+                value = resolve(attribute, data[attribute], options)
+                if value:
+                    streaming[attribute] = value
+        return streaming
+
+    def get_tmdb_ids(self, method, data, is_movie=None, filters=None, is_episode=False):
+        if method == "mdblist_streaming":
+            if is_movie is None:
+                raise Failed("MDBList Error: mdblist_streaming can only be used with movie or show libraries")
+
+            media_type = "movie" if is_movie else "show"
+            response, _ = self._request(f"{api_url}justwatch/streaming-charts/{media_type}", params=data)
+            items = response.get("results", response.get("items", [])) if isinstance(response, dict) else response
+            if not isinstance(items, list):
+                raise Failed("MDBList Error: JustWatch streaming chart response must be a list")
+
+            results = []
+            for item in items:
+                if not isinstance(item, dict):
+                    continue
+                ids = item.get("ids") or {}
+                tmdb_id = util.check_num(item.get("tmdb_id") or item.get("tmdbid") or ids.get("tmdb") or item.get("id"))
+                if tmdb_id:
+                    results.append((tmdb_id, "tmdb" if is_movie else "tmdb_show"))
+            return results
 
         list_id = data.get("id")
+        official_slug = None
         if list_id:
             external_id = None
             items_url = f"{api_url}lists/{list_id}/items/"
@@ -423,8 +609,14 @@ class MDBList:
         else:
             list_path = data["url"].split("/lists/")[-1].strip("/")
             external_id = list_path.split("/external/")[-1] if "/external/" in list_path else None
-            items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
-            meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
+            official_parts = list_path.split("/")
+            official_slug = official_parts[-1] if len(official_parts) == 3 and official_parts[0] == "official" and official_parts[1] in ("movies", "shows") else None
+            if official_slug:
+                items_url = f"{api_url}lists/official/{official_slug}/items"
+                meta_url = f"{api_url}lists/official/{official_slug}"
+            else:
+                items_url = f"{api_url}external/lists/{external_id}/items/" if external_id else f"{api_url}lists/{list_path}/items/"
+                meta_url = f"{api_url}external/lists/{external_id}" if external_id else f"{api_url}lists/{list_path}"
 
         sort, direction = data["sort_by"].split(".") if "sort_by" in data else (None, None)
         results = []
@@ -432,11 +624,15 @@ class MDBList:
         limit_config = data.get("limit", 0)
         has_more = True
 
-        params = {
+        params: dict[str, int | str] = {
             "limit": 1000,
         }
 
-        if not external_id and is_movie is not None:
+        if official_slug:
+            params["mediatype"] = "movie" if official_parts[1] == "movies" else "show"
+        elif not external_id and is_episode:
+            items_url = f"{items_url}episode"
+        elif not external_id and is_movie is not None:
             items_url = f"{items_url}movie" if is_movie else f"{items_url}show"
         else:
             params["unified"] = True
@@ -450,6 +646,8 @@ class MDBList:
                 meta_data = meta_data[0]
             if isinstance(meta_data, dict):
                 total_count = int(meta_data.get("items", 0) or 0)
+        except MDBListLimitReached:
+            raise
         except Exception:
             pass
 
@@ -470,7 +668,9 @@ class MDBList:
 
                 items = []
                 if isinstance(page_data, dict):
-                    if is_movie:
+                    if is_episode:
+                        items = page_data.get("episodes", [])
+                    elif is_movie:
                         items = page_data.get("movies")
                     else:
                         items = page_data.get("shows")
@@ -480,12 +680,22 @@ class MDBList:
 
                 elif isinstance(page_data, list):
                     items = page_data
+            except MDBListLimitReached:
+                raise
             except Exception as e:
                 raise Failed(f"MDBList Error: Could not fetch list items: {e}")
 
             for item in items:  # type: ignore
                 if 0 < limit_config <= len(results):
                     return results
+
+                if is_episode:
+                    show_id = util.check_num(item.get("show_id"))
+                    season_number = util.check_num(item.get("season_number"))
+                    episode_number = util.check_num(item.get("episode_number"))
+                    if show_id and season_number is not None and episode_number is not None:
+                        results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
+                    continue
 
                 tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
                 if tmdb_id:

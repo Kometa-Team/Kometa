@@ -39,7 +39,7 @@ templates:
       final_tmdb_key:
         default: <<tmdb_key>>
         conditions:
-          - region.not: [AT, DE, GB, JP, US]
+          - region.notdefault: [AT, DE, GB, JP, US]
             tmdb_key: [9]
             value: 119
 
@@ -77,6 +77,7 @@ templates:
     default:
       region: "US"
       limit: "500"
+      limit_<<key>>: <<limit>>
       sync_mode: sync
       sync_mode_<<key>>: <<sync_mode>>
       discover_with_<<key>>: <<discover_with>>
@@ -93,7 +94,7 @@ templates:
     sync_mode: <<sync_mode_<<key>>>>
     mdblist_list: https://mdblist.com/lists/k0meta/<<key>>-<<originals>>
     delete_collections_named: <<delete_collections_named_<<key>>>>
-    limit: <<limit>>
+    limit: <<limit_<<key>>>>
     tmdb_discover:
       limit: <<discover_limit>>
       with_watch_providers: <<discover_with_<<key>>>>

@@ -469,18 +469,6 @@ overlays:
     tmdb_trending_weekly: 50
 
   # ---------------------------------------------------------------------------
-  # BUILDER — trakt_list: overlay on movies from a specific Trakt list
-  # ---------------------------------------------------------------------------
-  Trakt List Overlay:
-    overlay:
-      file: config/overlays/images/trakt-badge.png
-      horizontal_align: right
-      horizontal_offset: 15
-      vertical_align: top
-      vertical_offset: 15
-    trakt_list: https://trakt.tv/users/garycrawfordgc/lists/letterboxd-top-250
-
-  # ---------------------------------------------------------------------------
   # BUILDER — tautulli_popular: overlay on most-played items in the past week
   # ---------------------------------------------------------------------------
   Tautulli Popular:
@@ -658,20 +646,6 @@ overlays:
       back_radius: 3
     builder_level: episode
     tvdb_show: 81189
-
-  # ---------------------------------------------------------------------------
-  # BUILDER — trakt_chart: overlay on items from Trakt's trending/popular charts
-  # ---------------------------------------------------------------------------
-  Trakt Trending Overlay:
-    overlay:
-      file: config/overlays/images/trakt-trending.png
-      horizontal_align: right
-      horizontal_offset: 15
-      vertical_align: bottom
-      vertical_offset: 30
-    trakt_chart:
-      chart: trending
-      limit: 50
 
   # ---------------------------------------------------------------------------
   # BUILDER — mal_popular: overlay on popular anime from MyAnimeList

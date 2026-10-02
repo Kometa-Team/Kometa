@@ -1,5 +1,7 @@
 import os
 import re
+import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 from modules import operations, radarr, sonarr, util
@@ -34,10 +36,10 @@ from modules.tautulli import Tautulli
 from modules.textfile import TextFile
 from modules.tmdb import TMDb
 from modules.tracearr import Tracearr
-from modules.trakt import Trakt
 from modules.tvdb import TVDb
 from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
+from modules.wetrakr import WeTrakr
 from modules.yamtrack import YamTrack
 
 logger = util.logger
@@ -67,6 +69,12 @@ hub_sort_options = {
     "configured": "Sort Recommendation Hubs in the order collections appear in your config files (first to last)",
     "configured.desc": "Sort Recommendation Hubs in the order collections appear in your config files (last to first)",
     "random": "Sort Recommendation Hubs in a random order",
+}
+# feat/threading experiment toggles (fork-only, not upstream schema) - cache_mode was Experiment A's lock-vs-threadlocal toggle; A1 won the 2026-07-26 bake-off and is now Cache's only behavior, so nothing's left to toggle here.
+threading_tmdb_pages_options = {
+    "bypass": "Raw-HTTP TMDb discover page fan-out (Experiment B1)",
+    "subclass": "tmdbapis subclass page fan-out (Experiment B2)",
+    "off": "Sequential TMDb discover pagination (control)",
 }
 imdb_label_options = {
     "remove": "Remove All IMDb Parental Labels",
@@ -164,7 +172,6 @@ mass_image_options = {
     "unlock": "Unlock Image",
     "plex": "Use Plex Images",
     "tmdb": "Use TMDb Images",
-    "trakt": "Use Trakt Images",
     "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {
@@ -176,7 +183,6 @@ mass_episode_rating_options = {
     "plex_imdb": "Use IMDB Rating through Plex",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
     "serializd": "Use Serializd Rating",
     "serializd_user": "Use Serializd User Rating",
     "floppy": "Use Floppy User Rating",
@@ -188,9 +194,8 @@ mass_rating_options = {
     "reset": "Remove and Unlock Rating",
     "tmdb": "Use TMDb Rating",
     "imdb": "Use IMDb Rating",
-    "trakt": "Use Trakt Rating",
-    "trakt_user": "Use Trakt User Rating",
     "flicklist_user": "Use FlickList User Rating",
+    "wetrakr_user": "Use WeTrakr User Rating",
     "serializd": "Use Serializd Rating",
     "floppy": "Use Floppy User Rating",
     "omdb": "Use IMDb Rating through OMDb",
@@ -205,7 +210,6 @@ mass_rating_options = {
     "mdb_imdb": "Use IMDb Rating through MDBList",
     "mdb_metacritic": "Use Metacritic Rating through MDBList",
     "mdb_metacriticuser": "Use Metacritic User Rating through MDBList",
-    "mdb_trakt": "Use Trakt Rating through MDBList",
     "mdb_tomatoes": "Use Rotten Tomatoes Rating through MDBList",
     "mdb_tomatoesaudience": "Use Rotten Tomatoes Audience Rating through MDBList",
     "mdb_tmdb": "Use TMDb Rating through MDBList",
@@ -492,8 +496,6 @@ class ConfigFile:
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
             self.data["sonarr"] = temp
-        if "trakt" in self.data:
-            self.data["trakt"] = self.data.pop("trakt")
         if "mal" in self.data:
             self.data["mal"] = self.data.pop("mal")
 
@@ -512,6 +514,9 @@ class ConfigFile:
                 return next_data
 
         self.data = check_next(self.data)
+        self.data, trakt_found = util.remove_trakt(self.data)
+        if trakt_found:
+            logger.error(util.TRAKT_REMOVAL_MESSAGE)
 
         def check_for_attribute(
             data,
@@ -813,6 +818,9 @@ class ConfigFile:
                     add_operation(image_key, {"mass_image_update": {image_key: image_config}}, schedule=get_schedule(input_dict[image_key]))
             return output_ops
 
+        settings_block = self.data.get("settings") if isinstance(self.data.get("settings"), dict) else None
+        threading_settings = settings_block.get("threading") if settings_block and isinstance(settings_block.get("threading"), dict) else {}
+
         self.general = {
             "run_order": check_for_attribute(
                 self.data,
@@ -824,6 +832,15 @@ class ConfigFile:
             ),
             "cache": check_for_attribute(self.data, "cache", parent="settings", var_type="bool", default=True),
             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="settings", var_type="int", default=60, int_min=1),
+            "threading": {
+                # settings.threading is two levels deep (past check_for_attribute's single `parent` support), so read it as its own sub-dict; do_print=False throughout so an unconfigured run stays silent.
+                # Phase 2 (2026-07-30): workers/prefetch_collection_children now default to the bake-off-validated posture - an absent block behaves like the proven-fast config, not workers:1.
+                "workers": check_for_attribute(threading_settings, "workers", var_type="int", default=4, int_min=1, save=False, do_print=False),
+                "tmdb_pages": check_for_attribute(threading_settings, "tmdb_pages", default="off", test_list=threading_tmdb_pages_options, save=False, do_print=False),
+                "parallel_sources": check_for_attribute(threading_settings, "parallel_sources", var_type="bool", default=False, save=False, do_print=False),
+                # Confirmed ~2.7-3.0% wall-time win at workers:4, no further gain at workers:8 (overnight churn-loop A/B, see perf-results-log.md) - defaults on.
+                "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=True, save=False, do_print=False),
+            },
             "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
@@ -896,6 +913,11 @@ class ConfigFile:
                 do_print=False,
             ),
         }
+        # feat/threading: created only when workers>1, torn down alongside Cache.close() in kometa.py's run cleanup - never a module-level singleton, never outlives this Config/run.
+        self.thread_pool = ThreadPoolExecutor(max_workers=self.general["threading"]["workers"]) if self.general["threading"]["workers"] > 1 else None
+        # Experiment C: one lock per service, lazily created (double-checked locking - meta-lock only guards dict mutation, not the service call).
+        self.service_locks = {}
+        self._service_locks_meta_lock = threading.Lock()
         self.custom_repo = None
         if self.general["custom_repo"]:
             repo = self.general["custom_repo"]
@@ -1106,34 +1128,6 @@ class ConfigFile:
 
             logger.separator()
 
-            logger.info("Connecting to Trakt in public mode..." if "trakt" not in self.data else "Connecting to Trakt...")
-            self.Trakt = None
-            trakt_data = self.data.get("trakt", {})
-            try:
-                self.Trakt = Trakt(
-                    self.Requests,
-                    self.read_only,
-                    {
-                        "client_id": check_for_attribute(self.data, "client_id", parent="trakt", default_is_none=True),
-                        "client_secret": check_for_attribute(self.data, "client_secret", parent="trakt", default_is_none=True),
-                        "config_path": self.config_path,
-                        "authorization": trakt_data.get("authorization"),
-                    },
-                )
-            except Failed as e:
-                if str(e).endswith("is blank"):
-                    logger.warning(e)
-                else:
-                    logger.error(e)
-            if self.Trakt is None:
-                logger.info("Trakt Connection Failed")
-            elif trakt_data.get("authorization") and not self.Trakt.authorization:
-                logger.info("Trakt Connection Successful (Public Mode - Authentication Failed, see error above)")
-            else:
-                logger.info("Trakt Connection Successful")
-
-            logger.separator()
-
             self.MyAnimeList = None
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
@@ -1220,7 +1214,13 @@ class ConfigFile:
             self.Letterboxd = Letterboxd(self.Requests, self.Cache)
             self.BoxOfficeMojo = BoxOfficeMojo(self.Requests, self.Cache)
             self.StevenLu = StevenLu(self.Requests)
-            self.Simkl = Simkl(self.Requests, self.Cache)
+            self.Simkl = Simkl(
+                self.Requests,
+                self.Cache,
+                read_only=self.read_only,
+                config_path=self.config_path,
+                authorization=self.data.get("simkl"),
+            )
             self.Serializd = None
             if "serializd" in self.data:
                 logger.info("Connecting to Serializd...")
@@ -1307,6 +1307,32 @@ class ConfigFile:
                 logger.info(f"FlickList Connection {'Failed' if self.FlickList is None else 'Successful'}")
             else:
                 logger.info("flicklist attribute not found")
+
+            logger.separator()
+
+            self.WeTrakr = None
+            if "wetrakr" in self.data:
+                logger.info("Connecting to WeTrakr...")
+                try:
+                    wetrakr_obj = WeTrakr(
+                        self.Requests,
+                        self.read_only,
+                        {
+                            "client_id": check_for_attribute(self.data, "client_id", parent="wetrakr", default_is_none=True),
+                            "config_path": self.config_path,
+                            "authorization": (self.data["wetrakr"]["authorization"] if "authorization" in self.data["wetrakr"] else None),
+                        },
+                    )
+                    wetrakr_obj.test_connection()
+                    self.WeTrakr = wetrakr_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"WeTrakr Connection {'Failed' if self.WeTrakr is None else 'Successful'}")
+            else:
+                logger.info("wetrakr attribute not found")
 
             logger.separator()
 
@@ -1792,6 +1818,8 @@ class ConfigFile:
                                         elif op in ["mass_originally_available_update", "mass_added_at_update"]:
                                             final_list.append(util.validate_date(list_attr))
                                         elif op.endswith("rating_update"):
+                                            if str(list_attr).lower() in util.RETIRED_TRAKT_RATING_VALUES:
+                                                raise Failed(util.TRAKT_REMOVAL_MESSAGE)
                                             final_list.append(util.check_int(list_attr, datatype="float", minimum=0, maximum=10, throw=True))
                                         else:
                                             raise Failed(f"has an invalid value: {list_attr}")
@@ -1951,8 +1979,6 @@ class ConfigFile:
                                 raise Failed(f"{source} without a successful AniDB Connection")
                             if source and str(source).startswith("mal") and self.MyAnimeList is None:
                                 raise Failed(f"{source} without a successful MyAnimeList Connection")
-                            if source and str(source).startswith("trakt") and self.Trakt is None:
-                                raise Failed(f"{source} without a successful Trakt Connection")
                     except Failed as e:
                         logger.error(f"Config Error: {mass_key} cannot use {e}")
                         params[mass_key] = None
@@ -2612,6 +2638,34 @@ class ConfigFile:
             logger.save_errors = False
             logger.clear_errors()
             raise
+
+    def get_service_lock(self, key):
+        """Returns the shared Lock for a given service key (see builder.py's gather_ids), creating it on first use. Safe to call from any thread - the meta-lock only guards the moment a new key is added, never the caller's actual work."""
+        lock = self.service_locks.get(key)
+        if lock is None:
+            with self._service_locks_meta_lock:
+                lock = self.service_locks.get(key)
+                if lock is None:
+                    lock = threading.Lock()
+                    self.service_locks[key] = lock
+        return lock
+
+    def thread_map(self, items, fn):
+        """Run fn(item) for each item, in parallel on self.thread_pool if threading is enabled, sequentially otherwise. Returns results in input order; raises the first exception in input order once every item has finished."""
+        if self.thread_pool is None:
+            return [fn(item) for item in items]
+        futures = [self.thread_pool.submit(fn, item) for item in items]
+        results = [None] * len(futures)
+        first_exception = None
+        for i, future in enumerate(futures):
+            try:
+                results[i] = future.result()
+            except Exception as e:
+                if first_exception is None:
+                    first_exception = e
+        if first_exception is not None:
+            raise first_exception
+        return results
 
     def notify(self, text, server=None, library=None, collection=None, playlist=None, critical=True):
         for error in util.get_list(text, split=False, return_none=False) or []:

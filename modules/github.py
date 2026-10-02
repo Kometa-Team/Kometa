@@ -64,9 +64,11 @@ class GitHub:
     def latest_release_notes(self):
         return self._requests(f"{kometa_base}/releases/latest")["body"]
 
-    def get_commits(self, dev_version, nightly=False):
+    def get_commits(self, dev_version):
+        # Always diffed against nightly - develop is now just an automatic mirror of it (see release-develop.yml),
+        # so there's no separate commit history to fetch from develop anymore.
         master_sha = self._requests(f"{kometa_base}/commits/master")["sha"]
-        response = self._requests(f"{kometa_base}/commits", params={"sha": "nightly" if nightly else "develop"})
+        response = self._requests(f"{kometa_base}/commits", params={"sha": "nightly"})
         commits = []
         for commit in response:
             if commit["sha"] == master_sha:

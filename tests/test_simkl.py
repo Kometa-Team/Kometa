@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 import modules.simkl as simkl_module
@@ -63,6 +65,7 @@ TRENDING_MONTH_SMALL_URL = f"{BASE_URL}/trending/month/small"
 TRENDING_LARGE_URL = f"{BASE_URL}/trending/today/large"
 DVD_SMALL_URL = f"{BASE_URL}/dvd/small"
 DVD_LARGE_URL = f"{BASE_URL}/dvd/large"
+SIMKL_TOKEN_URL = "https://api.simkl.com/oauth2/token"
 
 
 # ---------------------------------------------------------------------------
@@ -122,6 +125,120 @@ class TestRequest:
         simkl = Simkl(FakeRequests({TRENDING_SMALL_URL: FakeResponse({}, status_code=503)}), None)
         with pytest.raises(Failed, match="Simkl Error"):
             simkl._request("trending/today/small")
+
+
+class TestOAuthRefresh:
+    def _requests(self, response):
+        requests = MagicMock()
+        requests.get_json.return_value = {"user": {"name": "kometa-user"}}
+        requests.post_json.return_value = response
+        yaml = MagicMock()
+        yaml.data = {"simkl": {"refresh_token": "simkl_rt_original"}}
+        requests.file_yaml.return_value = yaml
+        return requests, yaml
+
+    def test_refreshes_access_token_and_persists_updated_expiry(self, monkeypatch):
+        monkeypatch.setattr(simkl_module.time, "time", lambda: 1_000_000)
+        requests, yaml = self._requests(
+            {
+                "access_token": "simkl_at_new",
+                "token_type": "Bearer",
+                "expires_in": 604800,
+                "refresh_token": "simkl_rt_original",
+                "scope": "media:read media:write",
+            }
+        )
+
+        simkl = Simkl(requests, None, config_path="config.yml", authorization={"refresh_token": "simkl_rt_original"})
+
+        assert simkl.get_access_token() == "simkl_at_new"
+        requests.post_json.assert_called_once_with(
+            SIMKL_TOKEN_URL,
+            data={"grant_type": "refresh_token", "client_id": simkl_module.client_id, "refresh_token": "simkl_rt_original"},
+            headers={"User-Agent": "Kometa Official V2"},
+        )
+        assert yaml.data["simkl"]["access_token"] == "simkl_at_new"
+        assert yaml.data["simkl"]["access_token_expires_at"] == 1_604_800
+        assert yaml.data["simkl"]["refresh_token_expires_at"] == 1_000_000 + 180 * 24 * 60 * 60
+        assert yaml.data["simkl"]["scope"] == "media:read media:write"
+        yaml.save.assert_called_once_with()
+
+    def test_valid_access_token_authenticates_without_refresh(self):
+        requests = MagicMock()
+        requests.get_json.return_value = {"user": {"name": "kometa-user"}}
+        simkl = Simkl(requests, None, authorization={"access_token": "simkl_at_valid", "refresh_token": "simkl_rt_original"})
+
+        assert simkl.get_access_token() == "simkl_at_valid"
+        requests.get_json.assert_called_once_with(
+            simkl_module.authenticated_user_url,
+            headers={"Authorization": "Bearer simkl_at_valid", "User-Agent": "Kometa Official V2"},
+            params={"client_id": simkl_module.client_id},
+        )
+        requests.post_json.assert_not_called()
+
+    def test_failed_access_token_authentication_refreshes(self):
+        requests, _ = self._requests(
+            {
+                "access_token": "simkl_at_refreshed",
+                "token_type": "Bearer",
+                "expires_in": 604800,
+                "refresh_token": "simkl_rt_original",
+            }
+        )
+        requests.get_json.side_effect = [{"error": "invalid_token"}, {"user": {"name": "kometa-user"}}]
+        simkl = Simkl(requests, None, authorization={"access_token": "simkl_at_invalid", "refresh_token": "simkl_rt_original"})
+
+        assert simkl.get_access_token() == "simkl_at_refreshed"
+        requests.post_json.assert_called_once()
+
+    def test_force_refresh_skips_access_token_authentication(self):
+        requests, _ = self._requests(
+            {
+                "access_token": "simkl_at_refreshed",
+                "token_type": "Bearer",
+                "expires_in": 604800,
+                "refresh_token": "simkl_rt_original",
+            }
+        )
+        simkl = Simkl(
+            requests,
+            None,
+            authorization={"access_token": "simkl_at_valid", "refresh_token": "simkl_rt_original", "force_refresh": True},
+        )
+
+        assert simkl.get_access_token() == "simkl_at_refreshed"
+        requests.get_json.assert_called_once_with(
+            simkl_module.authenticated_user_url,
+            headers={"Authorization": "Bearer simkl_at_refreshed", "User-Agent": "Kometa Official V2"},
+            params={"client_id": simkl_module.client_id},
+        )
+        requests.post_json.assert_called_once()
+
+    def test_authentication_and_refresh_failure_logs_error_and_skips_simkl(self):
+        requests = MagicMock()
+        requests.get_json.return_value = {"error": "invalid_token"}
+        requests.post_json.return_value = {"error": "invalid_grant"}
+        simkl = Simkl(requests, None, authorization={"access_token": "simkl_at_invalid", "refresh_token": "simkl_rt_expired"})
+
+        assert simkl.access_token is None
+        assert any("invalid_grant" in message for message in simkl_module.logger.error_messages)
+        assert requests.get_json.call_count == 1
+
+    def test_refresh_failure_requests_new_utility_authorization(self):
+        requests = MagicMock()
+        requests.post_json.return_value = {"error": "invalid_grant"}
+        simkl = Simkl(requests, None, authorization={"refresh_token": "simkl_rt_expired"})
+
+        assert simkl.access_token is None
+        assert any("invalid_grant" in message and "simkl-oauth" in message for message in simkl_module.logger.error_messages)
+
+    def test_legacy_user_token_warns_without_refreshing(self):
+        requests = MagicMock()
+        simkl = Simkl(requests, None, authorization={"user_token": "legacy-token"})
+
+        assert simkl.access_token is None
+        requests.post_json.assert_not_called()
+        assert any("AUTH V1" in message and "simkl-oauth" in message for message in simkl_module.logger.warning_messages)
 
 
 # ---------------------------------------------------------------------------

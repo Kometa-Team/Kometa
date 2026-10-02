@@ -14,7 +14,7 @@ Kometa is a Python CLI tool that gives users granular control over Plex media li
 - **Playlist management** — cross-library playlists
 - **Library operations** — mass updates, missing item reporting, and integration with Sonarr/Radarr
 
-Kometa connects to dozens of third-party services (TMDb, IMDb, Trakt, AniDB, MyAnimeList, TVDb, Letterboxd, etc.) to build dynamic collections and overlays. Users configure everything through YAML files.
+Kometa connects to dozens of third-party services (TMDb, IMDb, AniDB, MyAnimeList, TVDb, Letterboxd, etc.) to build dynamic collections and overlays. Users configure everything through YAML files.
 
 ---
 
@@ -49,14 +49,14 @@ See `requirements.txt` for the full pinned list. Notable ones:
 
 ### Development Dependencies
 
-See `dev-requirements.txt`:
+The `dev` dependency group in `pyproject.toml` (locked in `uv.lock`, install with `uv sync --group dev`) pins:
 
 - `black==26.5.1`
-- `isort==8.0.1`
+- `isort==9.0.1`
 - `flake8==7.3.0`
-- `mypy==2.1.0`
+- `pyright==1.1.411`
 - `bandit==1.9.4`
-- `prek==0.4.5` (wrapper around the above)
+- `prek==0.5.2` (wrapper around the above)
 
 ---
 
@@ -68,12 +68,13 @@ See `dev-requirements.txt`:
 ├── VERSION                   # SemVer string (e.g., "2.4.0-build1") — drives nightly build numbering
 ├── PART                      # Build-part counter used by CI
 ├── CHANGELOG.md              # Release notes in keepachangelog format
-├── CONTRIBUTING.md           # Contributor guide (branching, versioning, code style, PR checklist)
 ├── requirements.txt          # Runtime dependencies (pinned)
-├── dev-requirements.txt      # Lint / format / type-check dependencies
-├── pyproject.toml            # Tool configuration (black, isort, bandit)
+├── pyproject.toml            # Project metadata, dependency groups (runtime, dev, docs) and tool configuration
+├── uv.lock                   # Locked dependency versions; requirements.txt and docs/requirements.txt are exported from it
 ├── Dockerfile                # Multi-stage-ish Docker build
-├── mkdocs.yml                # Documentation site configuration
+├── docker/                   # Dockerfile.base (dependency base image) and the hashed uv-bootstrap.txt it installs uv from
+├── scripts/                  # Dev tooling; pyright/ holds the ratcheting baseline and type stubs
+├── .github/                  # Workflows, CONTRIBUTING.md, spellcheck config, shared CI script and composite action
 │
 ├── modules/                  # Core application code (~26k total lines)
 │   ├── config.py             # ConfigFile class: parses kometa config YAML
@@ -89,7 +90,6 @@ See `dev-requirements.txt`:
 │   ├── request.py            # Requests wrapper: versioning, headers, retries
 │   ├── library.py            # Library abstraction helpers
 │   ├── tmdb.py               # TMDb API integration
-│   ├── trakt.py              # Trakt API integration
 │   ├── imdb.py               # IMDb scraping + GraphQL
 │   ├── anidb.py              # AniDB integration
 │   ├── anilist.py            # AniList integration
@@ -140,6 +140,7 @@ See `dev-requirements.txt`:
 │   └── test_validator.py
 │
 ├── docs/                     # MkDocs source
+│   ├── mkdocs.yml            # MkDocs configuration (run `mkdocs serve -f docs/mkdocs.yml`)
 │   ├── requirements.txt      # Docs build dependencies
 │   ├── kometa/               # User-facing wiki pages
 │   ├── config/               # Config reference docs
@@ -176,7 +177,7 @@ See `dev-requirements.txt`:
 ### Key Architecture
 
 - **Execution**: CLI args → config parsing → scheduler → per-library `CollectionBuilder` → overlays/metadata/operations.
-- **Builders**: Each data source (TMDb, Trakt, Plex) exposes builder names (e.g., `tmdb_collection`, `trakt_list`). `CollectionBuilder` dispatches dynamically.
+- **Builders**: Each data source (TMDb, Plex) exposes builder names (e.g., `tmdb_collection`, `trakt_list`). `CollectionBuilder` dispatches dynamically.
 - **Exception flow**: Custom exceptions (`Failed`, `NotScheduled`, `FilterFailed`) replace deep nesting for control flow.
 - **Caching**: SQLite in `modules/cache.py` caches API responses and overlay images with configurable TTL.
 - **Logging**: `MyLogger` singleton in `modules/logs.py` with trace mode and request logging.
@@ -189,7 +190,7 @@ See `dev-requirements.txt`:
 ```bash
 # Install
 pip install -r requirements.txt          # Runtime
-pip install -r dev-requirements.txt      # Development
+uv sync --group dev                      # Development (locked runtime + dev tools)
 
 # Run
 python kometa.py --run                   # One-shot
@@ -203,7 +204,7 @@ pytest
 prek run --all-files --show-diff-on-failure  # Runs black, isort, flake8, mypy, bandit
 
 # Docs
-pip install -r docs/requirements.txt && mkdocs serve
+pip install -r docs/requirements.txt && mkdocs serve -f docs/mkdocs.yml
 ```
 
 ---
@@ -228,7 +229,7 @@ pip install -r docs/requirements.txt && mkdocs serve
 
 ## CI/CD & Deployment
 
-- **Branches**: `nightly` (dev) → `develop` (beta) → `master` (stable). **All PRs must target `nightly`.**
+- **Branches**: `nightly` (internal integration branch, not user-facing) → `develop` (public beta, auto-mirrors `nightly` on every push) → `master` (stable). **All PRs must target `nightly`.**
 - **Docker**: Multi-arch images at `kometateam/kometa:<tag>` via GitHub Actions on tag/push.
 - **Workflows**: Validation, Docker builds, releases. See `.github/workflows/` for details.
 
@@ -246,7 +247,7 @@ pip install -r docs/requirements.txt && mkdocs serve
 
 ## Contributing
 
-See `CONTRIBUTING.md` for the full guide. Key points for agents:
+See `.github/CONTRIBUTING.md` for the full guide. Key points for agents:
 
 1. All PRs target `nightly`.
 2. Update `CHANGELOG.md` under `## [Unreleased]` and docs where needed.

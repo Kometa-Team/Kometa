@@ -100,7 +100,6 @@ class Requests:
         self.image_content_types = ["image/png", "image/jpeg", "image/webp"]
         self._image_url_cache = {}  # Run-scoped memoization for get_image() - same URL within one run is always the same asset, no staleness risk.
         self._nightly = None
-        self._develop = None
         self._master = None
         self._branch = None
         self._latest = None
@@ -261,16 +260,17 @@ class Requests:
 
     @property
     def branch(self):
+        # "develop" is kept as a recognized value here because installs still on that tag/branch genuinely
+        # report it via git_branch/env_branch - but develop is now just an automatic mirror of nightly (see
+        # release-develop.yml), so there's no longer a way to tell them apart by version/build number alone,
+        # and no need to: they're always identical.
         if self._branch is None:
             if self.git_branch in ["develop", "nightly"]:
                 self._branch = self.git_branch
             elif self.env_branch in ["develop", "nightly"]:
                 self._branch = self.env_branch
             elif self.local.build > 0:
-                if self.local.main != self.develop.main or self.local.build <= self.develop.build:
-                    self._branch = "develop"
-                else:
-                    self._branch = "nightly"
+                self._branch = "nightly"
             else:
                 self._branch = "master"
         return self._branch
@@ -278,13 +278,7 @@ class Requests:
     @property
     def latest(self):
         if self._latest is None:
-            if self.branch == "develop":
-                self._latest = self.develop
-            elif self.branch == "nightly":
-                self._latest = self.nightly
-            elif self.local.build > 0:
-                if self.local.main != self.develop.main or self.develop.build >= self.local.build:
-                    self._latest = self.develop
+            if self.branch in ("develop", "nightly"):
                 self._latest = self.nightly
             else:
                 self._latest = self.master
@@ -301,12 +295,6 @@ class Requests:
         if self._master is None:
             self._master = self._version("master")
         return self._master
-
-    @property
-    def develop(self):
-        if self._develop is None:
-            self._develop = self._version("develop")
-        return self._develop
 
     @property
     def nightly(self):

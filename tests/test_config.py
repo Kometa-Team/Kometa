@@ -58,7 +58,6 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
         "modules.cache",
         "modules.plex",
         "modules.tmdb",
-        "modules.trakt",
         "modules.anidb",
         "modules.tvdb",
         "modules.letterboxd",
@@ -113,7 +112,6 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
     config_names = {
         "Plex": lambda *a, **kw: fake_plex,
         "TMDb": lambda *a, **kw: MagicMock(),
-        "Trakt": lambda *a, **kw: MagicMock(),
         "AniDB": lambda *a, **kw: MagicMock(),
         "TVDb": lambda *a, **kw: MagicMock(),
         "Letterboxd": lambda *a, **kw: MagicMock(),
@@ -471,6 +469,72 @@ plex:
         movie_lib = cf.data["libraries"]["Movies"]
         assert "radarr_add_all" not in movie_lib
         assert movie_lib.get("radarr_add_all_existing") is True
+
+
+class TestLibraryOperationsRetiredTraktRatingValues:
+    """A mass_*_rating_update value of "trakt"/"trakt_user"/"mdb_trakt" used to fall through to
+    the generic numeric-rating parser, producing a confusing "must be a number between 0 and 10"
+    error. These values should instead get the clear Trakt-removal message."""
+
+    @pytest.mark.parametrize("value", ["trakt", "trakt_user", "mdb_trakt", "TRAKT"])
+    def test_retired_trakt_value_logs_removal_message(self, tmp_path, value):
+        config = f"""
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      mass_critic_rating_update: {value}
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        make_config(tmp_path, config_yaml=config)
+        assert any("Trakt is no longer supported" in message for message in config_module.logger.error_messages)
+        assert not any("must be a number" in message for message in config_module.logger.error_messages)
+
+    def test_nested_mass_metadata_update_ratings_form_logs_removal_message(self, tmp_path):
+        # The expand_mass_metadata_operation() form: operations.mass_metadata_update.ratings.audience
+        config = """
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      mass_metadata_update:
+        ratings:
+          audience: trakt
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        make_config(tmp_path, config_yaml=config)
+        assert any("Trakt is no longer supported" in message for message in config_module.logger.error_messages)
+
+    def test_unrelated_rating_value_still_gets_generic_error(self, tmp_path):
+        config = """
+settings:
+  cache: false
+libraries:
+  Movies:
+    collection_files: []
+    operations:
+      mass_critic_rating_update: not-a-number
+tmdb:
+  apikey: fake
+plex:
+  url: http://localhost
+  token: fake
+"""
+        make_config(tmp_path, config_yaml=config)
+        assert any("must be a number" in message for message in config_module.logger.error_messages)
+        assert not any("Trakt is no longer supported" in message for message in config_module.logger.error_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
