@@ -10,4 +10,4 @@ ENV KOMETA_DOCKER=True
 COPY . /
 
 VOLUME /config
-ENTRYPOINT ["/tini", "-s", "python3", "kometa.py", "--"]
+ENTRYPOINT ["/tini", "-s", "/.venv/bin/python3", "kometa.py", "--"]

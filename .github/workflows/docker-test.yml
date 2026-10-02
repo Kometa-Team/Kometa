@@ -69,5 +69,29 @@ jobs:
             --build-arg BRANCH_NAME=${{ github.ref_name }} \
             --file ./Dockerfile \
             --platform ${{ matrix.platform }} \
+            --tag kometa-test:${{ matrix.cache-scope }} \
             --load \
             .
+
+      - name: Verify venv entrypoint and startup with overridden PATH
+        if: ${{ github.event_name == 'pull_request' || github.event.inputs.platform == 'all' || github.event.inputs.platform == matrix.platform }}
+        run: |
+          entrypoint=$(docker image inspect --format '{{json .Config.Entrypoint}}' kometa-test:${{ matrix.cache-scope }})
+          if [ "$entrypoint" != '["/tini","-s","/.venv/bin/python3","kometa.py","--"]' ]; then
+            echo "ERROR: unexpected entrypoint: $entrypoint"
+            exit 1
+          fi
+          docker run --rm \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            --entrypoint /.venv/bin/python3 \
+            kometa-test:${{ matrix.cache-scope }} \
+            -c "import packaging; print(packaging.__version__)"
+          startup_output=$(docker run --rm \
+            --env PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin \
+            --env KOMETA_CONFIG=/tmp/kometa-entrypoint-test.yml \
+            kometa-test:${{ matrix.cache-scope }} 2>&1)
+          printf '%s\n' "$startup_output"
+          if ! grep -Fq "Config Error: Configuration file (config.yml) not found at /tmp/kometa-entrypoint-test.yml" <<< "$startup_output"; then
+            echo "ERROR: the configured entrypoint did not reach the expected missing-config error"
+            exit 1
+          fi
