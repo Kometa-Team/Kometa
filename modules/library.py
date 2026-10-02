@@ -2,8 +2,8 @@ import os
 import time
 from abc import ABC, abstractmethod
 
-from PIL import Image
-from requests.exceptions import RequestException
+from PIL import Image, UnidentifiedImageError
+from requests.exceptions import RequestException, Timeout
 
 from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
@@ -32,6 +32,8 @@ class Library(ABC):
         self.collection_images = {}
         self.queue_current = 0
         self.collection_files = []
+        # Includes parsed files which are configured but scheduled out of this run.
+        self.configured_collection_metadata_files = []
         self.metadata_files = []
         self.overlay_files = []
         self.images_files = []
@@ -234,6 +236,7 @@ class Library(ABC):
         for file_type, metadata_file, temp_vars, asset_directory in self.configured_collection_files:
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
+                self.configured_collection_metadata_files.append(meta_obj)
                 if meta_obj.collections:
                     self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
             except NotScheduled:
@@ -312,6 +315,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {poster.attribute} {poster.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {poster.attribute} failed to update {poster.message}")
@@ -327,6 +332,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {background.prefix}background update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {background.attribute} {background.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {background.attribute} failed to update {background.message}")
@@ -342,6 +349,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {logo.attribute} {logo.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {logo.attribute} failed to update {logo.message}")
@@ -357,6 +366,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except Timeout:
+                logger.error(f"Plex Error: Plex server timed out while updating {square_art.attribute} {square_art.message}")
             except (Failed, RequestException):
                 logger.stacktrace()
                 logger.error(f"Metadata: {square_art.attribute} failed to update {square_art.message}")
@@ -517,8 +528,11 @@ class Library(ABC):
         while util.is_locked(image_path) and elapsed < timeout:
             time.sleep(0.1)
             elapsed += 0.1
-        with Image.open(image_path) as image:
-            exif_tags = image.getexif()
+        try:
+            with Image.open(image_path) as image:
+                exif_tags = image.getexif()
+        except UnidentifiedImageError as e:
+            raise Failed(f"Cannot read poster image '{image_path}': unsupported image format or corrupt file. Check the poster source and replace this file with a valid original poster before rerunning overlays.") from e
         if 0x04BC in exif_tags and exif_tags[0x04BC] == "overlay":
             os.remove(image_path)
             raise Failed("This item's poster already has an Overlay. There is no Kometa setting to change; manual attention required.")

@@ -689,8 +689,6 @@ Kometa also features multiple layers of scheduling, which you can leverage to co
 <!--all-->
 {% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "develop", "NAME": "develop"}' %}
 
-{% include-markdown "./branch.md" include-tags='INCLUDE_TAGS' replace='{"BRANCH": "nightly", "NAME": "nightly"}' %}
-
 <!--all-->
 
 <!--local-->

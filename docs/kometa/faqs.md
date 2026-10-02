@@ -90,7 +90,7 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
             docker pull kometateam/kometa:TAG_HERE
 
-        replacing TAG_HERE with latest, develop, or nightly [whichever you are currently using]
+        replacing TAG_HERE with latest or develop [whichever you are currently using]
 
         Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.].
 
@@ -168,81 +168,6 @@ so if you installed it somewhere else you will have to change the path[s] to ref
 
         Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], changing the image in the docker command or 
         the `docker-compose.yml` to `kometateam/kometa:develop`.
-
-        If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
-
-
-??? question "How do I switch to the nightly branch"
-
-    === ":fontawesome-brands-linux: Linux"
-    
-        [type this into your terminal, changing `YOUR_USERNAME` to your username]
-
-            cd /Users/YOUR_USERNAME/Kometa
-            git stash
-            git stash clear
-            git checkout nightly
-            git pull
-            source kometa-venv/bin/activate
-            python -m pip install -r requirements.txt
-
-        These two commands:
-
-            git stash
-            git stash clear
-
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not
-        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
-
-    === ":fontawesome-brands-apple: macOS"
-    
-        [type this into your terminal, changing `YOUR_USERNAME` to your username]
-
-            cd /Users/YOUR_USERNAME/Kometa
-            git stash
-            git stash clear
-            git checkout nightly
-            git pull
-            source kometa-venv/bin/activate
-            python -m pip install -r requirements.txt
-
-        These two commands:
-
-            git stash
-            git stash clear
-
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not 
-        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
-
-    === ":fontawesome-brands-windows: Windows"
-    
-        [type this into your terminal, changing `YOUR_USERNAME` to your username and the drive letter if needed]
-
-            C:
-            cd C:\Users\YOUR_USERNAME\Kometa
-            git stash
-            git stash clear
-            git checkout nightly
-            git pull
-            .\kometa-venv\Scripts\activate
-            python -m pip install -r requirements.txt
-
-        These two commands:
-
-            git stash
-            git stash clear
-
-        Will reset any changes you have made to Kometa-owned files [YOUR CONFIG FILES ARE NOT AFFECTED]. You shouldn't be doing this, so typically this will not
-        lose any of your work. If you have done this, the assumption is that you know enough about `git` to know how to prevent that from happening.
-
-    === ":fontawesome-brands-docker: Docker"
-    
-        [type this into your terminal]
-
-            docker pull kometateam/kometa:nightly
-
-        Then recreate your container via whatever means you used to create it [docker run, docker-compose, etc.], 
-        changing the image in the docker command or the `docker-compose.yml` to `kometateam/kometa:nightly`.
 
         If you are using Docker on a NAS like Synology or UNRaid, they will provide some means of doing those two things.
 

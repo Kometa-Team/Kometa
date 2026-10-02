@@ -32,7 +32,7 @@ If you don't already have this installed, you can install it [here](https://foru
 
 2. Click the `Install` button on the Template from Sohjiro's Repository Tools.
 
-3. Choose which branch you want to run `latest`, `develop`, or `nightly`.
+3. Choose which branch you want to run `latest` or `develop`.
 
 4. Set the `Console shell command:` to `Bash`
 

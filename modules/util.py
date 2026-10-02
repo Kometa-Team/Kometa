@@ -38,20 +38,73 @@ else:
 
 TRAKT_REMOVAL_MESSAGE = "Trakt is no longer supported, please see the Announcements channel in the Kometa Discord server for further information"
 
+# Retired Trakt rating-source option *values* - as opposed to TRAKT_KEYS below, these are values a
+# user could set for a mass_*_rating_update attribute (e.g. `audience: trakt`). Checked explicitly
+# during rating option validation so a config still carrying one of these gets the clear removal
+# message instead of config.py's generic rating-value parser trying (and failing) to read "trakt"
+# as a number between 0 and 10.
+RETIRED_TRAKT_RATING_VALUES = frozenset({"trakt", "trakt_user", "mdb_trakt"})
+
+# Retired Trakt config/builder attribute names, matched exactly (case-insensitive) against dict
+# keys only - not substring-matched and never checked against string values. A substring check
+# on values would false-positive on anything that merely mentions "trakt" without using it, e.g.
+# an mdblist_list URL whose slug happens to include "trakt", or prose in a summary attribute.
+TRAKT_KEYS = frozenset(
+    {
+        "trakt",  # legacy top-level API credentials block
+        "trakt_chart",
+        "trakt_userlist",
+        "trakt_list",
+        "trakt_list_details",
+        "trakt_watchlist",
+        "trakt_collection",
+        "trakt_trending",
+        "trakt_popular",
+        "trakt_boxoffice",
+        "trakt_collected_daily",
+        "trakt_collected_weekly",
+        "trakt_collected_monthly",
+        "trakt_collected_yearly",
+        "trakt_collected_all",
+        "trakt_recommendations",
+        "trakt_recommended_personal",
+        "trakt_recommended_daily",
+        "trakt_recommended_weekly",
+        "trakt_recommended_monthly",
+        "trakt_recommended_yearly",
+        "trakt_recommended_all",
+        "trakt_watched_daily",
+        "trakt_watched_weekly",
+        "trakt_watched_monthly",
+        "trakt_watched_yearly",
+        "trakt_watched_all",
+        "sync_to_trakt_list",
+        "sync_missing_to_trakt_list",
+    }
+)
+
 
 def remove_trakt(data):
-    """Remove retired Trakt configuration while preserving unrelated settings."""
+    """Remove retired Trakt configuration keys while preserving unrelated settings.
+
+    Only matches known Trakt config/builder attribute names (see TRAKT_KEYS) - it does not scan
+    or match on string values, so URLs, summaries, or collection names that simply mention
+    "trakt" (e.g. an MDBList list sourced from Trakt data, or a collection named "Trakt
+    Favorites") are left untouched.
+    """
     if isinstance(data, dict):
         cleaned = {}
         found = False
         for key, value in data.items():
-            if "trakt" in str(key).lower():
+            if isinstance(key, str) and key.lower() in TRAKT_KEYS:
                 found = True
                 continue
             value, value_found = remove_trakt(value)
             found = found or value_found
-            if value is not None and not (value_found and isinstance(value, dict) and not value):
-                cleaned[key] = value
+            # Only drop entries that trakt removal actually produced; keep pre-existing None/empty values intact
+            if value_found and (value is None or (isinstance(value, dict) and not value)):
+                continue
+            cleaned[key] = value
         return cleaned, found
     elif isinstance(data, list):
         cleaned = []
@@ -59,11 +112,10 @@ def remove_trakt(data):
         for value in data:
             value, value_found = remove_trakt(value)
             found = found or value_found
-            if value is not None:
-                cleaned.append(value)
+            if value_found and value is None:
+                continue
+            cleaned.append(value)
         return cleaned, found
-    elif isinstance(data, str) and "trakt" in data.lower():
-        return None, True
     return data, False
 
 

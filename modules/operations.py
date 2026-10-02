@@ -174,7 +174,7 @@ class Operations:
 
     def _configured_collection_names(self):
         configured_names = set(self.library.collection_names)
-        for metadata_file in self.library.collection_files:
+        for metadata_file in self.library.configured_collection_metadata_files:
             for mapping_name, collection_data in (metadata_file.collections or {}).items():
                 try:
                     configured_names.update(_configured_collection_name_aliases(self.config, self.library, metadata_file, mapping_name, collection_data))
@@ -347,6 +347,8 @@ class Operations:
                     source = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
                     image_operation_counts[(operation, source, image_type, level, status)] += 1
 
+            # Pre-warms reload data for the whole library in batched requests instead of one per item - see plex.py's bulk_reload().
+            self.library.bulk_reload(items)
             for i, item in enumerate(items, 1):
                 logger.info("")
                 logger.info(f"({i}/{total_items}) {item.title}")
@@ -430,6 +432,16 @@ class Operations:
                     if not _flicklist_ratings:
                         raise Failed
                     return _flicklist_ratings
+
+                _wetrakr_ratings = None
+
+                def wetrakr_ratings():
+                    nonlocal _wetrakr_ratings
+                    if _wetrakr_ratings is None:
+                        _wetrakr_ratings = self.config.WeTrakr.user_ratings(self.library.is_movie)
+                    if not _wetrakr_ratings:
+                        raise Failed
+                    return _wetrakr_ratings
 
                 _tmdb_obj = None
 
@@ -704,6 +716,15 @@ class Operations:
                                         if not self.config.FlickList:
                                             raise Failed
                                         _ratings = flicklist_ratings()
+                                        _id = tmdb_id if self.library.is_movie else tvdb_id
+                                        if _id in _ratings:
+                                            found_rating = _ratings[_id]
+                                        else:
+                                            raise Failed
+                                    elif option == "wetrakr_user":
+                                        if not self.config.WeTrakr:
+                                            raise Failed
+                                        _ratings = wetrakr_ratings()
                                         _id = tmdb_id if self.library.is_movie else tvdb_id
                                         if _id in _ratings:
                                             found_rating = _ratings[_id]
@@ -1565,6 +1586,8 @@ class Operations:
 
                         if len(item_edits) > 0:
                             logger.info(f"{item_edits[1:]}")
+                        else:
+                            logger.info("No Item Edits")
 
             if image_operation_counts:
                 logger.info("")

@@ -70,6 +70,17 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[WeTrakr](../wetrakr/overview)** builders grab lists and personal data from your configured WeTrakr account.
+
+    [:octicons-home-16: View Builder](../wetrakr/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: WeTrakr List](../wetrakr/list) - Gets every item in a WeTrakr list.
+        - [:octicons-list-ordered-16: WeTrakr Tracking](../wetrakr/personal) - Gets the configured user's WeTrakr tracking list.
+
+!!! builder
+
     **[Serializd](../serializd/overview)** builders grab shows from Serializd lists and watchlists through its JSON API.
 
     [:octicons-home-16: View Builder](../serializd/overview){ .md-button .md-button--primary }

@@ -55,14 +55,8 @@ That means we can just jump right into running it. At the command prompt, type:
       docker run --rm kometateam/kometa:develop --run
       ```
 
-=== ":fontawesome-brands-docker: nightly"
-
-      ```shell
-      docker run --rm kometateam/kometa:nightly --run
-      ```
-
 Use the branch reflecting the version of the wiki you are reading, as some functionality may be dependent on this. If you are reading the latest version of the wiki, 
-use `latest` [or leave the tag off] as shown above. If you are reading the develop branch, use `develop`. If you are reading the nightly branch, use `nightly`.
+use `latest` [or leave the tag off] as shown above. If you are reading the develop branch, use `develop`.
 
 This same thing holds for all future docker commands in this walkthrough.
 

@@ -1,3 +1,8 @@
+# This file lives inside the docs tree, so docs_dir is its own directory and the build output goes back to the repo root.
+docs_dir: .
+site_dir: ../site
+exclude_docs: |
+  mkdocs.yml
 site_name: Kometa Wiki
 site_author: meisnate12
 site_description: Kometa is an open-source python project allowing you to unlock the potential of your media server.
@@ -9,7 +14,7 @@ theme:
   name: material
   logo: assets/images/icons/icon.png
   favicon: assets/images/icons/favicon.png
-  custom_dir: docs/overrides
+  custom_dir: overrides
   font:
     text: DM Sans
     code: Fira Code
@@ -61,9 +66,6 @@ extra:
     lang: en
   - name: Develop Docs
     link: /en/develop/
-    lang: en
-  - name: Nightly Docs
-    link: /en/nightly/
     lang: en
   social:
   - icon: fontawesome/solid/heart
@@ -119,7 +121,7 @@ extra_javascript:
 - https://unpkg.com/@popperjs/core@2
 - https://unpkg.com/tippy.js@6
 hooks:
-- docs/hooks/copyright.py
+- hooks/copyright.py
 
 nav:
 - KOMETA:
@@ -194,6 +196,7 @@ nav:
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
+      - WeTrakr: config/wetrakr.md
       - MyAnimeList: config/myanimelist.md
       - Kometa Utilities Authentication: config/authentication.md
       - Webhooks: config/webhooks.md
@@ -395,6 +398,7 @@ nav:
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md
+        - Streaming: files/builders/mdblist/streaming.md
       - YamTrack:
         - Overview: files/builders/yamtrack/overview.md
         - List: files/builders/yamtrack/list.md
@@ -404,6 +408,11 @@ nav:
         - List: files/builders/flicklist/list.md
         - Personal: files/builders/flicklist/personal.md
         - Ratings: files/builders/flicklist/ratings.md
+      - WeTrakr:
+        - Overview: files/builders/wetrakr/overview.md
+        - List: files/builders/wetrakr/list.md
+        - Personal: files/builders/wetrakr/personal.md
+        - Ratings: files/builders/wetrakr/ratings.md
       - Serializd:
         - Overview: files/builders/serializd/overview.md
         - Charts: files/builders/serializd/charts.md

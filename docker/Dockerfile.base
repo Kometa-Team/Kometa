@@ -12,8 +12,8 @@ ENV UV_PYTHON_DOWNLOADS=never
 ENV UV_COMPILE_BYTECODE=1
 ENV UV_LINK_MODE=copy
 
-# uv is pip-installed from hash-pinned uv-bootstrap.txt (the uv image has no linux/arm/v7) and removed in the same RUN, so it never ships.
-COPY pyproject.toml uv.lock uv-bootstrap.txt /
+# uv is pip-installed from hash-pinned docker/uv-bootstrap.txt (the uv image has no linux/arm/v7) and removed in the same RUN, so it never ships.
+COPY pyproject.toml uv.lock docker/uv-bootstrap.txt /
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/root/.cache/uv,sharing=locked \
     echo "**** install system packages ****" \

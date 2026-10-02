@@ -12,8 +12,8 @@ Thanks for taking the time to contribute! This document covers everything you ne
 
 | Branch | Purpose |
 | ------ | ------- |
-| `nightly` | Active development - all PRs target here |
-| `develop` | Pre-release staging |
+| `nightly` | Active development, internal only - all PRs target here |
+| `develop` | Public beta - auto-mirrors `nightly` on every push |
 | `master` | Stable releases only |
 
 Create your branch from `nightly` and keep it rebased against `nightly` before opening a PR.
@@ -31,9 +31,8 @@ The `VERSION` file in the repo root drives the build numbering. When the team de
 ## Setting up your environment
 
 ```bash
-# Clone and install dev dependencies
-pip install -r requirements.txt
-pip install -r dev-requirements.txt
+# Clone and install the locked runtime + dev dependencies (needs uv: https://docs.astral.sh/uv/)
+uv sync --group dev
 
 # Install pre-commit hooks (runs black, isort, flake8, and spellcheck automatically)
 pre-commit install

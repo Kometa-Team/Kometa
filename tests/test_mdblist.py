@@ -51,6 +51,13 @@ class TestMDbObj:
         assert m.metacritic_rating == 80
         assert m.tmdb_rating == 8
 
+    def test_preserves_single_item_letterboxd_native_scale(self):
+        from modules.mdblist import MDbObj
+
+        m = MDbObj({**self._BASE, "ratings": [{"source": "letterboxd", "value": 4.5}]})
+
+        assert m.letterboxd_rating == 4.5
+
     def test_handles_none_release_date(self):
         from modules.mdblist import MDbObj
 
@@ -157,6 +164,30 @@ class TestMDBList:
         )
         assert result[0]["sort_by"] == "score"
 
+    def test_validate_streaming_normalizes_options(self, adapter):
+        result = adapter.validate_mdblist_streaming(
+            "Collection",
+            {"country": "United Kingdom", "period": "7d", "provider": "Netflix", "genre": "Science Fiction"},
+        )
+
+        assert result == {"country": "GB", "period": "weekly", "provider": "nfx", "genre": "scf"}
+
+    def test_get_tmdb_ids_for_streaming_chart(self, adapter):
+        adapter._request = MagicMock(
+            return_value=(
+                {"results": [{"ids": {"tmdb": 101}}, {"tmdb_id": 202}, {"id": "invalid"}]},
+                {},
+            )
+        )
+
+        result = adapter.get_tmdb_ids("mdblist_streaming", {"country": "GB", "period": "weekly"}, is_movie=False)
+
+        assert result == [(101, "tmdb_show"), (202, "tmdb_show")]
+        adapter._request.assert_called_once_with(
+            "https://api.mdblist.com/justwatch/streaming-charts/show",
+            params={"country": "GB", "period": "weekly"},
+        )
+
     def test_get_tmdb_ids_returns_episode_ids(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(
@@ -177,6 +208,22 @@ class TestMDBList:
 
         assert result == [("456_2_3", "tmdb_episode")]
         assert adapter._request.call_args_list[1].args[0].endswith("/items/episode")
+
+    def test_get_tmdb_ids_uses_official_list_endpoint(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(
+            side_effect=[
+                ({"items": 1}, {}),
+                ({"movies": [{"id": 123, "mediatype": "movie"}]}, {"X-Has-More": "false"}),
+            ]
+        )
+
+        result = adapter.get_tmdb_ids("mdblist_list", {"url": "https://mdblist.com/lists/official/movies/most-watched"}, is_movie=True)
+
+        assert result == [(123, "tmdb")]
+        assert adapter._request.call_args_list[0].args[0] == "https://api.mdblist.com/lists/official/most-watched"
+        assert adapter._request.call_args_list[1].args[0] == "https://api.mdblist.com/lists/official/most-watched/items"
+        assert adapter._request.call_args_list[1].kwargs["params"]["mediatype"] == "movie"
 
     def test_add_key_raises_on_bad_api(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
@@ -231,6 +278,23 @@ class TestMDBList:
         assert {media_id: item.title for media_id, item in result.items()} == {101: "Cached", 202: "Refreshed", 303: "Fetched"}
         adapter._request.assert_called_once_with("https://api.mdblist.com/tmdb/movie/", json_data={"ids": [202, 303]})
         assert [call.args[:2] for call in adapter.cache.update_mdb.call_args_list] == [(True, "tm202"), (None, "tm303")]
+
+    @pytest.mark.parametrize(("batch_value", "expected"), [(9, 4.5), (4.6, 2.3)])
+    def test_get_items_normalizes_letterboxd_batch_rating_to_native_scale(self, adapter, batch_value, expected):
+        adapter.cache.query_mdb.return_value = ({}, None)
+        adapter._request = MagicMock(
+            return_value=(
+                [{"id": 101, "title": "Batch Item", "ratings": [{"source": "letterboxd", "value": batch_value}]}],
+                {},
+            )
+        )
+
+        result = adapter.get_items("tmdb", "movie", [101])
+
+        assert result[101].letterboxd_rating == expected
+        assert result[101].ratings_valid
+        assert adapter._run_cache["tm101"].letterboxd_rating == expected
+        assert adapter.cache.update_mdb.call_args.args[2].letterboxd_rating == expected
 
     def test_get_items_chunks_requests_at_one_hundred_ids(self, adapter):
         adapter.cache = None
@@ -396,3 +460,31 @@ class TestMDBList:
 
         remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
         assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
+
+
+@pytest.mark.parametrize("metadata_succeeds", [False, True])
+def test_daily_quota_preserved_during_list_loading(monkeypatch, metadata_succeeds):
+    from modules.mdblist import MDBList, MDBListLimitReached
+    from modules.util import ServiceError
+
+    monkeypatch.setattr("modules.mdblist.time.sleep", lambda _: None)
+    adapter = MDBList.__new__(MDBList)
+    adapter.apikey = "private-key"
+    adapter.supporter = False
+    adapter.limit = False
+    adapter.requests = MagicMock()
+    quota = MagicMock(status_code=429)
+    quota.json.return_value = {"error": "Daily API limit exceeded!"}
+    metadata = MagicMock(status_code=200)
+    metadata.json.return_value = {"items": 1}
+    adapter.requests.get.side_effect = [metadata, quota] if metadata_succeeds else [quota]
+
+    with pytest.raises(MDBListLimitReached) as caught:
+        adapter.get_tmdb_ids("mdblist_list", {"id": 123}, is_movie=True)
+
+    assert isinstance(caught.value, ServiceError)
+    assert isinstance(caught.value, LimitReached)
+    assert adapter.limit is True
+    assert "Wait for the daily quota to reset" in str(caught.value)
+    assert str(caught.value).count("MDBList Error:") == 1
+    assert adapter.requests.get.call_count == (2 if metadata_succeeds else 1)

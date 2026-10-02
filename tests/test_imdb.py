@@ -676,3 +676,26 @@ def test_interest_options_falls_back_on_empty_response():
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
     imdb.requests.get_json = MagicMock(return_value={})
     assert imdb.interest_options == interest_options_fallback
+
+
+def test_chart_empty_document_is_contextual_service_error(monkeypatch):
+    from lxml import html
+
+    from modules.util import ServiceError
+
+    logger = MagicMock()
+    monkeypatch.setattr("modules.imdb.logger", logger)
+    requests = MagicMock()
+    requests.get_cloudscrape_html.side_effect = lambda *args, **kwargs: html.fromstring(b"")
+    imdb = IMDb(requests=requests, cache=None, default_dir="/tmp")
+    imdb._chart_graphql = MagicMock(side_effect=Failed("GraphQL unavailable"))
+
+    with pytest.raises(ServiceError) as caught:
+        imdb._ids_from_chart("popular_movies", "en")
+
+    message = str(caught.value)
+    assert "Most Popular Movies" in message
+    assert "Empty or unreadable page" in message
+    assert "Retry later" in message
+    assert "Kometa host" in message
+    logger.stacktrace.assert_not_called()

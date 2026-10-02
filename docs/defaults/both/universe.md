@@ -17,7 +17,8 @@ hide:
 | `Arrowverse`                 | `arrow`     | Collection of Movies in the The Arrow Universe                    |
 | `Conjuring Universe`         | `conjuring` | Collection of Movies in the Conjuring Universe                    |
 | `DC Animated Universe`       | `dca`       | Collection of Movies in the DC Animated Universe                  |
-| `DC Extended Universe`       | `dcu`       | Collection of Movies in the DC Extended Universe                  |
+| `DC Extended Universe`       | `dceu`      | Collection of Movies in the DC Extended Universe                  |
+| `DC Universe`                | `dcu`       | Collection of Movies and Shows in the DC Universe                 |
 | `Fast & Furious`             | `fast`      | Collection of Movies in the Fast & Furious Universe               |
 | `In Association with Marvel` | `marvel`    | Collection of Movies in the Marvel Universe (but not part of MCU) |
 | `Marvel Cinematic Universe`  | `mcu`       | Collection of Movies in the Marvel Cinematic Universe             |
