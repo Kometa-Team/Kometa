@@ -6,6 +6,7 @@ from tenacity import RetryError, retry, retry_if_exception, stop_after_attempt, 
 from tmdbapis import Movie
 from tmdbapis import NotFound as TMDbNotFound
 from tmdbapis import TMDbAPIs, TMDbException
+from tmdbapis.objs.reload import Configuration
 
 from modules import util
 from modules.util import Failed, ServiceError
@@ -27,12 +28,49 @@ class Unavailable(ServiceError):
     """Raised when transient TMDb failures exhaust their retry budget."""
 
 
+class InvalidConfiguration(TMDbException):
+    """TMDb returned incomplete or malformed language configuration."""
+
+
+class KometaConfiguration(Configuration):
+    """Validate configuration before tmdbapis normalizes missing fields away."""
+
+    @retry(
+        retry=retry_if_exception(lambda e: isinstance(e, InvalidConfiguration)),
+        stop=stop_after_attempt(3),
+        wait=wait_fixed(5),
+        before_sleep=lambda state: logger.warning(f"TMDb returned incomplete or malformed language configuration (attempt {state.attempt_number}/3); retrying in 5 seconds."),
+        reraise=True,
+    )
+    def _full_load(self, partial=None):
+        data = super()._full_load(partial=partial)
+        languages = data.get("languages") if isinstance(data, dict) else None
+        translations = data.get("primary_translations") if isinstance(data, dict) else None
+        valid_languages = (
+            isinstance(languages, list)
+            and bool(languages)
+            and all(isinstance(entry, dict) and isinstance(entry.get("iso_639_1"), str) and re.fullmatch(r"[a-z]{2}", entry["iso_639_1"]) for entry in languages)
+            and any(entry["iso_639_1"] == "en" for entry in languages)
+        )
+        valid_translations = isinstance(translations, list) and bool(translations) and all(isinstance(entry, str) and re.fullmatch(r"[a-z]{2}-[A-Z]{2}", entry) for entry in translations)
+        if not valid_languages or not valid_translations:
+            logger.trace(f"Rejected TMDb language configuration response: {data!r}")
+            field = "languages" if not valid_languages else "primary_translations"
+            raise InvalidConfiguration(f"TMDb returned incomplete or malformed {field} configuration after repeated requests. Try running Kometa again later; this is not a language setting error.")
+        return data
+
+
 class KometaTMDbAPIs(TMDbAPIs):
     """Defensively normalize response shapes before tmdbapis parses them.
 
     This overrides a private tmdbapis 1.2.30 method and must be reviewed when
     the pinned dependency version changes.
     """
+
+    def configuration(self, reload=False):
+        if reload or self._config is None:
+            self._config = KometaConfiguration(self)
+        return self._config
 
     def _parse(self, data=None, attrs=None, value_type="str", default_is_none=False, is_list=False, is_dict=False, extend=False, key=None):
         aggregate_key = "roles" if value_type == "agg_tv_cast" else "jobs" if value_type == "agg_tv_crew" else None

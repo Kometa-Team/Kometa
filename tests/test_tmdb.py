@@ -9,6 +9,98 @@ from modules import tmdb
 from modules.util import Failed, ServiceError
 
 
+@pytest.fixture
+def startup_configuration(monkeypatch):
+    from tmdbapis.api3 import API3
+
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(tmdb, "logger", FakeLogger())
+    monkeypatch.setattr(tmdb.logger, "trace", MagicMock())
+    monkeypatch.setattr(tmdb.KometaConfiguration._full_load.retry, "wait", wait_none())
+    data = {
+        "languages": [{"iso_639_1": "en", "english_name": "English", "name": "English"}],
+        "primary_translations": ["en-US"],
+        "countries": [{"iso_3166_1": "US", "english_name": "United States"}],
+        "images": {"secure_base_url": "https://image.tmdb.org/t/p/"},
+    }
+    request = MagicMock(return_value=data)
+    monkeypatch.setattr(API3, "configuration_get_api_configuration", request)
+    return data, request
+
+
+@pytest.mark.parametrize("language", ["en", "en-US"])
+def test_startup_accepts_valid_language_configuration(startup_configuration, language):
+    _, request = startup_configuration
+    api = tmdb.KometaTMDbAPIs("test-key", language=language)
+    assert api.language == language
+    assert request.call_count == 1
+    assert api.configuration() is api._config
+    assert request.call_count == 1
+    tmdb.logger.trace.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("languages", None),
+        ("languages", []),
+        ("languages", {}),
+        ("languages", [None]),
+        ("languages", [{}]),
+        ("languages", [{"iso_639_1": 123}]),
+        ("languages", [{"iso_639_1": "fr"}]),
+        ("primary_translations", None),
+        ("primary_translations", []),
+        ("primary_translations", [None]),
+        ("primary_translations", ["invalid"]),
+    ],
+)
+def test_startup_refetches_malformed_configuration(startup_configuration, field, value):
+    data, request = startup_configuration
+    rejected = {**data, field: value}
+    request.side_effect = [rejected, data]
+    api = tmdb.KometaTMDbAPIs("test-key", language="en")
+    assert api.language == "en"
+    assert request.call_count == 2
+    assert len(tmdb.logger.warning_messages) == 1
+    tmdb.logger.trace.assert_called_once_with(f"Rejected TMDb language configuration response: {rejected!r}")
+
+
+@pytest.mark.parametrize("response", [None, [], {}, {"languages": []}])
+def test_startup_configuration_failure_has_bounded_retries(startup_configuration, response):
+    _, request = startup_configuration
+    request.return_value = response
+    config = SimpleNamespace(Requests=SimpleNamespace(session=None), Cache=None)
+    with pytest.raises(Failed, match="not a language setting error"):
+        tmdb.TMDb(config, {"apikey": "test-key", "language": "en", "expiration": 60})
+    assert request.call_count == 3
+    assert len(tmdb.logger.warning_messages) == 2
+    assert tmdb.logger.trace.call_count == 3
+    tmdb.logger.trace.assert_called_with(f"Rejected TMDb language configuration response: {response!r}")
+
+
+def test_startup_does_not_retry_invalid_user_language(startup_configuration):
+    from tmdbapis import Invalid
+
+    _, request = startup_configuration
+    with pytest.raises(Invalid, match="Language: invalid"):
+        tmdb.KometaTMDbAPIs("test-key", language="invalid")
+    assert request.call_count == 1
+    assert tmdb.logger.warning_messages == []
+
+
+def test_startup_does_not_retry_authentication_failure(startup_configuration):
+    from tmdbapis import Unauthorized
+
+    _, request = startup_configuration
+    request.side_effect = Unauthorized("Invalid API key")
+    with pytest.raises(Unauthorized):
+        tmdb.KometaTMDbAPIs("test-key", language="en")
+    assert request.call_count == 1
+    assert tmdb.logger.warning_messages == []
+
+
 def _bare_tmdb(monkeypatch):
     from tests.conftest import FakeLogger
 

@@ -85,6 +85,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Show trace messages in terminal and Docker console output when `--trace` is enabled without `--debug`.
+- Retry incomplete or malformed TMDb language configuration during startup instead of reporting a valid language such as `en` as invalid, and log rejected responses at trace level.
 - Fix playlists never being reordered after creation, where every move failed with a `404` on `/playlists/<id>/items/None/move` because updating the metadata of the items cleared the Plex playlist item IDs needed to reorder them. #2265
 - Refresh a playlist after successful moves so `sync_to_users` copies use its current post-move order instead of the cached pre-sort order.
 - Report "Trakt Connection Successful (Public Mode)" instead of a plain "Successful" when a configured Trakt authorization fails to refresh, so the run log doesn't contradict the authentication error logged just above it.

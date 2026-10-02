@@ -119,7 +119,7 @@ class MyLogger:
         self._logger.setLevel(logging.DEBUG)
 
         cmd_handler = logging.StreamHandler()
-        cmd_handler.setLevel(logging.DEBUG if self.is_debug else logging.INFO)
+        cmd_handler.setLevel(logging.DEBUG if self.is_debug or self.is_trace else logging.INFO)
 
         self._logger.addHandler(cmd_handler)
 
