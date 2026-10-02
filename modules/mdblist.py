@@ -177,13 +177,15 @@ class MDbObj:
         self.tmdbid = util.check_num(data.get("tmdbid") or data.get("tmdb_id") or data.get("id"))
         self.imdbid = data.get("imdbid") or data.get("imdb_id")
 
+        released = data.get("released")
         try:
-            self.released = datetime.strptime(data.get("released"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released = datetime.strptime(released, "%Y-%m-%d") if isinstance(released, str) else None
+        except ValueError:
             self.released = None
+        released_digital = data.get("released_digital")
         try:
-            self.released_digital = datetime.strptime(data.get("released_digital"), "%Y-%m-%d")
-        except (ValueError, TypeError):
+            self.released_digital = datetime.strptime(released_digital, "%Y-%m-%d") if isinstance(released_digital, str) else None
+        except ValueError:
             self.released_digital = None
 
         self.traktid = util.check_num(data.get("traktid"))
@@ -220,7 +222,7 @@ class MDbObj:
             elif rating.get("source") == "letterboxd":
                 letterboxd_value = rating.get("value")
                 if batch and util.is_valid_rating(letterboxd_value, maximum=10):
-                    letterboxd_value = float(letterboxd_value) / 2
+                    letterboxd_value = float(str(letterboxd_value)) / 2
                 self.letterboxd_rating = _rating("letterboxd", letterboxd_value, 5, is_int=False)
             elif rating.get("source") == "myanimelist":
                 self.myanimelist_rating = _rating("myanimelist", rating.get("value"), 10, is_int=False)
