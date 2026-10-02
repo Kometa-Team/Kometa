@@ -20,7 +20,7 @@ simkl:
 
 | Attribute       | Description                                      | Allowed Values              | Required |
 |:----------------|:-------------------------------------------------|:----------------------------|:--------:|
-| `refresh_token` | Simkl AUTH V2 refresh token. Kometa manages the access token and expiration. | Any valid AUTH V2 refresh token | :fontawesome-solid-circle-xmark:{ .red } |
+| `refresh_token` | Simkl OAuth V2 refresh token. Kometa manages the access token and expiration. | Any valid OAuth V2 refresh token | :fontawesome-solid-circle-xmark:{ .red } |
 | `force_refresh` | Always refresh before authenticating instead of trying the saved access token first. | `true` or `false` (default: `false`) | :fontawesome-solid-circle-xmark:{ .red } |
 
 Normally Kometa first authenticates with the saved access token and only refreshes if authentication fails.
@@ -31,5 +31,5 @@ each other's token.
 
 ???+ tip
 
-    Generate a refresh token using the [Kometa Utilities](./authentication.md). Existing AUTH V1
-    `user_token` entries are not supported; create a new AUTH V2 token and replace the old `simkl` block.
+    Generate a refresh token using the [Kometa Utilities](./authentication.md). Existing OAuth V1
+    `user_token` entries are not supported; create a new OAuth V2 token and replace the old `simkl` block.
