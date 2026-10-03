@@ -53,4 +53,4 @@ hide:
 
     === "Direct Play Overlays"
     
-        The Direct Play overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) for 4K items.
+        The Direct Play overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for 4K items.

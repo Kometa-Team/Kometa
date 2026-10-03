@@ -58,4 +58,4 @@ hide:
 
     === "Audio/Subtitle Language Count Overlays"
     
-        The Audio/Subtitle Language Count overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) for items with any number or <3 audio tracks.
+        The Audio/Subtitle Language Count overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for items with any number or <3 audio tracks.

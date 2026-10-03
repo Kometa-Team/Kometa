@@ -50,4 +50,4 @@ hide:
 
     === "MediaStinger Overlays"
     
-        The MediaStinger overlays use the [`plex_all` Builder](../../../files/builders/plex#plex-all) with [filters](../../../files/filters) on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`.
+        The MediaStinger overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on `tmdb_keyword: aftercreditsstinger, duringcreditsstinger`.

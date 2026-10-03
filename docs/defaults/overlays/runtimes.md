@@ -58,4 +58,4 @@ hide:
 
     === "Runtimes Overlays"
     
-        The Runtimes overlays use the [`plex_all` Builder](../../../files/builders/plex#plex-all) to apply to all items in the library.
+        The Runtimes overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) to apply to all items in the library.

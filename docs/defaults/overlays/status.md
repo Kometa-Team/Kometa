@@ -61,4 +61,4 @@ hide:
 
     === "Status Overlays"
     
-        The Status overlays use the [`plex_all` Builder](../../../files/builders/plex#plex-all) with [filters](../../../files/filters) on `tmdb_status`.
+        The Status overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) with [filters](../../../files/filters) on `tmdb_status`.

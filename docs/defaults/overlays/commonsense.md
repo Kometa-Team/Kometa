@@ -80,4 +80,4 @@ hide:
 
     === "Common Sense Age Rating Overlays"
     
-        The Common Sense Age Rating overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.
+        The Common Sense Age Rating overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a set of content ratings and map them into a single content rating as requested.

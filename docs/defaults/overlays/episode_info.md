@@ -50,4 +50,4 @@ hide:
 
     === "Episode Info Overlays"
     
-        The Episode Info overlays use the [`plex_all` Builder](../../../files/builders/plex#plex-all) to apply to every episode in the library.
+        The Episode Info overlays use the [`plex_all` Builder](../../files/builders/plex/all.md) to apply to every episode in the library.

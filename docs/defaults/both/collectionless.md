@@ -74,6 +74,6 @@ Requirements:
 
     === "Collectionless Collection"
 
-        The Collectionless collection use the [`plex_collectionless` Builder](../../../files/builders/plex#plex-collectionless) to create the collection.
+        The Collectionless collection use the [`plex_collectionless` Builder](../../files/builders/plex/collectionless.md) to create the collection.
         
         Collections and their items are excluded from this collection based on a name prefix or the collection name.
