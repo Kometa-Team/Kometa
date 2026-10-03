@@ -155,8 +155,9 @@ class TestOAuthRefresh:
         requests.post_json.assert_called_once_with(
             SIMKL_TOKEN_URL,
             data={"grant_type": "refresh_token", "client_id": simkl_module.client_id, "refresh_token": "simkl_rt_original"},
-            headers={"User-Agent": "Kometa Official V2"},
+            headers={"User-Agent": simkl_module.user_agent},
         )
+        assert "client_secret" not in requests.post_json.call_args.kwargs["data"]
         assert yaml.data["simkl"]["access_token"] == "simkl_at_new"
         assert yaml.data["simkl"]["access_token_expires_at"] == 1_604_800
         assert yaml.data["simkl"]["refresh_token_expires_at"] == 1_000_000 + 180 * 24 * 60 * 60
@@ -171,7 +172,7 @@ class TestOAuthRefresh:
         assert simkl.get_access_token() == "simkl_at_valid"
         requests.get_json.assert_called_once_with(
             simkl_module.authenticated_user_url,
-            headers={"Authorization": "Bearer simkl_at_valid", "User-Agent": "Kometa Official V2"},
+            headers={"Authorization": "Bearer simkl_at_valid", "User-Agent": simkl_module.user_agent},
             params={"client_id": simkl_module.client_id},
         )
         requests.post_json.assert_not_called()
@@ -209,7 +210,7 @@ class TestOAuthRefresh:
         assert simkl.get_access_token() == "simkl_at_refreshed"
         requests.get_json.assert_called_once_with(
             simkl_module.authenticated_user_url,
-            headers={"Authorization": "Bearer simkl_at_refreshed", "User-Agent": "Kometa Official V2"},
+            headers={"Authorization": "Bearer simkl_at_refreshed", "User-Agent": simkl_module.user_agent},
             params={"client_id": simkl_module.client_id},
         )
         requests.post_json.assert_called_once()

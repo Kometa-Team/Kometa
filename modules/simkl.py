@@ -9,8 +9,8 @@ builders = ["simkl_trending", "simkl_dvd"]
 
 base_url = "https://utilities.kometa.wiki/simkl-service"
 oauth_token_url = "https://api.simkl.com/oauth2/token"
-client_id = "1d2dc22b74616b53206f8dc1f65509abb9948b353a9a56b5554e234dde75c74a"
-user_agent = "Kometa Official V2"
+client_id = "efb8c6a84fb66c4932967c0c327b97d4675e96ca3889b66c3f8c8d3596475a73"
+user_agent = "Kometa Official V3"
 refresh_token_lifetime = 180 * 24 * 60 * 60
 authenticated_user_url = "https://api.simkl.com/users/settings"
 
