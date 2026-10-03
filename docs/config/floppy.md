@@ -13,6 +13,6 @@ floppy:
 | Attribute | Description | Required |
 |:----------|:------------|:--------:|
 | `url` | Floppy server URL | :fontawesome-solid-circle-check:{ .green } |
-| `token` | API token from **Settings → Advanced**. Required for private lists; optional for public lists. | :fontawesome-solid-circle-xmark:{ .red } |
+| `token` | API token from **Settings → Integrations**. Required for private lists; optional for public lists. | :fontawesome-solid-circle-xmark:{ .red } |
 
 When no token is configured, Kometa can only read public lists. With a token, Kometa can read all lists available to the account.

@@ -15,7 +15,7 @@ import pytest
 from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
-from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid
+from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid, playlist_attributes
 from modules.util import Failed
 from tests.conftest import FakeLogger
 
@@ -710,6 +710,13 @@ class TestTextfile:
 
     def test_mdblist_list_is_allowed_for_episode_collections(self):
         assert "mdblist_list" in parts_collection_valid
+
+    def test_floppy_list_builders_are_allowed_for_episode_collections(self):
+        assert "floppy_list" in parts_collection_valid
+        assert "floppy_list_details" in parts_collection_valid
+
+    def test_floppy_list_details_is_allowed_for_playlists(self):
+        assert "floppy_list_details" in playlist_attributes
 
 
 # ═══════════════════════════════════════════════
