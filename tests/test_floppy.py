@@ -39,6 +39,20 @@ def test_public_show_list_uses_sonarr_json_feed():
     assert floppy.get_ids("https://floppy.kometa.team/list/1", is_movie=False) == [(1399, "tmdb_show")]
 
 
+def test_public_episode_list_uses_rss_feed():
+    json_url = "https://floppy.kometa.team/list/1/json?arr=sonarr"
+    rss_url = "https://floppy.kometa.team/list/1/rss"
+    rss_data = "<rss><channel><item><guid>tmdb:episode:97546:s1:e1</guid></item><item><guid>tmdb:episode:97546:s1:e2</guid></item></channel></rss>"
+    floppy = Floppy(
+        Requests({json_url: [], rss_url: FakeResponse(content=rss_data.encode("utf-8"))}),
+        {"url": "https://floppy.kometa.team", "token": None},
+    )
+    assert floppy.get_ids("https://floppy.kometa.team/list/1", is_movie=False, is_episode=True) == [
+        ("97546_1_1", "tmdb_episode"),
+        ("97546_1_2", "tmdb_episode"),
+    ]
+
+
 def test_rejects_list_from_another_host():
     floppy = Floppy(Requests({}), {"url": "https://floppy.kometa.team", "token": None})
     with pytest.raises(Failed, match="must be a list URL"):

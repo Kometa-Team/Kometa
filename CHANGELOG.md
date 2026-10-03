@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Evaluate `non_existing` schedules against collection or playlist existence, preserving OR behavior in schedule lists while allowing `all[...]` to require absence alongside other conditions. #3675
+- Allow `floppy_list` and `floppy_list_details` builders in episode-level collections, including exact episodes from public Floppy RSS feeds.
 - Group `STARZ`, `Starz Encore`, and `STARZ Encore` network values into the canonical `Starz` Network Default collection.
 - Honor per-collection `limit_<<key>>` template variables across Defaults files, including Letterboxd charts, Based On collections, and Streaming collections.
 - Fix the `resolution` Defaults overlay file applying the `-Dovetail` variant to every DV HDR10+ item at 4K and 1080P, even without an edition, by matching the Dovetail weights to their plain counterparts. #3654
