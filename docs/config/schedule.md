@@ -60,6 +60,9 @@ schedule:
   - range(10/05-10/31)
 ```
 
+???+ warning "`delete_not_scheduled` with `non_existing`"
+    When this OR schedule is combined with `delete_not_scheduled: true`, an existing collection is deleted outside the range because neither condition matches. On the next run, `non_existing` matches again and recreates it. Use only the range if the collection should remain absent outside that range, or leave `delete_not_scheduled` disabled if the existing collection should remain in Plex without being updated.
+
 Use `all[...]` for AND logic. This definition runs only when the collection does not exist **and** the date is within the range:
 
 ```yaml
