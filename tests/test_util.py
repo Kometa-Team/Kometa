@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime
+
 import pytest
 
 import modules.builder  # noqa: F401
@@ -96,6 +98,56 @@ class TestPipeSeparatedSchedules:
         schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 14), 0)
         with pytest.raises(NotScheduled):
             schedule_check("schedule", "yearly(01/01|08/14|12/25)", datetime(2026, 8, 15), 0)
+
+
+class TestNonExistingSchedules:
+    outside_range = datetime(2026, 10, 3)
+    inside_range = datetime(2026, 10, 10)
+    either_schedule = ["non_existing", "range(10/05-10/31)"]
+    all_schedule = "all[non_existing, range(10/05-10/31)]"
+
+    @pytest.mark.parametrize(
+        ("object_exists", "current_time", "scheduled"),
+        [
+            (False, outside_range, True),
+            (True, outside_range, False),
+            (False, inside_range, True),
+            (True, inside_range, True),
+        ],
+    )
+    def test_list_uses_or_logic(self, object_exists, current_time, scheduled):
+        from modules.util import NotScheduled, schedule_check
+
+        if scheduled:
+            schedule_check("schedule", self.either_schedule, current_time, 0, object_exists=object_exists)
+        else:
+            with pytest.raises(NotScheduled):
+                schedule_check("schedule", self.either_schedule, current_time, 0, object_exists=object_exists)
+
+    @pytest.mark.parametrize(
+        ("object_exists", "current_time", "scheduled"),
+        [
+            (False, outside_range, False),
+            (True, outside_range, False),
+            (False, inside_range, True),
+            (True, inside_range, False),
+        ],
+    )
+    def test_all_requires_every_condition(self, object_exists, current_time, scheduled):
+        from modules.util import NotScheduled, schedule_check
+
+        if scheduled:
+            schedule_check("schedule", self.all_schedule, current_time, 0, object_exists=object_exists)
+        else:
+            with pytest.raises(NotScheduled):
+                schedule_check("schedule", self.all_schedule, current_time, 0, object_exists=object_exists)
+
+    def test_non_existing_alone_only_runs_for_missing_object(self):
+        from modules.util import NotScheduled, schedule_check
+
+        schedule_check("schedule", "non_existing", self.outside_range, 0, object_exists=False)
+        with pytest.raises(NotScheduled):
+            schedule_check("schedule", "non_existing", self.outside_range, 0, object_exists=True)
 
 
 # ═══════════════════════════════════════════════════════════════════════

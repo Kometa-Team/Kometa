@@ -782,9 +782,8 @@ def check_day(_m, _d):
         return _m, _d
 
 
-def schedule_check(attribute, data, current_time, run_hour, is_all=False):
+def schedule_check(attribute, data, current_time, run_hour, is_all=False, object_exists=False):
     range_collection = False
-    non_existing = False
     all_check = 0
     schedules_run = 0
     next_month = current_time.replace(day=28) + timedelta(days=4)
@@ -805,7 +804,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
                 continue
             try:
                 schedule_str += "\nScheduled to meet all of these:\n    "
-                schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True)
+                schedule_str += schedule_check(attribute, match.group(1), current_time, run_hour, is_all=True, object_exists=object_exists)
                 all_check += 1
             except NotScheduled as e:
                 schedule_str += str(e)
@@ -813,8 +812,8 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
         elif run_time.startswith(("day", "daily")):
             all_check += 1
         elif run_time.startswith("non_existing"):
-            all_check += 1
-            non_existing = True
+            if not object_exists:
+                all_check += 1
         elif run_time == "never":
             schedule_str += "\nNever scheduled to run"
         elif run_time.startswith(("hour", "week", "month", "year", "date", "range")):
@@ -962,9 +961,7 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False):
     if is_all:
         schedule_str.replace("\n", "\n    ")
     if (all_check == 0 and not is_all) or (is_all and schedules_run != all_check):
-        if non_existing:
-            raise NonExisting(schedule_str)
-        elif range_collection:
+        if range_collection:
             raise NotScheduledRange(schedule_str)
         else:
             raise NotScheduled(schedule_str)
