@@ -167,4 +167,4 @@ audio/subtitle languages available on each item within your library"
 
     === "Audio/Subtitle Language Flag Overlays"
     
-        The Audio/Subtitle Language Flag overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on either audio or subtitle tracks names.
+        The Audio/Subtitle Language Flag overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on either audio or subtitle tracks names.

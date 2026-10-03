@@ -120,4 +120,4 @@ Recommendations: If you use `rating1: critic`, `rating2: audience`, or `rating3:
 
     === "Ratings Overlays"
     
-        The Ratings overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on ratings as set on items in Plex.
+        The Ratings overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on ratings as set on items in Plex.

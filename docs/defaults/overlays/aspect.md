@@ -83,4 +83,4 @@ hide:
 
     === "Aspect Overlays"
     
-        The Aspect overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) with [filters](../../../files/filters) on a limited set of aspect ratios.
+        The Aspect overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) with [filters](../../../files/filters) on a limited set of aspect ratios.

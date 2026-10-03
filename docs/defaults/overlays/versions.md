@@ -57,4 +57,4 @@ hide:
 
     === "Versions Overlays"
     
-        The Versions overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) for duplicate items or episodes.
+        The Versions overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) for duplicate items or episodes.

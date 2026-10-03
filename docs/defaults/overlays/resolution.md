@@ -173,4 +173,4 @@ This is not something you can enable or disable independently; it's an internal 
 
     === "Resolution/Edition Overlays"
 
-        The Resolution/Edition overlays use the [`plex_search` Builder](../../../files/builders/plex#plex-search) on resolutions and editions as set on items in Plex.
+        The Resolution/Edition overlays use the [`plex_search` Builder](../../files/builders/plex/search.md) on resolutions and editions as set on items in Plex.

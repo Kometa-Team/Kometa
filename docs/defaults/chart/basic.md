@@ -50,4 +50,4 @@ Recommendations: The New Episode Collection only work with Show Libraries.
 
     === "Basic Chart Collections"
         
-        The Basic Chart collections are based on [Smart Filters](./../../../files/builders/plex#smart-filter-builder) using the `in_the_last` attribute, not external lists.
+        The Basic Chart collections are based on [Smart Filters](../../files/builders/plex/smart-filter.md) using the `in_the_last` attribute, not external lists.
