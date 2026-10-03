@@ -589,6 +589,7 @@ custom_sort_builders = [
     "trakt_list",
     "mdblist_streaming",
     "floppy_list",
+    "floppy_list_details",
     "floppy_tracked",
     "yamtrack_list",
     "yamtrack_tracked",
@@ -720,6 +721,8 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "floppy_list",
+        "floppy_list_details",
         "cache_builders",
         "url_theme",
         "file_theme",
@@ -3909,7 +3912,7 @@ class CollectionBuilder:
                     if mal_ids:
                         ids.extend(self.config.Convert.myanimelist_to_ids(mal_ids, self.library))
                 else:
-                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None)
+                    ids = self.config.Floppy.get_ids(value, self.library.is_movie if not self.playlist else None, is_episode=self.builder_level == "episode")
             elif "radarr" in method:
                 ids = self.library.Radarr.get_tmdb_ids(method, value)
             elif "sonarr" in method:
