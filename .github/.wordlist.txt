@@ -311,6 +311,7 @@ repos
 RogerEbert
 Romani
 RSSKILL
+RSS
 runtimeH
 runtimeM
 Runtimes
