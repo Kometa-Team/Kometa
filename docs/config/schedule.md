@@ -30,11 +30,12 @@ The scheduling options are:
 | Range        | Updates whenever the date is within the range. A range can be a single day (`range(06/01-06/01)`) (For multiple ranges, use a bar-separated (<code>&#124;</code>) list) | range(MM/DD-MM/DD)                                 | `range(12/01-12/31)`<br><code>range(8/01-8/15&#124;9/01-9/15)</code> |
 | Never        | Never updates.                                                                                                       | never                                              | `never`                                                              |
 | Non Existing | Updates if it doesn't exist.                                                                                         | non_existing                                       | `non_existing`                                                       |
-| All          | Requires that all comma separated scheduling options inside its brackets be meet in order to run.                    | all[Options]                                       | `all[weekly(sunday), hourly(17)]`                                    |
+| All          | Requires that all comma-separated scheduling options inside its brackets be met in order to run.                     | all[Options]                                       | `all[weekly(sunday), hourly(17)]`                                    |
 
 * `daily` is the default when `schedule` is not specified.
 * You can run Kometa multiple times per day but using the `--time` command line argument detailed on the [Run Commands & Environmental Variables Page](../kometa/environmental.md).
-* You can have multiple scheduling options as a list.
+* You can have multiple scheduling options as a list. List entries use OR logic: the definition runs when any entry matches.
+* Use `all[...]` to require every enclosed scheduling option to match.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
 ???+ warning "monthly(N) behaviour change"
@@ -50,6 +51,20 @@ The scheduling options are:
     ```
 
 ### Multiple Schedule Values
+
+Multiple schedule values in a YAML list use OR logic. This definition runs when the collection does not exist **or** when the date is within the range:
+
+```yaml
+schedule:
+  - non_existing
+  - range(10/05-10/31)
+```
+
+Use `all[...]` for AND logic. This definition runs only when the collection does not exist **and** the date is within the range:
+
+```yaml
+schedule: all[non_existing, range(10/05-10/31)]
+```
 
 Use a bar (`|`) inside `hourly`, `monthly`, or `yearly` schedules to accept any of several values. Monthly values can mix individual days and inclusive ranges:
 

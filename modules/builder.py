@@ -1266,7 +1266,6 @@ class CollectionBuilder:
         self.collection_background = None
         self.collection_logo = None
         self.exists = False
-        self.non_existing = False
         self.created = False
         self.deleted = False
 
@@ -1331,9 +1330,7 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods['schedule']]}")
                 err = None
                 try:
-                    util.schedule_check("schedule", self.data[methods["schedule"]], self.current_time, self.config.run_hour)
-                except NonExisting as e:
-                    self.non_existing = str(e)
+                    util.schedule_check("schedule", self.data[methods["schedule"]], self.current_time, self.config.run_hour, object_exists=self.obj is not None)
                 except NotScheduledRange as e:
                     err = e
                 except NotScheduled as e:
@@ -1888,9 +1885,6 @@ class CollectionBuilder:
                 logger.warning(f"{self.Type} Error: Sync Mode can only be append when using build_collection: false")
                 self.sync = False
             self.run_again = False
-        if self.non_existing is not False and self.obj is not None:
-            raise NotScheduled(self.non_existing)
-
         logger.info("")
         logger.info("Validation Successful")
 
