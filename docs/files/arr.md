@@ -9,10 +9,14 @@ tags:
   - radarr_monitor_existing
   - radarr_ignore_cache
   - radarr_folder
+  - radarr_root_folder_path
   - radarr_monitor
   - radarr_availability
+  - radarr_minimum_availability
   - radarr_quality
+  - radarr_quality_profile
   - radarr_tag
+  - radarr_tags
   - radarr_search
   - item_radarr_tag
   - item_radarr_tag.remove
@@ -23,12 +27,18 @@ tags:
   - sonarr_monitor_existing
   - sonarr_ignore_cache
   - sonarr_folder
+  - sonarr_root_folder_path
   - sonarr_monitor
   - sonarr_quality
+  - sonarr_quality_profile
   - sonarr_language
+  - sonarr_language_profile
   - sonarr_series
+  - sonarr_series_type
   - sonarr_season
+  - sonarr_season_folder
   - sonarr_tag
+  - sonarr_tags
   - sonarr_search
   - sonarr_cutoff_search
   - item_sonarr_tag
@@ -48,11 +58,11 @@ All the following attributes can override the global/library [Radarr](../config/
 | `radarr_upgrade_existing` | **Description:** Override Radarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                    |
 | `radarr_monitor_existing` | **Description:** Override Radarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                    |
 | `radarr_ignore_cache`     | **Description:** Override Radarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `radarr_folder`           | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                          |
+| `radarr_root_folder_path` | **Description:** Override Radarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                          |
 | `radarr_monitor`          | **Description:** Override Radarr `monitor` attribute<br>**Values:** `true` or `false`                                                                                                                                                                             |
-| `radarr_availability`     | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                                                                                                                 |
-| `radarr_quality`          | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                                                                                                                |
-| `radarr_tag`              | **Description:** Override Radarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                          |
+| `radarr_minimum_availability` | **Description:** Override Radarr `availability` attribute<br>**Values:** `announced`, `cinemas`, `released`, `db`                                                                                                                                             |
+| `radarr_quality_profile`  | **Description:** Override Radarr `quality_profile` attribute<br>**Values:** Radarr Quality Profile                                                                                                                                                                |
+| `radarr_tags`             | **Description:** Override Radarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                          |
 | `radarr_search`           | **Description:** Override Radarr `search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                              |
 | `item_radarr_tag`         | **Description:** Used to append a tag in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                    |
 | `item_radarr_tag.remove`  | **Description:** Used to remove existing tags in Radarr for every movie found by the builders that's in Radarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags            |
@@ -69,13 +79,13 @@ All the following attributes can override the global/library [Sonarr](../config/
 | `sonarr_upgrade_existing` | **Description:** Override Sonarr `upgrade_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                     |
 | `sonarr_monitor_existing` | **Description:** Override Sonarr `monitor_existing` attribute<br>**Values:** `true` or `false`                                                                                                                                                                     |
 | `sonarr_ignore_cache`     | **Description:** Override Sonarr `ignore_cache` attribute<br>**Values:** `true` or `false`                                                                                                                                                                         |
-| `sonarr_folder`           | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                           |
+| `sonarr_root_folder_path` | **Description:** Override Sonarr `root_folder_path` attribute<br>**Values:** Folder Path                                                                                                                                                                           |
 | `sonarr_monitor`          | **Description:** Override Sonarr `monitor` attribute<br>**Values:** `all`, `future`, `missing`, `existing`, `pilot`, `first`, `latest`, `none`                                                                                                                     |
-| `sonarr_quality`          | **Description:** Override Sonarr `quality_profile` attribute<br>**Values:** Sonarr Quality Profile                                                                                                                                                                 |
-| `sonarr_language`         | **Description:** Override Sonarr `language_profile` attribute<br>**Values:** Sonarr Language Profile                                                                                                                                                               |
-| `sonarr_series`           | **Description:** Override Sonarr `series_type` attribute<br>**Values:** `standard`, `daily`, `anime`                                                                                                                                                               |
-| `sonarr_season`           | **Description:** Override Sonarr `season_folder` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
-| `sonarr_tag`              | **Description:** Override Sonarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                           |
+| `sonarr_quality_profile`  | **Description:** Override Sonarr `quality_profile` attribute<br>**Values:** Sonarr Quality Profile                                                                                                                                                                 |
+| `sonarr_language_profile` | **Description:** Override Sonarr `language_profile` attribute<br>**Values:** Sonarr Language Profile                                                                                                                                                               |
+| `sonarr_series_type`      | **Description:** Override Sonarr `series_type` attribute<br>**Values:** `standard`, `daily`, `anime`                                                                                                                                                               |
+| `sonarr_season_folder`    | **Description:** Override Sonarr `season_folder` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
+| `sonarr_tags`             | **Description:** Override Sonarr `tag` attribute<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                                                                           |
 | `sonarr_search`           | **Description:** Override Sonarr `search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                               |
 | `sonarr_cutoff_search`    | **Description:** Override Sonarr `cutoff_search` attribute<br>**Values:** `true` or `false`                                                                                                                                                                        |
 | `item_sonarr_tag`         | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                    |
@@ -100,14 +110,14 @@ If your Radarr/Sonarr has different file system mappings from your Plex use `rad
 
 ### Radarr Add Settings
 
-When adding a movie in Radarr you get the screen below to set these options use `radarr_folder`, `radarr_monitor`,`radarr_availability`, `radarr_quality`, `radarr_tag`, and `radarr_search`.
+When adding a movie in Radarr you get the screen below to set these options use `radarr_root_folder_path`, `radarr_monitor`, `radarr_minimum_availability`, `radarr_quality_profile`, `radarr_tags`, and `radarr_search`.
 
 ![Radarr Details](../assets/images/files/radarr-settings.png)
 
 ### Sonarr Add Settings
 
-When adding a show in Sonarr you get the screen below to set these options use `sonarr_folder`, `sonarr_monitor`, `sonarr_quality`, `sonarr_language`, `sonarr_series`, 
-`sonarr_season`, `sonarr_tag`, `sonarr_search`, and `sonarr_cutoff_search`.
+When adding a show in Sonarr you get the screen below to set these options use `sonarr_root_folder_path`, `sonarr_monitor`, `sonarr_quality_profile`, `sonarr_language_profile`, `sonarr_series_type`,
+`sonarr_season_folder`, `sonarr_tags`, `sonarr_search`, and `sonarr_cutoff_search`.
 
 ![Sonarr Details](../assets/images/files/sonarr-settings.png)
 

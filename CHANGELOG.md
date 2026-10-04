@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Standardize collection-level Radarr and Sonarr definition setting names: `radarr_root_folder_path`, `radarr_minimum_availability`, `radarr_quality_profile`, `radarr_tags`, `sonarr_root_folder_path`, `sonarr_quality_profile`, `sonarr_language_profile`, `sonarr_series_type`, `sonarr_season_folder`, and `sonarr_tags` are now the preferred keys; the previous names remain supported as aliases.
 - Upgrade SIMKL authentication to AUTH V2 with access-token validation, refresh-on-failure, and an optional `force_refresh` setting.
 - Default `settings.threading.workers` to 4 (was effectively single-threaded) and `settings.threading.prefetch_collection_children` to `true`, deferring a collection's `sync_collection` "what to remove" lookup and PMS's comma-separated `/library/metadata/{ids}` batch-read to the shared thread pool instead of blocking the main collection loop; the cache is now RLock-guarded (`_LockedConnection`) so concurrent worker threads can share one SQLite connection safely.
 - Consolidate end-of-run log-summary routing and repeated high-volume item warnings, including metadata entries skipped because their titles were not found.
