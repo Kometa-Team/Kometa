@@ -12,6 +12,14 @@
     },
     "definitions": {
 
+        "schedule": {
+            "description": "A single schedule expression or a non-empty list of expressions evaluated with OR logic.",
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            ]
+        },
+
         "collections-map": {
             "title": "collections",
             "description": "A mapping of collection names to their definitions.",
@@ -90,7 +98,7 @@
                     ]
                 },
                 "save_report": { "type": "boolean" },
-                "schedule": { "type": "string" },
+                "schedule": { "$ref": "#/definitions/schedule" },
                 "server_preroll": {
                     "description": "Sets Plex's Movie pre-roll video.",
                     "oneOf": [
@@ -137,9 +145,9 @@
                 },
                 "tmdb_person_offset": { "type": "integer", "minimum": 0 },
                 "url_theme": { "type": "string", "format": "uri" },
-                "visible_home": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
-                "visible_library": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
-                "visible_shared": { "oneOf": [{ "type": "boolean" }, { "type": "string" }] },
+                "visible_home": { "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/schedule" }] },
+                "visible_library": { "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/schedule" }] },
+                "visible_shared": { "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/schedule" }] },
 
                 "summary": { "type": "string" },
                 "letterboxd_description": { "type": "string" },

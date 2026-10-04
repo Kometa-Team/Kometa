@@ -12,6 +12,14 @@
     },
     "definitions": {
 
+        "schedule": {
+            "description": "A single schedule expression or a non-empty list of expressions evaluated with OR logic.",
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            ]
+        },
+
         "overlays-map": {
             "title": "overlays",
             "type": "object",
@@ -39,7 +47,7 @@
                 },
 
                 "builder_level": { "type": "string", "enum": ["season", "episode", "show"] },
-                "schedule": { "type": "string" },
+                "schedule": { "$ref": "#/definitions/schedule" },
                 "run_definition": {
                     "oneOf": [
                         { "type": "string", "enum": ["movie", "show", "artist", "true", "false"] },

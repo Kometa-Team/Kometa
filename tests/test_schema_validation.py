@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -35,9 +36,27 @@ DEFAULTS_DIR = REPO_ROOT / "defaults"
 # Schema files in this directory are JSON Schema documents themselves.
 # Other .json files (e.g. example configs) are skipped here.
 SCHEMA_FILES = sorted(p for p in SCHEMA_DIR.glob("*.json") if p.name.endswith("-schema.json"))
+SCHEDULE_SCHEMA_FILES = [SCHEMA_DIR / name for name in ("config-schema.json", "collection-schema.json", "overlay-schema.json", "playlist-schema.json")]
 
 # Every YAML file shipped under defaults/.
 DEFAULT_YAML_FILES = sorted(list(DEFAULTS_DIR.rglob("*.yml")) + list(DEFAULTS_DIR.rglob("*.yaml")))
+
+
+def _scheduled_visibility_declarations(schema):
+    declarations = []
+
+    def find_visibility_properties(value):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if re.fullmatch(r"\^?visible_(?:library|home|shared)(?:_\.\+\$)?", key) and isinstance(child, dict):
+                    declarations.append(child)
+                find_visibility_properties(child)
+        elif isinstance(value, list):
+            for child in value:
+                find_visibility_properties(child)
+
+    find_visibility_properties(schema)
+    return declarations
 
 
 # ── 1. Schemas themselves must be valid JSON Schema ───────────────────────────
@@ -71,12 +90,84 @@ def test_legacy_mass_metadata_operations_accept_scalar_and_list(operation: str, 
     assert list(Draft7Validator(operation_schema).iter_errors(value)) == []
 
 
-@pytest.mark.parametrize("value", ["hourly(0|12)", ["hourly(0)", "hourly(12)"]], ids=["scalar", "list"])
-def test_schedule_schema_accepts_scalar_and_list(value: str | list[str]) -> None:
-    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+@pytest.mark.parametrize("schema_path", SCHEDULE_SCHEMA_FILES, ids=lambda p: p.name)
+@pytest.mark.parametrize("schedule", ["weekly(monday)", ["non_existing", "range(10/05-10/31)"]])
+def test_schedule_schema_accepts_string_or_list(schema_path: Path, schedule) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
         schema = json.load(fh)
 
-    assert list(Draft7Validator(schema["definitions"]["schedule"]).iter_errors(value)) == []
+    assert list(Draft7Validator(schema["definitions"]["schedule"]).iter_errors(schedule)) == []
+
+
+@pytest.mark.parametrize("schema_path", SCHEDULE_SCHEMA_FILES, ids=lambda p: p.name)
+@pytest.mark.parametrize("schedule", [[], ["daily", 1], [True], None, 1, {}])
+def test_schedule_schema_rejects_invalid_values(schema_path: Path, schedule) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    assert list(Draft7Validator(schema["definitions"]["schedule"]).iter_errors(schedule))
+
+
+@pytest.mark.parametrize("schema_path", SCHEDULE_SCHEMA_FILES, ids=lambda p: p.name)
+def test_schedule_properties_use_shared_definition(schema_path: Path) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    declarations = []
+
+    def find_schedule_properties(value, path=()):
+        if isinstance(value, dict):
+            for key, child in value.items():
+                if path != ("definitions",) and key in {"schedule", "schedule_overlays", "^schedule_.*$"} and isinstance(child, dict):
+                    declarations.append(child)
+                find_schedule_properties(child, (*path, key))
+        elif isinstance(value, list):
+            for index, child in enumerate(value):
+                find_schedule_properties(child, (*path, index))
+
+    find_schedule_properties(schema)
+
+    assert declarations
+
+    def references_shared_schedule(declaration):
+        if declaration.get("$ref") == "#/definitions/schedule":
+            return True
+        return any(item.get("$ref") == "#/definitions/schedule" for item in declaration.get("allOf", []))
+
+    assert all(references_shared_schedule(declaration) for declaration in declarations)
+
+
+@pytest.mark.parametrize("schema_path", [SCHEMA_DIR / "config-schema.json", SCHEMA_DIR / "collection-schema.json"], ids=lambda p: p.name)
+def test_scheduled_visibility_uses_shared_schedule_definition(schema_path: Path) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    declarations = _scheduled_visibility_declarations(schema)
+
+    assert declarations
+    assert all({"type": "boolean"} in declaration.get("oneOf", []) and any(item.get("$ref") == "#/definitions/schedule" for item in declaration.get("oneOf", [])) for declaration in declarations)
+
+
+@pytest.mark.parametrize("schema_path", [SCHEMA_DIR / "config-schema.json", SCHEMA_DIR / "collection-schema.json"], ids=lambda p: p.name)
+@pytest.mark.parametrize("value", [True, False, "weekly(monday)", ["non_existing", "range(10/05-10/31)"]])
+def test_scheduled_visibility_accepts_boolean_or_schedule(schema_path: Path, value) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    for declaration in _scheduled_visibility_declarations(schema):
+        scheduled_boolean = {"definitions": schema["definitions"], **declaration}
+        assert list(Draft7Validator(scheduled_boolean).iter_errors(value)) == []
+
+
+@pytest.mark.parametrize("schema_path", [SCHEMA_DIR / "config-schema.json", SCHEMA_DIR / "collection-schema.json"], ids=lambda p: p.name)
+@pytest.mark.parametrize("value", [[], ["daily", 1], [True], None, 1, {}])
+def test_scheduled_visibility_rejects_invalid_values(schema_path: Path, value) -> None:
+    with schema_path.open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    for declaration in _scheduled_visibility_declarations(schema):
+        scheduled_boolean = {"definitions": schema["definitions"], **declaration}
+        assert list(Draft7Validator(scheduled_boolean).iter_errors(value))
 
 
 def test_metadata_schema_accepts_movie_and_show_themes() -> None:

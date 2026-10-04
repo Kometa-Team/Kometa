@@ -288,8 +288,8 @@ def test_schema_additionalproperties_violation_goes_to_gap_not_error(tmp_path, m
 def test_schema_type_error_is_an_error(tmp_path, monkeypatch):
     monkeypatch.setattr(validator_module, "logger", FakeLogger())
     config = _VALID_CONFIG_STUB + "libraries:\n" "  Movies:\n" "    collection_files:\n" "      - file: collections/typed.yml\n"
-    # visible_home is a bool/string in the schema; passing a list makes it a type error
-    collection_content = "collections:\n  Test:\n    tmdb_popular: 5\n    visible_home: [not, a, bool]\n"
+    # Scheduled visibility accepts a boolean, string, or list of strings; a non-string list item is a type error.
+    collection_content = "collections:\n  Test:\n    tmdb_popular: 5\n    visible_home: [daily, 1]\n"
     v = make_validator(
         tmp_path,
         config,
