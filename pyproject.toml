@@ -5,7 +5,7 @@ description = "Metadata editor for Plex"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "apprise>=2.0.0",
+    "apprise>=2.0.1",
     "arrapi==1.4.14",
     "cloudscraper==1.2.71",
     "gitpython==3.2.0",

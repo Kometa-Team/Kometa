@@ -4,7 +4,7 @@ annotated-types==0.8.0
     # via pydantic
 anyio==4.15.1
     # via httpx
-apprise==2.0.0
+apprise==2.0.1
     # via kometa
 arrapi==1.4.14
     # via kometa
@@ -153,7 +153,7 @@ typing-extensions==4.16.0
     #   typing-inspection
 typing-inspection==0.4.4
     # via pydantic
-tzdata==2026.4 ; sys_platform == 'win32'
+tzdata==2026.5 ; sys_platform == 'win32'
     # via apprise
 urllib3==2.8.0
     # via

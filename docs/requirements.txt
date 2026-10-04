@@ -58,7 +58,7 @@ markdown==3.11
     #   pymdown-extensions
 markdown-it-py==4.2.0
     # via rich
-markupsafe==3.0.3
+markupsafe==3.0.4
     # via
     #   essentials-openapi
     #   jinja2
@@ -100,7 +100,7 @@ pathspec==1.1.1
     # via
     #   mkdocs
     #   properdocs
-platformdirs==4.12.2
+platformdirs==4.12.3
     # via
     #   mkdocs-get-deps
     #   properdocs
@@ -131,7 +131,7 @@ requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
     # via neoteroi-mkdocs
-selectolax==0.4.13
+selectolax==1.0.0
     # via mkdocs-glightbox
 six==1.17.0
     # via python-dateutil
