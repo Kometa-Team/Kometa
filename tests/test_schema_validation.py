@@ -61,6 +61,24 @@ def test_at_least_one_schema_exists() -> None:
     assert SCHEMA_FILES, f"no *-schema.json files found in {SCHEMA_DIR}"
 
 
+@pytest.mark.parametrize("operation", ["mass_content_rating_update", "mass_original_title_update"])
+@pytest.mark.parametrize("value", ["reset", ["reset", "remove"]], ids=["scalar", "list"])
+def test_legacy_mass_metadata_operations_accept_scalar_and_list(operation: str, value: str | list[str]) -> None:
+    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    operation_schema = schema["definitions"]["operations"]["oneOf"][0]["properties"][operation]
+    assert list(Draft7Validator(operation_schema).iter_errors(value)) == []
+
+
+@pytest.mark.parametrize("value", ["hourly(0|12)", ["hourly(0)", "hourly(12)"]], ids=["scalar", "list"])
+def test_schedule_schema_accepts_scalar_and_list(value: str | list[str]) -> None:
+    with (SCHEMA_DIR / "config-schema.json").open(encoding="utf-8") as fh:
+        schema = json.load(fh)
+
+    assert list(Draft7Validator(schema["definitions"]["schedule"]).iter_errors(value)) == []
+
+
 def test_metadata_schema_accepts_movie_and_show_themes() -> None:
     with (SCHEMA_DIR / "metadata-schema.json").open(encoding="utf-8") as fh:
         schema = json.load(fh)
