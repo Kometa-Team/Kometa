@@ -4679,7 +4679,7 @@
             },
             "schedule_overlays": {
               "description": "Used to schedule when overlays are run for this library.",
-              "type": "string"
+              "allOf": [{"$ref": "#/definitions/schedule"}]
             },
             "remove_overlays": {
               "description": "Used to remove overlays from this library only. \nWhen set to true, this will remove all overlays from your library every run, but will not delete the overlaid images from your system, resulting in image bloat.",
@@ -4713,7 +4713,7 @@
           }
         },
         "^schedule_.*$": {
-          "type": "string"
+          "$ref": "#/definitions/schedule"
         }
       }
     },
@@ -6850,35 +6850,35 @@
           "type": "boolean"
         },
         "visible_home": {
-          "description": "Controls Home Tab visibility for all collections. true/false or a schedule string.",
+          "description": "Controls Home Tab visibility for all collections. true/false or a schedule string/list.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
         "visible_library": {
-          "description": "Controls Library Recommended Tab visibility for all collections. true/false or a schedule string.",
+          "description": "Controls Library Recommended Tab visibility for all collections. true/false or a schedule string/list.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
         "visible_shared": {
-          "description": "Controls Shared Users' Home Tab visibility for all collections. true/false or a schedule string.",
+          "description": "Controls Shared Users' Home Tab visibility for all collections. true/false or a schedule string/list.",
           "oneOf": [
             {
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7156,7 +7156,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7167,7 +7167,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7178,7 +7178,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7368,7 +7368,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7378,7 +7378,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7388,7 +7388,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7937,7 +7937,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7948,7 +7948,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -7959,7 +7959,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8136,7 +8136,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8146,7 +8146,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8156,7 +8156,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8588,7 +8588,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8599,7 +8599,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8610,7 +8610,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8796,7 +8796,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8806,7 +8806,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -8816,7 +8816,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9200,7 +9200,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9211,7 +9211,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9222,7 +9222,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9407,7 +9407,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9417,7 +9417,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9427,7 +9427,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9804,7 +9804,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9815,7 +9815,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -9826,7 +9826,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10015,7 +10015,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10025,7 +10025,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10035,7 +10035,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10472,7 +10472,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10483,7 +10483,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10494,7 +10494,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10679,7 +10679,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10689,7 +10689,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -10699,7 +10699,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11160,7 +11160,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11171,7 +11171,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11182,7 +11182,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11359,7 +11359,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11369,7 +11369,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11379,7 +11379,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11769,7 +11769,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11780,7 +11780,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11791,7 +11791,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11976,7 +11976,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11986,7 +11986,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -11996,7 +11996,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12383,7 +12383,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12394,7 +12394,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12405,7 +12405,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12590,7 +12590,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12600,7 +12600,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -12610,7 +12610,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13090,7 +13090,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13101,7 +13101,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13112,7 +13112,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13300,7 +13300,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13310,7 +13310,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13320,7 +13320,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13573,7 +13573,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13583,7 +13583,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },
@@ -13593,7 +13593,7 @@
               "type": "boolean"
             },
             {
-              "type": "string"
+              "$ref": "#/definitions/schedule"
             }
           ]
         },

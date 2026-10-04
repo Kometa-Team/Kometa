@@ -12,6 +12,14 @@
     "required": ["playlists"],
     "definitions": {
 
+        "schedule": {
+            "description": "A single schedule expression or a non-empty list of expressions evaluated with OR logic.",
+            "oneOf": [
+                { "type": "string" },
+                { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+            ]
+        },
+
         "playlists-map": {
             "title": "playlists",
             "type": "object",
@@ -46,7 +54,7 @@
                 },
                 "delete_playlist": { "type": "boolean" },
                 "sync_mode": { "type": "string", "enum": ["sync", "append"] },
-                "schedule": { "type": "string" },
+                "schedule": { "$ref": "#/definitions/schedule" },
                 "limit": { "type": "integer", "minimum": 1 },
                 "minimum_items": { "type": "integer", "minimum": 1 },
                 "delete_below_minimum": { "type": "boolean" },
