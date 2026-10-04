@@ -5247,54 +5247,106 @@
               ]
             },
             "mass_content_rating_update": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "anyOf": [
-                  {
-                    "enum": [
-                      "mdb",
-                      "mdb_commonsense",
-                      "mdb_commonsense0",
-                      "plex_csm",
-                      "plex_csm0",
-                      "omdb",
-                      "mal",
-                      "lock",
-                      "unlock",
-                      "remove",
-                      "reset"
+              "oneOf": [
+                {
+                  "type": "string",
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "mdb",
+                        "mdb_commonsense",
+                        "mdb_commonsense0",
+                        "plex_csm",
+                        "plex_csm0",
+                        "omdb",
+                        "mal",
+                        "lock",
+                        "unlock",
+                        "remove",
+                        "reset"
+                      ]
+                    },
+                    {
+                      "pattern": ".*"
+                    }
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "mdb",
+                          "mdb_commonsense",
+                          "mdb_commonsense0",
+                          "plex_csm",
+                          "plex_csm0",
+                          "omdb",
+                          "mal",
+                          "lock",
+                          "unlock",
+                          "remove",
+                          "reset"
+                        ]
+                      },
+                      {
+                        "pattern": ".*"
+                      }
                     ]
-                  },
-                  {
-                    "pattern": ".*"
                   }
-                ]
-              }
+                }
+              ]
             },
             "mass_original_title_update": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "anyOf": [
-                  {
-                    "enum": [
-                      "anidb",
-                      "anidb_official",
-                      "mal",
-                      "mal_english",
-                      "mal_japanese",
-                      "lock",
-                      "unlock",
-                      "remove",
-                      "reset"
+              "oneOf": [
+                {
+                  "type": "string",
+                  "anyOf": [
+                    {
+                      "enum": [
+                        "anidb",
+                        "anidb_official",
+                        "mal",
+                        "mal_english",
+                        "mal_japanese",
+                        "lock",
+                        "unlock",
+                        "remove",
+                        "reset"
+                      ]
+                    },
+                    {
+                      "pattern": ".*"
+                    }
+                  ]
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "anyOf": [
+                      {
+                        "enum": [
+                          "anidb",
+                          "anidb_official",
+                          "mal",
+                          "mal_english",
+                          "mal_japanese",
+                          "lock",
+                          "unlock",
+                          "remove",
+                          "reset"
+                        ]
+                      },
+                      {
+                        "pattern": ".*"
+                      }
                     ]
-                  },
-                  {
-                    "pattern": ".*"
                   }
-                ]
-              }
+                }
+              ]
             },
             "mass_studio_update": {
               "anyOf": [

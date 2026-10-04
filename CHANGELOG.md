@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Accept scalar values for the legacy `mass_content_rating_update` and `mass_original_title_update` operations in the config schema, matching runtime normalization and the other legacy mass metadata operations.
 - Evaluate `non_existing` schedules against collection or playlist existence, preserving OR behavior in schedule lists while allowing `all[...]` to require absence alongside other conditions. #3675
 - Allow `floppy_list` and `floppy_list_details` builders in episode-level collections, including exact episodes from public Floppy RSS feeds.
 - Group `STARZ`, `Starz Encore`, and `STARZ Encore` network values into the canonical `Starz` Network Default collection.
