@@ -117,7 +117,7 @@ requests-oauthlib==2.0.0
     # via apprise
 requests-toolbelt==1.0.0
     # via cloudscraper
-rpds-py==2026.6.3
+rpds-py==2026.9.1
     # via
     #   jsonschema
     #   referencing
