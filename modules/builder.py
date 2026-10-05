@@ -1179,23 +1179,7 @@ class CollectionBuilder:
                 self.exclude_users = config.general["playlist_exclude_users"]
                 logger.info(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
-            plex_users = self.library.users + [self.library.account.username]
-
-            self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
-            for user in self.exclude_users:
-                if user not in plex_users:
-                    raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
-
-            if self.sync_to_users:
-                if str(self.sync_to_users) == "all":
-                    self.valid_users = [p for p in plex_users if p not in self.exclude_users]
-                else:
-                    user_list = self.sync_to_users if isinstance(self.sync_to_users, list) else util.get_list(self.sync_to_users)
-                    for user in user_list:
-                        if user not in plex_users:
-                            raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
-                        if user not in self.exclude_users:
-                            self.valid_users.append(user)
+            self._resolve_playlist_users()
 
             if "delete_playlist" in methods:
                 logger.debug("")
@@ -6000,6 +5984,27 @@ class CollectionBuilder:
             self.deleted = True
         return output
 
+    def _resolve_playlist_users(self):
+        self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
+        if not self.sync_to_users and not self.exclude_users:
+            return
+
+        plex_users = self.library.users + [self.library.account.username]
+        for user in self.exclude_users:
+            if user not in plex_users:
+                raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+
+        if self.sync_to_users:
+            if str(self.sync_to_users) == "all":
+                self.valid_users = [p for p in plex_users if p not in self.exclude_users]
+            else:
+                user_list = self.sync_to_users if isinstance(self.sync_to_users, list) else util.get_list(self.sync_to_users)
+                for user in user_list:
+                    if user not in plex_users:
+                        raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
+                    if user not in self.exclude_users:
+                        self.valid_users.append(user)
+
     def sync_playlist(self):
         if self.obj is not None and self.valid_users:
             logger.info("")
@@ -6015,7 +6020,7 @@ class CollectionBuilder:
                     logger.info(f"Playlist: {self.name} synced to {user}")
 
     def exclude_admin_from_playlist(self):
-        if self.obj is not None and (self.exclude_users is not None and self.library.account.username in self.exclude_users):
+        if self.obj is not None and (self.exclude_users and self.library.account.username in self.exclude_users):
             logger.info("")
             logger.separator("Excluding Admin from Playlist", space=False, border=False)
             logger.info("")
