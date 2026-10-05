@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.2] - 2026-10-05
+
 ### Changed
 
 - Standardize collection-level Radarr and Sonarr definition setting names: `radarr_root_folder_path`, `radarr_minimum_availability`, `radarr_quality_profile`, `radarr_tags`, `sonarr_root_folder_path`, `sonarr_quality_profile`, `sonarr_language_profile`, `sonarr_series_type`, `sonarr_season_folder`, and `sonarr_tags` are now the preferred keys; the previous names remain supported as aliases.
@@ -456,7 +458,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...HEAD
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.2...HEAD
+[v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.2
 [v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
 [v2.4.9]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...v2.4.9
