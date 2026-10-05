@@ -117,7 +117,7 @@ mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-
 
 [dependency-groups]
 # uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
-bootstrap = ["uv==0.12.20"]
+bootstrap = ["uv==0.12.23"]
 
 # Documentation toolchain. Not installed at runtime -- nothing in modules/ or
 # kometa.py imports any of these; they exist only to build the mkdocs site.
@@ -145,7 +145,7 @@ docs = [
 dev = [
     "arrapi==1.4.14",
     "bandit==1.9.4",
-    "black==26.5.1",
+    "black==26.10.0",
     "cloudscraper==1.2.71",
     "flake8==7.4.1",
     "gitpython==3.2.0",
@@ -157,7 +157,7 @@ dev = [
     "pathvalidate==3.3.1",
     "pillow==12.3.0",
     "plexapi==4.18.3",
-    "prek==0.5.4",
+    "prek==0.5.5",
     "psutil==7.2.2",
     "pyright==1.1.414",
     "pytest==9.1.1",
