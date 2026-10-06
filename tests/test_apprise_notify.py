@@ -163,3 +163,31 @@ class TestAppriseNotifyNotification:
         warning_msg = mock_logger.warning.call_args[0][0]
         assert "Apprise" in warning_msg
         assert "failed" in warning_msg.lower()
+
+    @pytest.mark.parametrize("status", ["FAILURE", "PARTIAL"])
+    def test_notify_failed_apprise_result_logs_warning(self, status):
+        """Apprise 2 returns an AppriseResult object instead of False; a failed one is still reported."""
+        import apprise
+
+        instance, mock_apobj = self._make_instance()
+        mock_apobj.notify.return_value = apprise.AppriseResult(status=getattr(apprise.AppriseResultStatus, status))
+
+        with patch("modules.apprise_notify.util") as mock_util:
+            mock_logger = MagicMock()
+            mock_util.logger = mock_logger
+            instance.notification({"event": "version", "current": "2.3.1", "latest": "2.4.0", "notes": "Bug fixes"})
+
+        mock_logger.warning.assert_called_once()
+
+    def test_notify_successful_apprise_result_logs_nothing(self):
+        import apprise
+
+        instance, mock_apobj = self._make_instance()
+        mock_apobj.notify.return_value = apprise.AppriseResult(status=apprise.AppriseResultStatus.SUCCESS)
+
+        with patch("modules.apprise_notify.util") as mock_util:
+            mock_logger = MagicMock()
+            mock_util.logger = mock_logger
+            instance.notification({"event": "version", "current": "2.3.1", "latest": "2.4.0", "notes": "Bug fixes"})
+
+        mock_logger.warning.assert_not_called()
