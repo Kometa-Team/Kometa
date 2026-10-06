@@ -5985,7 +5985,7 @@ class CollectionBuilder:
         return output
 
     def _resolve_playlist_users(self):
-        self.exclude_users = util.get_list(self.exclude_users) if self.exclude_users else []
+        self.exclude_users = (util.get_list(self.exclude_users) or []) if self.exclude_users else []
         if not self.sync_to_users and not self.exclude_users:
             return
 
@@ -5998,7 +5998,7 @@ class CollectionBuilder:
             if str(self.sync_to_users) == "all":
                 self.valid_users = [p for p in plex_users if p not in self.exclude_users]
             else:
-                user_list = self.sync_to_users if isinstance(self.sync_to_users, list) else util.get_list(self.sync_to_users)
+                user_list = self.sync_to_users if isinstance(self.sync_to_users, list) else (util.get_list(self.sync_to_users) or [])
                 for user in user_list:
                     if user not in plex_users:
                         raise Failed(f"Playlist Error: User: {user} not found in plex\nOptions: {plex_users}")
