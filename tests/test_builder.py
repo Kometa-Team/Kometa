@@ -1216,6 +1216,80 @@ class TestDelete:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# update_smart_filter
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestUpdateSmartFilter:
+    """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
+
+    @staticmethod
+    def _library(existing_filter):
+        library = MagicMock()
+        library.smart_filter.return_value = existing_filter
+        return library
+
+    def test_bug_smart_label_none_filter_does_not_overwrite_the_collection(self, monkeypatch):
+        """Regression for the "Metadata: Smart Collection updated to None" log line — a smart_label
+        collection resolves smart_label_url to None whenever its label isn't in Plex (e.g. the labelled
+        items are gone), and __init__ sent that None as the collection's new filter:
+        update_smart_collection(obj, None) -> build_smart_filter(None) -> `.../allNone`.
+        See CollectionBuilder.update_smart_filter() in modules/builder.py.
+        """
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library("?label=Newly+Released&sort=random")
+        builder = make_builder(library=library, obj=SimpleNamespace(title="Newly Released"), smart_label_collection=True, smart_url=None, smart_label_url=None)
+
+        builder.update_smart_filter(None)
+
+        library.smart_filter.assert_not_called()
+        library.update_smart_collection.assert_not_called()
+
+    def test_unchanged_filter_is_not_rewritten(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library("?label=Newly+Released&sort=random")
+        builder = make_builder(
+            library=library,
+            obj=SimpleNamespace(title="Newly Released"),
+            smart_label_collection=True,
+            smart_url=None,
+            smart_label_url="?label=Newly+Released&sort=random",
+        )
+
+        builder.update_smart_filter(builder.smart_label_url)
+
+        library.update_smart_collection.assert_not_called()
+
+    def test_changed_filter_updates_the_existing_collection(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = self._library("?label=Newly+Released&sort=titleSort")
+        obj = SimpleNamespace(title="Newly Released")
+        builder = make_builder(
+            library=library,
+            obj=obj,
+            smart_label_collection=True,
+            smart_url=None,
+            smart_label_url="?label=Newly+Released&sort=random",
+        )
+
+        builder.update_smart_filter(builder.smart_label_url)
+
+        library.update_smart_collection.assert_called_once_with(obj, "?label=Newly+Released&sort=random")
+        assert logger.info_messages == ["Metadata: Smart Collection updated to ?label=Newly+Released&sort=random"]
+
+    def test_collection_that_does_not_exist_yet_is_skipped(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = self._library(None)
+        builder = make_builder(library=library, obj=None, smart_url="?label=Newly+Released&sort=random")
+
+        builder.update_smart_filter(builder.smart_url)
+
+        library.smart_filter.assert_not_called()
+        library.update_smart_collection.assert_not_called()
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # gather_ids
 # ═══════════════════════════════════════════════════════════════════════
 
