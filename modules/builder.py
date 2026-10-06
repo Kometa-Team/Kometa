@@ -1881,10 +1881,7 @@ class CollectionBuilder:
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                if self.obj is not None:
-                    if check_url != self.library.smart_filter(self.obj):
-                        self.library.update_smart_collection(self.obj, check_url)
-                        logger.info(f"Metadata: Smart Collection updated to {check_url}")
+                self.update_smart_filter(check_url)
                 self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
             if self.obj is not None:
                 self.exists = True
@@ -5499,6 +5496,16 @@ class CollectionBuilder:
     def _collection_child_count(obj):
         # Plex returns None for childCount on genuinely-empty separator collections - treat as 0, not a TypeError (builder.py fix, 2026-07-30).
         return obj.childCount or 0
+
+    def update_smart_filter(self, check_url):
+        # An unresolved filter URL is never a valid target for an existing collection: a smart_label collection whose
+        # label isn't currently in Plex resolves to None, and build_smart_filter() turns that into the bogus
+        # `.../allNone` URI, wiping the collection's real filter (builder.py fix, 2026-10-06).
+        if self.obj is None or check_url is None:
+            return
+        if check_url != self.library.smart_filter(self.obj):
+            self.library.update_smart_collection(self.obj, check_url)
+            logger.info(f"Metadata: Smart Collection updated to {check_url}")
 
     @timings.timed("load_collection")
     def load_collection(self):
