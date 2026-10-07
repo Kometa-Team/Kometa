@@ -7,6 +7,7 @@ manually-set attributes.
 
 from __future__ import annotations
 
+import os
 from types import SimpleNamespace
 from typing import cast
 from unittest.mock import MagicMock
@@ -1987,8 +1988,10 @@ def test_missing_show_artwork_logs_paths_and_respects_settings(tmp_path, asset_f
     import modules.plex as plex_module
 
     output = "\n".join(plex_module.logger.info_messages)
-    assert (f"Missing Season 2 Poster [{directory}/{prefix}Season02.*]" in output) is season_messages
-    assert (f"Missing S01E02 Title Card [{directory}/{prefix}S01E02.*]" in output) is episode_messages
+    season_path = os.path.join(directory, f"{prefix}Season02.*")
+    assert (f"Missing Season 2 Poster [{season_path}]" in output) is season_messages
+    episode_path = os.path.join(directory, f"{prefix}S01E02.*")
+    assert (f"Missing S01E02 Title Card [{episode_path}]" in output) is episode_messages
     assert plex.upload_images.call_count == 3
 
 
@@ -2005,8 +2008,8 @@ def test_missing_asset_folder_logs_all_search_locations(tmp_path, item_class, en
     assert bool(warnings) is enabled
     if enabled:
         for root in roots:
-            assert f"{root}/Missing" in warnings[0]
-            assert f"{root}/*/Missing" in warnings[0]
+            assert os.path.join(root, "Missing") in warnings[0]
+            assert os.path.join(root, "*", "Missing") in warnings[0]
 
 
 @pytest.mark.parametrize("enabled", [True, False])
@@ -2029,10 +2032,13 @@ def test_missing_album_poster_logs_path_and_respects_setting(tmp_path, enabled):
     import modules.plex as plex_module
 
     output = "\n".join(plex_module.logger.info_messages)
-    assert (f"Missing Album Missing Poster [{directory}/Missing.*]" in output) is enabled
+    album_path = os.path.join(directory, "Missing.*")
+    assert (f"Missing Album Missing Poster [{album_path}]" in output) is enabled
 
 
 def test_flat_artwork_search_paths_include_override_roots():
     episode = MagicMock(spec=Episode, seasonEpisode="s01e08")
     plex = make_plex(asset_directory=["unused"], asset_folders=False)
-    assert plex.asset_search_paths(episode, folder_name="The Agency (2024)", asset_directory=["config/assets", "extra/assets"]) == "config/assets/The Agency (2024)_S01E08.*, extra/assets/The Agency (2024)_S01E08.*"
+    roots = [os.path.join("config", "assets"), os.path.join("extra", "assets")]
+    expected = ", ".join(os.path.join(root, "The Agency (2024)_S01E08.*") for root in roots)
+    assert plex.asset_search_paths(episode, folder_name="The Agency (2024)", asset_directory=roots) == expected
