@@ -883,6 +883,8 @@ The available setting attributes which can be set at each level are outlined bel
 
     <div id="show-missing-assets" />Display missing asset warnings for items, collections, and playlists.
 
+    Detailed log messages include the searched asset locations. End-of-run warning summaries omit those paths when grouping repeated warnings.
+
     <hr style="margin: 0px;">
 
     **Attribute:** `show_missing_assets`
@@ -908,11 +910,11 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip "Shows/Hides messages like these for episodes"
 
-      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"
+      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}' [{searched_paths}]"
 
-      "Asset Warning: No poster '{name}' found in the assets folders"
+      "Asset Warning: No poster '{name}' found in the assets folders [{searched_paths}]"
 
-      "\nMissing S##E## Title Card"
+      "\nMissing S##E## Title Card [{searched_paths}]"
 
     <hr style="margin: 0px;">
 
@@ -939,11 +941,11 @@ The available setting attributes which can be set at each level are outlined bel
 
     ???+ tip "Shows/Hides messages like these for seasons/albums"
 
-      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}'"
+      "Asset Warning: No poster found for '{item_title}' in the assets folder '{directory}' [{searched_paths}]"
 
-      "Asset Warning: No poster '{name}' found in the assets folders"
+      "Asset Warning: No poster '{name}' found in the assets folders [{searched_paths}]"
 
-      "Missing Season {season_number} Poster"
+      "Missing Season {season_number} Poster [{searched_paths}]"
 
     <hr style="margin: 0px;">
 
