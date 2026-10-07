@@ -2353,7 +2353,7 @@ class Plex(Library):
         directories = self.asset_directory if asset_directory is None else asset_directory
         if item_dir:
             directories = [item_dir]
-        elif self.asset_folders:
+        elif self.asset_folders and folder_name is not None:
             directories = [os.path.join(ad, *(["*"] * depth), folder_name) for ad in directories for depth in range(self.asset_depth + 1)]
         if folders_only:
             return ", ".join(directories)
