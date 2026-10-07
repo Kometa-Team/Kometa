@@ -32,6 +32,6 @@ class AppriseNotify:
             body=message,
             notify_type=_PRIORITY_MAP.get(priority, apprise_lib.NotifyType.INFO),
         )
-        if result is False:
+        if not result:  # Apprise 2 returns an AppriseResult, which is falsy when any service fails
             if util.logger:
                 util.logger.warning("Apprise: One or more notification services failed to deliver")

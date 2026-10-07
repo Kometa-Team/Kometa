@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid unnecessary Plex account and user lookups for owner-only playlists when user syncing and exclusions are disabled; playlist reporting still requires plex.tv access. #3687
-
+- Log the Apprise delivery-failure warning again with Apprise 2, whose `notify()` returns an `AppriseResult` object instead of `False`, so failed and partially failed notifications were silently ignored.
 - Accept YAML lists for schedules and scheduled visibility attributes across the config, collection, overlay, and playlist schemas, matching documented runtime OR semantics.
 - Accept scalar values for the legacy `mass_content_rating_update` and `mass_original_title_update` operations in the config schema, matching runtime normalization and the other legacy mass metadata operations.
 - Evaluate `non_existing` schedules against collection or playlist existence, preserving OR behavior in schedule lists while allowing `all[...]` to require absence alongside other conditions. #3675
@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validate that OMDb, IMDb service, and MDBList rating/search responses are the expected object shape before indexing into them, reporting a clean error instead of an unhandled traceback when one of those APIs answers with an unexpected body (e.g. an error payload shaped as a list); remove dead rating/image lookup code left over from the Trakt removal that referenced the no-longer-existing `config.Trakt`.
 - Stop the retired-Trakt config cleanup from discarding unrelated attributes that merely mention "trakt" in a string value (e.g. an `mdblist_list` URL whose slug references Trakt-sourced data, or `summary` prose) or an entire collection whose name contains "trakt", by matching only the actual Trakt builder/attribute key names instead of a substring check against every key and string value.
 - Report a `mass_*_rating_update`/`mass_*_episode_rating_update` value of the retired `trakt`, `trakt_user`, or `mdb_trakt` options with the Trakt-removal message instead of a confusing "must be a number between 0 and 10" error from the generic numeric-rating parser.
+- Stop a `smart_label` collection whose label isn't currently applied to any items in Plex from overwriting the existing collection's smart filter: the unresolved label filter URL is `None`, and `update_smart_collection()` translated that into the bogus `.../allNone` URI, logging `Metadata: Smart Collection updated to None` and wiping the collection's real filter. An unresolved filter URL is now skipped, leaving the collection intact so the existing `Label: ... was not added to any items in the Library` error can report the problem. 
 
 ## [v2.5.1] - 2026-09-24
 
