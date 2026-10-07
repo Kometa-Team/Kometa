@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Avoid unnecessary Plex account and user lookups for owner-only playlists when user syncing and exclusions are disabled; playlist reporting still requires plex.tv access. #3687
 - Log the Apprise delivery-failure warning again with Apprise 2, whose `notify()` returns an `AppriseResult` object instead of `False`, so failed and partially failed notifications were silently ignored.
 - Accept YAML lists for schedules and scheduled visibility attributes across the config, collection, overlay, and playlist schemas, matching documented runtime OR semantics.
 - Accept scalar values for the legacy `mass_content_rating_update` and `mass_original_title_update` operations in the config schema, matching runtime normalization and the other legacy mass metadata operations.

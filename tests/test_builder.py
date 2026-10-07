@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import contextlib
 from types import SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from plexapi.exceptions import NotFound
@@ -1828,3 +1828,60 @@ class TestCollectionChildCount:
     def test_zero_childcount_stays_zero(self):
         obj = SimpleNamespace(childCount=0)
         assert CollectionBuilder._collection_child_count(obj) == 0
+
+
+@pytest.mark.parametrize("sync_to_users", [None, False, "", []])
+@pytest.mark.parametrize("exclude_users", [None, False, "", []])
+def test_owner_only_playlist_skips_cloud_user_discovery(sync_to_users, exclude_users):
+    library = MagicMock()
+    account = PropertyMock(side_effect=AssertionError("Unexpected plex.tv account lookup"))
+    users = PropertyMock(side_effect=AssertionError("Unexpected plex.tv user lookup"))
+    type(library).account = account
+    type(library).users = users
+    builder = make_builder(playlist=True, library=library, sync_to_users=sync_to_users, exclude_users=exclude_users, valid_users=[])
+
+    builder._resolve_playlist_users()
+    builder.obj = SimpleNamespace(title="Owner Playlist")
+    builder.sync_playlist()
+    builder.exclude_admin_from_playlist()
+
+    assert builder.valid_users == []
+    assert builder.exclude_users == []
+    account.assert_not_called()
+    users.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    ("sync_to_users", "exclude_users", "expected"),
+    [("all", "Guest", ["Owner"]), (["Guest", "Owner"], ["Owner"], ["Guest"]), ("Guest", None, ["Guest"]), (False, "Guest", [])],
+)
+def test_playlist_user_resolution_preserves_sync_and_exclusions(sync_to_users, exclude_users, expected):
+    library = SimpleNamespace(users=["Guest"], account=SimpleNamespace(username="Owner"))
+    builder = make_builder(playlist=True, library=library, sync_to_users=sync_to_users, exclude_users=exclude_users, valid_users=[])
+
+    builder._resolve_playlist_users()
+
+    assert builder.valid_users == expected
+    assert builder.exclude_users == ([exclude_users] if isinstance(exclude_users, str) else exclude_users or [])
+
+
+@pytest.mark.parametrize(("sync_to_users", "exclude_users"), [("Missing", None), (False, "Missing")])
+def test_playlist_user_resolution_still_rejects_unknown_users(sync_to_users, exclude_users):
+    library = SimpleNamespace(users=["Guest"], account=SimpleNamespace(username="Owner"))
+    builder = make_builder(playlist=True, library=library, sync_to_users=sync_to_users, exclude_users=exclude_users, valid_users=[])
+
+    with pytest.raises(Failed, match="User: Missing not found in plex"):
+        builder._resolve_playlist_users()
+
+
+def test_playlist_owner_exclusion_still_deletes_owner_playlist(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    library = SimpleNamespace(users=["Guest"], account=SimpleNamespace(username="Owner"), delete=MagicMock())
+    playlist = SimpleNamespace(title="Excluded Playlist")
+    builder = make_builder(playlist=True, library=library, obj=playlist, sync_to_users="all", exclude_users="Owner", valid_users=[])
+
+    builder._resolve_playlist_users()
+    builder.exclude_admin_from_playlist()
+
+    assert builder.valid_users == ["Guest"]
+    library.delete.assert_called_once_with(playlist)

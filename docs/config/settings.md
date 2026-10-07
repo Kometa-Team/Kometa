@@ -621,6 +621,8 @@ The available setting attributes which can be set at each level are outlined bel
 
     <div id="playlist-report" />Set `playlist_report` to true to print out a playlist report at the end of the log.
 
+    The report queries plex.tv for account and shared-user information, even when playlist syncing is disabled. Set `playlist_report: false` to skip these reporting requests. Owner-only playlists skip user discovery when syncing and user exclusions are disabled; features such as user syncing, user exclusions, and playlist deletion fallback can still require plex.tv access.
+
     <hr style="margin: 0px;">
 
     **Attribute:** `playlist_report`
@@ -629,7 +631,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Accepted Values:** `true` or `false`.
 
-    **Default Value:** `false`
+    **Default Value:** `true`
 
     ???+ example "Example"
 
