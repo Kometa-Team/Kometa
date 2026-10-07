@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Include searched asset paths in missing artwork log messages while keeping end-of-run warning summaries grouped without paths; retain the existing missing-asset reporting settings.
+
 ## [v2.5.2] - 2026-10-07
 
 ### Changed

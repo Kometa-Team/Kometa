@@ -7,13 +7,15 @@ manually-set attributes.
 
 from __future__ import annotations
 
+import os
 from types import SimpleNamespace
 from typing import cast
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.audio import Album, Artist
 from plexapi.exceptions import BadRequest, NotFound
-from plexapi.video import Episode
+from plexapi.video import Episode, Movie, Season, Show
 from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
@@ -1950,3 +1952,93 @@ class TestTracedPlexServer:
 
         test_logger.trace.assert_not_called()
         clock.assert_not_called()
+
+
+@pytest.mark.parametrize("asset_folders", [True, False])
+@pytest.mark.parametrize("season_messages,episode_messages", [(True, True), (False, True), (True, False), (False, False)])
+def test_missing_show_artwork_logs_paths_and_respects_settings(tmp_path, asset_folders, season_messages, episode_messages):
+    show = MagicMock(spec=Show, title="The Agency (2024)", locations=["/media/The Agency (2024)"])
+    seasons = [MagicMock(spec=Season, seasonNumber=n, parentTitle=show.title) for n in (1, 2)]
+    episodes = [MagicMock(spec=Episode, seasonEpisode=f"s01e{n:02}", grandparentTitle=show.title) for n in (1, 2)]
+    show.seasons.return_value = seasons
+    seasons[0].episodes.return_value = episodes
+    seasons[1].episodes.return_value = []
+    for child in [*seasons, *episodes]:
+        child.show.return_value = show
+    root = tmp_path / "assets"
+    directory = root / show.title if asset_folders else root
+    directory.mkdir(parents=True)
+    prefix = "" if asset_folders else f"{show.title}_"
+    for filename in ["poster" if asset_folders else show.title, f"{prefix}Season01", f"{prefix}S01E01"]:
+        (directory / f"{filename}.png").write_bytes(b"artwork")
+    plex = make_plex(
+        asset_directory=[str(root)],
+        asset_folders=asset_folders,
+        asset_depth=0,
+        create_asset_folders=False,
+        dimensional_asset_rename=False,
+        show_missing_assets=True,
+        show_missing_season_assets=season_messages,
+        show_missing_episode_assets=episode_messages,
+        query=lambda method: method(),
+        upload_images=MagicMock(),
+        item_labels=lambda item: [],
+    )
+    plex.find_and_upload_assets(show, [])
+    import modules.plex as plex_module
+
+    output = "\n".join(plex_module.logger.info_messages)
+    season_path = os.path.join(directory, f"{prefix}Season02.*")
+    assert (f"Missing Season 2 Poster [{season_path}]" in output) is season_messages
+    episode_path = os.path.join(directory, f"{prefix}S01E02.*")
+    assert (f"Missing S01E02 Title Card [{episode_path}]" in output) is episode_messages
+    assert plex.upload_images.call_count == 3
+
+
+@pytest.mark.parametrize("item_class", [Movie, Show])
+@pytest.mark.parametrize("enabled", [True, False])
+def test_missing_asset_folder_logs_all_search_locations(tmp_path, item_class, enabled):
+    item = MagicMock(spec=item_class, title="Missing", locations=["/media/Missing/file.mkv" if item_class is Movie else "/media/Missing"])
+    roots = [str(tmp_path / "assets"), str(tmp_path / "other")]
+    plex = make_plex(asset_directory=roots, asset_folders=True, asset_depth=1, create_asset_folders=False, show_missing_assets=enabled)
+    plex.find_and_upload_assets(item, [])
+    import modules.plex as plex_module
+
+    warnings = plex_module.logger.warning_messages
+    assert bool(warnings) is enabled
+    if enabled:
+        for root in roots:
+            assert os.path.join(root, "Missing") in warnings[0]
+            assert os.path.join(root, "*", "Missing") in warnings[0]
+
+
+@pytest.mark.parametrize("enabled", [True, False])
+def test_missing_album_poster_logs_path_and_respects_setting(tmp_path, enabled):
+    artist = MagicMock(spec=Artist, title="Artist")
+    albums = [MagicMock(spec=Album, title=title) for title in ["Found", "Missing"]]
+    artist.albums.return_value = albums
+    directory = str(tmp_path / "Artist")
+    plex = make_plex(
+        asset_directory=[str(tmp_path)],
+        asset_folders=True,
+        asset_depth=0,
+        show_missing_assets=False,
+        show_missing_season_assets=enabled,
+        query=lambda method: method(),
+        upload_images=MagicMock(),
+    )
+    plex.find_item_assets = MagicMock(side_effect=[(None, None, None, None, directory, "Artist"), (True, None, None, None, directory, "Artist"), (None, None, None, None, directory, "Artist")])
+    plex.find_and_upload_assets(artist, [])
+    import modules.plex as plex_module
+
+    output = "\n".join(plex_module.logger.info_messages)
+    album_path = os.path.join(directory, "Missing.*")
+    assert (f"Missing Album Missing Poster [{album_path}]" in output) is enabled
+
+
+def test_flat_artwork_search_paths_include_override_roots():
+    episode = MagicMock(spec=Episode, seasonEpisode="s01e08")
+    plex = make_plex(asset_directory=["unused"], asset_folders=False)
+    roots = [os.path.join("config", "assets"), os.path.join("extra", "assets")]
+    expected = ", ".join(os.path.join(root, "The Agency (2024)_S01E08.*") for root in roots)
+    assert plex.asset_search_paths(episode, folder_name="The Agency (2024)", asset_directory=roots) == expected

@@ -198,10 +198,11 @@ class Overlays:
                                 or (isinstance(item, Season) and self.library.show_missing_season_assets)
                                 or (not isinstance(item, (Episode, Season)) and self.library.show_missing_assets)
                             ):
+                                paths = self.library.asset_search_paths(item, item_dir, name)
                                 if self.library.asset_folders:
-                                    logger.warning(f"Asset Warning: No poster found for '{item_title}' in the assets folder '{item_dir}'")
+                                    logger.warning(f"Asset Warning: No poster found for '{item_title}' in the assets folder '{item_dir}' [{paths}]")
                                 else:
-                                    logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders")
+                                    logger.warning(f"Asset Warning: No poster '{name}' found in the assets folders [{paths}]")
                         if background:
                             self.library.upload_images(item, background=background)
                         if logo:
