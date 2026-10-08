@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
+
 ### Fixed
 
 - Include searched asset paths in missing artwork log messages while keeping end-of-run warning summaries grouped without paths; retain the existing missing-asset reporting settings.

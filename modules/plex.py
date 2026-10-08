@@ -69,6 +69,7 @@ search_translation = {
     "user_rating": "userRating",
     "episode_user_rating": "episode.userRating",
     "content_rating": "contentRating",
+    "commonsense_rating": "contentRatingAge",
     "episode_year": "episode.year",
     "release": "originallyAvailableAt",
     "show_unmatched": "show.unmatched",
@@ -544,7 +545,7 @@ date_attributes = [
 ]
 date_modifiers = ["", ".not", ".before", ".after"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
-number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips"] + year_attributes
+number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips", "commonsense_rating"] + year_attributes
 number_modifiers = [".gt", ".gte", ".lt", ".lte"]
 float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
 float_modifiers = number_modifiers + [".rated"]
@@ -597,6 +598,7 @@ searches = (
     + [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"]
     + [f"{f}{m}" for f in date_attributes for m in date_modifiers]
     + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods]
+    + ["commonsense_rating"]
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
 music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
