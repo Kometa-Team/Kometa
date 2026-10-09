@@ -688,6 +688,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
     Enabling this Operation tells Kometa
     to search the asset directories for images for unmanaged and unconfigured collections in the library.
 
+    Uses the library/global `asset_directory.collections` when configured, otherwise the library’s item asset directories. Collection-file and individual collection overrides apply when those definitions run, rather than to this library operation.
+
     **Attribute:** `assets_for_all_collections`
 
     **Accepted Values:** `true` or `false`.

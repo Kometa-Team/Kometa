@@ -1751,7 +1751,7 @@ class Operations:
                         if poster or background or logo or square_art:
                             self.library.upload_images(col, poster=poster, background=background, logo=logo, square_art=square_art)
                         elif self.library.show_missing_assets:
-                            directories = item_dir or "', '".join(self.library.asset_directory)
+                            directories = item_dir or "', '".join(self.library.collection_asset_directory or self.library.asset_directory)
                             logger.warning(f"Asset Warning: No poster or background found in an assets folder for '{name}' [{directories}]")
                     except Failed as e:
                         logger.warning(e)

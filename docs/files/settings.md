@@ -50,6 +50,16 @@ tags:
 
 All the following attributes serve various functions as how the definition functions inside of Kometa.
 
+<div id="asset-directory" />`asset_directory` overrides the artwork directories for an individual collection. Accepts an existing directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`. Empty values inherit the collection-file, library, or global setting; when none is configured, the existing `asset_directory` applies. See [collection asset settings](../config/settings.md#asset-directory) for layout and download behavior.
+
+```yaml
+collections:
+  My Collection:
+    asset_directory:
+      collections: config/assets/my_collection_artwork
+    plex_all: true
+```
+
 | Attribute                    | Description & Values                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 |:-----------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `blank_collection`           | **Description:** When set to true the collection will be created with no builders and no items added.<br>**Default:** `false`<br>**Values:** `true` or `false`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |

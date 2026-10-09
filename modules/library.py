@@ -65,6 +65,7 @@ class Library(ABC):
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
+        self.collection_asset_directory = params.get("collection_asset_directory") or []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
@@ -205,6 +206,9 @@ class Library(ABC):
             for ad in self.asset_directory:
                 logger.info(f"Using Asset Directory: {ad}")
 
+        for ad in self.collection_asset_directory:
+            logger.info(f"Using Collection Asset Directory: {ad}")
+
         if output:
             logger.info("")
             logger.info(output)
@@ -233,7 +237,8 @@ class Library(ABC):
         return any(label in labels for label in self.ignore_labels)
 
     def scan_configured_collection_names(self):
-        for file_type, metadata_file, temp_vars, asset_directory in self.configured_collection_files:
+        for file_entry in self.configured_collection_files:
+            file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
                 self.configured_collection_metadata_files.append(meta_obj)
@@ -247,7 +252,8 @@ class Library(ABC):
     def scan_files(self, operations_only, overlays_only, collection_only, metadata_only):
         self.scan_configured_collection_names()
         if not operations_only and not overlays_only and not metadata_only:
-            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_collection_files:
+            for file_entry in self.scanned_collection_files:
+                file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
                 try:
                     meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
@@ -451,7 +457,7 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
 
-    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None, download_all_urls=False):
         if image_name is None:
             image_name = image_type
         if images:
@@ -486,7 +492,8 @@ class Library(ABC):
                 "tmdb_show_details",
             ]:
                 if attr in images:
-                    if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
+                    downloadable = attr in ["style_data", f"url_{image_type}"] or (download_all_urls and isinstance(images[attr], str) and attr not in [f"file_{image_type}", "asset_directory", f"pmm_{image_type}"])
+                    if downloadable and download_url_assets and item_dir:
                         if "asset_directory" in images:
                             return images["asset_directory"]
                         else:

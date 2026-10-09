@@ -595,6 +595,31 @@ def time_window(tw):
         return tw
 
 
+def asset_directory_paths(value, err_type="Config"):
+    """Validate shared roots or roots grouped by media type and collections."""
+    if isinstance(value, dict):
+        if any(key not in ["movies", "shows", "music", "collections"] or isinstance(paths, dict) for key, paths in value.items()):
+            raise Failed(f"{err_type} Error: asset_directory mapping keys must be movies, shows, music, or collections; values must be paths or lists of paths")
+        return {key: asset_directory_paths(paths, err_type) for key, paths in value.items()}
+    if value is None or value == "" or value == []:
+        return []
+    if not isinstance(value, (str, list)):
+        raise Failed(f"{err_type} Error: asset_directory must be a path, list of paths, or mapping")
+    paths = get_list(value, split=False, return_none=False)
+    for path in paths:
+        if not isinstance(path, str) or not os.path.isdir(path):
+            raise Failed(f"{err_type} Error: Asset Directory Does Not Exist: {path}")
+    return paths
+
+
+def resolve_asset_directories(value, library_type, inherited_items=None, inherited_collections=None):
+    """Resolve partial mappings without discarding inherited item or collection roots."""
+    if isinstance(value, dict):
+        group = {"Movie": "movies", "Video": "movies", "Show": "shows", "Artist": "music"}.get(library_type)
+        return value.get(group) or inherited_items or [], value.get("collections") or inherited_collections or []
+    return value or inherited_items or [], inherited_collections or []
+
+
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
     files = []
     had_scheduled = False
@@ -652,13 +677,16 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                 logger.info(f"Template Variables: {temp_vars}")
 
             asset_directory = []
-            if "asset_directory" in file and file["asset_directory"]:
-                logger.info(f"Asset Directory: {file['asset_directory']}")
+            if isinstance(file.get("asset_directory"), dict):
+                asset_directory = asset_directory_paths(file["asset_directory"], err_type)
+            elif file.get("asset_directory"):
                 for asset_path in get_list(file["asset_directory"], split=False, return_none=False):
                     if os.path.exists(asset_path):
                         asset_directory.append(asset_path)
                     else:
                         logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
+            if asset_directory:
+                logger.info(f"Asset Directory: {asset_directory}")
 
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule

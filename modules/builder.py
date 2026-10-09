@@ -189,6 +189,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
+    "asset_directory",
     "smart_filter",
     "smart_label",
     "smart_url",
@@ -782,6 +783,7 @@ playlist_attributes = (
 )
 music_attributes = (
     [
+        "asset_directory",
         "non_item_remove_label",
         "item_label",
         "collection_filtering",
@@ -1196,7 +1198,9 @@ class CollectionBuilder:
         else:
             self.libraries.append(self.library)
 
-        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
+        file_items, _ = util.resolve_asset_directories(metadata.asset_directory, self.library.type)
+        self.asset_directory = file_items or self.library.asset_directory
+        self._resolve_collection_asset_directory(metadata, methods)
 
         self.language = self.library.Plex.language
         self.details = {
@@ -1260,6 +1264,7 @@ class CollectionBuilder:
         self.sync_to_wetrakr_list = None
         self.sync_missing_to_wetrakr_list = False
         self.collection_poster = None
+        self.collection_square_art = None
         self.collection_background = None
         self.collection_logo = None
         self.exists = False
@@ -5701,27 +5706,7 @@ class CollectionBuilder:
             if advance_update and "Metadata" not in updated_details:
                 updated_details.append("Metadata")
 
-        asset_location = None
-        if self.asset_directory:
-            name_mapping = self.name
-            if "name_mapping" in self.details:
-                if self.details["name_mapping"]:
-                    name_mapping = self.details["name_mapping"]
-                else:
-                    logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            try:
-                asset_poster, asset_background, asset_logo, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
-                if asset_poster:
-                    self.posters["asset_directory"] = asset_poster
-                if asset_background:
-                    self.backgrounds["asset_directory"] = asset_background
-                if asset_logo:
-                    self.logos["asset_directory"] = asset_logo
-                if asset_square_art:
-                    self.square_arts["asset_directory"] = asset_square_art
-            except Failed as e:
-                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
-                    logger.warning(e)
+        asset_location, asset_name = self._load_collection_assets()
         if self.mapping_name in self.library.collection_images or self.name in self.library.collection_images:
             style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
             if style_data and "url_poster" in style_data and style_data["url_poster"]:
@@ -5737,37 +5722,7 @@ class CollectionBuilder:
             if style_data and "url_square_art" in style_data and style_data["url_square_art"]:
                 self.square_arts["style_data"] = style_data["url_square_art"]
 
-        self.collection_poster = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.posters,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-        )
-        self.collection_background = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.backgrounds,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="background",
-        )
-        self.collection_logo = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.logos,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="logo",
-        )
-        self.collection_square_art = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.square_arts,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="square_art",
-        )
+        self._pick_collection_artwork(asset_location, asset_name)
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -5990,6 +5945,67 @@ class CollectionBuilder:
         if self.obj is not None:
             self.deleted = True
         return output
+
+    def _load_collection_assets(self):
+        asset_location = None
+        asset_name = None
+        if self.collection_asset_directory:
+            name_mapping = self.name
+            if "name_mapping" in self.details:
+                if self.details["name_mapping"]:
+                    name_mapping = self.details["name_mapping"]
+                else:
+                    logger.error(f"{self.Type} Error: name_mapping attribute is blank")
+            try:
+                asset_poster, asset_background, asset_logo, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.collection_asset_directory)
+                if self.collection_assets_configured and not self.library.asset_folders:
+                    asset_location = asset_location or self.collection_asset_directory[0]
+                    asset_name, _ = util.validate_filename(name_mapping)
+                if asset_poster:
+                    self.posters["asset_directory"] = asset_poster
+                if asset_background:
+                    self.backgrounds["asset_directory"] = asset_background
+                if asset_logo:
+                    self.logos["asset_directory"] = asset_logo
+                if asset_square_art:
+                    self.square_arts["asset_directory"] = asset_square_art
+            except Failed as e:
+                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
+                    logger.warning(e)
+        return asset_location, asset_name
+
+    def _pick_collection_artwork(self, asset_location, asset_name=None):
+        if self.obj is None:
+            return
+        for image_type, images in [("poster", self.posters), ("background", self.backgrounds), ("logo", self.logos), ("square_art", self.square_arts)]:
+            image_name = None if asset_name is None else (asset_name if image_type == "poster" else f"{asset_name}_{image_type}")
+            image = self.library.pick_image(
+                self.obj.title,
+                images,
+                self.library.prioritize_assets,
+                self.library.download_url_assets,
+                asset_location,
+                image_type=image_type,
+                image_name=image_name,
+                download_all_urls=self.collection_assets_configured,
+            )
+            setattr(self, f"collection_{image_type}", image)
+
+    def _resolve_collection_asset_directory(self, metadata, methods):
+        self.collection_asset_directory = self.asset_directory
+        self.collection_assets_configured = False
+        if self.playlist or self.overlay:
+            return
+        configured = metadata.collection_asset_directory or self.library.collection_asset_directory
+        self.collection_assets_configured = bool(configured)
+        self.collection_asset_directory = configured or self.asset_directory
+        if "asset_directory" in methods:
+            value = util.asset_directory_paths(self.data[methods["asset_directory"]], self.Type)
+            items, collections = util.resolve_asset_directories(value, self.library.type)
+            override = collections or items
+            if override:
+                self.collection_asset_directory = override
+                self.collection_assets_configured = bool(collections)
 
     def _resolve_playlist_users(self):
         self.exclude_users = (util.get_list(self.exclude_users) or []) if self.exclude_users else []

@@ -106,6 +106,7 @@ def _patch_everything(monkeypatch: pytest.MonkeyPatch) -> None:
     fake_plex.library_operation = None
     fake_plex.images_files = []
     fake_plex.original_mapping_name = "Movies"
+    fake_plex.type = "Movie"
     fake_plex.scan_files = MagicMock()
 
     # Module names that config.py imports directly via ``from modules.X import Y``
@@ -630,3 +631,86 @@ plex:
             secrets={},
         )
         assert cf.config_path == str(custom)
+
+
+@pytest.mark.parametrize("level", ["unset", "global", "library"])
+def test_collection_asset_directory_settings_inheritance(tmp_path, monkeypatch, level):
+    global_root = tmp_path / "global_collections"
+    library_root = tmp_path / "library_collections"
+    global_root.mkdir()
+    library_root.mkdir()
+    constructor = MagicMock(wraps=config_module.Plex)
+    monkeypatch.setattr(config_module, "Plex", constructor)
+    config_yaml = BASE_CONFIG
+    if level != "unset":
+        config_yaml = config_yaml.replace("  cache: false", f"  cache: false\n  asset_directory:\n    collections: {global_root}")
+    if level == "library":
+        config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:\n        collections: {library_root}")
+    make_config(tmp_path, config_yaml=config_yaml)
+    params = constructor.call_args.args[1]
+    assert params["collection_asset_directory"] == ([str(library_root if level == "library" else global_root)] if level != "unset" else [])
+
+
+@pytest.mark.parametrize("library_type, group", [("Movie", "movies"), ("Show", "shows"), ("Artist", "music")])
+@pytest.mark.parametrize("local", [False, True])
+def test_grouped_asset_directory_type_inheritance(tmp_path, monkeypatch, local, library_type, group):
+    roots = {name: tmp_path / name for name in ["movies", "shows", "music", "collections", "local"]}
+    for root in roots.values():
+        root.mkdir()
+    constructor = config_module.Plex
+    library = constructor(None, None)
+    library.type = library_type
+    config_yaml = BASE_CONFIG.replace("  cache: false", "  cache: false\n  asset_directory:\n" + "".join(f"    {key}: {roots[key]}\n" for key in ["movies", "shows", "music", "collections"]))
+    if local:
+        config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:\n        collections: {roots['local']}")
+    config = make_config(tmp_path, config_yaml=config_yaml)
+    assert config.libraries[0].asset_directory == [str(roots[group])]
+    assert config.libraries[0].collection_asset_directory == [str(roots["local"] if local else roots["collections"])]
+
+
+@pytest.mark.parametrize("as_list", [False, True])
+def test_legacy_asset_directory_configuration(tmp_path, monkeypatch, as_list):
+    root = tmp_path / "assets"
+    root.mkdir()
+    constructor = MagicMock(wraps=config_module.Plex)
+    monkeypatch.setattr(config_module, "Plex", constructor)
+    value = f"\n    - {root}" if as_list else f" {root}"
+    make_config(tmp_path, config_yaml=BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:{value}"))
+    params = constructor.call_args.args[1]
+    assert params["asset_directory"] == [str(root)]
+    assert params["collection_asset_directory"] == []
+
+
+@pytest.mark.parametrize("library_type, group", [("Movie", "movies"), ("Show", "shows"), ("Artist", "music")])
+def test_same_type_libraries_share_asset_roots(tmp_path, monkeypatch, library_type, group):
+    from copy import copy
+
+    root = tmp_path / "Ozzy"
+    root.mkdir()
+    prototype = config_module.Plex(None, None)
+
+    def make_library(config, params):
+        library = copy(prototype)
+        library.type = library_type
+        library.original_mapping_name = params["mapping_name"]
+        return library
+
+    monkeypatch.setattr(config_module, "Plex", make_library)
+    config_yaml = BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:\n    {group}: {root}")
+    config_yaml = config_yaml.replace("  Movies:\n    collection_files: []", "  First Library:\n    collection_files: []\n  Second Library:\n    collection_files: []")
+    config = make_config(tmp_path, config_yaml=config_yaml)
+    assert len(config.libraries) == 2
+    assert all(library.asset_directory == [str(root)] for library in config.libraries)
+
+
+@pytest.mark.parametrize("local_grouped", [False, True])
+def test_library_item_override_retains_shared_collections(tmp_path, monkeypatch, local_grouped):
+    roots = {name: tmp_path / name for name in ["shared", "local", "collections"]}
+    for root in roots.values():
+        root.mkdir()
+    config_yaml = BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:\n    movies: {roots['shared']}\n    collections: {roots['collections']}")
+    local = f"\n        movies: {roots['local']}" if local_grouped else f" {roots['local']}"
+    config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:{local}")
+    config = make_config(tmp_path, config_yaml=config_yaml)
+    assert config.libraries[0].asset_directory == [str(roots["local"])]
+    assert config.libraries[0].collection_asset_directory == [str(roots["collections"])]

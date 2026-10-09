@@ -94,24 +94,65 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
 
-    **Accepted Values:** Any Directory or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Directories.
+    **Accepted Values:** A directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
-    ???+ example "Example"
+    **Grouped configuration**
+
+    Use a mapping to share asset directories across libraries of the same type. The supported keys are `movies`, `shows`, `music`, and `collections` (lowercase). Kometa selects the item group from the Plex library type, independently of its Plex or Kometa config name. The `collections` group supplies collection artwork across all library types. Directory names have no special meaning.
+
+    ```yaml
+    settings:
+      asset_directory:
+        movies:
+          - config/assets/movies
+        shows:
+          - config/assets/shows
+        music:
+          - config/assets/music
+        collections:
+          - config/assets/collections
+    libraries:
+      4K Movies:
+        settings:
+          asset_directory:
+            collections:
+              - config/assets/movie_collections
+    ```
+
+    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the shared `movies` item paths. Without a `collections` entry, collections use their library's item paths.
+
+    Library-level settings can override the shared item paths for a specific library. Anime libraries use `movies` or `shows` according to their Plex type; use a library override to give them separate assets:
+
+    ```yaml
+    libraries:
+      Anime:
+        settings:
+          asset_directory:
+            shows:
+              - config/assets/anime
+    ```
+
+    Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
+
+    ???+ example "Simple configuration (shared asset directories)"
+
+        To use the same directories for item and collection artwork, specify a single directory or a list of directories. Both formats remain supported; existing configs do not need to migrate to the grouped format.
 
         ```yaml
         settings:
-          asset_directory: config/movies
+          asset_directory: config/assets
         ```
 
         ```yaml
         settings:
           asset_directory:
-            - config/assets/movies
-            - config/assets/collections
+            - config/assets/Ozzy
+            - config/assets/Tony
+            - config/assets/Geezer
+            - config/assets/Bill
         ```
-
 
 ??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
 
