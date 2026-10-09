@@ -909,6 +909,64 @@ class TestRefreshItemCacheAndMappings:
             assert getattr(plex, attr) == {}
 
 
+class TestMusicTrackMetadata:
+    def test_maps_local_track_metadata_to_music_rating_keys(self):
+        track = SimpleNamespace(
+            ratingKey=30,
+            title="Fame Is a Gun",
+            grandparentTitle="Addison Rae",
+            parentTitle="Addison",
+            parentIndex=1,
+            index=9,
+            duration=183264,
+        )
+        plex = make_plex(is_movie=False, is_show=False, type="Artist")
+        plex.is_music = True
+        plex._music_tracks_mapped = False
+        plex.get_all = MagicMock(return_value=[track])
+
+        plex.ensure_music_track_search_map()
+
+        assert plex.find_music_track_rating_keys("Fame is a Gun", ["Addison Rae"], "Addison", 1, 9, 183000) == [30]
+        assert plex._music_tracks_mapped is True
+
+    def test_uses_duration_when_disc_or_track_number_differs(self):
+        plex = make_plex(is_movie=False, is_show=False, type="Artist")
+        plex.is_music = True
+        plex._music_tracks_mapped = True
+        plex.music_track_search_map = {
+            "fameisagun": [
+                (30, "addisonrae", "addison", 1, 9, 183264),
+                (31, "addisonrae", "addison", 1, 4, 210000),
+            ]
+        }
+
+        assert plex.find_music_track_rating_keys("Fame Is a Gun", ["Addison Rae"], "Addison", 1, 3, 183000) == [30]
+
+    def test_maps_local_album_metadata_to_music_rating_keys(self):
+        album = SimpleNamespace(ratingKey=40, title="After Hours", parentTitle="The Weeknd")
+        plex = make_plex(is_movie=False, is_show=False, type="Artist")
+        plex.is_music = True
+        plex._music_albums_mapped = False
+        plex.get_all = MagicMock(return_value=[album])
+
+        assert plex.find_music_album_rating_keys("After Hours", ["The Weeknd"]) == [40]
+        assert plex._music_albums_mapped is True
+
+
+class TestSpotifyCollectionArtwork:
+    def test_selects_spotify_list_details_as_a_collection_poster(self):
+        import modules.library as library_module
+
+        library_module.logger = FakeLogger()
+        plex = make_plex()
+
+        poster = plex.pick_image("Spotify Playlist", {"spotify_list_details": "https://image.example/custom-cover.jpg"}, False, False, None)
+
+        assert poster.attribute == "spotify_list_details"
+        assert poster.location == "https://image.example/custom-cover.jpg"
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # check_filters / check_filter reload dedup
 # ═══════════════════════════════════════════════════════════════════════

@@ -78,6 +78,9 @@
     },
     "simkl": {
       "$ref": "#/definitions/simkl-api"
+    },
+    "spotify": {
+      "$ref": "#/definitions/spotify-api"
     }
   },
   "required": [
@@ -1279,6 +1282,38 @@
       },
       "required": [],
       "title": "simkl"
+    },
+    "spotify-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "client_id": {
+          "type": "string",
+          "description": "Spotify application Client ID."
+        },
+        "client_secret": {
+          "type": "string",
+          "description": "Spotify application Client Secret."
+        },
+        "redirect_uri": {
+          "type": "string",
+          "description": "Spotify application redirect URI."
+        },
+        "authorization": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "access_token": { "type": "string" },
+            "refresh_token": { "type": "string" },
+            "expires_in": { "type": "integer", "minimum": 1 },
+            "expires_at": { "type": "integer", "minimum": 0 },
+            "scope": { "type": "string" },
+            "token_type": { "type": "string" }
+          }
+        }
+      },
+      "required": ["client_id", "client_secret", "redirect_uri"],
+      "title": "spotify"
     },
     "ntfy-api": {
       "type": "object",

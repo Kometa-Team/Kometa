@@ -711,6 +711,9 @@ class TestTextfile:
     def test_mdblist_list_is_allowed_for_episode_collections(self):
         assert "mdblist_list" in parts_collection_valid
 
+    def test_spotify_list_is_allowed_for_track_collections(self):
+        assert "spotify_list" in parts_collection_valid
+
     def test_floppy_list_builders_are_allowed_for_episode_collections(self):
         assert "floppy_list" in parts_collection_valid
         assert "floppy_list_details" in parts_collection_valid

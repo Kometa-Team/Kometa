@@ -189,6 +189,7 @@ nav:
       - ntfy: config/ntfy.md
       - Apprise: config/apprise.md
       - Simkl: config/simkl.md
+      - Spotify: config/spotify.md
       - Serializd: config/serializd.md
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
@@ -448,6 +449,8 @@ nav:
         - Overview: files/builders/simkl/overview.md
         - Trending: files/builders/simkl/trending.md
         - DVD: files/builders/simkl/dvd.md
+      - Spotify:
+        - Playlist: files/builders/spotify/list.md
       - StevenLu:
         - Overview: files/builders/stevenlu/overview.md
         - Popular: files/builders/stevenlu/popular.md

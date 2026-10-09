@@ -803,6 +803,41 @@
                     ]
                 },
 
+                "spotify_list": {
+                    "description": "Spotify playlist URL, 22-character playlist ID, or an exact playlist name from your Spotify library. The authorized Spotify account must own the playlist or be a collaborator. Available for Music libraries and creates a track collection.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+                    ]
+                },
+                "spotify_list_details": {
+                    "description": "Spotify playlist URL, 22-character playlist ID, or an exact playlist name from your Spotify library, using the playlist description and artwork for the collection. The authorized Spotify account must own the playlist or be a collaborator.",
+                    "oneOf": [
+                        { "type": "string", "minLength": 1 },
+                        { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 1 } }
+                    ]
+                },
+                "spotify_liked": {
+                    "description": "Your Spotify liked songs. Must be set to me.",
+                    "type": "string",
+                    "enum": ["me"]
+                },
+                "spotify_top": {
+                    "description": "Your Spotify top tracks. Set to short, medium, or long.",
+                    "type": "string",
+                    "enum": ["short", "medium", "long"]
+                },
+                "spotify_recent": {
+                    "description": "Your recently played Spotify tracks. Must be set to me.",
+                    "type": "string",
+                    "enum": ["me"]
+                },
+                "spotify_saved": {
+                    "description": "Your saved Spotify albums. Must be set to me; creates an album-level collection.",
+                    "type": "string",
+                    "enum": ["me"]
+                },
+
                 "text_file": {
                     "description": "Path(s) to a plain-text file containing one IMDb/TMDb/TVDb ID per line.",
                     "oneOf": [

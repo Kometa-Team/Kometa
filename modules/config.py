@@ -32,6 +32,7 @@ from modules.radarr import Radarr
 from modules.serializd import Serializd
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
+from modules.spotify import Spotify
 from modules.stevenlu import StevenLu
 from modules.tautulli import Tautulli
 from modules.textfile import TextFile
@@ -1236,6 +1237,26 @@ class ConfigFile:
                 config_path=self.config_path,
                 authorization=self.data.get("simkl"),
             )
+            self.Spotify = None
+            if "spotify" in self.data:
+                logger.info("Connecting to Spotify...")
+                try:
+                    self.Spotify = Spotify(
+                        self.Requests,
+                        self.read_only,
+                        {
+                            "client_id": check_for_attribute(self.data, "client_id", parent="spotify", throw=True),
+                            "client_secret": check_for_attribute(self.data, "client_secret", parent="spotify", throw=True),
+                            "redirect_uri": check_for_attribute(self.data, "redirect_uri", parent="spotify", throw=True),
+                            "config_path": self.config_path,
+                            "authorization": self.data["spotify"].get("authorization"),
+                        },
+                    )
+                except Failed as e:
+                    logger.error(e)
+                logger.info(f"Spotify Connection {'Failed' if self.Spotify is None else 'Successful'}")
+            else:
+                logger.info("spotify attribute not found")
             self.Serializd = None
             if "serializd" in self.data:
                 logger.info("Connecting to Serializd...")

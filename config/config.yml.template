@@ -127,6 +127,11 @@ simkl:
   refresh_token:                   # Enter SIMKL AUTH V2 refresh token (Optional)
                                    # Get one at https://utilities.kometa.wiki/simkl-oauth
   force_refresh: false             # Set true to always refresh before SIMKL authentication (Optional)
+spotify:
+  client_id:                       # Spotify application Client ID
+  client_secret:                   # Spotify application Client Secret
+  redirect_uri: http://127.0.0.1:8888/callback # Must match Spotify Developer Dashboard
+  authorization: {}                # Filled by Kometa after authorization
 serializd:
   email:                           # Enter Serializd account email (Optional)
   password:                        # Enter Serializd account password (Optional)

@@ -1,5 +1,7 @@
 import os
+import re
 import time
+import unicodedata
 from abc import ABC, abstractmethod
 
 from PIL import Image, UnidentifiedImageError
@@ -50,6 +52,10 @@ class Library(ABC):
         self.imdb_rating_key_map = {}
         self.plex_map = {}
         self.plex_map_levels = set()
+        self.music_album_search_map = {}
+        self._music_albums_mapped = False
+        self.music_track_search_map = {}
+        self._music_tracks_mapped = False
         self.cached_items = {}
         # Per-run memo for check_filter's plain item attribute reads, keyed by (ratingKey, attr) - cleared per-item in reload() whenever a real reload happens, so it never outlives cached_items' own freshness guarantee.
         self.filter_attr_cache = {}
@@ -378,7 +384,7 @@ class Library(ABC):
                 logger.stacktrace()
                 logger.error(f"Metadata: {square_art.attribute} failed to update {square_art.message}")
 
-        if self.config.Cache:
+        if getattr(self.config, "Cache", None):
             if poster_uploaded:
                 self.config.Cache.update_image_map(item.ratingKey, self.image_table_name, "", poster.compare if poster else "")
             if background_uploaded:
@@ -424,6 +430,98 @@ class Library(ABC):
         builder_level = str(builder_level).lower()
         if builder_level not in self.plex_map_levels:
             self.map_plex_ids(self.get_all(builder_level=builder_level), builder_level=builder_level)
+
+    @staticmethod
+    def _music_search_text(value):
+        value = unicodedata.normalize("NFKD", str(value or "")).casefold()
+        return re.sub(r"[^a-z0-9]+", "", value)
+
+    def find_music_track_rating_keys(self, title, artists=None, album=None, disc_number=None, track_number=None, duration=None):
+        """Find local tracks by normalized Spotify metadata as a release-agnostic fallback."""
+        title = self._music_search_text(title)
+        if not title:
+            return []
+        artist_names = [self._music_search_text(artist) for artist in artists or []]
+        artist_names = [artist for artist in artist_names if artist]
+        album = self._music_search_text(album)
+        try:
+            duration = int(duration) if duration is not None else None
+        except (TypeError, ValueError):
+            duration = None
+        try:
+            expected_disc = int(disc_number) if disc_number is not None else None
+            expected_track = int(track_number) if track_number is not None else None
+        except (TypeError, ValueError):
+            expected_disc = None
+            expected_track = None
+        matches = []
+        self.ensure_music_track_search_map()
+        for rating_key, track_artist, track_album, track_disc, local_track, track_duration in self.music_track_search_map.get(title, []):
+            if artist_names and not any(artist == track_artist or artist in track_artist or track_artist in artist for artist in artist_names):
+                continue
+            if album and album != track_album:
+                continue
+            position_matches = expected_disc is not None and expected_track is not None and expected_disc == track_disc and expected_track == local_track
+            if not position_matches and (not duration or not track_duration or abs(duration - track_duration) > 7000):
+                continue
+            score = 2 + int(bool(album)) + (2 if position_matches else 1 if duration and track_duration else 0)
+            matches.append((score, rating_key))
+        if not matches:
+            return []
+        best_score = max(score for score, _ in matches)
+        return [rating_key for score, rating_key in matches if score == best_score]
+
+    def find_music_album_rating_keys(self, title, artists=None):
+        """Find local albums by normalized Spotify album and artist metadata."""
+        title = self._music_search_text(title)
+        if not title:
+            return []
+        artist_names = [self._music_search_text(artist) for artist in artists or []]
+        artist_names = [artist for artist in artist_names if artist]
+        self.ensure_music_album_search_map()
+        matches = self.music_album_search_map.get(title, [])
+        if artist_names:
+            matches = [
+                (rating_key, album_artist)
+                for rating_key, album_artist in matches
+                if any(artist == album_artist or artist in album_artist or album_artist in artist for artist in artist_names)
+            ]
+        return [rating_key for rating_key, _ in matches]
+
+    def ensure_music_album_search_map(self):
+        """Index local album metadata for music-source builders."""
+        if not self.is_music or self._music_albums_mapped:
+            return
+        self.music_album_search_map = {}
+        for album in self.get_all(builder_level="album"):
+            title = self._music_search_text(getattr(album, "title", ""))
+            if title:
+                self.music_album_search_map.setdefault(title, []).append(
+                    (album.ratingKey, self._music_search_text(getattr(album, "parentTitle", "")))
+                )
+        self._music_albums_mapped = True
+
+    def ensure_music_track_search_map(self):
+        """Index local music metadata for music-source builders."""
+        if not self.is_music:
+            return
+        if self._music_tracks_mapped:
+            return
+        self.music_track_search_map = {}
+        for track in self.get_all(builder_level="track"):
+            title = self._music_search_text(getattr(track, "title", ""))
+            if title:
+                self.music_track_search_map.setdefault(title, []).append(
+                    (
+                        track.ratingKey,
+                        self._music_search_text(getattr(track, "grandparentTitle", "")),
+                        self._music_search_text(getattr(track, "parentTitle", "")),
+                        getattr(track, "parentIndex", None),
+                        getattr(track, "index", None),
+                        getattr(track, "duration", None),
+                    )
+                )
+        self._music_tracks_mapped = True
 
     @abstractmethod
     def notify(self, text, collection=None, critical=True):
@@ -487,6 +585,7 @@ class Library(ABC):
                 "tmdb_movie_details",
                 "tmdb_list_details",
                 "tvdb_list_details",
+                "spotify_list_details",
                 "tvdb_movie_details",
                 "tvdb_show_details",
                 "tmdb_show_details",
@@ -627,6 +726,10 @@ class Library(ABC):
         self.imdb_rating_key_map = {}
         self.plex_map = {}
         self.plex_map_levels = set()
+        self.music_album_search_map = {}
+        self._music_albums_mapped = False
+        self.music_track_search_map = {}
+        self._music_tracks_mapped = False
         self.cached_items = {}
         self.filter_attr_cache = {}
 

@@ -12,7 +12,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, spotify, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -107,6 +107,7 @@ all_builders = (
     + serializd.builders
     + mdblist.builders
     + simkl.builders
+    + spotify.builders
     + radarr.builders
     + sonarr.builders
     + lidarr.builders
@@ -746,6 +747,12 @@ parts_collection_valid = (
         "imdb_list",
         "imdb_search",
         "mdblist_list",
+        "spotify_list",
+        "spotify_list_details",
+        "spotify_liked",
+        "spotify_top",
+        "spotify_recent",
+        "spotify_saved",
         "floppy_list",
         "floppy_list_details",
         "cache_builders",
@@ -818,6 +825,7 @@ music_attributes = (
     + logo_details
     + square_art_details
     + lidarr.builders
+    + spotify.builders
 )
 
 
@@ -1110,7 +1118,7 @@ class CollectionBuilder:
         elif self.library.is_show:
             self.builder_level = "show"
         elif self.library.is_music:
-            self.builder_level = "artist"
+            self.builder_level = "album" if "spotify_saved" in methods else "track" if any(method in methods for method in spotify.builders) else "artist"
         else:
             self.builder_level = "movie"
         level = None
@@ -1138,6 +1146,14 @@ class CollectionBuilder:
                         options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
                     raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
         self.parts_collection = self.builder_level in plex.builder_level_options
+        spotify_methods = [method for method in methods if method in spotify.builders]
+        if self.library.is_music and "spotify_saved" in spotify_methods:
+            if len(spotify_methods) > 1:
+                raise BuilderValidationError(f"{self.Type} Error: spotify_saved cannot be combined with track-level Spotify builders")
+            if self.builder_level != "album":
+                raise BuilderValidationError(f"{self.Type} Error: spotify_saved requires builder_level 'album'")
+        elif self.library.is_music and spotify_methods and self.builder_level != "track":
+            raise BuilderValidationError(f"{self.Type} Error: Spotify builders require builder_level 'track'")
 
         self.posters = {}
         self.backgrounds = {}
@@ -1237,6 +1253,8 @@ class CollectionBuilder:
         self.sonarr_details = {}
         self.missing_movies = []
         self.missing_shows = []
+        self.missing_albums = []
+        self.missing_tracks = []
         self.missing_parts = []
         self.added_to_radarr = []
         self.added_to_sonarr = []
@@ -1685,6 +1703,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tracearr to be configured")
                 elif not self.config.MyAnimeList and "mal" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}'requires MyAnimeList to be configured")
+                elif not self.config.Spotify and method_name in spotify.builders:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Spotify to be configured")
                 elif self.library.is_movie and method_name in show_only_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed for Show libraries")
                 elif not self.playlist and self.library.is_movie and method_name == "tracearr_binged":
@@ -1789,6 +1809,8 @@ class CollectionBuilder:
                     self._mdblist(method_name, method_data)
                 elif method_name in simkl.builders:
                     self._simkl(method_name, method_data)
+                elif method_name in spotify.builders:
+                    self._spotify(method_name, method_data)
                 elif method_name == "filters":
                     self._filters(method_name, method_data)
                 elif method_name == "value_filter":
@@ -3366,6 +3388,31 @@ class CollectionBuilder:
     def _simkl(self, method_name, method_data):
         self.builders.append((method_name, self.config.Simkl.validate_simkl_dict(self.Type, method_name, method_data)))
 
+    def _spotify(self, method_name, method_data):
+        if method_name in ["spotify_liked", "spotify_recent", "spotify_saved"]:
+            if str(method_data).strip().lower() != "me":
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} must be set to 'me'")
+            self.builders.append((method_name, "me"))
+        elif method_name == "spotify_top":
+            period = str(method_data).strip().lower()
+            if period not in ["short", "medium", "long"]:
+                raise BuilderValidationError(f"{self.Type} Error: spotify_top must be set to 'short', 'medium', or 'long'")
+            self.builders.append((method_name, period))
+        else:
+            for value in util.get_list(method_data, split=False, return_none=False):
+                playlist_id = self.config.Spotify.resolve_playlist_id(value)
+                self.builders.append(("spotify_list", playlist_id))
+                if method_name == "spotify_list_details":
+                    details = self.config.Spotify.get_playlist_details(playlist_id)
+                    spotify_url = f"https://open.spotify.com/playlist/{playlist_id}"
+                    if details.get("description"):
+                        self.summaries[method_name] = f"{details['description']}\n\nSource: Spotify ({spotify_url})"
+                    else:
+                        self.summaries[method_name] = f"Source: Spotify ({spotify_url})"
+                    images = details.get("images")
+                    if isinstance(images, list) and images and isinstance(images[0], dict) and images[0].get("url"):
+                        self.posters[method_name] = images[0]["url"]
+
     def _tautulli(self, method_name, method_data):
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
@@ -3839,7 +3886,7 @@ class CollectionBuilder:
     def gather_ids(self, method, value):
         expired = None
         list_key = None
-        if self.config.Cache and self.details["cache_builders"]:
+        if self.config.Cache and self.details["cache_builders"] and method not in spotify.builders:
             list_key, expired = self.config.Cache.query_list_cache(f"{self.library.type}:{method}", str(value), self.details["cache_builders"])
             if list_key and expired is False:
                 logger.info(f"Builder: {method} loaded from Cache")
@@ -3905,6 +3952,8 @@ class CollectionBuilder:
             elif "simkl" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries (e.g. (id, "tmdb") + (id, "tmdb_show")).
                 ids = self.config.Simkl.get_simkl_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif method in spotify.builders:
+                ids = self._spotify_rating_keys(method, value)
             elif "tmdb" in method:
                 ids = self.config.TMDb.get_tmdb_ids(method, value, self.library.is_movie, self.tmdb_region)
             elif "trakt" in method:
@@ -3940,7 +3989,7 @@ class CollectionBuilder:
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")
-        if self.config.Cache and self.details["cache_builders"] and ids:
+        if self.config.Cache and self.details["cache_builders"] and method not in spotify.builders and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
             list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
@@ -3950,6 +3999,66 @@ class CollectionBuilder:
                 self.mdb_list_arr_ids = []
             self.mdb_list_arr_ids.extend(ids)
             self.mdb_list_arr_removal_types.add(mdb_list_arr_types[method])
+        return ids
+
+    def _spotify_rating_keys(self, method, value):
+        """Resolve Spotify playlist tracks from local Plex track metadata."""
+        ids = []
+        seen = set()
+        if method == "spotify_liked":
+            tracks = self.config.Spotify.get_liked_tracks()
+        elif method == "spotify_top":
+            tracks = self.config.Spotify.get_top_tracks(value)
+        elif method == "spotify_recent":
+            tracks = self.config.Spotify.get_recent_tracks()
+        elif method == "spotify_saved":
+            return self._spotify_album_rating_keys()
+        else:
+            tracks = self.config.Spotify.get_playlist_tracks(value)
+        for spotify_track in tracks:
+            if not isinstance(spotify_track, dict):
+                continue
+            track_name = spotify_track.get("name", "Unknown track")
+            found = False
+            spotify_artists = [artist.get("name") for artist in spotify_track.get("artists", []) if isinstance(artist, dict) and artist.get("name")]
+            spotify_album = spotify_track.get("album", {}).get("name") if isinstance(spotify_track.get("album"), dict) else None
+            for rating_key in self.library.find_music_track_rating_keys(
+                track_name,
+                spotify_artists,
+                spotify_album,
+                spotify_track.get("disc_number"),
+                spotify_track.get("track_number"),
+                spotify_track.get("duration_ms"),
+            ):
+                if rating_key not in seen:
+                    ids.append((rating_key, "ratingKey"))
+                    seen.add(rating_key)
+                    found = True
+            if not found:
+                track_label = f"{', '.join(spotify_artists) or 'Unknown artist'} - {track_name}"
+                if track_label not in self.missing_tracks:
+                    self.missing_tracks.append(track_label)
+        return ids
+
+    def _spotify_album_rating_keys(self):
+        """Resolve Spotify saved albums from local Plex album metadata."""
+        ids = []
+        seen = set()
+        for spotify_album in self.config.Spotify.get_saved_albums():
+            if not isinstance(spotify_album, dict):
+                continue
+            album_name = spotify_album.get("name", "Unknown album")
+            spotify_artists = [artist.get("name") for artist in spotify_album.get("artists", []) if isinstance(artist, dict) and artist.get("name")]
+            found = False
+            for rating_key in self.library.find_music_album_rating_keys(album_name, spotify_artists):
+                if rating_key not in seen:
+                    ids.append((rating_key, "ratingKey"))
+                    seen.add(rating_key)
+                    found = True
+            if not found:
+                album_label = f"{', '.join(spotify_artists) or 'Unknown artist'} - {album_name}"
+                if album_label not in self.missing_albums:
+                    self.missing_albums.append(album_label)
         return ids
 
     def _find_plex_keys(self, input_id):
@@ -5185,6 +5294,26 @@ class CollectionBuilder:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
                 self.library.add_filtered(self.name, filtered_shows_with_names, False)
+        missing_tracks = getattr(self, "missing_tracks", [])
+        if len(missing_tracks) > 0 and self.library.is_music:
+            if self.details["show_missing"] is True:
+                logger.info("")
+                logger.separator(f"Missing Tracks from Library: {self.name}", space=False, border=False)
+                logger.info("")
+                for i, track in enumerate(missing_tracks, 1):
+                    logger.info(f"{i}/{len(missing_tracks)} {self.name} {self.Type} | ? | {track}")
+                logger.info("")
+                logger.info(f"{len(missing_tracks)} Track{'s' if len(missing_tracks) != 1 else ''} Missing")
+        missing_albums = getattr(self, "missing_albums", [])
+        if len(missing_albums) > 0 and self.library.is_music:
+            if self.details["show_missing"] is True:
+                logger.info("")
+                logger.separator(f"Missing Albums from Library: {self.name}", space=False, border=False)
+                logger.info("")
+                for i, album in enumerate(missing_albums, 1):
+                    logger.info(f"{i}/{len(missing_albums)} {self.name} {self.Type} | ? | {album}")
+                logger.info("")
+                logger.info(f"{len(missing_albums)} Album{'s' if len(missing_albums) != 1 else ''} Missing")
         if len(self.missing_parts) > 0 and self.library.is_show:
             if self.details["show_missing"] is True:
                 for missing in self.missing_parts:
@@ -5591,6 +5720,8 @@ class CollectionBuilder:
             summary = ("wetrakr_list_details", self.summaries["wetrakr_list_details"])
         elif "floppy_list_details" in self.summaries:
             summary = ("floppy_list_details", self.summaries["floppy_list_details"])
+        elif "spotify_list_details" in self.summaries:
+            summary = ("spotify_list_details", self.summaries["spotify_list_details"])
         elif "tmdb_list_details" in self.summaries:
             summary = ("tmdb_list_details", self.summaries["tmdb_list_details"])
         elif "tvdb_list_details" in self.summaries:
