@@ -31,7 +31,8 @@ The settings may be declared globally or overridden in an individual library's `
 
 | Attribute | Description |
 |:--|:--|
-| `url`, `token` | Lidarr URL and API key. |
+| `url` | Lidarr URL. |
+| `token` | Lidarr API key. |
 | `add_missing` | Reserved for future artist-add operations; Lidarr builders only return artists already tracked by Lidarr. |
 | `add_existing` | Enables `lidarr_add_all_existing`, which adds the current Plex artists. |
 | `upgrade_existing` | Changes an existing artist to the configured quality profile. |

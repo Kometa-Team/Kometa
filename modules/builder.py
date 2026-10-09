@@ -298,7 +298,20 @@ none_details = [
     "wetrakr_tracking",
     "wetrakr_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist", "lidarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
+none_builders = [
+    "radarr_taglist",
+    "sonarr_taglist",
+    "lidarr_taglist",
+    "flicklist_watchlist",
+    "flicklist_favorites",
+    "flicklist_watched",
+    "flicklist_up_next",
+    "flicklist_tracked",
+    "flicklist_ratings",
+    "wetrakr_favorites",
+    "wetrakr_tracking",
+    "wetrakr_ratings",
+]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",

@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+from typing import Any, cast
 
 from modules import timings, util
 from modules.util import Failed
@@ -11,20 +12,20 @@ builders = ["lidarr_all", "lidarr_taglist"]
 monitor_options = ["all", "future", "missing", "existing", "first", "latest", "none"]
 monitor_new_albums_options = ["all", "none", "new"]
 monitor_descriptions = {
-    "all": "All Albums", "future": "Future Albums", "missing": "Missing Albums", "existing": "Existing Albums",
-    "first": "First Album", "latest": "Latest Album", "none": "None",
+    "all": "All Albums",
+    "future": "Future Albums",
+    "missing": "Missing Albums",
+    "existing": "Existing Albums",
+    "first": "First Album",
+    "latest": "Latest Album",
+    "none": "None",
 }
 monitor_new_albums_descriptions = {"all": "All Albums", "none": "No New Albums", "new": "New Albums"}
 mbid_pattern = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
+JsonObject = dict[str, Any]
 
 
 class Lidarr:
-    """Lidarr artist management using its v1 API.
-
-    ArrAPI currently provides no artist endpoints for Lidarr, so this connector
-    deliberately uses Kometa's shared requests session for the small API surface
-    it needs.
-    """
 
     def __init__(self, requests, cache, library, params):
         self.requests = requests
@@ -53,9 +54,9 @@ class Lidarr:
         self._artist_names = None
 
         try:
-            self._get("/system/status")
-            self.profiles = self._get("/qualityprofile")
-            self.metadata_profiles = self._get("/metadataprofile")
+            self._get_object("/system/status")
+            self.profiles = self._get_list("/qualityprofile")
+            self.metadata_profiles = self._get_list("/metadataprofile")
             self._validate_root_folder()
             self.quality_profile_id = self._quality_profile_id(self.quality_profile)
             self.metadata_profile_id = self.metadata_profiles[0]["id"]
@@ -64,30 +65,40 @@ class Lidarr:
         except Exception as e:
             raise Failed(f"Lidarr Error: {e}") from e
 
-    def _request(self, method, path, **kwargs):
+    def _request(self, method, path, **kwargs) -> Any:
         try:
-            response = self.requests.session.request(
-                method, f"{self.url}/api/v1{path}", headers=self.headers, timeout=30, **kwargs
-            )
+            response = self.requests.session.request(method, f"{self.url}/api/v1{path}", headers=self.headers, timeout=30, **kwargs)
             response.raise_for_status()
             return response.json() if response.content else None
         except Exception as e:
             raise Failed(f"Lidarr Error: {e}") from e
 
-    def _get(self, path, params=None):
+    def _get(self, path, params=None) -> Any:
         return self._request("GET", path, params=params)
 
-    def _post(self, path, data):
+    def _get_object(self, path, params=None) -> JsonObject:
+        data = self._get(path, params=params)
+        if not isinstance(data, dict):
+            raise Failed(f"Lidarr Error: Expected an object from {path}")
+        return cast(JsonObject, data)
+
+    def _get_list(self, path, params=None) -> list[JsonObject]:
+        data = self._get(path, params=params)
+        if not isinstance(data, list) or not all(isinstance(item, dict) for item in data):
+            raise Failed(f"Lidarr Error: Expected a list of objects from {path}")
+        return cast(list[JsonObject], data)
+
+    def _post(self, path, data) -> Any:
         return self._request("POST", path, json=data)
 
-    def _put(self, path, data):
+    def _put(self, path, data) -> Any:
         return self._request("PUT", path, json=data)
 
-    def _delete(self, path, data=None):
+    def _delete(self, path, data=None) -> Any:
         return self._request("DELETE", path, json=data)
 
     def _validate_root_folder(self):
-        folders = self._get("/rootfolder")
+        folders = self._get_list("/rootfolder")
         if not any(folder["path"] == self.root_folder_path for folder in folders):
             raise Failed(f"Lidarr Error: Invalid Root Folder: {self.root_folder_path}")
 
@@ -99,13 +110,16 @@ class Lidarr:
         raise Failed(f"Lidarr Error: Invalid Quality Profile: {profile}. Options: {names}")
 
     def _tag_ids(self, tags, create=True):
-        current_tags = self._get("/tag")
+        current_tags = self._get_list("/tag")
         labels = {tag["label"].lower(): tag["id"] for tag in current_tags}
         tag_ids = []
         for tag in tags or []:
             label = str(tag).lower()
             if label not in labels and create:
-                labels[label] = self._post("/tag", {"label": label})["id"]
+                response = self._post("/tag", {"label": label})
+                if not isinstance(response, dict) or "id" not in response:
+                    raise Failed("Lidarr Error: Expected a tag object when creating a tag")
+                labels[label] = response["id"]
             if label in labels:
                 tag_ids.append(labels[label])
         return tag_ids
@@ -114,8 +128,8 @@ class Lidarr:
     def valid_mbid(mbid):
         return bool(mbid and mbid_pattern.fullmatch(mbid))
 
-    def all_artists(self):
-        return self._get("/artist")
+    def all_artists(self) -> list[JsonObject]:
+        return self._get_list("/artist")
 
     def get_artist_name(self, mbid):
         if self._artist_names is None:
@@ -123,7 +137,7 @@ class Lidarr:
         return self._artist_names.get(mbid, "Unknown Artist")
 
     def _set_album_monitoring(self, artist_id, monitor):
-        albums = self._get("/album", params={"artistId": artist_id})
+        albums = self._get_list("/album", params={"artistId": artist_id})
         if monitor == "none":
             album_ids = [album["id"] for album in albums]
             monitored = False
@@ -192,7 +206,7 @@ class Lidarr:
                     self.cache.update_lidarr_adds(mbid, self.library.original_mapping_name)
                 continue
 
-            lookup = self._get("/artist/lookup", params={"term": f"lidarr:{mbid}"})
+            lookup = self._get_list("/artist/lookup", params={"term": f"lidarr:{mbid}"})
             if not lookup:
                 logger.warning(f"Lidarr Warning: MusicBrainz Artist ID not found: {mbid}")
                 continue
@@ -240,7 +254,7 @@ class Lidarr:
                 logger.info(f"Removed from Lidarr | {artist['artistName']}")
 
     def get_mbid_ids(self, method, data):
-        allowed = {tag["id"] for tag in self._get("/tag") if tag["label"].lower() in data} if method == "lidarr_taglist" else set()
+        allowed = {tag["id"] for tag in self._get_list("/tag") if tag["label"].lower() in data} if method == "lidarr_taglist" else set()
         ids = []
         artists = self.all_artists()
         self._artist_names = {artist.get("foreignArtistId"): artist.get("artistName") for artist in artists}
