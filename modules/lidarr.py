@@ -183,7 +183,7 @@ class Lidarr:
                 continue
             if self.cache and not self.ignore_cache and self.cache.query_lidarr_adds(mbid, self.library.original_mapping_name):
                 artist_name = existing.get(mbid, {}).get("artistName") or plex_artist_name or "Unknown Artist"
-                logger.info(f"Skipped In Change | {artist_name} (MBID: {mbid})")
+                logger.info(f"Skipped In Cache | {artist_name} (MBID: {mbid})")
                 continue
             if mbid in existing:
                 artist = existing[mbid]
