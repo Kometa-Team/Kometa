@@ -15,6 +15,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
+
 from modules.log_summary import SUMMARY_NORMALIZATIONS, RunLogSummary, normalize_summary_message
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -377,3 +379,25 @@ def test_status_summary_skips_empty_tables() -> None:
     """
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert "if not status:\n            return" in text
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "ERROR"])
+def test_missing_tmdb_lookup_summaries_group_ids_and_keep_types_separate(severity):
+    summary = RunLogSummary([])
+    detailed = RunLogSummary([], details=True)
+    for kind in ["Collection", "Movie", "Show"]:
+        messages = [
+            f"TMDb Error: No {kind} found on TMDb for ID(s) [1719379]. Verify the ID(s) still exist and update your config.",
+            f"TMDb Error: No {kind} found on TMDb for ID(s) [1698578, 1677089]. Verify the ID(s) still exist and update your config.",
+        ]
+        for message in messages:
+            summary.add(severity, message)
+            detailed.add(severity, message)
+        assert (f"TMDb Error: No {kind} found on TMDb", 2) in summary.severity_rows(severity)
+        assert all((message, 1) in detailed.severity_rows(severity) for message in messages)
+    assert len(summary.severity_rows(severity)) == 3
+
+
+def test_unrelated_tmdb_failure_keeps_diagnostic_details():
+    message = "TMDb Error: No Collection found on TMDb for ID(s) [1719379]. Request timed out."
+    assert normalize_summary_message(message) == message
