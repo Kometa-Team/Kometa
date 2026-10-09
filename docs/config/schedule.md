@@ -38,6 +38,34 @@ The scheduling options are:
 * Use `all[...]` to require every enclosed scheduling option to match.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
+## Library Schedule Modes
+
+Library schedule modes limit the media items Kometa processes. Use an ordered list of `schedule` and `mode` mappings under a library's `schedule` attribute. Kometa uses the first matching entry; if none match, it skips the library.
+
+```yaml title="Run a limited Monday update and a full update on other days"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: added(7)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The `.not` modifier inverts one schedule expression. For example, `weekly.not(monday)` matches every day except Monday.
+
+| Mode | Scope |
+|:--|:--|
+| `full` | Every top-level library item. |
+| `added(days)` | Items added to Plex during the previous number of days. In a TV Show library, this also includes existing shows with recently added episodes. |
+| `diff` | Items absent from Kometa's previous library snapshot. Show libraries compare each season's Plex `updatedAt` value. Requires a persistent Kometa cache. |
+| `index(A-F)` | Titles beginning with letters in the inclusive A through F range. |
+| `index(A-F#)` | The A through F range plus titles beginning with a number, symbol, or other non-alphabetical character. |
+
+`index` matches the first non-whitespace character in a Plex title, case-insensitively. Ranges must be alphabetical and ascending.
+
+When a mode is not `full`, Kometa limits metadata, overlays, item operations, and collection additions to items in scope. It does not remove existing collection members or change custom collection ordering; run with `full` to reconcile the whole library.
+
 ???+ warning "monthly(N) behaviour change"
     In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.
 

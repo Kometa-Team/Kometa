@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add library schedule modes that select `full`, `added(days)`, `diff`, or alphabetical `index()` item scopes from an ordered schedule mapping. Scoped runs preserve existing collection members and custom item ordering; TV Show `added(days)` includes shows with newly added episodes and `diff` compares season XML timestamps.
 - Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
 
 ### Fixed
