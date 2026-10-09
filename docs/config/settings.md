@@ -94,34 +94,45 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
 
-    **Accepted Values:** A directory, list of directories, or mapping keyed by exact library names and reserved `collections`.
+    **Accepted Values:** A directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
     **Grouped configuration**
 
-    Use a mapping to select asset directories by the exact, case-sensitive names under `libraries:` in your Kometa config. These keys match the config library names, even when `library_name` points to a differently named Plex library. The reserved `collections` key supplies collection artwork directories across libraries. A library named `collections` cannot be selected separately in this format.
+    Use a mapping to share asset directories across libraries of the same type. The supported keys are `movies`, `shows`, `music`, and `collections` (lowercase). Kometa selects the item group from the Plex library type, independently of its Plex or Kometa config name. The `collections` group supplies collection artwork across all library types. Directory names have no special meaning.
 
     ```yaml
     settings:
       asset_directory:
-        Movies:
+        movies:
           - config/assets/movies
-        Shows:
+        shows:
           - config/assets/shows
-        Anime:
-          - config/assets/anime
+        music:
+          - config/assets/music
         collections:
           - config/assets/collections
     libraries:
-      Movies:
+      4K Movies:
         settings:
           asset_directory:
             collections:
               - config/assets/movie_collections
     ```
 
-    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the global `Movies` item paths. Without a `collections` entry, collections use their library's item paths.
+    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the shared `movies` item paths. Without a `collections` entry, collections use their library's item paths.
+
+    Library-level settings can override the shared item paths for a specific library. Anime libraries use `movies` or `shows` according to their Plex type; use a library override to give them separate assets:
+
+    ```yaml
+    libraries:
+      Anime:
+        settings:
+          asset_directory:
+            shows:
+              - config/assets/anime
+    ```
 
     Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
 

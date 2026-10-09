@@ -952,7 +952,7 @@
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
                 "album_sorting": { "type": "string", "description": "Default album sort order for this library (music libraries)." },
-                "asset_directory": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }, { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } }] },
+                "asset_directory": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }, {"type": "object", "properties": {"movies": {"anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}, {"type": "null"}]}, "shows": {"anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}, {"type": "null"}]}, "music": {"anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}, {"type": "null"}]}, "collections": {"anyOf": [{"type": "string"}, {"type": "array", "items": {"type": "string"}}, {"type": "null"}]}}, "additionalProperties": false}] },
                 "asset_folders": { "type": "boolean", "description": "Use per-item asset sub-folders instead of a flat asset directory." },
                 "create_asset_folders": { "type": "boolean", "description": "Create missing asset sub-folders automatically." },
 

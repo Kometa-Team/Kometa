@@ -596,10 +596,10 @@ def time_window(tw):
 
 
 def asset_directory_paths(value, err_type="Config"):
-    """Validate legacy roots or roots grouped by exact library name and collections."""
+    """Validate shared roots or roots grouped by media type and collections."""
     if isinstance(value, dict):
-        if any(not isinstance(key, str) or isinstance(paths, dict) for key, paths in value.items()):
-            raise Failed(f"{err_type} Error: asset_directory mapping values must be paths or lists of paths")
+        if any(key not in ["movies", "shows", "music", "collections"] or isinstance(paths, dict) for key, paths in value.items()):
+            raise Failed(f"{err_type} Error: asset_directory mapping keys must be movies, shows, music, or collections; values must be paths or lists of paths")
         return {key: asset_directory_paths(paths, err_type) for key, paths in value.items()}
     if value is None or value == "" or value == []:
         return []
@@ -612,10 +612,11 @@ def asset_directory_paths(value, err_type="Config"):
     return paths
 
 
-def resolve_asset_directories(value, library_name, inherited_items=None, inherited_collections=None):
+def resolve_asset_directories(value, library_type, inherited_items=None, inherited_collections=None):
     """Resolve partial mappings without discarding inherited item or collection roots."""
     if isinstance(value, dict):
-        return value.get(library_name) or inherited_items or [], value.get("collections") or inherited_collections or []
+        group = {"Movie": "movies", "Video": "movies", "Show": "shows", "Artist": "music"}.get(library_type)
+        return value.get(group) or inherited_items or [], value.get("collections") or inherited_collections or []
     return value or inherited_items or [], inherited_collections or []
 
 

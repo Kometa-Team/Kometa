@@ -229,7 +229,7 @@ You can have some control of the files from inside your Configuration file by us
 
     <hr style="margin: 0px;">
     
-    On collection-file entries, a mapping can select item directories by exact library name and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. Individual collections can override the collection roots again.
+    On collection-file entries, a mapping can select item directories by library type (`movies`, `shows`, or `music`) and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. Individual collections can override the collection roots again.
 
     ```yaml
     libraries:
@@ -242,7 +242,7 @@ You can have some control of the files from inside your Configuration file by us
 
     **Attribute:** `asset_directory`
     
-    **Accepted Values:** A directory, list of directories, or mapping keyed by exact library names and reserved `collections`.
+    **Accepted Values:** A directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 

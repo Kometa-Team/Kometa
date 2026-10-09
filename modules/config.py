@@ -1444,9 +1444,9 @@ class ConfigFile:
                     do_print=False,
                     save=False,
                 )
-                global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], str(library_name))
+                global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], None)
                 configured_assets = check_for_attribute(lib, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True, do_print=False, save=False)
-                params["asset_directory"], params["collection_asset_directory"] = util.resolve_asset_directories(configured_assets, str(library_name), global_items, global_collections)
+                params["asset_directory"], params["collection_asset_directory"] = util.resolve_asset_directories(configured_assets, None, global_items, global_collections)
                 params["asset_folders"] = check_for_attribute(
                     lib,
                     "asset_folders",
@@ -2205,6 +2205,13 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], library.type)
+                    library.asset_directory, library.collection_asset_directory = util.resolve_asset_directories(configured_assets, library.type, global_items, global_collections)
+                    if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
+                        for directory in library.asset_directory:
+                            logger.info(f"Using Asset Directory: {directory}")
+                        for directory in library.collection_asset_directory:
+                            logger.info(f"Using Collection Asset Directory: {directory}")
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                     logger.info("")
