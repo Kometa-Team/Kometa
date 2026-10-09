@@ -1032,7 +1032,7 @@ class Plex(Library):
         logger.info(f"Loading {builder_level.capitalize()}s Added Since {cutoff.date()} from Library: {self.name}")
         key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(builder_level)}&sort=addedAt%3Adesc"
         container_start = 0
-        container_size = plexapi.X_PLEX_CONTAINER_SIZE
+        container_size: int = plexapi.X_PLEX_CONTAINER_SIZE  # type: ignore[assignment]
         results = []
         total_size = 1
         while total_size > container_start:

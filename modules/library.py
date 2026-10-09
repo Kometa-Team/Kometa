@@ -556,6 +556,12 @@ class Library(ABC):
     def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False) -> list: ...
 
     @abstractmethod
+    def get_items_added_since(self, builder_level, cutoff) -> list: ...
+
+    @abstractmethod
+    def cached_item_subitems(self, item, method_name) -> list: ...
+
+    @abstractmethod
     def get_ids(self, item) -> tuple: ...
 
     def add_additions(self, collection, items, is_movie):
@@ -640,12 +646,7 @@ class Library(ABC):
             if days < 1:
                 raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added days must be at least 1")
             cutoff = datetime.now(timezone.utc) - timedelta(days=days)
-            scheduled_keys = {
-                item.ratingKey
-                for item in items
-                if getattr(item, "addedAt", None)
-                and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff
-            }
+            scheduled_keys = {item.ratingKey for item in items if getattr(item, "addedAt", None) and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff}
             if getattr(self, "is_show", False):
                 for episode in self.get_items_added_since("episode", cutoff):
                     if getattr(episode, "grandparentRatingKey", None) is not None:
@@ -657,14 +658,7 @@ class Library(ABC):
             end = end or start
             if start > end:
                 raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; index range must be ascending")
-            return {
-                item.ratingKey
-                for item in items
-                if (
-                    start <= str(getattr(item, "title", "")).lstrip()[:1].lower() <= end
-                    or (include_non_alphabetical and not re.match(r"[a-z]", str(getattr(item, "title", "")).lstrip()[:1], re.IGNORECASE))
-                )
-            }
+            return {item.ratingKey for item in items if (start <= str(getattr(item, "title", "")).lstrip()[:1].lower() <= end or (include_non_alphabetical and not re.match(r"[a-z]", str(getattr(item, "title", "")).lstrip()[:1], re.IGNORECASE)))}
         raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), or index(<range>)")
 
     @property

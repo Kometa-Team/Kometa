@@ -413,7 +413,13 @@ def process(attrs):
 
 
 def should_sync_collection(builder):
-    return not getattr(getattr(builder, "library", None), "has_schedule_scope", False) is True and builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
+    return (
+        not getattr(getattr(builder, "library", None), "has_schedule_scope", False) is True
+        and builder.sync
+        and builder.build_collection
+        and bool(builder.remove_item_map)
+        and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
+    )
 
 
 def collection_count_after_run(beginning_count, items_added, items_removed):
