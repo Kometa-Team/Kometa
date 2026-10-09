@@ -328,3 +328,29 @@ class TestMediaDirname:
                 return r"P:\Movies\Title\file.mkv"
 
         assert media_dirname(FakePath()) == r"P:\Movies\Title"
+
+
+@pytest.mark.parametrize("value", [False, 123, {}, [None]])
+def test_collection_asset_directory_rejects_invalid_values(value):
+    from modules.util import Failed, collection_asset_paths
+
+    with pytest.raises(Failed):
+        collection_asset_paths(value)
+
+
+def test_collection_file_assets_are_carried_separately(tmp_path, monkeypatch):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(util, "logger", FakeLogger())
+    collection_file = tmp_path / "collections.yml"
+    collection_file.write_text("collections: {}")
+    item_assets = tmp_path / "items"
+    collection_assets = tmp_path / "collections"
+    item_assets.mkdir()
+    collection_assets.mkdir()
+    files, _ = util.load_files([{"file": str(collection_file), "asset_directory": str(item_assets), "collection_asset_directory": str(collection_assets)}], "collection_files")
+    assert files[0][3] == [str(item_assets)]
+    assert files[0][4] == [str(collection_assets)]
+    legacy, _ = util.load_files([{"file": str(collection_file), "asset_directory": str(item_assets)}], "collection_files")
+    assert len(legacy[0]) == 4

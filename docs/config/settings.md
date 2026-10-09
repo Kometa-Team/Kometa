@@ -113,6 +113,28 @@ The available setting attributes which can be set at each level are outlined bel
         ```
 
 
+??? blank "`collection_asset_directory` - Used to store collection artwork separately.<a class="headerlink" href="#collection-asset-directory" title="Permanent link">¶</a>"
+
+    <div id="collection-asset-directory" />Specify an existing directory or list of directories for collection posters, backgrounds, logos, and square art. When unset, collections use `asset_directory`.
+
+    **Levels with this Attribute:** Global/Library, with overrides on [collection-file entries](files.md#collection-asset-directory) and [collection definitions](../files/settings.md#collection-asset-directory).
+
+    The override order is collection, collection-file entry, library settings, then global settings. A configured collection directory replaces the item asset directories for collection artwork searches. Missing artwork does not cause a search in the item directories.
+
+    `asset_folders`, `asset_depth`, `create_asset_folders`, `prioritize_assets`, and `download_url_assets` continue to apply. Enabled collection artwork downloads use these directories, including artwork URLs supplied by builders. With `asset_folders: false`, filenames use the collection name (or `name_mapping`), such as `My Collection.png` and `My Collection_background.png`.
+
+    `assets_for_all_collections` uses the library/global collection directory for unmanaged and unconfigured collections. Item artwork continues to use `asset_directory`.
+
+    ```yaml
+    settings:
+      asset_directory: config/assets/items
+      collection_asset_directory: config/assets/collections
+    libraries:
+      Movies:
+        settings:
+          collection_asset_directory: config/assets/movie_collections
+    ```
+
 ??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
 
     <div id="asset-folders" />While `true`, Kometa will search the `asset_directory` for a dedicated folder per item vs while false will look for an image.
