@@ -595,17 +595,28 @@ def time_window(tw):
         return tw
 
 
-def collection_asset_paths(value, err_type="Collection"):
-    """Validate collection artwork roots; empty values inherit the next setting."""
+def asset_directory_paths(value, err_type="Config"):
+    """Validate legacy roots or roots grouped by exact library name and collections."""
+    if isinstance(value, dict):
+        if any(not isinstance(key, str) or isinstance(paths, dict) for key, paths in value.items()):
+            raise Failed(f"{err_type} Error: asset_directory mapping values must be paths or lists of paths")
+        return {key: asset_directory_paths(paths, err_type) for key, paths in value.items()}
     if value is None or value == "" or value == []:
         return []
     if not isinstance(value, (str, list)):
-        raise Failed(f"{err_type} Error: collection_asset_directory must be a path or list of paths")
+        raise Failed(f"{err_type} Error: asset_directory must be a path, list of paths, or mapping")
     paths = get_list(value, split=False, return_none=False)
     for path in paths:
         if not isinstance(path, str) or not os.path.isdir(path):
-            raise Failed(f"{err_type} Error: Collection Asset Directory Does Not Exist: {path}")
+            raise Failed(f"{err_type} Error: Asset Directory Does Not Exist: {path}")
     return paths
+
+
+def resolve_asset_directories(value, library_name, inherited_items=None, inherited_collections=None):
+    """Resolve partial mappings without discarding inherited item or collection roots."""
+    if isinstance(value, dict):
+        return value.get(library_name) or inherited_items or [], value.get("collections") or inherited_collections or []
+    return value or inherited_items or [], inherited_collections or []
 
 
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
@@ -665,13 +676,16 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                 logger.info(f"Template Variables: {temp_vars}")
 
             asset_directory = []
-            if "asset_directory" in file and file["asset_directory"]:
-                logger.info(f"Asset Directory: {file['asset_directory']}")
+            if isinstance(file.get("asset_directory"), dict):
+                asset_directory = asset_directory_paths(file["asset_directory"], err_type)
+            elif file.get("asset_directory"):
                 for asset_path in get_list(file["asset_directory"], split=False, return_none=False):
                     if os.path.exists(asset_path):
                         asset_directory.append(asset_path)
                     else:
                         logger.error(f"{err_type} Error: Asset Directory Does Not Exist: {asset_path}")
+            if asset_directory:
+                logger.info(f"Asset Directory: {asset_directory}")
 
             if schedule and "schedule" in file and file["schedule"]:
                 current_time, run_hour, ignore_schedules = schedule
@@ -694,12 +708,7 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     had_scheduled = True
                     logger.warning(f"This {'set of files' if len(current) > 1 else 'file'} not scheduled to run")
                     continue
-            if method == "collection_files" and file.get("collection_asset_directory"):
-                collection_asset_directory = collection_asset_paths(file["collection_asset_directory"], err_type)
-                logger.info(f"Collection Asset Directory: {collection_asset_directory}")
-                files.extend([(ft, fp, temp_vars, asset_directory, collection_asset_directory) for ft, fp in current])
-            else:
-                files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
+            files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
         else:
             logger.info(f"Reading file: {file}")
             if os.path.exists(file):

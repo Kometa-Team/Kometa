@@ -1991,17 +1991,10 @@
             ]
           }
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "description": "Used to define where local assets are located.\nSpecify the directories where assets (posters, backgrounds, etc) are located.",
           "anyOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -2655,16 +2648,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -2756,16 +2742,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -3936,6 +3915,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4011,6 +3991,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4044,6 +4025,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4079,6 +4061,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4111,6 +4094,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4138,16 +4122,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4180,6 +4157,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4212,6 +4190,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4242,16 +4221,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4283,6 +4255,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4312,16 +4285,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4356,6 +4322,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4390,6 +4357,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4422,6 +4390,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4449,16 +4418,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4491,6 +4453,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4523,6 +4486,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4555,6 +4519,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4582,16 +4547,9 @@
         "schedule": {
           "$ref": "#/definitions/schedule"
         },
-        "collection_asset_directory": {
-          "description": "Collection artwork directories. Inherits from the library/global setting, then asset_directory when unset.",
-          "anyOf": [
-            { "type": "string" },
-            { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-            { "type": "null" }
-          ]
-        },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4624,6 +4582,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4656,6 +4615,7 @@
         },
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {
               "type": "string"
             },
@@ -4793,6 +4753,7 @@
         "schedule": {"$ref": "#/definitions/schedule"},
         "asset_directory": {
           "oneOf": [
+            { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } },
             {"type": "string"},
             {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
           ]

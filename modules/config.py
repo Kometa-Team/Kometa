@@ -543,6 +543,8 @@ class ConfigFile:
                     do_print = False
                     save = False
             final_value = data[attribute] if data and attribute in data else None
+            if var_type == "asset_paths" and not isinstance(final_value, dict):
+                var_type = "list_path"
             if translations and final_value in translations:
                 final_value = translations[final_value]
             if self.read_only:
@@ -560,10 +562,10 @@ class ConfigFile:
                     else:
                         endline = ""
                     yaml.save()
-                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]:
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path", "asset_paths"]:
                     return default if default else []
             elif final_value is None:
-                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]:
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path", "asset_paths"]:
                     return default if default else []
                 elif default_is_none:
                     return None
@@ -604,6 +606,8 @@ class ConfigFile:
                     message = f"{text}: {', '.join(failed_items)} is an invalid input"
                 else:
                     return output_list
+            elif var_type == "asset_paths":
+                return util.asset_directory_paths(final_value)
             elif var_type == "list_path":
                 temp_list = []
                 warning_message = ""
@@ -841,8 +845,7 @@ class ConfigFile:
                 # Confirmed ~2.7-3.0% wall-time win at workers:4, no further gain at workers:8 (overnight churn-loop A/B, see perf-results-log.md) - defaults on.
                 "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=True, save=False, do_print=False),
             },
-            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
-            "collection_asset_directory": check_for_attribute(self.data, "collection_asset_directory", parent="settings", var_type="list_path", default_is_none=True),
+            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
@@ -1441,26 +1444,9 @@ class ConfigFile:
                     do_print=False,
                     save=False,
                 )
-                params["asset_directory"] = check_for_attribute(
-                    lib,
-                    "asset_directory",
-                    parent="settings",
-                    var_type="list_path",
-                    default=self.general["asset_directory"],
-                    default_is_none=True,
-                    do_print=False,
-                    save=False,
-                )
-                params["collection_asset_directory"] = check_for_attribute(
-                    lib,
-                    "collection_asset_directory",
-                    parent="settings",
-                    var_type="list_path",
-                    default=self.general["collection_asset_directory"],
-                    default_is_none=True,
-                    do_print=False,
-                    save=False,
-                )
+                global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], str(library_name))
+                configured_assets = check_for_attribute(lib, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True, do_print=False, save=False)
+                params["asset_directory"], params["collection_asset_directory"] = util.resolve_asset_directories(configured_assets, str(library_name), global_items, global_collections)
                 params["asset_folders"] = check_for_attribute(
                     lib,
                     "asset_folders",

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `collection_asset_directory` at global, library, collection-file, and collection levels to separate collection artwork and enabled downloads from item assets, including `assets_for_all_collections`.
+- Add grouped `asset_directory` mappings keyed by library name and reserved `collections` at global, library, collection-file, and collection levels to separate collection artwork and enabled downloads from item assets, including `assets_for_all_collections`.
 - Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
 
 ### Fixed
