@@ -51,6 +51,7 @@ SUMMARY_NORMALIZATIONS = [
     (r"Text File Error: No supported IDs found in .+", "Text File Error: No supported IDs found"),
     (r"TMDb Error: Collection ID \d+ missing on TMDb; add '\d+' to the franchise exclude list if this is auto-built\.", "TMDb Error: Collection ID missing on TMDb; add it to the franchise exclude list if this is auto-built"),
     (r"TMDb Error: ([A-Za-z]+) ID \d+ missing on TMDb\. Verify it still exists and update your config\.$", r"TMDb Error: \1 ID missing on TMDb. Verify it still exists and update your config."),
+    (r"TMDb Error: No (Collection|Movie|Show) found on TMDb for ID\(s\) \[[\d,\s]+\]\. Verify the ID\(s\) still exist and update your config\.$", r"TMDb Error: No \1 found on TMDb"),
     (r"TMDb Error: No Episode found for TMDb ID \d+ Season \d+ Episode \d+: .+", "TMDb Error: No Episode found for TMDb ID"),
     (r"TMDb Error: No Movie found for TMDb ID:? \d+(?:: .+)?", "TMDb Error: No Movie found for TMDb ID"),
     (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),

@@ -270,3 +270,28 @@ def test_asset_paths_remain_in_log_file_but_not_grouped_summary(tmp_path):
         for handler in list(log._logger.handlers):
             log._logger.removeHandler(handler)
             handler.close()
+
+
+def test_missing_tmdb_ids_remain_in_log_file_but_are_grouped_in_summary(tmp_path):
+    from modules.log_summary import RunLogSummary
+    from modules.logs import MyLogger
+
+    messages = [f"TMDb Error: No Collection found on TMDb for ID(s) [{tmdb_id}]. Verify the ID(s) still exist and update your config." for tmdb_id in [1719379, 1698578]]
+    log = MyLogger("kometa-tmdb-summary", str(tmp_path), 256, "=", True, False, False, False)
+    try:
+        log.add_main_handler()
+        for message in messages:
+            log.warning(message)
+        log.remove_main_handler()
+        contents = (tmp_path / "logs" / "meta.log").read_text(encoding="utf-8")
+        assert all(message in contents for message in messages)
+        summary = RunLogSummary([])
+        for line in contents.splitlines():
+            summary.add_formatted_line(line)
+        assert summary.severity_rows("WARNING") == [("TMDb Error: No Collection found on TMDb", 2)]
+    finally:
+        if log.main_handler is not None:
+            log.main_handler.close()
+        for handler in list(log._logger.handlers):
+            log._logger.removeHandler(handler)
+            handler.close()
