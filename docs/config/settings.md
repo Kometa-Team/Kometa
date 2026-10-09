@@ -98,22 +98,9 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
-    ???+ example "Example"
+    **Grouped configuration**
 
-        ```yaml
-        settings:
-          asset_directory: config/movies
-        ```
-
-        ```yaml
-        settings:
-          asset_directory:
-            - config/assets/movies
-            - config/assets/collections
-        ```
-
-
-    Alternatively, use a mapping keyed by the exact names under `libraries:`. The reserved `collections` key supplies collection artwork directories across libraries. A library named `collections` cannot be selected separately in this format.
+    Use a mapping to select asset directories by the exact, case-sensitive names under `libraries:` in your Kometa config. These keys match the config library names, even when `library_name` points to a differently named Plex library. The reserved `collections` key supplies collection artwork directories across libraries. A library named `collections` cannot be selected separately in this format.
 
     ```yaml
     settings:
@@ -134,9 +121,27 @@ The available setting attributes which can be set at each level are outlined bel
               - config/assets/movie_collections
     ```
 
-    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the global `Movies` item paths. Without a `collections` entry, collections use their library's item paths. Legacy strings and lists continue to supply item and collection assets.
+    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the global `Movies` item paths. Without a `collections` entry, collections use their library's item paths.
 
     Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
+
+    ???+ example "Simple configuration (shared asset directories)"
+
+        To use the same directories for item and collection artwork, specify a single directory or a list of directories. Both formats remain supported; existing configs do not need to migrate to the grouped format.
+
+        ```yaml
+        settings:
+          asset_directory: config/assets
+        ```
+
+        ```yaml
+        settings:
+          asset_directory:
+            - config/assets/Ozzy
+            - config/assets/Tony
+            - config/assets/Geezer
+            - config/assets/Bill
+        ```
 
 ??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
 
