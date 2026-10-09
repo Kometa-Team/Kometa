@@ -291,15 +291,23 @@ def test_tracearr_default_uses_short_trending_window_without_raw_history_and_set
 def test_collection_asset_directory_schema_levels(value, level):
     if level == "collection":
         schema = json.loads((SCHEMA_DIR / "collection-schema.json").read_text())
-        document = {"collections": {"Test": {"plex_all": True, "asset_directory": {"Movies": value, "collections": value}}}}
+        document = {"collections": {"Test": {"plex_all": True, "asset_directory": {"movies": value, "collections": value}}}}
     else:
         schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
         document = {"libraries": {"Movies": {"collection_files": []}}, "plex": {"url": "http://localhost:32400", "token": "test"}, "tmdb": {"apikey": "test"}}
         if level == "global":
-            document["settings"] = {"asset_directory": {"Movies": value, "collections": value}}
+            document["settings"] = {"asset_directory": {"movies": value, "collections": value}}
         elif level == "library":
-            document["libraries"]["Movies"]["settings"] = {"asset_directory": {"Movies": value, "collections": value}}
+            document["libraries"]["Movies"]["settings"] = {"asset_directory": {"movies": value, "collections": value}}
         else:
-            document["libraries"]["Movies"]["collection_files"] = [{"file": "config/collections.yml", "asset_directory": {"Movies": value, "collections": value}}]
+            document["libraries"]["Movies"]["collection_files"] = [{"file": "config/collections.yml", "asset_directory": {"movies": value, "collections": value}}]
     errors = list(Draft7Validator(schema).iter_errors(document))
     assert not errors, [error.message for error in errors]
+
+
+@pytest.mark.parametrize("group", ["shows", "music", "My Movies", "Movies", "anime"])
+def test_asset_directory_schema_type_groups(group):
+    schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
+    document = {"libraries": {"Custom Name": {"collection_files": []}}, "settings": {"asset_directory": {group: ["config/assets/Ozzy"]}}, "plex": {"url": "http://localhost:32400", "token": "test"}, "tmdb": {"apikey": "test"}}
+    errors = list(Draft7Validator(schema).iter_errors(document))
+    assert bool(errors) is (group not in ["shows", "music"])

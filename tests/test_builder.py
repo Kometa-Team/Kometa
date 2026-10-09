@@ -1898,7 +1898,7 @@ def test_collection_asset_directory_precedence(tmp_path, level):
         directory.mkdir()
         paths[name] = str(directory)
     metadata = SimpleNamespace(collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
-    library = SimpleNamespace(original_mapping_name="Movies", collection_asset_directory=[paths["library"]] if level != "legacy" else [])
+    library = SimpleNamespace(type="Movie", original_mapping_name="Movies", collection_asset_directory=[paths["library"]] if level != "legacy" else [])
     data = {"asset_directory": {"collections": [paths["collection"]]} if level == "collection" else None}
     builder = make_builder(asset_directory=[paths["legacy"]], library=library, data=data)
     methods = {"asset_directory": "asset_directory"} if level in ["collection", "empty"] else {}

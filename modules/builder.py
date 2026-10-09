@@ -1198,7 +1198,7 @@ class CollectionBuilder:
         else:
             self.libraries.append(self.library)
 
-        file_items, _ = util.resolve_asset_directories(metadata.asset_directory, self.library.original_mapping_name)
+        file_items, _ = util.resolve_asset_directories(metadata.asset_directory, self.library.type)
         self.asset_directory = file_items or self.library.asset_directory
         self._resolve_collection_asset_directory(metadata, methods)
 
@@ -6001,7 +6001,7 @@ class CollectionBuilder:
         self.collection_asset_directory = configured or self.asset_directory
         if "asset_directory" in methods:
             value = util.asset_directory_paths(self.data[methods["asset_directory"]], self.Type)
-            items, collections = util.resolve_asset_directories(value, self.library.original_mapping_name)
+            items, collections = util.resolve_asset_directories(value, self.library.type)
             override = collections or items
             if override:
                 self.collection_asset_directory = override

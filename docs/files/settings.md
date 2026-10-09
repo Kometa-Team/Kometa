@@ -50,7 +50,7 @@ tags:
 
 All the following attributes serve various functions as how the definition functions inside of Kometa.
 
-<div id="asset-directory" />`asset_directory` overrides the artwork directories for an individual collection. Accepts an existing directory, list of directories, or mapping keyed by exact library names and reserved `collections`. Empty values inherit the collection-file, library, or global setting; when none is configured, the existing `asset_directory` applies. See [collection asset settings](../config/settings.md#asset-directory) for layout and download behavior.
+<div id="asset-directory" />`asset_directory` overrides the artwork directories for an individual collection. Accepts an existing directory, list of directories, or mapping with `movies`, `shows`, `music`, and `collections`. Empty values inherit the collection-file, library, or global setting; when none is configured, the existing `asset_directory` applies. See [collection asset settings](../config/settings.md#asset-directory) for layout and download behavior.
 
 ```yaml
 collections:

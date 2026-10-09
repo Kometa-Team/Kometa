@@ -2084,7 +2084,7 @@ def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch,
 
     entry = ("File", "collections.yml", {}, ["item-art"])
     if override:
-        entry = ("File", "collections.yml", {}, {"Movies": ["item-art"], "collections": override})
+        entry = ("File", "collections.yml", {}, {"movies": ["item-art"], "collections": override})
     metadata = SimpleNamespace(collections={"Test": {}})
     constructor = MagicMock(return_value=metadata)
     monkeypatch.setattr(library_module, "MetadataFile", constructor)

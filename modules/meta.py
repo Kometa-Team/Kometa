@@ -634,7 +634,7 @@ class MetadataFile(DataFile):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
         super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
-        self.asset_directory, self.collection_asset_directory = util.resolve_asset_directories(asset_directory, library.original_mapping_name)
+        self.asset_directory, self.collection_asset_directory = util.resolve_asset_directories(asset_directory, library.type)
         self.configured_names_only = configured_names_only
         self.data_type = "Collection"
         self.library = library
@@ -2367,7 +2367,7 @@ class OverlayFile(DataFile):
         self.file_num = len(library.overlay_files)
         super().__init__(config, file_type, path, temp_vars, asset_directory, f"Overlay File {self.file_num}")
         self.library = library
-        self.asset_directory, _ = util.resolve_asset_directories(asset_directory, library.original_mapping_name)
+        self.asset_directory, _ = util.resolve_asset_directories(asset_directory, library.type)
         self.data_type = "Overlay"
         data = self.load_file(self.type, self.path, overlay=True)
         self.overlays = get_dict("overlays", data)
