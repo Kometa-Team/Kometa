@@ -642,10 +642,38 @@ def test_collection_asset_directory_settings_inheritance(tmp_path, monkeypatch, 
     monkeypatch.setattr(config_module, "Plex", constructor)
     config_yaml = BASE_CONFIG
     if level != "unset":
-        config_yaml = config_yaml.replace("  cache: false", f"  cache: false\n  collection_asset_directory: {global_root}")
+        config_yaml = config_yaml.replace("  cache: false", f"  cache: false\n  asset_directory:\n    collections: {global_root}")
     if level == "library":
-        config_yaml = config_yaml.replace("  Movies:", f"  Movies:\n    settings:\n      collection_asset_directory: {library_root}")
-    config = make_config(tmp_path, config_yaml=config_yaml)
-    assert config.general["collection_asset_directory"] == ([str(global_root)] if level != "unset" else [])
+        config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:\n        collections: {library_root}")
+    make_config(tmp_path, config_yaml=config_yaml)
     params = constructor.call_args.args[1]
     assert params["collection_asset_directory"] == ([str(library_root if level == "library" else global_root)] if level != "unset" else [])
+
+
+@pytest.mark.parametrize("local", [False, True])
+def test_grouped_asset_directory_library_inheritance(tmp_path, monkeypatch, local):
+    roots = [tmp_path / name for name in ["items", "other", "collections", "local"]]
+    for root in roots:
+        root.mkdir()
+    constructor = MagicMock(wraps=config_module.Plex)
+    monkeypatch.setattr(config_module, "Plex", constructor)
+    config_yaml = BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:\n    Movies: {roots[0]}\n    movies: {roots[1]}\n    collections: {roots[2]}")
+    if local:
+        config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:\n        collections: {roots[3]}")
+    make_config(tmp_path, config_yaml=config_yaml)
+    params = constructor.call_args.args[1]
+    assert params["asset_directory"] == [str(roots[0])]
+    assert params["collection_asset_directory"] == [str(roots[3] if local else roots[2])]
+
+
+@pytest.mark.parametrize("as_list", [False, True])
+def test_legacy_asset_directory_configuration(tmp_path, monkeypatch, as_list):
+    root = tmp_path / "assets"
+    root.mkdir()
+    constructor = MagicMock(wraps=config_module.Plex)
+    monkeypatch.setattr(config_module, "Plex", constructor)
+    value = f"\n    - {root}" if as_list else f" {root}"
+    make_config(tmp_path, config_yaml=BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:{value}"))
+    params = constructor.call_args.args[1]
+    assert params["asset_directory"] == [str(root)]
+    assert params["collection_asset_directory"] == []

@@ -1898,10 +1898,10 @@ def test_collection_asset_directory_precedence(tmp_path, level):
         directory.mkdir()
         paths[name] = str(directory)
     metadata = SimpleNamespace(collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
-    library = SimpleNamespace(collection_asset_directory=[paths["library"]] if level != "legacy" else [])
-    data = {"collection_asset_directory": [paths["collection"]] if level == "collection" else None}
+    library = SimpleNamespace(original_mapping_name="Movies", collection_asset_directory=[paths["library"]] if level != "legacy" else [])
+    data = {"asset_directory": {"collections": [paths["collection"]]} if level == "collection" else None}
     builder = make_builder(asset_directory=[paths["legacy"]], library=library, data=data)
-    methods = {"collection_asset_directory": "collection_asset_directory"} if level in ["collection", "empty"] else {}
+    methods = {"asset_directory": "asset_directory"} if level in ["collection", "empty"] else {}
     builder._resolve_collection_asset_directory(metadata, methods)
     expected = "file" if level == "empty" else level
     assert builder.collection_asset_directory == [paths[expected]]
@@ -1915,8 +1915,7 @@ def test_collection_asset_directory_does_not_redirect_other_builders(kind):
     builder._resolve_collection_asset_directory(SimpleNamespace(), {})
     assert builder.collection_asset_directory == ["items"]
     assert builder.collection_assets_configured is False
-    with pytest.raises(Failed, match="only supported for collections"):
-        builder._resolve_collection_asset_directory(SimpleNamespace(), {"collection_asset_directory": "collection_asset_directory"})
+    builder._resolve_collection_asset_directory(SimpleNamespace(), {"asset_directory": "asset_directory"})
 
 
 @pytest.mark.parametrize("asset_folders", [True, False])

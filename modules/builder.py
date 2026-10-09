@@ -189,7 +189,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
-    "collection_asset_directory",
+    "asset_directory",
     "smart_filter",
     "smart_label",
     "smart_url",
@@ -783,7 +783,7 @@ playlist_attributes = (
 )
 music_attributes = (
     [
-        "collection_asset_directory",
+        "asset_directory",
         "non_item_remove_label",
         "item_label",
         "collection_filtering",
@@ -1198,7 +1198,8 @@ class CollectionBuilder:
         else:
             self.libraries.append(self.library)
 
-        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
+        file_items, _ = util.resolve_asset_directories(metadata.asset_directory, self.library.original_mapping_name)
+        self.asset_directory = file_items or self.library.asset_directory
         self._resolve_collection_asset_directory(metadata, methods)
 
         self.language = self.library.Plex.language
@@ -5994,17 +5995,17 @@ class CollectionBuilder:
         self.collection_asset_directory = self.asset_directory
         self.collection_assets_configured = False
         if self.playlist or self.overlay:
-            if "collection_asset_directory" in methods:
-                raise BuilderValidationError(f"{self.Type} Error: collection_asset_directory is only supported for collections")
             return
         configured = metadata.collection_asset_directory or self.library.collection_asset_directory
         self.collection_assets_configured = bool(configured)
         self.collection_asset_directory = configured or self.asset_directory
-        if "collection_asset_directory" in methods:
-            override = util.collection_asset_paths(self.data[methods["collection_asset_directory"]], self.Type)
+        if "asset_directory" in methods:
+            value = util.asset_directory_paths(self.data[methods["asset_directory"]], self.Type)
+            items, collections = util.resolve_asset_directories(value, self.library.original_mapping_name)
+            override = collections or items
             if override:
                 self.collection_asset_directory = override
-                self.collection_assets_configured = True
+                self.collection_assets_configured = bool(collections)
 
     def _resolve_playlist_users(self):
         self.exclude_users = (util.get_list(self.exclude_users) or []) if self.exclude_users else []

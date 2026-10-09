@@ -330,12 +330,12 @@ class TestMediaDirname:
         assert media_dirname(FakePath()) == r"P:\Movies\Title"
 
 
-@pytest.mark.parametrize("value", [False, 123, {}, [None]])
+@pytest.mark.parametrize("value", [False, 123, {"Movies": False}, [None]])
 def test_collection_asset_directory_rejects_invalid_values(value):
-    from modules.util import Failed, collection_asset_paths
+    from modules.util import Failed, asset_directory_paths
 
     with pytest.raises(Failed):
-        collection_asset_paths(value)
+        asset_directory_paths(value)
 
 
 def test_collection_file_assets_are_carried_separately(tmp_path, monkeypatch):
@@ -349,8 +349,23 @@ def test_collection_file_assets_are_carried_separately(tmp_path, monkeypatch):
     collection_assets = tmp_path / "collections"
     item_assets.mkdir()
     collection_assets.mkdir()
-    files, _ = util.load_files([{"file": str(collection_file), "asset_directory": str(item_assets), "collection_asset_directory": str(collection_assets)}], "collection_files")
-    assert files[0][3] == [str(item_assets)]
-    assert files[0][4] == [str(collection_assets)]
+    files, _ = util.load_files([{"file": str(collection_file), "asset_directory": {"Movies": str(item_assets), "collections": str(collection_assets)}}], "collection_files")
+    assert files[0][3] == {"Movies": [str(item_assets)], "collections": [str(collection_assets)]}
     legacy, _ = util.load_files([{"file": str(collection_file), "asset_directory": str(item_assets)}], "collection_files")
     assert len(legacy[0]) == 4
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ({"collections": ["local"]}, (["items"], ["local"])),
+        ({"Movies": ["local"]}, (["local"], ["collections"])),
+        ({"movies": ["wrong-case"]}, (["items"], ["collections"])),
+        ({"Movies": [], "collections": None}, (["items"], ["collections"])),
+        (["legacy"], (["legacy"], ["collections"])),
+    ],
+)
+def test_grouped_asset_inheritance(value, expected):
+    from modules.util import resolve_asset_directories
+
+    assert resolve_asset_directories(value, "Movies", ["items"], ["collections"]) == expected

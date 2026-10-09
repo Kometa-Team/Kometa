@@ -94,7 +94,7 @@ The available setting attributes which can be set at each level are outlined bel
 
     **Levels with this Attribute:** Global/Library
 
-    **Accepted Values:** Any Directory or List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } of Directories.
+    **Accepted Values:** A directory, list of directories, or mapping keyed by exact library names and reserved `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 
@@ -113,27 +113,30 @@ The available setting attributes which can be set at each level are outlined bel
         ```
 
 
-??? blank "`collection_asset_directory` - Used to store collection artwork separately.<a class="headerlink" href="#collection-asset-directory" title="Permanent link">¶</a>"
-
-    <div id="collection-asset-directory" />Specify an existing directory or list of directories for collection posters, backgrounds, logos, and square art. When unset, collections use `asset_directory`.
-
-    **Levels with this Attribute:** Global/Library, with overrides on [collection-file entries](files.md#collection-asset-directory) and [collection definitions](../files/settings.md#collection-asset-directory).
-
-    The override order is collection, collection-file entry, library settings, then global settings. A configured collection directory replaces the item asset directories for collection artwork searches. Missing artwork does not cause a search in the item directories.
-
-    `asset_folders`, `asset_depth`, `create_asset_folders`, `prioritize_assets`, and `download_url_assets` continue to apply. Enabled collection artwork downloads use these directories, including artwork URLs supplied by builders. With `asset_folders: false`, filenames use the collection name (or `name_mapping`), such as `My Collection.png` and `My Collection_background.png`.
-
-    `assets_for_all_collections` uses the library/global collection directory for unmanaged and unconfigured collections. Item artwork continues to use `asset_directory`.
+    Alternatively, use a mapping keyed by the exact names under `libraries:`. The reserved `collections` key supplies collection artwork directories across libraries. A library named `collections` cannot be selected separately in this format.
 
     ```yaml
     settings:
-      asset_directory: config/assets/items
-      collection_asset_directory: config/assets/collections
+      asset_directory:
+        Movies:
+          - config/assets/movies
+        Shows:
+          - config/assets/shows
+        Anime:
+          - config/assets/anime
+        collections:
+          - config/assets/collections
     libraries:
       Movies:
         settings:
-          collection_asset_directory: config/assets/movie_collections
+          asset_directory:
+            collections:
+              - config/assets/movie_collections
     ```
+
+    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the global `Movies` item paths. Without a `collections` entry, collections use their library's item paths. Legacy strings and lists continue to supply item and collection assets.
+
+    Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
 
 ??? blank "`asset_folders` - Used to control the asset directory folder structure.<a class="headerlink" href="#asset-folders" title="Permanent link">¶</a>"
 

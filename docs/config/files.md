@@ -215,18 +215,6 @@ You can have some control of the files from inside your Configuration file by us
             schedule: weekly(sunday)
         ```
 
-??? blank "`collection_asset_directory` - Used to override collection artwork directories for a file.<a class="headerlink" href="#collection-asset-directory" title="Permanent link">¶</a>"
-
-    <div id="collection-asset-directory" />On a `collection_files` entry, specify an existing directory or list of directories. This overrides the library/global `collection_asset_directory` for collections in that file. Individual collections can override it again. When unset, the inherited setting applies, falling back to the existing `asset_directory` behavior.
-
-    ```yaml
-    libraries:
-      Movies:
-        collection_files:
-          - file: config/collections.yml
-            collection_asset_directory: config/assets/special_collections
-    ```
-
 ??? blank "`asset_directory` - Used to define Asset Directories for a file.<a class="headerlink" href="#asset-directory" title="Permanent link">¶</a>"
 
     <div id="asset-directory" />Specify the directory where assets (posters, backgrounds, etc) are located for this specific file.
@@ -241,9 +229,20 @@ You can have some control of the files from inside your Configuration file by us
 
     <hr style="margin: 0px;">
     
+    On collection-file entries, a mapping can select item directories by exact library name and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. Individual collections can override the collection roots again.
+
+    ```yaml
+    libraries:
+      Movies:
+        collection_files:
+          - file: config/collections.yml
+            asset_directory:
+              collections: config/assets/special_collections
+    ```
+
     **Attribute:** `asset_directory`
     
-    **Accepted Values:** Any directory.
+    **Accepted Values:** A directory, list of directories, or mapping keyed by exact library names and reserved `collections`.
 
     **Default Value:** `[Directory containing YAML config]/assets`
 

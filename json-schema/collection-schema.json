@@ -952,10 +952,7 @@
                     "oneOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }]
                 },
                 "album_sorting": { "type": "string", "description": "Default album sort order for this library (music libraries)." },
-                "collection_asset_directory": {
-                    "description": "Collection artwork directories; overrides file/library/global settings. Empty values inherit.",
-                    "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" }, "uniqueItems": true }, { "type": "null" }]
-                },
+                "asset_directory": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }, { "type": "object", "additionalProperties": { "anyOf": [{ "type": "string" }, { "type": "array", "items": { "type": "string" } }, { "type": "null" }] } }] },
                 "asset_folders": { "type": "boolean", "description": "Use per-item asset sub-folders instead of a flat asset directory." },
                 "create_asset_folders": { "type": "boolean", "description": "Create missing asset sub-folders automatically." },
 

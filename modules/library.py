@@ -239,9 +239,8 @@ class Library(ABC):
     def scan_configured_collection_names(self):
         for file_entry in self.configured_collection_files:
             file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
-            collection_asset_directory = file_entry[4] if len(file_entry) > 4 else None
             try:
-                meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True, collection_asset_directory=collection_asset_directory)
+                meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
                 self.configured_collection_metadata_files.append(meta_obj)
                 if meta_obj.collections:
                     self.collection_names.extend([c for c in meta_obj.collections if c not in self.collection_names])
@@ -255,9 +254,8 @@ class Library(ABC):
         if not operations_only and not overlays_only and not metadata_only:
             for file_entry in self.scanned_collection_files:
                 file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
-                collection_asset_directory = file_entry[4] if len(file_entry) > 4 else None
                 try:
-                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", collection_asset_directory=collection_asset_directory)
+                    meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
                         self.collections.extend([c for c in meta_obj.collections])
                     self.collection_files.append(meta_obj)
