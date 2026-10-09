@@ -193,6 +193,7 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
+      - Lidarr: config/lidarr.md
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
@@ -395,6 +396,10 @@ nav:
         - Overview: files/builders/sonarr/overview.md
         - All: files/builders/sonarr/all.md
         - Taglist: files/builders/sonarr/taglist.md
+      - Lidarr:
+        - Overview: files/builders/lidarr/overview.md
+        - All: files/builders/lidarr/all.md
+        - Taglist: files/builders/lidarr/taglist.md
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md

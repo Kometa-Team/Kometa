@@ -1,0 +1,16 @@
+# yaml-language-server: $schema=../collection-schema.json
+collections:
+  All Lidarr Artists:
+    lidarr_all: true
+    sync_mode: sync
+    summary: Every artist currently tracked in Lidarr.
+
+  Tagged Lidarr Artists:
+    lidarr_taglist: kometa
+    sync_mode: sync
+    summary: Artists tagged with "kometa" in Lidarr.
+
+  Untagged Lidarr Artists:
+    lidarr_taglist:
+    sync_mode: sync
+    summary: Artists without Lidarr tags.

@@ -323,6 +323,10 @@ class Cache:
                     key INTEGER PRIMARY KEY,
                     tvdb_id TEXT,
                     library TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS lidarr_adds (
+                    key INTEGER PRIMARY KEY,
+                    mbid TEXT,
+                    library TEXT)""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS serializd_watched_sync (
                     key INTEGER PRIMARY KEY,
                     account TEXT,
@@ -1355,6 +1359,9 @@ class Cache:
     def query_sonarr_adds(self, tvdb_id, library):
         return self.query_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
 
+    def query_lidarr_adds(self, mbid, library):
+        return self.query_arr_adds(mbid, library, "lidarr", "mbid")
+
     def query_arr_adds(self, t_id, library, arr, id_type):
         arr, id_type = sql_identifier(arr), sql_identifier(id_type)
         with self.connection as connection:
@@ -1362,7 +1369,7 @@ class Cache:
                 cursor.execute(f"SELECT * FROM {arr}_adds WHERE {id_type} = ? AND library = ?", (t_id, library))  # nosec B608 - identifiers validated by sql_identifier()
                 row = cursor.fetchone()
                 if row and row[id_type]:
-                    return int(row[id_type])
+                    return row[id_type] if arr == "lidarr" else int(row[id_type])
         return None
 
     def update_radarr_adds(self, tmdb_id, library):
@@ -1370,6 +1377,9 @@ class Cache:
 
     def update_sonarr_adds(self, tvdb_id, library):
         return self.update_arr_adds(tvdb_id, library, "sonarr", "tvdb_id")
+
+    def update_lidarr_adds(self, mbid, library):
+        return self.update_arr_adds(mbid, library, "lidarr", "mbid")
 
     def query_serializd_watched(self, account, tmdb_id, season_number):
         with self.connection as connection:

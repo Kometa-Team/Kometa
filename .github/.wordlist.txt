@@ -79,7 +79,6 @@ crontab
 Crunchyroll
 customizable
 customizations
-d'Or
 Deathday
 deduplicate
 deduplication
@@ -96,6 +95,7 @@ dockerfiles
 Dockerhub
 dockerhub
 docstring
+d'Or
 Downey
 dropdown
 DTS
@@ -172,8 +172,8 @@ Klamath
 KOMETA
 Kometa
 kometa
-Kometa's
 Kometa’s
+Kometa's
 kometateam
 kometautils
 Kubernetes
@@ -184,6 +184,8 @@ Letterboxd
 letterboxd
 Letterboxd's
 LGBTQ
+Lidarr
+Lidarr's
 lifecycle
 Limburgish
 Lingala
@@ -230,6 +232,7 @@ Movistar
 MPAA
 MUBI
 multiline
+MusicBrainz
 MyAnimeList
 myanimelist
 MyAnimeList's
@@ -264,11 +267,11 @@ PLEX
 PLex
 Plex
 plex
-Plex's
-plex's
 Plex’s
 PlexAPI
 PlexAPI's
+Plex's
+plex's
 PNG
 png
 Pokémon
@@ -310,8 +313,8 @@ Repos
 repos
 RogerEbert
 Romani
-RSSKILL
 RSS
+RSSKILL
 runtimeH
 runtimeM
 Runtimes
@@ -365,8 +368,8 @@ tippy
 TMDB
 TMDb
 tmdb
-TMDb's
 TMDbAPIs
+TMDb's
 tmp
 Toastjuh
 toc
@@ -383,12 +386,12 @@ Trakt's
 transcode
 transcoded
 transcoding
-TTL
 TrueHD
 TrueNAS
 tsv
 tt
 ttf
+TTL
 Tubi
 tubi
 TVDB
@@ -407,6 +410,8 @@ unplayed
 Unraid
 unRAID
 unraid
+untagged
+Untagged
 untyped
 unwatched
 URI
