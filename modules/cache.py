@@ -112,6 +112,13 @@ class Cache:
                     imdb_id TEXT,
                     media_type TEXT,
                     expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS xml_map (
+                    key INTEGER PRIMARY KEY,
+                    library_id INTEGER NOT NULL,
+                    parent_rating_key TEXT NOT NULL,
+                    season_rating_key TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    UNIQUE(library_id, parent_rating_key, season_rating_key))""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_to_tmdb_map (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT UNIQUE,
@@ -1408,6 +1415,23 @@ class Cache:
                 if row and row["key"]:
                     list_key = row["key"]
         return list_key
+
+    def query_xml_updated_at(self, library_id):
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.execute("SELECT parent_rating_key, season_rating_key, updated_at FROM xml_map WHERE library_id = ?", (library_id,))
+                return {(row["parent_rating_key"], row["season_rating_key"]): row["updated_at"] for row in cursor}
+
+    def update_xml_updated_at(self, library_id, updates):
+        if not updates:
+            return
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                cursor.executemany(
+                    """INSERT INTO xml_map(library_id, parent_rating_key, season_rating_key, updated_at) VALUES(?, ?, ?, ?)
+                    ON CONFLICT(library_id, parent_rating_key, season_rating_key) DO UPDATE SET updated_at = excluded.updated_at""",
+                    [(library_id, parent_key, season_key, updated_at) for parent_key, season_key, updated_at in updates],
+                )
 
     def query_list_cache(self, list_type, list_data, expiration):
         list_key = None
