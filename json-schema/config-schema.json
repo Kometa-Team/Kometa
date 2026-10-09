@@ -43,6 +43,9 @@
     "radarr": {
       "$ref": "#/definitions/radarr-api"
     },
+    "lidarr": {
+      "$ref": "#/definitions/lidarr-api"
+    },
     "settings": {
       "$ref": "#/definitions/settings"
     },
@@ -1756,6 +1759,35 @@
         ]
       },
       "title": "sonarr"
+    },
+    "lidarr-api": {
+      "$ref": "#/definitions/lidarr-config"
+    },
+    "lidarr-api-lib": {
+      "$ref": "#/definitions/lidarr-config"
+    },
+    "lidarr-config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {"type": ["string", "null"]},
+        "token": {"type": ["string", "null"]},
+        "add_missing": {"type": "boolean"},
+        "add_existing": {"type": "boolean"},
+        "upgrade_existing": {"type": "boolean"},
+        "monitor_existing": {"type": "boolean"},
+        "ignore_cache": {"type": "boolean"},
+        "root_folder_path": {"type": ["string", "null"]},
+        "monitor": {"type": "string", "enum": ["all", "future", "missing", "existing", "first", "latest", "none"]},
+        "monitor_new_albums": {"type": "string", "enum": ["all", "none", "new"]},
+        "quality_profile": {"type": ["string", "integer", "null"]},
+        "tag": {"type": ["string", "array", "null"], "items": {"type": "string"}},
+        "search": {"type": "boolean"},
+        "lidarr_path": {"type": ["string", "null"]},
+        "plex_path": {"type": ["string", "null"]}
+      },
+      "required": [],
+      "title": "lidarr"
     },
     "radarr-api": {
       "type": "object",
@@ -4617,7 +4649,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4663,6 +4695,9 @@
             },
             "sonarr": {
               "$ref": "#/definitions/sonarr-api-lib"
+            },
+            "lidarr": {
+              "$ref": "#/definitions/lidarr-api-lib"
             },
             "tautulli": {
               "$ref": "#/definitions/tautulli-api"
@@ -6383,6 +6418,15 @@
               }
             },
             "sonarr_remove_by_tag": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lidarr_add_all_existing": {
+              "type": "boolean"
+            },
+            "lidarr_remove_by_tag": {
               "type": "array",
               "items": {
                 "type": "string"

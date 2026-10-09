@@ -12,7 +12,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -109,6 +109,7 @@ all_builders = (
     + simkl.builders
     + radarr.builders
     + sonarr.builders
+    + lidarr.builders
     + flicklist.builders
     + wetrakr.builders
 )
@@ -156,7 +157,7 @@ movie_only_builders = [
     "mojo_all_time",
     "mojo_never",
 ]
-music_only_builders = ["item_album_sorting"]
+music_only_builders = ["item_album_sorting", *lidarr.builders]
 summary_details = [
     "summary",
     "tmdb_summary",
@@ -282,6 +283,7 @@ none_details = [
     "item_genre.sync",
     "radarr_taglist",
     "sonarr_taglist",
+    "lidarr_taglist",
     "item_edition",
     "item_critic_rating",
     "item_audience_rating",
@@ -296,7 +298,7 @@ none_details = [
     "wetrakr_tracking",
     "wetrakr_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
+none_builders = ["radarr_taglist", "sonarr_taglist", "lidarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",
@@ -802,6 +804,7 @@ music_attributes = (
     + background_details
     + logo_details
     + square_art_details
+    + lidarr.builders
 )
 
 
@@ -1661,6 +1664,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
+                elif not self.library.Lidarr and "lidarr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Lidarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
@@ -1719,6 +1724,8 @@ class CollectionBuilder:
                     self._radarr(method_name, method_data)
                 elif method_name in sonarr_details or method_name in sonarr.builders:
                     self._sonarr(method_name, method_data)
+                elif method_name in lidarr.builders:
+                    self._lidarr(method_name, method_data)
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
@@ -2186,6 +2193,14 @@ class CollectionBuilder:
         elif method_name == "sonarr_taglist":
             self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "sonarr_all":
+            self.builders.append((method_name, True))
+
+    def _lidarr(self, method_name, method_data):
+        if not self.library.Lidarr:
+            raise BuilderValidationError(f"{self.Type} Error: Lidarr must be configured to use {method_name}")
+        if method_name == "lidarr_taglist":
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
+        elif method_name == "lidarr_all":
             self.builders.append((method_name, True))
 
     def _anidb(self, method_name, method_data):
@@ -3907,6 +3922,8 @@ class CollectionBuilder:
                 ids = self.library.Radarr.get_tmdb_ids(method, value)
             elif "sonarr" in method:
                 ids = self.library.Sonarr.get_tvdb_ids(method, value)
+            elif "lidarr" in method:
+                ids = self.library.Lidarr.get_mbid_ids(method, value)
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")
@@ -4051,6 +4068,20 @@ class CollectionBuilder:
                             rating_keys = found_keys
                         else:
                             logger.warning(f"{self.Type} Warning: Plex ID: {input_id} not found in the defined libraries")
+                            continue
+                    elif id_type == "mbid" and self.library.is_music:
+                        for pl_library in self.libraries:
+                            if not pl_library.is_music:
+                                continue
+                            for artist in pl_library.get_all(builder_level="artist"):
+                                if any(guid.id.lower() == f"mbid://{str(input_id).lower()}" for guid in getattr(artist, "guids", [])):
+                                    rating_keys = artist.ratingKey
+                                    break
+                            if rating_keys:
+                                break
+                        if not rating_keys:
+                            artist_name = self.library.Lidarr.get_artist_name(input_id)
+                            logger.info(f"{artist_name} (MBID: {input_id}) not found in library {self.library.name}")
                             continue
                     elif id_type == "tmdb" and not self.parts_collection:
                         if not isinstance(input_id, list):

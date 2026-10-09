@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.
+- Add music-library `lidarr_all` and `lidarr_taglist` builders, which create Plex artist collections by matching Lidarr and Plex MusicBrainz artist IDs.
 - Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
 
 ### Fixed
