@@ -595,6 +595,19 @@ def time_window(tw):
         return tw
 
 
+def collection_asset_paths(value, err_type="Collection"):
+    """Validate collection artwork roots; empty values inherit the next setting."""
+    if value is None or value == "" or value == []:
+        return []
+    if not isinstance(value, (str, list)):
+        raise Failed(f"{err_type} Error: collection_asset_directory must be a path or list of paths")
+    paths = get_list(value, split=False, return_none=False)
+    for path in paths:
+        if not isinstance(path, str) or not os.path.isdir(path):
+            raise Failed(f"{err_type} Error: Collection Asset Directory Does Not Exist: {path}")
+    return paths
+
+
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):
     files = []
     had_scheduled = False
@@ -681,7 +694,12 @@ def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars
                     had_scheduled = True
                     logger.warning(f"This {'set of files' if len(current) > 1 else 'file'} not scheduled to run")
                     continue
-            files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
+            if method == "collection_files" and file.get("collection_asset_directory"):
+                collection_asset_directory = collection_asset_paths(file["collection_asset_directory"], err_type)
+                logger.info(f"Collection Asset Directory: {collection_asset_directory}")
+                files.extend([(ft, fp, temp_vars, asset_directory, collection_asset_directory) for ft, fp in current])
+            else:
+                files.extend([(ft, fp, temp_vars, asset_directory) for ft, fp in current])
         else:
             logger.info(f"Reading file: {file}")
             if os.path.exists(file):

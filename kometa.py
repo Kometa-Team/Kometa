@@ -913,6 +913,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.debug(f"Folder Name: {library.mapping_name}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
+            for ad in library.collection_asset_directory:
+                logger.debug(f"Collection Asset Directory: {ad}")
             logger.debug(f"Asset Folders: {library.asset_folders}")
             logger.debug(f"Asset Depth: {library.asset_depth}")
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")

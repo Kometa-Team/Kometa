@@ -284,3 +284,22 @@ def test_tracearr_default_uses_short_trending_window_without_raw_history_and_set
     for collection in collections.values():
         shared_template = next(template for template in collection["template"] if template["name"] == "shared")
         assert shared_template["url_logo"] == expected_logo
+
+
+@pytest.mark.parametrize("value", ["config/collections", ["config/collections", "config/shared"], None])
+@pytest.mark.parametrize("level", ["global", "library", "file", "collection"])
+def test_collection_asset_directory_schema_levels(value, level):
+    if level == "collection":
+        schema = json.loads((SCHEMA_DIR / "collection-schema.json").read_text())
+        document = {"collections": {"Test": {"plex_all": True, "collection_asset_directory": value}}}
+    else:
+        schema = json.loads((SCHEMA_DIR / "config-schema.json").read_text())
+        document = {"libraries": {"Movies": {"collection_files": []}}, "plex": {"url": "http://localhost:32400", "token": "test"}, "tmdb": {"apikey": "test"}}
+        if level == "global":
+            document["settings"] = {"collection_asset_directory": value}
+        elif level == "library":
+            document["libraries"]["Movies"]["settings"] = {"collection_asset_directory": value}
+        else:
+            document["libraries"]["Movies"]["collection_files"] = [{"file": "config/collections.yml", "collection_asset_directory": value}]
+    errors = list(Draft7Validator(schema).iter_errors(document))
+    assert not errors, [error.message for error in errors]

@@ -630,10 +630,11 @@ class DataFile:
 
 
 class MetadataFile(DataFile):
-    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False):
+    def __init__(self, config, library, file_type, path, temp_vars, asset_directory, file_style, configured_names_only=False, collection_asset_directory=None):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
         super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
+        self.collection_asset_directory = collection_asset_directory or []
         self.configured_names_only = configured_names_only
         self.data_type = "Collection"
         self.library = library

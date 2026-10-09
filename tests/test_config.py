@@ -630,3 +630,22 @@ plex:
             secrets={},
         )
         assert cf.config_path == str(custom)
+
+
+@pytest.mark.parametrize("level", ["unset", "global", "library"])
+def test_collection_asset_directory_settings_inheritance(tmp_path, monkeypatch, level):
+    global_root = tmp_path / "global_collections"
+    library_root = tmp_path / "library_collections"
+    global_root.mkdir()
+    library_root.mkdir()
+    constructor = MagicMock(wraps=config_module.Plex)
+    monkeypatch.setattr(config_module, "Plex", constructor)
+    config_yaml = BASE_CONFIG
+    if level != "unset":
+        config_yaml = config_yaml.replace("  cache: false", f"  cache: false\n  collection_asset_directory: {global_root}")
+    if level == "library":
+        config_yaml = config_yaml.replace("  Movies:", f"  Movies:\n    settings:\n      collection_asset_directory: {library_root}")
+    config = make_config(tmp_path, config_yaml=config_yaml)
+    assert config.general["collection_asset_directory"] == ([str(global_root)] if level != "unset" else [])
+    params = constructor.call_args.args[1]
+    assert params["collection_asset_directory"] == ([str(library_root if level == "library" else global_root)] if level != "unset" else [])

@@ -54,6 +54,7 @@ def make_plex(**attrs) -> Plex:
     plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
 
     # Required by Plex class
+    plex.collection_asset_directory = attrs.pop("collection_asset_directory", [])
     plex.plex = attrs.pop("plex", None)
     plex.url = attrs.pop("url", "http://localhost:32400")
     plex.token = attrs.pop("token", "fake-token")
@@ -2042,3 +2043,65 @@ def test_flat_artwork_search_paths_include_override_roots():
     roots = [os.path.join("config", "assets"), os.path.join("extra", "assets")]
     expected = ", ".join(os.path.join(root, "The Agency (2024)_S01E08.*") for root in roots)
     assert plex.asset_search_paths(episode, folder_name="The Agency (2024)", asset_directory=roots) == expected
+
+
+@pytest.mark.parametrize("asset_folders", [True, False])
+def test_collection_assets_are_separate_from_item_assets(tmp_path, asset_folders):
+    from plexapi.collection import Collection
+
+    item_root = tmp_path / "items"
+    collection_root = tmp_path / "collections"
+    item_root.mkdir()
+    collection_root.mkdir()
+    name = "Shared Name"
+    for root, content in [(item_root, b"item artwork"), (collection_root, b"collection artwork")]:
+        directory = root / name if asset_folders else root
+        directory.mkdir(exist_ok=True)
+        (directory / ("poster.png" if asset_folders else f"{name}.png")).write_bytes(content)
+    collection = MagicMock(spec=Collection, title=name)
+    movie = MagicMock(spec=Movie, title=name, locations=[f"/media/{name}/video.mkv"])
+    plex = make_plex(
+        asset_directory=[str(item_root)],
+        collection_asset_directory=[str(collection_root)],
+        asset_folders=asset_folders,
+        asset_depth=0,
+        create_asset_folders=False,
+        dimensional_asset_rename=False,
+    )
+    collection_poster = plex.find_item_assets(collection)[0]
+    item_poster = plex.find_item_assets(movie)[0]
+    from pathlib import Path
+
+    assert Path(collection_poster.location).read_bytes() == b"collection artwork"
+    assert Path(item_poster.location).read_bytes() == b"item artwork"
+    plex.collection_asset_directory = []
+    assert plex.find_item_assets(collection)[0].location == item_poster.location
+
+
+@pytest.mark.parametrize("override", [None, ["collection-art"]])
+def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch, override):
+    import modules.library as library_module
+
+    entry = ("File", "collections.yml", {}, ["item-art"])
+    if override:
+        entry += (override,)
+    metadata = SimpleNamespace(collections={"Test": {}})
+    constructor = MagicMock(return_value=metadata)
+    monkeypatch.setattr(library_module, "MetadataFile", constructor)
+    library = make_plex(
+        config=SimpleNamespace(),
+        configured_collection_files=[entry],
+        scanned_collection_files=[entry],
+        configured_collection_metadata_files=[],
+        collection_names=[],
+        collections=[],
+        collection_files=[],
+    )
+    library.scan_files(False, False, True, False)
+    assert constructor.call_count == 2
+    for call in constructor.call_args_list:
+        assert call.args[5] == ["item-art"]
+        assert call.kwargs["collection_asset_directory"] == override
+    assert constructor.call_args_list[0].kwargs["configured_names_only"] is True
+    assert library.collection_names == ["Test"]
+    assert library.collections == ["Test"]
