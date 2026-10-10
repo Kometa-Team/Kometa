@@ -212,6 +212,10 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.20.0
 
+      - name: Read source version
+        id: source-version
+        run: echo "version=$(tr -d '\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
+
       - name: Build and Push
         id: docker_build
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
@@ -220,6 +224,8 @@ jobs:
           file: ./Dockerfile
           build-args: |
             "BRANCH_NAME=nightly"
+            "KOMETA_GIT_SHA=${{ needs.increment-build.outputs.bump-commit-hash }}"
+            "KOMETA_VERSION=${{ steps.source-version.outputs.version }}"
             "BASE_TAG=${{ needs.verify-changes.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}"
           platforms: linux/amd64,linux/arm64
           push: true

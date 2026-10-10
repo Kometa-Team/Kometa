@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add a non-blocking startup source integrity diagnostic comparing distributed files against pristine upstream source for the exact running commit, with an offline reusable cache and modified/missing/added file reporting; include the full Kometa version and build number in Docker image metadata.
+
 - Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
 
 ### Fixed

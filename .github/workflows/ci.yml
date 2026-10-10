@@ -209,6 +209,8 @@ jobs:
         id: docker_build
         run: |
           docker buildx build \
+            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
+            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
             --build-arg BRANCH_NAME=${{ steps.build-vars.outputs.tag-name }} \
             --file ./Dockerfile \
             --platform linux/amd64,linux/arm64 \
