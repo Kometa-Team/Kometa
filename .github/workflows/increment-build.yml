@@ -220,6 +220,7 @@ jobs:
           file: ./Dockerfile
           build-args: |
             "BRANCH_NAME=nightly"
+            "KOMETA_GIT_SHA=${{ needs.increment-build.outputs.bump-commit-hash }}"
             "BASE_TAG=${{ needs.verify-changes.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}"
           platforms: linux/amd64,linux/arm64
           push: true

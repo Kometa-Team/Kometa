@@ -57,6 +57,7 @@ jobs:
         id: docker_build
         run: |
           docker buildx build \
+            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
             --build-arg BRANCH_NAME=nightly \
             --file ./Dockerfile \
             --platform ${{ matrix.platform }} \

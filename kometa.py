@@ -14,6 +14,7 @@ from typing import TypeAlias
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
+from modules.integrity import log_integrity
 from modules.log_summary import SEVERITIES, RunLogSummary
 from modules.logs import MyLogger
 
@@ -502,6 +503,7 @@ def start(attrs):
         logger.info(f"    Version: {my_requests.local} ({system_ver})")
         if my_requests.newest:
             logger.info(f"    Newest Version: {my_requests.newest}")
+        log_integrity(os.path.dirname(os.path.abspath(__file__)), default_dir, logger, "docker" if is_docker else "source")
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")

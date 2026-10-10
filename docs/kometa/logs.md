@@ -289,3 +289,12 @@ File is not where Kometa expects it:
 | Loading Collection File: config/Movies.yml                                              |
 | YAML Error: File Error: File does not exist /Users/Lucky/Kometa/config/Movies.yml       |
 ```
+
+
+## Source integrity
+
+Startup logs include `Source Integrity: Verified`, `Source Integrity: MODIFIED`, or `Source Integrity: Not Verified` with a reason. Modified installations list changed, missing, and added files. This is a support diagnostic and never blocks Kometa.
+
+The baseline comes from official upstream source pinned to the installed commit. It is cached under `.source-integrity/` in the active config directory for subsequent offline checks. When no usable cache exists, startup reports Not Verified and retrieves the baseline in the background; a successful check then logs its result. Downloads never delay startup, and subsequent cached checks rehash installed files. Runtime config, logs, virtual environments, bytecode, and integrity metadata are excluded. Docker checks Kometa-owned files and directories rather than the container operating system. Repository-only CI/test files excluded from upstream source archives are outside the comparison.
+
+Git installs use the installation's HEAD; Docker builds carry `KOMETA_GIT_SHA`; `.kometa_sha` is an identity hint. The candidate commit must belong to an official upstream branch before a baseline is cached. Older images or installations without exact commit metadata report Not Verified. Cache corruption, unavailable upstream data, and inspection errors also report Not Verified. The diagnostic cannot protect against deliberate replacement of its own implementation or provenance metadata.

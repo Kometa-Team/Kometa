@@ -98,16 +98,16 @@ def hostname_to_source(url):
     return f"other:{host}"
 
 
-def git_sha():
+def git_sha(root=None, use_env=True):
     # Docker mounts never include .git, so KOMETA_GIT_SHA lets the host pass its own `git rev-parse HEAD` in - checked first as the only reliable source in a container.
     env_sha = os.environ.get("KOMETA_GIT_SHA")
-    if env_sha:
+    if use_env and env_sha:
         return env_sha
     try:
         from git import InvalidGitRepositoryError, Repo  # noqa
 
         try:
-            return Repo(path=".").head.commit.hexsha
+            return Repo(path=str(root) if root is not None else ".").head.commit.hexsha
         except (InvalidGitRepositoryError, ValueError, TypeError):
             return None
     except ImportError:

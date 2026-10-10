@@ -35,6 +35,7 @@ jobs:
         id: docker_build
         run: |
           docker buildx build \
+            --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
             --file ./Dockerfile \
             --platform linux/amd64,linux/arm64,linux/arm/v7 \
             --tag ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:latest \
