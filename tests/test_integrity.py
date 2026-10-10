@@ -61,7 +61,7 @@ def check(installation, profile="source"):
 
 def cache_path(installation):
     root, config, commit, _ = installation
-    return config / integrity.CACHE_DIR / f"Kometa-Team-Kometa-{commit}-source-v1.json"
+    return config / integrity.CACHE_DIR / f"Kometa-Team-Kometa-{commit}-source-v{integrity.SCHEMA}.json"
 
 
 def test_pristine_and_cached_offline(installation):
@@ -306,21 +306,6 @@ def test_corrupt_archive_and_symlink_cache_are_not_verified(installation):
     assert check(installation)["state"] == "Not Verified"
 
 
-@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified", "exception"])
-def test_integrity_failure_does_not_prevent_startup(installation, monkeypatch, state):
-    events = []
-    logger = MagicMock()
-    logger.info.side_effect = lambda line: events.append(line)
-    if state == "exception":
-        monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("unexpected")))
-    else:
-        monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: {"state": state, "reason": "authoritative manifest unavailable", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []})
-    integrity.log_integrity(installation[0], installation[1], logger)
-    events.append("normal startup continued")
-    assert events[-1] == "normal startup continued"
-    assert events[0].startswith("Source Integrity:")
-
-
 def test_output_bounded_and_escaped():
     report = {"state": "Modified", "modified": ["bad\nInjected"] + [str(index) for index in range(30)], "missing": [], "added": []}
     lines = integrity.format_integrity(report)
@@ -329,52 +314,14 @@ def test_output_bounded_and_escaped():
     assert lines[2] == "  bad\\nInjected"
 
 
-def test_startup_does_not_wait_for_network(installation, monkeypatch):
-    import threading
-
-    entered, release, completed = threading.Event(), threading.Event(), threading.Event()
-    root, config, _, client = installation
-    original = integrity.check_integrity
-
-    def slow_baseline(commit, profile):
-        entered.set()
-        assert release.wait(3)
-        zipped, expected, raw, entries = archive_and_proof()
-        return integrity.manifest_from_zip(zipped, expected, profile, raw, entries)
-
-    client.baseline.side_effect = slow_baseline
-
-    def checker(root, config, profile, allow_network=True):
-        try:
-            return original(root, config, profile, client, allow_network=allow_network)
-        finally:
-            if allow_network:
-                completed.set()
-
-    monkeypatch.setattr(integrity, "check_integrity", checker)
-    logger = MagicMock()
-    integrity.log_integrity(root, config, logger)
-    assert entered.wait(1)
-    logger.info.assert_called_with("Source Integrity: Not Verified (authoritative manifest unavailable)")
-    assert not completed.is_set()
-    release.set()
-    assert completed.wait(3)
-
-
-def test_cached_startup_never_starts_background_download(installation, monkeypatch):
-    check(installation)
-    monkeypatch.setattr(integrity, "_start_background_check", lambda *args: pytest.fail("warm cache must not start a download"))
-    logger = MagicMock()
-    integrity.log_integrity(installation[0], installation[1], logger)
-    logger.info.assert_called_once_with("Source Integrity: Verified")
-
-
 def test_authoritative_download_is_pinned_and_tls_verified(monkeypatch):
     from types import SimpleNamespace
 
     zipped, commit, raw, entries = archive_and_proof()
     client = integrity.Upstream()
     calls = []
+    git_calls = []
+    monkeypatch.setenv("GIT_SSL_NO_VERIFY", "true")
 
     class Response:
         def __enter__(self):
@@ -399,12 +346,29 @@ def test_authoritative_download_is_pinned_and_tls_verified(monkeypatch):
         return Response()
 
     monkeypatch.setattr(client.session, "get", get)
-    monkeypatch.setattr(integrity.subprocess, "run", lambda args, **kwargs: SimpleNamespace(stdout=raw if "cat-file" in args else b""))
+
+    def run_git(args, **kwargs):
+        git_calls.append((args, kwargs))
+        return SimpleNamespace(stdout=raw if "cat-file" in args else b"")
+
+    monkeypatch.setattr(integrity.subprocess, "run", run_git)
+    original = integrity.manifest_from_zip
+    archive_files = []
+
+    def from_disk(source, *args):
+        assert not isinstance(source, bytes)
+        assert source.fileno() >= 0
+        archive_files.append(source)
+        return original(source, *args)
+
+    monkeypatch.setattr(integrity, "manifest_from_zip", from_disk)
     manifest = client.baseline(commit, "source")
     client.close()
+    assert archive_files and archive_files[0].closed
     assert manifest["commit"] == commit
     assert calls[-1][0] == f"https://codeload.github.com/{integrity.REPOSITORY}/zip/{commit}"
     assert all(kwargs["verify"] is True for _, kwargs in calls)
+    assert git_calls and all("GIT_SSL_NO_VERIFY" not in kwargs["env"] for _, kwargs in git_calls)
     assert calls[0][0].endswith(f"compare/{commit}...nightly")
 
 
@@ -447,3 +411,180 @@ def test_stat_permission_error_is_not_missing(installation, monkeypatch):
     report = check(installation)
     assert report["state"] == "Not Verified"
     assert report["missing"] == []
+
+
+@pytest.mark.parametrize("path", ["modules/builder.py", "scripts/baseline.json", "defaults/data.yml", "VERSION"])
+def test_text_line_endings_are_not_modifications(installation, path):
+    root = installation[0]
+    if path in SHIPPED:
+        (root / path).write_bytes(SHIPPED[path].replace(b"\n", b"\r\n"))
+        assert check(installation)["state"] == "Verified"
+    else:
+        files = {**SHIPPED, path: b'{"value": true}\n'}
+        zipped, commit, raw, entries = archive_and_proof(files)
+        manifest = integrity.manifest_from_zip(zipped, commit, "source", raw, entries)
+        target = root / path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(files[path].replace(b"\n", b"\r\n"))
+        assert integrity._compare(root, manifest, "source", installation[1])["state"] == "Verified"
+        target.write_bytes(b'{"value": false}\r\n')
+        assert integrity._compare(root, manifest, "source", installation[1])["state"] == "Modified"
+
+
+def test_binary_line_endings_remain_significant(installation):
+    files = {**SHIPPED, "fonts/font.ttf": b"font\r\n"}
+    zipped, commit, raw, entries = archive_and_proof(files)
+    manifest = integrity.manifest_from_zip(zipped, commit, "source", raw, entries)
+    (installation[0] / "fonts/font.ttf").write_bytes(b"font\n")
+    assert integrity._compare(installation[0], manifest, "source", installation[1])["modified"] == ["fonts/font.ttf"]
+
+
+@pytest.mark.parametrize("name", [".DS_Store", "Thumbs.db", "desktop.ini", "modules/.DS_Store", "defaults/Thumbs.db", "defaults/overlays/desktop.ini"])
+def test_desktop_metadata_is_excluded_everywhere(installation, name):
+    path = installation[0] / name
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(b"desktop")
+    assert check(installation)["state"] == "Verified"
+
+
+def test_cache_prunes_only_this_repository_and_profile(installation):
+    check(installation)
+    current = cache_path(installation)
+    old = current.with_name(f"Kometa-Team-Kometa-{'a' * 40}-source-v1.json")
+    old.write_text("old", encoding="utf-8")
+    docker = current.with_name(f"Kometa-Team-Kometa-{'a' * 40}-docker-v2.json")
+    unrelated = current.with_name("unrelated.json")
+    linked = current.with_name(f"Kometa-Team-Kometa-{'b' * 40}-source-v2.json")
+    docker.write_text("docker", encoding="utf-8")
+    unrelated.write_text("keep", encoding="utf-8")
+    try:
+        linked.symlink_to(unrelated)
+    except OSError:
+        linked = None
+    integrity._write_manifest(current, json.loads(current.read_text()))
+    assert not old.exists()
+    assert current.exists() and docker.exists() and unrelated.read_text() == "keep"
+    if linked:
+        assert linked.is_symlink()
+
+
+@pytest.mark.parametrize("value", ["false", "FALSE", "0", "no", "off"])
+def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatch, value):
+    monkeypatch.setenv("KOMETA_SOURCE_INTEGRITY", value)
+    monkeypatch.setattr(integrity, "check_integrity", lambda *a, **k: pytest.fail("disabled"))
+    monkeypatch.setattr(integrity, "_start_background_check", lambda *a, **k: pytest.fail("disabled"))
+    logger = MagicMock()
+    integrity.log_integrity(installation[0], installation[1], logger)
+    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by KOMETA_SOURCE_INTEGRITY)")
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_startup_does_not_wait_for_hashing_or_download(installation, monkeypatch, cached):
+    import threading
+
+    if cached:
+        check(installation)
+        installation[3].baseline.side_effect = requests.ConnectionError("offline")
+    entered, release, finished = threading.Event(), threading.Event(), threading.Event()
+    original = integrity.check_integrity
+
+    def slow_check(*args, **kwargs):
+        entered.set()
+        assert release.wait(3)
+        try:
+            return original(*args, upstream=installation[3], **kwargs)
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(integrity, "check_integrity", slow_check)
+    logger = MagicMock()
+    integrity.log_integrity(installation[0], installation[1], logger)
+    assert entered.wait(1)
+    assert not finished.is_set()
+    logger.info.assert_called_with("Source Integrity: Not Verified (comparison in progress)")
+    release.set()
+    assert finished.wait(3)
+
+
+@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified", "exception"])
+def test_background_failure_does_not_prevent_startup(installation, monkeypatch, state):
+    import threading
+
+    logged = threading.Event()
+    logger = MagicMock()
+    logger.info.side_effect = lambda line: logged.set() if "comparison in progress" not in line else None
+    if state == "exception":
+
+        def fail(*args, **kwargs):
+            logged.set()
+            raise RuntimeError("unexpected")
+
+        monkeypatch.setattr(integrity, "check_integrity", fail)
+    else:
+        monkeypatch.setattr(integrity, "check_integrity", lambda *a, **k: {"state": state, "reason": "authoritative manifest unavailable", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []})
+    integrity.log_integrity(installation[0], installation[1], logger)
+    assert logged.wait(3)
+
+
+@pytest.mark.parametrize("status", [403, 429, 500])
+def test_upstream_http_failure_is_not_rejected_commit(monkeypatch, status):
+    client = integrity.Upstream()
+    response = requests.Response()
+    response.status_code = status
+    failure = requests.HTTPError(response=response)
+    monkeypatch.setattr(client, "_json", MagicMock(side_effect=failure))
+    with pytest.raises(integrity.Unavailable, match="upstream validation request failed"):
+        client.baseline("a" * 40, "source")
+    assert client._json.call_count == 1
+    client.close()
+
+
+def test_export_exclusions_come_from_bound_upstream_attributes(installation):
+    content = b".gitattributes export-ignore\nfuture/ export-ignore\n*.private export-ignore\n"
+    files = {**SHIPPED, ".gitattributes": content, "future/resource.txt": b"export only", "new.private": b"private"}
+    zipped, commit, raw, entries = archive_and_proof(files)
+    attributes = {".gitattributes": base64.b64encode(content).decode()}
+    manifest = integrity.manifest_from_zip(zipped, commit, "source", raw, entries, attributes)
+    assert set(manifest["files"]) == set(SHIPPED) - {"config/config.yml.template"}
+    target = installation[0] / "future/local.txt"
+    target.parent.mkdir()
+    target.write_bytes(b"ignored")
+    assert integrity._compare(installation[0], manifest, "source", installation[1])["state"] == "Verified"
+    manifest["attributes"][".gitattributes"] = base64.b64encode(b"modules/ export-ignore\n").decode()
+    with pytest.raises(ValueError, match="attributes do not match tree"):
+        integrity._validate_manifest(manifest, commit, "source")
+
+
+def test_windows_archive_line_endings_match_canonical_git_blob():
+    files = {**SHIPPED, "script.ps1": b"Write-Output 'hello'\n"}
+    _, commit, raw, entries = archive_and_proof(files)
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as zipped:
+        for name, content in files.items():
+            zipped.writestr(f"Kometa-{commit}/{name}", content.replace(b"\n", b"\r\n") if name.endswith(".ps1") else content)
+    manifest = integrity.manifest_from_zip(archive.getvalue(), commit, "source", raw, entries)
+    assert manifest["files"]["script.ps1"] == integrity.hashlib.sha256(files["script.ps1"]).hexdigest()
+
+
+@pytest.mark.parametrize("original", [b"binary\x00\r\n", b"binary\xff\r\n"])
+def test_binary_content_in_text_path_is_not_normalized(installation, original):
+    files = {**SHIPPED, "data.json": original}
+    zipped, commit, raw, entries = archive_and_proof(files)
+    manifest = integrity.manifest_from_zip(zipped, commit, "source", raw, entries)
+    (installation[0] / "data.json").write_bytes(original.replace(b"\r\n", b"\n"))
+    report = integrity._compare(installation[0], manifest, "source", installation[1])
+    assert report["state"] == "Modified"
+    assert report["modified"] == ["data.json"]
+
+
+def test_normalization_handles_chunk_boundary_and_preserves_lone_cr():
+    canonical = b"x" * (128 * 1024 - 1) + b"\nend\r"
+    content = canonical.replace(b"\n", b"\r\n")
+    assert integrity._normalized_digest(io.BytesIO(content)) == integrity._digest_stream(io.BytesIO(canonical), len(canonical))
+
+
+def test_unsupported_export_pattern_is_not_trusted():
+    content = b"secret/** export-ignore\n"
+    entries = [{"path": ".gitattributes", "sha": integrity._git_hash("blob", content)}]
+    with pytest.raises(ValueError, match="Unsupported export pattern"):
+        integrity._export_rules(entries, {".gitattributes": base64.b64encode(content).decode()})

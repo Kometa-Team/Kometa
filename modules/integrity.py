@@ -9,11 +9,14 @@ This is a support diagnostic, not protection against replacement of the checker.
 from __future__ import annotations
 
 import base64
+import codecs
+import fnmatch
 import hashlib
 import io
 import json
 import os
 import re
+import shlex
 import shutil
 import stat
 
@@ -33,7 +36,7 @@ import requests
 from modules import timings
 
 REPOSITORY = "Kometa-Team/Kometa"
-SCHEMA = 1
+SCHEMA = 2
 CACHE_DIR = ".source-integrity"
 SHA = re.compile(r"[0-9a-f]{40}")
 DIGEST = re.compile(r"[0-9a-f]{64}")
@@ -60,10 +63,11 @@ IGNORED_ROOTS = {
     ".vscode",
     ".idea",
 }
-# These are repository-only files omitted from upstream's exported archives.
-EXPORT_ONLY = {".github", "tests", ".gitattributes", ".gitignore", ".dockerignore", ".envrc"}
 DOCKER_ROOTS = {"modules", "defaults", "fonts", "docker", "scripts"}
 DOCKER_OMITTED = {"docs", "json-schema", "CHANGELOG.md", "Dockerfile", "LICENSE", "README.md", ".readthedocs.yml", "test.py"}
+DESKTOP_METADATA = {".DS_Store", "Thumbs.db", "desktop.ini"}
+TEXT_SUFFIXES = {".py", ".pyi", ".pyx", ".sh", ".bash", ".yml", ".yaml", ".json", ".toml", ".cfg", ".ini", ".txt", ".template", ".md", ".rst", ".html", ".css", ".js", ".svg", ".bat", ".cmd", ".ps1", ".lock"}
+TEXT_NAMES = {"VERSION", "PART", "Dockerfile", "LICENSE"}
 METADATA = {".kometa_sha", ".kometa_branch", ".kometa_integrity.json", ".env", ".DS_Store", "dictionary.dic", "UUID", ".coverage"}
 REQUIRED = {"kometa.py", "VERSION", "requirements.txt"}
 MAX_ARCHIVE = 512 * 1024 * 1024
@@ -88,7 +92,8 @@ def _safe_relative_path(value: str) -> PurePosixPath:
 
 def _ignored(path: PurePosixPath, profile: str) -> bool:
     return (
-        path.parts[0] in IGNORED_ROOTS | EXPORT_ONLY
+        path.parts[0] in IGNORED_ROOTS
+        or path.name in DESKTOP_METADATA
         or "__pycache__" in path.parts
         or path.suffix.lower() in {".pyc", ".pyo"}
         or (len(path.parts) == 1 and (path.name in METADATA or path.name.startswith((".kometa_integrity-", ".coverage."))))
@@ -109,6 +114,36 @@ def _digest_stream(stream, size: int) -> tuple[str, str]:
         digest.update(chunk)
         blob.update(chunk)
     return digest.hexdigest(), blob.hexdigest()
+
+
+def _text_path(path: str) -> bool:
+    relative = PurePosixPath(path)
+    return relative.suffix.lower() in TEXT_SUFFIXES or relative.name in TEXT_NAMES
+
+
+def _normalized_digest(stream) -> tuple[str, str] | None:
+    """Normalize CRLF only for known text paths; never reinterpret binary files."""
+    with tempfile.SpooledTemporaryFile(max_size=1024 * 1024) as canonical:
+        pending = b""
+        decoder = codecs.getincrementaldecoder("utf-8")()
+        for chunk in iter(lambda: stream.read(128 * 1024), b""):
+            if b"\x00" in chunk:
+                return None
+            try:
+                decoder.decode(chunk)
+            except UnicodeDecodeError:
+                return None
+            chunk = pending + chunk
+            pending = b"\r" if chunk.endswith(b"\r") else b""
+            canonical.write((chunk[:-1] if pending else chunk).replace(b"\r\n", b"\n"))
+        try:
+            decoder.decode(b"", final=True)
+        except UnicodeDecodeError:
+            return None
+        canonical.write(pending)
+        size = canonical.tell()
+        canonical.seek(0)
+        return _digest_stream(canonical, size)
 
 
 def _tree_hashes(entries: list[dict[str, str]]) -> dict[str, str]:
@@ -136,6 +171,53 @@ def _tree_hashes(entries: list[dict[str, str]]) -> dict[str, str]:
     return hashes
 
 
+def _export_rules(entries, attributes):
+    """Bind export exclusions to pristine attributes rather than a manual list."""
+    objects = {entry["path"]: entry["sha"] for entry in entries if PurePosixPath(entry["path"]).name == ".gitattributes"}
+    if set(attributes) != set(objects):
+        raise ValueError("Incomplete upstream attributes")
+    rules = []
+    for path in sorted(attributes, key=lambda key: (key.count("/"), key)):
+        content = base64.b64decode(attributes[path], validate=True)
+        if _git_hash("blob", content) != objects[path]:
+            raise ValueError("Upstream attributes do not match tree")
+        parent = PurePosixPath(path).parent.as_posix()
+        for line in content.decode("utf-8").splitlines():
+            fields = shlex.split(line, comments=True)
+            if not fields:
+                continue
+            if fields[0].startswith("[attr]"):
+                raise ValueError("Unsupported Git attribute macro")
+            for attribute in fields[1:]:
+                if attribute in {"export-ignore", "-export-ignore", "!export-ignore"}:
+                    pattern = fields[0]
+                    # Fail safely on unsupported patterns rather than exclude too much.
+                    if pattern.startswith("!") or "[" in pattern or "**" in pattern or ("/" in pattern.strip("/") and any(char in pattern for char in "*?")):
+                        raise ValueError("Unsupported export pattern")
+                    rules.append((parent, pattern, attribute == "export-ignore"))
+    return rules
+
+
+def _export_ignored(path: PurePosixPath, rules) -> bool:
+    ignored = False
+    for parent, pattern, value in rules:
+        scope = PurePosixPath(parent)
+        try:
+            relative = path.relative_to(scope).as_posix()
+        except ValueError:
+            continue
+        pattern = pattern.removeprefix("/")
+        if pattern.endswith("/"):
+            matches = relative == pattern[:-1] or relative.startswith(pattern)
+        elif "/" in pattern:
+            matches = fnmatch.fnmatchcase(relative, pattern)
+        else:
+            matches = fnmatch.fnmatchcase(path.name, pattern)
+        if matches:
+            ignored = value
+    return ignored
+
+
 def _validate_manifest(manifest: dict[str, Any], commit: str, profile: str) -> dict[str, str]:
     if any(manifest.get(key) != value for key, value in {"repository": REPOSITORY, "commit": commit, "profile": profile, "schema_version": SCHEMA, "upstream_validated": True}.items()):
         raise ValueError("Integrity cache identity mismatch")
@@ -145,7 +227,8 @@ def _validate_manifest(manifest: dict[str, Any], commit: str, profile: str) -> d
     tree = _tree_hashes(manifest["entries"])
     if raw_commit.splitlines()[0] != f"tree {tree['']}".encode():
         raise ValueError("Integrity cache tree mismatch")
-    expected = {entry["path"]: entry["sha"] for entry in manifest["entries"] if not _ignored(_safe_relative_path(entry["path"]), profile)}
+    rules = _export_rules(manifest["entries"], manifest.get("attributes", {}))
+    expected = {entry["path"]: entry["sha"] for entry in manifest["entries"] if not _ignored(_safe_relative_path(entry["path"]), profile) and not _export_ignored(_safe_relative_path(entry["path"]), rules)}
     files = manifest["files"]
     if not isinstance(files, dict) or set(files) != set(expected) or not REQUIRED.issubset(files):
         raise ValueError("Incomplete integrity manifest")
@@ -154,14 +237,16 @@ def _validate_manifest(manifest: dict[str, Any], commit: str, profile: str) -> d
     return expected
 
 
-def manifest_from_zip(zip_bytes: bytes, commit: str, profile: str, commit_object: bytes, entries: list[dict[str, str]]) -> dict[str, Any]:
+def manifest_from_zip(zip_source, commit: str, profile: str, commit_object: bytes, entries: list[dict[str, str]], attributes=None) -> dict[str, Any]:
     """Hash pristine upstream ZIP files with exact-commit cache binding."""
+    attributes = attributes or {}
+    rules = _export_rules(entries, attributes)
     files: dict[str, str] = {}
     roots = set()
     seen = set()
     expanded = 0
     objects = {entry["path"]: entry["sha"] for entry in entries}
-    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as archive:
+    with zipfile.ZipFile(io.BytesIO(zip_source) if isinstance(zip_source, bytes) else zip_source) as archive:
         for entry in archive.infolist():
             member = _safe_relative_path(entry.orig_filename.rstrip("/"))
             roots.add(member.parts[0])
@@ -177,13 +262,28 @@ def manifest_from_zip(zip_bytes: bytes, commit: str, profile: str, commit_object
             if key.casefold() in seen:
                 raise ValueError("Duplicate Kometa archive file")
             seen.add(key.casefold())
-            if not _ignored(relative, profile):
+            if not _ignored(relative, profile) and not _export_ignored(relative, rules):
                 with archive.open(entry) as stream:
                     digest, blob = _digest_stream(stream, entry.file_size)
+                if blob != objects.get(key) and _text_path(key):
+                    with archive.open(entry) as stream:
+                        normalized = _normalized_digest(stream)
+                        if normalized is not None:
+                            digest, blob = normalized
                 if blob != objects.get(key):
                     raise ValueError("Archive does not match upstream tree")
                 files[key] = digest
-    manifest = {"schema_version": SCHEMA, "repository": REPOSITORY, "commit": commit, "profile": profile, "upstream_validated": True, "commit_object": base64.b64encode(commit_object).decode(), "entries": entries, "files": dict(sorted(files.items()))}
+    manifest = {
+        "schema_version": SCHEMA,
+        "repository": REPOSITORY,
+        "commit": commit,
+        "profile": profile,
+        "upstream_validated": True,
+        "commit_object": base64.b64encode(commit_object).decode(),
+        "entries": entries,
+        "attributes": attributes,
+        "files": dict(sorted(files.items())),
+    }
     _validate_manifest(manifest, commit, profile)
     return manifest
 
@@ -237,8 +337,10 @@ class Upstream:
                 if comparison.get("merge_base_commit", {}).get("sha") == commit:
                     validated = True
                     break
-            except requests.HTTPError:
-                continue
+            except requests.HTTPError as error:
+                if error.response is not None and error.response.status_code == 404:
+                    continue
+                raise Unavailable("upstream validation request failed") from error
             except requests.RequestException as error:
                 raise Unavailable("upstream commit could not be validated") from error
         if not validated:
@@ -257,7 +359,7 @@ class Upstream:
                     check=True,
                     capture_output=True,
                     timeout=min(20, self._remaining()),
-                    env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_SSL_NO_VERIFY": "false"},
+                    env={**{key: value for key, value in os.environ.items() if key != "GIT_SSL_NO_VERIFY"}, "GIT_TERMINAL_PROMPT": "0"},
                 )
                 return result.stdout
 
@@ -271,15 +373,23 @@ class Upstream:
         if tree.get("truncated") or tree.get("sha") != tree_sha:
             raise ValueError("Incomplete upstream tree")
         entries = [{"path": entry["path"], "mode": entry["mode"], "sha": entry["sha"]} for entry in tree["tree"] if entry["type"] != "tree"]
-        with self.session.get(f"https://codeload.github.com/{REPOSITORY}/zip/{commit}", stream=True, timeout=(min(3, self._remaining()), min(10, self._remaining())), verify=True) as response:
-            response.raise_for_status()
-            content = io.BytesIO()
-            for chunk in response.iter_content(128 * 1024):
-                self._remaining()
-                content.write(chunk)
-                if content.tell() > MAX_ARCHIVE:
-                    raise ValueError("Upstream archive too large")
-        return manifest_from_zip(content.getvalue(), commit, profile, raw_commit, entries)
+        attributes = {}
+        for entry in entries:
+            if PurePosixPath(entry["path"]).name == ".gitattributes":
+                blob = self._json(f"git/blobs/{entry['sha']}")
+                if blob.get("encoding") != "base64":
+                    raise ValueError("Unsupported upstream attributes")
+                attributes[entry["path"]] = blob["content"].replace("\n", "")
+        with tempfile.TemporaryFile() as content:
+            with self.session.get(f"https://codeload.github.com/{REPOSITORY}/zip/{commit}", stream=True, timeout=(min(3, self._remaining()), min(10, self._remaining())), verify=True) as response:
+                response.raise_for_status()
+                for chunk in response.iter_content(128 * 1024):
+                    self._remaining()
+                    content.write(chunk)
+                    if content.tell() > MAX_ARCHIVE:
+                        raise ValueError("Upstream archive too large")
+            content.seek(0)
+            return manifest_from_zip(content, commit, profile, raw_commit, entries, attributes)
 
     def close(self):
         self.session.close()
@@ -294,6 +404,14 @@ def _write_manifest(path: Path, manifest: dict[str, Any]):
             json.dump(manifest, stream, sort_keys=True)
             stream.write("\n")
         os.replace(temporary, path)
+        prefix = REPOSITORY.replace("/", "-")
+        pattern = re.compile(rf"{re.escape(prefix)}-[0-9a-f]{{40}}-{re.escape(manifest['profile'])}-v[0-9]+\.json")
+        for old in path.parent.iterdir():
+            if old != path and pattern.fullmatch(old.name) and not _is_link(old):
+                try:
+                    old.unlink()
+                except OSError:
+                    continue
     finally:
         if temporary and temporary.exists():
             temporary.unlink()
@@ -339,6 +457,11 @@ def _open_local(root: Path, relative: PurePosixPath):
 
 def _compare(root: Path, manifest: dict[str, Any], profile: str, runtime: Path) -> dict[str, Any]:
     objects = _validate_manifest(manifest, manifest["commit"], profile)
+    rules = _export_rules(manifest["entries"], manifest.get("attributes", {}))
+
+    def ignored(path):
+        return _ignored(path, profile) or _export_ignored(path, rules)
+
     report: dict[str, Any] = {"state": "Verified", "reason": "", "modified": [], "missing": [], "added": []}
     expected = manifest["files"]
     for key, digest in expected.items():
@@ -357,6 +480,11 @@ def _compare(root: Path, manifest: dict[str, Any], profile: str, runtime: Path) 
                 continue
             with _open_local(root, relative) as stream:
                 digest_actual, blob = _digest_stream(stream, os.fstat(stream.fileno()).st_size)
+                if blob != objects[key] and digest_actual != digest and _text_path(key):
+                    stream.seek(0)
+                    normalized = _normalized_digest(stream)
+                    if normalized is not None:
+                        digest_actual, blob = normalized
             upstream_matches = blob == objects[key]
             digest_matches = digest_actual == digest
             if upstream_matches != digest_matches:
@@ -389,19 +517,19 @@ def _compare(root: Path, manifest: dict[str, Any], profile: str, runtime: Path) 
             for name in dirs[:]:
                 path = base / name
                 relative = PurePosixPath(path.relative_to(root).as_posix())
-                if _ignored(relative, profile) or path == runtime or _is_link(path) or (path / "pyvenv.cfg").is_file():
+                if ignored(relative) or path == runtime or _is_link(path) or (path / "pyvenv.cfg").is_file():
                     dirs.remove(name)
-                    if _is_link(path) and not _ignored(relative, profile) and path != runtime:
+                    if _is_link(path) and not ignored(relative) and path != runtime:
                         actual.add(relative.as_posix())
             for name in names:
                 relative = PurePosixPath((base / name).relative_to(root).as_posix())
-                if not _ignored(relative, profile):
+                if not ignored(relative):
                     actual.add(unicodedata.normalize("NFC", relative.as_posix()))
     if profile == "docker":
         root_names = {key for key in expected if "/" not in key}
         for path in root.iterdir():
             if path.name in root_names or path.suffix in {".py", ".yml", ".yaml", ".json", ".toml", ".txt", ".lock", ".sh"}:
-                if not _ignored(PurePosixPath(path.name), profile) and (path.is_file() or _is_link(path)):
+                if not ignored(PurePosixPath(path.name)) and (path.is_file() or _is_link(path)):
                     actual.add(path.name)
     report["added"] = sorted(actual - set(expected))
     for category in ("modified", "missing"):
@@ -484,11 +612,10 @@ def _start_background_check(root: Path, config_dir: Path, logger, profile: str):
     def refresh():
         try:
             report = check_integrity(root, config_dir, profile)
-            if report["state"] == "Not Verified":
-                logger.debug(f"Source integrity baseline refresh unavailable: {report['reason']}")
-            else:
-                for line in format_integrity(report):
-                    logger.info(line)
+            for line in format_integrity(report):
+                logger.info(line)
+            if report.get("diagnostic"):
+                logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
         except Exception:
             # A background diagnostic must not affect the main run or its logs.
             return
@@ -504,15 +631,12 @@ def _start_background_check(root: Path, config_dir: Path, logger, profile: str):
 
 
 def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source"):
-    """Log cached diagnostics immediately; never wait on upstream during startup."""
+    """Run both cached hashing and cold retrieval off the startup thread."""
     try:
-        root, config_dir = Path(root), Path(config_dir)
-        report = check_integrity(root, config_dir, profile, allow_network=False)
-        for line in format_integrity(report):
-            logger.info(line)
-        if report.get("diagnostic"):
-            logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
-        if report["state"] == "Not Verified" and report["reason"] == "authoritative manifest unavailable":
-            _start_background_check(root, config_dir, logger, profile)
+        if os.environ.get("KOMETA_SOURCE_INTEGRITY", "true").strip().lower() in {"false", "0", "no", "off"}:
+            logger.info("Source Integrity: Not Verified (disabled by KOMETA_SOURCE_INTEGRITY)")
+            return
+        logger.info("Source Integrity: Not Verified (comparison in progress)")
+        _start_background_check(Path(root), Path(config_dir), logger, profile)
     except Exception:
         logger.info("Source Integrity: Not Verified (installation could not be inspected)")
