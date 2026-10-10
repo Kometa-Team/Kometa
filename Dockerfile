@@ -9,6 +9,8 @@ ENV KOMETA_DOCKER=True
 # Exact source identity only; the integrity baseline is obtained at runtime.
 ARG KOMETA_GIT_SHA
 ENV KOMETA_GIT_SHA=${KOMETA_GIT_SHA}
+ARG KOMETA_VERSION
+LABEL org.opencontainers.image.version=${KOMETA_VERSION}
 
 COPY . /
 

@@ -67,6 +67,7 @@ jobs:
         run: |
           docker buildx build \
             --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" \
+            --build-arg KOMETA_VERSION="$(tr -d '\r\n' < VERSION)" \
             --build-arg BRANCH_NAME=${{ github.ref_name }} \
             --file ./Dockerfile \
             --platform ${{ matrix.platform }} \
