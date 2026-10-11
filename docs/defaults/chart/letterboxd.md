@@ -31,7 +31,7 @@ collections on within the Letterboxd defaults using Template Variables.
 | `Oscar Best Picture Winners`     | `oscars`            | Collection of films that have won the Academy Award for Best Picture.         |
 | `Roger Ebert's Great Movies`     | `rogerebert`        | Collection of films from Roger Ebert's "Great Movies" essays.                 |
 | `Sight & Sound Greatest Films`   | `sight_sound`       | Collection of Sight and Sound's Greatest Films of All Time.                   |
-| `Top 100 Animation`              | `animation`         | Collection of the Top 100 animated films on Letterboxd.                       |
+| `Top 250 Animation`              | `animation`         | Collection of the Top 250 animated films on Letterboxd.                       |
 | `Top 250 Black-Directed`         | `black_directors`   | Collection of the Top 250 Black-Directed films on Letterboxd.                 |
 | `Top 250 Documentaries`          | `documentaries`     | Collection of the Top 250 documentary films on Letterboxd.                    |
 | `Top 250 Horror`                 | `horror`            | Collection of the Top 250 horror films on Letterboxd.                         |

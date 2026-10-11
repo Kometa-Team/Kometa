@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Correct the Letterboxd animation chart collection name to Top 250 Animation and remove the old Top 100 Animation collection (#3702).
 - Group missing TMDb collection, movie, and show lookups by type in end-of-run summaries while retaining IDs and troubleshooting details in the original log messages.
 - Include searched asset paths in missing artwork log messages while keeping end-of-run warning summaries grouped without paths; retain the existing missing-asset reporting settings.
 

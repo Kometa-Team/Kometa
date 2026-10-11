@@ -186,7 +186,7 @@ collections:
       - name: arr
       - name: custom
 
-  "Top 100 Animation":
+  "Top 250 Animation":
     variables:
       style: color
       key: animation
@@ -195,11 +195,13 @@ collections:
         user: official
         list: top-250-animated-films
       - name: shared
-        translation_key: top_100_animation
+        translation_key: top_250_animation
+        image: chart/<<style>>/Top%20100%20Animation
         url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
       - name: custom
+    delete_collections_named: "Top 100 Animation"
 
   "Top 250 Horror":
     variables:
