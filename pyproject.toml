@@ -6,12 +6,12 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "apprise>=2.0.1",
-    "arrapi==1.4.14",
+    "arrapi==1.5.1",
     "cloudscraper==1.2.71",
     "gitpython==3.2.0",
     "jsonschema==4.26.0",
     "langcodes==3.5.1",
-    "letterboxdpy==6.5.7",
+    "letterboxdpy==6.5.9",
     "lxml==6.1.3",
     "num2words==0.5.14",
     "packaging==26.3",
@@ -28,8 +28,8 @@ dependencies = [
     "schedule==1.2.2",
     "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
     "setuptools==84.0.0",
-    "tenacity==9.1.4",
-    "tmdbapis==1.2.30",
+    "tenacity==9.2.1",
+    "tmdbapis==1.3.1",
 ]
 
 [tool.pytest.ini_options]
@@ -117,7 +117,7 @@ mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-
 
 [dependency-groups]
 # uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
-bootstrap = ["uv==0.12.23"]
+bootstrap = ["uv==0.13.0"]
 
 # Documentation toolchain. Not installed at runtime -- nothing in modules/ or
 # kometa.py imports any of these; they exist only to build the mkdocs site.
@@ -137,20 +137,20 @@ docs = [
     "neoteroi-mkdocs>=1.2.0",
     "paginate>=0.5.7",
     "pygments>=2.21.0",
-    "pymdown-extensions>=12.1",
+    "pymdown-extensions>=12.2",
     "regex>=2026.9.29",
     "requests==2.34.2",
 ]
 
 dev = [
-    "arrapi==1.4.14",
+    "arrapi==1.5.1",
     "bandit==1.9.4",
-    "black==26.10.0",
+    "black==26.10.1",
     "cloudscraper==1.2.71",
     "flake8==7.4.1",
     "gitpython==3.2.0",
     "isort==9.0.2",
-    "letterboxdpy==6.5.7",
+    "letterboxdpy==6.5.9",
     "lxml==6.1.3",
     "num2words==0.5.14",
     "packaging==26.3",
@@ -172,6 +172,6 @@ dev = [
     "schedule==1.2.2",
     "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
     "setuptools==84.0.0",
-    "tenacity==9.1.4",
-    "tmdbapis==1.2.30",
+    "tenacity==9.2.1",
+    "tmdbapis==1.3.1",
 ]
