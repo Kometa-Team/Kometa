@@ -5995,7 +5995,7 @@ class CollectionBuilder:
         self.collection_assets_configured = False
         if self.playlist or self.overlay:
             return
-        configured = metadata.collection_asset_directory or ([] if metadata.asset_directory and not isinstance(metadata.asset_directory, dict) else self.library.collection_asset_directory)
+        configured = metadata.collection_asset_directory or ([] if metadata.asset_directory and not metadata.asset_directory_is_mapping else self.library.collection_asset_directory)
         self.collection_assets_configured = bool(configured)
         self.collection_asset_directory = configured or self.asset_directory
         if "asset_directory" in methods:

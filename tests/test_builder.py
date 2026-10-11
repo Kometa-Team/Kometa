@@ -1897,7 +1897,7 @@ def test_collection_asset_directory_precedence(tmp_path, level):
         directory = tmp_path / name
         directory.mkdir()
         paths[name] = str(directory)
-    metadata = SimpleNamespace(asset_directory=[], collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
+    metadata = SimpleNamespace(asset_directory_is_mapping=False, asset_directory=[], collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
     library = SimpleNamespace(type="Movie", original_mapping_name="Movies", collection_asset_directory=[paths["library"]] if level != "legacy" else [])
     data = {"asset_directory": {"collections": [paths["collection"]]} if level == "collection" else None}
     builder = make_builder(asset_directory=[paths["legacy"]], library=library, data=data)
@@ -2012,7 +2012,7 @@ def test_collection_artwork_override_preserves_item_roots(tmp_path, value):
     root = str(tmp_path)
     override = root if value == "plain" else [root] if value == "list" else {value: root}
     library = SimpleNamespace(type="Movie", collection_asset_directory=["inherited"])
-    metadata = SimpleNamespace(asset_directory=[], collection_asset_directory=[])
+    metadata = SimpleNamespace(asset_directory_is_mapping=False, asset_directory=[], collection_asset_directory=[])
     builder = make_builder(library=library, asset_directory=["items"], data={"asset_directory": override})
     builder._resolve_collection_asset_directory(metadata, {"asset_directory": "asset_directory"})
     assert builder.collection_asset_directory == [root]
@@ -2022,8 +2022,26 @@ def test_collection_artwork_override_preserves_item_roots(tmp_path, value):
 
 def test_plain_collection_file_roots_replace_inherited_collection_roots():
     library = SimpleNamespace(collection_asset_directory=["global collections"])
-    metadata = SimpleNamespace(asset_directory=["file roots"], collection_asset_directory=[])
+    metadata = SimpleNamespace(asset_directory_is_mapping=False, asset_directory=["file roots"], collection_asset_directory=[])
     builder = make_builder(library=library, asset_directory=["file roots"])
     builder._resolve_collection_asset_directory(metadata, {})
     assert builder.collection_asset_directory == ["file roots"]
     assert not builder.collection_assets_configured
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+@pytest.mark.parametrize("inherited", [[], ["global collections"], ["library collections"]])
+def test_collection_file_item_roots_preserve_mapping_inheritance(monkeypatch, grouped, inherited):
+    from modules.meta import DataFile, MetadataFile
+
+    monkeypatch.setattr("modules.meta.logger", FakeLogger())
+    monkeypatch.setattr(DataFile, "load_file", lambda *args, **kwargs: {"collections": {"Test": {"plex_all": True}}})
+    library = SimpleNamespace(type="Movie", collections=[], collection_asset_directory=inherited)
+    config = SimpleNamespace(GitHub=SimpleNamespace(configs_url=""), requested_files=[])
+    roots = {"movies": ["file items"]} if grouped else ["file items"]
+    metadata = MetadataFile(config, library, "File", "collections.yml", {}, roots, "collection")
+    assert metadata.asset_directory == ["file items"]
+    builder = make_builder(library=library, asset_directory=metadata.asset_directory)
+    builder._resolve_collection_asset_directory(metadata, {})
+    assert builder.collection_asset_directory == (inherited if grouped and inherited else ["file items"])
+    assert builder.collection_assets_configured is bool(grouped and inherited)

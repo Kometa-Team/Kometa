@@ -634,6 +634,7 @@ class MetadataFile(DataFile):
         self.file_style = file_style
         self.type_str = f"{file_style.capitalize()} File"
         super().__init__(config, file_type, path, temp_vars, asset_directory, self.type_str)
+        self.asset_directory_is_mapping = isinstance(asset_directory, dict)
         self.asset_directory, self.collection_asset_directory = util.resolve_asset_directories(asset_directory, library.type)
         self.configured_names_only = configured_names_only
         self.data_type = "Collection"
