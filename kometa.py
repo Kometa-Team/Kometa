@@ -454,9 +454,9 @@ def report_duplicate_collections(config):
         for library_name, duplicate_titles in duplicate_libraries:
             logger.warning(f"Plex Warning: Duplicate collection titles detected in {library_name} Library")
             for title, count in duplicate_titles:
-                logger.warning(f"  {count} instances: {title}")
-            logger.warning("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.")
-            logger.warning("")
+                logger.info(f"  {count} instances: {title}")
+            logger.info("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.")
+            logger.info("")
 
 
 def log_validate_footer(start_time, my_requests, label, integrity_run):

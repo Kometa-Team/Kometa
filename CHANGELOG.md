@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Exclude blank warning/error messages from end-of-run summaries, log duplicate-collection counts, advice, and spacer lines at INFO level while retaining a warning per affected library, and group Letterboxd validation failures for missing resources while retaining full errors in detailed summaries (#3704).
+- Group alternate TMDb movie, show, and collection lookup failure messages by type while retaining IDs and API details in the original log and detailed summaries.
 - Correct the Letterboxd animation chart collection name to Top 250 Animation and remove the old Top 100 Animation collection (#3702).
 - Group missing TMDb collection, movie, and show lookups by type in end-of-run summaries while retaining IDs and troubleshooting details in the original log messages.
 - Include searched asset paths in missing artwork log messages while keeping end-of-run warning summaries grouped without paths; retain the existing missing-asset reporting settings.
