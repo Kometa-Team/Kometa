@@ -672,10 +672,7 @@ class Library(ABC):
 
     def is_scheduled_item(self, item):
         """Return whether an item belongs to the scheduled top-level library scope."""
-        return any(
-            key in self.scheduled_item_keys
-            for key in (getattr(item, "ratingKey", None), getattr(item, "parentRatingKey", None), getattr(item, "grandparentRatingKey", None))
-        )
+        return any(key in self.scheduled_item_keys for key in (getattr(item, "ratingKey", None), getattr(item, "parentRatingKey", None), getattr(item, "grandparentRatingKey", None)))
 
     def refresh_item_cache_and_mappings(self):
         """Reload library items and rebuild every rating-key-based lookup.
