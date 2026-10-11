@@ -658,12 +658,24 @@ class Library(ABC):
             end = end or start
             if start > end:
                 raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; index range must be ascending")
-            return {item.ratingKey for item in items if (start <= str(getattr(item, "title", "")).lstrip()[:1].lower() <= end or (include_non_alphabetical and not re.match(r"[a-z]", str(getattr(item, "title", "")).lstrip()[:1], re.IGNORECASE)))}
+
+            def index_initial(item):
+                title = str(getattr(item, "titleSort", None) or getattr(item, "title", "")).lstrip()
+                return title[:1].lower()
+
+            return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
         raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), or index(<range>)")
 
     @property
     def has_schedule_scope(self):
         return self.schedule_mode != "full"
+
+    def is_scheduled_item(self, item):
+        """Return whether an item belongs to the scheduled top-level library scope."""
+        return any(
+            key in self.scheduled_item_keys
+            for key in (getattr(item, "ratingKey", None), getattr(item, "parentRatingKey", None), getattr(item, "grandparentRatingKey", None))
+        )
 
     def refresh_item_cache_and_mappings(self):
         """Reload library items and rebuild every rating-key-based lookup.

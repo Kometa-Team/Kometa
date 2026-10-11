@@ -62,9 +62,15 @@ The `.not` modifier inverts one schedule expression. For example, `weekly.not(mo
 | `index(A-F)` | Titles beginning with letters in the inclusive A through F range. |
 | `index(A-F#)` | The A through F range plus titles beginning with a number, symbol, or other non-alphabetical character. |
 
-`index` matches the first non-whitespace character in a Plex title, case-insensitively. Ranges must be alphabetical and ascending.
+`index` matches the first non-whitespace character in a Plex item's Sort Title, case-insensitively, and falls back to its title when no Sort Title is set. Ranges must be alphabetical and ascending.
 
 When a mode is not `full`, Kometa limits metadata, overlays, item operations, and collection additions to items in scope. It does not remove existing collection members or change custom collection ordering; run with `full` to reconcile the whole library.
+
+???+ warning "Scoped runs can leave outdated results"
+
+    Scoped runs only update items in their selected scope. If a collection or overlay depends on a changing list, such as "Top 10 Today", items outside that scope may remain after they no longer qualify.
+
+    Schedule regular `full` runs to reconcile the whole library. For example, run `diff` daily for quick updates and `full` weekly to remove stale collection members and refresh overlays.
 
 ???+ warning "monthly(N) behaviour change"
     In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.

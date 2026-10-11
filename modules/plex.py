@@ -952,7 +952,7 @@ class Plex(Library):
     def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
         items = self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
         if getattr(self, "has_schedule_scope", False):
-            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.ratingKey in self.scheduled_item_keys]
+            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or self.is_scheduled_item(item)]
         return items
 
     @PLEX_RETRY
@@ -962,7 +962,7 @@ class Plex(Library):
             terms["year"] = year
         items = self.Plex.search(libtype=libtype, **terms)
         if getattr(self, "has_schedule_scope", False):
-            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.ratingKey in self.scheduled_item_keys]
+            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or self.is_scheduled_item(item)]
         return items
 
     def fetch_item(self, item):
@@ -2041,8 +2041,14 @@ class Plex(Library):
         elif method == "plex_id":
             return [(plex_id, "plex") for plex_id in data]
         elif method == "plex_all":
-            logger.info(f"Processing Plex All {data.capitalize()}s")
-            items = self.get_all(builder_level=data)
+            if getattr(self, "has_schedule_scope", False) and self.is_show and data in ["season", "episode"]:
+                logger.info(f"Processing Plex {data.capitalize()}s from Scheduled Shows")
+                method_name = f"{data}s"
+                for show in self.get_all():
+                    items.extend(self.cached_item_subitems(show, method_name))
+            else:
+                logger.info(f"Processing Plex All {data.capitalize()}s")
+                items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":
             logger.info("Processing Plex Watchlist")
             return self.get_watchlist(sort=data, is_playlist=is_playlist)

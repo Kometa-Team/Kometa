@@ -4239,7 +4239,7 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
-            if not self.playlist and getattr(getattr(self, "library", None), "has_schedule_scope", False) is True and item.ratingKey not in self.library.scheduled_item_keys:
+            if not self.playlist and getattr(getattr(self, "library", None), "has_schedule_scope", False) is True and not self.library.is_scheduled_item(item):
                 continue
             if item not in self.found_items:
                 if item.ratingKey in self.filtered_keys:
