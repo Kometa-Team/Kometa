@@ -229,7 +229,7 @@ You can have some control of the files from inside your Configuration file by us
 
     <hr style="margin: 0px;">
     
-    On collection-file entries, a mapping can select item directories by library type (`movies`, `shows`, or `music`) and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. Individual collections can override the collection roots again.
+    On collection-file entries, a mapping can select item directories by library type (`movies`, `shows`, or `music`) and collection artwork with the reserved `collections` key. Omitted or empty entries inherit library/global settings. A nonempty string or list replaces both item and collection roots for that file. Missing paths warn and are skipped, matching legacy lists. Individual collections can override their own artwork roots again without changing item asset directories.
 
     ```yaml
     libraries:

@@ -5987,7 +5987,6 @@ class CollectionBuilder:
                 asset_location,
                 image_type=image_type,
                 image_name=image_name,
-                download_all_urls=self.collection_assets_configured,
             )
             setattr(self, f"collection_{image_type}", image)
 
@@ -5996,7 +5995,7 @@ class CollectionBuilder:
         self.collection_assets_configured = False
         if self.playlist or self.overlay:
             return
-        configured = metadata.collection_asset_directory or self.library.collection_asset_directory
+        configured = metadata.collection_asset_directory or ([] if metadata.asset_directory and not isinstance(metadata.asset_directory, dict) else self.library.collection_asset_directory)
         self.collection_assets_configured = bool(configured)
         self.collection_asset_directory = configured or self.asset_directory
         if "asset_directory" in methods:
@@ -6005,7 +6004,7 @@ class CollectionBuilder:
             override = collections or items
             if override:
                 self.collection_asset_directory = override
-                self.collection_assets_configured = bool(collections)
+                self.collection_assets_configured = True
 
     def _resolve_playlist_users(self):
         self.exclude_users = (util.get_list(self.exclude_users) or []) if self.exclude_users else []

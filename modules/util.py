@@ -605,11 +605,18 @@ def asset_directory_paths(value, err_type="Config"):
         return []
     if not isinstance(value, (str, list)):
         raise Failed(f"{err_type} Error: asset_directory must be a path, list of paths, or mapping")
+    if isinstance(value, list) and any(not isinstance(path, str) for path in value):
+        raise Failed(f"{err_type} Error: asset_directory paths must be strings")
     paths = get_list(value, split=False, return_none=False)
+    valid_paths = []
     for path in paths:
-        if not isinstance(path, str) or not os.path.isdir(path):
-            raise Failed(f"{err_type} Error: Asset Directory Does Not Exist: {path}")
-    return paths
+        if not isinstance(path, str):
+            raise Failed(f"{err_type} Error: asset_directory paths must be strings: {path}")
+        if os.path.exists(path):
+            valid_paths.append(path)
+        else:
+            logger.warning(f"{err_type} Warning: Path does not exist: {os.path.abspath(path)}")
+    return valid_paths
 
 
 def resolve_asset_directories(value, library_type, inherited_items=None, inherited_collections=None):
@@ -617,7 +624,7 @@ def resolve_asset_directories(value, library_type, inherited_items=None, inherit
     if isinstance(value, dict):
         group = {"Movie": "movies", "Video": "movies", "Show": "shows", "Artist": "music"}.get(library_type)
         return value.get(group) or inherited_items or [], value.get("collections") or inherited_collections or []
-    return value or inherited_items or [], inherited_collections or []
+    return (value, []) if value else (inherited_items or [], inherited_collections or [])
 
 
 def load_files(files_to_load, method, err_type="Config", schedule=None, lib_vars=None, single=False):

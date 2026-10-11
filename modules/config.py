@@ -1447,6 +1447,9 @@ class ConfigFile:
                 global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], None)
                 configured_assets = check_for_attribute(lib, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True, do_print=False, save=False)
                 params["asset_directory"], params["collection_asset_directory"] = util.resolve_asset_directories(configured_assets, None, global_items, global_collections)
+                if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
+                    # Log roots once, after the Plex library type is known.
+                    params["defer_asset_directory_logging"] = True
                 params["asset_folders"] = check_for_attribute(
                     lib,
                     "asset_folders",

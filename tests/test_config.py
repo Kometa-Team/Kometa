@@ -704,7 +704,7 @@ def test_same_type_libraries_share_asset_roots(tmp_path, monkeypatch, library_ty
 
 
 @pytest.mark.parametrize("local_grouped", [False, True])
-def test_library_item_override_retains_shared_collections(tmp_path, monkeypatch, local_grouped):
+def test_library_item_override_inherits_collections_only_for_mappings(tmp_path, monkeypatch, local_grouped):
     roots = {name: tmp_path / name for name in ["shared", "local", "collections"]}
     for root in roots.values():
         root.mkdir()
@@ -713,4 +713,16 @@ def test_library_item_override_retains_shared_collections(tmp_path, monkeypatch,
     config_yaml = config_yaml.replace("libraries:\n  Movies:", f"libraries:\n  Movies:\n    settings:\n      asset_directory:{local}")
     config = make_config(tmp_path, config_yaml=config_yaml)
     assert config.libraries[0].asset_directory == [str(roots["local"])]
-    assert config.libraries[0].collection_asset_directory == [str(roots["collections"])]
+    assert config.libraries[0].collection_asset_directory == ([str(roots["collections"])] if local_grouped else [])
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+def test_config_skips_missing_asset_roots(tmp_path, grouped):
+    root = tmp_path / "assets"
+    root.mkdir()
+    missing = tmp_path / "missing"
+    paths = f"\n      - {missing}\n      - {root}" if grouped else f"\n    - {missing}\n    - {root}"
+    value = f"\n    movies:{paths}" if grouped else paths
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:{value}"))
+    assert config.libraries[0].asset_directory == [str(root)]
+    assert any(str(missing) in message for message in config_module.logger.warning_messages)

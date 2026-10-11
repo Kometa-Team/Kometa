@@ -201,13 +201,14 @@ class Library(ABC):
         )
         self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.ignore_labels else False
 
-        if self.asset_directory:
-            logger.info("")
-            for ad in self.asset_directory:
-                logger.info(f"Using Asset Directory: {ad}")
+        if not params.get("defer_asset_directory_logging", False):
+            if self.asset_directory:
+                logger.info("")
+                for ad in self.asset_directory:
+                    logger.info(f"Using Asset Directory: {ad}")
 
-        for ad in self.collection_asset_directory:
-            logger.info(f"Using Collection Asset Directory: {ad}")
+            for ad in self.collection_asset_directory:
+                logger.info(f"Using Collection Asset Directory: {ad}")
 
         if output:
             logger.info("")
@@ -238,7 +239,7 @@ class Library(ABC):
 
     def scan_configured_collection_names(self):
         for file_entry in self.configured_collection_files:
-            file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
+            file_type, metadata_file, temp_vars, asset_directory = file_entry
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
                 self.configured_collection_metadata_files.append(meta_obj)
@@ -253,7 +254,7 @@ class Library(ABC):
         self.scan_configured_collection_names()
         if not operations_only and not overlays_only and not metadata_only:
             for file_entry in self.scanned_collection_files:
-                file_type, metadata_file, temp_vars, asset_directory = file_entry[:4]
+                file_type, metadata_file, temp_vars, asset_directory = file_entry
                 try:
                     meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:
@@ -457,7 +458,7 @@ class Library(ABC):
     def image_update(self, item, image, tmdb=None, title=None, poster=True, image_type=None):
         pass
 
-    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None, download_all_urls=False):
+    def pick_image(self, title, images, prioritize_assets, download_url_assets, item_dir, image_type="poster", image_name=None):
         if image_name is None:
             image_name = image_type
         if images:
@@ -492,8 +493,7 @@ class Library(ABC):
                 "tmdb_show_details",
             ]:
                 if attr in images:
-                    downloadable = attr in ["style_data", f"url_{image_type}"] or (download_all_urls and isinstance(images[attr], str) and attr not in [f"file_{image_type}", "asset_directory", f"pmm_{image_type}"])
-                    if downloadable and download_url_assets and item_dir:
+                    if attr in ["style_data", f"url_{image_type}"] and download_url_assets and item_dir:
                         if "asset_directory" in images:
                             return images["asset_directory"]
                         else:

@@ -121,7 +121,7 @@ The available setting attributes which can be set at each level are outlined bel
               - config/assets/movie_collections
     ```
 
-    Library mappings inherit omitted or empty entries from global settings. The example overrides movie collection artwork while retaining the shared `movies` item paths. Without a `collections` entry, collections use their library's item paths.
+    Library mappings inherit omitted or empty entries from global settings. A nonempty library string or list replaces both item and collection roots, so collections use that library’s item paths. The example overrides movie collection artwork while retaining the shared `movies` item paths. Without a `collections` entry, collections use their library's item paths.
 
     Library-level settings can override the shared item paths for a specific library. Anime libraries use `movies` or `shows` according to their Plex type; use a library override to give them separate assets:
 
@@ -134,7 +134,7 @@ The available setting attributes which can be set at each level are outlined bel
               - config/assets/anime
     ```
 
-    Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
+    Collection-file entries and collection definitions can override artwork with `asset_directory: {collections: config/assets/special_collections}`. The order is collection, collection-file, library, then global. Configured collection roots replace item roots for collection searches, including enabled `url_*` / style downloads and `assets_for_all_collections`; missing artwork does not fall back to item roots.
 
     ???+ example "Simple configuration (shared asset directories)"
 

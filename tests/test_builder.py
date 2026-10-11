@@ -1897,7 +1897,7 @@ def test_collection_asset_directory_precedence(tmp_path, level):
         directory = tmp_path / name
         directory.mkdir()
         paths[name] = str(directory)
-    metadata = SimpleNamespace(collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
+    metadata = SimpleNamespace(asset_directory=[], collection_asset_directory=[paths["file"]] if level in ["file", "collection", "empty"] else [])
     library = SimpleNamespace(type="Movie", original_mapping_name="Movies", collection_asset_directory=[paths["library"]] if level != "legacy" else [])
     data = {"asset_directory": {"collections": [paths["collection"]]} if level == "collection" else None}
     builder = make_builder(asset_directory=[paths["legacy"]], library=library, data=data)
@@ -1952,7 +1952,7 @@ def test_collection_artwork_and_downloads_use_collection_root(tmp_path, asset_fo
         obj=SimpleNamespace(title="My Collection"),
         name="My Collection",
         details={},
-        posters={"tmdb_poster": "https://example.com/poster.png"},
+        posters={"url_poster": "https://example.com/poster.png"},
         backgrounds={"url_background": "https://example.com/background.png"},
         logos={"url_logo": "https://example.com/logo.png"},
         square_arts={"url_square_art": "https://example.com/square.png"},
@@ -1990,3 +1990,40 @@ def test_collection_asset_downloads_still_respect_download_setting(tmp_path, mon
     builder._pick_collection_artwork(str(tmp_path))
     assert builder.collection_poster.is_url
     assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("source", ["tmdb_poster", "tvdb_poster", "tmdb_movie_details"])
+def test_grouped_collection_assets_do_not_download_live_sources(tmp_path, source, monkeypatch):
+    import modules.library as library_module
+    from tests.test_plex import make_plex
+
+    monkeypatch.setattr(library_module, "logger", FakeLogger())
+    requests = SimpleNamespace(download_image=MagicMock())
+    library = make_plex(prioritize_assets=False, download_url_assets=True, config=SimpleNamespace(Requests=requests))
+    builder = make_builder(library=library, obj=SimpleNamespace(title="Collection"), collection_assets_configured=True, posters={source: "https://example.com/poster.png"}, backgrounds={}, logos={}, square_arts={})
+    builder._pick_collection_artwork(str(tmp_path))
+    assert builder.collection_poster.is_url
+    requests.download_image.assert_not_called()
+    assert list(tmp_path.iterdir()) == []
+
+
+@pytest.mark.parametrize("value", ["plain", "list", "movies", "collections"])
+def test_collection_artwork_override_preserves_item_roots(tmp_path, value):
+    root = str(tmp_path)
+    override = root if value == "plain" else [root] if value == "list" else {value: root}
+    library = SimpleNamespace(type="Movie", collection_asset_directory=["inherited"])
+    metadata = SimpleNamespace(asset_directory=[], collection_asset_directory=[])
+    builder = make_builder(library=library, asset_directory=["items"], data={"asset_directory": override})
+    builder._resolve_collection_asset_directory(metadata, {"asset_directory": "asset_directory"})
+    assert builder.collection_asset_directory == [root]
+    assert builder.collection_assets_configured
+    assert builder.asset_directory == ["items"]
+
+
+def test_plain_collection_file_roots_replace_inherited_collection_roots():
+    library = SimpleNamespace(collection_asset_directory=["global collections"])
+    metadata = SimpleNamespace(asset_directory=["file roots"], collection_asset_directory=[])
+    builder = make_builder(library=library, asset_directory=["file roots"])
+    builder._resolve_collection_asset_directory(metadata, {})
+    assert builder.collection_asset_directory == ["file roots"]
+    assert not builder.collection_assets_configured
