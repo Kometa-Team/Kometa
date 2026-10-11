@@ -116,19 +116,25 @@ def test_unknown_validation_failures_keep_their_diagnostics(message):
     assert normalize_summary_message(message) == message
 
 
-def test_duplicate_collection_spacers_do_not_emit_warnings():
+def test_duplicate_collection_details_do_not_repeat_in_warning_summary():
     nodes = [node for node in _module_ast().body if isinstance(node, ast.FunctionDef) and node.name in ("summarize_duplicate_collections", "report_duplicate_collections")]
     logger = MagicMock()
     namespace = {"logger": logger}
     exec(compile(ast.Module(body=nodes, type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
     libraries = [SimpleNamespace(name=name, get_all_collections=lambda: [SimpleNamespace(title="A | B"), SimpleNamespace(title="A | B")]) for name in ("Movies", "Shows")]
     namespace["report_duplicate_collections"](SimpleNamespace(libraries=libraries))
-    assert logger.info.call_count == 3
-    assert all(call.args == ("",) for call in logger.info.call_args_list)
+    info_messages = [call.args[0] for call in logger.info.call_args_list]
+    assert info_messages.count("") == 3
+    assert info_messages.count("  2 instances: A | B") == 2
+    assert info_messages.count("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.") == 2
     messages = [call.args[0] for call in logger.warning.call_args_list]
-    assert len(messages) == 6
-    assert all(message.strip() for message in messages)
-    assert messages.count("  2 instances: A | B") == 2
+    assert messages == [f"Plex Warning: Duplicate collection titles detected in {name} Library" for name in ("Movies", "Shows")]
+    summary = RunLogSummary([])
+    for message in info_messages:
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [INFO] | {message} |")
+    for message in messages:
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [WARNING] | {message} |")
+    assert summary.severity_rows("WARNING") == [(message, 1) for message in messages]
 
 
 def _section_rows(message: str, rating_sources: list[str] | None = None) -> list[tuple[int, str, list[str]]]:
