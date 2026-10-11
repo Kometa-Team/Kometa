@@ -462,20 +462,20 @@ def test_cache_prunes_only_this_repository_and_profile(installation):
     except OSError:
         linked = None
     integrity._write_manifest(current, json.loads(current.read_text()))
-    assert not old.exists()
+    assert old.exists()
     assert current.exists() and docker.exists() and unrelated.read_text() == "keep"
     if linked:
         assert linked.is_symlink()
 
 
-@pytest.mark.parametrize("value", ["false", "FALSE", "0", "no", "off"])
-def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatch, value):
-    monkeypatch.setenv("KOMETA_SOURCE_INTEGRITY", value)
+def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatch):
     monkeypatch.setattr(integrity, "check_integrity", lambda *a, **k: pytest.fail("disabled"))
     monkeypatch.setattr(integrity, "_start_background_check", lambda *a, **k: pytest.fail("disabled"))
     logger = MagicMock()
-    integrity.log_integrity(installation[0], installation[1], logger)
-    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by KOMETA_SOURCE_INTEGRITY)")
+    run = integrity.log_integrity(installation[0], installation[1], logger, enabled=False)
+    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by source-integrity option)")
+    integrity.log_integrity_summary(run, logger)
+    logger.info.assert_called_with("Source Integrity: Not Verified (disabled by source-integrity option)")
 
 
 @pytest.mark.parametrize("cached", [False, True])
@@ -588,3 +588,133 @@ def test_unsupported_export_pattern_is_not_trusted():
     entries = [{"path": ".gitattributes", "sha": integrity._git_hash("blob", content)}]
     with pytest.raises(ValueError, match="Unsupported export pattern"):
         integrity._export_rules(entries, {".gitattributes": base64.b64encode(content).decode()})
+
+
+@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified"])
+def test_summary_repeats_completed_report(state):
+    report = {"state": state, "reason": "upstream validation request failed" if state == "Not Verified" else "", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []}
+    run = integrity.IntegrityRun()
+    run.finish(report)
+    logger = MagicMock()
+    integrity.log_integrity_summary(run, logger)
+    assert [call.args[0] for call in logger.info.call_args_list] == integrity.format_integrity(report)
+    logger.separator.assert_called_once_with("Source Integrity Summary", space=False, border=False)
+
+
+def test_pending_summary_does_not_wait_or_claim_a_failure():
+    run = integrity.IntegrityRun()
+    logger = MagicMock()
+    integrity.log_integrity_summary(run, logger)
+    logger.info.assert_called_once_with("Source Integrity: Not Verified (comparison still in progress at end of run)")
+    assert run.snapshot()["reason"] == "comparison in progress"
+
+
+def test_summary_snapshot_is_independent_of_other_runs():
+    first, second = integrity.IntegrityRun(), integrity.IntegrityRun()
+    first.finish({"state": "Modified", "reason": "", "modified": ["modules/builder.py"], "missing": [], "added": []})
+    snapshot = first.snapshot()
+    snapshot["modified"].clear()
+    assert first.snapshot()["modified"] == ["modules/builder.py"]
+    assert second.snapshot()["reason"] == "comparison in progress"
+
+
+def test_background_report_is_retained_for_summary(installation, monkeypatch):
+    import threading
+
+    complete = threading.Event()
+    original = integrity.check_integrity
+    monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: original(*args, upstream=installation[3], **kwargs))
+    logger = MagicMock()
+    logger.info.side_effect = lambda line: complete.set() if line == "Source Integrity: Verified" else None
+    run = integrity.log_integrity(installation[0], installation[1], logger)
+    assert complete.wait(3)
+    integrity.log_integrity_summary(run, logger)
+    assert logger.info.call_args.args == ("Source Integrity: Verified",)
+
+
+def test_thread_creation_failure_is_in_summary(installation, monkeypatch):
+    def fail(*args, **kwargs):
+        raise RuntimeError("unavailable")
+
+    monkeypatch.setattr(integrity.threading.Thread, "start", fail)
+    logger = MagicMock()
+    run = integrity.log_integrity(installation[0], installation[1], logger)
+    integrity.log_integrity_summary(run, logger)
+    logger.info.assert_called_with("Source Integrity: Not Verified (background check could not be started)")
+
+
+def test_cache_retention_is_bounded(installation):
+    import os
+
+    check(installation)
+    current = cache_path(installation)
+    old = []
+    for index in range(5):
+        path = current.with_name(f"Kometa-Team-Kometa-{index:040x}-source-v2.json")
+        path.write_text("old", encoding="utf-8")
+        os.utime(path, ns=(index + 1, index + 1))
+        old.append(path)
+    integrity._write_manifest(current, json.loads(current.read_text()))
+    assert len(list(current.parent.glob("*-source-v*.json"))) == integrity.CACHE_KEEP
+    assert current.exists() and old[-1].exists() and old[-2].exists()
+    assert not any(path.exists() for path in old[:-2])
+
+
+def test_shared_config_preserves_two_installation_caches(installation, tmp_path, monkeypatch):
+    first, config, first_commit, first_client = installation
+    assert check(installation)["state"] == "Verified"
+    files = {**SHIPPED, "VERSION": b"2.5.2-build4\n"}
+    zipped, second_commit, raw, entries = archive_and_proof(files)
+    second = tmp_path / "second-kometa"
+    for name, content in files.items():
+        path = second / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(content)
+    second_client = MagicMock()
+    second_client.baseline.side_effect = lambda requested, profile: integrity.manifest_from_zip(zipped, requested, profile, raw, entries)
+    monkeypatch.setattr(integrity.timings, "git_sha", lambda root, **kwargs: first_commit if Path(root) == first else second_commit)
+    assert integrity.check_integrity(second, config, upstream=second_client)["state"] == "Verified"
+    first_client.baseline.side_effect = requests.ConnectionError("offline")
+    second_client.baseline.side_effect = requests.ConnectionError("offline")
+    assert check(installation)["state"] == "Verified"
+    assert integrity.check_integrity(second, config, upstream=second_client)["state"] == "Verified"
+    assert first_client.baseline.call_count == second_client.baseline.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "flags, environment, expected",
+    [
+        ([], {}, True),
+        (["--source-integrity"], {}, True),
+        (["--no-source-integrity"], {}, False),
+        (["-si"], {}, True),
+        ([], {"KOMETA_SOURCE_INTEGRITY": "false"}, False),
+        ([], {"KOMETA_SOURCE_INTEGRITY": "true"}, True),
+        (["--source-integrity"], {"KOMETA_SOURCE_INTEGRITY": "false"}, False),
+        (["--no-source-integrity"], {"KOMETA_SOURCE_INTEGRITY": "true"}, True),
+        ([], {"PMM_SOURCE_INTEGRITY": "false"}, False),
+    ],
+)
+def test_source_integrity_uses_standard_argument_resolution(monkeypatch, flags, environment, expected):
+    import argparse
+    import ast
+    import os
+    import sys
+
+    # Execute the real argument table/parser/resolver without starting Kometa or APIs.
+    source = ast.parse((Path(__file__).resolve().parents[1] / "kometa.py").read_text(encoding="utf-8"))
+    start = next(index for index, node in enumerate(source.body) if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "arguments" for target in node.targets))
+    end = next(index for index, node in enumerate(source.body) if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == "env_branch" for target in node.targets))
+    for name in tuple(os.environ):
+        if name.startswith(("KOMETA_", "PMM_")):
+            monkeypatch.delenv(name)
+    for name, value in environment.items():
+        monkeypatch.setenv(name, value)
+    monkeypatch.setattr(sys, "argv", ["kometa.py", *flags])
+    namespace = {"argparse": argparse, "os": os}
+    exec(compile(ast.Module(body=source.body[start:end], type_ignores=[]), "kometa-arguments", "exec"), namespace)
+    assert namespace["run_args"]["source-integrity"] is expected
+    assert namespace["run_args"]["timings"] is False
+    assert "KOMETA_SOURCE_INTEGRITY" in namespace["static_envs"]
+    assert "--no-source-integrity" in namespace["parser"].format_help()
+    assert not namespace["unknown"]

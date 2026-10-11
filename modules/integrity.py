@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import base64
 import codecs
+import copy
 import fnmatch
 import hashlib
 import io
@@ -72,12 +73,29 @@ METADATA = {".kometa_sha", ".kometa_branch", ".kometa_integrity.json", ".env", "
 REQUIRED = {"kometa.py", "VERSION", "requirements.txt"}
 MAX_ARCHIVE = 512 * 1024 * 1024
 MAX_EXPANDED = 1024 * 1024 * 1024
-_pending: set[tuple[str, str, str]] = set()
+CACHE_KEEP = 3
+_pending: dict[tuple[str, str, str], IntegrityRun] = {}
 _pending_lock = threading.Lock()
 
 
 class Unavailable(Exception):
     """The diagnostic cannot safely complete an authoritative comparison."""
+
+
+class IntegrityRun:
+    """Thread-safe result retained for this run's nonblocking footer."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._report = {"state": "Not Verified", "reason": "comparison in progress", "modified": [], "missing": [], "added": []}
+
+    def finish(self, report):
+        with self._lock:
+            self._report = copy.deepcopy(report)
+
+    def snapshot(self):
+        with self._lock:
+            return copy.deepcopy(self._report)
 
 
 def _safe_relative_path(value: str) -> PurePosixPath:
@@ -406,12 +424,20 @@ def _write_manifest(path: Path, manifest: dict[str, Any]):
         os.replace(temporary, path)
         prefix = REPOSITORY.replace("/", "-")
         pattern = re.compile(rf"{re.escape(prefix)}-[0-9a-f]{{40}}-{re.escape(manifest['profile'])}-v[0-9]+\.json")
+        candidates = []
         for old in path.parent.iterdir():
             if old != path and pattern.fullmatch(old.name) and not _is_link(old):
                 try:
-                    old.unlink()
+                    candidates.append((old.stat().st_mtime_ns, old))
                 except OSError:
                     continue
+        # Keep this write plus the two newest other identities for shared configs.
+        for _, old in sorted(candidates, key=lambda item: (item[0], item[1].name), reverse=True)[CACHE_KEEP - 1 :]:
+            try:
+                old.unlink()
+            except OSError:
+                continue
+
     finally:
         if temporary and temporary.exists():
             temporary.unlink()
@@ -602,41 +628,61 @@ def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
     return lines
 
 
-def _start_background_check(root: Path, config_dir: Path, logger, profile: str):
+def _start_background_check(root: Path, config_dir: Path, logger, profile: str, run: IntegrityRun):
     key = (str(root), str(config_dir), profile)
     with _pending_lock:
         if key in _pending:
-            return
-        _pending.add(key)
+            return _pending[key]
+        _pending[key] = run
 
     def refresh():
         try:
             report = check_integrity(root, config_dir, profile)
+            run.finish(report)
             for line in format_integrity(report):
                 logger.info(line)
             if report.get("diagnostic"):
                 logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
         except Exception:
-            # A background diagnostic must not affect the main run or its logs.
-            return
+            run.finish({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
         finally:
             with _pending_lock:
-                _pending.discard(key)
+                _pending.pop(key, None)
 
     try:
         threading.Thread(target=refresh, name="Kometa source integrity", daemon=True).start()
     except Exception:
+        run.finish({"state": "Not Verified", "reason": "background check could not be started", "modified": [], "missing": [], "added": []})
         with _pending_lock:
-            _pending.discard(key)
+            _pending.pop(key, None)
+    return run
 
 
-def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source"):
+def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source", enabled: bool = True) -> IntegrityRun:
     """Run both cached hashing and cold retrieval off the startup thread."""
+    run = IntegrityRun()
     try:
-        if os.environ.get("KOMETA_SOURCE_INTEGRITY", "true").strip().lower() in {"false", "0", "no", "off"}:
-            logger.info("Source Integrity: Not Verified (disabled by KOMETA_SOURCE_INTEGRITY)")
-            return
+        if not enabled:
+            run.finish({"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []})
+            for line in format_integrity(run.snapshot()):
+                logger.info(line)
+            return run
         logger.info("Source Integrity: Not Verified (comparison in progress)")
-        _start_background_check(Path(root), Path(config_dir), logger, profile)
+        return _start_background_check(Path(root), Path(config_dir), logger, profile, run)
     except Exception:
+        run.finish({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
         logger.info("Source Integrity: Not Verified (installation could not be inspected)")
+        return run
+
+
+def log_integrity_summary(run: IntegrityRun, logger):
+    """Repeat the completed result, or pending reason, without joining the thread."""
+    try:
+        report = run.snapshot()
+        if report["reason"] == "comparison in progress":
+            report["reason"] = "comparison still in progress at end of run"
+        logger.separator("Source Integrity Summary", space=False, border=False)
+        for line in format_integrity(report):
+            logger.info(line)
+    except Exception:
+        logger.info("Source Integrity: Not Verified (summary unavailable)")
