@@ -23,10 +23,24 @@ def startup_configuration(monkeypatch):
         "primary_translations": ["en-US"],
         "countries": [{"iso_3166_1": "US", "english_name": "United States"}],
         "images": {"secure_base_url": "https://image.tmdb.org/t/p/"},
+        "jobs": {},
+        "timezones": {},
     }
-    request = MagicMock(return_value=data)
-    monkeypatch.setattr(API3, "configuration_get_api_configuration", request)
-    return data, request
+    requests = SimpleNamespace(
+        configuration=MagicMock(return_value={"images": data["images"]}),
+        countries=MagicMock(return_value=data["countries"]),
+        jobs=MagicMock(return_value=data["jobs"]),
+        languages=MagicMock(return_value=data["languages"]),
+        primary_translations=MagicMock(return_value=data["primary_translations"]),
+        timezones=MagicMock(return_value=data["timezones"]),
+    )
+    monkeypatch.setattr(API3, "configuration_get_api_configuration", requests.configuration)
+    monkeypatch.setattr(API3, "configuration_get_countries", requests.countries)
+    monkeypatch.setattr(API3, "configuration_get_jobs", requests.jobs)
+    monkeypatch.setattr(API3, "configuration_get_languages", requests.languages)
+    monkeypatch.setattr(API3, "configuration_get_primary_translations", requests.primary_translations)
+    monkeypatch.setattr(API3, "configuration_get_timezones", requests.timezones)
+    return data, requests
 
 
 @pytest.mark.parametrize("language", ["en", "en-US"])
@@ -34,9 +48,9 @@ def test_startup_accepts_valid_language_configuration(startup_configuration, lan
     _, request = startup_configuration
     api = tmdb.KometaTMDbAPIs("test-key", language=language)
     assert api.language == language
-    assert request.call_count == 1
+    assert request.configuration.call_count == 1
     assert api.configuration() is api._config
-    assert request.call_count == 1
+    assert request.configuration.call_count == 1
     tmdb.logger.trace.assert_not_called()
 
 
@@ -58,26 +72,28 @@ def test_startup_accepts_valid_language_configuration(startup_configuration, lan
 )
 def test_startup_refetches_malformed_configuration(startup_configuration, field, value):
     data, request = startup_configuration
-    rejected = {**data, field: value}
-    request.side_effect = [rejected, data]
+    rejected = data[field]
+    getattr(request, field).side_effect = [value, rejected]
     api = tmdb.KometaTMDbAPIs("test-key", language="en")
     assert api.language == "en"
-    assert request.call_count == 2
+    assert getattr(request, field).call_count == 2
     assert len(tmdb.logger.warning_messages) == 1
-    tmdb.logger.trace.assert_called_once_with(f"Rejected TMDb language configuration response: {rejected!r}")
+    message = tmdb.logger.trace.call_args.args[0]
+    assert message.startswith("Rejected TMDb language configuration response: ")
+    assert repr(value) in message
 
 
 @pytest.mark.parametrize("response", [None, [], {}, {"languages": []}])
 def test_startup_configuration_failure_has_bounded_retries(startup_configuration, response):
     _, request = startup_configuration
-    request.return_value = response
+    request.languages.return_value = response
     config = SimpleNamespace(Requests=SimpleNamespace(session=None), Cache=None)
     with pytest.raises(Failed, match="not a language setting error"):
         tmdb.TMDb(config, {"apikey": "test-key", "language": "en", "expiration": 60})
-    assert request.call_count == 3
+    assert request.languages.call_count == 3
     assert len(tmdb.logger.warning_messages) == 2
     assert tmdb.logger.trace.call_count == 3
-    tmdb.logger.trace.assert_called_with(f"Rejected TMDb language configuration response: {response!r}")
+    assert repr(response) in tmdb.logger.trace.call_args.args[0]
 
 
 def test_startup_does_not_retry_invalid_user_language(startup_configuration):
@@ -86,7 +102,7 @@ def test_startup_does_not_retry_invalid_user_language(startup_configuration):
     _, request = startup_configuration
     with pytest.raises(Invalid, match="Language: invalid"):
         tmdb.KometaTMDbAPIs("test-key", language="invalid")
-    assert request.call_count == 1
+    assert request.configuration.call_count == 1
     assert tmdb.logger.warning_messages == []
 
 
@@ -94,10 +110,10 @@ def test_startup_does_not_retry_authentication_failure(startup_configuration):
     from tmdbapis import Unauthorized
 
     _, request = startup_configuration
-    request.side_effect = Unauthorized("Invalid API key")
+    request.configuration.side_effect = Unauthorized("Invalid API key")
     with pytest.raises(Unauthorized):
         tmdb.KometaTMDbAPIs("test-key", language="en")
-    assert request.call_count == 1
+    assert request.configuration.call_count == 1
     assert tmdb.logger.warning_messages == []
 
 
