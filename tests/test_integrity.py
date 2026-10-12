@@ -470,60 +470,94 @@ def test_cache_prunes_only_this_repository_and_profile(installation):
 
 def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatch):
     monkeypatch.setattr(integrity, "check_integrity", lambda *a, **k: pytest.fail("disabled"))
-    monkeypatch.setattr(integrity, "_start_background_check", lambda *a, **k: pytest.fail("disabled"))
+    monkeypatch.setattr(integrity.threading.Thread, "start", lambda *a: pytest.fail("disabled"))
     logger = MagicMock()
-    run = integrity.log_integrity(installation[0], installation[1], logger, enabled=False)
-    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by source-integrity option)")
-    integrity.log_integrity_summary(run, logger)
-    logger.info.assert_called_with("Source Integrity: Not Verified (disabled by source-integrity option)")
+    integrity.log_integrity(installation[0], installation[1], logger, enabled=False)
+    logger.info.assert_called_once_with("    Source Integrity: Disabled (source-integrity option)")
 
 
 @pytest.mark.parametrize("cached", [False, True])
-def test_startup_does_not_wait_for_hashing_or_download(installation, monkeypatch, cached):
-    import threading
-
+def test_startup_logs_completed_comparison_once(installation, monkeypatch, cached):
     if cached:
         check(installation)
         installation[3].baseline.side_effect = requests.ConnectionError("offline")
+    original = integrity.check_integrity
+    monkeypatch.setattr(integrity, "check_integrity", lambda *args: original(*args, upstream=installation[3]))
+    logger = MagicMock()
+    integrity.log_integrity(installation[0], installation[1], logger)
+    logger.info.assert_called_once_with("    Source Integrity: Verified")
+    logger.separator.assert_not_called()
+
+
+@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified", "exception"])
+def test_startup_logs_result_or_inspection_error(installation, monkeypatch, state):
+    report = {"state": state, "reason": "authoritative manifest unavailable", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []}
+    if state == "exception":
+
+        def fail(*args):
+            raise RuntimeError("unexpected")
+
+        monkeypatch.setattr(integrity, "check_integrity", fail)
+        report.update(state="Not Verified", reason="installation could not be inspected")
+    else:
+        monkeypatch.setattr(integrity, "check_integrity", lambda *args: report)
+    logger = MagicMock()
+    integrity.log_integrity(installation[0], installation[1], logger)
+    assert [call.args[0] for call in logger.info.call_args_list] == [f"    {line}" for line in integrity.format_integrity(report)]
+
+
+@pytest.mark.parametrize("cached", [False, True])
+def test_startup_timeout_has_no_late_log(installation, monkeypatch, cached):
+    import threading
+    import time
+
+    if cached:
+        check(installation)
     entered, release, finished = threading.Event(), threading.Event(), threading.Event()
     original = integrity.check_integrity
 
-    def slow_check(*args, **kwargs):
+    def slow_check(*args):
         entered.set()
         assert release.wait(3)
         try:
-            return original(*args, upstream=installation[3], **kwargs)
+            return original(*args, upstream=installation[3])
         finally:
             finished.set()
 
     monkeypatch.setattr(integrity, "check_integrity", slow_check)
+    monkeypatch.setattr(integrity, "STARTUP_TIMEOUT", 0.02)
     logger = MagicMock()
-    integrity.log_integrity(installation[0], installation[1], logger)
-    assert entered.wait(1)
-    assert not finished.is_set()
-    logger.info.assert_called_with("Source Integrity: Not Verified (comparison in progress)")
-    release.set()
+    started = time.monotonic()
+    try:
+        report = integrity.log_integrity(installation[0], installation[1], logger)
+        assert entered.is_set()
+        assert time.monotonic() - started < 1
+        logger.info.assert_called_once_with("    Source Integrity: Check unavailable (startup time limit reached; local files were not verified)")
+    finally:
+        release.set()
     assert finished.wait(3)
+    assert cache_path(installation).exists()
+    assert original(installation[0], installation[1], allow_network=False)["state"] == "Verified"
+    logger.info.assert_called_once()
+    logger.debug.assert_not_called()
+    footer = MagicMock()
+    integrity.log_integrity_summary(report, footer)
+    footer.info.assert_called_once_with("Source Integrity: Check unavailable (startup time limit reached; local files were not verified)")
 
 
-@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified", "exception"])
-def test_background_failure_does_not_prevent_startup(installation, monkeypatch, state):
-    import threading
-
-    logged = threading.Event()
-    logger = MagicMock()
-    logger.info.side_effect = lambda line: logged.set() if "comparison in progress" not in line else None
-    if state == "exception":
-
-        def fail(*args, **kwargs):
-            logged.set()
-            raise RuntimeError("unexpected")
-
-        monkeypatch.setattr(integrity, "check_integrity", fail)
-    else:
-        monkeypatch.setattr(integrity, "check_integrity", lambda *a, **k: {"state": state, "reason": "authoritative manifest unavailable", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []})
-    integrity.log_integrity(installation[0], installation[1], logger)
-    assert logged.wait(3)
+def test_upstream_deadline_allows_retrieval_after_startup_timeout(monkeypatch):
+    clock = [100.0]
+    monkeypatch.setattr(integrity.time, "monotonic", lambda: clock[0])
+    client = integrity.Upstream()
+    try:
+        assert integrity.STARTUP_TIMEOUT == 30
+        clock[0] += 31
+        assert client._remaining() == 149
+        clock[0] = 280
+        with pytest.raises(integrity.Unavailable, match="authoritative manifest unavailable"):
+            client._remaining()
+    finally:
+        client.close()
 
 
 @pytest.mark.parametrize("status", [403, 429, 500])
@@ -590,57 +624,69 @@ def test_unsupported_export_pattern_is_not_trusted():
         integrity._export_rules(entries, {".gitattributes": base64.b64encode(content).decode()})
 
 
-@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified"])
-def test_summary_repeats_completed_report(state):
-    report = {"state": state, "reason": "upstream validation request failed" if state == "Not Verified" else "", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []}
-    run = integrity.IntegrityRun()
-    run.finish(report)
+@pytest.mark.parametrize("reason", ["upstream validation request failed", "upstream commit could not be validated", "authoritative manifest unavailable"])
+def test_unavailable_startup_explains_files_were_not_verified(installation, monkeypatch, reason):
+    report = {"state": "Not Verified", "reason": reason, "modified": [], "missing": [], "added": []}
+    monkeypatch.setattr(integrity, "check_integrity", lambda *args: report)
     logger = MagicMock()
-    integrity.log_integrity_summary(run, logger)
-    assert [call.args[0] for call in logger.info.call_args_list] == integrity.format_integrity(report)
-    logger.separator.assert_called_once_with("Source Integrity Summary", space=False, border=False)
+    integrity.log_integrity(installation[0], installation[1], logger)
+    explanation = "could not complete upstream validation" if reason == "upstream validation request failed" else reason
+    logger.info.assert_called_once_with(f"    Source Integrity: Check unavailable ({explanation}; local files were not verified)")
 
 
-def test_pending_summary_does_not_wait_or_claim_a_failure():
-    run = integrity.IntegrityRun()
-    logger = MagicMock()
-    integrity.log_integrity_summary(run, logger)
-    logger.info.assert_called_once_with("Source Integrity: Not Verified (comparison still in progress at end of run)")
-    assert run.snapshot()["reason"] == "comparison in progress"
-
-
-def test_summary_snapshot_is_independent_of_other_runs():
-    first, second = integrity.IntegrityRun(), integrity.IntegrityRun()
-    first.finish({"state": "Modified", "reason": "", "modified": ["modules/builder.py"], "missing": [], "added": []})
-    snapshot = first.snapshot()
-    snapshot["modified"].clear()
-    assert first.snapshot()["modified"] == ["modules/builder.py"]
-    assert second.snapshot()["reason"] == "comparison in progress"
-
-
-def test_background_report_is_retained_for_summary(installation, monkeypatch):
-    import threading
-
-    complete = threading.Event()
-    original = integrity.check_integrity
-    monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: original(*args, upstream=installation[3], **kwargs))
-    logger = MagicMock()
-    logger.info.side_effect = lambda line: complete.set() if line == "Source Integrity: Verified" else None
-    run = integrity.log_integrity(installation[0], installation[1], logger)
-    assert complete.wait(3)
-    integrity.log_integrity_summary(run, logger)
-    assert logger.info.call_args.args == ("Source Integrity: Verified",)
-
-
-def test_thread_creation_failure_is_in_summary(installation, monkeypatch):
+def test_thread_creation_failure_is_logged_at_startup(installation, monkeypatch):
     def fail(*args, **kwargs):
         raise RuntimeError("unavailable")
 
     monkeypatch.setattr(integrity.threading.Thread, "start", fail)
     logger = MagicMock()
-    run = integrity.log_integrity(installation[0], installation[1], logger)
-    integrity.log_integrity_summary(run, logger)
-    logger.info.assert_called_with("Source Integrity: Not Verified (background check could not be started)")
+    integrity.log_integrity(installation[0], installation[1], logger)
+    logger.info.assert_called_once_with("    Source Integrity: Check unavailable (integrity check could not be started; local files were not verified)")
+
+
+@pytest.mark.parametrize("state", ["Verified", "Modified", "Not Verified", "unknown"])
+def test_summary_repeats_startup_result(state):
+    report = {"state": state, "reason": "authoritative manifest unavailable", "modified": ["modules/builder.py"] if state == "Modified" else [], "missing": [], "added": []}
+    logger = MagicMock()
+    integrity.log_integrity_summary(report, logger)
+    logger.separator.assert_called_once_with("Source Integrity Summary (startup check)", space=False, border=False)
+    assert [call.args[0] for call in logger.info.call_args_list] == integrity.format_integrity(report)
+    if state == "unknown":
+        logger.info.assert_called_once_with("Source Integrity: Check unavailable (result unavailable; local files were not verified)")
+
+
+@pytest.mark.parametrize(
+    "reason",
+    [
+        "startup time limit reached",
+        "upstream validation request failed",
+        "upstream commit could not be validated",
+        "authoritative build identity unavailable",
+        "authoritative manifest unavailable",
+        "installation could not be inspected",
+        "integrity check could not be started",
+        "conflicting build identities",
+        "installation profile unavailable",
+    ],
+)
+def test_unavailable_summary_does_not_claim_detected_changes(reason):
+    report = {"state": "Not Verified", "reason": reason, "modified": [], "missing": [], "added": []}
+    logger = MagicMock()
+    integrity.log_integrity_summary(report, logger)
+    explanation = "could not complete upstream validation" if reason == "upstream validation request failed" else reason
+    logger.info.assert_called_once_with(f"Source Integrity: Check unavailable ({explanation}; local files were not verified)")
+
+
+def test_disabled_summary():
+    logger = MagicMock()
+    integrity.log_integrity_summary({"state": "Not Verified", "reason": "disabled by source-integrity option"}, logger)
+    logger.info.assert_called_once_with("Source Integrity: Disabled (source-integrity option)")
+
+
+def test_summary_with_missing_result_is_unavailable():
+    logger = MagicMock()
+    integrity.log_integrity_summary({}, logger)
+    logger.info.assert_called_once_with("Source Integrity: Check unavailable (summary unavailable; local files were not verified)")
 
 
 def test_cache_retention_is_bounded(installation):

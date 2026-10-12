@@ -1,4 +1,4 @@
-"""Nonblocking source integrity diagnostics.
+"""Startup source integrity diagnostics.
 
 Expected SHA-256 values always come from pristine upstream archives. Git's
 content-addressed commit/tree objects bind cached paths to the requested commit;
@@ -74,28 +74,12 @@ REQUIRED = {"kometa.py", "VERSION", "requirements.txt"}
 MAX_ARCHIVE = 512 * 1024 * 1024
 MAX_EXPANDED = 1024 * 1024 * 1024
 CACHE_KEEP = 3
-_pending: dict[tuple[str, str, str], IntegrityRun] = {}
-_pending_lock = threading.Lock()
+STARTUP_TIMEOUT = 30
+UPSTREAM_TIMEOUT = 180
 
 
 class Unavailable(Exception):
     """The diagnostic cannot safely complete an authoritative comparison."""
-
-
-class IntegrityRun:
-    """Thread-safe result retained for this run's nonblocking footer."""
-
-    def __init__(self):
-        self._lock = threading.Lock()
-        self._report = {"state": "Not Verified", "reason": "comparison in progress", "modified": [], "missing": [], "added": []}
-
-    def finish(self, report):
-        with self._lock:
-            self._report = copy.deepcopy(report)
-
-    def snapshot(self):
-        with self._lock:
-            return copy.deepcopy(self._report)
 
 
 def _safe_relative_path(value: str) -> PurePosixPath:
@@ -328,7 +312,7 @@ class Upstream:
     """Bounded, TLS-verified requests; no long application retry loop at startup."""
 
     def __init__(self):
-        self.deadline = time.monotonic() + 180
+        self.deadline = time.monotonic() + UPSTREAM_TIMEOUT
         self.session = requests.Session()
         self.session.headers["User-Agent"] = "Kometa source integrity"
 
@@ -617,7 +601,14 @@ def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
     if report["state"] == "Verified":
         return ["Source Integrity: Verified"]
     if report["state"] == "Not Verified":
-        return [f"Source Integrity: Not Verified ({report['reason']})"]
+        reason = report["reason"]
+        if reason == "disabled by source-integrity option":
+            return ["Source Integrity: Disabled (source-integrity option)"]
+        if reason == "upstream validation request failed":
+            reason = "could not complete upstream validation"
+        return [f"Source Integrity: Check unavailable ({reason}; local files were not verified)"]
+    if report["state"] != "Modified":
+        return ["Source Integrity: Check unavailable (result unavailable; local files were not verified)"]
     lines = ["Source Integrity: MODIFIED"]
     for category in ("modified", "missing", "added"):
         if report[category]:
@@ -628,61 +619,43 @@ def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
     return lines
 
 
-def _start_background_check(root: Path, config_dir: Path, logger, profile: str, run: IntegrityRun):
-    key = (str(root), str(config_dir), profile)
-    with _pending_lock:
-        if key in _pending:
-            return _pending[key]
-        _pending[key] = run
+def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source", enabled: bool = True) -> dict[str, Any]:
+    """Log one startup result, waiting at most 30 seconds for the silent worker."""
+    report = {"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []}
+    if enabled:
+        completed = threading.Event()
+        result = {}
 
-    def refresh():
+        def inspect():
+            try:
+                result.update(check_integrity(Path(root), Path(config_dir), profile))
+            except Exception:
+                result.update({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
+            finally:
+                completed.set()
+
+        deadline = time.monotonic() + STARTUP_TIMEOUT
         try:
-            report = check_integrity(root, config_dir, profile)
-            run.finish(report)
-            for line in format_integrity(report):
-                logger.info(line)
-            if report.get("diagnostic"):
-                logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
+            threading.Thread(target=inspect, name="Kometa source integrity", daemon=True).start()
+            if completed.wait(max(0, deadline - time.monotonic())):
+                report = result
+            else:
+                report["reason"] = "startup time limit reached"
         except Exception:
-            run.finish({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
-        finally:
-            with _pending_lock:
-                _pending.pop(key, None)
+            report["reason"] = "integrity check could not be started"
+    for line in format_integrity(report):
+        logger.info(f"    {line}")
+    if report.get("diagnostic"):
+        logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
+    return copy.deepcopy(report)
 
+
+def log_integrity_summary(report: dict[str, Any], logger):
+    """Repeat the startup result without waiting for or adopting a late result."""
     try:
-        threading.Thread(target=refresh, name="Kometa source integrity", daemon=True).start()
+        lines = format_integrity(report)
     except Exception:
-        run.finish({"state": "Not Verified", "reason": "background check could not be started", "modified": [], "missing": [], "added": []})
-        with _pending_lock:
-            _pending.pop(key, None)
-    return run
-
-
-def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source", enabled: bool = True) -> IntegrityRun:
-    """Run both cached hashing and cold retrieval off the startup thread."""
-    run = IntegrityRun()
-    try:
-        if not enabled:
-            run.finish({"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []})
-            for line in format_integrity(run.snapshot()):
-                logger.info(line)
-            return run
-        logger.info("Source Integrity: Not Verified (comparison in progress)")
-        return _start_background_check(Path(root), Path(config_dir), logger, profile, run)
-    except Exception:
-        run.finish({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
-        logger.info("Source Integrity: Not Verified (installation could not be inspected)")
-        return run
-
-
-def log_integrity_summary(run: IntegrityRun, logger):
-    """Repeat the completed result, or pending reason, without joining the thread."""
-    try:
-        report = run.snapshot()
-        if report["reason"] == "comparison in progress":
-            report["reason"] = "comparison still in progress at end of run"
-        logger.separator("Source Integrity Summary", space=False, border=False)
-        for line in format_integrity(report):
-            logger.info(line)
-    except Exception:
-        logger.info("Source Integrity: Not Verified (summary unavailable)")
+        lines = ["Source Integrity: Check unavailable (summary unavailable; local files were not verified)"]
+    logger.separator("Source Integrity Summary (startup check)", space=False, border=False)
+    for line in lines:
+        logger.info(line)

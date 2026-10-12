@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Limit the startup integrity wait to 30 seconds while allowing upstream retrieval up to 180 seconds to finish silently and cache a baseline. Use clearer unavailable and disabled statuses, and have the end-of-run summary explicitly repeat the startup check result.
 - Exclude blank warning/error messages from end-of-run summaries, log duplicate-collection counts, advice, and spacer lines at INFO level while retaining a warning per affected library, and group Letterboxd validation failures for missing resources while retaining full errors in detailed summaries (#3704).
 - Group alternate TMDb movie, show, and collection lookup failure messages by type while retaining IDs and API details in the original log and detailed summaries.
 - Correct the Letterboxd animation chart collection name to Top 250 Animation and remove the old Top 100 Animation collection (#3702).
