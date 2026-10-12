@@ -9,13 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add a non-blocking startup source integrity diagnostic comparing distributed files against pristine upstream source for the exact running commit, with an offline reusable cache and modified/missing/added file reporting; include the full Kometa version and build number in Docker image metadata.
+- Add a source integrity diagnostic comparing distributed files against pristine upstream source for the exact running commit, with reusable cached baselines and modified/missing/added file reporting. Startup waits at most 30 seconds while retrieval has up to 180 seconds to finish silently; clearer status messages and the end-of-run summary describe the startup check, and Docker image metadata includes the full Kometa version and build number.
 - Add grouped `asset_directory` mappings keyed by library type (`movies`, `shows`, `music`) and `collections` at global, library, collection-file, and collection levels to separate collection artwork and enabled downloads from item assets, including `assets_for_all_collections`.
 - Add the `commonsense_rating` numeric Plex filter for `plex_search` and `smart_filter`, using Plex's Common Sense Media age-rating metadata.
 
 ### Fixed
 
-- Limit the startup integrity wait to 30 seconds while allowing upstream retrieval up to 180 seconds to finish silently and cache a baseline. Use clearer unavailable and disabled statuses, and have the end-of-run summary explicitly repeat the startup check result.
 - Exclude blank warning/error messages from end-of-run summaries, log duplicate-collection counts, advice, and spacer lines at INFO level while retaining a warning per affected library, and group Letterboxd validation failures for missing resources while retaining full errors in detailed summaries (#3704).
 - Group alternate TMDb movie, show, and collection lookup failure messages by type while retaining IDs and API details in the original log and detailed summaries.
 - Correct the Letterboxd animation chart collection name to Top 250 Animation and remove the old Top 100 Animation collection (#3702).
