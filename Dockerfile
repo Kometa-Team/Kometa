@@ -17,20 +17,26 @@ LABEL org.opencontainers.image.source="https://github.com/Kometa-Team/Kometa"
 
 COPY . /
 
-# Reject images without the exact source identity and version, and retain the
-# identity independently of runtime environment overrides.
+# Warn until the metadata workflow reaches master; retain validated identity
+# independently of runtime environment overrides.
 RUN /.venv/bin/python3 - <<'PY'
 import os
 import re
+import sys
 from pathlib import Path
 
 commit = os.environ.get("KOMETA_GIT_SHA", "")
 version = os.environ.get("KOMETA_VERSION", "")
-if not re.fullmatch(r"[0-9a-f]{40}", commit):
-    raise SystemExit("KOMETA_GIT_SHA must be the full source commit SHA")
-if not version or version != Path("VERSION").read_text().strip():
-    raise SystemExit("KOMETA_VERSION must match the source VERSION file")
-Path(".kometa_sha").write_text(commit + "\n")
+hint = Path(".kometa_sha")
+hint.unlink(missing_ok=True)
+valid_commit = bool(re.fullmatch(r"[0-9a-f]{40}", commit))
+valid_version = bool(version) and version == Path("VERSION").read_text().strip()
+if not valid_commit:
+    print("WARNING: KOMETA_GIT_SHA must be the full source commit SHA; source identity hint omitted", file=sys.stderr)
+if not valid_version:
+    print("WARNING: KOMETA_VERSION must match the source VERSION file; source identity hint omitted", file=sys.stderr)
+if valid_commit and valid_version:
+    hint.write_text(commit + "\n")
 PY
 
 VOLUME /config

@@ -159,7 +159,7 @@ When building from a Git checkout, pass its full commit SHA and the version from
 docker build --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" --build-arg KOMETA_VERSION="$(cat VERSION)" -t kometa-local .
 ```
 
-Both build arguments are required. The build rejects a missing or invalid commit SHA or a version that does not match the source `VERSION` file.
+Provide both build arguments to embed validated source identity in `/.kometa_sha`, which remains available when the runtime environment value is empty or absent. Missing or invalid metadata currently produces a build warning and omits that hint, allowing the existing release workflow to continue building images. Strict enforcement can follow after the metadata workflow reaches `master` and a published nightly image has been checked for the expected commit and version.
 
 ## Customizing the docker-compose file with runtime flags and ENV vars
 

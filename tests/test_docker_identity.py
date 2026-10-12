@@ -35,9 +35,10 @@ def test_docker_build_identity(tmp_path, commit, version, expected_error):
         env["KOMETA_VERSION"] = version
     result = subprocess.run([sys.executable, "-c", validation], cwd=tmp_path, env=env, capture_output=True, text=True)
     if expected_error:
-        assert result.returncode != 0
+        assert result.returncode == 0, result.stderr
+        assert "WARNING:" in result.stderr
         assert expected_error in result.stderr
-        assert hint.read_text() == "stale hint"
+        assert not hint.exists()
     else:
         assert result.returncode == 0, result.stderr
         assert hint.read_text() == commit + "\n"
