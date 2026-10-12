@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v2.5.3] - 2026-10-12
+
+
 ### Added
 
 - Add a source integrity diagnostic comparing distributed files against pristine upstream source for the exact running commit, with reusable cached baselines and modified/missing/added file reporting. Startup waits at most 30 seconds while retrieval has up to 180 seconds to finish silently; clearer status messages and the end-of-run summary describe the startup check, and Docker image metadata includes the full Kometa version and build number.
@@ -476,8 +479,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Prior history is captured in [GitHub Releases](https://github.com/Kometa-Team/Kometa/releases).
 
-[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.2...HEAD
-[v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.2
+[unreleased]: https://github.com/Kometa-Team/Kometa/compare/v2.5.3...HEAD
+[v2.5.3]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.3
+[v2.5.2]: https://github.com/Kometa-Team/Kometa/compare/v2.5.1...v2.5.2
 [v2.5.1]: https://github.com/Kometa-Team/Kometa/compare/v2.5.0...v2.5.1
 [v2.5.0]: https://github.com/Kometa-Team/Kometa/compare/v2.4.9...v2.5.0
 [v2.4.9]: https://github.com/Kometa-Team/Kometa/compare/v2.4.8...v2.4.9
