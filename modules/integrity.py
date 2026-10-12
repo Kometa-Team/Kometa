@@ -640,7 +640,7 @@ def _start_background_check(root: Path, config_dir: Path, logger, profile: str, 
             report = check_integrity(root, config_dir, profile)
             run.finish(report)
             for line in format_integrity(report):
-                logger.info(f"    {line}")
+                logger.info(line)
             if report.get("diagnostic"):
                 logger.debug(f"Source integrity diagnostic: {report['diagnostic']}")
         except Exception:
@@ -665,13 +665,13 @@ def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str
         if not enabled:
             run.finish({"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []})
             for line in format_integrity(run.snapshot()):
-                logger.info(f"    {line}")
+                logger.info(line)
             return run
-        logger.info("    Source Integrity: Not Verified (comparison in progress)")
+        logger.info("Source Integrity: Not Verified (comparison in progress)")
         return _start_background_check(Path(root), Path(config_dir), logger, profile, run)
     except Exception:
         run.finish({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
-        logger.info("    Source Integrity: Not Verified (installation could not be inspected)")
+        logger.info("Source Integrity: Not Verified (installation could not be inspected)")
         return run
 
 

@@ -475,7 +475,7 @@ def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatc
     monkeypatch.setattr(integrity, "_start_background_check", lambda *a, **k: pytest.fail("disabled"))
     logger = MagicMock()
     run = integrity.log_integrity(installation[0], installation[1], logger, enabled=False)
-    logger.info.assert_called_once_with("    Source Integrity: Not Verified (disabled by source-integrity option)")
+    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by source-integrity option)")
     integrity.log_integrity_summary(run, logger)
     logger.info.assert_called_with("Source Integrity: Not Verified (disabled by source-integrity option)")
 
@@ -503,7 +503,7 @@ def test_startup_does_not_wait_for_hashing_or_download(installation, monkeypatch
     integrity.log_integrity(installation[0], installation[1], logger)
     assert entered.wait(1)
     assert not finished.is_set()
-    logger.info.assert_called_with("    Source Integrity: Not Verified (comparison in progress)")
+    logger.info.assert_called_with("Source Integrity: Not Verified (comparison in progress)")
     release.set()
     assert finished.wait(3)
 
@@ -627,7 +627,7 @@ def test_background_report_is_retained_for_summary(installation, monkeypatch):
     original = integrity.check_integrity
     monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: original(*args, upstream=installation[3], **kwargs))
     logger = MagicMock()
-    logger.info.side_effect = lambda line: complete.set() if line == "    Source Integrity: Verified" else None
+    logger.info.side_effect = lambda line: complete.set() if line == "Source Integrity: Verified" else None
     run = integrity.log_integrity(installation[0], installation[1], logger)
     assert complete.wait(3)
     integrity.log_integrity_summary(run, logger)
