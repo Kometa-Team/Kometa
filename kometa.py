@@ -96,7 +96,7 @@ arguments = {
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "timings": {"args": ["timing"], "type": "bool", "help": "Run with Timing Instrumentation Enabled (writes a timings summary and JSON/CSV breakdown to the logs directory)"},
-    "source-integrity": {"args": "si", "type": "bool", "default": True, "negatable": True, "help": "Check source integrity in the background (enabled by default; --no-source-integrity disables it)"},
+    "source-integrity": {"args": "si", "type": "bool", "default": True, "negatable": True, "help": "Check source integrity at startup (up to 30 seconds; --no-source-integrity disables it)"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -459,8 +459,8 @@ def report_duplicate_collections(config):
             logger.info("")
 
 
-def log_validate_footer(start_time, my_requests, label, integrity_run):
-    log_integrity_summary(integrity_run, logger)
+def log_validate_footer(start_time, my_requests, label, integrity_report):
+    log_integrity_summary(integrity_report, logger)
     end_time = datetime.now()
     run_time = str(end_time - start_time).split(".")[0]
     version_line = f"Version: {my_requests.local}"
@@ -505,7 +505,7 @@ def start(attrs):
         logger.info(f"    Version: {my_requests.local} ({system_ver})")
         if my_requests.newest:
             logger.info(f"    Newest Version: {my_requests.newest}")
-        integrity_run = log_integrity(os.path.dirname(os.path.abspath(__file__)), default_dir, logger, "docker" if is_docker else "source", enabled=run_args["source-integrity"])
+        integrity_report = log_integrity(os.path.dirname(os.path.abspath(__file__)), default_dir, logger, "docker" if is_docker else "source", enabled=run_args["source-integrity"])
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
@@ -606,7 +606,7 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
-            log_validate_footer(start_time, my_requests, f"{level} Validation", integrity_run)
+            log_validate_footer(start_time, my_requests, f"{level} Validation", integrity_report)
             sys.exit(0 if passed else 1)
 
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -620,7 +620,7 @@ def start(attrs):
                 sys.exit(1)
             validator = FileSetValidator(paths, schema_dir)
             passed, *_ = validator.validate()
-            log_validate_footer(start_time, my_requests, "File Validation", integrity_run)
+            log_validate_footer(start_time, my_requests, "File Validation", integrity_report)
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
@@ -730,7 +730,7 @@ def start(attrs):
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
 
-        log_integrity_summary(integrity_run, logger)
+        log_integrity_summary(integrity_report, logger)
 
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
