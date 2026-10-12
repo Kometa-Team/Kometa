@@ -196,7 +196,6 @@ collections:
         list: top-250-animated-films
       - name: shared
         translation_key: top_250_animation
-        image: chart/<<style>>/Top%20100%20Animation
         url_logo: https://raw.githubusercontent.com/Kometa-Team/Default-Images/master/chart/logos/Letterboxd.png
         summary: <<summary_<<key>>>>
       - name: arr
