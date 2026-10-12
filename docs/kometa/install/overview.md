@@ -153,6 +153,14 @@ services:
 A `Dockerfile` is included within the GitHub repository for those who require it, although this is only suggested for those with knowledge of dockerfiles. 
 The official Kometa build is available on the [Dockerhub Website](https://hub.docker.com/r/kometateam/kometa).
 
+When building from a Git checkout, pass its full commit SHA and the version from that same checkout. Run this command from the repository root:
+
+```bash
+docker build --build-arg KOMETA_GIT_SHA="$(git rev-parse HEAD)" --build-arg KOMETA_VERSION="$(cat VERSION)" -t kometa-local .
+```
+
+Both build arguments are required. The build rejects a missing or invalid commit SHA or a version that does not match the source `VERSION` file.
+
 ## Customizing the docker-compose file with runtime flags and ENV vars
 
 Kometa's behavior can be modified in a variety of ways using either runtime flags or environment variables. These flags and vars are detailed [here](../environmental.md).

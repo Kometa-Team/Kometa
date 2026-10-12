@@ -220,17 +220,19 @@ def test_arbitrary_local_git_commit_is_not_upstream(installation, monkeypatch):
     assert report["reason"] == "upstream commit could not be validated"
 
 
-@pytest.mark.parametrize("hint", ["env", "sha_file", "none", "invalid", "conflict"])
+@pytest.mark.parametrize("hint", ["env", "sha_file", "empty_env_sha_file", "none", "invalid", "conflict"])
 def test_identity_hints(installation, monkeypatch, hint):
     root, config, commit, client = installation
     monkeypatch.setattr(integrity.timings, "git_sha", lambda *args, **kwargs: commit if hint == "conflict" else None)
     if hint in {"env", "invalid", "conflict"}:
         monkeypatch.setenv("KOMETA_GIT_SHA", commit if hint == "env" else "b" * 40 if hint == "conflict" else "invalid")
-    elif hint == "sha_file":
+    elif hint in {"sha_file", "empty_env_sha_file"}:
         (root / ".kometa_sha").write_text(commit)
+        if hint == "empty_env_sha_file":
+            monkeypatch.setenv("KOMETA_GIT_SHA", "")
     report = integrity.check_integrity(root, config, upstream=client)
-    assert report["state"] == ("Verified" if hint in {"env", "sha_file"} else "Not Verified")
-    assert client.baseline.call_count == (1 if hint in {"env", "sha_file"} else 0)
+    assert report["state"] == ("Verified" if hint in {"env", "sha_file", "empty_env_sha_file"} else "Not Verified")
+    assert client.baseline.call_count == (1 if hint in {"env", "sha_file", "empty_env_sha_file"} else 0)
 
 
 @pytest.mark.parametrize("directory", [False, True])
@@ -473,7 +475,7 @@ def test_integrity_opt_out_does_not_inspect_or_download(installation, monkeypatc
     monkeypatch.setattr(integrity, "_start_background_check", lambda *a, **k: pytest.fail("disabled"))
     logger = MagicMock()
     run = integrity.log_integrity(installation[0], installation[1], logger, enabled=False)
-    logger.info.assert_called_once_with("Source Integrity: Not Verified (disabled by source-integrity option)")
+    logger.info.assert_called_once_with("    Source Integrity: Not Verified (disabled by source-integrity option)")
     integrity.log_integrity_summary(run, logger)
     logger.info.assert_called_with("Source Integrity: Not Verified (disabled by source-integrity option)")
 
@@ -501,7 +503,7 @@ def test_startup_does_not_wait_for_hashing_or_download(installation, monkeypatch
     integrity.log_integrity(installation[0], installation[1], logger)
     assert entered.wait(1)
     assert not finished.is_set()
-    logger.info.assert_called_with("Source Integrity: Not Verified (comparison in progress)")
+    logger.info.assert_called_with("    Source Integrity: Not Verified (comparison in progress)")
     release.set()
     assert finished.wait(3)
 
@@ -625,7 +627,7 @@ def test_background_report_is_retained_for_summary(installation, monkeypatch):
     original = integrity.check_integrity
     monkeypatch.setattr(integrity, "check_integrity", lambda *args, **kwargs: original(*args, upstream=installation[3], **kwargs))
     logger = MagicMock()
-    logger.info.side_effect = lambda line: complete.set() if line == "Source Integrity: Verified" else None
+    logger.info.side_effect = lambda line: complete.set() if line == "    Source Integrity: Verified" else None
     run = integrity.log_integrity(installation[0], installation[1], logger)
     assert complete.wait(3)
     integrity.log_integrity_summary(run, logger)
