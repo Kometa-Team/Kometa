@@ -326,6 +326,7 @@ selectable
 Serializd
 serializd
 Serializd's
+SHA
 Sharkboy
 ShawShank
 shoutout

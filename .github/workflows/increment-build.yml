@@ -212,9 +212,18 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.20.0
 
-      - name: Read source version
+      - name: Read source identity and version
         id: source-version
-        run: echo "version=$(tr -d '\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
+        env:
+          EXPECTED_COMMIT: ${{ needs.increment-build.outputs.bump-commit-hash }}
+        run: |
+          commit=$(git rev-parse HEAD)
+          if [ "$commit" != "$EXPECTED_COMMIT" ]; then
+            echo "Source checkout does not match the version bump commit" >&2
+            exit 1
+          fi
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "version=$(tr -d '\r\n' < VERSION)" >> "$GITHUB_OUTPUT"
 
       - name: Build and Push
         id: docker_build
@@ -223,10 +232,10 @@ jobs:
           context: ./
           file: ./Dockerfile
           build-args: |
-            "BRANCH_NAME=nightly"
-            "KOMETA_GIT_SHA=${{ needs.increment-build.outputs.bump-commit-hash }}"
-            "KOMETA_VERSION=${{ steps.source-version.outputs.version }}"
-            "BASE_TAG=${{ needs.verify-changes.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}"
+            BRANCH_NAME=nightly
+            KOMETA_GIT_SHA=${{ steps.source-version.outputs.commit }}
+            KOMETA_VERSION=${{ steps.source-version.outputs.version }}
+            BASE_TAG=${{ needs.verify-changes.outputs.base == 'true' && format('base-{0}', needs.increment-build.outputs.bump-commit-hash) || 'base' }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ vars.DOCKER_TEAM }}/${{ vars.DOCKER_REPO }}:nightly
