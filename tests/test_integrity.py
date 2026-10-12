@@ -547,6 +547,41 @@ def test_startup_timeout_has_no_late_log(installation, monkeypatch, cached):
     footer.info.assert_called_once_with("Source Integrity: Check unavailable (startup time limit reached; local files were not verified)")
 
 
+def test_overlapping_starts_share_one_check(installation, monkeypatch):
+    import threading
+
+    entered, release, finished = threading.Event(), threading.Event(), threading.Event()
+    calls = []
+    original = integrity.check_integrity
+
+    def slow_check(*args):
+        calls.append(args)
+        entered.set()
+        assert release.wait(3)
+        try:
+            return original(*args, upstream=installation[3])
+        finally:
+            finished.set()
+
+    monkeypatch.setattr(integrity, "check_integrity", slow_check)
+    monkeypatch.setattr(integrity, "STARTUP_TIMEOUT", 0.02)
+    logger = MagicMock()
+    try:
+        first = integrity.log_integrity(installation[0], installation[1], logger)
+        assert entered.is_set()
+        second = integrity.log_integrity(installation[0], installation[1], logger)
+        assert len(calls) == 1
+        assert first == second
+    finally:
+        release.set()
+    assert finished.wait(3)
+    footer = MagicMock()
+    integrity.log_integrity_summary(first, footer)
+    footer.info.assert_called_once_with("Source Integrity: Check unavailable (startup time limit reached; local files were not verified)")
+    assert integrity.check_integrity is slow_check
+    assert original(installation[0], installation[1], allow_network=False)["state"] == "Verified"
+
+
 def test_upstream_deadline_allows_retrieval_after_startup_timeout(monkeypatch):
     clock = [100.0]
     monkeypatch.setattr(integrity.time, "monotonic", lambda: clock[0])

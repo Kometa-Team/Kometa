@@ -619,26 +619,53 @@ def format_integrity(report: dict[str, Any], limit: int = 20) -> list[str]:
     return lines
 
 
-def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source", enabled: bool = True) -> dict[str, Any]:
-    """Log one startup result, waiting at most 30 seconds for the silent worker."""
-    report = {"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []}
-    if enabled:
-        completed = threading.Event()
-        result = {}
+class PendingCheck:
+    """One silent comparison shared by overlapping starts for this installation."""
+
+    def __init__(self):
+        self.completed = threading.Event()
+        self.report: dict[str, Any] = {}
+
+
+_pending: dict[tuple[str, str, str], PendingCheck] = {}
+_pending_lock = threading.Lock()
+
+
+def _start_check(root: Path, config_dir: Path, profile: str) -> PendingCheck:
+    key = (str(root), str(config_dir), profile)
+    with _pending_lock:
+        if key in _pending:
+            return _pending[key]
+        pending = PendingCheck()
+        _pending[key] = pending
 
         def inspect():
             try:
-                result.update(check_integrity(Path(root), Path(config_dir), profile))
+                pending.report.update(check_integrity(root, config_dir, profile))
             except Exception:
-                result.update({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
+                pending.report.update({"state": "Not Verified", "reason": "installation could not be inspected", "modified": [], "missing": [], "added": []})
             finally:
-                completed.set()
+                pending.completed.set()
+                with _pending_lock:
+                    _pending.pop(key, None)
 
-        deadline = time.monotonic() + STARTUP_TIMEOUT
         try:
             threading.Thread(target=inspect, name="Kometa source integrity", daemon=True).start()
-            if completed.wait(max(0, deadline - time.monotonic())):
-                report = result
+        except Exception:
+            _pending.pop(key, None)
+            raise
+    return pending
+
+
+def log_integrity(root: Path | str, config_dir: Path | str, logger, profile: str = "source", enabled: bool = True) -> dict[str, Any]:
+    """Log one startup result, waiting at most 30 seconds for a shared silent worker."""
+    report = {"state": "Not Verified", "reason": "disabled by source-integrity option", "modified": [], "missing": [], "added": []}
+    if enabled:
+        deadline = time.monotonic() + STARTUP_TIMEOUT
+        try:
+            pending = _start_check(Path(root).resolve(), Path(config_dir).resolve(), profile)
+            if pending.completed.wait(max(0, deadline - time.monotonic())):
+                report = pending.report
             else:
                 report["reason"] = "startup time limit reached"
         except Exception:
