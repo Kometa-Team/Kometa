@@ -9,7 +9,7 @@ from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NotScheduled, PlexImageUploadError
 
 logger = util.logger
 
@@ -328,6 +328,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {poster.attribute} update skipped for {item.title}: {e}; {poster.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {poster.attribute} {poster.message}")
             except (Failed, RequestException):
@@ -345,6 +347,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {background.prefix}background update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {background.attribute} update skipped for {item.title}: {e}; {background.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {background.attribute} {background.message}")
             except (Failed, RequestException):
@@ -362,6 +366,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {logo.attribute} update skipped for {item.title}: {e}; {logo.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {logo.attribute} {logo.message}")
             except (Failed, RequestException):
@@ -379,6 +385,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {square_art.attribute} update skipped for {item.title}: {e}; {square_art.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {square_art.attribute} {square_art.message}")
             except (Failed, RequestException):

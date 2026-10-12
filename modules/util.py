@@ -131,6 +131,10 @@ class Failed(Exception):
     pass
 
 
+class PlexImageUploadError(Failed):
+    """A temporary Plex image upload error persisted after bounded retries."""
+
+
 class FilterFailed(Failed):
     pass
 
