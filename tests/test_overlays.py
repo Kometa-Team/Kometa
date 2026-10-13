@@ -78,6 +78,64 @@ class TestGetOverlayItems:
 
 
 class TestCompileOverlays:
+    def test_plex_search_filter_does_not_parse_non_plex_ids_as_rating_keys(self, monkeypatch):
+        test_logger = FakeLogger()
+        test_logger.separating_character = "="
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        item = SimpleNamespace(ratingKey=1)
+
+        def builder_factory(_config, _overlay_file, name, _data, library, overlay):
+            overlay_object = SimpleNamespace(mapping_name=name, keys=[], suppress=[], group=None, weight=0)
+            return SimpleNamespace(
+                overlay=overlay_object,
+                builders=[("plex_search", {})],
+                gather_ids=lambda _method, _value: [(1, "ratingKey")],
+                found_items=[item],
+                limit=None,
+                display_filters=lambda: None,
+                filter_and_save_items=lambda _ids: None,
+            )
+
+        monkeypatch.setattr("modules.overlays.CollectionBuilder", builder_factory)
+        monkeypatch.setattr("modules.overlays.prefetch_gather_ids", lambda _config, _builder: [None])
+        overlay_file = SimpleNamespace(overlays={"Test Overlay": {}})
+        library = MagicMock(overlay_files=[overlay_file])
+        library.get_ids.return_value = (None, None, "tt0137523")
+        library.get_item_display_title.return_value = "Test Movie"
+        overlays = make_overlays(library=library)
+
+        key_to_overlays, _ = overlays.compile_overlays({("imdb", "tt0137523")})
+
+        assert list(key_to_overlays) == [item.ratingKey]
+
+    def test_filters_overlay_candidates_by_requested_item_ids(self, monkeypatch):
+        test_logger = FakeLogger()
+        test_logger.separating_character = "="
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        selected_item = SimpleNamespace(ratingKey=1)
+        other_item = SimpleNamespace(ratingKey=2)
+
+        def builder_factory(_config, _overlay_file, name, _data, library, overlay):
+            overlay_object = SimpleNamespace(mapping_name=name, keys=[], suppress=[], group=None, weight=0)
+            return SimpleNamespace(
+                overlay=overlay_object,
+                builders=[],
+                found_items=[selected_item, other_item],
+                limit=None,
+                display_filters=lambda: None,
+            )
+
+        monkeypatch.setattr("modules.overlays.CollectionBuilder", builder_factory)
+        overlay_file = SimpleNamespace(overlays={"Test Overlay": {}})
+        library = MagicMock(overlay_files=[overlay_file])
+        library.get_ids.side_effect = [(550, None, None), (603, None, None)]
+        library.get_item_display_title.return_value = "Test Movie"
+        overlays = make_overlays(library=library)
+
+        key_to_overlays, _ = overlays.compile_overlays({("tmdb", "550")})
+
+        assert list(key_to_overlays) == [selected_item.ratingKey]
+
     def test_suppress_rules_are_not_skipped_after_an_earlier_removal(self, monkeypatch):
         test_logger = FakeLogger()
         test_logger.separating_character = "="

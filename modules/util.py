@@ -367,6 +367,72 @@ def get_list_bar_then_comma(data, lower=False, upper=False, split=True, int_list
         return [d if isinstance(d, dict) else get_str(d) for d in list_data]
 
 
+def parse_run_item_ids(data):
+    if not data:
+        return None
+
+    supported_types = {"tmdb", "tvdb", "imdb", "plex"}
+    item_ids = set()
+    for value in get_list_bar_then_comma(data, lower=True) or []:
+        value = str(value).strip().lower()
+        id_type, separator, item_id = value.partition(":")
+        if not separator or id_type not in supported_types or not item_id:
+            raise Failed("Argument Error: --run-items values must use tmdb:<id>, tvdb:<id>, imdb:<id>, or plex:<ratingKey>")
+        if id_type in {"tmdb", "tvdb", "plex"}:
+            if not item_id.isdecimal():
+                raise Failed(f"Argument Error: --run-items {id_type} IDs must be numeric: {value}")
+            item_id = str(int(item_id))
+        elif not re.fullmatch(r"tt\d+", item_id):
+            raise Failed(f"Argument Error: --run-items IMDb IDs must use the tt######## format: {value}")
+        item_ids.add((id_type, item_id))
+    return item_ids or None
+
+
+def resolve_run_item_ids(library, item_ids):
+    if not item_ids:
+        return None
+
+    resolved_ids = set(item_ids)
+    if library.is_show:
+        for id_type, item_id in item_ids:
+            if id_type == "tmdb":
+                tvdb_id = library.config.Convert.tmdb_to_tvdb(int(item_id))
+                if tvdb_id:
+                    resolved_ids.add(("tvdb", str(tvdb_id)))
+    return resolved_ids
+
+
+def filter_items_by_ids(library, items, item_ids):
+    if not item_ids:
+        return items
+
+    filtered_items = []
+    for item in items:
+        if ("plex", str(item.ratingKey)) in item_ids:
+            filtered_items.append(item)
+            continue
+        if isinstance(item, Episode):
+            parent_key = item.grandparentRatingKey
+        elif isinstance(item, Season):
+            parent_key = item.parentRatingKey
+        else:
+            parent_key = None
+        if parent_key is not None:
+            tmdb_id = None
+            tvdb_id = library.show_rating_key_map.get(parent_key)
+            imdb_id = library.imdb_rating_key_map.get(parent_key)
+        else:
+            tmdb_id, tvdb_id, imdb_id = library.get_ids(item)
+        item_ids_found = {
+            ("tmdb", str(tmdb_id)) if tmdb_id else None,
+            ("tvdb", str(tvdb_id)) if tvdb_id else None,
+            ("imdb", str(imdb_id).lower()) if imdb_id else None,
+        }
+        if item_ids_found.intersection(item_ids):
+            filtered_items.append(item)
+    return filtered_items
+
+
 @overload
 def get_list(data, lower=False, upper=False, split=True, int_list=False, trim=True, *, return_none: Literal[False]) -> list: ...
 @overload  # noqa: E302

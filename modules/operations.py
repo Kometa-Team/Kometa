@@ -243,7 +243,7 @@ class Operations:
         return all((less_check, managed_check, configured_check))
 
     @timings.timed("operations")
-    def run_operations(self):
+    def run_operations(self, item_ids=None):
         operation_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Operations")
@@ -297,6 +297,8 @@ class Operations:
         refreshed_items = None
         if self.library.split_duplicates:
             duplicate_items = self.library.search(**{"duplicate": True})
+            if item_ids:
+                duplicate_items = util.filter_items_by_ids(self.library, duplicate_items, item_ids)
             for item in duplicate_items:
                 item.split()
                 logger.info(f"{item.title[:25]:<25} | Splitting")
@@ -305,6 +307,8 @@ class Operations:
 
         if self.library.update_blank_track_titles:
             tracks = self.library.get_all(builder_level="track")
+            if item_ids:
+                tracks = util.filter_items_by_ids(self.library, tracks, item_ids)
             num_edited = 0
             for i, track in enumerate(tracks, 1):
                 logger.ghost(f"Processing Track: {i}/{len(tracks)} {track.title}")
@@ -318,7 +322,12 @@ class Operations:
             if self.library.assets_for_all and not self.library.asset_directory:
                 logger.error("Asset Error: No Asset Directory for Assets For All")
 
-            items = refreshed_items if refreshed_items is not None else self.library.get_all()
+            items = refreshed_items if refreshed_items is not None else self.library.get_all(filter=item_ids)
+
+            if item_ids:
+                all_items = items
+                items = util.filter_items_by_ids(self.library, items, item_ids)
+                logger.info(f"Item Filter: Processing {len(items)} of {len(all_items)} library items")
             total_items = len(items)
             self._prefetch_mdblist(items)
 

@@ -551,6 +551,28 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --run-libraries "Movies - 4K|TV Shows - 4K"
             ```
 
+??? blank "Run Items&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-ri`/`--run-items`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_ITEMS`<a class="headerlink" href="#run-items" title="Permanent link">¶</a>"
+
+    <div id="run-items" />Limit library Operations and Overlays processing to the specified items. This option requires exactly one of `--operations-only` or `--overlays-only`; Collections and metadata files are not filtered by this option.
+
+    <hr style="margin: 0px;">
+
+    **Accepted Values:** Pipe-separated list of typed IDs: `tmdb:<id>`, `tvdb:<id>`, `imdb:<id>`, or `plex:<ratingKey>`. For example, `tmdb:550|imdb:tt0137523`. Show TMDb IDs are resolved to TVDb IDs for show libraries.
+
+    **Shell Flags:** `-ri` or `--run-items` (ex. `--run-items "tmdb:550|tmdb:603"`)
+
+    **Environment Variable:** `KOMETA_RUN_ITEMS` (ex. `KOMETA_RUN_ITEMS=tmdb:550|tmdb:603`)
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --operations-only --run-items "tmdb:550|tmdb:603"
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" kometateam/kometa --overlays-only --run-items "tmdb:550|tmdb:603"
+            ```
+
 ??? blank "Run Files&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-rf`/`--run-files`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_RUN_FILES`<a class="headerlink" href="#run-files" title="Permanent link">¶</a>"
 
     <div id="run-files" />Perform an [immediate run](#run) to run only the named Collection, Metadata or Playlist files,
@@ -645,7 +667,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Delete Labels&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`-dl`/`--delete-labels`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_DELETE_LABELS`<a class="headerlink" href="#delete-labels" title="Permanent link">¶</a>"
 
-    <div id="delete-labels" />Delete all labels [save one, see below] on every item in a Library prior to running collections/operations.
+    <div id="delete-labels" />Delete all labels [save one, see below] on every item in a Library prior to running collections/operations, or only on items selected with [`--run-items`](#run-items).
 
     ???+ warning
 

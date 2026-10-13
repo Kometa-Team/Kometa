@@ -49,7 +49,7 @@ class Overlays:
         if items:
             self.library.prefetch_mdblist(items)
 
-    def run_overlays(self):
+    def run_overlays(self, item_ids=None):
         overlay_start = datetime.now()
         logger.info("")
         logger.separator(f"{self.library.name} Library Overlays")
@@ -60,7 +60,7 @@ class Overlays:
         key_to_overlays = {}
         properties = {}
         if not self.library.remove_overlays:
-            key_to_overlays, properties = self.compile_overlays()
+            key_to_overlays, properties = self.compile_overlays(item_ids)
             self._prefetch_mdblist(key_to_overlays, properties)
         ignore_list = [rk for rk in key_to_overlays]
 
@@ -69,7 +69,7 @@ class Overlays:
             logger.separator(f"Removing Old Overlays for the {self.library.name} Library")
             logger.info("")
             for old_overlay in old_overlays:
-                label_items = self.get_overlay_items(label=old_overlay)
+                label_items = self.get_overlay_items(label=old_overlay, item_ids=item_ids)
                 if label_items:
                     logger.info("")
                     logger.separator(f"Removing {old_overlay.title}")
@@ -80,12 +80,12 @@ class Overlays:
                         self.remove_overlay(item, item_title, old_overlay.title, [os.path.join(self.library.overlay_folder, old_overlay.title[:-8], f"{item.ratingKey}.png")])
             logger.info("")
 
-        remove_overlays = self.get_overlay_items(ignore=ignore_list)
+        remove_overlays = self.get_overlay_items(ignore=ignore_list, item_ids=item_ids)
         if self.library.is_show:
-            remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list))
-            remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list))
+            remove_overlays.extend(self.get_overlay_items(libtype="episode", ignore=ignore_list, item_ids=item_ids))
+            remove_overlays.extend(self.get_overlay_items(libtype="season", ignore=ignore_list, item_ids=item_ids))
         elif self.library.is_music:
-            remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list))
+            remove_overlays.extend(self.get_overlay_items(libtype="album", ignore=ignore_list, item_ids=item_ids))
 
         if remove_overlays:
             logger.separator(f"Removing {'All ' if self.library.remove_overlays else ''}Overlays for the {self.library.name} Library")
@@ -498,7 +498,7 @@ class Overlays:
         return overlay_run_time
 
     @timings.timed("compile_overlays")
-    def compile_overlays(self):
+    def compile_overlays(self, item_ids=None):
         key_to_item = {}
         properties = {}
         overlay_groups = {}
@@ -527,6 +527,9 @@ class Overlays:
                             try:
                                 pending = prefetched[i]
                                 ids = pending.result() if pending is not None else builder.gather_ids(method, value)
+                                if item_ids and method == "plex_search" and all(id_type == "plex" for id_type, _ in item_ids):
+                                    rating_keys = {int(item_id) for _, item_id in item_ids}
+                                    ids = [item for item in ids if item[0] in rating_keys]
                                 builder.filter_and_save_items(ids)
                             except Failed as e:
                                 if builder.ignore_blank_results:
@@ -537,7 +540,8 @@ class Overlays:
 
                         added_titles = []
                         if builder.found_items:
-                            for item in builder.found_items:
+                            found_items = util.filter_items_by_ids(self.library, builder.found_items, item_ids)
+                            for item in found_items:
                                 if builder.limit and len(added_titles) >= builder.limit:
                                     break
                                 key_to_item[item.ratingKey] = item
@@ -636,9 +640,11 @@ class Overlays:
                             key_to_overlays[over_key][1].remove(v)
         return key_to_overlays, properties
 
-    def get_overlay_items(self, label="Overlay", libtype=None, ignore=None):
+    def get_overlay_items(self, label="Overlay", libtype=None, ignore=None, item_ids=None):
         items = self.library.search(label=label, libtype=libtype)
-        return items if not ignore else [o for o in items if o.ratingKey not in ignore]
+        if ignore:
+            items = [o for o in items if o.ratingKey not in ignore]
+        return util.filter_items_by_ids(self.library, items, item_ids)
 
     def remove_overlay(self, item, item_title, label, locations):
         try:
