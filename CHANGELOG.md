@@ -7,12 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.
+- Add music-library `lidarr_all` and `lidarr_taglist` builders, which create Plex artist collections by matching Lidarr and Plex MusicBrainz artist IDs.
+
 ### Fixed
 
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713
 
 ## [v2.5.3] - 2026-10-12
-
 
 ### Added
 

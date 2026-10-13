@@ -502,6 +502,16 @@
                     ]
                 },
 
+                "lidarr_all": { "type": "boolean", "description": "Get all artists in Lidarr." },
+                "lidarr_taglist": {
+                    "description": "Get Lidarr artists by tag(s). Leave blank for untagged artists.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "type": "null" },
+                        { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
                 "mdblist_list": {
                     "description": "MDBList List URL(s) or object with url and limit.",
                     "oneOf": [
