@@ -315,6 +315,26 @@ Kometa will load those environment variables when it starts up, and you don't ha
             docker run -it -v "X:\Media\Kometa\config:/config:rw" -e KOMETA_TIMINGS=true kometateam/kometa --run
             ```
 
+??? blank "Source Integrity&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--source-integrity`/`--no-source-integrity`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_SOURCE_INTEGRITY`<a class="headerlink" href="#source-integrity" title="Permanent link">¶</a>"
+
+    <div id="source-integrity" />Check distributed Kometa files against official source for the exact installed commit. Enabled by default; checking waits up to 30 seconds during startup and never prevents Kometa from running. Results appear with the startup system information, with no integrity messages during library processing. The end-of-run summary repeats the startup result. See [Source integrity](logs.md#source-integrity) for states, caching, and exclusions.
+
+    <hr style="margin: 0px;">
+
+    **Shell Flags:** `--source-integrity` enables checking; `--no-source-integrity` disables it.
+
+    **Environment Variable:** `KOMETA_SOURCE_INTEGRITY` (ex. `KOMETA_SOURCE_INTEGRITY=false`). Environment variables take precedence over CLI flags.
+
+    !!! example
+        === "Local Environment"
+            ```
+            python kometa.py --run --no-source-integrity
+            ```
+        === "Docker Environment"
+            ```
+            docker run -it -v "X:\Media\Kometa\config:/config:rw" -e KOMETA_SOURCE_INTEGRITY=false kometateam/kometa --run
+            ```
+
 ??? blank "Deep Profiling&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_PROFILE`<a class="headerlink" href="#deep-profiling" title="Permanent link">¶</a>"
 
     <div id="deep-profiling" />Run a single Kometa run under [`pyinstrument`](https://github.com/joerick/pyinstrument), writing an HTML profile report to the logs directory. Intended for maintainers diagnosing a specific slow run in more depth than Timing Instrumentation's summary provides.

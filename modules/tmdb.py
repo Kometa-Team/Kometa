@@ -43,7 +43,13 @@ class KometaConfiguration(Configuration):
         reraise=True,
     )
     def _full_load(self, partial=None):
-        data = super()._full_load(partial=partial)
+        try:
+            data = super()._full_load(partial=partial)
+        except (AttributeError, TypeError) as e:
+            # tmdbapis now assembles configuration from several endpoints. A
+            # malformed base response can fail within tmdbapis before it
+            # reaches Kometa's validation below.
+            raise InvalidConfiguration(f"TMDb returned a malformed configuration response: {e}; this is not a language setting error.") from e
         languages = data.get("languages") if isinstance(data, dict) else None
         translations = data.get("primary_translations") if isinstance(data, dict) else None
         valid_languages = (

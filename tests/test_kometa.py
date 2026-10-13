@@ -15,6 +15,8 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
+
 from modules.log_summary import SUMMARY_NORMALIZATIONS, RunLogSummary, normalize_summary_message
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -63,6 +65,76 @@ def test_process_pool_preserves_spawn_when_fork_is_unavailable() -> None:
 
 def _summarize_log_message(message: str) -> str:
     return normalize_summary_message(message)
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "ERROR", "CRITICAL"])
+@pytest.mark.parametrize("details", [False, True])
+def test_run_summary_ignores_blank_messages(severity, details):
+    summary = RunLogSummary([], details=details)
+    for message in ("", " ", "\t", "\n"):
+        summary.add(severity, message)
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [{severity}] | {message.rstrip()} |")
+    assert not summary.has_messages()
+    assert summary.severity_rows(severity) == []
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "ERROR", "CRITICAL"])
+def test_run_summary_preserves_real_messages_with_pipes(severity):
+    summary = RunLogSummary([])
+    for message in ("", " ", "Example diagnostic: A | B", "Example diagnostic: A | B", "\t"):
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [{severity}] | {message} |")
+    assert summary.has_messages()
+    assert summary.severity_rows(severity) == [("Example diagnostic: A | B", 2)]
+
+
+@pytest.mark.parametrize("err_type", ["Collection", "Playlist"])
+@pytest.mark.parametrize("resource", ["list", "watchlist", "films page"])
+def test_letterboxd_validation_missing_resources_are_grouped(err_type, resource):
+    summary = RunLogSummary([])
+    detailed = RunLogSummary([], details=True)
+    messages = []
+    for name in ("anxiety-inducing-cinema", "black-directors-the-official-top-100-narrative"):
+        url = f"https://letterboxd.com/example/list/{name}/"
+        message = f"{err_type} Error: Could not validate {url}: Letterboxd Error: Failed to load {resource} {url}: Resource not found: {url.rstrip('/')}"
+        messages.append(message)
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [ERROR] | {message} |")
+        detailed.add("ERROR", message)
+        assert sum(bool(re.match(pattern, message)) for pattern, _ in SUMMARY_NORMALIZATIONS) == 1
+    assert summary.severity_rows("ERROR") == [(f"{err_type} Error: Could not validate Letterboxd {resource} (resource not found)", 2)]
+    assert detailed.severity_rows("ERROR") == [(message, 1) for message in messages]
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "Collection Error: Could not validate https://letterboxd.com/example/list/test/: Letterboxd Error: Failed to load list https://letterboxd.com/example/list/test/: Connection timed out",
+        "Collection Error: Could not validate https://letterboxd.com/example/list/test/: Letterboxd Error: Unsupported list URL",
+        "Collection Error: Could not validate https://example.com/test/: Other Error: Resource not found: https://example.com/test/",
+    ],
+)
+def test_unknown_validation_failures_keep_their_diagnostics(message):
+    assert normalize_summary_message(message) == message
+
+
+def test_duplicate_collection_details_do_not_repeat_in_warning_summary():
+    nodes = [node for node in _module_ast().body if isinstance(node, ast.FunctionDef) and node.name in ("summarize_duplicate_collections", "report_duplicate_collections")]
+    logger = MagicMock()
+    namespace = {"logger": logger}
+    exec(compile(ast.Module(body=nodes, type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+    libraries = [SimpleNamespace(name=name, get_all_collections=lambda: [SimpleNamespace(title="A | B"), SimpleNamespace(title="A | B")]) for name in ("Movies", "Shows")]
+    namespace["report_duplicate_collections"](SimpleNamespace(libraries=libraries))
+    info_messages = [call.args[0] for call in logger.info.call_args_list]
+    assert info_messages.count("") == 3
+    assert info_messages.count("  2 instances: A | B") == 2
+    assert info_messages.count("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.") == 2
+    messages = [call.args[0] for call in logger.warning.call_args_list]
+    assert messages == [f"Plex Warning: Duplicate collection titles detected in {name} Library" for name in ("Movies", "Shows")]
+    summary = RunLogSummary([])
+    for message in info_messages:
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [INFO] | {message} |")
+    for message in messages:
+        summary.add_formatted_line(f"[2026-10-11] [kometa.py:1] [WARNING] | {message} |")
+    assert summary.severity_rows("WARNING") == [(message, 1) for message in messages]
 
 
 def _section_rows(message: str, rating_sources: list[str] | None = None) -> list[tuple[int, str, list[str]]]:
@@ -377,3 +449,55 @@ def test_status_summary_skips_empty_tables() -> None:
     """
     text = KOMETA_PY.read_text(encoding="utf-8")
     assert "if not status:\n            return" in text
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "ERROR"])
+def test_missing_tmdb_lookup_summaries_group_ids_and_keep_types_separate(severity):
+    summary = RunLogSummary([])
+    detailed = RunLogSummary([], details=True)
+    for kind in ["Collection", "Movie", "Show"]:
+        messages = [
+            f"TMDb Error: No {kind} found on TMDb for ID(s) [1719379]. Verify the ID(s) still exist and update your config.",
+            f"TMDb Error: No {kind} found on TMDb for ID(s) [1698578, 1677089]. Verify the ID(s) still exist and update your config.",
+        ]
+        for message in messages:
+            summary.add(severity, message)
+            detailed.add(severity, message)
+        assert (f"TMDb Error: No {kind} found on TMDb", 2) in summary.severity_rows(severity)
+        assert all((message, 1) in detailed.severity_rows(severity) for message in messages)
+    assert len(summary.severity_rows(severity)) == 3
+
+
+def test_unrelated_tmdb_failure_keeps_diagnostic_details():
+    message = "TMDb Error: No Collection found on TMDb for ID(s) [1719379]. Request timed out."
+    assert normalize_summary_message(message) == message
+
+
+@pytest.mark.parametrize("severity", ["WARNING", "ERROR"])
+def test_alternate_tmdb_lookup_summaries_keep_types_separate(severity):
+    summary = RunLogSummary([])
+    detailed = RunLogSummary([], details=True)
+    for kind in ("Collection", "Movie", "Show"):
+        messages = [
+            f"TMDb Error: No {kind} found for TMDb ID: 12345",
+            f"TMDb Error: No {kind} found for TMDb ID 67890: (404 [Not Found]) Requested Item Not Found",
+        ]
+        for message in messages:
+            summary.add_formatted_line(f"[2026-10-11] [tmdb.py:1] [{severity}] | {message} |")
+            detailed.add(severity, message)
+            assert sum(bool(re.match(pattern, message)) for pattern, _ in SUMMARY_NORMALIZATIONS) == 1
+        assert (f"TMDb Error: No {kind} found for TMDb ID", 2) in summary.severity_rows(severity)
+        assert all((message, 1) in detailed.severity_rows(severity) for message in messages)
+    assert len(summary.severity_rows(severity)) == 3
+
+
+@pytest.mark.parametrize(
+    "message",
+    [
+        "TMDb Error: No Person found for TMDb ID 12345: API unavailable",
+        "TMDb Error: No Movie or Collection found for TMDb ID 12345",
+        "TMDb Error: No Show found for TMDb ID 12345 Season 2: API unavailable",
+    ],
+)
+def test_alternate_tmdb_rule_preserves_other_lookup_failures(message):
+    assert normalize_summary_message(message) == message

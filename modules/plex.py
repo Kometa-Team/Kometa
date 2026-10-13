@@ -2281,7 +2281,7 @@ class Plex(Library):
     def find_and_upload_assets(self, item, current_labels, asset_directory=None):
         item_dir = None
         name = None
-        configured_asset_directories = self.asset_directory if asset_directory is None else asset_directory
+        configured_asset_directories = self.asset_directories(item) if asset_directory is None else asset_directory
         try:
             poster, background, logo, square_art, item_dir, name = self.find_item_assets(item, asset_directory=asset_directory)
             has_overlay = "Overlay" in current_labels
@@ -2350,9 +2350,14 @@ class Plex(Library):
             if self.show_missing_season_assets and found_album and missing_assets:
                 logger.info(f"Missing Album Posters for {item.title}{missing_assets}")
 
+    def asset_directories(self, item):
+        if isinstance(item, Collection) and self.collection_asset_directory:
+            return self.collection_asset_directory
+        return self.asset_directory
+
     def asset_search_paths(self, item, item_dir=None, folder_name=None, asset_directory=None, folders_only=False):
         """Describe the configured artwork search locations without querying Plex or the filesystem."""
-        directories = self.asset_directory if asset_directory is None else asset_directory
+        directories = self.asset_directories(item) if asset_directory is None else asset_directory
         if item_dir:
             directories = [item_dir]
         elif self.asset_folders and folder_name is not None:
@@ -2380,7 +2385,7 @@ class Plex(Library):
         square_art = None
 
         if asset_directory is None:
-            asset_directory = self.asset_directory
+            asset_directory = self.asset_directories(item)
 
         is_top_level = isinstance(item, (Movie, Artist, Show, Collection, Playlist, str))
         if isinstance(item, Album):

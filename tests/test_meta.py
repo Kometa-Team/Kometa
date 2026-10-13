@@ -81,6 +81,7 @@ def test_dynamic_tmdb_collection_skips_plex_discovered_notfound(monkeypatch):
     stale_item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
     valid_item = SimpleNamespace(title="Valid Movie", guid="plex://movie/valid")
     library = SimpleNamespace(
+        original_mapping_name="Movies",
         type="Movie",
         is_movie=True,
         is_show=False,
@@ -126,6 +127,7 @@ def test_dynamic_tmdb_attribute_discovery_ignores_notfound(auto_type, library_ty
     )
     item = SimpleNamespace(title="Deleted Movie", guid="plex://movie/deleted")
     library = SimpleNamespace(
+        original_mapping_name="Movies",
         type=library_type,
         is_movie=is_movie,
         is_show=not is_movie,
