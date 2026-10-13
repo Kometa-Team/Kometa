@@ -78,6 +78,7 @@ dynamic_collections:
         Documentario: genre/Documentary
         Documentário: genre/Documentary
         Dokumentar: genre/Documentary
+        Dokumentarfilm: genre/Documentary
         Dokumentation: genre/Documentary
         Dokumentumfilm: genre/Documentary
         Dokumentär: genre/Documentary
@@ -133,11 +134,13 @@ dynamic_collections:
         Komödie: genre/Comedy
         Krieg: genre/War
         Krieg & Politik: genre/War%20%26%20Politics
+        Kriegsfilm: genre/War
         Krig: genre/War
         Krig & Politik: genre/War%20%26%20Politics
         Krig & politik: genre/War%20%26%20Politics
         Krig og politikk: genre/War%20%26%20Politics
         Krimi: genre/Crime
+        Liebesfilm: genre/Romance
         Misdaad: genre/Crime
         Misterio: genre/Mystery
         Mistero: genre/Mystery
@@ -193,6 +196,7 @@ dynamic_collections:
         Tudományos-Fantasztikus: genre/Science%20Fiction
         TV Film: genre/TV%20Movie
         TV film: genre/TV%20Movie
+        TV-Film: genre/TV%20Movie
         Téléfilm: genre/TV%20Movie
         Történelem: genre/History
         Verbrechen: genre/Crime
