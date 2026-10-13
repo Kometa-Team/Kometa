@@ -57,12 +57,27 @@ The `.not` modifier inverts one schedule expression. For example, `weekly.not(mo
 | Mode | Scope |
 |:--|:--|
 | `full` | Every top-level library item. |
+| `items(ids)` | Individual movies or shows identified by pipe-separated TMDb, TVDb, IMDb, or Plex rating-key IDs. |
 | `added(days)` | Items added to Plex during the previous number of days. In a TV Show library, this also includes existing shows with recently added episodes. |
 | `diff` | Items absent from Kometa's previous library snapshot. Show libraries compare each season's Plex `updatedAt` value. Requires a persistent Kometa cache. |
 | `index(A-F)` | Titles beginning with letters in the inclusive A through F range. |
 | `index(A-F#)` | The A through F range plus titles beginning with a number, symbol, or other non-alphabetical character. |
 
 `index` matches the first non-whitespace character in a Plex item's Sort Title, case-insensitively, and falls back to its title when no Sort Title is set. Ranges must be alphabetical and ascending.
+
+Use `items(...)` to select specific items already present in the library. Accepted identifiers are `tmdb:<id>`, `tvdb:<id>`, `imdb:tt<id>`, and `plex:<ratingKey>`. Numeric IDs must be positive. Identifiers can be mixed and are matched with OR logic; duplicates select an item only once. IDs that do not match a library item select nothing and never expand the scope to the full library. TMDb IDs in a TV Show library are converted to TVDb IDs. Selecting a show also includes its seasons and episodes. Plex rating keys must identify top-level library items, such as movies, shows, or music artists; provider IDs apply to movies and shows.
+
+```yaml title="Update two selected movies on Mondays"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: items(tmdb:550|tmdb:603)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The second entry is optional; without it, this library is skipped on other days. As with other library schedule modes, `--ignore-schedules` or explicitly selecting the library with `--run-libraries` bypasses its schedule and uses the full scope.
 
 When a mode is not `full`, Kometa limits metadata, overlays, item operations, and collection additions to items in scope. It does not remove existing collection members or change custom collection ordering; run with `full` to reconcile the whole library.
 

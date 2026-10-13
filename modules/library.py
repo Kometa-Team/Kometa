@@ -623,6 +623,35 @@ class Library(ABC):
         """Return the top-level Plex rating keys selected by today's schedule mode."""
         if self.schedule_mode == "full":
             return {item.ratingKey for item in items}
+        if self.schedule_mode.startswith("items(") and self.schedule_mode.endswith(")"):
+            identifiers = set()
+            for value in self.schedule_mode[6:-1].split("|"):
+                id_type, separator, item_id = value.strip().lower().partition(":")
+                if not separator or not ((id_type in {"tmdb", "tvdb", "plex"} and re.fullmatch(r"[0-9]+", item_id) and int(item_id) > 0) or (id_type == "imdb" and re.fullmatch(r"tt[0-9]+", item_id))):
+                    raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected items(tmdb:<id>|tvdb:<id>|imdb:<id>|plex:<ratingKey>)")
+                identifiers.add((id_type, item_id if id_type == "imdb" else str(int(item_id))))
+            if self.is_show:
+                for id_type, item_id in list(identifiers):
+                    if id_type == "tmdb":
+                        tvdb_id = self.config.Convert.tmdb_to_tvdb(int(item_id))
+                        if tvdb_id:
+                            identifiers.add(("tvdb", str(tvdb_id)))
+            selected = set()
+            for item in items:
+                if ("plex", str(item.ratingKey)) in identifiers:
+                    selected.add(item.ratingKey)
+                    continue
+                if getattr(self, "is_music", False) or all(id_type == "plex" for id_type, _ in identifiers):
+                    continue
+                # Resolve IDs before the scoped library mapping is built, including
+                # legacy Plex agents and runs with the persistent cache disabled.
+                media_type, main_ids, imdb_ids = self.config.Convert.get_id(item, self)
+                provider = "tmdb" if media_type == "movie" else "tvdb"
+                item_ids = {(provider, str(item_id)) for item_id in main_ids or []}
+                item_ids.update(("imdb", str(item_id).lower()) for item_id in imdb_ids or [])
+                if identifiers.intersection(item_ids):
+                    selected.add(item.ratingKey)
+            return selected
         if self.schedule_mode == "diff":
             if not getattr(self, "is_show", False):
                 return {item.ratingKey for item in items if item.ratingKey not in self.scheduled_cached_keys}
@@ -664,7 +693,7 @@ class Library(ABC):
                 return title[:1].lower()
 
             return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
-        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), or index(<range>)")
+        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), index(<range>), or items(<ids>)")
 
     @property
     def has_schedule_scope(self):
