@@ -999,9 +999,18 @@ class Plex(Library):
 
             try:
                 data = self.Plex._server.query(key)
-                results = self.Plex.findItems(data, initpath=key)
+                raw_results = self.Plex.findItems(data, initpath=key)
 
-                logger.info(f"Successfully loaded {len(results)} target items:")
+                results = [
+                    result for result in raw_results
+                    if result.librarySectionID == self.Plex.key
+                ]
+
+                if len(results) == 0:
+                    logger.info(f"None of the target items are present in {self.name}")
+                else:
+                    logger.info(f"Successfully loaded {len(results)} target items:")
+
                 logger.info("")
                 for result in results:
                     guids = result.guids
