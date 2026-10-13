@@ -275,6 +275,8 @@ class Operations:
         logger.debug(f"Radarr Remove by Tag: {self.library.radarr_remove_by_tag}")
         logger.debug(f"Sonarr Add All Existing: {self.library.sonarr_add_all_existing}")
         logger.debug(f"Sonarr Remove by Tag: {self.library.sonarr_remove_by_tag}")
+        logger.debug(f"Lidarr Add All Existing: {self.library.lidarr_add_all_existing}")
+        logger.debug(f"Lidarr Remove by Tag: {self.library.lidarr_remove_by_tag}")
         logger.debug(f"Update Blank Track Titles: {self.library.update_blank_track_titles}")
         logger.debug(f"Update Remove Title Parentheses: {self.library.remove_title_parentheses}")
         logger.debug(f"Genre Mapper: {self.library.genre_mapper}")
@@ -322,6 +324,7 @@ class Operations:
 
             radarr_adds = []
             sonarr_adds = []
+            lidarr_adds = []
             label_edits = {"add": {}, "remove": {}}
             rating_edits = {"audienceRating": {}, "rating": {}, "userRating": {}}
             genre_edits = {"add": {}, "remove": {}}
@@ -412,6 +415,15 @@ class Operations:
                         path = path.replace(self.library.Sonarr.plex_path, self.library.Sonarr.sonarr_path)
                         path = path[:-1] if path.endswith(("/", "\\")) else path
                         sonarr_adds.append((tvdb_id, path))
+                if self.library.Lidarr and self.library.Lidarr.add_existing and self.library.lidarr_add_all_existing and self.library.is_music:
+                    artist_mbids = [guid.id.removeprefix("mbid://") for guid in getattr(item, "guids", []) if guid.id.startswith("mbid://")]
+                    valid_mbids = [mbid for mbid in artist_mbids if self.library.Lidarr.valid_mbid(mbid)]
+                    if len(valid_mbids) == 1:
+                        lidarr_adds.append((valid_mbids[0], item.title))
+                    elif not valid_mbids:
+                        logger.warning(f"Lidarr Warning: Skipping {item.title}; no valid MusicBrainz artist ID in Plex")
+                    else:
+                        logger.warning(f"Lidarr Warning: Skipping {item.title}; Plex returned multiple MusicBrainz IDs")
 
                 _flicklist_ratings = None
 
@@ -1664,6 +1676,15 @@ class Operations:
                 except Failed as e:
                     logger.error(e)
 
+            if self.library.Lidarr and self.library.Lidarr.add_existing and self.library.lidarr_add_all_existing:
+                logger.info("")
+                logger.separator(f"Lidarr Add All Existing: {len(lidarr_adds)} Artists", space=False, border=False)
+                logger.info("")
+                try:
+                    self.library.Lidarr.add_artists(list(dict.fromkeys(lidarr_adds)))
+                except Failed as e:
+                    logger.error(e)
+
             logger.info("")
 
         if self.library.radarr_remove_by_tag:
@@ -1676,6 +1697,11 @@ class Operations:
             logger.separator(f"Sonarr Remove {len(self.library.sonarr_remove_by_tag)} Shows with Tags: {', '.join(self.library.sonarr_remove_by_tag)}", space=False, border=False)
             logger.info("")
             self.library.Sonarr.remove_all_with_tags(self.library.sonarr_remove_by_tag)
+        if self.library.lidarr_remove_by_tag:
+            logger.info("")
+            logger.separator(f"Lidarr Remove Artists with Tags: {', '.join(self.library.lidarr_remove_by_tag)}", space=False, border=False)
+            logger.info("")
+            self.library.Lidarr.remove_all_with_tags(self.library.lidarr_remove_by_tag)
 
         if self.library.delete_collections or self.library.show_unmanaged or self.library.show_unconfigured or self.library.assets_for_all or self.library.mass_collection_mode:
             logger.info("")
