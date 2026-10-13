@@ -992,7 +992,7 @@ class Plex(Library):
 
         # If all filter IDs are Plex ratingKeys, fetch them directly
         if filter and all(id_type == "plex" for id_type, _ in filter):
-            logger.info(f"Directly fetching {len(filter)} target item(s) from Library: {self.name}")
+            logger.info(f"Fetching target item(s) from Library: {self.name}")
 
             keys_str = ",".join(str(k[1]) for k in filter)
             key = f"/library/metadata/{keys_str}?includeGuids=1"
@@ -1004,6 +1004,7 @@ class Plex(Library):
                 results = [
                     result for result in raw_results
                     if result.librarySectionID == self.Plex.key
+                    and not isinstance(result, Collection)
                 ]
 
                 if len(results) == 0:
@@ -1012,16 +1013,25 @@ class Plex(Library):
                     logger.info(f"Successfully loaded {len(results)} target items:")
 
                 logger.info("")
-                for result in results:
-                    guids = result.guids
-                    tmdb_id = next((guid.id for guid in guids if "tmdb://" in guid.id), None)
-                    tmdb_label = f' | {tmdb_id.replace("tmdb://", "TMDb ID: ")}' if tmdb_id else ""
-                    tvdb_id = next((guid.id for guid in guids if "tvdb://" in guid.id), None)
-                    tvdb_label = f' | {tvdb_id.replace("tvdb://", "TVDb ID: ")}' if tvdb_id else ""
-                    imdb_id = next((guid.id for guid in guids if guid.id.startswith("imdb://")), None)
-                    imdb_label = f' | {imdb_id.replace("imdb://", "IMDb ID: ")}' if imdb_id else ""
-                    logger.info(f"- {result.title} ({result.year}){tmdb_label}{tvdb_label}{imdb_label}")
+                for i, result in enumerate(results, 1):
+                    title = getattr(result, "title", None)
+                    
+                    tmdb_label = ""
+                    tvdb_label = ""
+                    imdb_label = ""
+                    year = getattr(result, "year", None)
+                    year_label = f" ({year})" if year else ""
+                    guids = getattr(result, "guids", None)
+                    if guids:
+                        tmdb_id = next((guid.id for guid in guids if "tmdb://" in guid.id), None)
+                        tmdb_label = f' | {tmdb_id.replace("tmdb://", "TMDb ID: ")}' if tmdb_id else ""
+                        tvdb_id = next((guid.id for guid in guids if "tvdb://" in guid.id), None)
+                        tvdb_label = f' | {tvdb_id.replace("tvdb://", "TVDb ID: ")}' if tvdb_id else ""
+                        imdb_id = next((guid.id for guid in guids if guid.id.startswith("imdb://")), None)
+                        imdb_label = f' | {imdb_id.replace("imdb://", "IMDb ID: ")}' if imdb_id else ""
+                    logger.info(f"({i}/{len(results)}) {title}{year_label}{tmdb_label}{tvdb_label}{imdb_label}")
 
+                logger.info("")
                 if cache_top_level:
                     self._all_items = results
                 return results

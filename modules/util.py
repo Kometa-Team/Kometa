@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Literal, overload
 from num2words import num2words
 from pathvalidate import is_valid_filename, sanitize_filename
 from plexapi.audio import Album, Track
+from plexapi.collection import Collection
 from plexapi.video import Episode, Movie, Season
 from tenacity import retry_if_exception
 from tenacity.wait import wait_base
@@ -408,6 +409,8 @@ def filter_items_by_ids(library, items, item_ids):
 
     filtered_items = []
     for item in items:
+        if isinstance(item, Collection):
+            continue
         if ("plex", str(item.ratingKey)) in item_ids:
             filtered_items.append(item)
             continue

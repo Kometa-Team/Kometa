@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
+from plexapi.collection import Collection
 
 from modules import util
 from modules.util import Failed
@@ -75,6 +76,14 @@ def test_filter_items_by_ids_keeps_only_requested_items():
     selected = util.filter_items_by_ids(library, [selected_item, other_item], {("tmdb", "550")})
 
     assert selected == [selected_item]
+
+
+def test_filter_items_by_ids_excludes_collections():
+    collection = Collection.__new__(Collection)
+    library = MagicMock()
+
+    assert util.filter_items_by_ids(library, [collection], {("plex", "1")}) == []
+    library.get_ids.assert_not_called()
 
 
 @pytest.mark.parametrize(
