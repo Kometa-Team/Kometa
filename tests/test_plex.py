@@ -305,6 +305,57 @@ class TestUploadImages:
         assert "Continuing the run" in message
         assert "sensitive Plex request details" not in message
 
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("url", [False, True])
+    def test_direct_upload_helpers_retry_and_identify_image(self, gateway_upload, artwork, method, url):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        image = "https://example.com/image.jpg" if url else "/posters/local.jpg"
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest("(503) sensitive request text"), None]
+
+        getattr(plex, f"upload_{artwork}")(item, image, url=url)
+
+        assert upload.call_count == 2
+        upload.assert_called_with(**{"url" if url else "filepath": image})
+        assert sleeps == [2]
+        message = test_logger.info.call_args.args[0]
+        assert item.title in message
+        assert artwork in message
+        assert image in message
+        assert "sensitive request text" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_direct_upload_exhaustion_is_not_retried_by_outer_policy(self, gateway_upload, artwork, method):
+        from modules.util import PlexImageUploadError
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        getattr(item, method).side_effect = BadRequest("(502) sensitive request text")
+
+        with pytest.raises(PlexImageUploadError) as error:
+            getattr(plex, f"upload_{artwork}")(item, "/posters/local.jpg")
+
+        assert getattr(item, method).call_count == 3
+        assert sleeps == [2, 5]
+        assert item.title in str(error.value)
+        assert artwork in str(error.value)
+        assert "/posters/local.jpg" in str(error.value)
+        assert "sensitive request text" not in str(error.value)
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_reset_failure_does_not_lock_artwork_or_remove_overlay_label(self, gateway_upload, artwork, method):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        setattr(plex, f"mass_{artwork}_update", {"source": "tmdb"})
+        plex.query = MagicMock()
+        plex.edit_tags = MagicMock()
+        getattr(item, method).side_effect = BadRequest("(504) gateway timeout")
+
+        assert plex.image_update(item, None, tmdb=("tmdb", "https://example.com/image.jpg"), image_type=artwork) == ("Reset", "TMDb", "Failed")
+
+        assert getattr(item, method).call_count == 3
+        plex.query.assert_not_called()
+        plex.edit_tags.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
     @pytest.mark.parametrize("message", ["(400) bad_request", "(404) not_found", "(401) unauthorized", "(400) body mentions (502)"])
     def test_permanent_upload_error_is_not_retried_and_retains_traceback(self, gateway_upload, message):
         plex, item, cache, test_logger, sleeps, run = gateway_upload

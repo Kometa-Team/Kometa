@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder, prefetch_gather_ids
-from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError, PlexImageUploadError
 
 logger = util.logger
 
@@ -658,7 +658,11 @@ class Overlays:
             except Failed:
                 pass
         if poster_location:
-            self.library.upload_poster(item, poster_location, url=is_url)
+            try:
+                self.library.upload_poster(item, poster_location, url=is_url)
+            except PlexImageUploadError as e:
+                logger.error(f"Overlay removal skipped for {item_title}: {e}. Continuing the run.")
+                return
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             for loc in locations:
                 if os.path.exists(loc):

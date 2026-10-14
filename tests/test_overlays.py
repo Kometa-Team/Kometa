@@ -428,6 +428,22 @@ class TestRemoveOverlay:
         overlay.remove_overlay(item, "Test Item", "Overlay", ["/tmp/poster.png"])
         overlay.library.edit_tags.assert_called_once_with("label", item, remove_tags=["Overlay"], do_print=False)
 
+    def test_failed_restore_keeps_overlay_label_and_backup(self, overlay, monkeypatch, tmp_path):
+        from modules.util import PlexImageUploadError
+
+        test_logger = MagicMock()
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        backup = tmp_path / "poster.png"
+        backup.write_bytes(b"original poster")
+        overlay.library.upload_poster.side_effect = PlexImageUploadError("Plex returned HTTP 502 after 3 upload attempts")
+
+        overlay.remove_overlay(MagicMock(), "Test Item", "Overlay", [str(backup)])
+
+        overlay.library.edit_tags.assert_not_called()
+        assert backup.read_bytes() == b"original poster"
+        test_logger.stacktrace.assert_not_called()
+        assert "Test Item" in test_logger.error.call_args.args[0]
+
     def test_handles_missing_assets_gracefully(self, overlay, monkeypatch):
         monkeypatch.setattr("modules.overlays.logger", FakeLogger())
         overlay.library.find_item_assets.side_effect = Failed("not found")
