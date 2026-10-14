@@ -915,6 +915,37 @@ class TestRefreshItemCacheAndMappings:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+class TestImdbRatingCacheOnLibraryLoad:
+    def test_map_guids_caches_ratings_after_the_library_loads(self, monkeypatch):
+        monkeypatch.setattr("modules.library.logger", FakeLogger())
+        library = MagicMock()
+        library.anidb_map = {}
+        library.mal_map = {}
+        library.plex_map_levels = set()
+        library.type = "Movie"
+        Plex.map_guids(library, [])
+        library.cache_imdb_ratings.assert_called_once_with()
+
+    def test_cache_imdb_ratings_sends_that_librarys_ids(self):
+        imdb = SimpleNamespace(cache_library_ratings=MagicMock())
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1], "": [2], "tt0068646": [3]}, config=SimpleNamespace(IMDb=imdb))
+        Plex.cache_imdb_ratings(library)
+        imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
+
+    def test_cache_imdb_ratings_skips_when_imdb_is_not_configured(self):
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=None))
+        Plex.cache_imdb_ratings(library)
+
+    def test_cache_imdb_ratings_logs_and_continues_when_caching_fails(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr("modules.library.logger", logger)
+        imdb = SimpleNamespace(cache_library_ratings=MagicMock(side_effect=RuntimeError("db locked")))
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=imdb))
+        Plex.cache_imdb_ratings(library)
+        assert imdb.cache_library_ratings.called
+        assert any("db locked" in message for message in logger.error_messages)
+
+
 class TestCheckFiltersReloadDedup:
     def test_first_tag_filter_forces_reload_second_does_not(self):
         plex = make_plex()

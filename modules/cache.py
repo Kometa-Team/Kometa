@@ -358,6 +358,11 @@ class Cache:
                     imdb_id TEXT,
                     keywords TEXT,
                     expiration_date TEXT)""")
+                cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_ratings (
+                    key INTEGER PRIMARY KEY,
+                    imdb_id TEXT UNIQUE,
+                    average_rating REAL,
+                    expiration_date TEXT)""")
                 cursor.execute("""CREATE TABLE IF NOT EXISTS imdb_parental (
                     key INTEGER PRIMARY KEY,
                     imdb_id TEXT,
@@ -1454,6 +1459,78 @@ class Cache:
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
                 cursor.execute("DELETE FROM list_ids WHERE list_key = ?", (list_key,))
+
+    def query_imdb_ratings(self, imdb_ids, expiration):
+        """Return ``(fresh, missing)`` for a batch of IMDb ids.
+
+        ``fresh`` maps ids whose row is still inside ``expiration`` days to the stored
+        rating (``None`` when the title was cached as having no rating). ``missing``
+        is every id with no row or an expired row, in request order.
+        """
+        fresh = {}
+        missing = []
+        if not imdb_ids:
+            return fresh, missing
+        found = {}
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = list(imdb_ids[start : start + 500])
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id, average_rating, expiration_date FROM imdb_ratings WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    for row in cursor:
+                        found[row["imdb_id"]] = row
+        now = datetime.now()
+        for imdb_id in imdb_ids:
+            row = found.get(imdb_id)
+            if not row or not row["expiration_date"]:
+                missing.append(imdb_id)
+                continue
+            try:
+                stored_on = datetime.strptime(row["expiration_date"], "%Y-%m-%d")
+            except (TypeError, ValueError):
+                missing.append(imdb_id)
+                continue
+            if (now - stored_on).days > expiration:
+                missing.append(imdb_id)
+            else:
+                fresh[imdb_id] = row["average_rating"]
+        return fresh, missing
+
+    def update_imdb_ratings(self, ratings, expiration):
+        """Store ``{imdb_id: average_rating or None}``.
+
+        New rows are staggered inside the expiration window, matching the other IMDb
+        caches, so a library-sized insert does not expire on one day. Refreshing a
+        row that is already stored starts a full ``expiration`` window from today.
+        """
+        if not ratings:
+            return
+        imdb_ids = list(ratings)
+        with self.connection as connection:
+            with closing(connection.cursor()) as cursor:
+                existing = set()
+                for start in range(0, len(imdb_ids), 500):
+                    chunk = imdb_ids[start : start + 500]
+                    placeholders = ",".join("?" * len(chunk))
+                    cursor.execute(
+                        f"SELECT imdb_id FROM imdb_ratings WHERE imdb_id IN ({placeholders})",  # nosec B608 - placeholders only
+                        chunk,
+                    )
+                    existing.update(row["imdb_id"] for row in cursor)
+                cursor.executemany("INSERT OR IGNORE INTO imdb_ratings(imdb_id) VALUES(?)", [(imdb_id,) for imdb_id in imdb_ids])
+                now = datetime.now()
+                updates = []
+                for imdb_id in imdb_ids:
+                    if imdb_id in existing:
+                        expiration_date = now
+                    else:
+                        expiration_date = now - timedelta(days=random.randint(1, expiration))
+                    updates.append((ratings[imdb_id], expiration_date.strftime("%Y-%m-%d"), imdb_id))
+                cursor.executemany("UPDATE imdb_ratings SET average_rating = ?, expiration_date = ? WHERE imdb_id = ?", updates)
 
     def query_imdb_keywords(self, imdb_id, expiration):
         imdb_dict = {}
