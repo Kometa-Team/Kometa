@@ -2,7 +2,7 @@ import os
 import re
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 from PIL import Image, UnidentifiedImageError
 from requests.exceptions import RequestException, Timeout
@@ -11,6 +11,7 @@ from modules import timings, util
 from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
+from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled
 
 logger = util.logger
@@ -680,14 +681,15 @@ class Library(ABC):
                     if cached_updates.get((parent_key, season_key)) != updated_at:
                         changed_shows.add(int(show.ratingKey))
             return changed_shows
-        if self.schedule_mode.startswith("added(") and self.schedule_mode.endswith(")"):
+        if self.schedule_mode.lower().startswith("added(") and self.schedule_mode.endswith(")"):
             try:
-                days = int(self.schedule_mode[6:-1])
-            except ValueError as e:
-                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected added(<days>)") from e
-            if days < 1:
-                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added days must be at least 1")
-            cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+                duration = parse_added_duration(self.schedule_mode)
+            except ValueError as error:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; {error}") from error
+            try:
+                cutoff = datetime.now(timezone.utc) - duration
+            except OverflowError as error:
+                raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; added duration is too large") from error
             scheduled_keys = {item.ratingKey for item in items if getattr(item, "addedAt", None) and (item.addedAt.replace(tzinfo=timezone.utc) if item.addedAt.tzinfo is None else item.addedAt.astimezone(timezone.utc)) >= cutoff}
             if getattr(self, "is_show", False):
                 for episode in self.get_items_added_since("episode", cutoff):
@@ -706,7 +708,7 @@ class Library(ABC):
                 return title[:1].lower()
 
             return {item.ratingKey for item in items if (start <= index_initial(item) <= end or (include_non_alphabetical and not re.match(r"[a-z]", index_initial(item), re.IGNORECASE)))}
-        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<days>), index(<range>), or items(<ids>)")
+        raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected full, diff, added(<positive integer>[m|h|d]), index(<range>), or items(<ids>)")
 
     @property
     def has_schedule_scope(self):

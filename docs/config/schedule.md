@@ -58,7 +58,7 @@ The `.not` modifier inverts one schedule expression. For example, `weekly.not(mo
 |:--|:--|
 | `full` | Every top-level library item. |
 | `items(ids)` | Individual movies or shows identified by pipe-separated TMDb, TVDb, IMDb, or Plex rating-key IDs. |
-| `added(days)` | Items added to Plex during the previous number of days. In a TV Show library, this also includes existing shows with recently added episodes. |
+| `added(duration)` | Items added to Plex within the previous duration. Use a positive integer with `m` for minutes, `h` for hours, or `d` for 24-hour days, such as `added(30m)`, `added(1h)`, or `added(12d)`. A bare integer such as `added(7)` means days. In a TV Show library, this also includes existing shows with recently added episodes. |
 | `diff` | Items absent from Kometa's previous library snapshot. Show libraries compare each season's Plex `updatedAt` value. Requires a persistent Kometa cache. |
 | `index(A-F)` | Titles beginning with letters in the inclusive A through F range. |
 | `index(A-F#)` | The A through F range plus titles beginning with a number, symbol, or other non-alphabetical character. |

@@ -592,7 +592,7 @@ Kometa will load those environment variables when it starts up, and you don't ha
     |:--|:--|:--|
     | `full` | Processes every top-level item in each library. | `python kometa.py --run --mode full` |
     | `items(ids)` | Processes only the listed items. Separate IDs with a pipe character. Movies match TMDb IDs, shows match TVDb IDs, and TMDb show IDs are converted to TVDb IDs. IMDb IDs and top-level Plex rating keys work for either. | `python kometa.py --run --mode 'items(imdb:tt0133093)'` |
-    | `added(days)` | Processes items added to Plex within the last number of days. For shows, it also includes shows with recently added episodes. | `python kometa.py --run --mode 'added(7)'` |
+    | `added(duration)` | Processes items added to Plex within the last duration. Use a positive integer with `m` (minutes), `h` (hours), or `d` (24-hour days); a bare integer means days. For shows, it also includes shows with recently added episodes. | `python kometa.py --run --mode 'added(30m)'` |
     | `diff` | Processes items missing from Kometa's previous library cache snapshot. For shows, it compares each season's Plex update time. Requires a persistent Kometa cache. | `python kometa.py --run --mode diff` |
     | `index(A-Z)` | Processes titles whose first letter is in the inclusive A through Z range. Uses the Plex Sort Title when available. | `python kometa.py --run --mode 'index(A-F)'` |
     | `index(A-Z#)` | Processes the A through Z range plus titles beginning with a number or symbol. | `python kometa.py --run --mode 'index(A-F#)'` |

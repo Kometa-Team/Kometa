@@ -9,6 +9,7 @@ from jsonschema import Draft7Validator
 import modules.builder  # noqa: F401 - pre-import breaks the plex/meta circular import
 from modules import util
 from modules.library import Library
+from modules.schedule_mode import parse_added_duration
 from modules.util import Failed, NotScheduled
 
 
@@ -115,6 +116,60 @@ def test_schedule_modes_select_expected_items(monkeypatch):
     assert Library._schedule_item_keys(library, items) == {1, 3}
     library.schedule_mode = "index(a-b#)"
     assert Library._schedule_item_keys(library, items) == {1, 2, 3}
+
+
+@pytest.mark.parametrize("mode,duration", [("added(30m)", timedelta(minutes=30)), ("added(1h)", timedelta(hours=1)), ("added(12d)", timedelta(days=12)), ("added(7)", timedelta(days=7)), ("added(01)", timedelta(days=1)), ("Added(1H)", timedelta(hours=1))])
+def test_added_duration_units(mode, duration):
+    assert parse_added_duration(mode) == duration
+
+
+@pytest.mark.parametrize("mode", ["added(0)", "added(-1h)", "added(1.5h)", "added(2w)", "added(1hm)", "added()"])
+def test_added_duration_rejects_invalid_values(mode):
+    with pytest.raises(ValueError):
+        parse_added_duration(mode)
+
+
+@pytest.mark.parametrize("mode,duration", [("added(30m)", timedelta(minutes=30)), ("added(1h)", timedelta(hours=1)), ("added(12d)", timedelta(days=12)), ("added(7)", timedelta(days=7))])
+def test_added_mode_includes_cutoff_boundary(mode, duration, monkeypatch):
+    now = datetime(2026, 10, 14, 15, 0, tzinfo=timezone.utc)
+
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return now if tz else now.replace(tzinfo=None)
+
+    monkeypatch.setattr("modules.library.datetime", FrozenDateTime)
+    library = SimpleNamespace(schedule_mode=mode, is_show=False)
+    items = [
+        SimpleNamespace(ratingKey=1, addedAt=now - duration),
+        SimpleNamespace(ratingKey=2, addedAt=now - duration - timedelta(microseconds=1)),
+        SimpleNamespace(ratingKey=3, addedAt=now - timedelta(seconds=1)),
+    ]
+    assert Library._schedule_item_keys(library, items) == {1, 3}
+
+
+def test_added_mode_includes_recent_show_episode(monkeypatch):
+    now = datetime(2026, 10, 14, 15, 0, tzinfo=timezone.utc)
+
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return now if tz else now.replace(tzinfo=None)
+
+    monkeypatch.setattr("modules.library.datetime", FrozenDateTime)
+    seen = []
+    library = SimpleNamespace(schedule_mode="added(1h)", is_show=True, get_items_added_since=lambda kind, cutoff: seen.append((kind, cutoff)) or [SimpleNamespace(grandparentRatingKey=42)])
+    shows = [SimpleNamespace(ratingKey=42, addedAt=now - timedelta(days=30))]
+    assert Library._schedule_item_keys(library, shows) == {42}
+    assert seen == [("episode", now - timedelta(hours=1))]
+
+
+@pytest.mark.parametrize("mode,valid", [("added(30m)", True), ("added(1h)", True), ("added(12d)", True), ("added(7)", True), ("added(01)", True), ("Added(1H)", True), ("added(0m)", False), ("added(1w)", False), ("added(1.5h)", False)])
+def test_added_mode_schema(mode, valid):
+    schema = json.loads((Path(__file__).resolve().parents[1] / "json-schema" / "config-schema.json").read_text(encoding="utf-8"))
+    validator = Draft7Validator({"$ref": "#/definitions/library-section", "definitions": schema["definitions"]})
+    config = {"Movies": {"schedule": [{"schedule": "weekly(monday)", "mode": mode}]}}
+    assert validator.is_valid(config) is valid
 
 
 def test_tv_diff_selects_shows_with_changed_seasons(monkeypatch):
