@@ -337,14 +337,15 @@ class TestValidateImdbWatchlist:
 # ---------------------------------------------------------------------------
 
 
-def make_imdb_service(service_responses, raise_failed=None, graph_response=None):
-    """Return an IMDb instance with _service_request mocked to return responses
-    looked up by endpoint path (e.g. 'title/tt0111161').
+def make_imdb_service(service_responses, raise_failed=None, graph_response=None, post_responses=None, post_raise=None):
+    """Return an IMDb instance with service calls mocked by endpoint path.
 
     Args:
-        service_responses: dict mapping endpoint path to JSON response.
-        raise_failed: optional endpoint path that will raise Failed when requested.
+        service_responses: dict mapping GET endpoint path to JSON response.
+        raise_failed: optional GET endpoint path that will raise Failed when requested.
         graph_response: optional response for _graph_request.
+        post_responses: dict mapping POST endpoint path to JSON response.
+        post_raise: optional POST endpoint path that will raise Failed when requested.
     """
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
 
@@ -353,36 +354,52 @@ def make_imdb_service(service_responses, raise_failed=None, graph_response=None)
             raise Failed("IMDb Service Error: 503")
         return service_responses.get(endpoint, {})
 
+    def _fake_service_post(endpoint, body, not_found_ok=False):
+        if post_raise and endpoint == post_raise:
+            raise Failed("IMDb Service Error: 503")
+        if post_responses and endpoint in post_responses:
+            payload = post_responses[endpoint]
+            return payload(body) if callable(payload) else payload
+        return {}
+
     imdb._service_request = MagicMock(side_effect=_fake_service_request)
+    imdb._service_post = MagicMock(side_effect=_fake_service_post)
     imdb._graph_request = MagicMock(return_value=graph_response)
     return imdb
 
 
+def _ratings_batch(results, not_found=None):
+    return {"field": "ratings", "results": results, "not_found": not_found or []}
+
+
 def test_get_rating_returns_average_rating():
-    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3, "genres": "Drama"}})
+    imdb = make_imdb_service({}, post_responses={"ratings": _ratings_batch({"tt0111161": {"tconst": "tt0111161", "averageRating": 9.3, "numVotes": 100}})})
     assert imdb.get_rating("tt0111161") == 9.3
+    imdb._service_post.assert_called_once_with("ratings", {"imdb_ids": ["tt0111161"]})
+    imdb._service_request.assert_not_called()
 
 
 def test_get_rating_blank_id_returns_none():
     imdb = make_imdb_service({})
     assert imdb.get_rating("") is None
     assert imdb.get_rating(None) is None
+    imdb._service_post.assert_not_called()
 
 
 def test_get_rating_falls_back_to_tsv_on_service_failure():
-    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb = make_imdb_service({}, post_raise="ratings")
     imdb._ratings = {"tt0111161": "8.7"}
     assert imdb.get_rating("tt0111161") == "8.7"
     assert imdb._service_available is False
 
 
 def test_get_rating_service_failure_uses_tsv_for_later_calls():
-    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb = make_imdb_service({}, post_raise="ratings")
     imdb._ratings = {"tt0111161": "8.7", "tt0068646": "9.2"}
     imdb.get_rating("tt0111161")
     # After first failure, service flag is False; second call should skip service entirely.
     assert imdb.get_rating("tt0068646") == "9.2"
-    assert imdb._service_request.call_count == 1
+    assert imdb._service_post.call_count == 1
 
 
 def test_get_genres_splits_comma_string():
@@ -475,8 +492,9 @@ def test_get_episode_rating_falls_back_to_tsv_on_service_failure():
 def test_get_rating_non_dict_response_returns_none_without_crash():
     # The IMDb service unexpectedly answering with a non-object body (e.g. a bare list)
     # must not raise AttributeError from calling .get() on it.
-    imdb = make_imdb_service({"title/tt0111161": ["unexpected", "list", "response"]})
+    imdb = make_imdb_service({}, post_responses={"ratings": ["unexpected", "list", "response"]})
     assert imdb.get_rating("tt0111161") is None
+    assert imdb._service_available is True
 
 
 def test_get_genres_non_dict_response_returns_empty_list():
@@ -497,10 +515,81 @@ def test_get_episode_rating_non_dict_seasons_returns_none():
 def test_get_rating_falls_back_on_non_http_failure():
     """Non-HTTP failures (connection errors, timeouts) should also trigger TSV fallback."""
     imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
-    imdb.requests.get.side_effect = ConnectionError("Connection refused")
+    imdb.requests.post.side_effect = ConnectionError("Connection refused")
     imdb._ratings = {"tt0111161": "8.7"}
     assert imdb.get_rating("tt0111161") == "8.7"
     assert imdb._service_available is False
+
+
+def test_get_rating_reads_fresh_cache_without_calling_the_service(tmp_path):
+    import modules.cache as cache_module
+    from modules.cache import Cache
+    from tests.conftest import FakeLogger
+
+    cache_module.logger = FakeLogger()
+    cache = Cache(str(tmp_path / "config.yml"), expiration=60)
+    cache.update_imdb_ratings({"tt0111161": 9.3, "tt0000000": None}, expiration=60)
+    imdb = IMDb(requests=MagicMock(), cache=cache, default_dir=str(tmp_path))
+    imdb._service_post = MagicMock(side_effect=AssertionError("fresh ratings must not be fetched"))
+
+    assert imdb.get_rating("tt0111161") == 9.3
+    assert imdb.get_rating("tt0000000") is None
+    assert imdb.get_rating("tt0111161") == 9.3
+    imdb._service_post.assert_not_called()
+
+
+def test_library_ratings_batch_misses_and_reuse_until_expired(tmp_path):
+    import sqlite3
+    from datetime import datetime, timedelta
+
+    import modules.cache as cache_module
+    from modules.cache import Cache
+    from modules.imdb import ratings_batch_max
+    from tests.conftest import FakeLogger
+
+    cache_module.logger = FakeLogger()
+    cache = Cache(str(tmp_path / "config.yml"), expiration=60)
+    imdb = IMDb(requests=MagicMock(), cache=cache, default_dir=str(tmp_path))
+    calls = []
+
+    def post(endpoint, body, not_found_ok=False):
+        assert endpoint == "ratings"
+        calls.append(list(body["imdb_ids"]))
+        return _ratings_batch(
+            {imdb_id: {"averageRating": 8.0, "numVotes": 10} for imdb_id in body["imdb_ids"] if not imdb_id.endswith("0000000")},
+            not_found=[imdb_id for imdb_id in body["imdb_ids"] if imdb_id.endswith("0000000")],
+        )
+
+    imdb._service_post = post
+    ids = [f"tt{i:07d}" for i in range(ratings_batch_max + 1)]
+    ids.append(ids[0])
+    imdb.cache_library_ratings(ids)
+
+    assert [len(chunk) for chunk in calls] == [ratings_batch_max, 1]
+    assert imdb.get_rating("tt0000001") == 8.0
+    assert imdb.get_rating("tt0000000") is None
+    assert len(calls) == 2
+
+    imdb._direct_ratings.clear()
+    imdb.cache_library_ratings(["tt0000001", "tt0000000"])
+    assert len(calls) == 2
+
+    old = (datetime.now() - timedelta(days=61)).strftime("%Y-%m-%d")
+    with sqlite3.connect(cache.cache_path) as conn:
+        conn.execute("UPDATE imdb_ratings SET expiration_date = ?", (old,))
+    imdb._direct_ratings.clear()
+    imdb.cache_library_ratings(["tt0000001", "tt0000000"])
+    assert len(calls) == 3
+    assert calls[2] == ["tt0000001", "tt0000000"]
+
+
+def test_rating_miss_during_the_run_uses_the_batch_endpoint():
+    imdb = make_imdb_service({}, post_responses={"ratings": _ratings_batch({"tt0068646": {"averageRating": 9.2}})})
+    imdb.cache_library_ratings(["tt0111161"])
+    assert imdb.get_rating("tt0068646") == 9.2
+    assert imdb._service_post.call_count == 2
+    imdb._service_post.assert_called_with("ratings", {"imdb_ids": ["tt0068646"]})
+    imdb._service_request.assert_not_called()
 
 
 def test_get_genres_falls_back_on_invalid_json():

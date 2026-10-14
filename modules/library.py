@@ -697,3 +697,21 @@ class Library(ABC):
         self.plex_map_levels.update({self.type, self.type.lower()})
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
+        self.cache_imdb_ratings()
+
+    def cache_imdb_ratings(self):
+        """Batch-fill the local IMDb rating cache with this library's ids.
+
+        Called when the library finishes loading so later IMDb direct rating lookups
+        read the cache instead of requesting one title at a time.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not self.imdb_map:
+            return
+        imdb_ids = [imdb_id for imdb_id in self.imdb_map if imdb_id]
+        if not imdb_ids:
+            return
+        try:
+            imdb.cache_library_ratings(imdb_ids)
+        except Exception as error:
+            logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")
