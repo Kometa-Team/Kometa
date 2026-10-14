@@ -1240,3 +1240,31 @@ class TestModuleConstants:
 
         values = list(tmdb_release_types.values())
         assert len(values) == len(set(values)), "tmdb_release_types has duplicate IDs"
+
+
+@pytest.mark.parametrize("field", ["audienceRating", "rating", "userRating"])
+@pytest.mark.parametrize("episode", [False, True])
+@pytest.mark.parametrize("draw, expected", [(0, "0.0"), (57, "5.7"), (100, "10.0")])
+@pytest.mark.parametrize("retry", [False, True])
+def test_random_rating_source(monkeypatch, field, episode, draw, expected, retry):
+    item = make_mass_edit_item(1, "Test")
+    rating_type = {"audienceRating": "audience", "rating": "critic", "userRating": "user"}[field]
+    operation = f"mass_{'episode_' if episode else ''}{rating_type}_rating_update"
+    library = make_mass_edit_library([item], **{operation: ["random"]})
+    if episode:
+        library.is_movie = False
+        library.is_show = True
+        library.cached_item_subitems.return_value = [SimpleNamespace(ratingKey=2, audienceRating=None, rating=None, userRating=None, seasonNumber=1, episodeNumber=1)]
+    if retry:
+        target = library.cached_item_subitems.return_value[0] if episode else item
+        setattr(target, field, ((draw + 1) % 101) / 10)
+        randint = MagicMock(side_effect=[(draw + 1) % 101, (draw + 1) % 101, draw])
+    else:
+        randint = MagicMock(return_value=draw)
+    monkeypatch.setattr(ops_module.random, "randint", randint)
+
+    Operations(config=MagicMock(), library=library).run_operations()
+
+    assert randint.call_count == (3 if retry else 1)
+    assert all(call.args == (0, 100) for call in randint.call_args_list)
+    library.Plex.editField.assert_any_call(field, expected)
