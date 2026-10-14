@@ -974,7 +974,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     **Attribute:** `plex_bulk_edit_batch_size`
 
-    **Accepted Values:** None, or any number.
+    **Accepted Values:** `null`, or a positive integer.
 
     ???+ example "Example"
 
