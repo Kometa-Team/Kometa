@@ -725,12 +725,12 @@ class Library(ABC):
         self.cached_items = {}
         self.filter_attr_cache = {}
 
-        items = self.get_all(load=True)
+        items = self.get_all(load=True, ignore_schedule_scope=True)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         if not getattr(self, "is_music", False):
             self.map_guids(items)
-        return items
+        return [item for item in items if item.ratingKey in self.scheduled_item_keys] if self.has_schedule_scope else items
 
     def map_guids(self, items):
         for i, item in enumerate(items, 1):

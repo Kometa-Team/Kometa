@@ -284,6 +284,7 @@ class ConfigFile:
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
+        self.runtime_mode = attrs.get("mode")
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = None
@@ -2038,8 +2039,8 @@ class ConfigFile:
                 params["default_dir"] = default_dir
 
                 params["skip_library"] = False
-                params["schedule_mode"] = "full"
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
+                params["schedule_mode"] = self.runtime_mode or "full"
+                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:

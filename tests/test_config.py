@@ -169,7 +169,7 @@ def make_config(
 # ═══════════════════════════════════════════════════════════════════════
 
 
-@pytest.mark.parametrize("attrs, expected_mode", [({}, "items(tmdb:550|tmdb:603)"), ({"ignore_schedules": True}, "full"), ({"libraries": "Movies"}, "full")])
+@pytest.mark.parametrize("attrs, expected_mode", [({}, "items(tmdb:550|tmdb:603)"), ({"ignore_schedules": True}, "full"), ({"libraries": "Movies"}, "full"), ({"mode": "index(a)"}, "index(a)"), ({"mode": "full", "ignore_schedules": True}, "full")])
 def test_items_schedule_config_selection(tmp_path, monkeypatch, attrs, expected_mode):
     class MondayDateTime(datetime):
         @classmethod

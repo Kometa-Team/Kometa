@@ -79,6 +79,8 @@ libraries:
 
 The second entry is optional; without it, this library is skipped on other days. As with other library schedule modes, `--ignore-schedules` or explicitly selecting the library with `--run-libraries` bypasses its schedule and uses the full scope.
 
+Use `--run --mode full` or `KOMETA_MODE=full` to choose one mode for every library in a run. This overrides configured library schedule modes, including unmatched entries. Other schedules, such as individual collection schedules and `schedule_overlays`, still apply unless you also use `--ignore-schedules`.
+
 When a mode is not `full`, Kometa limits metadata, overlays, item operations, and collection additions to items in scope. It does not remove existing collection members or change custom collection ordering; run with `full` to reconcile the whole library.
 
 ???+ warning "Scoped runs can leave outdated results"

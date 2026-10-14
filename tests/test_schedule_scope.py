@@ -37,3 +37,19 @@ def test_index_schedule_uses_sort_title():
     ]
 
     assert Library._schedule_item_keys(library, items) == {1, 2}
+
+
+def test_refresh_maps_all_items_but_returns_only_current_scope():
+    items = [SimpleNamespace(ratingKey=10), SimpleNamespace(ratingKey=20)]
+    calls = []
+    library = SimpleNamespace(
+        has_schedule_scope=True,
+        scheduled_item_keys={10},
+        is_music=False,
+        get_all=lambda **kwargs: calls.append(kwargs) or items,
+        map_guids=lambda mapped: calls.append(mapped),
+    )
+
+    assert Library.refresh_item_cache_and_mappings(library) == [items[0]]
+    assert calls == [{"load": True, "ignore_schedule_scope": True}, items]
+    assert set(library.cached_items) == {10, 20}

@@ -105,6 +105,7 @@ arguments = {
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
     "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
+    "mode": {"args": [], "type": "str", "help": "Override library schedule modes for this run"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
@@ -186,6 +187,10 @@ for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
+if run_args["mode"] is not None:
+    run_args["mode"] = run_args["mode"].strip().lower()
+    if not run_args["mode"]:
+        parser.error("--mode / KOMETA_MODE must specify a schedule mode")
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
@@ -563,6 +568,7 @@ def start(attrs):
         attrs["time_obj"] = start_time
         attrs["config_file"] = run_args["config"]
         attrs["ignore_schedules"] = run_args["ignore-schedules"]
+        attrs["mode"] = run_args["mode"]
         attrs["read_only"] = run_args["read-only-config"]
         attrs["no_missing"] = run_args["no-missing"]
         attrs["no_report"] = run_args["no-report"]
