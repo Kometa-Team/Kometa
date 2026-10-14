@@ -559,7 +559,7 @@ class Library(ABC):
         pass
 
     @abstractmethod
-    def get_all(self, builder_level=None, load=False) -> list: ...
+    def get_all(self, builder_level=None, load=False, filter=None) -> list: ...
 
     @abstractmethod
     def get_ids(self, item) -> tuple: ...
@@ -606,11 +606,11 @@ class Library(ABC):
         yaml.data = self.report_data
         yaml.save()
 
-    def cache_items(self):
+    def cache_items(self, filter=None):
         logger.info("")
         logger.separator(f"Caching {self.name} Library Items", space=False, border=False)
         logger.info("")
-        items = self.get_all()
+        items = self.get_all(filter=filter)
         for item in items:
             self.cached_items[item.ratingKey] = (item, False)
         return items

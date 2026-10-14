@@ -496,6 +496,29 @@ def make_title_test_library(items):
 
 
 class TestRemoveTitleParenthesesBatching:
+    def test_run_operations_filters_items_before_bulk_reload(self):
+        selected_item = make_item(1, "Selected")
+        other_item = make_item(2, "Not Selected")
+        library = make_title_test_library([selected_item, other_item])
+        library.remove_title_parentheses = False
+        library.get_ids.side_effect = lambda item: (550 if item.ratingKey == 1 else 603, None, None)
+
+        Operations(config=MagicMock(), library=library).run_operations({("tmdb", "550")})
+
+        library.bulk_reload.assert_called_once_with([selected_item])
+        library.reload.assert_called_once_with(selected_item)
+
+    def test_run_operations_rechecks_plex_ids_after_direct_fetch_fallback(self):
+        selected_item = make_item(1, "Selected")
+        other_item = make_item(2, "Not Selected")
+        library = make_title_test_library([selected_item, other_item])
+        library.remove_title_parentheses = False
+
+        Operations(config=MagicMock(), library=library).run_operations({("plex", "1")})
+
+        library.bulk_reload.assert_called_once_with([selected_item])
+        library.reload.assert_called_once_with(selected_item)
+
     def test_split_duplicates_refreshes_items_and_mappings_before_item_operations(self):
         stale_item = make_item(1, "Split Show")
         stale_item.split = MagicMock()
@@ -520,7 +543,7 @@ class TestRemoveTitleParenthesesBatching:
         Operations(config=MagicMock(), library=library).run_operations()
 
         library.refresh_item_cache_and_mappings.assert_not_called()
-        library.get_all.assert_called_once_with()
+        library.get_all.assert_called_once_with(filter=None)
 
     def test_uses_limited_metadata_reload(self):
         item = make_item(1, "Show A")

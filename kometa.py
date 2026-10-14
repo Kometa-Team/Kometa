@@ -106,6 +106,7 @@ arguments = {
     "overlays-only": {"args": ["ov", "overlay", "overlays", "overlay-only"], "type": "bool", "help": "Run only overlay files"},
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
+    "run-items": {"args": ["ri", "item", "items", "run-item"], "type": "str", "help": "Process only specified items operations and overlays (pipe-separated list '|')"},
     "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
@@ -633,6 +634,9 @@ def start(attrs):
         else:
             if sum([attrs["collection_only"], attrs["metadata_only"], attrs["playlist_only"], attrs["operations_only"], attrs["overlays_only"]]) > 1:
                 logger.error("Error: Only one of --collections-only, --metadata-only, --playlists-only, --operations-only, or --overlays-only can be specified at a time.")
+            elif run_args["run-items"] and not (attrs["operations_only"] or attrs["overlays_only"]):
+                logger.error("Error: --run-items requires either --operations-only or --overlays-only.")
+                sys.exit(1)
             else:
                 profiler = None
                 if os.environ.get("KOMETA_PROFILE") == "pyinstrument":
@@ -900,7 +904,9 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
     library_status: LibraryRunStatus = {}
     collections_ran = False
     config.run_libraries = []
+    requested_item_ids = util.parse_run_item_ids(run_args["run-items"])
     for library in config.libraries:
+        item_filter = util.resolve_run_item_ids(library, requested_item_ids)
         if library.skip_library:
             logger.info("")
             logger.separator(f"Skipping {library.original_mapping_name} Library")
@@ -971,26 +977,6 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                         logger.error(e)
                 library_status[library.name]["All Collections Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
-            if run_args["delete-labels"] and not run_args["playlists-only"]:
-                time_start = datetime.now()
-                logger.info("")
-                logger.separator(f"Deleting all Labels from All items in the {library.name} Library", space=False, border=False)
-                logger.info("")
-                if library.is_show:
-                    library_types = ["show", "season", "episode"]
-                elif library.is_music:
-                    library_types = ["artist", "album", "track"]
-                else:
-                    library_types = ["movie"]
-                for library_type in library_types:
-                    for item in library.get_all(builder_level=library_type):
-                        try:
-                            sync = ["Overlay"] if "Overlay" in [lbl.tag for lbl in item.labels] else []
-                            library.edit_tags("label", item, sync_tags=sync)
-                        except NotFound:
-                            logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
-                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
-
             time_start = datetime.now()
             temp_items = None
             list_key = None
@@ -998,7 +984,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
 
             if not temp_items:
-                temp_items = library.cache_items()
+                temp_items = library.cache_items(filter=item_filter)
                 if config.Cache and list_key:
                     config.Cache.delete_list_ids(list_key)
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
@@ -1009,6 +995,33 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                 library.map_guids(temp_items)
             library_status[library.name]["Library Loading and Mapping"] = str(datetime.now() - time_start).split(".")[0]
             config.run_libraries.append(library)
+
+            if run_args["delete-labels"] and not run_args["playlists-only"]:
+                time_start = datetime.now()
+                logger.info("")
+                logger.separator(f"Deleting all Labels from {'Selected' if item_filter else 'All'} items in the {library.name} Library", space=False, border=False)
+                logger.info("")
+                if item_filter and all(id_type == "plex" for id_type, _ in item_filter):
+                    items = library.get_all(filter=item_filter)
+                    items = util.filter_items_by_ids(library, items, item_filter)
+                else:
+                    if library.is_show:
+                        library_types = ["show", "season", "episode"]
+                    elif library.is_music:
+                        library_types = ["artist", "album", "track"]
+                    else:
+                        library_types = ["movie"]
+                    items = []
+                    for library_type in library_types:
+                        library_items = library.get_all(builder_level=library_type)
+                        items.extend(util.filter_items_by_ids(library, library_items, item_filter))
+                for item in items:
+                    try:
+                        sync = ["Overlay"] if "Overlay" in [lbl.tag for lbl in item.labels] else []
+                        library.edit_tags("label", item, sync_tags=sync)
+                    except NotFound:
+                        logger.error(f"{item.title[:25]:<25} | Labels Failed to be Removed")
+                library_status[library.name]["All Labels Deleted"] = str(datetime.now() - time_start).split(".")[0]
 
             runs = {
                 "metadata": all([not run_args[x] for x in ["tests", "operations-only", "overlays-only", "playlists-only", "collections-only"]]),
@@ -1094,9 +1107,9 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             logger.error(e)
                     library_status[library.name]["Library Metadata Files"] = str(datetime.now() - time_start).split(".")[0]
                 elif run_type == "operations" and runs[run_type] and not config.requested_files and library.library_operation:
-                    library_status[library.name]["Library Operations"] = library.Operations.run_operations()
+                    library_status[library.name]["Library Operations"] = library.Operations.run_operations(item_filter)
                 elif run_type == "overlays" and runs[run_type] and (library.overlay_files or (library.remove_overlays and not config.requested_files)):
-                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays()
+                    library_status[library.name]["Library Overlay Files"] = library.Overlays.run_overlays(item_filter)
             # logger.remove_library_handler(library.mapping_name)
         except Exception as e:
             library.notify(get_critical_error_message(e))
@@ -1535,7 +1548,18 @@ def run_playlists(config):
 
 if __name__ == "__main__":
     try:
-        if run_args["run"] or run_args["tests"] or run_args["run-collections"] or run_args["run-libraries"] or run_args["run-files"] or run_args["resume"] or run_args["validate"] or run_args["validate-file"] or run_args["validate-dir"]:
+        if (
+            run_args["run"]
+            or run_args["tests"]
+            or run_args["run-collections"]
+            or run_args["run-libraries"]
+            or run_args["run-items"]
+            or run_args["run-files"]
+            or run_args["resume"]
+            or run_args["validate"]
+            or run_args["validate-file"]
+            or run_args["validate-dir"]
+        ):
             exit_code = process({"collections": run_args["run-collections"], "libraries": run_args["run-libraries"], "files": run_args["run-files"]})
             sys.exit(exit_code)
         else:
