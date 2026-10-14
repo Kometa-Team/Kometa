@@ -3114,9 +3114,15 @@ class Plex(Library):
                     percentage = sub_data
                 elif sub_atr == "count":
                     count = sub_data
+                elif sub_atr == "latest":
+                    continue
                 else:
                     filters_in.append((sub_atr, sub_data))
-            if count is not None:
+            if filter_attr == "seasons" and filter_data.get("latest"):
+                numbered_seasons = [season for season in sub_items if season.index is not None and season.index > 0]
+                if not numbered_seasons or not self.check_filters(max(numbered_seasons, key=lambda season: season.index), filters_in, current_time):
+                    return False
+            elif count is not None:
                 matches = 0
                 for sub_item in sub_items:
                     if self.check_filters(sub_item, filters_in, current_time) is True:

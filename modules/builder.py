@@ -4697,6 +4697,13 @@ class CollectionBuilder:
             if isinstance(data, dict) and data:
                 has_percentage = "percentage" in data
                 has_count = "count" in data
+                has_latest = "latest" in data
+                latest = util.parse(self.Type, "latest", data["latest"], datatype="bool") if has_latest and attribute == "seasons" else False
+
+                if has_latest and attribute != "seasons":
+                    raise BuilderValidationError(f"{self.Type} Error: latest is only valid in the seasons filter")
+                if latest and (has_percentage or has_count):
+                    raise BuilderValidationError(f"{self.Type} Error: Cannot use latest with percentage or count in {attribute} filter.")
 
                 if has_percentage and has_count:
                     raise BuilderValidationError(f"{self.Type} Error: Cannot use both percentage and count in {attribute} filter. Please use one or the other.")
@@ -4724,12 +4731,14 @@ class CollectionBuilder:
                             percentage = self.default_percent
                         else:
                             percentage = maybe
-                else:
+                elif not latest:
                     # Default to percentage if neither is specified
                     percentage = self.default_percent
 
                 final_filters = {}
-                if count is not None:
+                if latest:
+                    final_filters["latest"] = True
+                elif count is not None:
                     final_filters["count"] = count
                 else:
                     final_filters["percentage"] = percentage
@@ -4737,7 +4746,7 @@ class CollectionBuilder:
                 for filter_method, filter_data in data.items():
                     filter_attr, filter_modifier, filter_final = self.library.split(filter_method)
                     message = None
-                    if filter_final in ["percentage", "count"]:
+                    if filter_final in ["percentage", "count", "latest"]:
                         continue
                     if filter_final not in all_filters:
                         message = f"{self.Type} Error: {filter_final} is not a valid filter attribute"
