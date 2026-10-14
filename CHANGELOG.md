@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713
 
 ## [v2.5.3] - 2026-10-12

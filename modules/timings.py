@@ -24,9 +24,6 @@ from urllib.parse import urlparse
 
 from modules import util
 
-logger = util.logger
-
-
 # Set by kometa.py from run_args["timings"] before any import-time reader of this flag runs; defaults False so a bare `import modules.timings` stays inert.
 ENABLED = False
 
@@ -161,7 +158,7 @@ class TimingRegistry:
         self._plex_request_log = open(path, "w", newline="", encoding="utf-8")
         self._plex_request_csv = csv.writer(self._plex_request_log)
         self._plex_request_csv.writerow(["method", "path", "elapsed_ms", "source_tag", "library", "overlay"])
-        logger.info(f"KOMETA_LOG_PLEX_REQUESTS enabled - writing {path}")
+        util.logger.info(f"KOMETA_LOG_PLEX_REQUESTS enabled - writing {path}")
 
     def log_plex_request(self, method, url, elapsed, source_tag):
         if self._plex_request_csv is None:
@@ -222,7 +219,7 @@ class TimingRegistry:
         if not self.enabled or self._banner_logged:
             return
         self._banner_logged = True
-        logger.info(f"KOMETA_TIMINGS enabled (git SHA: {git_sha() or 'unknown'})")
+        util.logger.info(f"KOMETA_TIMINGS enabled (git SHA: {git_sha() or 'unknown'})")
 
     def set_meta(self, **kwargs):
         self.meta.update(kwargs)
