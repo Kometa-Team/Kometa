@@ -643,7 +643,7 @@ class Library(ABC):
                 if not separator or not ((id_type in {"tmdb", "tvdb", "plex"} and re.fullmatch(r"[0-9]+", item_id) and int(item_id) > 0) or (id_type == "imdb" and re.fullmatch(r"tt[0-9]+", item_id))):
                     raise Failed(f"Config Error: schedule mode {self.schedule_mode} invalid; expected items(tmdb:<id>|tvdb:<id>|imdb:<id>|plex:<ratingKey>)")
                 identifiers.add((id_type, item_id if id_type == "imdb" else str(int(item_id))))
-            if self.is_show:
+            if getattr(self, "is_show", False):
                 for id_type, item_id in list(identifiers):
                     if id_type == "tmdb":
                         tvdb_id = self.config.Convert.tmdb_to_tvdb(int(item_id))
