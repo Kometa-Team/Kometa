@@ -25,6 +25,10 @@ SUMMARY_NORMALIZATIONS = [
     (r"Asset Warning: No poster or background found in an assets folder for '.+'", "Asset Warning: No poster or background found in an assets folder"),
     (r"Asset Warning: Unable to find asset folder: '.+'", "Asset Warning: Unable to find asset folder"),
     (r"Collection Error: No valid Plex Collections in .+", "Collection Error: No valid Plex Collections"),
+    (
+        r"(Collection|Playlist) Error: Could not validate https?://(?:www\.)?letterboxd\.com/\S+: Letterboxd Error: Failed to load (list|watchlist|films page) https?://\S+: Resource not found: https?://\S+\s*$",
+        r"\1 Error: Could not validate Letterboxd \2 (resource not found)",
+    ),
     (r"Config Warning: Skipping duplicate ([^:]+): .+", r"Config Warning: Skipping duplicate \1"),
     (r"Skipping .+: Item not found(?: in .+)?$", "Item not found"),
     (r"(?:Collection|Playlist) Warning: tvdb_episode:\d+_\d+_\d+ -> .+ Season: \d+ Episode: \d+ Missing", "TVDb Episode Missing"),
@@ -53,7 +57,7 @@ SUMMARY_NORMALIZATIONS = [
     (r"TMDb Error: ([A-Za-z]+) ID \d+ missing on TMDb\. Verify it still exists and update your config\.$", r"TMDb Error: \1 ID missing on TMDb. Verify it still exists and update your config."),
     (r"TMDb Error: No (Collection|Movie|Show) found on TMDb for ID\(s\) \[[\d,\s]+\]\. Verify the ID\(s\) still exist and update your config\.$", r"TMDb Error: No \1 found on TMDb"),
     (r"TMDb Error: No Episode found for TMDb ID \d+ Season \d+ Episode \d+: .+", "TMDb Error: No Episode found for TMDb ID"),
-    (r"TMDb Error: No Movie found for TMDb ID:? \d+(?:: .+)?", "TMDb Error: No Movie found for TMDb ID"),
+    (r"TMDb Error: No (Collection|Movie|Show) found for TMDb ID:? \d+(?:: .+)?$", r"TMDb Error: No \1 found for TMDb ID"),
     (r"TMDb Error: No valid TMDb IDs in .+", "TMDb Error: No valid TMDb IDs"),
     (r"TMDb Warning: unable to load (movie|show) TMDb ID \d+; skipping item: (.+)", r"TMDb Warning: Unable to load \1; skipping item: \2"),
     (r"TVDb Error: No TVDb IDs found at .+", "TVDb Error: No TVDb IDs found"),
@@ -137,6 +141,8 @@ class RunLogSummary:
         self.severities = defaultdict(Counter)
 
     def add(self, severity, message):
+        if not message.strip():
+            return
         for rule_index, rule in enumerate(self.rules):
             if not message.startswith(rule.prefix):
                 continue

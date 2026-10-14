@@ -21,6 +21,7 @@ class Library(ABC):
         self.session = None
         self.Radarr = None
         self.Sonarr = None
+        self.Lidarr = None
         self.Tautulli = None
         self.Tracearr = None
         self.Webhooks = None
@@ -70,6 +71,7 @@ class Library(ABC):
         self.skip_library = params["skip_library"]
         self.asset_depth = params["asset_depth"]
         self.asset_directory = params["asset_directory"] if params["asset_directory"] else []
+        self.collection_asset_directory = params.get("collection_asset_directory") or []
         self.default_dir = params["default_dir"]
         self.mapping_name, output = util.validate_filename(self.original_mapping_name)
         self.image_table_name = self.config.Cache.get_image_table_name(self.original_mapping_name) if self.config.Cache else None
@@ -138,6 +140,8 @@ class Library(ABC):
         self.radarr_remove_by_tag = params["radarr_remove_by_tag"]
         self.sonarr_add_all_existing = params["sonarr_add_all_existing"]
         self.sonarr_remove_by_tag = params["sonarr_remove_by_tag"]
+        self.lidarr_add_all_existing = params["lidarr_add_all_existing"]
+        self.lidarr_remove_by_tag = params["lidarr_remove_by_tag"]
         self.update_blank_track_titles = params["update_blank_track_titles"]
         self.remove_title_parentheses = params["remove_title_parentheses"]
         self.remove_overlays = params["remove_overlays"]
@@ -159,6 +163,7 @@ class Library(ABC):
             "removed": 0,
             "radarr": 0,
             "sonarr": 0,
+            "lidarr": 0,
             "names": [],
         }
         self.status = {}
@@ -185,6 +190,7 @@ class Library(ABC):
             or self.mass_studio_update
             or self.radarr_add_all_existing
             or self.sonarr_add_all_existing
+            or self.lidarr_add_all_existing
             or self.mass_poster_update
             or self.mass_background_update
             or self.mass_logo_update
@@ -199,6 +205,7 @@ class Library(ABC):
             or self.mass_collection_mode
             or self.radarr_remove_by_tag
             or self.sonarr_remove_by_tag
+            or self.lidarr_remove_by_tag
             or self.show_unmanaged
             or self.show_unconfigured
             or self.metadata_backup
@@ -207,10 +214,14 @@ class Library(ABC):
         )
         self.label_operations = True if self.assets_for_all or self.mass_imdb_parental_labels or self.ignore_labels else False
 
-        if self.asset_directory:
-            logger.info("")
-            for ad in self.asset_directory:
-                logger.info(f"Using Asset Directory: {ad}")
+        if not params.get("defer_asset_directory_logging", False):
+            if self.asset_directory:
+                logger.info("")
+                for ad in self.asset_directory:
+                    logger.info(f"Using Asset Directory: {ad}")
+
+            for ad in self.collection_asset_directory:
+                logger.info(f"Using Collection Asset Directory: {ad}")
 
         if output:
             logger.info("")
@@ -240,7 +251,8 @@ class Library(ABC):
         return any(label in labels for label in self.ignore_labels)
 
     def scan_configured_collection_names(self):
-        for file_type, metadata_file, temp_vars, asset_directory in self.configured_collection_files:
+        for file_entry in self.configured_collection_files:
+            file_type, metadata_file, temp_vars, asset_directory = file_entry
             try:
                 meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection", configured_names_only=True)
                 self.configured_collection_metadata_files.append(meta_obj)
@@ -254,7 +266,8 @@ class Library(ABC):
     def scan_files(self, operations_only, overlays_only, collection_only, metadata_only):
         self.scan_configured_collection_names()
         if not operations_only and not overlays_only and not metadata_only:
-            for file_type, metadata_file, temp_vars, asset_directory in self.scanned_collection_files:
+            for file_entry in self.scanned_collection_files:
+                file_type, metadata_file, temp_vars, asset_directory = file_entry
                 try:
                     meta_obj = MetadataFile(self.config, self, file_type, metadata_file, temp_vars, asset_directory, "collection")
                     if meta_obj.collections:

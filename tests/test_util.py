@@ -328,3 +328,73 @@ class TestMediaDirname:
                 return r"P:\Movies\Title\file.mkv"
 
         assert media_dirname(FakePath()) == r"P:\Movies\Title"
+
+
+@pytest.mark.parametrize("value", [False, 123, {"movies": False}, {"My Movies": []}, {"Movies": []}, {"anime": []}, [None]])
+def test_collection_asset_directory_rejects_invalid_values(value):
+    from modules.util import Failed, asset_directory_paths
+
+    with pytest.raises(Failed):
+        asset_directory_paths(value)
+
+
+def test_collection_file_assets_are_carried_separately(tmp_path, monkeypatch):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(util, "logger", FakeLogger())
+    collection_file = tmp_path / "collections.yml"
+    collection_file.write_text("collections: {}")
+    item_assets = tmp_path / "items"
+    collection_assets = tmp_path / "collections"
+    item_assets.mkdir()
+    collection_assets.mkdir()
+    files, _ = util.load_files([{"file": str(collection_file), "asset_directory": {"movies": str(item_assets), "collections": str(collection_assets)}}], "collection_files")
+    assert files[0][3] == {"movies": [str(item_assets)], "collections": [str(collection_assets)]}
+    legacy, _ = util.load_files([{"file": str(collection_file), "asset_directory": str(item_assets)}], "collection_files")
+    assert len(legacy[0]) == 4
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ({"collections": ["local"]}, (["items"], ["local"])),
+        ({"movies": ["local"]}, (["local"], ["collections"])),
+        ({"shows": ["other-type"]}, (["items"], ["collections"])),
+        ({"movies": [], "collections": None}, (["items"], ["collections"])),
+        (["legacy"], (["legacy"], [])),
+    ],
+)
+def test_grouped_asset_inheritance(value, expected):
+    from modules.util import resolve_asset_directories
+
+    assert resolve_asset_directories(value, "Movie", ["items"], ["collections"]) == expected
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+def test_asset_paths_skip_missing_paths_and_keep_valid_paths(tmp_path, monkeypatch, grouped):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    logger = FakeLogger()
+    monkeypatch.setattr(util, "logger", logger)
+    missing = str(tmp_path / "missing")
+    paths = [missing, str(tmp_path)]
+    value = {"movies": paths} if grouped else paths
+    expected = {"movies": [str(tmp_path)]} if grouped else [str(tmp_path)]
+    assert util.asset_directory_paths(value) == expected
+    assert any(missing in message for message in logger.warning_messages)
+
+
+@pytest.mark.parametrize("grouped", [False, True])
+def test_collection_files_skip_missing_asset_roots(tmp_path, monkeypatch, grouped):
+    from modules import util
+    from tests.conftest import FakeLogger
+
+    monkeypatch.setattr(util, "logger", FakeLogger())
+    collection_file = tmp_path / "collections.yml"
+    collection_file.write_text("collections: {}")
+    paths = [str(tmp_path / "missing"), str(tmp_path)]
+    value = {"collections": paths} if grouped else paths
+    files, _ = util.load_files([{"file": str(collection_file), "asset_directory": value}], "collection_files")
+    assert files[0][3] == ({"collections": [str(tmp_path)]} if grouped else [str(tmp_path)])

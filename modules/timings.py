@@ -24,9 +24,6 @@ from urllib.parse import urlparse
 
 from modules import util
 
-logger = util.logger
-
-
 # Set by kometa.py from run_args["timings"] before any import-time reader of this flag runs; defaults False so a bare `import modules.timings` stays inert.
 ENABLED = False
 
@@ -98,16 +95,16 @@ def hostname_to_source(url):
     return f"other:{host}"
 
 
-def git_sha():
+def git_sha(root=None, use_env=True):
     # Docker mounts never include .git, so KOMETA_GIT_SHA lets the host pass its own `git rev-parse HEAD` in - checked first as the only reliable source in a container.
     env_sha = os.environ.get("KOMETA_GIT_SHA")
-    if env_sha:
+    if use_env and env_sha:
         return env_sha
     try:
         from git import InvalidGitRepositoryError, Repo  # noqa
 
         try:
-            return Repo(path=".").head.commit.hexsha
+            return Repo(path=str(root) if root is not None else ".").head.commit.hexsha
         except (InvalidGitRepositoryError, ValueError, TypeError):
             return None
     except ImportError:
@@ -161,7 +158,7 @@ class TimingRegistry:
         self._plex_request_log = open(path, "w", newline="", encoding="utf-8")
         self._plex_request_csv = csv.writer(self._plex_request_log)
         self._plex_request_csv.writerow(["method", "path", "elapsed_ms", "source_tag", "library", "overlay"])
-        logger.info(f"KOMETA_LOG_PLEX_REQUESTS enabled - writing {path}")
+        util.logger.info(f"KOMETA_LOG_PLEX_REQUESTS enabled - writing {path}")
 
     def log_plex_request(self, method, url, elapsed, source_tag):
         if self._plex_request_csv is None:
@@ -222,7 +219,7 @@ class TimingRegistry:
         if not self.enabled or self._banner_logged:
             return
         self._banner_logged = True
-        logger.info(f"KOMETA_TIMINGS enabled (git SHA: {git_sha() or 'unknown'})")
+        util.logger.info(f"KOMETA_TIMINGS enabled (git SHA: {git_sha() or 'unknown'})")
 
     def set_meta(self, **kwargs):
         self.meta.update(kwargs)

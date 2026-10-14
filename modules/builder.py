@@ -12,7 +12,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -109,6 +109,7 @@ all_builders = (
     + simkl.builders
     + radarr.builders
     + sonarr.builders
+    + lidarr.builders
     + flicklist.builders
     + wetrakr.builders
 )
@@ -156,7 +157,7 @@ movie_only_builders = [
     "mojo_all_time",
     "mojo_never",
 ]
-music_only_builders = ["item_album_sorting"]
+music_only_builders = ["item_album_sorting", *lidarr.builders]
 summary_details = [
     "summary",
     "tmdb_summary",
@@ -189,6 +190,7 @@ boolean_details = [
 scheduled_boolean = ["visible_library", "visible_home", "visible_shared"]
 string_details = ["sort_title", "content_rating", "name_mapping"]
 ignored_details = [
+    "asset_directory",
     "smart_filter",
     "smart_label",
     "smart_url",
@@ -282,6 +284,7 @@ none_details = [
     "item_genre.sync",
     "radarr_taglist",
     "sonarr_taglist",
+    "lidarr_taglist",
     "item_edition",
     "item_critic_rating",
     "item_audience_rating",
@@ -296,7 +299,20 @@ none_details = [
     "wetrakr_tracking",
     "wetrakr_ratings",
 ]
-none_builders = ["radarr_taglist", "sonarr_taglist", "flicklist_watchlist", "flicklist_favorites", "flicklist_watched", "flicklist_up_next", "flicklist_tracked", "flicklist_ratings", "wetrakr_favorites", "wetrakr_tracking", "wetrakr_ratings"]
+none_builders = [
+    "radarr_taglist",
+    "sonarr_taglist",
+    "lidarr_taglist",
+    "flicklist_watchlist",
+    "flicklist_favorites",
+    "flicklist_watched",
+    "flicklist_up_next",
+    "flicklist_tracked",
+    "flicklist_ratings",
+    "wetrakr_favorites",
+    "wetrakr_tracking",
+    "wetrakr_ratings",
+]
 radarr_details = [
     "radarr_add_missing",
     "radarr_add_existing",
@@ -782,6 +798,7 @@ playlist_attributes = (
 )
 music_attributes = (
     [
+        "asset_directory",
         "non_item_remove_label",
         "item_label",
         "collection_filtering",
@@ -802,6 +819,7 @@ music_attributes = (
     + background_details
     + logo_details
     + square_art_details
+    + lidarr.builders
 )
 
 
@@ -1196,7 +1214,9 @@ class CollectionBuilder:
         else:
             self.libraries.append(self.library)
 
-        self.asset_directory = metadata.asset_directory if metadata.asset_directory else self.library.asset_directory
+        file_items, _ = util.resolve_asset_directories(metadata.asset_directory, self.library.type)
+        self.asset_directory = file_items or self.library.asset_directory
+        self._resolve_collection_asset_directory(metadata, methods)
 
         self.language = self.library.Plex.language
         self.details = {
@@ -1260,6 +1280,7 @@ class CollectionBuilder:
         self.sync_to_wetrakr_list = None
         self.sync_missing_to_wetrakr_list = False
         self.collection_poster = None
+        self.collection_square_art = None
         self.collection_background = None
         self.collection_logo = None
         self.exists = False
@@ -1661,6 +1682,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
+                elif not self.library.Lidarr and "lidarr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Lidarr to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
@@ -1719,6 +1742,8 @@ class CollectionBuilder:
                     self._radarr(method_name, method_data)
                 elif method_name in sonarr_details or method_name in sonarr.builders:
                     self._sonarr(method_name, method_data)
+                elif method_name in lidarr.builders:
+                    self._lidarr(method_name, method_data)
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
@@ -2186,6 +2211,14 @@ class CollectionBuilder:
         elif method_name == "sonarr_taglist":
             self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "sonarr_all":
+            self.builders.append((method_name, True))
+
+    def _lidarr(self, method_name, method_data):
+        if not self.library.Lidarr:
+            raise BuilderValidationError(f"{self.Type} Error: Lidarr must be configured to use {method_name}")
+        if method_name == "lidarr_taglist":
+            self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
+        elif method_name == "lidarr_all":
             self.builders.append((method_name, True))
 
     def _anidb(self, method_name, method_data):
@@ -3907,6 +3940,8 @@ class CollectionBuilder:
                 ids = self.library.Radarr.get_tmdb_ids(method, value)
             elif "sonarr" in method:
                 ids = self.library.Sonarr.get_tvdb_ids(method, value)
+            elif "lidarr" in method:
+                ids = self.library.Lidarr.get_mbid_ids(method, value)
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")
@@ -4051,6 +4086,20 @@ class CollectionBuilder:
                             rating_keys = found_keys
                         else:
                             logger.warning(f"{self.Type} Warning: Plex ID: {input_id} not found in the defined libraries")
+                            continue
+                    elif id_type == "mbid" and self.library.is_music:
+                        for pl_library in self.libraries:
+                            if not pl_library.is_music:
+                                continue
+                            for artist in pl_library.get_all(builder_level="artist"):
+                                if any(guid.id.lower() == f"mbid://{str(input_id).lower()}" for guid in getattr(artist, "guids", [])):
+                                    rating_keys = artist.ratingKey
+                                    break
+                            if rating_keys:
+                                break
+                        if not rating_keys:
+                            artist_name = self.library.Lidarr.get_artist_name(input_id)
+                            logger.info(f"{artist_name} (MBID: {input_id}) not found in library {self.library.name}")
                             continue
                     elif id_type == "tmdb" and not self.parts_collection:
                         if not isinstance(input_id, list):
@@ -5703,27 +5752,7 @@ class CollectionBuilder:
             if advance_update and "Metadata" not in updated_details:
                 updated_details.append("Metadata")
 
-        asset_location = None
-        if self.asset_directory:
-            name_mapping = self.name
-            if "name_mapping" in self.details:
-                if self.details["name_mapping"]:
-                    name_mapping = self.details["name_mapping"]
-                else:
-                    logger.error(f"{self.Type} Error: name_mapping attribute is blank")
-            try:
-                asset_poster, asset_background, asset_logo, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.asset_directory)
-                if asset_poster:
-                    self.posters["asset_directory"] = asset_poster
-                if asset_background:
-                    self.backgrounds["asset_directory"] = asset_background
-                if asset_logo:
-                    self.logos["asset_directory"] = asset_logo
-                if asset_square_art:
-                    self.square_arts["asset_directory"] = asset_square_art
-            except Failed as e:
-                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
-                    logger.warning(e)
+        asset_location, asset_name = self._load_collection_assets()
         if self.mapping_name in self.library.collection_images or self.name in self.library.collection_images:
             style_data = self.library.collection_images[self.mapping_name if self.mapping_name in self.library.collection_images else self.name]
             if style_data and "url_poster" in style_data and style_data["url_poster"]:
@@ -5739,37 +5768,7 @@ class CollectionBuilder:
             if style_data and "url_square_art" in style_data and style_data["url_square_art"]:
                 self.square_arts["style_data"] = style_data["url_square_art"]
 
-        self.collection_poster = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.posters,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-        )
-        self.collection_background = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.backgrounds,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="background",
-        )
-        self.collection_logo = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.logos,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="logo",
-        )
-        self.collection_square_art = self.library.pick_image(
-            self.obj.title,  # type: ignore[union-attr]
-            self.square_arts,
-            self.library.prioritize_assets,
-            self.library.download_url_assets,
-            asset_location,
-            image_type="square_art",
-        )
+        self._pick_collection_artwork(asset_location, asset_name)
 
         clean_temp = False
         if isinstance(self.collection_poster, KometaImage):
@@ -5995,6 +5994,66 @@ class CollectionBuilder:
         if self.obj is not None:
             self.deleted = True
         return output
+
+    def _load_collection_assets(self):
+        asset_location = None
+        asset_name = None
+        if self.collection_asset_directory:
+            name_mapping = self.name
+            if "name_mapping" in self.details:
+                if self.details["name_mapping"]:
+                    name_mapping = self.details["name_mapping"]
+                else:
+                    logger.error(f"{self.Type} Error: name_mapping attribute is blank")
+            try:
+                asset_poster, asset_background, asset_logo, asset_square_art, asset_location, _ = self.library.find_item_assets(name_mapping, asset_directory=self.collection_asset_directory)
+                if self.collection_assets_configured and not self.library.asset_folders:
+                    asset_location = asset_location or self.collection_asset_directory[0]
+                    asset_name, _ = util.validate_filename(name_mapping)
+                if asset_poster:
+                    self.posters["asset_directory"] = asset_poster
+                if asset_background:
+                    self.backgrounds["asset_directory"] = asset_background
+                if asset_logo:
+                    self.logos["asset_directory"] = asset_logo
+                if asset_square_art:
+                    self.square_arts["asset_directory"] = asset_square_art
+            except Failed as e:
+                if self.library.asset_folders and (self.library.show_missing_assets or self.library.create_asset_folders):
+                    logger.warning(e)
+        return asset_location, asset_name
+
+    def _pick_collection_artwork(self, asset_location, asset_name=None):
+        if self.obj is None:
+            return
+        for image_type, images in [("poster", self.posters), ("background", self.backgrounds), ("logo", self.logos), ("square_art", self.square_arts)]:
+            image_name = None if asset_name is None else (asset_name if image_type == "poster" else f"{asset_name}_{image_type}")
+            image = self.library.pick_image(
+                self.obj.title,
+                images,
+                self.library.prioritize_assets,
+                self.library.download_url_assets,
+                asset_location,
+                image_type=image_type,
+                image_name=image_name,
+            )
+            setattr(self, f"collection_{image_type}", image)
+
+    def _resolve_collection_asset_directory(self, metadata, methods):
+        self.collection_asset_directory = self.asset_directory
+        self.collection_assets_configured = False
+        if self.playlist or self.overlay:
+            return
+        configured = metadata.collection_asset_directory or ([] if metadata.asset_directory and not metadata.asset_directory_is_mapping else self.library.collection_asset_directory)
+        self.collection_assets_configured = bool(configured)
+        self.collection_asset_directory = configured or self.asset_directory
+        if "asset_directory" in methods:
+            value = util.asset_directory_paths(self.data[methods["asset_directory"]], self.Type)
+            items, collections = util.resolve_asset_directories(value, self.library.type)
+            override = collections or items
+            if override:
+                self.collection_asset_directory = override
+                self.collection_assets_configured = True
 
     def _resolve_playlist_users(self):
         self.exclude_users = (util.get_list(self.exclude_users) or []) if self.exclude_users else []

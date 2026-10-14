@@ -14,6 +14,7 @@ from typing import TypeAlias
 from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
+from modules.integrity import log_integrity, log_integrity_summary
 from modules.log_summary import SEVERITIES, RunLogSummary
 from modules.logs import MyLogger
 
@@ -95,6 +96,7 @@ arguments = {
     "trace": {"args": "tr", "type": "bool", "help": "Run with extra Trace Debug Logs"},
     "log-requests": {"args": ["lr", "log-request"], "type": "bool", "help": "Run with all Requests printed"},
     "timings": {"args": ["timing"], "type": "bool", "help": "Run with Timing Instrumentation Enabled (writes a timings summary and JSON/CSV breakdown to the logs directory)"},
+    "source-integrity": {"args": "si", "type": "bool", "default": True, "negatable": True, "help": "Check source integrity at startup (up to 30 seconds; --no-source-integrity disables it)"},
     "timeout": {"args": "ti", "type": "int", "default": 180, "help": "Kometa Global Timeout (Default: 180)"},
     "no-verify-ssl": {"args": "nv", "type": "bool", "help": "Turns off Global SSL Verification"},
     "collections-only": {"args": ["co", "collection-only"], "type": "bool", "help": "Run only collection files"},
@@ -133,7 +135,7 @@ for arg_key, arg_data in arguments.items():
     args = [f"--{arg_key}"] + [f"--{a}" if len(a) > 2 else f"-{a}" for a in temp_args]
     kwargs = {"dest": arg_key.replace("-", "_"), "help": arg_data["help"]}
     if arg_data["type"] == "bool":
-        kwargs["action"] = "store_true"
+        kwargs["action"] = argparse.BooleanOptionalAction if arg_data.get("negatable") else "store_true"
         kwargs["default"] = False  # noqa
     else:
         kwargs["type"] = int if arg_data["type"] == "int" else str
@@ -463,12 +465,13 @@ def report_duplicate_collections(config):
         for library_name, duplicate_titles in duplicate_libraries:
             logger.warning(f"Plex Warning: Duplicate collection titles detected in {library_name} Library")
             for title, count in duplicate_titles:
-                logger.warning(f"  {count} instances: {title}")
-            logger.warning("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.")
-            logger.warning("")
+                logger.info(f"  {count} instances: {title}")
+            logger.info("If this is unexpected, check for an empty or stale smart collection and consider checking Plex DBRepair.")
+            logger.info("")
 
 
-def log_validate_footer(start_time, my_requests, label):
+def log_validate_footer(start_time, my_requests, label, integrity_report):
+    log_integrity_summary(integrity_report, logger)
     end_time = datetime.now()
     run_time = str(end_time - start_time).split(".")[0]
     version_line = f"Version: {my_requests.local}"
@@ -513,6 +516,7 @@ def start(attrs):
         logger.info(f"    Version: {my_requests.local} ({system_ver})")
         if my_requests.newest:
             logger.info(f"    Newest Version: {my_requests.newest}")
+        integrity_report = log_integrity(os.path.dirname(os.path.abspath(__file__)), default_dir, logger, "docker" if is_docker else "source", enabled=run_args["source-integrity"])
         logger.info(f"    Platform: {platform.platform()}")
         logger.info(f"    Total Memory: {round(psutil.virtual_memory().total / (1024.0 ** 3))} GB")
         logger.info(f"    Available Memory: {round(psutil.virtual_memory().available / (1024.0 ** 3))} GB")
@@ -614,7 +618,7 @@ def start(attrs):
                 schema_path=schema_dir,
             )
             passed, _errors, _warnings = validator.validate()
-            log_validate_footer(start_time, my_requests, f"{level} Validation")
+            log_validate_footer(start_time, my_requests, f"{level} Validation", integrity_report)
             sys.exit(0 if passed else 1)
 
         if run_args["validate-file"] or run_args["validate-dir"]:
@@ -628,7 +632,7 @@ def start(attrs):
                 sys.exit(1)
             validator = FileSetValidator(paths, schema_dir)
             passed, *_ = validator.validate()
-            log_validate_footer(start_time, my_requests, "File Validation")
+            log_validate_footer(start_time, my_requests, "File Validation", integrity_report)
             sys.exit(0 if passed else 1)
 
         logger.separator(f"Starting {start_type}Run")
@@ -737,6 +741,8 @@ def start(attrs):
         except Failed as e:
             logger.stacktrace()
             logger.error(f"Report Error: {e}")
+
+        log_integrity_summary(integrity_report, logger)
 
         if timings.registry.enabled:
             # Silent by design (never calls logger, so meta.log is unaffected) - placed after Error Summary so the run is fully accounted for first.
@@ -925,6 +931,8 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
             logger.debug(f"Folder Name: {library.mapping_name}")
             for ad in library.asset_directory:
                 logger.debug(f"Asset Directory: {ad}")
+            for ad in library.collection_asset_directory:
+                logger.debug(f"Collection Asset Directory: {ad}")
             logger.debug(f"Asset Folders: {library.asset_folders}")
             logger.debug(f"Asset Depth: {library.asset_depth}")
             logger.debug(f"Create Asset Folders: {library.create_asset_folders}")

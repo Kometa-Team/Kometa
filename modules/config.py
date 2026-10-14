@@ -4,7 +4,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-from modules import operations, radarr, sonarr, util
+from modules import lidarr, operations, radarr, sonarr, util
 from modules.anidb import AniDB
 from modules.anilist import AniList
 from modules.apprise_notify import AppriseNotify
@@ -18,6 +18,7 @@ from modules.gotify import Gotify
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
 from modules.letterboxd import Letterboxd
+from modules.lidarr import Lidarr
 from modules.mal import MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
@@ -234,6 +235,8 @@ library_operations = {
     "radarr_remove_by_tag": "str",
     "sonarr_add_all_existing": "bool",
     "sonarr_remove_by_tag": "str",
+    "lidarr_add_all_existing": "bool",
+    "lidarr_remove_by_tag": "str",
     "mass_content_rating_update": mass_content_options,
     "mass_collection_content_rating_update": "dict",
     "mass_genre_update": mass_genre_options,
@@ -388,6 +391,8 @@ class ConfigFile:
                     self.data["libraries"][library]["radarr_add_all_existing"] = self.data["libraries"][library].pop("radarr_add_all")
                 if "sonarr_add_all" in self.data["libraries"][library]:
                     self.data["libraries"][library]["sonarr_add_all_existing"] = self.data["libraries"][library].pop("sonarr_add_all")
+                if "lidarr_add_all" in self.data["libraries"][library]:
+                    self.data["libraries"][library]["lidarr_add_all_existing"] = self.data["libraries"][library].pop("lidarr_add_all")
                 if "plex" in self.data["libraries"][library] and self.data["libraries"][library]["plex"]:
                     replace_attr(self.data["libraries"][library], "asset_directory", "plex")
                     replace_attr(self.data["libraries"][library], "sync_mode", "plex")
@@ -409,11 +414,16 @@ class ConfigFile:
                 if "sonarr" in self.data["libraries"][library] and self.data["libraries"][library]["sonarr"]:
                     if "add" in self.data["libraries"][library]["sonarr"]:
                         self.data["libraries"][library]["sonarr"]["add_missing"] = self.data["libraries"][library]["sonarr"].pop("add")
+                if "lidarr" in self.data["libraries"][library] and self.data["libraries"][library]["lidarr"]:
+                    if "add" in self.data["libraries"][library]["lidarr"]:
+                        self.data["libraries"][library]["lidarr"]["add_missing"] = self.data["libraries"][library]["lidarr"].pop("add")
                 if "operations" in self.data["libraries"][library] and self.data["libraries"][library]["operations"]:
                     if "radarr_add_all" in self.data["libraries"][library]["operations"]:
                         self.data["libraries"][library]["operations"]["radarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("radarr_add_all")
                     if "sonarr_add_all" in self.data["libraries"][library]["operations"]:
                         self.data["libraries"][library]["operations"]["sonarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("sonarr_add_all")
+                    if "lidarr_add_all" in self.data["libraries"][library]["operations"]:
+                        self.data["libraries"][library]["operations"]["lidarr_add_all_existing"] = self.data["libraries"][library]["operations"].pop("lidarr_add_all")
                     if "mass_imdb_parental_labels" in self.data["libraries"][library]["operations"] and self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"]:
                         if self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] == "with_none":
                             self.data["libraries"][library]["operations"]["mass_imdb_parental_labels"] = "none"
@@ -497,6 +507,11 @@ class ConfigFile:
             if temp and "add" in temp:
                 temp["add_missing"] = temp.pop("add")
             self.data["sonarr"] = temp
+        if "lidarr" in self.data:
+            temp = self.data.pop("lidarr")
+            if temp and "add" in temp:
+                temp["add_missing"] = temp.pop("add")
+            self.data["lidarr"] = temp
         if "mal" in self.data:
             self.data["mal"] = self.data.pop("mal")
 
@@ -544,6 +559,8 @@ class ConfigFile:
                     do_print = False
                     save = False
             final_value = data[attribute] if data and attribute in data else None
+            if var_type == "asset_paths" and not isinstance(final_value, dict):
+                var_type = "list_path"
             if translations and final_value in translations:
                 final_value = translations[final_value]
             if self.read_only:
@@ -561,10 +578,10 @@ class ConfigFile:
                     else:
                         endline = ""
                     yaml.save()
-                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]:
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path", "asset_paths"]:
                     return default if default else []
             elif final_value is None:
-                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path"]:
+                if default_is_none and var_type in ["list", "int_list", "lower_list", "list_path", "asset_paths"]:
                     return default if default else []
                 elif default_is_none:
                     return None
@@ -605,6 +622,8 @@ class ConfigFile:
                     message = f"{text}: {', '.join(failed_items)} is an invalid input"
                 else:
                     return output_list
+            elif var_type == "asset_paths":
+                return util.asset_directory_paths(final_value)
             elif var_type == "list_path":
                 temp_list = []
                 warning_message = ""
@@ -842,7 +861,7 @@ class ConfigFile:
                 # Confirmed ~2.7-3.0% wall-time win at workers:4, no further gain at workers:8 (overnight churn-loop A/B, see perf-results-log.md) - defaults on.
                 "prefetch_collection_children": check_for_attribute(threading_settings, "prefetch_collection_children", var_type="bool", default=True, save=False, do_print=False),
             },
-            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="list_path", default_is_none=True),
+            "asset_directory": check_for_attribute(self.data, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True),
             "asset_folders": check_for_attribute(self.data, "asset_folders", parent="settings", var_type="bool", default=True),
             "asset_depth": check_for_attribute(self.data, "asset_depth", parent="settings", var_type="int", default=0),
             "create_asset_folders": check_for_attribute(self.data, "create_asset_folders", parent="settings", var_type="bool", default=False),
@@ -1404,6 +1423,23 @@ class ConfigFile:
                 "sonarr_path": check_for_attribute(self.data, "sonarr_path", parent="sonarr", default_is_none=True),
                 "plex_path": check_for_attribute(self.data, "plex_path", parent="sonarr", default_is_none=True),
             }
+            self.general["lidarr"] = {
+                "url": check_for_attribute(self.data, "url", parent="lidarr", var_type="url", default_is_none=True),
+                "token": check_for_attribute(self.data, "token", parent="lidarr", default_is_none=True),
+                "add_missing": check_for_attribute(self.data, "add_missing", parent="lidarr", var_type="bool", default=False),
+                "add_existing": check_for_attribute(self.data, "add_existing", parent="lidarr", var_type="bool", default=False),
+                "upgrade_existing": check_for_attribute(self.data, "upgrade_existing", parent="lidarr", var_type="bool", default=False),
+                "monitor_existing": check_for_attribute(self.data, "monitor_existing", parent="lidarr", var_type="bool", default=False),
+                "ignore_cache": check_for_attribute(self.data, "ignore_cache", parent="lidarr", var_type="bool", default=False),
+                "root_folder_path": check_for_attribute(self.data, "root_folder_path", parent="lidarr", default_is_none=True),
+                "monitor": check_for_attribute(self.data, "monitor", parent="lidarr", test_list=lidarr.monitor_descriptions, default="all"),
+                "monitor_new_albums": check_for_attribute(self.data, "monitor_new_albums", parent="lidarr", test_list=lidarr.monitor_new_albums_descriptions, default="all"),
+                "quality_profile": check_for_attribute(self.data, "quality_profile", parent="lidarr", default_is_none=True),
+                "tag": check_for_attribute(self.data, "tag", parent="lidarr", var_type="lower_list", default_is_none=True),
+                "search": check_for_attribute(self.data, "search", parent="lidarr", var_type="bool", default=False),
+                "lidarr_path": check_for_attribute(self.data, "lidarr_path", parent="lidarr", default_is_none=True),
+                "plex_path": check_for_attribute(self.data, "plex_path", parent="lidarr", default_is_none=True),
+            }
             self.general["tautulli"] = {
                 "url": check_for_attribute(self.data, "url", parent="tautulli", var_type="url", default_is_none=True),
                 "apikey": check_for_attribute(self.data, "apikey", parent="tautulli", default_is_none=True),
@@ -1441,16 +1477,12 @@ class ConfigFile:
                     do_print=False,
                     save=False,
                 )
-                params["asset_directory"] = check_for_attribute(
-                    lib,
-                    "asset_directory",
-                    parent="settings",
-                    var_type="list_path",
-                    default=self.general["asset_directory"],
-                    default_is_none=True,
-                    do_print=False,
-                    save=False,
-                )
+                global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], None)
+                configured_assets = check_for_attribute(lib, "asset_directory", parent="settings", var_type="asset_paths", default_is_none=True, do_print=False, save=False)
+                params["asset_directory"], params["collection_asset_directory"] = util.resolve_asset_directories(configured_assets, None, global_items, global_collections)
+                if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
+                    # Log roots once, after the Plex library type is known.
+                    params["defer_asset_directory_logging"] = True
                 params["asset_folders"] = check_for_attribute(
                     lib,
                     "asset_folders",
@@ -2239,6 +2271,13 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], library.type)
+                    library.asset_directory, library.collection_asset_directory = util.resolve_asset_directories(configured_assets, library.type, global_items, global_collections)
+                    if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
+                        for directory in library.asset_directory:
+                            logger.info(f"Using Asset Directory: {directory}")
+                        for directory in library.collection_asset_directory:
+                            logger.info(f"Using Collection Asset Directory: {directory}")
                     logger.info("")
                     logger.info(f"{display_name} Library Connection Successful")
                     logger.info("")
@@ -2563,6 +2602,41 @@ class ConfigFile:
                         logger.error(e)
                         logger.info("")
                     logger.info(f"{display_name} library's Sonarr Connection {'Failed' if library.Sonarr is None else 'Successful'}")
+
+                if self.general["lidarr"]["url"] or (lib and "lidarr" in lib):
+                    logger.info("")
+                    logger.separator("Lidarr Configuration", space=False, border=False)
+                    logger.info("")
+                    logger.info(f"Connecting to {display_name} library's Lidarr...")
+                    logger.info("")
+                    try:
+                        library.Lidarr = Lidarr(
+                            self.Requests,
+                            self.Cache,
+                            library,
+                            {
+                                "url": check_for_attribute(lib, "url", parent="lidarr", var_type="url", default=self.general["lidarr"]["url"], req_default=True, save=False),
+                                "token": check_for_attribute(lib, "token", parent="lidarr", default=self.general["lidarr"]["token"], req_default=True, save=False),
+                                "add_missing": check_for_attribute(lib, "add_missing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["add_missing"], save=False),
+                                "add_existing": check_for_attribute(lib, "add_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["add_existing"], save=False),
+                                "upgrade_existing": check_for_attribute(lib, "upgrade_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["upgrade_existing"], save=False),
+                                "monitor_existing": check_for_attribute(lib, "monitor_existing", parent="lidarr", var_type="bool", default=self.general["lidarr"]["monitor_existing"], save=False),
+                                "ignore_cache": check_for_attribute(lib, "ignore_cache", parent="lidarr", var_type="bool", default=self.general["lidarr"]["ignore_cache"], save=False),
+                                "root_folder_path": check_for_attribute(lib, "root_folder_path", parent="lidarr", default=self.general["lidarr"]["root_folder_path"], req_default=True, save=False),
+                                "monitor": check_for_attribute(lib, "monitor", parent="lidarr", test_list=lidarr.monitor_descriptions, default=self.general["lidarr"]["monitor"], save=False),
+                                "monitor_new_albums": check_for_attribute(lib, "monitor_new_albums", parent="lidarr", test_list=lidarr.monitor_new_albums_descriptions, default=self.general["lidarr"]["monitor_new_albums"], save=False),
+                                "quality_profile": check_for_attribute(lib, "quality_profile", parent="lidarr", default=self.general["lidarr"]["quality_profile"], req_default=True, save=False),
+                                "tag": check_for_attribute(lib, "tag", parent="lidarr", var_type="lower_list", default=self.general["lidarr"]["tag"], default_is_none=True, save=False),
+                                "search": check_for_attribute(lib, "search", parent="lidarr", var_type="bool", default=self.general["lidarr"]["search"], save=False),
+                                "lidarr_path": check_for_attribute(lib, "lidarr_path", parent="lidarr", default=self.general["lidarr"]["lidarr_path"], default_is_none=True, save=False),
+                                "plex_path": check_for_attribute(lib, "plex_path", parent="lidarr", default=self.general["lidarr"]["plex_path"], default_is_none=True, save=False),
+                            },
+                        )
+                    except Failed as e:
+                        logger.stacktrace()
+                        logger.error(e)
+                        logger.info("")
+                    logger.info(f"{display_name} library's Lidarr Connection {'Failed' if library.Lidarr is None else 'Successful'}")
 
                 if self.general["tautulli"]["url"] or (lib and "tautulli" in lib):
                     logger.info("")
