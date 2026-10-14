@@ -866,6 +866,8 @@ class TestRefreshItemCacheAndMappings:
         fresh_item = make_plex_item(rating_key=202)
         plex = make_plex(is_movie=False, is_show=True)
         plex.is_music = False
+        plex.schedule_mode = "full"
+        plex.scheduled_item_keys = set()
         plex.get_all = MagicMock(return_value=[fresh_item])
         plex.map_guids = MagicMock()
         for attr in [
@@ -889,7 +891,7 @@ class TestRefreshItemCacheAndMappings:
         result = plex.refresh_item_cache_and_mappings()
 
         assert result == [fresh_item]
-        plex.get_all.assert_called_once_with(load=True)
+        plex.get_all.assert_called_once_with(load=True, ignore_schedule_scope=True)
         plex.map_guids.assert_called_once_with([fresh_item])
         assert plex.cached_items == {202: (fresh_item, False)}
         assert plex.filter_attr_cache == {}
