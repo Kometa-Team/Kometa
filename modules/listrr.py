@@ -2,6 +2,9 @@ import re
 import time
 from urllib.parse import urlparse
 
+import requests
+from tenacity import RetryError
+
 from modules import util
 from modules.util import Failed
 
@@ -65,6 +68,16 @@ class Listrr:
         return data.get("description") or ""
 
     def get_listrr_ids(self, method, data, is_movie):
+        entries = data if isinstance(data, list) else [data]
+        results = []
+        emitted = set()
+        for entry in entries:
+            entry_results = [item for item in self._ids_for_entry(method, entry, is_movie) if item not in emitted]
+            results.extend(entry_results)
+            emitted.update(entry_results)
+        return results
+
+    def _ids_for_entry(self, method, data, is_movie):
         list_id = data["list_id"]
         sort_name, direction = sort_by_options[data.get("sort_by", "name.asc")]
         limit = data.get("limit", 0)
@@ -113,10 +126,21 @@ class Listrr:
     def _headers(self):
         return {"Authorization": f"{authorization_scheme} {self.api_key}"}
 
+    def _send(self, url):
+        getter = getattr(self.requests, "get_once", None)
+        if getter is None:
+            getter = self.requests.get
+        try:
+            return getter(url, headers=self._headers())
+        except RetryError as exc:
+            raise Failed(f"Listrr Error: Request failed for {url}: {exc}") from exc
+        except requests.exceptions.RequestException as exc:
+            raise Failed(f"Listrr Error: Request failed for {url}: {exc}") from exc
+
     def _request(self, url):
         attempts = 0
         while True:
-            response = self.requests.get(url, headers=self._headers())
+            response = self._send(url)
             if response.status_code != 429:
                 break
             attempts += 1

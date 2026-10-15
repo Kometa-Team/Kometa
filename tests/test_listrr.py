@@ -1,4 +1,4 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -316,3 +316,120 @@ def test_successful_pages_do_not_sleep(mock_sleep, patch_util_logger):
     client = make_listrr([meta(), page([movie(tmdb=1)], pages=2), page([movie(tmdb=2)], pages=2)])
     client.get_listrr_ids("listrr_list", normalized(), True)
     mock_sleep.assert_not_called()
+
+
+SECOND_ID = "aaaaaaaaaaaaaaaaaaaaaaaa"
+
+
+def test_multiple_lists_keep_each_sort_and_drop_ids_already_emitted(patch_util_logger):
+    client = make_listrr(
+        [
+            meta(),
+            page([movie(tmdb=1, row_id="a"), movie(tmdb=2, row_id="b")]),
+            meta(list_id=SECOND_ID),
+            page([movie(tmdb=2, row_id="other"), movie(tmdb=3, row_id="c")]),
+        ]
+    )
+    lists = [normalized(), normalized(SECOND_ID, sort_by="release.desc")]
+    assert client.get_listrr_ids("listrr_list", lists, True) == [(1, "tmdb"), (2, "tmdb"), (3, "tmdb")]
+    urls = [url for url, _headers in client.requests.gets]
+    assert urls[1] == f"https://listrr.pro/api/List/Movies/{MOVIE_ID}/Name/Ascending/1"
+    assert urls[3] == f"https://listrr.pro/api/List/Movies/{SECOND_ID}/ReleaseDate/Descending/1"
+
+
+def test_limit_applies_to_each_list(patch_util_logger):
+    client = make_listrr(
+        [
+            meta(),
+            page([movie(tmdb=1, row_id="a"), movie(tmdb=2, row_id="b")], count=2),
+            meta(list_id=SECOND_ID),
+            page([movie(tmdb=3, row_id="c")]),
+        ]
+    )
+    lists = [normalized(limit=1), normalized(SECOND_ID)]
+    assert client.get_listrr_ids("listrr_list", lists, True) == [(1, "tmdb"), (3, "tmdb")]
+
+
+def test_playlist_concatenates_movie_and_show_lists(patch_util_logger):
+    client = make_listrr(
+        [
+            meta(),
+            page([movie(tmdb=5, row_id="m")]),
+            meta(list_type="Show", list_id=SHOW_ID),
+            page([show(tvdb=9, row_id="s")]),
+        ]
+    )
+    assert client.get_listrr_ids("listrr_list", [normalized(), normalized(SHOW_ID)], None) == [(5, "tmdb"), (9, "tvdb")]
+
+
+def test_show_list_on_a_movie_library_still_fails_when_lists_are_combined(patch_util_logger):
+    client = make_listrr([meta(), page([movie(tmdb=5, row_id="m")]), meta(list_type="Show", list_id=SHOW_ID)])
+    with pytest.raises(Failed, match="Show list"):
+        client.get_listrr_ids("listrr_list", [normalized(), normalized(SHOW_ID)], True)
+    assert "/Shows/" not in client.requests.gets[-1][0]
+
+
+def test_retry_error_and_connection_error_become_failed():
+    from concurrent.futures import Future
+
+    from requests.exceptions import ConnectionError
+    from tenacity import RetryError
+
+    future = Future()
+    future.set_exception(ConnectionError("timed out"))
+
+    class PlainGet:
+        def get(self, url, headers=None):
+            raise RetryError(future)
+
+    retry_client = Listrr(PlainGet(), "test-key")
+    with pytest.raises(Failed, match="Request failed") as retry_exc:
+        retry_client.test_connection()
+    assert not str(retry_exc.value).endswith("is blank")
+
+    class Disconnect:
+        def get(self, url, headers=None):
+            raise ConnectionError("timed out")
+
+    with pytest.raises(Failed, match="Request failed") as connection_exc:
+        Listrr(Disconnect(), "test-key").test_connection()
+    assert not str(connection_exc.value).endswith("is blank")
+
+
+@patch("modules.listrr.time.sleep", return_value=None)
+def test_shared_requests_returns_oversized_retry_after_without_retrying(mock_sleep, monkeypatch):
+    from tenacity import wait_none
+
+    from modules.request import DEFAULT_TIMEOUT, Requests
+
+    req = Requests.__new__(Requests)
+    limited = MagicMock(status_code=429, reason="Too Many Requests", headers={"Retry-After": "121"}, text="slow", content=b"slow")
+    req.session = MagicMock()
+    req.session.get.return_value = limited
+    monkeypatch.setattr(Requests.get.retry, "wait", wait_none())
+
+    with pytest.raises(Failed, match="120"):
+        Listrr(req, "test-key").test_connection()
+    req.session.get.assert_called_once()
+    assert req.session.get.call_args.kwargs["timeout"] == DEFAULT_TIMEOUT
+    assert req.session.get.call_args.kwargs["headers"]["Authorization"] == "APIKEY test-key"
+    mock_sleep.assert_not_called()
+
+
+@patch("modules.listrr.time.sleep", return_value=None)
+def test_shared_requests_429_then_success_uses_the_local_loop(mock_sleep, monkeypatch):
+    from tenacity import wait_none
+
+    from modules.request import Requests
+
+    req = Requests.__new__(Requests)
+    limited = MagicMock(status_code=429, headers={"Retry-After": "2"}, text="slow", content=b"slow")
+    success = MagicMock(status_code=200, headers={})
+    success.json.return_value = {"items": [], "count": 0, "pages": 0}
+    req.session = MagicMock()
+    req.session.get.side_effect = [limited, success]
+    monkeypatch.setattr(Requests.get.retry, "wait", wait_none())
+
+    Listrr(req, "test-key").test_connection()
+    assert req.session.get.call_count == 2
+    mock_sleep.assert_called_once_with(2.0)

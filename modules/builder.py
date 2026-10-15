@@ -3793,8 +3793,7 @@ class CollectionBuilder:
         if self.config.Listrr is None:
             raise BuilderValidationError(f"{self.Type} Error: listrr attribute not found in config")
         listrr_lists = self.config.Listrr.validate_lists(self.Type, method_data)
-        for listrr_list in listrr_lists:
-            self.builders.append(("listrr_list", listrr_list))
+        self.builders.append(("listrr_list", listrr_lists))
         if method_name == "listrr_list_details":
             try:
                 description = self.config.Listrr.list_description(listrr_lists[0]["list_id"])

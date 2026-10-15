@@ -1751,6 +1751,48 @@ class TestDispatchTables:
         assert "listrr_list" in custom_sort_builders
 
 
+def test_listrr_lists_register_as_one_builder_and_keep_the_first_description():
+    listrr = MagicMock()
+    lists = [
+        {"list_id": "671527158e1c7df162d0fe69", "sort_by": "name.asc", "limit": 0},
+        {"list_id": "67fb123c6f5a448f92e7ee03", "sort_by": "release.desc", "limit": 10},
+    ]
+    listrr.validate_lists.return_value = lists
+    listrr.list_description.return_value = "First list"
+    builder = make_builder(config=SimpleNamespace(Listrr=listrr), summaries={})
+
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", {"url": "https://listrr.pro/Lists/ShowShowList/67fb123c6f5a448f92e7ee03"}])
+
+    assert builder.builders == [("listrr_list", lists)]
+    assert builder.summaries["listrr_list_details"] == "First list"
+    listrr.list_description.assert_called_once_with("671527158e1c7df162d0fe69")
+
+
+def test_listrr_description_failure_keeps_the_single_builder(monkeypatch):
+    from requests.exceptions import ConnectionError
+
+    from modules.listrr import Listrr
+
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+
+    class Down:
+        def get(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+        def get_once(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+    builder = make_builder(config=SimpleNamespace(Listrr=Listrr(Down(), "test-key")), summaries={})
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"])
+
+    assert len(builder.builders) == 1
+    assert builder.builders[0][0] == "listrr_list"
+    assert [entry["list_id"] for entry in builder.builders[0][1]] == ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"]
+    assert builder.summaries == {}
+    assert any("List description not found" in message for message in logger.error_messages)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # _service_lock_key (Experiment C - per-service lock bucket classification)
 # ═══════════════════════════════════════════════════════════════════════
