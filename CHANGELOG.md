@@ -162,6 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
 - Add `music_playlists` to Music library collection files for building Music Playlists.
+=======
+- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.apikey` and reads list membership from the Listrr API.
 - Add Last.fm connector and various music builders.
 - Add YouTube Music builders for music libraries and operation for updating artist images
 - Log the current value when an item or episode rating already matches the requested rating.
