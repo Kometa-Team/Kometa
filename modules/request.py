@@ -90,8 +90,9 @@ class Version:
 
 
 class Requests:
-    # Kometa's own shipped assets (Default-Images, People-Images-*) don't need a per-run liveness check - unlike arbitrary user url_poster/url_background/url_logo/url_square_art values, the real staleness risk.
-    stable_asset_prefixes = ("https://raw.githubusercontent.com/Kometa-Team/",)
+    # Skip validation only for shipped default artwork. People-Images repositories
+    # may omit an individual person, so their URLs must be checked before selection.
+    stable_asset_prefixes = ("https://raw.githubusercontent.com/Kometa-Team/Default-Images/",)
 
     def __init__(self, local, part, env_branch, git_branch, verify_ssl=True):
         self.local = Version(local, part)
@@ -163,22 +164,28 @@ class Requests:
         # Keyed on (url, validate_only) so a bodyless HEAD check can never be served back to a caller that needs real content (nightly's leaked version wrote this cache but never read it back).
         cache_key = (url, validate_only)
         if cache_key in self._image_url_cache:
-            return self._image_url_cache[cache_key]
-        # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
-        if validate_only and url.startswith(self.stable_asset_prefixes):
-            return None
-        # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
-        with timings.tag_context("image"):
-            try:
-                if validate_only:
-                    # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
-                    response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
-                else:
-                    response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
-            except RequestException as e:
-                # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
-                raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
+            response = self._image_url_cache[cache_key]
+        else:
+            # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
+            if validate_only and url.startswith(self.stable_asset_prefixes):
+                return None
+            # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
+            with timings.tag_context("image"):
+                try:
+                    if validate_only:
+                        # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
+                        response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+                    else:
+                        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
+                except RequestException as e:
+                    # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
+                    raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
         if response.status_code == 404:
+            # Repeated definitions can reference the same missing person poster.
+            # Remember validation misses for this run, without affecting downloads
+            # or suppressing fresh attempts after transient network/server errors.
+            if validate_only:
+                self._image_url_cache[cache_key] = response
             raise Failed(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
             raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
