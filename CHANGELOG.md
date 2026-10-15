@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Accept a Kometa Utilities "Use Kometa App" MyAnimeList block that omits `client_secret`, and refresh that official app without sending a client secret.
 - Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
