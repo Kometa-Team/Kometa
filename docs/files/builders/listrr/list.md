@@ -4,7 +4,7 @@ hide:
 ---
 # Listrr List
 
-Finds every item in one Listrr list.
+Finds every item in one or more Listrr lists.
 
 ???+ warning "Listrr Configuration"
 
@@ -20,6 +20,8 @@ The expected input is one list, or a YAML list of them. Each value is a 24-chara
 `?page=` on a site URL is the website pager. Kometa ignores it and always starts at API page 1.
 
 Multiple values are supported as a YAML list only. A comma-separated string is one value and will not be split, because a URL has to stay intact.
+
+Several lists stay one builder. Kometa reads them in the order given, applies each list's own `sort_by` and `limit`, and skips an id that an earlier list already emitted. Playlists and `collection_order: custom` accept that single builder.
 
 On an object, `url` and `list_id` are aliases for that same id or URL.
 
