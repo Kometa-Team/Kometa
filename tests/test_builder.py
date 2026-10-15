@@ -994,7 +994,7 @@ class TestTvdbOutageResilience:
         logger = FakeLogger()
         monkeypatch.setattr(builder_module, "logger", logger)
         get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
-        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        library = SimpleNamespace(is_movie=False, is_show=True, is_music=False, Sonarr=None)
         builder = make_builder(
             library=library,
             config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
