@@ -63,14 +63,36 @@ Collection Files can utilize the following top-level attributes
 |:----------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
 | [`collections`](#collection-operations--attributes) | contains definitions of collections you wish to add to one or more libraries                                              |
 | [`dynamic_collections`](#dynamic-collections)       | contains definitions of [dynamic collections](dynamic.md) you wish to create                                              |
+| [`music_playlists`](#music-playlists)               | contains music playlist definitions for a Music library                                                                    |
 | [`external_templates`](templates.md)                | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple collections |
 | [`templates`](templates.md)                         | contains definitions of templates that can be leveraged by multiple collections                                           |
 
-* One of `metadata`, `collections` or `dynamic_collections` must be present for the File to run, else you will receive 
+* One of `metadata`, `collections`, `dynamic_collections` or `music_playlists` must be present for the File to run, else you will receive
 an error when trying to run the file against your library.
 
 * Example Files can be found in the 
 [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
+
+## Music Playlists
+
+Use `music_playlists` in a collection file attached to a Music library to create Plex playlists from music builders. Music builders such as Lidarr, Last.fm, and YouTube Music create regular playlists that Kometa refreshes when it runs. Use `smart_filter`, `smart_label`, or `smart_url` to create a Plex smart playlist that updates from its filter automatically.
+
+```yaml
+music_playlists:
+  Last.fm Top Tracks:
+    lastfm_chart_top_tracks:
+      limit: 50
+
+  Recently Added Tracks:
+    smart_filter:
+      type: track
+      limit: 50
+      sort_by: added.desc
+      all:
+        plays.gte: 1
+```
+
+Each definition uses one builder. A smart playlist can use one smart rule (`smart_filter`, `smart_label`, or `smart_url`) and cannot combine that rule with another builder. Smart labels filter existing Plex music labels; they do not apply labels to tracks.
 
 ## Collection Operations & Attributes
 

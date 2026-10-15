@@ -312,6 +312,7 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
+    "item.label": "item_label",
     "collection_minimum": "minimum_items",
     "playlist_minimum": "minimum_items",
     "save_missing": "save_report",
@@ -1800,6 +1801,29 @@ class Plex(Library):
         args = {"type": smart_type, "title": title, "smart": 1, "sectionId": self.Plex.key, "uri": self.build_smart_filter(uri_args)}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
+    def create_smart_playlist(self, title, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        args = {"type": self.Plex.CONTENT_TYPE, "title": title, "smart": 1, "uri": self._smart_playlist_uri(uri_args)}
+        self._query(f"/playlists{utils.joinArgs(args)}", post=True)
+
+    @staticmethod
+    def smart_playlist_filter(playlist):
+        smart_filter = playlist.content
+        if not smart_filter or "?" not in smart_filter:
+            return None
+        return smart_filter[smart_filter.index("?") :]
+
+    def update_smart_playlist(self, playlist, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        self._query(f"{playlist.key}/items{utils.joinArgs({'uri': self._smart_playlist_uri(uri_args)})}", put=True)
+
+    def _smart_playlist_uri(self, uri_args):
+        if str(uri_args).startswith(("http://", "https://")):
+            return uri_args
+        return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
+
     def create_blank_collection(self, title):
         existing_collection = self._collection_by_title(title)
         if existing_collection is not None:
@@ -1811,7 +1835,7 @@ class Plex(Library):
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0]  # noqa
         args = smart_filter[smart_filter.index("?") :]
-        return self.build_smart_filter(args), int(args[args.index("type=") + 5 : args.index("type=") + 6])
+        return args, int(args[args.index("type=") + 5 : args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
@@ -1821,6 +1845,8 @@ class Plex(Library):
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart_filter(self, collection):
+        if isinstance(collection, Playlist):
+            return self.smart_playlist_filter(collection)
         smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
         if not smart_filter or "?" not in smart_filter:
             return None
@@ -3035,6 +3061,9 @@ class Plex(Library):
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
+        if attribute == "item" and modifier == ".label":
+            attribute = f"item_{modifier[1:]}"
+            modifier = ""
         attribute = method_alias[attribute] if attribute in method_alias else attribute
         modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
 

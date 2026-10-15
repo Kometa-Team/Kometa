@@ -1033,7 +1033,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             library.collection_names.append(mapping_name)
 
             for run_type in library.run_order:
-                if run_type == "collections" and runs[run_type]:
+                if run_type == "collections" and (runs[run_type] or run_args["playlists-only"]):
                     time_start = datetime.now()
                     for metadata in library.collection_files:
                         metadata_name = metadata.get_file_name()
@@ -1043,10 +1043,21 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             continue
                         logger.info("")
                         logger.separator(f"Running {metadata_name} Collection File\n{metadata.path}")
-                        collections_to_run = metadata.get_collections(config.requested_collections)
-                        if run_args["resume"] and run_args["resume"] not in collections_to_run:
+                        collections_to_run = {} if run_args["playlists-only"] else metadata.get_collections(config.requested_collections)
+                        music_playlists_to_run = {} if run_args["collections-only"] else metadata.get_music_playlists(config.requested_collections)
+                        if run_args["resume"]:
+                            if run_args["resume"] in collections_to_run:
+                                collections_to_run = {run_args["resume"]: collections_to_run[run_args["resume"]]}
+                                music_playlists_to_run = {}
+                            elif run_args["resume"] in music_playlists_to_run:
+                                music_playlists_to_run = {run_args["resume"]: music_playlists_to_run[run_args["resume"]]}
+                                collections_to_run = {}
+                            else:
+                                logger.info("")
+                                logger.warning(f"Collection or Music Playlist: {run_args['resume']} not in Collection File: {metadata.path}")
+                                continue
+                        if not collections_to_run and not music_playlists_to_run:
                             logger.info("")
-                            logger.warning(f"Collection: {run_args['resume']} not in Collection File: {metadata.path}")
                             continue
                         if collections_to_run:
                             logger.info("")
@@ -1055,6 +1066,11 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             with timings.overlay_context(False):
                                 run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
+                        if music_playlists_to_run:
+                            logger.info("")
+                            logger.separator(f"{'Test ' if run_args['tests'] else ''}Music Playlists")
+                            with timings.overlay_context(False):
+                                run_collection(config, library, metadata, music_playlists_to_run, music_playlist=True)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
                     targeted_run = config.requested_collections or config.requested_files
@@ -1108,7 +1124,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
     return library_status, collections_ran
 
 
-def run_collection(config, library, metadata, requested_collections):
+def run_collection(config, library, metadata, requested_collections, music_playlist=False):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -1144,13 +1160,13 @@ def run_collection(config, library, metadata, requested_collections):
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
-            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
+            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str, music_playlist=music_playlist)
             library.stats["names"].append(builder.name)
-            if builder.build_collection:
+            if builder.build_collection and not builder.playlist:
                 library.collection_names.append(builder.name)
             logger.info("")
 
-            logger.separator(f"Running {builder.name} Collection", space=False, border=False)
+            logger.separator(f"Running {builder.name} {'Music Playlist' if builder.playlist else 'Collection'}", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 logger.info(builder.schedule)
@@ -1197,7 +1213,9 @@ def run_collection(config, library, metadata, requested_collections):
 
                 items_added = 0
                 items_removed = 0
-                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
+                if builder.music_playlist_smart:
+                    builder.found_items = []
+                elif len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
@@ -1218,12 +1236,12 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
             final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)
-            if builder.build_collection and not builder.blank_collection and final_collection_count < builder.minimum:
+            if builder.build_collection and not builder.music_playlist_smart and not builder.blank_collection and final_collection_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
@@ -1235,7 +1253,7 @@ def run_collection(config, library, metadata, requested_collections):
                 library.status[str(mapping_name)]["status"] = delete_status
 
             run_item_details = True
-            if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
+            if valid and (builder.build_collection or builder.music_playlist_smart) and (builder.builders or builder.smart_url or builder.blank_collection):
                 try:
                     builder.load_collection()
                     if builder.created:

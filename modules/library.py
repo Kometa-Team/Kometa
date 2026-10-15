@@ -481,6 +481,7 @@ class Library(ABC):
                 "tmdb_profile",
                 "tmdb_list_poster",
                 "tvdb_list_poster",
+                "ytmusic_list",
                 f"tvdb_{image_type}",
                 "asset_directory",
                 f"pmm_{image_type}",

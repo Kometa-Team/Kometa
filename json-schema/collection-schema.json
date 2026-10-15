@@ -6,6 +6,7 @@
     "additionalProperties": false,
     "properties": {
         "collections": { "$ref": "#/definitions/collections-map" },
+        "music_playlists": { "$ref": "#/definitions/music-playlists-map" },
         "templates": { "$ref": "#/definitions/templates-map" },
         "dynamic_collections": { "$ref": "#/definitions/dynamic-collections-map" },
         "external_templates": { "$ref": "#/definitions/external-templates-list" }
@@ -106,6 +107,17 @@
             "description": "A mapping of collection names to their definitions.",
             "type": "object",
             "additionalProperties": { "$ref": "#/definitions/collection-definition" }
+        },
+
+        "music-playlists-map": {
+            "title": "music_playlists",
+            "description": "A mapping of Plex music playlist names to music builders or smart playlist filters.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "description": "A music playlist definition. Music builders and smart_filter, smart_label, or smart_url are supported.",
+                "additionalProperties": true
+            }
         },
 
         "collection-definition": {
@@ -1094,6 +1106,9 @@
                 "item_label": { "$ref": "#/definitions/tag-value", "description": "Apply label(s) to all items found by builders." },
                 "item_label.remove": { "$ref": "#/definitions/tag-value" },
                 "item_label.sync": { "$ref": "#/definitions/tag-value" },
+                "item.label": { "$ref": "#/definitions/tag-value", "description": "Alias for item_label; supported on Music artists, albums, and tracks." },
+                "item.label.remove": { "$ref": "#/definitions/tag-value" },
+                "item.label.sync": { "$ref": "#/definitions/tag-value" },
                 "item_assets": { "type": "boolean" },
                 "item_refresh": { "type": "boolean" },
                 "item_refresh_delay": { "type": "integer", "minimum": 0 },

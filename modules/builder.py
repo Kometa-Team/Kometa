@@ -374,7 +374,7 @@ sonarr_details = [
     "item_sonarr_tag",
     "sonarr_ignore_cache",
 ]
-album_details = ["non_item_remove_label", "item_label", "item_album_sorting"]
+album_details = ["non_item_remove_label", "item_album_sorting"]
 sub_filters = [
     "filepath",
     "audio_track_title",
@@ -801,6 +801,9 @@ parts_collection_valid = (
 )
 playlist_attributes = (
     [
+        "smart_filter",
+        "smart_label",
+        "smart_url",
         "filters",
         "name_mapping",
         "show_filtered",
@@ -821,6 +824,8 @@ playlist_attributes = (
         "default_percent",
     ]
     + custom_sort_builders
+    + lidarr.builders
+    + ["plex_all", "plex_id", "plex_rating_key"]
     + summary_details
     + poster_details
     + radarr_details
@@ -828,6 +833,9 @@ playlist_attributes = (
 )
 music_attributes = (
     [
+        "smart_filter",
+        "smart_label",
+        "smart_url",
         "asset_directory",
         "non_item_remove_label",
         "item_label",
@@ -867,7 +875,7 @@ class CollectionBuilder:
             raise BuilderValidationError("Playlist Error: No libraries were processed this run to use as the playlist default")
         return libraries
 
-    def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None):
+    def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None, music_playlist=False):
         self.config = config
         self.metadata = metadata
         self.mapping_name = name
@@ -876,9 +884,14 @@ class CollectionBuilder:
         self.libraries = []
         self.summaries = {}
         self.is_playlist = False
-        self.playlist = library is None
-        self.overlay = overlay
+        self.music_playlist = music_playlist
         methods = {m.lower(): m for m in self.data}
+        self.music_playlist_smart = self.music_playlist and any(method in methods for method in ["smart_filter", "smart_label", "smart_url"])
+        self.smart_url_builder = False
+        if self.music_playlist_smart and sum(method in methods for method in ["smart_filter", "smart_label", "smart_url"]) > 1:
+            raise BuilderValidationError("Playlist Error: Use only one of smart_filter, smart_label, or smart_url in a music playlist")
+        self.playlist = library is None or music_playlist
+        self.overlay = overlay
         if self.playlist:
             self.type = "playlist"
         elif self.overlay:
@@ -1092,18 +1105,23 @@ class CollectionBuilder:
         if not self.name:
             self.name = self.mapping_name
 
-        if self.library and self.name not in self.library.collections:
+        if self.library and not self.playlist and self.name not in self.library.collections:
             self.library.collections.append(self.name)
 
         if self.playlist:
             logger.debug("")
             logger.debug("Validating Method: libraries")
-            playlist_libraries = self._playlist_libraries(config, self.data, methods)
-            logger.debug(f"Value: {', '.join(playlist_libraries)}")
-            for pl_library in playlist_libraries:
-                if str(pl_library) not in config.library_map:
-                    raise BuilderValidationError(f"Playlist Error: Library '{pl_library}' not defined. Libraries must be defined within `libraries` section of Configuration File to be usable with playlists")
-                self.libraries.append(config.library_map[pl_library])
+            if self.music_playlist:
+                if not self.library.is_music:
+                    raise BuilderValidationError("Playlist Error: music_playlists can only be used with a Music library")
+                self.libraries.append(self.library)
+            else:
+                playlist_libraries = self._playlist_libraries(config, self.data, methods)
+                logger.debug(f"Value: {', '.join(playlist_libraries)}")
+                for pl_library in playlist_libraries:
+                    if str(pl_library) not in config.library_map:
+                        raise BuilderValidationError(f"Playlist Error: Library '{pl_library}' not defined. Libraries must be defined within `libraries` section of Configuration File to be usable with playlists")
+                    self.libraries.append(config.library_map[pl_library])
             self.library = self.libraries[0]
 
         try:
@@ -1211,27 +1229,31 @@ class CollectionBuilder:
         self.exclude_users = None
         self.valid_users = []
         if self.playlist:
-            if "sync_to_users" in methods or "sync_to_user" in methods:
-                s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
-                logger.debug("")
-                logger.debug(f"Validating Method: {s_attr}")
-                logger.debug(f"Value: {self.data[methods[s_attr]]}")
-                self.sync_to_users = self.data[methods[s_attr]]
+            if self.music_playlist_smart:
+                self.sync_to_users = None
+                self.exclude_users = None
             else:
-                self.sync_to_users = config.general["playlist_sync_to_users"]
-                logger.info(f"Playlist Warning: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
+                if "sync_to_users" in methods or "sync_to_user" in methods:
+                    s_attr = f"sync_to_user{'s' if 'sync_to_users' in methods else ''}"
+                    logger.debug("")
+                    logger.debug(f"Validating Method: {s_attr}")
+                    logger.debug(f"Value: {self.data[methods[s_attr]]}")
+                    self.sync_to_users = self.data[methods[s_attr]]
+                else:
+                    self.sync_to_users = config.general["playlist_sync_to_users"]
+                    logger.info(f"Playlist Warning: sync_to_users attribute not found defaulting to playlist_sync_to_users: {self.sync_to_users}")
 
-            if "exclude_users" in methods or "exclude_user" in methods:
-                s_attr = f"exclude_user{'s' if 'exclude_users' in methods else ''}"
-                logger.debug("")
-                logger.debug(f"Validating Method: {s_attr}")
-                logger.debug(f"Value: {self.data[methods[s_attr]]}")
-                self.exclude_users = self.data[methods[s_attr]]
-            elif config.general["playlist_exclude_users"]:
-                self.exclude_users = config.general["playlist_exclude_users"]
-                logger.info(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
+                if "exclude_users" in methods or "exclude_user" in methods:
+                    s_attr = f"exclude_user{'s' if 'exclude_users' in methods else ''}"
+                    logger.debug("")
+                    logger.debug(f"Validating Method: {s_attr}")
+                    logger.debug(f"Value: {self.data[methods[s_attr]]}")
+                    self.exclude_users = self.data[methods[s_attr]]
+                elif config.general["playlist_exclude_users"]:
+                    self.exclude_users = config.general["playlist_exclude_users"]
+                    logger.info(f"Playlist Warning: exclude_users attribute not found defaulting to playlist_exclude_users: {self.exclude_users}")
 
-            self._resolve_playlist_users()
+                self._resolve_playlist_users()
 
             if "delete_playlist" in methods:
                 logger.debug("")
@@ -1604,7 +1626,8 @@ class CollectionBuilder:
 
         self.smart_url = None
         self.smart_type_key = None
-        if "smart_url" in methods and not self.playlist and not self.overlay:
+        self.smart_label_url = None
+        if "smart_url" in methods and (not self.playlist or self.music_playlist) and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
             if not self.data[methods["smart_url"]]:
@@ -1613,10 +1636,11 @@ class CollectionBuilder:
                 logger.debug(f"Value: {self.data[methods['smart_url']]}")
                 try:
                     self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
+                    self.smart_url_builder = True
                 except ValueError:
                     raise BuilderValidationError(f"{self.Type} Error: 'smart_url' attribute is incorrectly formatted")
 
-        if "smart_filter" in methods and not self.playlist and not self.overlay:
+        if "smart_filter" in methods and (not self.playlist or self.music_playlist) and not self.overlay:
             try:
                 self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_filter", self.data[methods["smart_filter"]], display=True, default_sort="random")
             except FilterFailed as e:
@@ -1624,6 +1648,22 @@ class CollectionBuilder:
                     raise
                 else:
                     raise Failed(str(e))
+
+        if "smart_label" in methods and self.music_playlist:
+            self.smart_label = {"sort_by": "random", "all": {"label": [self.name]}}
+            label_data = self.data[methods["smart_label"]]
+            if isinstance(label_data, dict):
+                self.smart_label = label_data
+                if "label" in self.smart_label:
+                    _data, replaced = util.replace_label(self.name, self.smart_label)
+                    if not replaced:
+                        raise BuilderValidationError("Playlist Error: <<smart_label>> not found in the smart_label attribute data")
+                    self.smart_label = _data
+            elif isinstance(label_data, str) and label_data.lower() in plex.sort_types["track"][2]:
+                self.smart_label["sort_by"] = label_data.lower()
+            elif label_data:
+                logger.warning(f"Playlist Warning: smart_label '{label_data}' is invalid, defaulting to random sort and the playlist name label")
+            self.smart_type_key, self.smart_filter_details, self.smart_url = self.build_filter("smart_label", self.smart_label, display=True, default_sort="random")
 
         if self.collectionless:
             for x in ["smart_label", "smart_filter", "smart_url"]:
@@ -1640,10 +1680,13 @@ class CollectionBuilder:
         if self.smart_url and self.smart_label_collection:
             raise BuilderValidationError(f"{self.Type} Error: 'smart_filter' is not compatible with 'smart_label'")
 
-        if self.parts_collection and "smart_url" in methods:
+        if self.parts_collection and self.smart_url_builder:
             raise BuilderValidationError(f"{self.Type} Error: 'smart_url' is not compatible with builder_level '{self.builder_level}'")
 
-        self.smart = self.smart_url or self.smart_label_collection
+        self.smart = bool(self.smart_url) or self.smart_label_collection
+        if self.music_playlist_smart:
+            self.minimum = 0
+            self.build_collection = True
 
         test_sort = None
         if "collection_order" in methods and not self.playlist and self.build_collection:
@@ -1705,12 +1748,20 @@ class CollectionBuilder:
             logger.debug(f"Validating Method: {method_key}")
             logger.debug(f"Value: {method_data}")
             try:
+                if self.music_playlist_smart and method_name in ["smart_filter", "smart_label", "smart_url"]:
+                    continue
                 if method_data is None and method_name in all_builders + plex.searches and method_final not in none_builders:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute is blank")
                 elif method_data is None and method_final not in none_details:
                     logger.warning(f"Collection Warning: '{method_final}' attribute is blank")
                 elif self.playlist and method_name not in playlist_attributes:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
+                elif self.playlist and not self.music_playlist and method_name in ["smart_filter", "smart_label", "smart_url"]:
+                    raise BuilderValidationError(f"{self.Type} Error: '{method_final}' is only supported for music_playlists")
+                elif self.music_playlist_smart and method_name in all_builders:
+                    raise BuilderValidationError(f"Playlist Error: A music smart playlist cannot combine {method_final} with its smart filter")
+                elif self.music_playlist_smart and method_name in ["build_collection", "minimum_items", "delete_below_minimum", "ignore_blank_results", "collection_order"]:
+                    raise BuilderValidationError(f"Playlist Error: '{method_final}' is not supported for smart playlists")
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
                 elif not self.config.WeTrakr and "wetrakr" in method_name:
@@ -1759,7 +1810,7 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed with smart collections")
                 elif self.collectionless and method_name not in collectionless_details:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not allowed for 'collectionless' collection")
-                elif self.smart_url and method_name in all_builders + smart_url_invalid:
+                elif self.smart_url_builder and method_name in all_builders + smart_url_invalid:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' builder not allowed when using 'smart_filter'")
                 elif not self.overlay and method_name in overlay_only:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute only allowed in an Overlay File")
@@ -1877,7 +1928,8 @@ class CollectionBuilder:
                 self.details["label"] = append_labels
 
         if not self.server_preroll and not self.smart_url and not self.blank_collection and len(self.builders) == 0:
-            raise BuilderValidationError(f"{self.Type} Error: No builders were found")
+            if not self.music_playlist_smart:
+                raise BuilderValidationError(f"{self.Type} Error: No builders were found")
 
         if self.blank_collection and len(self.builders) > 0:
             raise BuilderValidationError(f"{self.Type} Error: No builders allowed with blank_collection")
@@ -1924,24 +1976,36 @@ class CollectionBuilder:
 
         if self.smart_url:
             self.sync = False
+        if self.music_playlist_smart:
+            self.sync = False
 
         self.do_report = not self.config.no_report and (self.details["save_report"])
         self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]))
-        if self.build_collection:
+        if self.build_collection or self.music_playlist_smart:
             if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
-                logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} collection")
+                logger.error(f"{self.Type} Error: Converting {self.obj.title} to a {'smart' if self.smart else 'normal'} {'playlist' if self.playlist else 'collection'}")
                 self.library.delete(self.obj)
                 self.obj = None
             if self.smart:
                 check_url = self.smart_url if self.smart_url else self.smart_label_url
-                self.update_smart_filter(check_url)
-                self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
+                if self.music_playlist:
+                    check_filter = check_url[check_url.index("?") :] if check_url and "?" in check_url else check_url
+                    if self.obj is not None and check_filter != self.library.smart_playlist_filter(self.obj):
+                        self.library.update_smart_playlist(self.obj, check_url)
+                        logger.info(f"Metadata: Smart Playlist updated to {check_url}")
+                    if self.obj is not None:
+                        self.beginning_count = getattr(self.obj, "leafCount", 0) or 0
+                    if self.obj is not None:
+                        self.exists = True
+                else:
+                    self.update_smart_filter(check_url)
+                    self.beginning_count = len(self.library.fetchItems(check_url)) if check_url else 0
             if self.obj is not None:
                 self.exists = True
-                if self.sync or self.playlist:
+                if (self.sync or self.playlist) and not self.music_playlist_smart:
                     self._remove_item_map = self._resolve_remove_item_map()
-                if not self.smart:
+                if not self.smart and not self.music_playlist_smart:
                     self.beginning_count = len(self.remove_item_map) if self.playlist else self._collection_child_count(self.obj)
         else:
             self.obj = None
@@ -4502,6 +4566,8 @@ class CollectionBuilder:
                 if plex_filter[filter_alias["type"]] not in plex.sort_types:
                     raise BuilderValidationError(f"{self.Type} Error: type '{plex_filter[filter_alias['type']]}' is invalid. Options: {', '.join(plex.sort_types)}")
                 sort_type = plex_filter[filter_alias["type"]]
+            elif self.music_playlist and self.library.is_music:
+                sort_type = "track"
             elif self.library.is_show:
                 sort_type = "show"
             elif self.library.is_music:
@@ -4510,6 +4576,9 @@ class CollectionBuilder:
                 sort_type = "movie"
         else:
             sort_type = self.builder_level
+
+        if self.music_playlist and sort_type not in ["artist", "album", "track"]:
+            raise BuilderValidationError(f"{self.Type} Error: Music playlist smart filters must use type 'artist', 'album', or 'track'")
 
         ms = method.split("_")
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()} {ms[1].capitalize()}\n"
@@ -4563,6 +4632,9 @@ class CollectionBuilder:
             conjunction = f"{'and' if is_all else 'or'}=1&"
             for _key, _data in filter_dict.items():
                 attr, modifier, final_attr = self.library.split(_key)
+                if self.library.is_music and attr == "label":
+                    attr = f"{sort_type}_label"
+                    final_attr = f"{attr}{modifier}"
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
                     arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr in ["folder_location", "audio_codec"] else plex.search_translation[attr] if attr in plex.search_translation else attr
@@ -5409,7 +5481,9 @@ class CollectionBuilder:
 
     @timings.timed("load_collection_items")
     def load_collection_items(self):
-        if self.build_collection and self.obj is not None:
+        if self.music_playlist_smart:
+            self.items = []
+        elif self.build_collection and self.obj is not None:
             self.items = self.library.get_collection_items(self.obj, self.smart_label_collection)
         elif not self.build_collection:
             logger.info("")
@@ -5751,7 +5825,10 @@ class CollectionBuilder:
 
     @timings.timed("load_collection")
     def load_collection(self):
-        if self.obj is None and self.smart_url:
+        if self.obj is None and self.music_playlist_smart:
+            self.library.create_smart_playlist(self.name, self.smart_url)
+            logger.debug(f"Smart Playlist Created: {self.smart_url}")
+        elif self.obj is None and self.smart_url:
             self.library.create_smart_collection(self.name, self.smart_type_key, self.smart_url, self.ignore_blank_results)
             logger.debug(f"Smart Collection Created: {self.smart_url}")
         elif self.obj is None and self.blank_collection:
@@ -5779,6 +5856,8 @@ class CollectionBuilder:
             summary = ("summary", self.summaries["summary"])
         elif "translation" in self.summaries:
             summary = ("translation", self.summaries["translation"])
+        elif "ytmusic_list" in self.summaries:
+            summary = ("ytmusic_list", self.summaries["ytmusic_list"])
         elif "tmdb_description" in self.summaries:
             summary = ("tmdb_description", self.summaries["tmdb_description"])
         elif "tvdb_description" in self.summaries:
@@ -6006,6 +6085,9 @@ class CollectionBuilder:
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")
+        if self.music_playlist_smart:
+            logger.info("Plex manages the order of smart playlist results")
+            return
         if not isinstance(self.custom_sort, list):
             items = self.found_items
             if self.custom_sort == "custom.desc":
