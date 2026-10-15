@@ -13,7 +13,37 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, listrr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack, ytmusic
+from modules import (
+    anidb,
+    anilist,
+    flicklist,
+    floppy,
+    icheckmovies,
+    imdb,
+    lastfm,
+    letterboxd,
+    lidarr,
+    listrr,
+    mal,
+    mdblist,
+    mojo,
+    plex,
+    radarr,
+    serializd,
+    simkl,
+    sonarr,
+    stevenlu,
+    tautulli,
+    textfile,
+    timings,
+    tmdb,
+    tracearr,
+    tvdb,
+    util,
+    wetrakr,
+    yamtrack,
+    ytmusic,
+)
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
