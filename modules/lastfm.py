@@ -18,12 +18,20 @@ class LastFM:
         logger.secret(apikey)
         self.network = pylast.LastFMNetwork(api_key=apikey)
 
+    def validate_connection(self):
+        try:
+            self.network.get_top_artists(limit=1, cacheable=False)
+        except pylast.PyLastError as e:
+            raise Failed(f"Last.fm Error: {e}") from e
+
     @staticmethod
     def _get_mbid(item, label):
         from modules.plex import music_mbid_pattern
 
         try:
-            mbid = (item.get_mbid() or "").lower()
+            info = getattr(item, "info", None)
+            embedded_mbid = info.get("mbid") if isinstance(info, dict) else None
+            mbid = str(embedded_mbid).lower() if embedded_mbid and music_mbid_pattern.fullmatch(str(embedded_mbid)) else (item.get_mbid() or "").lower()
         except pylast.PyLastError as e:
             logger.debug(f"Last.fm {label} MBID unavailable: {e}")
             return ""
@@ -81,10 +89,13 @@ class LastFM:
         results = []
         seen = set()
         seen_missing = set()
+        mbids = {}
         for entry in items:
             lastfm_artist = cast(pylast.Artist, entry.item)
             artist_name = str(lastfm_artist.get_name())
-            mbid = self._get_mbid(lastfm_artist, f"artist {artist_name}")
+            if artist_name not in mbids:
+                mbids[artist_name] = self._get_mbid(lastfm_artist, f"artist {artist_name}")
+            mbid = mbids[artist_name]
             artist, reason = matcher.match(mbid=mbid, artist=artist_name)
             if artist is None:
                 missing_key = (artist_name, mbid, reason)
@@ -112,11 +123,15 @@ class LastFM:
         results = []
         seen = set()
         seen_missing = set()
+        mbids = {}
         for entry in items:
             lastfm_album = cast(pylast.Album, entry.item)
             album_name = str(lastfm_album.get_name())
             artist_name = str(cast(pylast.Artist, lastfm_album.get_artist()).get_name())
-            mbid = self._get_mbid(lastfm_album, f"album {artist_name} - {album_name}")
+            album_key = (artist_name, album_name)
+            if album_key not in mbids:
+                mbids[album_key] = self._get_mbid(lastfm_album, f"album {artist_name} - {album_name}")
+            mbid = mbids[album_key]
             album, reason = matcher.match(mbid=mbid, artist=artist_name, album=album_name)
             if album is None:
                 missing_key = (artist_name, album_name, mbid, reason)
@@ -131,7 +146,7 @@ class LastFM:
         return results
 
     def _get_track_rating_keys(self, method, value, library, items=None):
-        from modules.plex import MusicMatcher
+        from modules.plex import MusicMatcher, music_title_key
 
         matcher = MusicMatcher([library], "track")
         if items is None:
@@ -149,6 +164,7 @@ class LastFM:
         results = []
         seen = set()
         seen_missing = set()
+        details = {}
         for entry in items:
             if method in ("lastfm_user_loved_tracks", "lastfm_user_recent_tracks"):
                 lastfm_track = cast(pylast.Track, getattr(entry, "track"))
@@ -156,27 +172,37 @@ class LastFM:
                 lastfm_track = cast(pylast.Track, getattr(entry, "item"))
             track_name = str(lastfm_track.get_name())
             artist_name = str(cast(pylast.Artist, lastfm_track.get_artist()).get_name())
-            mbid = self._get_mbid(lastfm_track, f"track {artist_name} - {track_name}")
-            track, reason = matcher.match(mbid=mbid)
             album_name = getattr(entry, "album", None) if method == "lastfm_user_recent_tracks" else None
-            if track is None:
-                try:
-                    duration_ms = lastfm_track.get_duration()
-                except pylast.PyLastError as e:
-                    logger.debug(f"Last.fm duration unavailable for {artist_name} - {track_name}: {e}")
-                    duration_ms = None
+            track_key = (artist_name, track_name, album_name) if method == "lastfm_user_recent_tracks" else (id(lastfm_track),)
+            if track_key not in details:
+                details[track_key] = {"mbid": self._get_mbid(lastfm_track, f"track {artist_name} - {track_name}")}
+            track_details = details[track_key]
+            mbid = track_details["mbid"]
+            track, reason = matcher.match(mbid=mbid)
+            candidates = matcher.tracks_by_artist_title.get((music_title_key(artist_name), music_title_key(track_name)), []) if track is None else []
+            if track is None and candidates:
+                if "duration" not in track_details:
+                    try:
+                        track_details["duration"] = lastfm_track.get_duration()
+                    except pylast.PyLastError as e:
+                        logger.debug(f"Last.fm duration unavailable for {artist_name} - {track_name}: {e}")
+                        track_details["duration"] = None
+                duration_ms = track_details["duration"]
                 duration_match, duration_reason = matcher.match_track_duration(artist_name, track_name, duration_ms)
                 if duration_match is not None:
                     track, reason = duration_match, None
                 elif duration_reason == "ambiguous":
                     reason = duration_reason
-            if track is None and not album_name:
-                try:
-                    lastfm_album = lastfm_track.get_album()
-                    album_name = str(lastfm_album.get_name()) if lastfm_album else None
-                except pylast.PyLastError as e:
-                    logger.debug(f"Last.fm album unavailable for {artist_name} - {track_name}: {e}")
-            if track is None and album_name:
+            if track is None and candidates and not album_name:
+                if "album" not in track_details:
+                    try:
+                        lastfm_album = lastfm_track.get_album()
+                        track_details["album"] = str(lastfm_album.get_name()) if lastfm_album else None
+                    except pylast.PyLastError as e:
+                        logger.debug(f"Last.fm album unavailable for {artist_name} - {track_name}: {e}")
+                        track_details["album"] = None
+                album_name = track_details["album"]
+            if track is None and candidates and album_name:
                 track, reason = matcher.match(mbid=mbid, artist=artist_name, album=album_name, track=track_name)
             if track is None:
                 missing_key = (artist_name, album_name, track_name, mbid, reason)

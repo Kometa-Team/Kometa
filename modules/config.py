@@ -1134,7 +1134,9 @@ class ConfigFile:
             if "lastfm" in self.data:
                 logger.info("Connecting to Last.fm...")
                 try:
-                    self.LastFM = LastFM(check_for_attribute(self.data, "apikey", parent="lastfm", throw=True, save=False))
+                    lastfm_connector = LastFM(check_for_attribute(self.data, "apikey", parent="lastfm", throw=True, save=False))
+                    lastfm_connector.validate_connection()
+                    self.LastFM = lastfm_connector
                 except Failed as e:
                     logger.error(e)
                 logger.info(f"Last.fm Connection {'Failed' if self.LastFM is None else 'Successful'}")
