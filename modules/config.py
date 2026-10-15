@@ -177,6 +177,7 @@ mass_image_options = {
     "tvdb": "Use TVDb Images",
 }
 mass_episode_rating_options = {
+    "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
     "remove": "Remove and Lock Rating",
@@ -190,6 +191,7 @@ mass_episode_rating_options = {
     "floppy": "Use Floppy User Rating",
 }
 mass_rating_options = {
+    "random": "Use Random Rating",
     "lock": "Lock Rating",
     "unlock": "Unlock Rating",
     "remove": "Remove and Lock Rating",
