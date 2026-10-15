@@ -4268,6 +4268,10 @@ class CollectionBuilder:
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
+        # PlexPartialObject equality compares metadata keys. Index them once per
+        # pass to avoid quadratic list scans while preserving first-seen order.
+        # Rebuilding also respects any earlier limit truncation of found_items.
+        found_keys = {item.key for item in self.found_items}
         if self.filters and (self.details["show_filtered"] is True or self.details["show_unfiltered"] is True):
             logger.info("")
             logger.info("Filtering Builders:")
@@ -4277,7 +4281,7 @@ class CollectionBuilder:
         if mdb_value_filters:
             value_filter_items = []
             for i, item in enumerate(items, 1):
-                if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item in self.found_items or item.ratingKey in self.filtered_keys:
+                if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.key in found_keys or item.ratingKey in self.filtered_keys:
                     continue
                 passed = self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                 standard_filter_results[item.ratingKey] = passed
@@ -4288,7 +4292,7 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
-            if item not in self.found_items:
+            if item.key not in found_keys:
                 if item.ratingKey in self.filtered_keys:
                     if self.details["show_filtered"] is True:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
@@ -4297,6 +4301,7 @@ class CollectionBuilder:
                     standard_filters_passed = standard_filter_results[item.ratingKey] if mdb_value_filters else self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                     if standard_filters_passed and self.check_value_filter(item):
                         self.found_items.append(item)
+                        found_keys.add(item.key)
                         if self.details["show_unfiltered"] is True:
                             logger.info(f"{name} {self.Type} | = | {current_title}")
                     else:

@@ -41,6 +41,7 @@ class FakeShowLibrary:
 class FakeEpisode:
     def __init__(self, rating_key, title):
         self.ratingKey = rating_key
+        self.key = f"/library/metadata/{rating_key}"
         self.title = title
 
 
@@ -430,6 +431,7 @@ class TestFilterAndSaveItems:
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = "Movie with stale TMDb GUID"
 
         logger = FakeLogger()
@@ -507,6 +509,7 @@ class TestFilterAndSaveItems:
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = f"Movie {rating_key}"
 
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
