@@ -39,6 +39,18 @@ def _process_pool_context(multiprocessing):
     raise AssertionError("_process_pool_context was not found in kometa.py")
 
 
+def test_album_only_missing_items_trigger_reporting():
+    for node in _module_ast().body:
+        if isinstance(node, ast.FunctionDef) and node.name == "missing_item_counts":
+            namespace = {}
+            exec(compile(ast.Module(body=[node], type_ignores=[]), str(KOMETA_PY), "exec"), namespace)
+            counts = namespace["missing_item_counts"](SimpleNamespace(missing_albums=[{"name": "Album"}]))
+            assert counts == {"movies": 0, "shows": 0, "artists": 0, "albums": 1, "tracks": 0}
+            assert any(counts.values())
+            return
+    raise AssertionError("missing_item_counts was not found in kometa.py")
+
+
 def test_process_pool_uses_fork_instead_of_forkserver() -> None:
     expected_context = object()
     multiprocessing = SimpleNamespace(

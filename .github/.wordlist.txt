@@ -286,6 +286,7 @@ preroll
 PRs
 PUID
 py
+pylast
 Pyright
 pyright
 pyright's
@@ -321,6 +322,9 @@ Runtimes
 runtimes
 rw
 sandler
+scrobble
+scrobbled
+scrobbles
 Schemas
 schemas
 SciFi

@@ -12,6 +12,69 @@
     },
     "definitions": {
 
+        "lastfm-user-top-artists-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "period": { "type": "string", "enum": ["overall", "7day", "1month", "3month", "6month", "12month"] },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "lastfm-user-loved-tracks-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "lastfm-user-recent-tracks-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 },
+                "from": { "type": "integer", "minimum": 1 },
+                "to": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "lastfm-user-tags-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username", "tag"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "tag": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "last-tag-charts-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tag"],
+            "properties": {
+                "tag": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "lastfm-global-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["limit"],
+            "properties": {
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
         "schedule": {
             "description": "A single schedule expression or a non-empty list of expressions evaluated with OR logic.",
             "oneOf": [
@@ -509,6 +572,84 @@
                         { "type": "string" },
                         { "type": "null" },
                         { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
+                "lastfm_user_top_artists": {
+                    "description": "Get a user's most-played artists from Last.fm for a Plex music library.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_top_albums": {
+                    "description": "Get a user's most-played albums from Last.fm for an album-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_top_tracks": {
+                    "description": "Get a user's most-played tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_loved_tracks": {
+                    "description": "Get a user's loved tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-loved-tracks-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-loved-tracks-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_recent_tracks": {
+                    "description": "Get a user's recently played tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-recent-tracks-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-recent-tracks-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_tags": {
+                    "description": "Get a user's personally tagged artists, albums, or tracks from Last.fm for a Plex music collection.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/lastfm-user-tags-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/lastfm-user-tags-entry" } }
+                    ]
+                },
+
+                "lastfm_tag_charts": {
+                    "description": "Get Last.fm's top artists, albums, or tracks for a tag for a Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/last-tag-charts-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/last-tag-charts-entry" }] } }
+                    ]
+                },
+
+                "lastfm_chart_top_artists": {
+                    "description": "Get the global Last.fm top artists API chart for an artist-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 1000 },
+                        { "$ref": "#/definitions/lastfm-global-chart-entry" }
+                    ]
+                },
+
+                "lastfm_chart_top_tracks": {
+                    "description": "Get the global Last.fm top tracks API chart for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 1000 },
+                        { "$ref": "#/definitions/lastfm-global-chart-entry" }
                     ]
                 },
 

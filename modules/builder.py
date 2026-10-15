@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import time
@@ -12,7 +13,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -21,6 +22,15 @@ from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, 
 logger = util.logger
 
 mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
+lastfm_track_builders = ("lastfm_user_top_tracks", "lastfm_user_loved_tracks", "lastfm_user_recent_tracks", "lastfm_chart_top_tracks")
+
+
+def _lastfm_music_level(methods):
+    if "lastfm_user_top_albums" in methods:
+        return "album"
+    if any(method in methods for method in lastfm_track_builders):
+        return "track"
+    return "artist"
 
 
 def _service_lock_key(method):
@@ -37,6 +47,8 @@ def _service_lock_key(method):
         return "anilist"
     if "mal" in method:
         return "mal"
+    if "lastfm" in method:
+        return "lastfm"
     if "tvdb" in method:
         return "tvdb"
     if "imdb" in method:
@@ -110,6 +122,7 @@ all_builders = (
     + radarr.builders
     + sonarr.builders
     + lidarr.builders
+    + lastfm.builders
     + flicklist.builders
     + wetrakr.builders
 )
@@ -157,7 +170,7 @@ movie_only_builders = [
     "mojo_all_time",
     "mojo_never",
 ]
-music_only_builders = ["item_album_sorting", *lidarr.builders]
+music_only_builders = ["item_album_sorting", *lidarr.builders, *lastfm.builders]
 summary_details = [
     "summary",
     "tmdb_summary",
@@ -588,6 +601,7 @@ smart_url_invalid = (
     + sonarr_details
 )
 custom_sort_builders = [
+    *lastfm.builders,
     "plex_search",
     "plex_watchlist",
     "plex_pilots",
@@ -726,6 +740,13 @@ parts_collection_valid = (
         "text_file",
         "trakt_list",
         "trakt_list_details",
+        "lastfm_user_top_albums",
+        "lastfm_user_top_tracks",
+        "lastfm_user_loved_tracks",
+        "lastfm_user_recent_tracks",
+        "lastfm_user_tags",
+        "lastfm_tag_charts",
+        "lastfm_chart_top_tracks",
         "collection_filtering",
         "collection_mode",
         "label",
@@ -820,6 +841,7 @@ music_attributes = (
     + logo_details
     + square_art_details
     + lidarr.builders
+    + lastfm.builders
 )
 
 
@@ -1139,6 +1161,8 @@ class CollectionBuilder:
                     else:
                         options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
                     raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
+        elif self.library.is_music:
+            self.builder_level = _lastfm_music_level(methods)
         self.parts_collection = self.builder_level in plex.builder_level_options
 
         self.posters = {}
@@ -1241,6 +1265,9 @@ class CollectionBuilder:
         self.sonarr_details = {}
         self.missing_movies = []
         self.missing_shows = []
+        self.missing_artists = []
+        self.missing_albums = []
+        self.missing_tracks = []
         self.missing_parts = []
         self.added_to_radarr = []
         self.added_to_sonarr = []
@@ -1684,6 +1711,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Sonarr to be configured")
                 elif not self.library.Lidarr and "lidarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Lidarr to be configured")
+                elif not self.config.LastFM and method_name in lastfm.builders:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Last.fm to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
@@ -1744,6 +1773,8 @@ class CollectionBuilder:
                     self._sonarr(method_name, method_data)
                 elif method_name in lidarr.builders:
                     self._lidarr(method_name, method_data)
+                elif method_name in lastfm.builders:
+                    self._lastfm(method_name, method_data)
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
@@ -2220,6 +2251,60 @@ class CollectionBuilder:
             self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "lidarr_all":
             self.builders.append((method_name, True))
+
+    def _lastfm(self, method_name, method_data):
+        if method_name not in ("lastfm_user_tags", "lastfm_tag_charts"):
+            expected_level = "album" if method_name == "lastfm_user_top_albums" else "track" if method_name in lastfm_track_builders else "artist"
+            if self.builder_level != expected_level:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} only supports {expected_level}-level collections")
+        if method_name in ("lastfm_chart_top_artists", "lastfm_chart_top_tracks"):
+            if isinstance(method_data, dict):
+                methods = {str(k).lower(): k for k in method_data}
+                if set(methods) != {"limit"}:
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} only supports the limit option")
+                limit = util.parse(self.Type, "limit", method_data, methods=methods, parent=method_name, datatype="int", minimum=1, maximum=1000)
+            else:
+                limit = util.parse(self.Type, method_name, method_data, datatype="int", minimum=1, maximum=1000)
+            self.builders.append((method_name, {"limit": limit}))
+            return
+        entries = method_data if isinstance(method_data, list) else [method_data]
+        for entry in entries:
+            if isinstance(entry, str):
+                entry = {"tag": entry} if method_name == "lastfm_tag_charts" else {"username": entry}
+            if not isinstance(entry, dict):
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} must be a username or dictionary")
+            methods = {str(k).lower(): k for k in entry}
+            allowed = {"tag", "limit"} if method_name == "lastfm_tag_charts" else {"username", "limit"}
+            if method_name == "lastfm_user_tags":
+                allowed.add("tag")
+            elif method_name.startswith("lastfm_user_top_"):
+                allowed.add("period")
+            elif method_name == "lastfm_user_recent_tracks":
+                allowed.update(("from", "to"))
+            unknown = set(methods) - allowed
+            if unknown:
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} has unsupported options: {', '.join(sorted(unknown))}")
+            limit = util.parse(self.Type, "limit", entry, methods=methods, parent=method_name, datatype="int", default=50, minimum=1, maximum=1000)
+            value = {"limit": limit}
+            if method_name != "lastfm_tag_charts":
+                username = util.parse(self.Type, "username", entry, methods=methods, parent=method_name)
+                if not str(username).strip():
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} username is blank")
+                value["username"] = username
+            if method_name in ("lastfm_user_tags", "lastfm_tag_charts"):
+                tag = util.parse(self.Type, "tag", entry, methods=methods, parent=method_name)
+                if not str(tag).strip():
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} tag is blank")
+                value.update({"tag": tag, "level": self.builder_level})
+            if method_name.startswith("lastfm_user_top_"):
+                value["period"] = str(util.parse(self.Type, "period", entry, methods=methods, parent=method_name, default="overall", options=lastfm.periods)).lower()
+            elif method_name == "lastfm_user_recent_tracks":
+                for option in ("from", "to"):
+                    if option in methods:
+                        value[option] = util.parse(self.Type, option, entry, methods=methods, parent=method_name, datatype="int", minimum=1)
+                if "from" in value and "to" in value and value["from"] > value["to"]:
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} from must be before to")
+            self.builders.append((method_name, value))
 
     def _anidb(self, method_name, method_data):
         if method_name in ["anidb_id", "anidb_relation"]:
@@ -3844,8 +3929,12 @@ class CollectionBuilder:
     def gather_ids(self, method, value):
         expired = None
         list_key = None
+        cache_method = ""
         if self.config.Cache and self.details["cache_builders"]:
-            list_key, expired = self.config.Cache.query_list_cache(f"{self.library.type}:{method}", str(value), self.details["cache_builders"])
+            cache_method = f"{self.library.type}:{method}"
+            if method in lastfm.builders:
+                cache_method = f"{self.library.PlexServer.machineIdentifier}:{self.library.name}:{cache_method}"
+            list_key, expired = self.config.Cache.query_list_cache(cache_method, str(value), self.details["cache_builders"])
             if list_key and expired is False:
                 logger.info(f"Builder: {method} loaded from Cache")
                 return self.config.Cache.query_list_ids(list_key)
@@ -3942,13 +4031,17 @@ class CollectionBuilder:
                 ids = self.library.Sonarr.get_tvdb_ids(method, value)
             elif "lidarr" in method:
                 ids = self.library.Lidarr.get_mbid_ids(method, value)
+            elif method in lastfm.builders:
+                ids = self.config.LastFM.get_rating_keys(method, value, self.library)
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")
         if self.config.Cache and self.details["cache_builders"] and ids:
             if list_key:
                 self.config.Cache.delete_list_ids(list_key)
-            list_key = self.config.Cache.update_list_cache(f"{self.library.type}:{method}", str(value), expired, self.details["cache_builders"])
+            if not cache_method:
+                cache_method = f"{self.library.type}:{method}"
+            list_key = self.config.Cache.update_list_cache(cache_method, str(value), expired, self.details["cache_builders"])
             self.config.Cache.update_list_ids(list_key, ids)
         if getattr(self, "sync_to_mdb_list", None) and method in mdb_list_arr_types:
             if self.mdb_list_arr_ids is None:
@@ -4005,6 +4098,7 @@ class CollectionBuilder:
     def filter_and_save_items(self, ids):
         total_ids = len(ids)
         items = []
+        music_artist_matcher = None
         if len(ids) > 0:
             logger.debug("")
             logger.debug(f"{total_ids} IDs Found")
@@ -4017,6 +4111,12 @@ class CollectionBuilder:
                     rating_keys = []
                     if id_type == "ratingKey":
                         rating_keys = int(input_id)
+                    elif id_type in ("lastfm_missing", "lastfm_album_missing", "music_missing") and self.library.is_music:
+                        if self.do_missing:
+                            missing_item = json.loads(input_id)
+                            level = missing_item.get("level", "artist" if id_type == "lastfm_missing" else "album")
+                            self._record_missing_music(level, missing_item)
+                        continue
                     elif id_type == "imdb":
                         if input_id not in self.ignore_imdb_ids:
                             found = False
@@ -4088,19 +4188,15 @@ class CollectionBuilder:
                             logger.warning(f"{self.Type} Warning: Plex ID: {input_id} not found in the defined libraries")
                             continue
                     elif id_type == "mbid" and self.library.is_music:
-                        for pl_library in self.libraries:
-                            if not pl_library.is_music:
-                                continue
-                            for artist in pl_library.get_all(builder_level="artist"):
-                                if any(guid.id.lower() == f"mbid://{str(input_id).lower()}" for guid in getattr(artist, "guids", [])):
-                                    rating_keys = artist.ratingKey
-                                    break
-                            if rating_keys:
-                                break
-                        if not rating_keys:
-                            artist_name = self.library.Lidarr.get_artist_name(input_id)
-                            logger.info(f"{artist_name} (MBID: {input_id}) not found in library {self.library.name}")
+                        if music_artist_matcher is None:
+                            music_artist_matcher = plex.MusicMatcher(self.libraries, "artist")
+                        artist_name = self.library.Lidarr.get_artist_name(input_id)
+                        artist, reason = music_artist_matcher.match(mbid=input_id, artist=artist_name if artist_name != "Unknown Artist" else None)
+                        if artist is None:
+                            if self.do_missing:
+                                self._record_missing_music("artist", {"name": artist_name, "mbid": input_id, "reason": reason})
                             continue
+                        rating_keys = artist.ratingKey
                     elif id_type == "tmdb" and not self.parts_collection:
                         if not isinstance(input_id, list):
                             input_id = [input_id]
@@ -5063,6 +5159,38 @@ class CollectionBuilder:
                 for filter_key, filter_value in filter_list:
                     logger.info(f"Collection Filter {filter_key}: {filter_value}")
 
+    def _record_missing_music(self, level, item):
+        if level not in ("artist", "album", "track"):
+            raise ValueError(f"Unsupported music level: {level}")
+        missing = getattr(self, f"missing_{level}s")
+        if item not in missing:
+            missing.append(item)
+
+    def _report_missing_music(self):
+        for level, label in (("artist", "Artist"), ("album", "Album"), ("track", "Track")):
+            missing = getattr(self, f"missing_{level}s", [])
+            if not missing:
+                continue
+            title_keys = {"artist": ("name",), "album": ("artist", "name"), "track": ("artist", "album", "name")}[level]
+            log_title_keys = ("artist", "name") if level == "track" else title_keys
+            if self.details["show_missing"] is True:
+                logger.info("")
+                logger.separator(f"Missing {label}s from Library: {self.library.name}", space=False, border=False)
+                logger.info("")
+            report_items = []
+            for index, item in enumerate(missing, 1):
+                name = " - ".join(str(item[key]) for key in title_keys if item.get(key))
+                mbid = item.get("mbid") or None
+                report_items.append((name, mbid))
+                if self.details["show_missing"] is True:
+                    reason = " [Ambiguous Plex match]" if item.get("reason") == "ambiguous" else ""
+                    log_name = " - ".join(str(item[key]) for key in log_title_keys if item.get(key))
+                    logger.info(f"{index}/{len(missing)} {self.name} {self.Type} | ? | {log_name}{reason}")
+            logger.info("")
+            logger.info(f"{len(missing)} {label}{'s' if len(missing) != 1 else ''} Missing")
+            if self.do_report:
+                self.library.add_missing(self.name, report_items, False, is_music=True if level == "artist" else level)
+
     def run_missing(self):
         added_to_radarr = 0
         added_to_sonarr = 0
@@ -5205,6 +5333,8 @@ class CollectionBuilder:
                     logger.info(f"{self.name} {self.Type} | ? | {missing}")
             if self.do_report:
                 self.library.add_missing(self.name, self.missing_parts, False)
+        if self.library.is_music:
+            self._report_missing_music()
         return added_to_radarr, added_to_sonarr
 
     @timings.timed("load_collection_items")

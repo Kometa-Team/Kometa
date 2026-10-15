@@ -425,6 +425,44 @@ class TestRatingKeyIsIgnored:
 
 
 class TestFilterAndSaveItems:
+    def test_lidarr_artist_uses_unique_plex_title_when_mbid_differs(self, monkeypatch):
+        class FakeArtist:
+            def __init__(self, rating_key, title):
+                self.ratingKey = rating_key
+                self.title = title
+                self.guids = []
+
+        artist = FakeArtist(101, "Alannah Myles")
+        library = SimpleNamespace(
+            name="Music",
+            is_music=True,
+            is_movie=False,
+            Lidarr=SimpleNamespace(get_artist_name=lambda mbid: "Alannah Myles"),
+            get_all=MagicMock(return_value=[artist]),
+            fetch_item=MagicMock(return_value=artist),
+        )
+        monkeypatch.setattr(builder_module, "Artist", FakeArtist)
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        builder = make_builder(library=library, libraries=[library], builder_level="artist")
+
+        builder.filter_and_save_items([("6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "mbid")])
+
+        assert builder.found_items == [artist]
+
+    def test_lidarr_unmatched_artist_uses_shared_missing_music_path(self, monkeypatch):
+        library = SimpleNamespace(
+            name="Music",
+            is_music=True,
+            is_movie=False,
+            Lidarr=SimpleNamespace(get_artist_name=lambda mbid: "Alannah Myles"),
+            get_all=MagicMock(return_value=[]),
+        )
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        builder = make_builder(library=library, libraries=[library], builder_level="artist", missing_artists=[])
+
+        assert builder.filter_and_save_items([("6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "mbid")]) is None
+        assert builder.missing_artists == [{"name": "Alannah Myles", "mbid": "6bcf8d06-9648-456b-970f-ae9ba1c9ae95", "reason": "not found"}]
+
     @staticmethod
     def _tmdb_filter_builder(monkeypatch, tmdb_error):
         class FakeMovie:
@@ -956,7 +994,7 @@ class TestTvdbOutageResilience:
         logger = FakeLogger()
         monkeypatch.setattr(builder_module, "logger", logger)
         get_tvdb_obj = MagicMock(side_effect=builder_module.tvdb.CircuitOpen("TVDb circuit open"))
-        library = SimpleNamespace(is_movie=False, is_show=True, Sonarr=None)
+        library = SimpleNamespace(is_movie=False, is_show=True, is_music=False, Sonarr=None)
         builder = make_builder(
             library=library,
             config=SimpleNamespace(TVDb=SimpleNamespace(get_tvdb_obj=get_tvdb_obj)),
