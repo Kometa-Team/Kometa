@@ -70,6 +70,16 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[Listrr](../listrr/overview)** builders grab every movie or show in a Listrr list.
+
+    [:octicons-home-16: View Builder](../listrr/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-list-ordered-16: Listrr List](../listrr/list) - Gets every movie or show in a Listrr list.
+
+!!! builder
+
     **[WeTrakr](../wetrakr/overview)** builders grab lists and personal data from your configured WeTrakr account.
 
     [:octicons-home-16: View Builder](../wetrakr/overview){ .md-button .md-button--primary }

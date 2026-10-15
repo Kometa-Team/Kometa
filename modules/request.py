@@ -233,6 +233,10 @@ class Requests:
     def get(self, url, json=None, headers=None, params=None, header=None, language=None):
         return _raise_for_rate_limit(self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT))
 
+    def get_once(self, url, json=None, headers=None, params=None, header=None, language=None):
+        """One request that returns HTTP 429 instead of retrying it. Callers apply their own Retry-After cap."""
+        return self.session.get(url, json=json, headers=get_header(headers, header, language), params=params, timeout=DEFAULT_TIMEOUT)
+
     @_request_retry()
     def head(self, url, headers=None, header=None, language=None):
         return _raise_for_rate_limit(self.session.head(url, headers=get_header(headers, header, language), timeout=DEFAULT_TIMEOUT, allow_redirects=True))

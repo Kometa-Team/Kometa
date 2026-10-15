@@ -157,12 +157,13 @@ def make_config(
     config_yaml: str = BASE_CONFIG,
     attrs: dict | None = None,
     secrets: dict | None = None,
+    requests=None,
 ) -> ConfigFile:
     """Build a ConfigFile from *config_yaml* with all dependencies mocked."""
     config_path = tmp_path / "config.yml"
     config_path.write_text(config_yaml, encoding="utf-8")
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
-    return ConfigFile(FakeRequests(), str(tmp_path), merged_attrs, secrets or {})
+    return ConfigFile(requests or FakeRequests(), str(tmp_path), merged_attrs, secrets or {})
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -714,6 +715,63 @@ def test_library_item_override_inherits_collections_only_for_mappings(tmp_path, 
     config = make_config(tmp_path, config_yaml=config_yaml)
     assert config.libraries[0].asset_directory == [str(roots["local"])]
     assert config.libraries[0].collection_asset_directory == ([str(roots["collections"])] if local_grouped else [])
+
+
+@pytest.mark.parametrize("api_key", ["", "   ", "\t"])
+def test_blank_listrr_api_key_stays_disabled_without_a_request(tmp_path, api_key):
+    class RecordingRequests(FakeRequests):
+        def __init__(self):
+            super().__init__()
+            self.urls = []
+
+        def get(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            self.urls.append(url)
+            return super().get(url)
+
+    requests = RecordingRequests()
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + f"\nlistrr:\n  api_key: '{api_key}'\n", requests=requests)
+    assert config.Listrr is None
+    assert requests.urls == []
+    assert any("api_key is blank" in message for message in config_module.logger.warning_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
+
+
+def test_listrr_api_key_whitespace_is_stripped_before_connect(tmp_path, monkeypatch):
+    captured = {}
+
+    class FakeListrr:
+        def __init__(self, requests, api_key):
+            captured["api_key"] = api_key
+
+        def test_connection(self):
+            captured["tested"] = True
+
+    monkeypatch.setattr(config_module, "Listrr", FakeListrr)
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  api_key: '  abc  '\n")
+    assert captured == {"api_key": "abc", "tested": True}
+    assert config.Listrr is not None
+
+
+def test_listrr_connection_error_disables_listrr_without_aborting_config(tmp_path):
+    from requests.exceptions import ConnectionError
+
+    class DownRequests(FakeRequests):
+        def get(self, url, headers=None, **kwargs):
+            if "listrr.pro" in str(url):
+                raise ConnectionError("timed out")
+            return super().get(url)
+
+        def get_once(self, url, headers=None, **kwargs):
+            return self.get(url, headers=headers)
+
+    config = make_config(tmp_path, config_yaml=BASE_CONFIG + "\nlistrr:\n  api_key: real-key\n", requests=DownRequests())
+    assert config.Listrr is None
+    assert any("Request failed" in message for message in config_module.logger.error_messages)
+    assert any("Listrr Connection Failed" in message for message in config_module.logger.info_messages)
 
 
 @pytest.mark.parametrize("grouped", [False, True])

@@ -13,7 +13,37 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack, ytmusic
+from modules import (
+    anidb,
+    anilist,
+    flicklist,
+    floppy,
+    icheckmovies,
+    imdb,
+    lastfm,
+    letterboxd,
+    lidarr,
+    listrr,
+    mal,
+    mdblist,
+    mojo,
+    plex,
+    radarr,
+    serializd,
+    simkl,
+    sonarr,
+    stevenlu,
+    tautulli,
+    textfile,
+    timings,
+    tmdb,
+    tracearr,
+    tvdb,
+    util,
+    wetrakr,
+    yamtrack,
+    ytmusic,
+)
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -87,6 +117,8 @@ def _service_lock_key(method):
         return "radarr"
     if "sonarr" in method:
         return "sonarr"
+    if "listrr" in method:
+        return "listrr"
     return "other"
 
 
@@ -131,6 +163,7 @@ all_builders = (
     + lastfm.builders
     + ytmusic.builders
     + flicklist.builders
+    + listrr.builders
     + wetrakr.builders
 )
 show_only_builders = [
@@ -711,6 +744,8 @@ custom_sort_builders = [
     "simkl_trending",
     "simkl_dvd",
     "flicklist_list",
+    "listrr_list",
+    "listrr_list_details",
     "flicklist_user_lists",
     "flicklist_watchlist",
     "flicklist_favorites",
@@ -1713,6 +1748,8 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: '{method_final}' attribute not compatible with playlists")
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
+                elif self.config.Listrr is None and "listrr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Listrr to be configured")
                 elif not self.config.WeTrakr and "wetrakr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires WeTrakr to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
@@ -1824,6 +1861,8 @@ class CollectionBuilder:
                     "sync_missing_to_flicklist_list",
                 ]:
                     self._flicklist(method_name, method_data)
+                elif method_name in listrr.builders:
+                    self._listrr(method_name, method_data)
                 elif method_name in wetrakr.builders or method_name in [
                     "sync_to_wetrakr_list",
                     "sync_missing_to_wetrakr_list",
@@ -3845,6 +3884,19 @@ class CollectionBuilder:
         elif method_name == "sync_missing_to_flicklist_list":
             self.sync_missing_to_flicklist_list = util.parse(self.Type, method_name, method_data, datatype="bool", default=False)
 
+    def _listrr(self, method_name, method_data):
+        if self.config.Listrr is None:
+            raise BuilderValidationError(f"{self.Type} Error: listrr attribute not found in config")
+        listrr_lists = self.config.Listrr.validate_lists(self.Type, method_data)
+        self.builders.append(("listrr_list", listrr_lists))
+        if method_name == "listrr_list_details":
+            try:
+                description = self.config.Listrr.list_description(listrr_lists[0]["list_id"])
+                if description:
+                    self.summaries[method_name] = description
+            except Failed as e:
+                logger.error(f"Listrr Error: List description not found: {e}")
+
     def _wetrakr(self, method_name, method_data):
         if self.config.WeTrakr is None:
             raise BuilderValidationError(f"{self.Type} Error: wetrakr attribute not found in config")
@@ -4078,6 +4130,8 @@ class CollectionBuilder:
             elif "flicklist" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
                 ids = self.config.FlickList.get_flicklist_ids(method, value, self.library.is_movie if not self.playlist else None)
+            elif "listrr" in method:
+                ids = self.config.Listrr.get_listrr_ids(method, value, self.library.is_movie if not self.playlist else None)
             elif "wetrakr" in method:
                 # is_movie=None = playlist mode; must return BOTH movie and show entries.
                 ids = self.config.WeTrakr.get_wetrakr_ids(method, value, self.library.is_movie if not self.playlist else None)
@@ -5801,6 +5855,8 @@ class CollectionBuilder:
             summary = ("yamtrack_list_details", self.summaries["yamtrack_list_details"])
         elif "flicklist_list_details" in self.summaries:
             summary = ("flicklist_list_details", self.summaries["flicklist_list_details"])
+        elif "listrr_list_details" in self.summaries:
+            summary = ("listrr_list_details", self.summaries["listrr_list_details"])
         elif "wetrakr_list_details" in self.summaries:
             summary = ("wetrakr_list_details", self.summaries["wetrakr_list_details"])
         elif "floppy_list_details" in self.summaries:

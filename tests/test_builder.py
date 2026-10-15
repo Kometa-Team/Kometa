@@ -16,7 +16,7 @@ from plexapi.exceptions import NotFound
 
 import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid, playlist_attributes
-from modules.util import Failed
+from modules.util import Failed, ServiceError
 from tests.conftest import FakeLogger
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1746,6 +1746,100 @@ class TestDispatchTables:
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+        assert "listrr_list" in all_builders
+        assert "listrr_list_details" in all_builders
+        assert "listrr_list" in custom_sort_builders
+
+
+@pytest.mark.parametrize("method", ["listrr_list", "listrr_list_details"])
+def test_missing_listrr_config_uses_the_service_configured_message(method, monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+
+    def get_collection(name, force_search=False):
+        raise Failed("not found")
+
+    def split(text):
+        lowered = str(text).lower()
+        return lowered, "", lowered
+
+    library = SimpleNamespace(
+        name="Movies",
+        collections=[],
+        is_show=False,
+        is_music=False,
+        is_movie=True,
+        type="Movie",
+        Plex=SimpleNamespace(language="en"),
+        show_filtered=False,
+        show_unfiltered=False,
+        show_options=False,
+        show_missing=False,
+        save_report=False,
+        missing_only_released=False,
+        only_filter_missing=False,
+        asset_folders=False,
+        create_asset_folders=False,
+        delete_below_minimum=False,
+        delete_not_scheduled=False,
+        changes_webhooks=None,
+        mass_collection_mode=None,
+        minimum_items=1,
+        ignore_ids=[],
+        ignore_imdb_ids=[],
+        sync_mode="append",
+        default_collection_order=None,
+        asset_directory=[],
+        collection_asset_directory=[],
+        get_collection=get_collection,
+        split=split,
+    )
+    metadata = SimpleNamespace(language="en", asset_directory=None, collection_asset_directory=None, asset_directory_is_mapping=False)
+    config = SimpleNamespace(Listrr=None, FlickList=None)
+
+    with pytest.raises(ServiceError, match=rf"Collection Error: '{method}' requires Listrr to be configured"):
+        CollectionBuilder(config, metadata, "Listrr Movies", {method: "671527158e1c7df162d0fe69"}, library=library)
+
+
+def test_listrr_lists_register_as_one_builder_and_keep_the_first_description():
+    listrr = MagicMock()
+    lists = [
+        {"list_id": "671527158e1c7df162d0fe69", "sort_by": "name.asc", "limit": 0},
+        {"list_id": "67fb123c6f5a448f92e7ee03", "sort_by": "release.desc", "limit": 10},
+    ]
+    listrr.validate_lists.return_value = lists
+    listrr.list_description.return_value = "First list"
+    builder = make_builder(config=SimpleNamespace(Listrr=listrr), summaries={})
+
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", {"url": "https://listrr.pro/Lists/ShowShowList/67fb123c6f5a448f92e7ee03"}])
+
+    assert builder.builders == [("listrr_list", lists)]
+    assert builder.summaries["listrr_list_details"] == "First list"
+    listrr.list_description.assert_called_once_with("671527158e1c7df162d0fe69")
+
+
+def test_listrr_description_failure_keeps_the_single_builder(monkeypatch):
+    from requests.exceptions import ConnectionError
+
+    from modules.listrr import Listrr
+
+    logger = FakeLogger()
+    monkeypatch.setattr(builder_module, "logger", logger)
+
+    class Down:
+        def get(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+        def get_once(self, url, headers=None, **kwargs):
+            raise ConnectionError("timed out")
+
+    builder = make_builder(config=SimpleNamespace(Listrr=Listrr(Down(), "test-key")), summaries={})
+    builder._listrr("listrr_list_details", ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"])
+
+    assert len(builder.builders) == 1
+    assert builder.builders[0][0] == "listrr_list"
+    assert [entry["list_id"] for entry in builder.builders[0][1]] == ["671527158e1c7df162d0fe69", "67fb123c6f5a448f92e7ee03"]
+    assert builder.summaries == {}
+    assert any("List description not found" in message for message in logger.error_messages)
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1779,6 +1873,7 @@ class TestServiceLockKey:
             ("floppy_tracked", "floppy"),
             ("radarr_taglist", "radarr"),
             ("sonarr_taglist", "sonarr"),
+            ("listrr_list", "listrr"),
         ],
     )
     def test_known_prefixes_map_to_expected_bucket(self, method, expected):

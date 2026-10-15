@@ -287,6 +287,22 @@ class TestRetryPolicy:
         assert wait_for_retry_after_header.parse(retry_after, now=now) == 45
 
 
+class TestGetOnce:
+    def test_returns_429_without_retrying_and_keeps_the_timeout(self):
+        import modules.request as request_module
+        from modules.request import Requests
+
+        limited = SimpleNamespace(status_code=429, headers={"Retry-After": "121"})
+        req = make_requests()
+        req.session = RecordingSession(response=limited)
+
+        assert req.get_once("https://listrr.pro/api/List/My/1", headers={"Authorization": "APIKEY secret"}) is limited
+        assert len(req.session.calls) == 1
+        assert req.session.calls[0][2]["timeout"] == request_module.DEFAULT_TIMEOUT
+        assert req.session.calls[0][2]["headers"]["Authorization"] == "APIKEY secret"
+        assert not hasattr(Requests.get_once, "retry")
+
+
 class TestGetStream:
     def test_progress_logging_is_throttled(self, monkeypatch, tmp_path):
         import modules.request as request_module
