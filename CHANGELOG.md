@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
 - Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
