@@ -1709,7 +1709,7 @@ class CollectionBuilder:
                 elif not self.config.FlickList and "flicklist" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
                 elif self.config.Listrr is None and "listrr" in method_name:
-                    raise ServiceError(f"{self.Type} Error: '{method_final}' listrr attribute is missing")
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Listrr to be configured")
                 elif not self.config.WeTrakr and "wetrakr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires WeTrakr to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
