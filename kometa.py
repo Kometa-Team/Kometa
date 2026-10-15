@@ -418,6 +418,10 @@ def should_sync_collection(builder):
     return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
 
 
+def missing_item_counts(builder):
+    return {level: len(getattr(builder, f"missing_{level}", [])) for level in ("movies", "shows", "artists", "albums", "tracks")}
+
+
 def collection_count_after_run(beginning_count, items_added, items_removed):
     return max(0, items_added + beginning_count - items_removed)
 
@@ -1204,9 +1208,10 @@ def run_collection(config, library, metadata, requested_collections):
                     library.stats["removed"] += items_removed
                     library.status[str(mapping_name)]["removed"] = items_removed
 
-                if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                missing_counts = missing_item_counts(builder)
+                if builder.do_missing and any(missing_counts.values()):
                     logger.info("")
-                    logger.info(f"Processing missing items: {len(builder.missing_movies)} movies and/or {len(builder.missing_shows)} missing shows")
+                    logger.info(f"Processing missing items: {', '.join(f'{count} {level}' for level, count in missing_counts.items())}")
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
                     library.status[str(mapping_name)]["radarr"] += radarr_add
@@ -1452,7 +1457,7 @@ def run_playlists(config):
                         delete_status = f"Deleted; {delete_status}"
                     status[mapping_name]["status"] = delete_status
 
-                if builder.do_missing and (len(builder.missing_movies) > 0 or len(builder.missing_shows) > 0):
+                if builder.do_missing and any(missing_item_counts(builder).values()):
                     builder.is_playlist = True
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add

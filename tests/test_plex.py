@@ -20,7 +20,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.plex import Plex, TracedPlexServer
+from modules.plex import MusicMatcher, Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
 
@@ -2135,3 +2135,88 @@ def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch,
     assert constructor.call_args_list[0].kwargs["configured_names_only"] is True
     assert library.collection_names == ["Test"]
     assert library.collections == ["Test"]
+
+
+def music_item(rating_key, title, artist=None, album=None, mbid=None):
+    item = SimpleNamespace(ratingKey=rating_key, title=title, guids=[SimpleNamespace(id=f"mbid://{mbid}")] if mbid else [])
+    if artist:
+        item.parentTitle = artist
+    if album:
+        item.grandparentTitle = artist
+        item.parentTitle = album
+    return item
+
+
+def test_music_artist_id_then_unique_title_fallback_and_ambiguity():
+    artists = [music_item(1, "Beyoncé", mbid="6bcf8d06-9648-456b-970f-ae9ba1c9ae95"), music_item(2, "Beyoncé & Shakira"), music_item(3, "Duplicate"), music_item(4, "Duplicate")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=artists))
+    matcher = MusicMatcher([library], "artist")
+
+    assert matcher.match(mbid="6BCF8D06-9648-456B-970F-AE9BA1C9AE95", artist="Other name") == (artists[0], None)
+    assert matcher.match(mbid="18dd525e-7efb-4a2e-b2cb-f6199acaeae2", artist="BEYONCÉ & SHAKIRA") == (artists[1], None)
+    assert matcher.match(artist="Duplicate") == (None, "ambiguous")
+    assert matcher.match(artist="Beyoncé & Shakira feat. Someone") == (None, "not found")
+
+
+def test_music_album_fallback_requires_unique_artist_and_title():
+    albums = [music_item(1, "Greatest Hits", artist="ABBA"), music_item(2, "Greatest Hits", artist="Queen"), music_item(3, "Deluxe", artist="ABBA"), music_item(4, "Deluxe", artist="ABBA")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=albums))
+    matcher = MusicMatcher([library], "album")
+
+    assert matcher.match(mbid="68c46898-e359-4cad-9d35-1576b66919d4", artist="abba", album="GREATEST HITS") == (albums[0], None)
+    assert matcher.match(artist="Queen", album="Greatest Hits") == (albums[1], None)
+    assert matcher.match(artist="ABBA", album="Deluxe") == (None, "ambiguous")
+
+
+def test_music_ambiguous_id_can_be_resolved_by_unique_titles():
+    shared_mbid = "e4be8595-a0f9-4f7e-acf1-23ffef126a23"
+    albums = [music_item(1, "Original", artist="Artist", mbid=shared_mbid), music_item(2, "Remaster", artist="Artist", mbid=shared_mbid)]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=albums))
+    matcher = MusicMatcher([library], "album")
+
+    assert matcher.match(mbid=shared_mbid, artist="Artist", album="Original") == (albums[0], None)
+    assert matcher.match(mbid=shared_mbid, artist="Artist", album="Unknown") == (None, "ambiguous")
+
+
+def test_music_track_fallback_requires_artist_album_and_track():
+    tracks = [music_item(1, "Black Velvet", artist="Alannah Myles", album="Alannah Myles"), music_item(2, "Black Velvet", artist="Alannah Myles", album="Greatest Hits")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match(mbid="be191a11-c480-4240-8baa-6c4be0f8d400", artist="ALANNAH MYLES", album="Alannah Myles", track="black velvet") == (tracks[0], None)
+    assert matcher.match(artist="Alannah Myles", track="Black Velvet") == (None, "not found")
+    assert matcher.match(artist="Alannah Myles", album="Greatest Hits", track="Black Velvet") == (tracks[1], None)
+
+
+def test_music_track_duration_requires_one_close_match():
+    tracks = [music_item(1, "Black Velvet", artist="Alannah Myles", album="Alannah Myles"), music_item(2, "Black Velvet", artist="Alannah Myles", album="Greatest Hits")]
+    tracks[0].duration = 287477
+    tracks[1].duration = 305000
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("ALANNAH MYLES", "Black Velvet", 288000) == (tracks[0], None)
+    assert matcher.match_track_duration("Alannah Myles", "Black Velvet", 0) == (None, "not found")
+    tracks[1].duration = 288500
+    assert matcher.match_track_duration("Alannah Myles", "Black Velvet", 288000) == (None, "ambiguous")
+
+
+def test_music_track_matches_unicode_and_ascii_artist_hyphens():
+    track = music_item(11526, "Crying at the Discotheque", artist="Sophie Ellis‐Bextor", album="Crying at the Discotheque")
+    track.duration = 231444
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=[track]))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("Sophie Ellis-Bextor", "Crying at the Discotheque", 231000) == (track, None)
+    assert matcher.match(artist="Sophie Ellis-Bextor", album="Crying at the Discotheque", track="Crying at the Discotheque") == (track, None)
+
+
+def test_music_dash_normalization_still_requires_unique_match():
+    tracks = [music_item(1, "Crying at the Discotheque", artist="Sophie Ellis‐Bextor", album="Crying at the Discotheque"), music_item(2, "Crying at the Discotheque", artist="Sophie Ellis-Bextor", album="Crying at the Discotheque")]
+    for track in tracks:
+        track.duration = 231444
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("Sophie Ellis-Bextor", "Crying at the Discotheque", 231000) == (None, "ambiguous")
+    assert matcher.match(artist="Sophie Ellis-Bextor", album="Crying at the Discotheque", track="Crying at the Discotheque") == (None, "ambiguous")

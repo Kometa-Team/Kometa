@@ -661,6 +661,19 @@ wheels = [
 ]
 
 [[package]]
+name = "httpcore2"
+version = "2.13.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "h11" },
+    { name = "truststore" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cb/f3/1db7aa2bc2524062192bb0e0323969492d1883152a232fe36eea65f4e35c/httpcore2-2.13.1.tar.gz", hash = "sha256:e0aa977abe17e69a3b820a24542a6fa88702676d83880b8d194dcd18408e5103", size = 68071, upload-time = "2026-09-23T07:47:22.372Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/09/ba/a4568248771ce81957bfb7cc600264a40fbcda092391ee1c415c50be4bea/httpcore2-2.13.1-py3-none-any.whl", hash = "sha256:e1e05d4f25f7d7d496bfb96748f6f4b67657b03da069b3a68c36069f3db73d0a", size = 83423, upload-time = "2026-09-23T07:47:19.365Z" },
+]
+
+[[package]]
 name = "httpx"
 version = "0.28.1"
 source = { registry = "https://pypi.org/simple" }
@@ -673,6 +686,32 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/b1/df/48c586a5fe32a0f01324ee087459e112ebb7224f646c0b5023f5e79e9956/httpx-0.28.1.tar.gz", hash = "sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc", size = 141406, upload-time = "2024-12-06T15:37:23.222Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2a/39/e50c7c3a983047577ee07d2a9e53faf5a69493943ec3f6a384bdc792deb2/httpx-0.28.1-py3-none-any.whl", hash = "sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad", size = 73517, upload-time = "2024-12-06T15:37:21.509Z" },
+]
+
+[[package]]
+name = "httpx2"
+version = "2.13.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "anyio", marker = "sys_platform != 'emscripten'" },
+    { name = "httpcore2", marker = "sys_platform != 'emscripten'" },
+    { name = "httpx2-jsfetch", marker = "sys_platform == 'emscripten'" },
+    { name = "idna" },
+    { name = "truststore", marker = "sys_platform != 'emscripten'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d5/44/474bef2a0e9d90f1715d32cb98b0738695ca17ba324095fb2497ed7fbd59/httpx2-2.13.1.tar.gz", hash = "sha256:e48744a19e3af5ee48313d0ce5fe941d5422fae5705ea922a4aabf94d7800dfa", size = 100405, upload-time = "2026-09-23T07:47:23.052Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/9c/6fe8931fd9f381042a9e4c7d5a7b4cbf7016b252bec0c99a49fce42c3326/httpx2-2.13.1-py3-none-any.whl", hash = "sha256:6dff50fabc270ee5fd25d845d0b078ed20564579744d6d962850975996d2f9a4", size = 95597, upload-time = "2026-09-23T07:47:20.995Z" },
+]
+
+[[package]]
+name = "httpx2-jsfetch"
+version = "1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/cd/c4/0e5636363151a2a1795e0a77617168b9ca438e1748ec05fc9b5687f93d64/httpx2_jsfetch-1.0.tar.gz", hash = "sha256:70a0e3eabfef7cce5ad9c629f7d01ca05e418f586646f4ddf14782e4c1454c60", size = 6872, upload-time = "2026-08-07T00:13:07.492Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/43/832f631d32e4f1211caa2ba368317739fe71f0b8530e4c9d15dc454bac2a/httpx2_jsfetch-1.0-py3-none-any.whl", hash = "sha256:cb916b707601e69a07721aabc8f3f6659be3a6893bc1ff5c6f9e02241df2da32", size = 6382, upload-time = "2026-08-07T00:13:06.567Z" },
 ]
 
 [[package]]
@@ -791,6 +830,7 @@ dependencies = [
     { name = "plexapi" },
     { name = "psutil" },
     { name = "pyinstrument" },
+    { name = "pylast" },
     { name = "python-dateutil" },
     { name = "python-dotenv" },
     { name = "pywin32", marker = "sys_platform == 'win32'" },
@@ -824,6 +864,7 @@ dev = [
     { name = "plexapi" },
     { name = "prek" },
     { name = "psutil" },
+    { name = "pylast" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-cov" },
@@ -878,6 +919,7 @@ requires-dist = [
     { name = "plexapi", specifier = "==4.18.3" },
     { name = "psutil", specifier = "==7.2.2" },
     { name = "pyinstrument", specifier = "==5.1.3" },
+    { name = "pylast", specifier = "==7.2.0" },
     { name = "python-dateutil", specifier = "==2.9.0.post0" },
     { name = "python-dotenv", specifier = "==1.2.4" },
     { name = "pywin32", marker = "sys_platform == 'win32'", specifier = "==312" },
@@ -909,6 +951,7 @@ dev = [
     { name = "plexapi", specifier = "==4.18.3" },
     { name = "prek", specifier = "==0.5.5" },
     { name = "psutil", specifier = "==7.2.2" },
+    { name = "pylast", specifier = "==7.2.0" },
     { name = "pyright", specifier = "==1.1.414" },
     { name = "pytest", specifier = "==9.1.1" },
     { name = "pytest-cov", specifier = ">=7.1.0" },
@@ -1832,6 +1875,18 @@ wheels = [
 ]
 
 [[package]]
+name = "pylast"
+version = "7.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "httpx2" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a6/43/eea015416b641eaba05f5c8a11cecc4a13741ed33915079b24b124630a9a/pylast-7.2.0.tar.gz", hash = "sha256:6b99cdbb556a5bdd2f5711bb42551ef14be2e685f1c24d015f4592b485705ba9", size = 438013, upload-time = "2026-09-29T16:12:33.869Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/2d/0d/e2ce2cb0922251f417c6d80ad69979c3bbf0ae1f9b7af05aaa4f95275022/pylast-7.2.0-py3-none-any.whl", hash = "sha256:40a716d100e61f727205a880968ba22fde48943f5dc82bd534eeab085906b2ec", size = 26873, upload-time = "2026-09-29T16:12:32.109Z" },
+]
+
+[[package]]
 name = "pymdown-extensions"
 version = "12.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2491,6 +2546,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/7a/68/8e6d7475c680a14ad91aaa27144233268f53e5cbff2e5d6510fb84238b55/tmdbapis-1.3.1.tar.gz", hash = "sha256:e4d3b89c36acfe4749a449dad11fb6264a414ba8146b589a636353b0a2429f7e", size = 63674, upload-time = "2026-10-11T19:12:10.238Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/cc/d6adf1d4082d06597f32f297684e558003c119a2f7df59def8e9c9f0a9d7/tmdbapis-1.3.1-py3-none-any.whl", hash = "sha256:4bc5a13630680ab227027b3fb04a987641650f82ff137d3fa026cb21788dca83", size = 58427, upload-time = "2026-10-11T19:12:09.132Z" },
+]
+
+[[package]]
+name = "truststore"
+version = "0.10.5"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/9f/c5201d42a484c061e528825fc8e2d565f5abd50a4ced6fb7d29c4ec99b2b/truststore-0.10.5.tar.gz", hash = "sha256:30d36967ccaded5cbb38d602c433f53600036c79d502f4533a49b60a03bbefcd", size = 28091, upload-time = "2026-10-12T22:27:31.808Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/51/e9/3a7820be2bb0fe53b6bc9c3be26d3d1158004e4c3ab953aa6840b955b1e9/truststore-0.10.5-py3-none-any.whl", hash = "sha256:9aaaedaefaf06d8b206278cf8b5012bc897f485a874503501e12d776df78951c", size = 19017, upload-time = "2026-10-12T22:27:30.377Z" },
 ]
 
 [[package]]

@@ -46,6 +46,9 @@
     "lidarr": {
       "$ref": "#/definitions/lidarr-api"
     },
+    "lastfm": {
+      "$ref": "#/definitions/lastfm-api"
+    },
     "settings": {
       "$ref": "#/definitions/settings"
     },
@@ -1087,6 +1090,14 @@
       },
       "required": [],
       "title": "omdb"
+    },
+    "lastfm-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apikey": {"type": ["string", "null"]}
+      },
+      "title": "lastfm"
     },
     "mdblist-api": {
       "type": "object",
@@ -4673,7 +4684,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|lastfm|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {

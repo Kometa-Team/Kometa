@@ -17,6 +17,7 @@ from modules.github import GitHub
 from modules.gotify import Gotify
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
+from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
 from modules.mal import MyAnimeList
@@ -1124,6 +1125,19 @@ class ConfigFile:
                 logger.info(f"OMDb Connection {'Failed' if self.OMDb is None else 'Successful'}")
             else:
                 logger.info("omdb attribute not found")
+
+            logger.separator()
+
+            self.LastFM = None
+            if "lastfm" in self.data:
+                logger.info("Connecting to Last.fm...")
+                try:
+                    self.LastFM = LastFM(check_for_attribute(self.data, "apikey", parent="lastfm", throw=True, save=False))
+                except Failed as e:
+                    logger.error(e)
+                logger.info(f"Last.fm Connection {'Failed' if self.LastFM is None else 'Successful'}")
+            else:
+                logger.info("lastfm attribute not found")
 
             logger.separator()
 
