@@ -23,6 +23,24 @@
             }
         },
 
+        "ytmusic-list-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["playlist"],
+            "properties": {
+                "playlist": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "ytmusic-top-artists-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "country": { "type": "string" }
+            }
+        },
+
         "lastfm-user-loved-tracks-entry": {
             "type": "object",
             "additionalProperties": false,
@@ -112,6 +130,26 @@
                         }
                     ]
                 },
+
+                "ytmusic_list": {
+                    "description": "YouTube Music playlist URL, ID, or entry object for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/ytmusic-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/ytmusic-list-entry" }] } }
+                    ]
+                },
+
+                "ytmusic_top_artists": {
+                    "description": "YouTube Music top artists chart for an artist-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string" },
+                        { "$ref": "#/definitions/ytmusic-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "boolean" }, { "type": "string" }, { "$ref": "#/definitions/ytmusic-top-artists-entry" }] } }
+                    ]
+                },
+
                 "variables": { "type": "object", "additionalProperties": true },
 
                 "blank_collection": { "type": "boolean", "description": "Create the collection with no builders and no items." },

@@ -13,7 +13,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack
+from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack, ytmusic
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -23,14 +23,18 @@ logger = util.logger
 
 mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
 lastfm_track_builders = ("lastfm_user_top_tracks", "lastfm_user_loved_tracks", "lastfm_user_recent_tracks", "lastfm_chart_top_tracks")
+ytmusic_track_builders = ("ytmusic_list",)
 
 
-def _lastfm_music_level(methods):
+def _default_music_level(methods):
     if "lastfm_user_top_albums" in methods:
         return "album"
-    if any(method in methods for method in lastfm_track_builders):
+    if any(method in methods for method in (*lastfm_track_builders, *ytmusic_track_builders)):
         return "track"
     return "artist"
+
+
+_lastfm_music_level = _default_music_level
 
 
 def _service_lock_key(method):
@@ -49,6 +53,8 @@ def _service_lock_key(method):
         return "mal"
     if "lastfm" in method:
         return "lastfm"
+    if "ytmusic" in method:
+        return "ytmusic"
     if "tvdb" in method:
         return "tvdb"
     if "imdb" in method:
@@ -123,6 +129,7 @@ all_builders = (
     + sonarr.builders
     + lidarr.builders
     + lastfm.builders
+    + ytmusic.builders
     + flicklist.builders
     + wetrakr.builders
 )
@@ -170,7 +177,7 @@ movie_only_builders = [
     "mojo_all_time",
     "mojo_never",
 ]
-music_only_builders = ["item_album_sorting", *lidarr.builders, *lastfm.builders]
+music_only_builders = ["item_album_sorting", *lidarr.builders, *lastfm.builders, *ytmusic.builders]
 summary_details = [
     "summary",
     "tmdb_summary",
@@ -602,6 +609,7 @@ smart_url_invalid = (
 )
 custom_sort_builders = [
     *lastfm.builders,
+    *ytmusic.builders,
     "plex_search",
     "plex_watchlist",
     "plex_pilots",
@@ -747,6 +755,7 @@ parts_collection_valid = (
         "lastfm_user_tags",
         "lastfm_tag_charts",
         "lastfm_chart_top_tracks",
+        *ytmusic.builders,
         "collection_filtering",
         "collection_mode",
         "label",
@@ -842,6 +851,7 @@ music_attributes = (
     + square_art_details
     + lidarr.builders
     + lastfm.builders
+    + ytmusic.builders
 )
 
 
@@ -1162,7 +1172,7 @@ class CollectionBuilder:
                         options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
                     raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
         elif self.library.is_music:
-            self.builder_level = _lastfm_music_level(methods)
+            self.builder_level = _default_music_level(methods)
         self.parts_collection = self.builder_level in plex.builder_level_options
 
         self.posters = {}
@@ -1713,6 +1723,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Lidarr to be configured")
                 elif not self.config.LastFM and method_name in lastfm.builders:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Last.fm to be configured")
+                elif not self.config.YouTubeMusic and method_name in ytmusic.builders:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires YouTube Music to be configured")
                 elif not self.library.Tautulli and "tautulli" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Tautulli to be configured")
                 elif "tracearr" in method_name and not any(pl_library.Tracearr for pl_library in self.libraries):
@@ -1775,6 +1787,8 @@ class CollectionBuilder:
                     self._lidarr(method_name, method_data)
                 elif method_name in lastfm.builders:
                     self._lastfm(method_name, method_data)
+                elif method_name in ytmusic.builders:
+                    self._ytmusic(method_name, method_data)
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
@@ -2305,6 +2319,57 @@ class CollectionBuilder:
                 if "from" in value and "to" in value and value["from"] > value["to"]:
                     raise BuilderValidationError(f"{self.Type} Error: {method_name} from must be before to")
             self.builders.append((method_name, value))
+
+    def _ytmusic(self, method_name, method_data):
+        if method_name == "ytmusic_list":
+            if self.builder_level != "track":
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} only supports track-level collections")
+        elif method_name == "ytmusic_top_artists":
+            if self.builder_level != "artist":
+                raise BuilderValidationError(f"{self.Type} Error: {method_name} only supports artist-level collections")
+
+        if method_name == "ytmusic_list":
+            entries = method_data if isinstance(method_data, list) else [method_data]
+            for entry in entries:
+                if isinstance(entry, dict):
+                    methods = {str(k).lower(): k for k in entry}
+                    if "playlist" not in methods:
+                        raise BuilderValidationError(f"{self.Type} Error: {method_name} requires a playlist")
+                    limit = util.parse(self.Type, "limit", entry, methods=methods, parent=method_name, datatype="int", minimum=1) if "limit" in methods else None
+                    pid = ytmusic.playlist_id(entry[methods["playlist"]])
+                    val = {"playlist": pid}
+                    if limit:
+                        val["limit"] = limit
+                    self.builders.append((method_name, val))
+                else:
+                    pid = ytmusic.playlist_id(entry)
+                    self.builders.append((method_name, pid))
+                if getattr(self, "config", None) and getattr(self.config, "YouTubeMusic", None):
+                    summary, poster = self.config.YouTubeMusic.playlist_metadata(pid)
+                    if summary and "ytmusic_list" not in self.summaries:
+                        self.summaries["ytmusic_list"] = summary
+                    if poster and "ytmusic_list" not in self.posters:
+                        self.posters["ytmusic_list"] = poster
+
+        elif method_name == "ytmusic_top_artists":
+            entries = method_data if isinstance(method_data, list) else [method_data]
+            for entry in entries:
+                if isinstance(entry, bool) or entry == "global":
+                    self.builders.append((method_name, "ZZ"))
+                elif isinstance(entry, str):
+                    code = entry.upper()
+                    if code not in ytmusic.countries:
+                        raise BuilderValidationError(f"{self.Type} Error: country '{entry}' is invalid")
+                    self.builders.append((method_name, code))
+                elif isinstance(entry, dict):
+                    methods = {str(k).lower(): k for k in entry}
+                    country = util.parse(self.Type, "country", entry, methods=methods, parent=method_name, default="ZZ")
+                    code = str(country).upper()
+                    if code not in ytmusic.countries:
+                        raise BuilderValidationError(f"{self.Type} Error: country '{country}' is invalid")
+                    self.builders.append((method_name, code))
+                else:
+                    raise BuilderValidationError(f"{self.Type} Error: {method_name} must be a boolean, country code, or dictionary")
 
     def _anidb(self, method_name, method_data):
         if method_name in ["anidb_id", "anidb_relation"]:
@@ -3932,7 +3997,7 @@ class CollectionBuilder:
         cache_method = ""
         if self.config.Cache and self.details["cache_builders"]:
             cache_method = f"{self.library.type}:{method}"
-            if method in lastfm.builders:
+            if method in lastfm.builders or method in ytmusic.builders:
                 cache_method = f"{self.library.PlexServer.machineIdentifier}:{self.library.name}:{cache_method}"
             list_key, expired = self.config.Cache.query_list_cache(cache_method, str(value), self.details["cache_builders"])
             if list_key and expired is False:
@@ -4033,6 +4098,11 @@ class CollectionBuilder:
                 ids = self.library.Lidarr.get_mbid_ids(method, value)
             elif method in lastfm.builders:
                 ids = self.config.LastFM.get_rating_keys(method, value, self.library)
+            elif method in ytmusic.builders:
+                if method == "ytmusic_list":
+                    ids = self.config.YouTubeMusic.get_rating_keys(value, self.library)
+                elif method == "ytmusic_top_artists":
+                    ids = self.config.YouTubeMusic.get_top_artists(value, self.library)
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")

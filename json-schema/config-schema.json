@@ -49,6 +49,9 @@
     "lastfm": {
       "$ref": "#/definitions/lastfm-api"
     },
+    "ytmusic": {
+      "$ref": "#/definitions/ytmusic-api"
+    },
     "settings": {
       "$ref": "#/definitions/settings"
     },
@@ -1098,6 +1101,11 @@
         "apikey": {"type": ["string", "null"]}
       },
       "title": "lastfm"
+    },
+    "ytmusic-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "title": "ytmusic"
     },
     "mdblist-api": {
       "type": "object",
@@ -4684,7 +4692,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|lastfm|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -6182,13 +6190,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                       }
                     }
                   ]
@@ -6218,13 +6226,13 @@
                   "oneOf": [
                     {
                       "type": "string",
-                      "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                      "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                     },
                     {
                       "type": "array",
                       "items": {
                         "type": "string",
-                        "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                        "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                       }
                     }
                   ]
@@ -6259,6 +6267,7 @@
                         "trakt",
                         "tvdb",
                         "plex",
+                        "ytmusic",
                         "lock",
                         "unlock"
                       ]
@@ -6270,13 +6279,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                               }
                             }
                           ]
@@ -6310,6 +6319,7 @@
                         "trakt",
                         "tvdb",
                         "plex",
+                        "ytmusic",
                         "lock",
                         "unlock"
                       ]
@@ -6321,13 +6331,13 @@
                           "oneOf": [
                             {
                               "type": "string",
-                              "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                              "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                             },
                             {
                               "type": "array",
                               "items": {
                                 "type": "string",
-                                "enum": ["tmdb", "trakt", "tvdb", "plex", "lock", "unlock"]
+                                "enum": ["tmdb", "trakt", "tvdb", "plex", "ytmusic", "lock", "unlock"]
                               }
                             }
                           ]

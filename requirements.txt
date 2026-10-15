@@ -126,6 +126,7 @@ requests==2.34.2
     #   requests-oauthlib
     #   requests-toolbelt
     #   tmdbapis
+    #   ytmusicapi
 requests-oauthlib==2.0.0
     # via apprise
 requests-toolbelt==1.0.0
@@ -177,3 +178,5 @@ urllib3==2.8.0
     # via
     #   apprise
     #   requests
+ytmusicapi==1.12.3
+    # via kometa

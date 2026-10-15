@@ -456,4 +456,5 @@ YamTrack
 YML
 yml
 Yozora
+ytmusic
 YYYY

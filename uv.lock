@@ -841,6 +841,7 @@ dependencies = [
     { name = "setuptools" },
     { name = "tenacity" },
     { name = "tmdbapis" },
+    { name = "ytmusicapi" },
 ]
 
 [package.dev-dependencies]
@@ -930,6 +931,7 @@ requires-dist = [
     { name = "setuptools", specifier = "==84.0.0" },
     { name = "tenacity", specifier = "==9.2.1" },
     { name = "tmdbapis", specifier = "==1.3.1" },
+    { name = "ytmusicapi", specifier = "==1.12.3" },
 ]
 
 [package.metadata.requires-dev]
@@ -2656,4 +2658,16 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/78/cd/0e028d8b7d906d51acdac537334fbe85f8284f2a8147d48bc9403af77a0d/wcmatch-11.1.tar.gz", hash = "sha256:f2b6f0fad6f5e2571498723fcb3c8facdd0fba0dcc139f31d32f592eb648153e", size = 129091, upload-time = "2026-10-10T13:10:54.573Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/1e/22/c4adda5a3754b7fc9429a544a0673fa6922fdd7808eab09abe18616f6e38/wcmatch-11.1-py3-none-any.whl", hash = "sha256:2863afee97a7dd62e64f7feada864848c1a5e31cb331b3aa530fa1300d2d5d3c", size = 43417, upload-time = "2026-10-10T13:10:52.939Z" },
+]
+
+[[package]]
+name = "ytmusicapi"
+version = "1.12.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4a/0d/a536a685d8b021ff984a3f9902600bc1fb613afe3c0b143e2b0d791a3c5c/ytmusicapi-1.12.3.tar.gz", hash = "sha256:be81511af7494eec8e5970c56a10e51aada6253246649e4ea6714fd6aeb654ee", size = 666106, upload-time = "2026-09-16T15:04:45.561Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/ad/6d471ea9d81e1f59a4d01badda21e7f3f508b94ed171c677b6547b292f73/ytmusicapi-1.12.3-py3-none-any.whl", hash = "sha256:f65db840907a43ca23b29bd563951a1e390fbe2089d7aa4ddbe2043824b2acd9", size = 111241, upload-time = "2026-09-16T15:04:43.883Z" },
 ]
