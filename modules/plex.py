@@ -2233,16 +2233,16 @@ class Plex(Library):
             return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
-            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "ytmusic": "YouTube Music"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
+                if attr in ["tmdb", "trakt", "tvdb", "ytmusic"] and tmdb:
                     image = tmdb
-                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "ytmusic": "YouTube Music"}[attr]
                     source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
-                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
+                if not image and attr not in ["tmdb", "trakt", "tvdb", "ytmusic", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.api_key` and reads list membership from the Listrr API.
 - Add Last.fm connector and various music builders.
+- Add YouTube Music builders for music libraries and operation for updating artist images
 - Log the current value when an item or episode rating already matches the requested rating.
 - Add `seasons: {latest: true}` filtering against the highest-numbered Plex season, excluding Specials.
 - Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.

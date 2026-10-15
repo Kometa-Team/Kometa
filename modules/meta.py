@@ -7,7 +7,7 @@ from datetime import datetime
 from plexapi.exceptions import BadRequest, NotFound, Unauthorized
 from requests.exceptions import RequestException
 
-from modules import ergast, letterboxd, plex, timings, util
+from modules import ergast, letterboxd, plex, timings, util, ytmusic
 from modules.request import quote
 from modules.util import Failed, NotScheduled
 
@@ -18,7 +18,7 @@ ms_auto = ["actor", "year", "content_rating", "original_language", "tmdb_popular
 auto = {
     "Movie": ["tmdb_collection", "edition", "country", "director", "producer", "writer", "letterboxd_user_lists"] + all_auto + ms_auto,
     "Show": ["edition", "network", "origin_country", "episode_year"] + all_auto + ms_auto,
-    "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto,
+    "Artist": ["mood", "style", "country", "album_genre", "album_mood", "album_style", "track_mood"] + all_auto + list(ytmusic.dynamic_chart_types.keys()),
     "Video": ["country", "content_rating"] + all_auto,
 }
 dynamic_attributes = ["type", "data", "exclude", "addons", "template", "template_variables", "other_template", "remove_suffix", "custom_keys", "remove_prefix", "title_format", "key_name_override", "title_override", "test", "sync", "include", "other_name"]
@@ -1182,6 +1182,37 @@ class MetadataFile(DataFile):
                             else:
                                 dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="int", minimum=1)
                             _check_dict(self.config.TMDb.get_popular_people(dynamic_data))
+                        elif auto_type in ytmusic.dynamic_chart_types:
+                            if not self.config.YouTubeMusic:
+                                raise Failed(f"Config Error: {map_name} requires YouTube Music to be configured")
+                            dynamic_data = util.parse("Config", "data", dynamic, parent=map_name, methods=methods, datatype="dict") if "data" in methods else {}
+                            if "data" in self.temp_vars:
+                                temp_data = util.parse("Config", "data", self.temp_vars["data"], datatype="dict")
+                                for k, v in temp_data.items():
+                                    dynamic_data[k] = v
+                            yt_methods = {ym.lower(): ym for ym in dynamic_data}
+                            country = util.parse("Config", "country", dynamic_data, parent=f"{map_name} data", methods=yt_methods, default="ZZ")
+                            limit = util.parse("Config", "limit", dynamic_data, parent=f"{map_name} data", methods=yt_methods, datatype="int", minimum=1) if "limit" in yt_methods else None
+                            playlists = self.config.YouTubeMusic.chart_playlists(country, ytmusic.dynamic_chart_types[auto_type])
+                            if auto_type == "ytmusic_genre_charts":
+                                logger.info(f"YouTube Music genre chart keys for {country}:")
+                            for entry in playlists:
+                                title = ytmusic.YouTubeMusic.chart_name(entry["title"], ytmusic.dynamic_chart_types[auto_type])
+                                pid = entry["playlistId"]
+                                if auto_type == "ytmusic_genre_charts":
+                                    logger.info(f"{pid} | {title}")
+                                all_keys[pid] = title
+                                if pid not in exclude and title not in exclude:
+                                    auto_list[pid] = title
+                            template_builder_data = {"playlist": "<<key>>"}
+                            if limit:
+                                template_builder_data["limit"] = limit
+                            default_template = {
+                                "ytmusic_list": template_builder_data,
+                                "builder_level": "track",
+                                "collection_order": "custom",
+                            }
+                            default_title_format = "<<key_name>>"
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
 

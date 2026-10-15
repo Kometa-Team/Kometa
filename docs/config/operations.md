@@ -463,7 +463,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Poster Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the poster update. Can be a single source or an ordered list of fallback sources. `tvdb` applies to top-level movie and show posters. `ytmusic` applies to top-level artists | `tmdb`, `tvdb`, `plex`, `ytmusic`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for poster fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode posters while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
@@ -472,7 +472,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
         | Background Option | Description | Values |
         | --- | --- | --- |
-        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. | `tmdb`, `tvdb`, `plex`, `lock`, or `unlock` |
+        | `source` | Source of the background update. Can be a single source or an ordered list of fallback sources. `ytmusic` applies to top-level artists. | `tmdb`, `tvdb`, `plex`, `ytmusic`, `lock`, or `unlock` |
         | `language` | Override the TMDb language for background fetching. Only applies when `source` is `tmdb`. | ISO 639-1 language code, such as `en`, `de`, or `xx` for textless. |
         | `seasons` | Update season backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |
         | `episodes` | Update episode backgrounds while updating shows. Ignored when `source` is `tvdb`. **Default:** `true` | `true` or `false` |

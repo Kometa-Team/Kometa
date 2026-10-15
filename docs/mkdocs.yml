@@ -195,6 +195,7 @@ nav:
       - Sonarr: config/sonarr.md
       - Lidarr: config/lidarr.md
       - Last.fm: config/lastfm.md
+      - YouTube Music: config/ytmusic.md
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
@@ -411,6 +412,10 @@ nav:
         - User Tags: files/builders/lastfm/user-tags.md
         - Tag Charts: files/builders/lastfm/tag-charts.md
         - Global Charts: files/builders/lastfm/global-charts.md
+      - YouTube Music:
+        - List: files/builders/ytmusic/list.md
+        - Top Artists: files/builders/ytmusic/top-artists.md
+        - Dynamic Charts: files/builders/ytmusic/charts.md
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md
