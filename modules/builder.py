@@ -579,7 +579,7 @@ all_filters = (
 )
 date_attributes = plex.date_attributes + ["first_episode_aired", "last_episode_aired", "last_episode_aired_or_never"]
 year_attributes = plex.year_attributes + ["tmdb_year"]
-number_attributes = plex.number_attributes + ["channels", "height", "width", "tmdb_vote_count"]
+number_attributes = plex.number_attributes + ["channels", "height", "width", "tmdb_vote_count", "stinger_rating"]
 tag_attributes = plex.tag_attributes
 string_attributes = plex.string_attributes + string_filters
 float_attributes = plex.float_attributes + ["aspect", "tmdb_vote_average"]
@@ -4682,7 +4682,7 @@ class CollectionBuilder:
                         raise BuilderValidationError(f"{self.Type} Error: {final} attribute modifier invalid '{year_values[1]}'")
                 return util.parse(self.Type, final, data, datatype="int", minimum=0)
         elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
-            return util.parse(self.Type, final, data, datatype="int", minimum=0)
+            return util.parse(self.Type, final, data, datatype="int", minimum=None if attribute == "stinger_rating" else 0)  # pyright: ignore[reportArgumentType]  # parse/check_int support None bounds; the default infers int.
         elif attribute == "origin_country":
             return util.get_list(data, upper=True)
         elif attribute in ["original_language", "tmdb_keyword"]:
