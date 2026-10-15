@@ -50,6 +50,26 @@ def chart_track(artist, album, title, mbid, duration=0):
     return SimpleNamespace(item=track)
 
 
+def test_connection_validation_checks_api_key(monkeypatch):
+    network = Mock()
+    monkeypatch.setattr(lastfm.pylast, "LastFMNetwork", Mock(return_value=network))
+    connector = LastFM("test-key")
+
+    connector.validate_connection()
+    network.get_top_artists.assert_called_once_with(limit=1, cacheable=False)
+
+    network.get_top_artists.side_effect = pylast.WSError(network, 10, "Invalid API key")
+    with pytest.raises(Failed, match="Invalid API key"):
+        connector.validate_connection()
+
+
+def test_embedded_mbid_avoids_detail_lookup():
+    mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
+    item = SimpleNamespace(info={"mbid": mbid}, get_mbid=Mock())
+    assert LastFM._get_mbid(item, "artist Test") == mbid
+    item.get_mbid.assert_not_called()
+
+
 def test_top_artists_match_mbid_then_unique_name_without_lidarr():
     mbid = "9c9f1380-2516-4fc9-a3e6-f9f61941d090"
     plex_artists = [plex_artist("Different name", 10, mbid), plex_artist("Name only", 20), plex_artist("Fallback name", 50), plex_artist("Duplicate", 30), plex_artist("Duplicate", 40)]
@@ -179,6 +199,44 @@ def test_recent_tracks_use_scrobble_album_after_duration_and_report_missing():
     assert result[1][1] == "music_missing"
     assert json.loads(result[1][0])["name"] == "Missing"
     connector.network.get_user.return_value.get_recent_tracks.assert_called_once_with(limit=2, time_from=100, time_to=200, cacheable=False)
+
+
+def test_repeated_scrobbles_reuse_track_details_and_unmatched_names_skip_extra_lookups():
+    mbid = "be191a11-c480-4240-8baa-6c4be0f8d400"
+    library = SimpleNamespace(is_music=True, get_all=Mock(return_value=[plex_track("Alannah Myles", "Alannah Myles", "Black Velvet", 10, mbid)]))
+    connector = LastFM("test-key")
+    connector.network = Mock()
+    matched = chart_track("Alannah Myles", None, "Black Velvet", mbid).item
+    absent = chart_track("Unknown", None, "Unknown Song", None).item
+    connector.network.get_user.return_value.get_recent_tracks.return_value = [SimpleNamespace(track=matched, album=None), SimpleNamespace(track=matched, album=None), SimpleNamespace(track=absent, album=None)]
+
+    results = connector.get_rating_keys("lastfm_user_recent_tracks", {"username": "listener", "limit": 3}, library)
+
+    assert results[0] == (10, "ratingKey")
+    assert results[1][1] == "music_missing"
+    matched.get_mbid.assert_called_once_with()
+    absent.get_duration.assert_not_called()
+    absent.get_album.assert_not_called()
+
+
+def test_repeated_scrobbles_reuse_duration_and_album_lookups():
+    library = SimpleNamespace(is_music=True, get_all=Mock(return_value=[plex_track("Artist", "Plex Album", "Song", 10, duration=200000)]))
+    connector = LastFM("test-key")
+    connector.network = Mock()
+    first = chart_track("Artist", None, "Song", None, duration=100000).item
+    second = chart_track("Artist", None, "Song", None, duration=100000).item
+    connector.network.get_user.return_value.get_recent_tracks.return_value = [SimpleNamespace(track=first, album=None), SimpleNamespace(track=second, album=None)]
+
+    results = connector.get_rating_keys("lastfm_user_recent_tracks", {"username": "listener", "limit": 2}, library)
+
+    assert len(results) == 1
+    assert results[0][1] == "music_missing"
+    first.get_mbid.assert_called_once_with()
+    first.get_duration.assert_called_once_with()
+    first.get_album.assert_called_once_with()
+    second.get_mbid.assert_not_called()
+    second.get_duration.assert_not_called()
+    second.get_album.assert_not_called()
 
 
 @pytest.mark.parametrize("method,level", [("lastfm_user_tags", "artist"), ("lastfm_user_tags", "album"), ("lastfm_user_tags", "track"), ("lastfm_tag_charts", "artist"), ("lastfm_tag_charts", "album"), ("lastfm_tag_charts", "track")])
