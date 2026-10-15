@@ -352,6 +352,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolve `label` filters in Music libraries to the selected artist, album, or track label field.
 - Accept a Kometa Utilities "Use Kometa App" MyAnimeList block that omits `client_secret`, and refresh that official app without sending a client secret.
 - Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
+- Say that an unconfigured `listrr_list` or `listrr_list_details` builder requires Listrr to be configured, matching the other service builders.
 - Read several `listrr_list` values as one builder so playlists and `collection_order: custom` can combine Listrr lists, and keep a Listrr timeout, rate limit, or blank API key from stopping the rest of the run.
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Validate People-Images poster URLs before selection so missing images allow an available TMDb poster to be selected; cache validation misses for the current run and distinguish temporary validation failures from confirmed missing images. #3715
