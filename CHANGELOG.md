@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.api_key` and reads list membership from the Listrr API.
 - Add Last.fm connector and various music builders.
 - Log the current value when an item or episode rating already matches the requested rating.
 - Add `seasons: {latest: true}` filtering against the highest-numbered Plex season, excluding Specials.

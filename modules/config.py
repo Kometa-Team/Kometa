@@ -20,6 +20,7 @@ from modules.imdb import IMDb
 from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
+from modules.listrr import Listrr
 from modules.mal import MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
@@ -1344,6 +1345,27 @@ class ConfigFile:
                 logger.info(f"FlickList Connection {'Failed' if self.FlickList is None else 'Successful'}")
             else:
                 logger.info("flicklist attribute not found")
+
+            logger.separator()
+
+            self.Listrr = None
+            if "listrr" in self.data:
+                logger.info("Connecting to Listrr...")
+                try:
+                    listrr_obj = Listrr(
+                        self.Requests,
+                        check_for_attribute(self.data, "api_key", parent="listrr", throw=True),
+                    )
+                    listrr_obj.test_connection()
+                    self.Listrr = listrr_obj
+                except Failed as e:
+                    if str(e).endswith("is blank"):
+                        logger.warning(e)
+                    else:
+                        logger.error(e)
+                logger.info(f"Listrr Connection {'Failed' if self.Listrr is None else 'Successful'}")
+            else:
+                logger.info("listrr attribute not found")
 
             logger.separator()
 

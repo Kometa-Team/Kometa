@@ -182,6 +182,8 @@
                 "tracearr_watched_media": { "$ref": "#/definitions/tracearr-watched-media-builder-block" },
 
                 "mdblist_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
+                "listrr_list": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }] } }] },
+                "listrr_list_details": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }] } }] },
                 "letterboxd_list": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }] } }] },
                 "letterboxd_crew": { "oneOf": [{ "type": "object", "additionalProperties": true }, { "type": "array", "items": { "type": "object", "additionalProperties": true } }] },
                 "letterboxd_studio": { "oneOf": [{ "type": "string" }, { "type": "object", "additionalProperties": true }, { "type": "array" }] },
@@ -358,6 +360,18 @@
                 },
                 { "$ref": "#/definitions/external-template-path" }
             ]
+        },
+
+        "listrr-list-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": { "type": "string" },
+                "list_id": { "type": "string" },
+                "sort_by": { "type": "string", "enum": ["name.asc", "name.desc", "release.asc", "release.desc"] },
+                "limit": { "type": "integer", "minimum": 0 }
+            },
+            "anyOf": [{ "required": ["url"] }, { "required": ["list_id"] }]
         }
     }
 }

@@ -1746,6 +1746,9 @@ class TestDispatchTables:
         assert "serializd_trending" in all_builders
         assert "serializd_popular" in all_builders
         assert "serializd_featured" in all_builders
+        assert "listrr_list" in all_builders
+        assert "listrr_list_details" in all_builders
+        assert "listrr_list" in custom_sort_builders
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -1779,6 +1782,7 @@ class TestServiceLockKey:
             ("floppy_tracked", "floppy"),
             ("radarr_taglist", "radarr"),
             ("sonarr_taglist", "sonarr"),
+            ("listrr_list", "listrr"),
         ],
     )
     def test_known_prefixes_map_to_expected_bucket(self, method, expected):
