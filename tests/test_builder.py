@@ -288,6 +288,24 @@ class TestFindPlexKeys:
 
 
 # ═══════════════════════════════════════════════════════════════════════
+# validate_attribute — stinger_rating
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestValidateAttributeStingerRating:
+    @pytest.mark.parametrize("modifier", ["", ".not", ".gt", ".gte", ".lt", ".lte"])
+    def test_accepts_a_number_with_every_number_modifier(self, modifier):
+        builder = make_builder()
+        final = f"stinger_rating{modifier}"
+        assert builder.validate_attribute("stinger_rating", modifier, final, 3, True) == 3
+
+    def test_rejects_a_negative_rating(self):
+        builder = make_builder()
+        with pytest.raises(Failed):
+            builder.validate_attribute("stinger_rating", ".gt", "stinger_rating.gt", -1, True)
+
+
+# ═══════════════════════════════════════════════════════════════════════
 # validate_attribute — audio_language / subtitle_language
 # ═══════════════════════════════════════════════════════════════════════
 
