@@ -135,7 +135,7 @@ six==1.17.0
     # via python-dateutil
 smmap==5.0.3
     # via gitdb
-soupsieve==3.0.1
+soupsieve==3.0.2
     # via beautifulsoup4
 tenacity==9.2.1
     # via kometa
