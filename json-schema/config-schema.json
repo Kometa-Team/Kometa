@@ -5083,6 +5083,11 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
+            "plex_bulk_edit_batch_size": {
+              "description": "Maximum number of items per Plex bulk edit batch. Omit or set to null to process all items in one batch.",
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
             "assets_for_all": {
               "type": "boolean"
             },
