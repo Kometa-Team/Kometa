@@ -108,6 +108,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "details": {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
         "filtered_keys": {},
         "found_items": [],
+        "found_item_keys": set(),
         "do_report": False,
         "obj": None,
         "name": "Test Collection",

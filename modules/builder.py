@@ -1250,6 +1250,7 @@ class CollectionBuilder:
         self.has_tmdb_filters = False
         self.has_imdb_filters = False
         self.found_items = []
+        self.found_item_keys = set()
         self.filtered_items = []
         self.filtered_keys = {}
         self.run_again_movies = []
@@ -4268,10 +4269,9 @@ class CollectionBuilder:
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
-        # PlexPartialObject equality compares metadata keys. Index them once per
-        # pass to avoid quadratic list scans while preserving first-seen order.
-        # Rebuilding also respects any earlier limit truncation of found_items.
-        found_item_keys = {item.key for item in self.found_items}
+        # PlexPartialObject equality compares metadata keys. Reuse the index
+        # across builder entries; the ordered list remains the source of output.
+        found_item_keys = self.found_item_keys
         if self.filters and (self.details["show_filtered"] is True or self.details["show_unfiltered"] is True):
             logger.info("")
             logger.info("Filtering Builders:")
@@ -4795,6 +4795,7 @@ class CollectionBuilder:
             if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
                 logger.info(f"{self.Type} Limit reached")
                 self.found_items = self.found_items[: i - 1]
+                self.found_item_keys = {item.key for item in self.found_items}
                 break
             current_operation = "=" if item.ratingKey in collection_item_keys else "+"
             number_text = f"{i}/{total}"

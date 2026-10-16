@@ -73,10 +73,19 @@ def test_later_builders_skip_existing_items_and_retain_order(episode_builder):
     assert builder.check_value_filter.call_count == 1
 
 
-def test_index_respects_replacement_of_the_ordered_list_after_a_limit(episode_builder):
+def test_index_is_synced_when_collection_limit_truncates_items(episode_builder):
     builder = episode_builder
     collect(builder, [KeyedEpisode(1), KeyedEpisode(2)])
-    builder.found_items = builder.found_items[:1]
+    builder.limit = 1
+    builder.beginning_count = 0
+    builder.remove_item_map = {}
+    builder.details["changes_webhooks"] = False
+    builder.library.get_collection_name_and_items = lambda *args: (builder.name, [])
+    builder.library.alter_collection = MagicMock()
+
+    assert builder.add_to_collection() == (1, 0)
+    assert [item.ratingKey for item in builder.found_items] == [1]
+    assert builder.found_item_keys == {"/library/metadata/1"}
 
     collect(builder, [KeyedEpisode(2), KeyedEpisode(3)])
 
@@ -107,7 +116,9 @@ def test_filtered_items_stay_excluded_and_are_reported_once(episode_builder, mdb
 
 def test_mdblist_prefetch_skips_previously_accepted_and_filtered_items(episode_builder):
     builder = episode_builder
-    builder.found_items = [KeyedEpisode(1)]
+    collect(builder, [KeyedEpisode(1)])
+    builder.check_filters.reset_mock()
+    builder.check_value_filter.reset_mock()
     builder.filtered_keys = {2: "Episode 2"}
     builder.value_filters = [("mdb_tomatoes_rating", "gte", 6.0)]
     builder._prefetch_mdblist_value_filters = MagicMock()
@@ -139,4 +150,20 @@ def test_large_episode_batch_uses_linear_key_work_without_object_comparisons(epi
 
     assert len(builder.found_items) == count
     assert all(saved is original for saved, original in zip(builder.found_items, items))
+    assert KeyedEpisode.key_reads <= 4 * count
+
+
+@pytest.mark.parametrize("mdb_value_filters", [False, True])
+def test_many_builder_entries_do_not_reindex_previous_results(episode_builder, mdb_value_filters):
+    builder = episode_builder
+    builder.check_filters = lambda item, display: True
+    builder.check_value_filter = lambda item: True
+    if mdb_value_filters:
+        builder.value_filters = [("mdb_tomatoes_rating", "gte", 6.0)]
+        builder._prefetch_mdblist_value_filters = lambda items: None
+    count = 2_000
+    for index in range(count):
+        collect(builder, [KeyedEpisode(index)])
+
+    assert [item.ratingKey for item in builder.found_items] == list(range(count))
     assert KeyedEpisode.key_reads <= 4 * count

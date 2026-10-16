@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713
-- Avoid quadratic item deduplication while filtering builders, reducing episode-overlay preparation work for large libraries while preserving item order and existing filters. #3722
+- Avoid quadratic item deduplication across builder entries and while compiling overlay item lists, reducing episode-overlay preparation work for large libraries while preserving item order, limits, and existing filters. #3722
 
 ## [v2.5.3] - 2026-10-12
 
