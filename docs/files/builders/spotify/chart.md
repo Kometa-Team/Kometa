@@ -1,6 +1,6 @@
 # Spotify Chart Builder
 
-`spotify_chart` builds a track-level collection from a Spotify country chart tracked by Kworb. It matches exact artist and track titles in your Plex Music library. When Plex has multiple exact matches, Kometa chooses the track on the album with the earliest known release date. Unmatched chart tracks are skipped.
+`spotify_chart` builds a track-level collection from a Spotify country chart. It matches exact artist and track titles in your Plex Music library. When Plex has multiple exact matches, Kometa chooses the track on the album with the earliest known release date. Unmatched chart tracks are skipped.
 
 ```yaml title="Collection file"
 collections:
@@ -12,9 +12,9 @@ collections:
     sync_mode: sync
 ```
 
-`country` accepts one of the two-letter codes listed below or a country name listed after them. Codes are case-insensitive; other two-letter codes are passed through to Kworb and work only if Kworb has a matching chart page. `UK` and `United Kingdom` map to Spotify's `gb` chart, `USA` and `United States` map to `us`, and `UAE` / `United Arab Emirates` map to `ae`.
+`country` accepts one of the two-letter codes listed below or a country name listed after them. Codes are case-insensitive; other two-letter codes are passed through and work only if a matching chart page exists. `UK` and `United Kingdom` map to Spotify's `gb` chart, `USA` and `United States` map to `us`, and `UAE` / `United Arab Emirates` map to `ae`.
 
-`chart` must be `daily` or `weekly`..
+`chart` must be `daily` or `weekly`.
 
 Supported country codes:
 

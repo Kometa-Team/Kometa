@@ -189,8 +189,6 @@ kometateam
 kometautils
 Kubernetes
 Kuesel
-Kworb
-Kworb's
 KZ
 lastfm
 Launchd

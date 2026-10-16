@@ -4,7 +4,7 @@ hide:
 ---
 # Spotify Builders
 
-Spotify chart data is provided by [Kworb](https://kworb.net/spotify/). The `spotify_chart` builder adds chart tracks to a Plex Music collection or playlist by matching the chart's artist and song titles.
+The `spotify_chart` builder adds chart tracks to a Plex Music collection or playlist by matching the chart's artist and song titles.
 
 | Builder | Description | Works with Music | Works with Playlists and Custom Sort |
 |:--|:--|:--:|:--:|

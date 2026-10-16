@@ -59,7 +59,7 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    **[Spotify](../spotify/overview)** builders create Plex Music collections from Kworb's Spotify country charts.
+    **[Spotify](../spotify/overview)** builders create Plex Music collections from Spotify country charts.
 
     [:octicons-home-16: View Builder](../spotify/overview){ .md-button .md-button--primary }
 
@@ -69,7 +69,7 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
-    **[Apple Music and iTunes](../apple/overview)** builders create Plex Music collections from Kworb country charts.
+    **[Apple Music and iTunes](../apple/overview)** builders create Plex Music collections from country charts.
 
     [:octicons-home-16: View Builder](../apple/overview){ .md-button .md-button--primary }
 
