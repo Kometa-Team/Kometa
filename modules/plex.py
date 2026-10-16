@@ -620,7 +620,22 @@ date_modifiers = ["", ".not", ".before", ".after", ".last", ".notlast"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips", "commonsense_rating"] + year_attributes
 number_modifiers = [".is", ".isnot", ".gt", ".gte", ".lt", ".lte"]
-float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "artist_rating", "album_user_rating", "album_rating", "album_critic_rating", "track_user_rating", "track_rating"]
+float_attributes = [
+    "user_rating",
+    "episode_user_rating",
+    "critic_rating",
+    "episode_critic_rating",
+    "audience_rating",
+    "episode_audience_rating",
+    "duration",
+    "artist_user_rating",
+    "artist_rating",
+    "album_user_rating",
+    "album_rating",
+    "album_critic_rating",
+    "track_user_rating",
+    "track_rating",
+]
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
@@ -677,7 +692,9 @@ searches = (
     + float_attributes
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
-music_searches = [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
+music_searches = (
+    [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
+)
 track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",

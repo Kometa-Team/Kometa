@@ -4822,6 +4822,7 @@ class CollectionBuilder:
         elif attribute in string_attributes and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute in year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+
             def _parse_year(value, minimum: int | None = None):
                 if attribute in ["decade", "album_decade"] and str(value).lower().endswith("s"):
                     value = str(value)[:-1]
