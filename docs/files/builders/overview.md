@@ -59,6 +59,26 @@ Builders use third-party services to source items to be added to the collection.
 
 !!! builder
 
+    **[Spotify](../spotify/overview)** builders create Plex Music collections from Kworb's Spotify country charts.
+
+    [:octicons-home-16: View Builder](../spotify/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-graph-16: Spotify Chart](../spotify/chart) - Gets tracks from a daily or weekly Spotify country chart.
+
+!!! builder
+
+    **[Apple Music and iTunes](../apple/overview)** builders create Plex Music collections from Kworb country charts.
+
+    [:octicons-home-16: View Builder](../apple/overview){ .md-button .md-button--primary }
+
+    ??? quicklink "Popular Builders"
+
+        - [:octicons-graph-16: Apple Music and iTunes Charts](../apple/chart) - Gets ranked songs or albums from a country chart.
+
+!!! builder
+
     **[FlickList](../flicklist/overview)** builders grab lists and personal data from your configured FlickList account.
 
     [:octicons-home-16: View Builder](../flicklist/overview){ .md-button .md-button--primary }

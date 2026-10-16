@@ -37,16 +37,24 @@ def music_title_key(value):
 class MusicMatcher:
     """Resolve external music IDs and unique titles against Plex items."""
 
-    def __init__(self, libraries, level):
+    def __init__(self, libraries, level, load_dates=False):
         if level not in ("artist", "album", "track"):
             raise ValueError(f"Unsupported music level: {level}")
         self.by_mbid = {}
         self.by_title = {}
         self.tracks_by_artist_title = {}
+        self.track_album_dates = {}
         for library in libraries:
             if not library.is_music:
                 continue
-            for item in library.get_all(builder_level=level):
+            library_items = library.get_all(builder_level=level, load=load_dates) if load_dates else library.get_all(builder_level=level)
+            album_dates = {}
+            if load_dates and level == "track":
+                album_dates = {
+                    album.ratingKey: getattr(album, "originallyAvailableAt", None) or getattr(album, "year", None)
+                    for album in library.get_all(builder_level="album")
+                }
+            for item in library_items:
                 for guid in getattr(item, "guids", []):
                     guid_id = str(guid.id)
                     if guid_id.lower().startswith("mbid://"):
@@ -62,6 +70,8 @@ class MusicMatcher:
                 else:
                     title_key = (music_title_key(item.grandparentTitle), music_title_key(item.parentTitle), music_title_key(item.title))
                     self.tracks_by_artist_title.setdefault((music_title_key(item.grandparentTitle), music_title_key(item.title)), []).append(item)
+                    album_date = album_dates.get(getattr(item, "parentRatingKey", None))
+                    self.track_album_dates[item.ratingKey] = album_date or getattr(item, "parentYear", None)
                 self.by_title.setdefault(title_key, []).append(item)
 
     def match(self, mbid=None, artist=None, album=None, track=None):
@@ -84,6 +94,26 @@ class MusicMatcher:
         if len(matches) == 1:
             return matches[0], None
         return None, "ambiguous" if len(matches) > 1 else "not found"
+
+    def match_earliest_track(self, artist, track):
+        """Choose the exact artist/title match whose album has the earliest known release date."""
+        candidates = self.tracks_by_artist_title.get((music_title_key(artist), music_title_key(track)), [])
+        if not candidates:
+            return None, "not found"
+        if len(candidates) == 1:
+            return candidates[0], None
+
+        def release_sort_key(item):
+            date = self.track_album_dates.get(item.ratingKey)
+            if isinstance(date, datetime):
+                date_key = (date.year, date.month, date.day)
+            elif isinstance(date, int):
+                date_key = (date, 0, 0)
+            else:
+                date_key = (9999, 12, 31)
+            return (*date_key, str(getattr(item, "parentTitle", "")).casefold(), item.ratingKey)
+
+        return min(candidates, key=release_sort_key), None
 
 
 PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)

@@ -42,6 +42,26 @@
             }
         },
 
+        "spotify-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country", "type"],
+            "properties": {
+                "country": { "type": "string", "minLength": 1 },
+                "type": { "type": "string", "enum": ["daily", "weekly"] }
+            }
+        },
+
+        "kworb-music-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country"],
+            "properties": {
+                "country": { "type": "string", "enum": ["US", "UK", "JP", "DE", "FR", "IT", "RU"] },
+                "type": { "type": "string", "enum": ["track", "song", "album"] }
+            }
+        },
+
         "lastfm-user-loved-tracks-entry": {
             "type": "object",
             "additionalProperties": false,
@@ -160,6 +180,18 @@
                         { "$ref": "#/definitions/ytmusic-top-artists-entry" },
                         { "type": "array", "items": { "oneOf": [{ "type": "boolean" }, { "type": "string" }, { "$ref": "#/definitions/ytmusic-top-artists-entry" }] } }
                     ]
+                },
+                "spotify_chart": {
+                    "description": "Kworb Spotify daily or weekly country chart for a track-level Plex music collection.",
+                    "$ref": "#/definitions/spotify-chart-entry"
+                },
+                "apple_chart": {
+                    "description": "Kworb Apple Music country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
+                },
+                "itunes_chart": {
+                    "description": "Kworb iTunes country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
                 },
 
                 "variables": { "type": "object", "additionalProperties": true },

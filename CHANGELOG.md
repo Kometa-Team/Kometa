@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
 - Add `music_playlists` to Music library collection files for building Music Playlists.
 - Add Last.fm connector and various music builders.

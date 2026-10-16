@@ -13,7 +13,7 @@ from plexapi.video import Episode, Movie, Season, Show
 from tmdbapis import TMDbException
 from tmdbapis.tmdb import discover_movie_sort_options, discover_tv_sort_options
 
-from modules import anidb, anilist, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack, ytmusic
+from modules import anidb, anilist, apple_chart, flicklist, floppy, icheckmovies, imdb, lastfm, letterboxd, lidarr, mal, mdblist, mojo, plex, radarr, serializd, simkl, sonarr, spotify_chart, stevenlu, tautulli, textfile, timings, tmdb, tracearr, tvdb, util, wetrakr, yamtrack, ytmusic
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
@@ -23,10 +23,17 @@ logger = util.logger
 
 mdb_list_arr_types = {"radarr_taglist": "tmdb", "sonarr_taglist": "tmdb_show"}
 lastfm_track_builders = ("lastfm_user_top_tracks", "lastfm_user_loved_tracks", "lastfm_user_recent_tracks", "lastfm_chart_top_tracks")
-ytmusic_track_builders = ("ytmusic_list",)
+ytmusic_track_builders = ("ytmusic_list", *spotify_chart.builders)
 
 
-def _default_music_level(methods):
+def _default_music_level(methods, data=None):
+    data = data or {}
+    for method in ("apple_chart", "itunes_chart"):
+        if method in methods:
+            chart = data.get(methods[method])
+            if isinstance(chart, dict) and str(chart.get("type", "track")).lower() == "album":
+                return "album"
+            return "track"
     if "lastfm_user_top_albums" in methods:
         return "album"
     if "tautulli_top" in methods or "tautulli_watched" in methods:
@@ -132,6 +139,8 @@ all_builders = (
     + lidarr.builders
     + lastfm.builders
     + ytmusic.builders
+    + spotify_chart.builders
+    + apple_chart.builders
     + flicklist.builders
     + wetrakr.builders
 )
@@ -179,7 +188,7 @@ movie_only_builders = [
     "mojo_all_time",
     "mojo_never",
 ]
-music_only_builders = ["item_album_sorting", *lidarr.builders, *lastfm.builders, *ytmusic.builders]
+music_only_builders = ["item_album_sorting", *lidarr.builders, *lastfm.builders, *ytmusic.builders, *spotify_chart.builders, *apple_chart.builders]
 summary_details = [
     "summary",
     "tmdb_summary",
@@ -612,6 +621,8 @@ smart_url_invalid = (
 custom_sort_builders = [
     *lastfm.builders,
     *ytmusic.builders,
+    *spotify_chart.builders,
+    *apple_chart.builders,
     "plex_search",
     "plex_watchlist",
     "plex_pilots",
@@ -758,6 +769,8 @@ parts_collection_valid = (
         "lastfm_chart_top_tracks",
         *tautulli.music_builders,
         *ytmusic.builders,
+        *spotify_chart.builders,
+        *apple_chart.builders,
         "collection_filtering",
         "collection_mode",
         "label",
@@ -863,6 +876,8 @@ music_attributes = (
     + lidarr.builders
     + lastfm.builders
     + ytmusic.builders
+    + spotify_chart.builders
+    + apple_chart.builders
     + tautulli.music_builders
 )
 
@@ -1194,7 +1209,7 @@ class CollectionBuilder:
                         options = "\n    album (Collection at the Album Level)\n    track (Collection at the Track Level)"
                     raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
         elif self.library.is_music:
-            self.builder_level = _default_music_level(methods)
+            self.builder_level = _default_music_level(methods, self.data)
         self.parts_collection = self.builder_level in plex.builder_level_options
 
         self.posters = {}
@@ -1308,6 +1323,7 @@ class CollectionBuilder:
         self.added_to_radarr = []
         self.added_to_sonarr = []
         self.builders = []
+        self.spotify_chart_order = {}
         self.filters = []
         self.value_filters = []
         self.has_tmdb_filters = False
@@ -1845,6 +1861,10 @@ class CollectionBuilder:
                     self._lastfm(method_name, method_data)
                 elif method_name in ytmusic.builders:
                     self._ytmusic(method_name, method_data)
+                elif method_name in spotify_chart.builders:
+                    self.builders.append((method_name, spotify_chart.SpotifyChart.validate(method_data)))
+                elif method_name in apple_chart.builders:
+                    self.builders.append((method_name, apple_chart.validate(method_name, method_data)))
                 elif method_name in anidb.builders:
                     self._anidb(method_name, method_data)
                 elif method_name in anilist.builders:
@@ -4173,6 +4193,14 @@ class CollectionBuilder:
                     ids = self.config.YouTubeMusic.get_rating_keys(value, self.library)
                 elif method == "ytmusic_top_artists":
                     ids = self.config.YouTubeMusic.get_top_artists(value, self.library)
+            elif method in spotify_chart.builders:
+                spotify_builder = spotify_chart.SpotifyChart()
+                ids = spotify_builder.get_rating_keys(value, self.library)
+                self.spotify_chart_order.update(spotify_builder.chart_order)
+            elif method in apple_chart.builders:
+                chart_builder = apple_chart.MusicChart(method)
+                ids = chart_builder.get_rating_keys(value, self.library)
+                self.spotify_chart_order.update(chart_builder.chart_order)
             else:
                 ids = []
                 logger.error(f"{self.Type} Error: {method} method not supported")
@@ -6162,7 +6190,9 @@ class CollectionBuilder:
             return
         if not isinstance(self.custom_sort, list):
             items = self.found_items
-            if self.custom_sort == "custom.desc":
+            if any(method in (*spotify_chart.builders, *apple_chart.builders) for method, _ in self.builders) and self.details.get("collection_order") in ("custom", "custom.desc"):
+                items = sorted(items, key=lambda item: self.spotify_chart_order.get(item.ratingKey, float("inf")))
+            elif self.custom_sort == "custom.desc":
                 items = items[::-1]
         else:
             plex_search = {"sort_by": self.custom_sort}
