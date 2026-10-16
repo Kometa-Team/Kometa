@@ -431,6 +431,7 @@ class TestFilterAndSaveItems:
         class FakeArtist:
             def __init__(self, rating_key, title):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = title
                 self.guids = []
 
