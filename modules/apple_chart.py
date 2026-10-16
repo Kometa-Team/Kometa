@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from urllib.parse import urljoin
 
 import requests
@@ -120,12 +121,15 @@ class MusicChart:
                 from modules.plex import music_title_key
 
                 candidates = matcher.by_title.get((music_title_key(entry["artist"]), music_title_key(entry["title"])), [])
+
                 def release_key(item):
                     release = getattr(item, "originallyAvailableAt", None)
                     if release is None:
                         release = getattr(item, "year", None)
-                    if hasattr(release, "year"):
+                    if isinstance(release, (date, datetime)):
                         return release.year, getattr(release, "month", 1), getattr(release, "day", 1), item.ratingKey
+                    if release is None:
+                        return 9999, 12, 31, item.ratingKey
                     try:
                         return int(release), 1, 1, item.ratingKey
                     except (TypeError, ValueError):

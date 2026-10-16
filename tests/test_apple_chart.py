@@ -2,8 +2,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from modules import builder as _builder  # Initialize the existing builder/Plex import cycle first.
 from modules import apple_chart
+from modules import builder as _builder  # noqa: F401  # Initialize the existing builder/Plex import cycle first.
 from modules.util import Failed
 
 

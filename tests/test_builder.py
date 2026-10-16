@@ -1497,6 +1497,30 @@ class TestBuildFilter:
         assert url.startswith("?type=10&")
         assert builder.smart_filter_result_type == "album"
 
+    def test_music_smart_album_filter_warns_that_tracks_are_used(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"R&B": "R&B"}, ["R&B"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+
+        assert logger.warning_messages == ["Playlist Warning: Smart Playlists do not support albums; the underlying tracks have been added instead"]
+
     @pytest.mark.parametrize(
         ("attribute", "value", "plex_field"),
         [

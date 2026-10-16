@@ -4,9 +4,10 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import Mock
 
-from jsonschema import Draft7Validator
 import pytest
+from jsonschema import Draft7Validator
 
+from modules import builder as _builder  # noqa: F401  # Initialize the existing builder/Plex import cycle first.
 from modules.spotify_chart import SpotifyChart, normalize_country, parse_chart_page
 from modules.util import Failed
 
@@ -32,9 +33,9 @@ def test_country_names_and_codes():
 
 
 def test_validation_defaults_nothing_and_rejects_bad_type():
-    assert SpotifyChart.validate({"country": "UK", "type": "DAILY"}) == {"country": "gb", "type": "daily"}
-    with pytest.raises(Failed, match="type must be daily or weekly"):
-        SpotifyChart.validate({"country": "UK", "type": "monthly"})
+    assert SpotifyChart.validate({"country": "UK", "chart": "DAILY"}) == {"country": "gb", "chart": "daily"}
+    with pytest.raises(Failed, match="chart must be daily or weekly"):
+        SpotifyChart.validate({"country": "UK", "chart": "monthly"})
 
 
 def test_parse_chart_table_splits_on_first_separator():
@@ -60,7 +61,7 @@ def test_builder_requests_expected_url_and_matches_earliest_album():
     client.get.return_value = response
     builder = SpotifyChart(session=client)
 
-    result = builder.get_rating_keys({"country": "gb", "type": "daily"}, library)
+    result = builder.get_rating_keys({"country": "gb", "chart": "daily"}, library)
 
     assert result == [(1, "ratingKey")]
     assert builder.chart_order == {1: 1}
@@ -71,4 +72,4 @@ def test_schema_accepts_chart_builder_and_custom_order():
     schema_path = Path(__file__).resolve().parents[1] / "json-schema" / "collection-schema.json"
     schema = json.loads(schema_path.read_text(encoding="utf-8"))
     Draft7Validator.check_schema(schema)
-    Draft7Validator(schema).validate({"collections": {"Spotify UK Daily": {"spotify_chart": {"country": "UK", "type": "daily"}, "collection_order": "custom"}}})
+    Draft7Validator(schema).validate({"collections": {"Spotify UK Daily": {"spotify_chart": {"country": "UK", "chart": "daily"}, "collection_order": "custom"}}})

@@ -50,10 +50,7 @@ class MusicMatcher:
             library_items = library.get_all(builder_level=level, load=load_dates) if load_dates else library.get_all(builder_level=level)
             album_dates = {}
             if load_dates and level == "track":
-                album_dates = {
-                    album.ratingKey: getattr(album, "originallyAvailableAt", None) or getattr(album, "year", None)
-                    for album in library.get_all(builder_level="album")
-                }
+                album_dates = {album.ratingKey: getattr(album, "originallyAvailableAt", None) or getattr(album, "year", None) for album in library.get_all(builder_level="album")}
             for item in library_items:
                 for guid in getattr(item, "guids", []):
                     guid_id = str(guid.id)
