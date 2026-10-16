@@ -17,9 +17,10 @@ from modules.github import GitHub
 from modules.gotify import Gotify
 from modules.icheckmovies import ICheckMovies
 from modules.imdb import IMDb
+from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
-from modules.mal import MyAnimeList
+from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
@@ -42,6 +43,7 @@ from modules.util import Failed, NotScheduled, NotScheduledRange
 from modules.webhooks import Webhooks
 from modules.wetrakr import WeTrakr
 from modules.yamtrack import YamTrack
+from modules.ytmusic import YouTubeMusic
 
 logger = util.logger
 
@@ -175,6 +177,7 @@ mass_image_options = {
     "tmdb": "Use TMDb Images",
     "tvdb": "Use TVDb Images",
 }
+mass_poster_options = {**mass_image_options, "ytmusic": "Use YouTube Music Artist Images (Music Libraries Only)"}
 mass_episode_rating_options = {
     "random": "Use Random Rating",
     "lock": "Lock Rating",
@@ -674,13 +677,14 @@ class ConfigFile:
                     logger.warning(options)
             return default
 
-        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False):
+        def parse_mass_image_operation(input_dict, image_type, allow_tmdb=False, allow_tvdb=False, allow_show_levels=False, allow_ytmusic=False):
             image_config = input_dict.get(image_type)
             if not image_config:
                 return None
             if not isinstance(image_config, dict):
                 image_config = {"source": image_config}
-            options = {k: v for k, v in mass_image_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
+            base_options = mass_poster_options if allow_ytmusic else mass_image_options
+            options = {k: v for k, v in base_options.items() if (allow_tmdb or k != "tmdb") and (allow_tvdb or k != "tvdb")}
             _language = check_for_attribute(image_config, "language", default_is_none=True, do_print=False, save=False)
             if _language is not None:
                 _language = str(_language).lower()
@@ -692,6 +696,8 @@ class ConfigFile:
             else:
                 source = check_for_attribute(image_config, "source", test_list=options, default_is_none=True, save=False)
                 sources = [source] if source else []
+            if allow_ytmusic and "ytmusic" in sources and not self.YouTubeMusic:
+                raise Failed("Config Error: poster source ytmusic requires a working YouTube Music connection")
             parsed = {
                 "source": source,
                 "sources": sources,
@@ -1129,6 +1135,31 @@ class ConfigFile:
 
             logger.separator()
 
+            self.LastFM = None
+            if "lastfm" in self.data:
+                logger.info("Connecting to Last.fm...")
+                try:
+                    lastfm_connector = LastFM(check_for_attribute(self.data, "apikey", parent="lastfm", throw=True, save=False))
+                    lastfm_connector.validate_connection()
+                    self.LastFM = lastfm_connector
+                except Failed as e:
+                    logger.error(e)
+                logger.info(f"Last.fm Connection {'Failed' if self.LastFM is None else 'Successful'}")
+            else:
+                logger.info("lastfm attribute not found")
+
+            logger.separator()
+
+            self.YouTubeMusic = None
+            logger.info("Connecting to YouTube Music (Public Mode)...")
+            try:
+                self.YouTubeMusic = YouTubeMusic()
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"YouTube Music Connection {'Failed' if self.YouTubeMusic is None else 'Successful (Public Mode)'}")
+
+            logger.separator()
+
             self.MDBList = MDBList(self.Requests, self.Cache)
             if "mdblist" in self.data:
                 logger.info("Connecting to MDBList...")
@@ -1153,13 +1184,19 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
+                    mal_client_id = check_for_attribute(self.data, "client_id", parent="mal", throw=True)
+                    if mal_client_id == OFFICIAL_CLIENT_ID:
+                        # The utilities "Use Kometa App" block omits client_secret. Do not fail, and do not write client_secret: null.
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", default_is_none=True, save=False, do_print=False)
+                    else:
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                     self.MyAnimeList = MyAnimeList(
                         self.Requests,
                         self.Cache,
                         self.read_only,
                         {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
+                            "client_id": mal_client_id,
+                            "client_secret": mal_client_secret,
                             "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                             "config_path": self.config_path,
@@ -1879,23 +1916,26 @@ class ConfigFile:
                                 if not input_dict or not isinstance(input_dict, dict):
                                     raise Failed(f"Config Error: {op} must be a dictionary")
                                 elif op in ["mass_poster_update", "mass_background_update"]:
+                                    source_options = mass_poster_options if op in ("mass_poster_update", "mass_background_update") else mass_image_options
                                     _language = check_for_attribute(input_dict, "language", default_is_none=True, save=False)
                                     if _language is not None:
                                         _language = str(_language).lower()
                                         if self.TMDb and _language not in self.TMDb.TMDb._iso_639_1:
                                             raise Failed(f"Config Error: {op} language {_language} is not a valid ISO 639-1 language code")
                                     if isinstance(input_dict.get("source"), list):
-                                        sources = check_for_attribute(input_dict, "source", test_list=mass_image_options, var_type="lower_list", default_is_none=True, save=False)
+                                        sources = check_for_attribute(input_dict, "source", test_list=source_options, var_type="lower_list", default_is_none=True, save=False)
                                         source = sources[0] if sources else None
                                     else:
                                         source = check_for_attribute(
                                             input_dict,
                                             "source",
-                                            test_list=mass_image_options,
+                                            test_list=source_options,
                                             default_is_none=True,
                                             save=False,
                                         )
                                         sources = [source] if source else []
+                                    if op in ("mass_poster_update", "mass_background_update") and "ytmusic" in sources and not self.YouTubeMusic:
+                                        raise Failed("Config Error: mass_poster_update source ytmusic requires a working YouTube Music connection")
                                     section_final[op] = {
                                         "source": source,
                                         "sources": sources,
@@ -1906,8 +1946,8 @@ class ConfigFile:
                                         "ignore_overlays": check_for_attribute(input_dict, "ignore_overlays", var_type="bool", default=False, save=False),
                                     }
                                 elif op == "mass_image_update":
-                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
-                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True)
+                                    poster_update = parse_mass_image_operation(input_dict, "poster", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True, allow_ytmusic=True)
+                                    background_update = parse_mass_image_operation(input_dict, "background", allow_tmdb=True, allow_tvdb=True, allow_show_levels=True, allow_ytmusic=True)
                                     logo_update = parse_mass_image_operation(input_dict, "logo", allow_tmdb=True, allow_tvdb=True)
                                     square_art_update = parse_mass_image_operation(input_dict, "square_art", allow_tmdb=False, allow_tvdb=True)
                                     if "squart_art" in input_dict and "square_art" not in input_dict:

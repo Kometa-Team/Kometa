@@ -2,7 +2,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
-from xml.etree.ElementTree import ParseError
+from xml.etree.ElementTree import ParseError  # nosec B405
 
 import langcodes
 import plexapi
@@ -25,6 +25,66 @@ from modules.request import parse_qs, quote_plus, urlparse
 from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, ServiceError
 
 logger = util.logger
+
+music_mbid_pattern = re.compile(r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$", re.IGNORECASE)
+music_dash_translation = str.maketrans({dash: "-" for dash in "‐‑‒–—−"})
+
+
+def music_title_key(value):
+    return value.casefold().translate(music_dash_translation)
+
+
+class MusicMatcher:
+    """Resolve external music IDs and unique titles against Plex items."""
+
+    def __init__(self, libraries, level):
+        if level not in ("artist", "album", "track"):
+            raise ValueError(f"Unsupported music level: {level}")
+        self.by_mbid = {}
+        self.by_title = {}
+        self.tracks_by_artist_title = {}
+        for library in libraries:
+            if not library.is_music:
+                continue
+            for item in library.get_all(builder_level=level):
+                for guid in getattr(item, "guids", []):
+                    guid_id = str(guid.id)
+                    if guid_id.lower().startswith("mbid://"):
+                        mbid = guid_id[7:].lower()
+                        if music_mbid_pattern.fullmatch(mbid):
+                            matches = self.by_mbid.setdefault(mbid, [])
+                            if item not in matches:
+                                matches.append(item)
+                if level == "artist":
+                    title_key = (music_title_key(item.title),)
+                elif level == "album":
+                    title_key = (music_title_key(item.parentTitle), music_title_key(item.title))
+                else:
+                    title_key = (music_title_key(item.grandparentTitle), music_title_key(item.parentTitle), music_title_key(item.title))
+                    self.tracks_by_artist_title.setdefault((music_title_key(item.grandparentTitle), music_title_key(item.title)), []).append(item)
+                self.by_title.setdefault(title_key, []).append(item)
+
+    def match(self, mbid=None, artist=None, album=None, track=None):
+        valid_mbid = str(mbid).lower() if mbid and music_mbid_pattern.fullmatch(str(mbid)) else None
+        candidates = self.by_mbid.get(valid_mbid, []) if valid_mbid else []
+        if len(candidates) == 1:
+            return candidates[0], None
+        id_ambiguous = len(candidates) > 1
+        titles = tuple(music_title_key(value) for value in (artist, album, track) if value is not None)
+        candidates = self.by_title.get(titles, []) if titles else []
+        if len(candidates) == 1:
+            return candidates[0], None
+        return None, "ambiguous" if candidates or id_ambiguous else "not found"
+
+    def match_track_duration(self, artist, track, duration_ms, tolerance_ms=2000):
+        if not artist or not track or not duration_ms or duration_ms <= 0:
+            return None, "not found"
+        candidates = self.tracks_by_artist_title.get((music_title_key(artist), music_title_key(track)), [])
+        matches = [item for item in candidates if getattr(item, "duration", 0) and abs(item.duration - duration_ms) <= tolerance_ms]
+        if len(matches) == 1:
+            return matches[0], None
+        return None, "ambiguous" if len(matches) > 1 else "not found"
+
 
 PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
 SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
@@ -2173,16 +2233,16 @@ class Plex(Library):
             return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
-            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "ytmusic": "YouTube Music"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
+                if attr in ["tmdb", "trakt", "tvdb", "ytmusic"] and tmdb:
                     image = tmdb
-                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "ytmusic": "YouTube Music"}[attr]
                     source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
-                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
+                if not image and attr not in ["tmdb", "trakt", "tvdb", "ytmusic", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")

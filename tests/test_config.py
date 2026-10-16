@@ -726,3 +726,93 @@ def test_config_skips_missing_asset_roots(tmp_path, grouped):
     config = make_config(tmp_path, config_yaml=BASE_CONFIG.replace("  cache: false", f"  cache: false\n  asset_directory:{value}"))
     assert config.libraries[0].asset_directory == [str(root)]
     assert any(str(missing) in message for message in config_module.logger.warning_messages)
+
+
+class TestMyAnimeListSecret:
+    def _config(self, mal_yaml: str) -> str:
+        return BASE_CONFIG + "\n" + mal_yaml
+
+    def _capture(self, monkeypatch):
+        calls = []
+
+        def capture(*args, **kwargs):
+            calls.append(args)
+            return MagicMock()
+
+        monkeypatch.setattr(config_module, "MyAnimeList", capture)
+        return calls
+
+    def test_official_client_missing_secret_connects_without_writing_null(self, tmp_path, monkeypatch):
+        from modules.mal import OFFICIAL_CLIENT_ID
+
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config(f"""
+mal:
+  client_id: {OFFICIAL_CLIENT_ID}
+  authorization:
+    access_token: at
+    token_type: Bearer
+    expires_in: 3600
+    refresh_token: rt
+"""),
+        )
+        assert config.MyAnimeList is not None
+        assert calls[0][3]["client_id"] == OFFICIAL_CLIENT_ID
+        assert calls[0][3]["client_secret"] is None
+        assert "client_secret" not in (tmp_path / "config.yml").read_text(encoding="utf-8")
+        assert not any("client_secret" in message for message in config_module.logger.error_messages)
+        assert not any("client_secret" in message for message in config_module.logger.warning_messages)
+
+    def test_official_client_blank_secret_connects(self, tmp_path, monkeypatch):
+        from modules.mal import OFFICIAL_CLIENT_ID
+
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config(f"""
+mal:
+  client_id: {OFFICIAL_CLIENT_ID}
+  client_secret:
+  authorization:
+    access_token: at
+    refresh_token: rt
+"""),
+        )
+        assert config.MyAnimeList is not None
+        assert calls[0][3]["client_secret"] is None
+        assert not any("client_secret" in message for message in config_module.logger.error_messages)
+        assert not any("client_secret is blank" in message for message in config_module.logger.warning_messages)
+
+    def test_other_client_missing_secret_still_fails(self, tmp_path, monkeypatch):
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config("""
+mal:
+  client_id: user-app-id
+  authorization:
+    access_token: at
+    refresh_token: rt
+"""),
+        )
+        assert config.MyAnimeList is None
+        assert calls == []
+        saved = (tmp_path / "config.yml").read_text(encoding="utf-8")
+        assert "client_secret" in saved
+        assert any("mal sub-attribute client_secret not found" in message for message in config_module.logger.error_messages)
+
+    def test_other_client_blank_secret_still_fails(self, tmp_path, monkeypatch):
+        calls = self._capture(monkeypatch)
+        config = make_config(
+            tmp_path,
+            config_yaml=self._config("""
+mal:
+  client_id: user-app-id
+  client_secret:
+"""),
+        )
+        assert config.MyAnimeList is None
+        assert calls == []
+        assert any("mal sub-attribute client_secret is blank" in message for message in config_module.logger.warning_messages)

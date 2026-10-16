@@ -1450,7 +1450,7 @@ class Cache:
         ids = []
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM list_ids WHERE list_key = ?", (list_key,))
+                cursor.execute("SELECT * FROM list_ids WHERE list_key = ? ORDER BY key", (list_key,))
                 for row in cursor:
                     ids.append((row["media_id"], row["media_type"]))
         return ids

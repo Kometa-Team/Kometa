@@ -355,7 +355,7 @@ class Operations:
             def record_image_operation(result, image_type, level):
                 if result:
                     operation, source, status = result
-                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
+                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets", "ytmusic": "YouTube Music"}.get(str(source).lower(), str(source))
                     image_operation_counts[(operation, source, image_type, level, status)] += 1
 
             # Pre-warms reload data for the whole library in batched requests instead of one per item - see plex.py's bulk_reload().
@@ -1258,6 +1258,12 @@ class Operations:
                                 image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
                             elif source == "tmdb":
                                 image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "ytmusic":
+                                try:
+                                    image_url = self.config.YouTubeMusic.artist_image_url(item.title, background=not is_poster) if self.library.is_music and self.config.YouTubeMusic else None
+                                except Exception as e:
+                                    logger.warning(f"YouTube Music Warning: unable to fetch artwork for {item.title} ({type(e).__name__}); continuing with the next image source")
+                                    image_url = None
                             elif source == "plex":
                                 return "plex", None
                             else:

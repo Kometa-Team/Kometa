@@ -529,9 +529,9 @@ def item_title(item):
     elif isinstance(item, Movie) and item.year:
         return f"{item.title} ({item.year})"
     elif isinstance(item, Album):
-        return f"{item.parentTitle}: {item.title}"
+        return f"{item.parentTitle} - {item.title}"
     elif isinstance(item, Track):
-        return f"{item.grandparentTitle}: {item.parentTitle}: {item.title}"
+        return f"{item.grandparentTitle} - {item.title}"
     else:
         return item.title
 
