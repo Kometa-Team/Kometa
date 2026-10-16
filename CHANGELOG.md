@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
 - Add `music_playlists` to Music library collection files for building Music Playlists.
 - Add Last.fm connector and various music builders.
 - Add YouTube Music builders for music libraries and operation for updating artist images
@@ -19,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Build Music smart playlist filters as track queries while retaining artist- and album-level filter fields, so the query results match the playlist's track contents.
 - Resolve `label` filters in Music libraries to the selected artist, album, or track label field.
 - Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.

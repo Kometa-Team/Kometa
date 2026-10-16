@@ -145,8 +145,8 @@ Builders use third-party services to source items to be added to the collection.
 
     ??? quicklink "Popular Builders"
 
-        - [:material-movie-search: Tautulli Popular](../tautulli/popular) - Gets  every movie/show in the Tautulli Most Popular List
-        - [:material-movie-search: Tautulli Watched](../tautulli/watched) - Gets every movie/show in the Tautulli Most Watched List
+        - [:material-movie-search: Tautulli Popular](../tautulli/popular) - Gets movies/shows or artists/albums/tracks from Tautulli's popular lists
+        - [:material-movie-search: Tautulli Top](../tautulli/top) - Gets most-played movies/shows or artists/albums/tracks
 
 !!! builder
 

@@ -323,14 +323,37 @@ playlists:
     sync_mode: sync
     schedule: weekly(monday)
 
-  Tautulli Watched Playlist:
+  Tautulli Top Playlist:
     libraries:
       - Movies
       - TV Shows
-    tautulli_watched:
+    tautulli_top:
       list_days: 30
       list_size: 20
       list_minimum: 5
+    sync_mode: sync
+
+  Tautulli Popular Music Playlist:
+    libraries: Music
+    tautulli_popular:
+      list_days: 30
+      list_size: 20
+      list_minimum: 1
+    sync_mode: sync
+
+  Tautulli Top Music Playlist:
+    libraries: Music
+    tautulli_top:
+      list_days: 90
+      list_size: 25
+      list_minimum: 2
+    sync_mode: sync
+
+  Tautulli Legacy Watched Playlist:
+    libraries: Movies
+    tautulli_watched:
+      list_days: 30
+      list_size: 20
     sync_mode: sync
 
   # ---------------------------------------------------------------------------

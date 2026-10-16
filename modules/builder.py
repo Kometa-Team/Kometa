@@ -29,6 +29,8 @@ ytmusic_track_builders = ("ytmusic_list",)
 def _default_music_level(methods):
     if "lastfm_user_top_albums" in methods:
         return "album"
+    if "tautulli_top" in methods or "tautulli_watched" in methods:
+        return "album"
     if any(method in methods for method in (*lastfm_track_builders, *ytmusic_track_builders)):
         return "track"
     return "artist"
@@ -674,8 +676,7 @@ custom_sort_builders = [
     "tracearr_watch_time",
     "tracearr_in_progress",
     "tracearr_watched_media",
-    "tautulli_popular",
-    "tautulli_watched",
+    *tautulli.builders,
     "mdblist_list",
     "letterboxd_list",
     *letterboxd.semantic_builders,
@@ -755,6 +756,7 @@ parts_collection_valid = (
         "lastfm_user_tags",
         "lastfm_tag_charts",
         "lastfm_chart_top_tracks",
+        *tautulli.music_builders,
         *ytmusic.builders,
         "collection_filtering",
         "collection_mode",
@@ -826,6 +828,7 @@ playlist_attributes = (
     + custom_sort_builders
     + lidarr.builders
     + ["plex_all", "plex_id", "plex_rating_key"]
+    + tautulli.music_builders
     + summary_details
     + poster_details
     + radarr_details
@@ -860,6 +863,7 @@ music_attributes = (
     + lidarr.builders
     + lastfm.builders
     + ytmusic.builders
+    + tautulli.music_builders
 )
 
 
@@ -3590,7 +3594,7 @@ class CollectionBuilder:
         for dict_data in util.parse(self.Type, method_name, method_data, datatype="listdict"):
             dict_methods = {dm.lower(): dm for dm in dict_data}
             final_dict = {
-                "list_type": "popular" if method_name == "tautulli_popular" else "watched",
+                "list_type": tautulli.builder_types[method_name],
                 "list_days": util.parse(
                     self.Type,
                     "list_days",
@@ -3618,6 +3622,7 @@ class CollectionBuilder:
                     default=0,
                     parent=method_name,
                 ),
+                "builder_level": ("track" if self.playlist else self.builder_level) if self.library.is_music else None,
             }
             buff = final_dict["list_size"] * 3
             if self.library.Tautulli.has_section:
