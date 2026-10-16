@@ -3542,7 +3542,7 @@ class CollectionBuilder:
                 dict_methods = {dm.lower(): dm for dm in dict_data}
                 if method_name == "plex_search":
                     try:
-                        self.builders.append((method_name, dict_data if self.playlist else self.build_filter("plex_search", dict_data)))
+                        self.builders.append((method_name, self.build_filter("plex_search", dict_data) if self.music_playlist or not self.playlist else dict_data))
                     except FilterFailed as e:
                         if self.ignore_blank_results:
                             raise

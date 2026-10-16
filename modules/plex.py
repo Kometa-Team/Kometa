@@ -185,6 +185,7 @@ search_translation = {
     "album_source": "album.source",
     "album_label": "album.label",
     "track_mood": "track.mood",
+    "track_genre": "track.genre",
     "track_title": "track.title",
     "track_plays": "track.viewCount",
     "track_last_played": "track.lastViewedAt",
@@ -648,6 +649,7 @@ tag_attributes = [
     "album_source",
     "album_label",
     "track_mood",
+    "track_genre",
     "track_source",
     "track_label",
 ]
