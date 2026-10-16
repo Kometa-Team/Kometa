@@ -178,6 +178,7 @@ kometateam
 kometautils
 Kubernetes
 Kuesel
+lastfm
 Launchd
 Lavagirl
 Letterboxd
