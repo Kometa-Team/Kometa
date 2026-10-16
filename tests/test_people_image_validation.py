@@ -88,3 +88,44 @@ def test_session_validation_caches_missing_response():
             requests.get_image(PEOPLE_URL, session=session, validate_only=True)
     assert session.head.call_count == 1
     mock_head.assert_not_called()
+
+
+@pytest.mark.parametrize("failure", ["rate_limit", "server_error", "timeout"])
+def test_temporary_validation_failure_is_reported_distinctly_and_can_recover(monkeypatch, failure):
+    from requests import Response
+
+    from modules.request import Requests
+
+    requests, _, _ = make_image_requests()
+    requests.head = Requests.head.__get__(requests, Requests)
+    requests.session = MagicMock()
+    monkeypatch.setattr(Requests.head.retry, "sleep", lambda seconds: None)
+    response = Response()
+    response.status_code = 429 if failure == "rate_limit" else 503
+    response.url = PEOPLE_URL
+    response.headers["Retry-After"] = "0"
+    success = Response()
+    success.status_code = 200
+    success.headers["Content-Type"] = "image/jpeg"
+    attempts = 1 if failure == "server_error" else 6
+    error = ReadTimeout("network timeout") if failure == "timeout" else response
+    requests.session.head.side_effect = [error] * attempts + [success]
+    test_logger = MagicMock()
+    monkeypatch.setattr("modules.builder.logger", test_logger)
+    library = make_plex(config=SimpleNamespace(Requests=requests))
+    monkeypatch.setattr("modules.library.logger", test_logger)
+
+    for expected_attribute in ["tmdb_person", "url_poster"]:
+        builder = make_builder(config=SimpleNamespace(Requests=requests), posters={"tmdb_person": TMDB_URL})
+        builder._poster("url_poster", PEOPLE_URL)
+        selected = library.pick_image("Gil Netter (Producer)", builder.posters, False, False, None)
+        assert selected.attribute == expected_attribute
+
+    assert requests.session.head.call_count == attempts + 1
+    test_logger.warning.assert_called_once()
+    message = test_logger.warning.call_args.args[0]
+    assert "Poster validation failed" in message
+    assert "No Poster Found" not in message
+    assert "Trying another available poster source" in message
+    assert {"rate_limit": "Too many requests", "server_error": "503", "timeout": "Unable to reach Image URL"}[failure] in message
+    test_logger.stacktrace.assert_not_called()

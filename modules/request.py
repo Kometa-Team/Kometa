@@ -12,7 +12,7 @@ from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
 
 from modules import timings, util
 from modules.poster import ImageData
-from modules.util import Failed
+from modules.util import Failed, ImageNotFound
 
 logger = util.logger
 
@@ -165,28 +165,29 @@ class Requests:
         cache_key = (url, validate_only)
         if cache_key in self._image_url_cache:
             response = self._image_url_cache[cache_key]
-        else:
-            # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
-            if validate_only and url.startswith(self.stable_asset_prefixes):
-                return None
-            # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
-            with timings.tag_context("image"):
-                try:
-                    if validate_only:
-                        # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
-                        response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
-                    else:
-                        response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
-                except RequestException as e:
-                    # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
-                    raise Failed(f"Image Error: Unable to reach Image URL: {url} ({e})")
+            if response.status_code == 404:
+                raise ImageNotFound(f"Image Error: Not Found on Image URL: {url}")
+            return response
+        # Skip the network round-trip entirely for validate_only checks against Kometa's own stable asset URLs - every run was re-validating ~239 static award/chart logos over the network for no reason.
+        if validate_only and url.startswith(self.stable_asset_prefixes):
+            return None
+        # self.get()/self.head(), not a raw session call, so image fetches keep the @retry exponential-backoff those wrappers provide (nightly's leaked version bypassed it).
+        with timings.tag_context("image"):
+            try:
+                if validate_only:
+                    # HEAD-only for validation-only callers (e.g. builder.py's url_poster/url_background/url_logo/url_square_art checks) - same status/Content-Type headers as GET, without downloading the body.
+                    response = self.head(url, header=True) if session is None else session.head(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT, allow_redirects=True)
+                else:
+                    response = self.get(url, header=True) if session is None else session.get(url, headers=get_header(None, True, None), timeout=DEFAULT_TIMEOUT)
+            except (RequestException, RetryError) as e:
+                # Network-level failure (reset, timeout, DNS, etc.) is treated the same as an unreachable image, not a crash
+                reason = e.last_attempt.exception() if isinstance(e, RetryError) else e
+                raise Failed(f"Image Error: Unable to reach Image URL: {url} ({reason})")
         if response.status_code == 404:
-            # Repeated definitions can reference the same missing person poster.
-            # Remember validation misses for this run, without affecting downloads
-            # or suppressing fresh attempts after transient network/server errors.
+            # Memoize confirmed validation misses for this run, independently of downloads.
             if validate_only:
                 self._image_url_cache[cache_key] = response
-            raise Failed(f"Image Error: Not Found on Image URL: {url}")
+            raise ImageNotFound(f"Image Error: Not Found on Image URL: {url}")
         if response.status_code >= 400:
             raise Failed(f"Image Error: {response.status_code} on Image URL: {url}")
         if "Content-Type" not in response.headers or response.headers["Content-Type"] not in self.image_content_types:
