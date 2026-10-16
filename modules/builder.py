@@ -1626,6 +1626,7 @@ class CollectionBuilder:
 
         self.smart_url = None
         self.smart_type_key = None
+        self.smart_filter_result_type = None
         self.smart_label_url = None
         if "smart_url" in methods and (not self.playlist or self.music_playlist) and not self.overlay:
             logger.debug("")
@@ -1994,8 +1995,8 @@ class CollectionBuilder:
                     if self.obj is not None and check_filter != self.library.smart_playlist_filter(self.obj):
                         self.library.update_smart_playlist(self.obj, check_url)
                         logger.info(f"Metadata: Smart Playlist updated to {check_url}")
-                    if self.obj is not None:
-                        self.beginning_count = getattr(self.obj, "leafCount", 0) or 0
+                    if check_url:
+                        self.beginning_count = self._music_playlist_result_count(check_url)
                     if self.obj is not None:
                         self.exists = True
                 else:
@@ -4559,7 +4560,7 @@ class CollectionBuilder:
         if "any" in filter_alias and "all" in filter_alias:
             raise BuilderValidationError(f"{self.Type} Error: Cannot have more than one base")
 
-        if self.builder_level == "item":
+        if self.builder_level == "item" or self.music_playlist:
             if "type" in filter_alias:
                 if plex_filter[filter_alias["type"]] is None:
                     raise BuilderValidationError(f"{self.Type} Error: type attribute is blank")
@@ -4640,7 +4641,10 @@ class CollectionBuilder:
                     final_attr = f"{attr}{modifier}"
 
                 def build_url_arg(arg, mod=None, arg_s=None, mod_s=None):
-                    arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr in ["folder_location", "audio_codec"] else plex.search_translation[attr] if attr in plex.search_translation else attr
+                    if self.library.is_music and attr in ["year", "unmatched", "trash", "record_label"]:
+                        arg_key = {"year": "album.year", "unmatched": "artist.unmatched", "trash": "track.trash", "record_label": "album.studio"}[attr]
+                    else:
+                        arg_key = self.library.get_search_key(attr, libtype=sort_type) if attr in ["folder_location", "audio_codec"] else plex.search_translation[attr] if attr in plex.search_translation else attr
                     arg_key = plex.show_translation[arg_key] if self.library.is_show and arg_key in plex.show_translation else arg_key
                     if mod is None:
                         mod = plex.modifier_translation[modifier] if modifier in plex.modifier_translation else modifier
@@ -4685,9 +4689,10 @@ class CollectionBuilder:
                         validation = self.validate_attribute(attr, modifier, final_attr, _data, validate, plex_search=True, plex_search_type=sort_type)
                         if validation is not False and validation != 0 and not validation:
                             continue
-                        elif attr in plex.date_attributes and modifier in ["", ".not"]:
-                            last_text = "is not in the last" if modifier == ".not" else "is in the last"
-                            last_mod = "%3E%3E" if modifier == "" else "%3C%3C"
+                        elif attr in plex.date_attributes and modifier in ["", ".not", ".last", ".notlast"]:
+                            is_not_last = modifier in [".not", ".notlast"]
+                            last_text = "is not in the last" if is_not_last else "is in the last"
+                            last_mod = "%3C%3C" if is_not_last else "%3E%3E"
                             search_mod = validation[-1]  # type: ignore[index]
                             if search_mod == "o":
                                 validation = f"{validation[:-1]}mon"  # type: ignore[index]
@@ -4762,6 +4767,13 @@ class CollectionBuilder:
                 raise BuilderValidationError(f"{self.Type} Error: {base} must be a dictionary: {plex_filter[filter_alias[base]]}")
             base_dict = plex_filter[filter_alias[base]]
         built_filter, filter_text = _filter(base_dict, is_all=base_all)
+        if self.music_playlist_smart:
+            if "artist." in built_filter:
+                self.smart_filter_result_type = "artist"
+            elif "album." in built_filter:
+                self.smart_filter_result_type = "album"
+            else:
+                self.smart_filter_result_type = sort_type
         filter_details = f"{filter_details}Filter:{filter_text}"
         if len(built_filter) > 0:
             final_filter = built_filter[:-1] if base_all else f"push=1&{built_filter}pop=1"
@@ -4805,6 +4817,11 @@ class CollectionBuilder:
         elif attribute in string_attributes and modifier in ["", ".not", ".is", ".isnot", ".begins", ".ends"]:
             return smart_pair(util.get_list(data, split=False))
         elif attribute in year_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+            def _parse_year(value, minimum=None):
+                if attribute in ["decade", "album_decade"] and str(value).lower().endswith("s"):
+                    value = str(value)[:-1]
+                return util.parse(self.Type, final, value, datatype="int", minimum=minimum)
+
             if modifier in ["", ".not"]:
                 final_years = []
                 values = util.get_list(data) or []
@@ -4816,7 +4833,7 @@ class CollectionBuilder:
                         except ValueError:
                             raise BuilderValidationError(f"{self.Type} Error: {final} attribute modifier invalid '{year_values[1]}'")
                     else:
-                        final_years.append(util.parse(self.Type, final, value, datatype="int"))
+                        final_years.append(_parse_year(value))
                 return smart_pair(final_years)
             else:
                 if str(data).startswith("current_year"):
@@ -4825,8 +4842,8 @@ class CollectionBuilder:
                         return datetime.now().year - (0 if len(year_values) == 1 else int(year_values[1].strip()))
                     except ValueError:
                         raise BuilderValidationError(f"{self.Type} Error: {final} attribute modifier invalid '{year_values[1]}'")
-                return util.parse(self.Type, final, data, datatype="int", minimum=0)
-        elif (attribute in number_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]) or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
+                return _parse_year(data, minimum=0)
+        elif (attribute in number_attributes and modifier in ["", ".is", ".isnot", ".not", ".gt", ".gte", ".lt", ".lte"]) or (attribute in tag_attributes and modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]):
             return util.parse(self.Type, final, data, datatype="int", minimum=None if attribute == "stinger_rating" else 0)  # pyright: ignore[reportArgumentType]  # parse/check_int support None bounds; the default infers int.
         elif attribute == "origin_country":
             return util.get_list(data, upper=True)
@@ -4923,14 +4940,44 @@ class CollectionBuilder:
                 return util.validate_date(datetime.now() if data == "today" else data, return_as="%Y-%m-%d")
             except Failed as e:
                 raise Failed(f"{self.Type} Error: {final}: {e}")
-        elif attribute in date_attributes and modifier in ["", ".not"]:
+        elif attribute in date_attributes and modifier in ["", ".not", ".last", ".notlast"]:
             search_mod = "d"
-            if plex_search and data and str(data)[-1] in ["s", "m", "h", "d", "w", "o", "y"]:
-                search_mod = str(data)[-1]
-                data = str(data)[:-1]
+            if plex_search and data:
+                duration = str(data).lower().strip()
+                duration_modifiers = [
+                    ("months", "o"),
+                    ("month", "o"),
+                    ("seconds", "s"),
+                    ("second", "s"),
+                    ("minutes", "m"),
+                    ("minute", "m"),
+                    ("hours", "h"),
+                    ("hour", "h"),
+                    ("days", "d"),
+                    ("day", "d"),
+                    ("weeks", "w"),
+                    ("week", "w"),
+                    ("years", "y"),
+                    ("year", "y"),
+                    ("min", "m"),
+                    ("mon", "o"),
+                    ("s", "s"),
+                    ("h", "h"),
+                    ("d", "d"),
+                    ("w", "w"),
+                    ("m", "o"),
+                    ("o", "o"),
+                    ("y", "y"),
+                ]
+                for suffix, modifier_value in duration_modifiers:
+                    if duration.endswith(suffix):
+                        search_mod = modifier_value
+                        duration = duration[: -len(suffix)].strip()
+                        break
+                data = duration
             search_data = util.parse(self.Type, final, data, datatype="int", minimum=0)
             return f"{search_data}{search_mod}" if plex_search else search_data
-        elif attribute in float_attributes and modifier in ["", ".not", ".gt", ".gte", ".lt", ".lte"]:
+        elif attribute in float_attributes and modifier in ["", ".not", ".is", ".isnot", ".gt", ".gte", ".lt", ".lte"]:
             return util.parse(self.Type, final, data, datatype="float", minimum=0, maximum=None if attribute == "duration" else 10)
         elif attribute in boolean_attributes or (attribute in float_attributes and modifier in [".rated"]):
             return util.parse(self.Type, attribute, data, datatype="bool")
@@ -5495,6 +5542,22 @@ class CollectionBuilder:
             self.items = self.found_items
         if not self.items and self.mdb_list_arr_ids is None:
             raise Failed(f"Plex Error: No {self.Type} items found")
+
+    def _music_playlist_result_count(self, filter_url):
+        result_type = self.smart_filter_result_type
+        if result_type is None:
+            if "artist." in filter_url or "unmatched=" in filter_url:
+                result_type = "artist"
+            elif "album." in filter_url:
+                result_type = "album"
+            else:
+                result_type = "track"
+        result_type_key = plex.sort_types[result_type][1]
+        query_parts = filter_url.split("?", 1)
+        if len(query_parts) == 2:
+            query = "&".join(f"type={result_type_key}" if part.startswith("type=") else part for part in query_parts[1].split("&"))
+            filter_url = f"?{query}"
+        return len(self.library.fetchItems(filter_url))
 
     def _safe_tmdb_lookup(self, getter, tmdb_id, item_type):
         try:

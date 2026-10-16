@@ -17,7 +17,18 @@ have one base attribute and all filter attributes must be under the base.
 
 For Music filters, `label` matches labels on the selected type: artists use `artist_label`, albums use `album_label`, and tracks use `track_label`. You can also use those type-specific filter names directly.
 
-Music smart playlists always contain tracks. You can still filter by artist- or album-level fields (for example, `artist_mood`); Plex applies those rules to the tracks in the playlist.
+Music smart playlists always contain tracks. You can still filter by artist- or album-level fields (for example, `artist_mood`); Plex applies those rules to the tracks in the playlist. Kometa's `Items Found` count uses artist results for artist filters and album results for album filters, so it reports the matching titles even though the playlist itself contains tracks.
+
+Numeric Music filters use comparison modifiers. For example, this creates a playlist of tracks with exactly one skip:
+
+```yaml
+music_playlists:
+  Skipped Tracks:
+    smart_filter:
+      type: track
+      all:
+        track_skips.is: 1
+```
 
 Inside the base attribute you can use any filter below or nest more `any` or `all`. You can have as many nested `any` 
 or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.

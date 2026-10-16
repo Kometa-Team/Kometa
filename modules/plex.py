@@ -155,6 +155,7 @@ search_translation = {
     "season_label": "season.label",
     "episode_label": "episode.label",
     "artist_title": "artist.title",
+    "artist_rating": "artist.userRating",
     "artist_user_rating": "artist.userRating",
     "artist_genre": "artist.genre",
     "artist_collection": "artist.collection",
@@ -162,6 +163,7 @@ search_translation = {
     "artist_mood": "artist.mood",
     "artist_style": "artist.style",
     "artist_added": "artist.addedAt",
+    "date_artist_added": "artist.addedAt",
     "artist_last_played": "artist.lastViewedAt",
     "artist_unmatched": "artist.unmatched",
     "artist_label": "artist.label",
@@ -172,6 +174,7 @@ search_translation = {
     "album_plays": "album.viewCount",
     "album_last_played": "album.lastViewedAt",
     "album_user_rating": "album.userRating",
+    "album_rating": "album.userRating",
     "album_critic_rating": "album.rating",
     "album_record_label": "album.studio",
     "album_mood": "album.mood",
@@ -181,6 +184,8 @@ search_translation = {
     "album_collection": "album.collection",
     "album_added": "album.addedAt",
     "album_released": "album.originallyAvailableAt",
+    "date_album_added": "album.addedAt",
+    "date_album_released": "album.originallyAvailableAt",
     "album_unmatched": "album.unmatched",
     "album_source": "album.source",
     "album_label": "album.label",
@@ -192,8 +197,10 @@ search_translation = {
     "track_skips": "track.skipCount",
     "track_last_skipped": "track.lastSkippedAt",
     "track_user_rating": "track.userRating",
+    "track_rating": "track.userRating",
     "track_last_rated": "track.lastRatedAt",
     "track_added": "track.addedAt",
+    "track_added_at": "track.addedAt",
     "track_trash": "track.trash",
     "track_source": "track.source",
     "track_label": "track.label",
@@ -567,7 +574,7 @@ show_only_searches = [
     "episode_unmatched",
     "show_unmatched",
 ]
-string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title", "audio_codec"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "record_label", "track_title", "audio_codec"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
@@ -596,20 +603,24 @@ date_attributes = [
     "last_played",
     "episode_last_played",
     "artist_added",
+    "date_artist_added",
     "artist_last_played",
     "album_last_played",
     "album_added",
     "album_released",
+    "date_album_added",
+    "date_album_released",
     "track_last_played",
     "track_last_skipped",
     "track_last_rated",
     "track_added",
+    "track_added_at",
 ]
-date_modifiers = ["", ".not", ".before", ".after"]
+date_modifiers = ["", ".not", ".before", ".after", ".last", ".notlast"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips", "commonsense_rating"] + year_attributes
-number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
+number_modifiers = [".is", ".isnot", ".gt", ".gte", ".lt", ".lte"]
+float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "artist_rating", "album_user_rating", "album_rating", "album_critic_rating", "track_user_rating", "track_rating"]
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
@@ -660,11 +671,13 @@ searches = (
     + [f"{f}{m}" for f in string_attributes for m in string_modifiers]
     + [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"]
     + [f"{f}{m}" for f in date_attributes for m in date_modifiers]
-    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods]
+    + number_attributes
+    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods or m != ".isnot"]
     + ["commonsense_rating"]
+    + float_attributes
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
-music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+music_searches = [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
 track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
