@@ -190,6 +190,7 @@ kometautils
 Kubernetes
 Kuesel
 Kworb
+Kworb's
 KZ
 lastfm
 Launchd
@@ -368,6 +369,7 @@ Sohjiro's
 Sonarr
 sonarr
 Spotify
+Spotify's
 Springland
 SSL
 ssl
