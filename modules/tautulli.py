@@ -40,8 +40,12 @@ class Tautulli:
         if is_music and builder_level == "track":
             return self._get_music_tracks(data, all_items)
 
-        item_type = {"artist": Artist, "album": Album}[builder_level] if is_music else Show if self.library.is_show else Movie
-        item_label = builder_level.capitalize() if is_music else "Shows" if self.library.is_show else "Movies"
+        if is_music:
+            item_type = Artist if builder_level == "artist" else Album
+            item_label = "Artist" if builder_level == "artist" else "Album"
+        else:
+            item_type = Show if self.library.is_show else Movie
+            item_label = "Shows" if self.library.is_show else "Movies"
         stat_id = f"{list_type}_{'music' if is_music else 'tv' if self.library.is_show else 'movies'}"
         logger.info(f"Processing Tautulli Most {data['list_type'].capitalize()}: {data['list_size']} {item_label}")
         item_count = int(data["list_size"])
