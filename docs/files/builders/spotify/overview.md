@@ -10,6 +10,6 @@ Spotify chart data is provided by [Kworb](https://kworb.net/spotify/). The `spot
 |:--|:--|:--:|:--:|
 | [`spotify_chart`](chart.md) | Gets tracks from a Spotify daily or weekly country chart | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
 
-The builder supports daily and weekly charts. When Plex returns multiple exact artist and track matches, Kometa chooses the one from the earliest known album release. Use `collection_order: custom` to preserve the chart's position order.
+Set `chart` to `daily` or `weekly`. When Plex returns multiple exact artist and track matches, Kometa chooses the one from the earliest known album release. Use `collection_order: custom` to preserve the chart's position order.
 
 See [Spotify Chart Builder](chart.md) for configuration examples and supported country codes.

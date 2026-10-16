@@ -98,21 +98,21 @@ class SpotifyChart:
     @staticmethod
     def validate(value):
         if not isinstance(value, dict):
-            raise Failed("Spotify Chart Error: spotify_chart must be a dictionary with country and type")
+            raise Failed("Spotify Chart Error: spotify_chart must be a dictionary with country and chart")
         methods = {str(key).lower(): key for key in value}
         country = value.get(methods.get("country"))
-        chart_type = value.get(methods.get("type"))
+        chart_type = value.get(methods.get("chart"))
         if country is None or not str(country).strip():
             raise Failed("Spotify Chart Error: country is required")
         if chart_type is None or str(chart_type).strip().lower() not in chart_types:
-            raise Failed("Spotify Chart Error: type must be daily or weekly")
-        unexpected = set(methods) - {"country", "type"}
+            raise Failed("Spotify Chart Error: chart must be daily or weekly")
+        unexpected = set(methods) - {"country", "chart"}
         if unexpected:
             raise Failed(f"Spotify Chart Error: unsupported attributes: {', '.join(sorted(unexpected))}")
-        return {"country": normalize_country(country), "type": str(chart_type).strip().lower()}
+        return {"country": normalize_country(country), "chart": str(chart_type).strip().lower()}
 
     def get_chart(self, value):
-        url = urljoin(self.base_url, f"{value['country']}_{value['type']}.html")
+        url = urljoin(self.base_url, f"{value['country']}_{value['chart']}.html")
         try:
             response = self.session.get(url, timeout=30, headers={"User-Agent": "Kometa/SpotifyChart"})
             response.raise_for_status()

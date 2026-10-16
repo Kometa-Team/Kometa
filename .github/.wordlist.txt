@@ -4,6 +4,7 @@ ACL
 Addon
 addon
 addons
+AE
 AFI's
 Ahsoka
 AMC
@@ -33,6 +34,7 @@ beetlejuice
 Berlinale
 berlinale
 Bestest
+BG
 BING
 bing
 Bitrate
@@ -69,6 +71,7 @@ config
 Configs
 configs
 CORS
+Costa
 cov
 Cpt
 Cron
@@ -79,6 +82,7 @@ crontab
 Crunchyroll
 customizable
 customizations
+CY
 Deathday
 deduplicate
 deduplication
@@ -90,6 +94,7 @@ Diiivoy
 diiivoy
 diiivoycolor
 DiskStation
+DK
 Dockerfile
 dockerfiles
 Dockerhub
@@ -102,6 +107,8 @@ DTS
 DV
 ee
 eedd
+EG
+El
 Emmys
 ENV
 env
@@ -140,9 +147,12 @@ gzip
 hayu
 HD
 HDR
+HK
 HLG
+HN
 HRA
 https
+HU
 Hulu
 ICheckMovies
 ImageMaid
@@ -165,6 +175,7 @@ JSON
 json
 JustWatch
 Kanopy
+KE
 keepachangelog
 Kenobi
 kesleyalfa
@@ -179,6 +190,7 @@ kometautils
 Kubernetes
 Kuesel
 Kworb
+KZ
 lastfm
 Launchd
 Lavagirl
@@ -201,6 +213,7 @@ Looper
 Lossy
 LSIO
 Luxembourgish
+LV
 MacOS
 macOS
 MAL
@@ -235,6 +248,7 @@ MPAA
 MUBI
 multiline
 MusicBrainz
+MX
 MyAnimeList
 myanimelist
 MyAnimeList's
@@ -246,6 +260,8 @@ nanogenres
 NAS
 natively
 nfr
+NG
+NL
 Nokmål
 NOSUCHLIBRARY
 Notifiarr
@@ -314,6 +330,8 @@ Repo
 repo
 Repos
 repos
+Rica
+RO
 RogerEbert
 Romani
 RSS
@@ -324,20 +342,22 @@ Runtimes
 runtimes
 rw
 sandler
-scrobble
-scrobbled
-scrobbles
 Schemas
 schemas
 SciFi
+scrobble
+scrobbled
+scrobbles
 SDTV
 selectable
 Serializd
 serializd
 Serializd's
+SG
 SHA
 Sharkboy
 ShawShank
+Shortcode
 shoutout
 SIMKL
 Simkl
@@ -360,6 +380,7 @@ stonecutter
 sudo
 Sundance
 sundance
+SV
 Synology
 Systemctl
 Taglist
@@ -405,7 +426,9 @@ tubi
 TVDB
 TVDb
 tvdb
+TW
 txt
+UA
 UI
 UID
 uncompress
@@ -426,8 +449,11 @@ URI
 UserList
 userlist
 UUID
+UY
 validator
+VE
 venv
+VN
 VSCode
 VSCodium
 Walkthrough
@@ -461,3 +487,4 @@ yml
 Yozora
 ytmusic
 YYYY
+ZA

@@ -7,12 +7,14 @@ collections:
   Spotify UK Daily:
     spotify_chart:
       country: UK
-      type: daily
+      chart: daily
     collection_order: custom
     sync_mode: sync
 ```
 
-`country` accepts one of the two-letter codes listed below or a country name listed after them. Codes are case-insensitive; other two-letter codes are passed through to Kworb and work only if Kworb has a matching chart page. `UK` and `United Kingdom` map to Spotify's `gb` chart, `USA` and `United States` map to `us`, and `UAE` / `United Arab Emirates` map to `ae`. `type` must be `daily` or `weekly`. Set `collection_order: custom` to keep the chart's `Pos` order.
+`country` accepts one of the two-letter codes listed below or a country name listed after them. Codes are case-insensitive; other two-letter codes are passed through to Kworb and work only if Kworb has a matching chart page. `UK` and `United Kingdom` map to Spotify's `gb` chart, `USA` and `United States` map to `us`, and `UAE` / `United Arab Emirates` map to `ae`.
+
+`chart` must be `daily` or `weekly`..
 
 Supported country codes:
 

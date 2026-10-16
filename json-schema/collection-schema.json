@@ -45,10 +45,10 @@
         "spotify-chart-entry": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["country", "type"],
+            "required": ["country", "chart"],
             "properties": {
                 "country": { "type": "string", "minLength": 1 },
-                "type": { "type": "string", "enum": ["daily", "weekly"] }
+                "chart": { "type": "string", "enum": ["daily", "weekly"] }
             }
         },
 
