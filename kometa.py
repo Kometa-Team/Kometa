@@ -1360,6 +1360,46 @@ def run_collection(config, library, metadata, requested_collections, music_playl
         # logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 
+def gather_playlist_ids(builder):
+    method, value = builder.builders[0]
+    logger.debug("")
+    logger.debug(f"Builder: {method}: {value}")
+    logger.info("")
+    if method == "plex_watchlist":
+        return builder.libraries[0].get_rating_keys(method, value, True)
+    if "plex" in method:
+        ids = []
+        logged_plex_search = False
+        for pl_library in builder.libraries:
+            try:
+                if method == "plex_search":
+                    builder.library = pl_library
+                    plex_search = builder.build_filter("plex_search", value)
+                    if not logged_plex_search:
+                        search_details = "\n".join(plex_search[1].splitlines()[1:])
+                        logger.info(f"Processing Plex Search{f'{chr(10)}{search_details}' if search_details else ''}")
+                        logged_plex_search = True
+                    ids.extend(pl_library.get_rating_keys(method, plex_search, True, display=False))
+                else:
+                    ids.extend(pl_library.get_rating_keys(method, value, True))
+            except Failed as e:
+                if builder.validate_builders:
+                    raise
+                logger.error(e)
+        return ids
+    if "tautulli" in method:
+        ids = []
+        for pl_library in builder.libraries:
+            try:
+                ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
+            except Failed as e:
+                if builder.validate_builders:
+                    raise
+                logger.error(e)
+        return ids
+    return builder.gather_ids(method, value)
+
+
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     status = {}
@@ -1367,8 +1407,15 @@ def run_playlists(config):
     logger.separator("Playlists")
     logger.info("")
     for playlist_file in config.playlist_files:
-        for mapping_name, playlist_attrs in playlist_file.playlists.items():
+        playlist_definitions = [(name, attrs, None) for name, attrs in playlist_file.playlists.items()]
+        music_libraries = [library for library in config.libraries if library.is_music]
+        for name, attrs in playlist_file.music_playlists.items():
+            playlist_definitions.extend((name, attrs, library) for library in music_libraries)
+        if playlist_file.music_playlists and not music_libraries:
+            logger.error("Playlist Error: music_playlists requires at least one configured Music library")
+        for mapping_name, playlist_attrs, music_library in playlist_definitions:
             playlist_start = datetime.now()
+            status_key = f"{mapping_name} ({music_library.name})" if music_library else mapping_name
             if run_args["tests"] and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
                 no_template_test = True
                 if "template" in playlist_attrs and playlist_attrs["template"]:
@@ -1391,10 +1438,12 @@ def run_playlists(config):
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
             # logger.add_playlist_handler(playlist_log_name)
-            status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+            status[status_key] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             try:
-                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, extra=output_str)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, library=music_library, extra=output_str, music_playlist=music_library is not None)
+                if not builder.libraries:
+                    raise Failed("Playlist Error: No libraries are available for this playlist")
                 stats["names"].append(builder.name)
                 logger.info("")
                 server_name = builder.libraries[0].PlexServer.friendlyName
@@ -1410,60 +1459,25 @@ def run_playlists(config):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                method, value = builder.builders[0]
-                logger.debug("")
-                logger.debug(f"Builder: {method}: {value}")
-                logger.info("")
-                if method == "plex_watchlist":
-                    ids = builder.libraries[0].get_rating_keys(method, value, True)
-                elif "plex" in method:
-                    ids = []
-                    logged_plex_search = False
-                    for pl_library in builder.libraries:
-                        try:
-                            if method == "plex_search":
-                                builder.library = pl_library
-                                plex_search = builder.build_filter("plex_search", value)
-                                if not logged_plex_search:
-                                    search_details = "\n".join(plex_search[1].splitlines()[1:])
-                                    logger.info(f"Processing Plex Search{f'{chr(10)}{search_details}' if search_details else ''}")
-                                    logged_plex_search = True
-                                ids.extend(pl_library.get_rating_keys(method, plex_search, True, display=False))
-                            else:
-                                ids.extend(pl_library.get_rating_keys(method, value, True))
-                        except Failed as e:
-                            if builder.validate_builders:
-                                raise
-                            else:
-                                logger.error(e)
-                elif "tautulli" in method:
-                    ids = []
-                    for pl_library in builder.libraries:
-                        try:
-                            ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
-                        except Failed as e:
-                            if builder.validate_builders:
-                                raise
-                            else:
-                                logger.error(e)
+                if builder.music_playlist_smart:
+                    builder.found_items = []
                 else:
-                    ids = builder.gather_ids(method, value)
+                    builder.filter_and_save_items(gather_playlist_ids(builder))
 
                 builder.display_filters()
-                builder.filter_and_save_items(ids)
 
-                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:
+                if not builder.music_playlist_smart and len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
                     stats["added"] += items_added
-                    status[mapping_name]["added"] += items_added
+                    status[status_key]["added"] += items_added
                     stats["unchanged"] += items_unchanged
-                    status[mapping_name]["unchanged"] += items_unchanged
+                    status[status_key]["unchanged"] += items_unchanged
                     items_removed = 0
                     if builder.sync:
                         items_removed = builder.sync_collection()
                         stats["removed"] += items_removed
-                        status[mapping_name]["removed"] += items_removed
-                elif len(builder.found_items) < builder.minimum:
+                        status[status_key]["removed"] += items_removed
+                elif not builder.music_playlist_smart and len(builder.found_items) < builder.minimum:
                     logger.info("")
                     logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
                     delete_status = f"Minimum {builder.minimum} Not Met"
@@ -1473,26 +1487,26 @@ def run_playlists(config):
                         logger.info(builder.delete())
                         stats["deleted"] += 1
                         delete_status = f"Deleted; {delete_status}"
-                    status[mapping_name]["status"] = delete_status
+                    status[status_key]["status"] = delete_status
 
                 if builder.do_missing and any(missing_item_counts(builder).values()):
                     builder.is_playlist = True
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add
-                    status[mapping_name]["radarr"] += radarr_add
+                    status[status_key]["radarr"] += radarr_add
                     stats["sonarr"] += sonarr_add
-                    status[mapping_name]["sonarr"] += sonarr_add
+                    status[status_key]["sonarr"] += sonarr_add
 
                 run_item_details = True
-                if valid and builder.builders:
+                if valid and (builder.builders or builder.music_playlist_smart):
                     try:
                         builder.load_collection()
                         if builder.created:
                             stats["created"] += 1
-                            status[mapping_name]["status"] = "Created"
+                            status[status_key]["status"] = "Created"
                         elif items_added > 0 or items_removed > 0:
                             stats["modified"] += 1
-                            status[mapping_name]["status"] = "Modified"
+                            status[status_key]["status"] = "Modified"
                     except Failed as e:
                         logger.error(e)
                         run_item_details = False
@@ -1502,9 +1516,9 @@ def run_playlists(config):
                         details_list = builder.update_details()
                         if details_list:
                             pre = ""
-                            if status[mapping_name]["status"] != "Unchanged":
-                                pre = f"{status[mapping_name]['status']} and "
-                            status[mapping_name]["status"] = f"{pre}Updated {', '.join(details_list)}"
+                            if status[status_key]["status"] != "Unchanged":
+                                pre = f"{status[status_key]['status']} and "
+                            status[status_key]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
                 if valid and run_item_details and builder.builders and (builder.item_details or builder.custom_sort):
                     try:
@@ -1526,30 +1540,30 @@ def run_playlists(config):
 
             except Deleted as e:
                 logger.info(e)
-                status[mapping_name]["status"] = "Deleted"
+                status[status_key]["status"] = "Deleted"
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
                     stats["deleted"] += 1
-                    status[mapping_name]["status"] = "Deleted Not Scheduled"
+                    status[status_key]["status"] = "Deleted Not Scheduled"
                 else:
-                    status[mapping_name]["status"] = "Not Scheduled"
+                    status[status_key]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
                 if not isinstance(e, ServiceError):
                     logger.stacktrace()
                 logger.error(e)
-                status[mapping_name]["status"] = "Kometa Failure"
-                status[mapping_name]["errors"].append(e)
+                status[status_key]["status"] = "Kometa Failure"
+                status[status_key]["errors"].append(e)
             except Exception as e:
                 config.notify(f"Unknown Error: {e}", server=server_name, playlist=mapping_name)
                 logger.stacktrace()
                 logger.error(f"Unknown Error: {e}")
-                status[mapping_name]["status"] = "Unknown Error"
-                status[mapping_name]["errors"].append(e)
+                status[status_key]["status"] = "Unknown Error"
+                status[status_key]["errors"].append(e)
             logger.info("")
             playlist_run_time = str(datetime.now() - playlist_start).split(".")[0]
-            status[mapping_name]["run_time"] = playlist_run_time
+            status[status_key]["run_time"] = playlist_run_time
             logger.info("")
             logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
             # logger.remove_playlist_handler(playlist_log_name)

@@ -61,8 +61,9 @@ class Tautulli:
             if entry["stat_id"] == stat_id:
                 items = entry["rows"]
                 break
-        if items is None:
-            raise Failed("Tautulli Error: No Items found in the response")
+        if not items:
+            item_label = "Artists" if is_music and builder_level == "artist" else "Albums" if is_music else item_label
+            raise Failed(f"Tautulli Error: No {item_label} found")
 
         rating_keys = []
         music_counts = {}

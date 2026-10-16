@@ -81,7 +81,7 @@ def detect_schema_type(data: dict) -> str | None:
         return "collection_files"
     if "overlays" in data:
         return "overlay_files"
-    if "playlists" in data:
+    if "playlists" in data or "music_playlists" in data:
         return "playlist_files"
     if "metadata" in data:
         return "metadata_files"

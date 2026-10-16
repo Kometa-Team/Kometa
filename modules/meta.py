@@ -2406,10 +2406,14 @@ class PlaylistFile(DataFile):
         self.data_type = "Playlist"
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
+        self.music_playlists = get_dict("music_playlists", data, self.config.playlist_names)
+        duplicate_names = set(self.playlists).intersection(self.music_playlists)
+        if duplicate_names:
+            raise Failed(f"YAML Error: Playlist names must be unique: {', '.join(str(name) for name in sorted(duplicate_names, key=str))}")
         self.templates = get_dict("templates", data)
         self.external_templates(data)
-        if not self.playlists:
-            raise Failed("YAML Error: playlists attribute is required")
+        if not self.playlists and not self.music_playlists:
+            raise Failed("YAML Error: playlists or music_playlists attribute is required")
         logger.info("Playlist File Loaded Successfully")
 
 

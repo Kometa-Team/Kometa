@@ -6,10 +6,11 @@
     "additionalProperties": false,
     "properties": {
         "playlists": { "$ref": "#/definitions/playlists-map" },
+        "music_playlists": { "$ref": "#/definitions/music-playlists-map" },
         "templates": { "$ref": "#/definitions/templates-map" },
         "external_templates": { "$ref": "#/definitions/external-templates-list" }
     },
-    "required": ["playlists"],
+    "anyOf": [{ "required": ["playlists"] }, { "required": ["music_playlists"] }],
     "definitions": {
 
         "schedule": {
@@ -24,6 +25,13 @@
             "title": "playlists",
             "type": "object",
             "additionalProperties": { "$ref": "#/definitions/playlist-definition" }
+        },
+
+        "music-playlists-map": {
+            "title": "music_playlists",
+            "description": "A mapping of Plex music playlist names to music builders or smart playlist filters.",
+            "type": "object",
+            "additionalProperties": { "type": "object", "additionalProperties": true }
         },
 
         "playlist-definition": {
