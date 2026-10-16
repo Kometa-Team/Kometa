@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
 - Make up to three attempts for Plex image uploads returning HTTP 502, 503, or 504, and report retries with the item and image details instead of a traceback, including artwork resets and overlay uploads/removal.
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713
+- Avoid quadratic item deduplication across builder entries and while compiling overlay item lists, reducing episode-overlay preparation work for large libraries while preserving item order, limits, and existing filters. #3722
 
 ## [v2.5.3] - 2026-10-12
 
