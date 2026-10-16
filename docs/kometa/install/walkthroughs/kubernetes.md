@@ -221,7 +221,7 @@ data:
       Tautulli Most Popular Movies:
         sync_mode: sync
         collection_order: custom
-        tautulli_watched:
+        tautulli_top:
           list_days: 180
           list_size: 10
           list_minimum: 1

@@ -135,6 +135,8 @@ class TestTautulli:
         t.api = "http://tautulli:8181/api/v2?apikey=fake"
         t.library = MagicMock()
         t.library.is_movie = True
+        t.library.is_show = False
+        t.library.is_music = False
         t.has_section = False
         return t
 
@@ -163,6 +165,80 @@ class TestTautulli:
             all_items=True,
         )
         assert result == [("101", "ratingKey")]
+
+    @pytest.mark.parametrize("level", ["artist", "album"])
+    @pytest.mark.parametrize("list_type, stat_id", [("popular", "popular_music"), ("top", "top_music")])
+    def test_get_rating_keys_supports_music_levels(self, adapter, monkeypatch, level, list_type, stat_id):
+        monkeypatch.setattr("modules.tautulli.logger", FakeLogger())
+        adapter.library.is_movie = False
+        adapter.library.is_show = False
+        adapter.library.is_music = True
+        adapter.section_id = 1
+        adapter._request = MagicMock(
+            return_value={
+                "response": {
+                    "data": [
+                        {
+                            "stat_id": stat_id,
+                            "rows": [
+                                {"rating_key": "101", "section_id": 1, "media_type": "track", "grandparent_rating_key": "201", "title": "Test", "year": 2023, "users_watched": 100, "total_plays": 200},
+                            ],
+                        }
+                    ]
+                }
+            }
+        )
+        from plexapi.audio import Album as PlexAlbum
+        from plexapi.audio import Artist as PlexArtist
+        from plexapi.audio import Track as PlexTrack
+
+        plex_types = {"artist": PlexArtist, "album": PlexAlbum, "track": PlexTrack}
+        track = MagicMock(spec=PlexTrack)
+        track.parentRatingKey = 201
+        target_item = MagicMock(spec=plex_types[level])
+        adapter.library.fetch_item = MagicMock(side_effect=[track, target_item] if level == "album" else [target_item])
+        adapter.library.exact_search = MagicMock()
+        result = adapter.get_rating_keys(
+            {"list_type": list_type, "list_size": 10, "list_days": 30, "list_buffer": 0, "list_minimum": 0, "builder_level": level},
+            all_items=True,
+        )
+        assert result == [("101" if level == "track" else "201", "ratingKey")]
+        stats_call = next(call for call in adapter._request.call_args_list if call.args[0] == "get_home_stats")
+        assert stats_call.kwargs["params"]["stats_count"] == 100
+
+    @pytest.mark.parametrize("list_type", ["popular", "top"])
+    def test_get_rating_keys_returns_tautulli_music_tracks_from_history(self, adapter, monkeypatch, list_type):
+        monkeypatch.setattr("modules.tautulli.logger", FakeLogger())
+        adapter.library.is_movie = False
+        adapter.library.is_show = False
+        adapter.library.is_music = True
+        adapter.section_id = 1
+        adapter._request = MagicMock(
+            return_value={
+                "response": {
+                    "data": {
+                        "recordsFiltered": 3,
+                        "data": [
+                            {"rating_key": 101, "user_id": 1, "group_count": 1},
+                            {"rating_key": 202, "user_id": 1, "group_count": 1},
+                            {"rating_key": 202, "user_id": 2, "group_count": 1},
+                        ],
+                    }
+                }
+            }
+        )
+        from plexapi.audio import Track as PlexTrack
+
+        adapter.library.fetch_item = MagicMock(return_value=MagicMock(spec=PlexTrack))
+        result = adapter.get_rating_keys(
+            {"list_type": list_type, "list_size": 1, "list_days": 30, "list_buffer": 0, "list_minimum": 1, "builder_level": "track"},
+            all_items=False,
+        )
+        assert result == [("202", "ratingKey")]
+        api_call = adapter._request.call_args
+        assert api_call.args[0] == "get_history"
+        assert api_call.kwargs["params"]["section_id"] == 1
+        assert api_call.kwargs["params"]["media_type"] == "track"
 
 
 class TestTracearr:

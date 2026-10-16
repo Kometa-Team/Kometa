@@ -37,16 +37,21 @@ def music_title_key(value):
 class MusicMatcher:
     """Resolve external music IDs and unique titles against Plex items."""
 
-    def __init__(self, libraries, level):
+    def __init__(self, libraries, level, load_dates=False):
         if level not in ("artist", "album", "track"):
             raise ValueError(f"Unsupported music level: {level}")
         self.by_mbid = {}
         self.by_title = {}
         self.tracks_by_artist_title = {}
+        self.track_album_dates = {}
         for library in libraries:
             if not library.is_music:
                 continue
-            for item in library.get_all(builder_level=level):
+            library_items = library.get_all(builder_level=level, load=load_dates) if load_dates else library.get_all(builder_level=level)
+            album_dates = {}
+            if load_dates and level == "track":
+                album_dates = {album.ratingKey: getattr(album, "originallyAvailableAt", None) or getattr(album, "year", None) for album in library.get_all(builder_level="album")}
+            for item in library_items:
                 for guid in getattr(item, "guids", []):
                     guid_id = str(guid.id)
                     if guid_id.lower().startswith("mbid://"):
@@ -62,6 +67,8 @@ class MusicMatcher:
                 else:
                     title_key = (music_title_key(item.grandparentTitle), music_title_key(item.parentTitle), music_title_key(item.title))
                     self.tracks_by_artist_title.setdefault((music_title_key(item.grandparentTitle), music_title_key(item.title)), []).append(item)
+                    album_date = album_dates.get(getattr(item, "parentRatingKey", None))
+                    self.track_album_dates[item.ratingKey] = album_date or getattr(item, "parentYear", None)
                 self.by_title.setdefault(title_key, []).append(item)
 
     def match(self, mbid=None, artist=None, album=None, track=None):
@@ -84,6 +91,26 @@ class MusicMatcher:
         if len(matches) == 1:
             return matches[0], None
         return None, "ambiguous" if len(matches) > 1 else "not found"
+
+    def match_earliest_track(self, artist, track):
+        """Choose the exact artist/title match whose album has the earliest known release date."""
+        candidates = self.tracks_by_artist_title.get((music_title_key(artist), music_title_key(track)), [])
+        if not candidates:
+            return None, "not found"
+        if len(candidates) == 1:
+            return candidates[0], None
+
+        def release_sort_key(item):
+            date = self.track_album_dates.get(item.ratingKey)
+            if isinstance(date, datetime):
+                date_key = (date.year, date.month, date.day)
+            elif isinstance(date, int):
+                date_key = (date, 0, 0)
+            else:
+                date_key = (9999, 12, 31)
+            return (*date_key, str(getattr(item, "parentTitle", "")).casefold(), item.ratingKey)
+
+        return min(candidates, key=release_sort_key), None
 
 
 PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
@@ -174,6 +201,7 @@ search_translation = {
     "season_label": "season.label",
     "episode_label": "episode.label",
     "artist_title": "artist.title",
+    "artist_rating": "artist.userRating",
     "artist_user_rating": "artist.userRating",
     "artist_genre": "artist.genre",
     "artist_collection": "artist.collection",
@@ -181,6 +209,7 @@ search_translation = {
     "artist_mood": "artist.mood",
     "artist_style": "artist.style",
     "artist_added": "artist.addedAt",
+    "date_artist_added": "artist.addedAt",
     "artist_last_played": "artist.lastViewedAt",
     "artist_unmatched": "artist.unmatched",
     "artist_label": "artist.label",
@@ -191,6 +220,7 @@ search_translation = {
     "album_plays": "album.viewCount",
     "album_last_played": "album.lastViewedAt",
     "album_user_rating": "album.userRating",
+    "album_rating": "album.userRating",
     "album_critic_rating": "album.rating",
     "album_record_label": "album.studio",
     "album_mood": "album.mood",
@@ -200,18 +230,23 @@ search_translation = {
     "album_collection": "album.collection",
     "album_added": "album.addedAt",
     "album_released": "album.originallyAvailableAt",
+    "date_album_added": "album.addedAt",
+    "date_album_released": "album.originallyAvailableAt",
     "album_unmatched": "album.unmatched",
     "album_source": "album.source",
     "album_label": "album.label",
     "track_mood": "track.mood",
+    "track_genre": "track.genre",
     "track_title": "track.title",
     "track_plays": "track.viewCount",
     "track_last_played": "track.lastViewedAt",
     "track_skips": "track.skipCount",
     "track_last_skipped": "track.lastSkippedAt",
     "track_user_rating": "track.userRating",
+    "track_rating": "track.userRating",
     "track_last_rated": "track.lastRatedAt",
     "track_added": "track.addedAt",
+    "track_added_at": "track.addedAt",
     "track_trash": "track.trash",
     "track_source": "track.source",
     "track_label": "track.label",
@@ -331,6 +366,7 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
+    "item.label": "item_label",
     "collection_minimum": "minimum_items",
     "playlist_minimum": "minimum_items",
     "save_missing": "save_report",
@@ -584,7 +620,7 @@ show_only_searches = [
     "episode_unmatched",
     "show_unmatched",
 ]
-string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title", "audio_codec"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "record_label", "track_title", "audio_codec"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
@@ -613,20 +649,39 @@ date_attributes = [
     "last_played",
     "episode_last_played",
     "artist_added",
+    "date_artist_added",
     "artist_last_played",
     "album_last_played",
     "album_added",
     "album_released",
+    "date_album_added",
+    "date_album_released",
     "track_last_played",
     "track_last_skipped",
     "track_last_rated",
     "track_added",
+    "track_added_at",
 ]
-date_modifiers = ["", ".not", ".before", ".after"]
+date_modifiers = ["", ".not", ".before", ".after", ".last", ".notlast"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips", "commonsense_rating"] + year_attributes
-number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
+number_modifiers = [".is", ".isnot", ".gt", ".gte", ".lt", ".lte"]
+float_attributes = [
+    "user_rating",
+    "episode_user_rating",
+    "critic_rating",
+    "episode_critic_rating",
+    "audience_rating",
+    "episode_audience_rating",
+    "duration",
+    "artist_user_rating",
+    "artist_rating",
+    "album_user_rating",
+    "album_rating",
+    "album_critic_rating",
+    "track_user_rating",
+    "track_rating",
+]
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
@@ -666,6 +721,7 @@ tag_attributes = [
     "album_source",
     "album_label",
     "track_mood",
+    "track_genre",
     "track_source",
     "track_label",
 ]
@@ -676,11 +732,15 @@ searches = (
     + [f"{f}{m}" for f in string_attributes for m in string_modifiers]
     + [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"]
     + [f"{f}{m}" for f in date_attributes for m in date_modifiers]
-    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods]
+    + number_attributes
+    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods or m != ".isnot"]
     + ["commonsense_rating"]
+    + float_attributes
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
-music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+music_searches = (
+    [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
+)
 track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
@@ -1822,6 +1882,29 @@ class Plex(Library):
         args = {"type": smart_type, "title": title, "smart": 1, "sectionId": self.Plex.key, "uri": self.build_smart_filter(uri_args)}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
+    def create_smart_playlist(self, title, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        args = {"type": self.Plex.CONTENT_TYPE, "title": title, "smart": 1, "uri": self._smart_playlist_uri(uri_args)}
+        self._query(f"/playlists{utils.joinArgs(args)}", post=True)
+
+    @staticmethod
+    def smart_playlist_filter(playlist):
+        smart_filter = playlist.content
+        if not smart_filter or "?" not in smart_filter:
+            return None
+        return smart_filter[smart_filter.index("?") :]
+
+    def update_smart_playlist(self, playlist, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        self._query(f"{playlist.key}/items{utils.joinArgs({'uri': self._smart_playlist_uri(uri_args)})}", put=True)
+
+    def _smart_playlist_uri(self, uri_args):
+        if str(uri_args).startswith(("http://", "https://")):
+            return uri_args
+        return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
+
     def create_blank_collection(self, title):
         existing_collection = self._collection_by_title(title)
         if existing_collection is not None:
@@ -1833,7 +1916,7 @@ class Plex(Library):
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0]  # noqa
         args = smart_filter[smart_filter.index("?") :]
-        return self.build_smart_filter(args), int(args[args.index("type=") + 5 : args.index("type=") + 6])
+        return args, int(args[args.index("type=") + 5 : args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
@@ -1843,6 +1926,8 @@ class Plex(Library):
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart_filter(self, collection):
+        if isinstance(collection, Playlist):
+            return self.smart_playlist_filter(collection)
         smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
         if not smart_filter or "?" not in smart_filter:
             return None
@@ -3057,6 +3142,9 @@ class Plex(Library):
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
+        if attribute == "item" and modifier == ".label":
+            attribute = f"item_{modifier[1:]}"
+            modifier = ""
         attribute = method_alias[attribute] if attribute in method_alias else attribute
         modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
 

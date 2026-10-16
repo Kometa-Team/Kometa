@@ -128,6 +128,31 @@ def test_top_artists_matches_unique_names_and_reports_missing():
     connector.client.get_charts.assert_called_once_with(country="US")
 
 
+def test_top_artists_falls_back_when_country_chart_contains_albums():
+    library = SimpleNamespace(is_music=True, get_all=Mock(return_value=[]))
+    connector = YouTubeMusic()
+    connector.client = Mock()
+    connector.client.get_charts.side_effect = [
+        {"artists": [{"title": "Wrong Album", "browseId": "MPREb_album"}]},
+        {"artists": [{"title": "Drake", "browseId": "UCU6cE7pdJPc6DU2jSrKEsdQ"}]},
+    ]
+
+    result = connector.get_top_artists("US", library)
+
+    assert json.loads(result[0][0])["artist"] == "Drake"
+    assert [call.kwargs for call in connector.client.get_charts.call_args_list] == [{"country": "US"}, {"country": "ZZ"}]
+
+
+def test_top_artists_rejects_non_artist_browse_ids():
+    library = SimpleNamespace(is_music=True, get_all=Mock(return_value=[]))
+    connector = YouTubeMusic()
+    connector.client = Mock()
+    connector.client.get_charts.return_value = {"artists": [{"title": "Album", "browseId": "MPREb_album"}]}
+
+    with pytest.raises(Failed, match="artist charts are unavailable"):
+        connector.get_top_artists("ZZ", library)
+
+
 def test_dynamic_chart_sections_and_unavailable_section():
     connector = YouTubeMusic()
     connector.client = Mock()

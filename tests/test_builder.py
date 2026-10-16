@@ -97,6 +97,9 @@ def make_builder(**attrs) -> CollectionBuilder:
         "Type": "Collection",
         "builder_level": "movie",
         "playlist": False,
+        "music_playlist": False,
+        "music_playlist_smart": False,
+        "smart_filter_result_type": None,
         "libraries": [],
         "ignore_imdb_ids": [],
         "ignore_ids": [],
@@ -724,6 +727,15 @@ class TestLogEpisodeCount:
 
 
 class TestTextfile:
+    def test_tautulli_builders_are_allowed_for_music_collections(self):
+        assert "tautulli_popular" in builder_module.music_attributes
+        assert "tautulli_top" in builder_module.music_attributes
+        assert "tautulli_watched" in builder_module.music_attributes
+        assert "tautulli_popular" in parts_collection_valid
+        assert "tautulli_top" in parts_collection_valid
+        assert builder_module._default_music_level({"tautulli_popular": True}) == "artist"
+        assert builder_module._default_music_level({"tautulli_top": True}) == "album"
+
     def test_registers_multiple_files_as_single_builder(self):
         builder = make_builder()
         builder.config = SimpleNamespace(
@@ -1420,6 +1432,225 @@ class TestGatherIds:
 
 
 class TestBuildFilter:
+    def test_music_smart_artist_filter_returns_tracks(self):
+        def split(value):
+            for modifier in [".notlast", ".isnot", ".gte", ".gt", ".lte", ".lt", ".before", ".after", ".last", ".is", ".not"]:
+                if value.endswith(modifier):
+                    return value[: -len(modifier)], modifier, value
+            return value, "", value
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({"Airy": "Airy"}, ["Airy"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="item",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"type": "artist", "all": {"artist_mood": "Airy"}},
+            default_sort="random",
+        )
+
+        assert url.startswith("?type=10&")
+        assert "artist.mood=Airy" in url
+        assert "Smart Artist Filter" in details
+
+        _, _, skips_url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {"track_skips.is": 1}},
+            default_sort="random",
+        )
+        assert "track.skipCount%3D=1" in skips_url
+
+        _, _, not_skips_url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {"track_skips.isnot": 1}},
+            default_sort="random",
+        )
+        assert "track.skipCount!%3D=1" in not_skips_url
+
+    def test_music_smart_filter_honors_type_for_artist_level_library(self):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"R&B": "R&B"}, ["R&B"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, default_sort="random")
+
+        assert "Smart Album Filter" in details
+        assert url.startswith("?type=10&")
+        assert builder.smart_filter_result_type == "album"
+
+    def test_music_smart_album_filter_warns_that_tracks_are_used(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr(builder_module, "logger", logger)
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"R&B": "R&B"}, ["R&B"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+        builder.build_filter("smart_filter", {"type": "album", "all": {"album_genre": "R&B"}}, display=True, default_sort="random")
+
+        assert logger.warning_messages == ["Playlist Warning: Smart Playlists do not support albums; the underlying tracks have been added instead"]
+
+    @pytest.mark.parametrize(
+        ("attribute", "value", "plex_field"),
+        [
+            ("artist_title.is", "Artist", "artist.title"),
+            ("artist_rating.is", 5, "artist.userRating"),
+            ("artist_rating.gte", 5, "artist.userRating"),
+            ("artist_genre", "Airy", "artist.genre"),
+            ("artist_collection", "Airy", "artist.collection"),
+            ("artist_country", "Airy", "artist.country"),
+            ("artist_mood", "Airy", "artist.mood"),
+            ("artist_style", "Airy", "artist.style"),
+            ("date_artist_added", 30, "artist.addedAt"),
+            ("date_album_added.last", "10h", "album.addedAt"),
+            ("date_album_released.notlast", "3min", "album.originallyAvailableAt"),
+            ("artist_last_played", 30, "artist.lastViewedAt"),
+            ("unmatched", True, "artist.unmatched"),
+            ("album_title.is", "Artist", "album.title"),
+            ("year", 2020, "album.year"),
+            ("album_decade", "1990s", "album.decade"),
+            ("album_genre", "Airy", "album.genre"),
+            ("album_plays", 1, "album.viewCount"),
+            ("album_last_played", 30, "album.lastViewedAt"),
+            ("album_rating.gte", 5, "album.userRating"),
+            ("album_critic_rating.gte", 5, "album.rating"),
+            ("record_label.is", "Airy", "album.studio"),
+            ("track_last_skipped", 30, "track.lastSkippedAt"),
+            ("track_rating.gte", 5, "track.userRating"),
+            ("track_last_rated", 30, "track.lastRatedAt"),
+            ("track_added_at", 30, "track.addedAt"),
+            ("audio_codec.is", "mp3", "media.audioCodec"),
+            ("trash", True, "track.trash"),
+            ("folder_location", "/music", "source"),
+            ("track_source", "Airy", "track.source"),
+        ],
+    )
+    def test_music_smart_filter_api_fields(self, attribute, value, plex_field):
+        def split(filter_name):
+            for modifier in [".notlast", ".isnot", ".gte", ".gt", ".lte", ".lt", ".before", ".after", ".last", ".is", ".not"]:
+                if filter_name.endswith(modifier):
+                    return filter_name[: -len(modifier)], modifier, filter_name
+            return filter_name, "", filter_name
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({"Airy": "Airy", "Artist": "Artist", "/music": 7}, ["Airy", "Artist", "/music"]),
+            get_search_key=lambda attribute, libtype=None: "media.audioCodec" if attribute == "audio_codec" else "source",
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="item",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, _, url = builder.build_filter(
+            "smart_filter",
+            {"type": "track", "all": {attribute: value}},
+            default_sort="random",
+        )
+
+        assert plex_field in url
+
+        expected_result_type = "artist" if "artist." in plex_field else "album" if plex_field.startswith("album.") else "track"
+        assert builder.smart_filter_result_type == expected_result_type
+
+    @pytest.mark.parametrize(
+        ("filter_url", "result_type", "expected_url", "result_count"),
+        [
+            ("?type=10&sort=titleSort&artist.title=Ariana", "artist", "?type=8&sort=titleSort&artist.title=Ariana", 1),
+            ("?type=10&sort=titleSort&unmatched=1", None, "?type=8&sort=titleSort&unmatched=1", 2),
+            ("?type=10&sort=titleSort&album.genre=Country", "album", "?type=9&sort=titleSort&album.genre=Country", 3),
+            ("?type=10&sort=titleSort&track.skipCount%3D=1", "track", "?type=10&sort=titleSort&track.skipCount%3D=1", 4),
+        ],
+    )
+    def test_music_playlist_result_count_uses_filter_item_type(self, filter_url, result_type, expected_url, result_count):
+        library = SimpleNamespace(fetchItems=MagicMock(return_value=[object()] * result_count))
+        builder = make_builder(library=library, smart_filter_result_type=result_type)
+
+        assert builder._music_playlist_result_count(filter_url) == result_count
+        library.fetchItems.assert_called_once_with(expected_url)
+
+    @pytest.mark.parametrize(
+        ("attribute", "value", "expected_filter"),
+        [
+            ("date_album_added", 10, "album.addedAt%3E%3E=-10d"),
+            ("date_album_added.last", "10h", "album.addedAt%3E%3E=-10h"),
+            ("date_album_added.last", "15min", "album.addedAt%3E%3E=-15m"),
+            ("date_album_added.last", "2m", "album.addedAt%3E%3E=-2mon"),
+            ("date_album_released.notlast", "3d", "album.originallyAvailableAt%3C%3C=-3d"),
+            ("date_album_added.after", "2020-01-01", "album.addedAt%3E%3E=2020-01-01"),
+            ("date_album_released.before", "2020-01-01", "album.originallyAvailableAt%3C%3C=2020-01-01"),
+        ],
+    )
+    def test_music_album_date_filter_modifiers(self, attribute, value, expected_filter):
+        def split(filter_name):
+            for modifier in [".notlast", ".before", ".after", ".last", ".not"]:
+                if filter_name.endswith(modifier):
+                    return filter_name[: -len(modifier)], modifier, filter_name
+            return filter_name, "", filter_name
+
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=split,
+            get_search_choices=lambda *args, **kwargs: ({}, []),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="artist",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, _, url = builder.build_filter("smart_filter", {"type": "album", "all": {attribute: value}}, default_sort="random")
+
+        assert expected_filter in url
+
     def test_raises_on_none_filter(self):
         builder = make_builder()
         import modules.util as util
