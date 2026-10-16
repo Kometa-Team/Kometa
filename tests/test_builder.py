@@ -96,6 +96,8 @@ def make_builder(**attrs) -> CollectionBuilder:
         "Type": "Collection",
         "builder_level": "movie",
         "playlist": False,
+        "music_playlist": False,
+        "music_playlist_smart": False,
         "libraries": [],
         "ignore_imdb_ids": [],
         "ignore_ids": [],
@@ -1415,6 +1417,33 @@ class TestGatherIds:
 
 
 class TestBuildFilter:
+    def test_music_smart_artist_filter_returns_tracks(self):
+        library = SimpleNamespace(
+            is_movie=False,
+            is_show=False,
+            is_music=True,
+            split=lambda value: (value, "", value),
+            get_search_choices=lambda *args, **kwargs: ({"Airy": "Airy"}, ["Airy"]),
+        )
+        builder = make_builder(
+            library=library,
+            builder_level="item",
+            playlist=True,
+            music_playlist=True,
+            music_playlist_smart=True,
+            details={"show_options": False},
+        )
+
+        _, details, url = builder.build_filter(
+            "smart_filter",
+            {"type": "artist", "all": {"artist_mood": "Airy"}},
+            default_sort="random",
+        )
+
+        assert url.startswith("?type=10&")
+        assert "artist.mood=Airy" in url
+        assert "Smart Artist Filter" in details
+
     def test_raises_on_none_filter(self):
         builder = make_builder()
         import modules.util as util

@@ -4583,6 +4583,9 @@ class CollectionBuilder:
         ms = method.split("_")
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()} {ms[1].capitalize()}\n"
         type_default_sort, type_key, sorts = plex.sort_types[sort_type]
+        if self.music_playlist_smart:
+            # Music smart playlists contain tracks even when their rules target artist- or album-level metadata.
+            type_key = plex.sort_types["track"][1]
 
         sort = []
         if "sort_by" in filter_alias:

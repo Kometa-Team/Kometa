@@ -810,7 +810,7 @@ class MetadataFile(DataFile):
                 duplicate_playlists = set(self.music_playlists).intersection(self.collections or {})
                 if duplicate_playlists:
                     raise Failed(f"YAML Error: music_playlists names must be unique from collections: {', '.join(str(name) for name in sorted(duplicate_playlists, key=str))}")
-                playlist_file_conflicts = set(self.music_playlists).intersection(self.config.playlist_names)
+                playlist_file_conflicts = set(self.music_playlists).intersection(getattr(self.config, "playlist_names", []))
                 if playlist_file_conflicts:
                     raise Failed(f"YAML Error: music_playlists names must be unique from Playlist Files: {', '.join(str(name) for name in sorted(playlist_file_conflicts, key=str))}")
                 self.dynamic_collections = get_dict("dynamic_collections", data)

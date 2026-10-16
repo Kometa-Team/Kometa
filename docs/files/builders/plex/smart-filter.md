@@ -17,6 +17,8 @@ have one base attribute and all filter attributes must be under the base.
 
 For Music filters, `label` matches labels on the selected type: artists use `artist_label`, albums use `album_label`, and tracks use `track_label`. You can also use those type-specific filter names directly.
 
+Music smart playlists always contain tracks. You can still filter by artist- or album-level fields (for example, `artist_mood`); Plex applies those rules to the tracks in the playlist.
+
 Inside the base attribute you can use any filter below or nest more `any` or `all`. You can have as many nested `any` 
 or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.
 
