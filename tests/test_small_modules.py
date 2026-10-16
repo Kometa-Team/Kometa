@@ -188,7 +188,9 @@ class TestTautulli:
                 }
             }
         )
-        from plexapi.audio import Album as PlexAlbum, Artist as PlexArtist, Track as PlexTrack
+        from plexapi.audio import Album as PlexAlbum
+        from plexapi.audio import Artist as PlexArtist
+        from plexapi.audio import Track as PlexTrack
 
         plex_types = {"artist": PlexArtist, "album": PlexAlbum, "track": PlexTrack}
         track = MagicMock(spec=PlexTrack)
