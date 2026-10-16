@@ -1337,6 +1337,7 @@ class CollectionBuilder:
         self.has_tmdb_filters = False
         self.has_imdb_filters = False
         self.found_items = []
+        self.found_item_keys = set()
         self.filtered_items = []
         self.filtered_keys = {}
         self.run_again_movies = []
@@ -4542,6 +4543,9 @@ class CollectionBuilder:
         total = len(items)
         max_length = len(str(total))
         found_before = len(self.found_items)
+        # PlexPartialObject equality compares metadata keys. Reuse the index
+        # across builder entries; the ordered list remains the source of output.
+        found_item_keys = self.found_item_keys
         if self.filters and (self.details["show_filtered"] is True or self.details["show_unfiltered"] is True):
             logger.info("")
             logger.info("Filtering Builders:")
@@ -4551,7 +4555,7 @@ class CollectionBuilder:
         if mdb_value_filters:
             value_filter_items = []
             for i, item in enumerate(items, 1):
-                if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item in self.found_items or item.ratingKey in self.filtered_keys:
+                if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.key in found_item_keys or item.ratingKey in self.filtered_keys:
                     continue
                 passed = self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                 standard_filter_results[item.ratingKey] = passed
@@ -4562,7 +4566,7 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
-            if item not in self.found_items:
+            if item.key not in found_item_keys:
                 if item.ratingKey in self.filtered_keys:
                     if self.details["show_filtered"] is True:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
@@ -4571,6 +4575,7 @@ class CollectionBuilder:
                     standard_filters_passed = standard_filter_results[item.ratingKey] if mdb_value_filters else self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                     if standard_filters_passed and self.check_value_filter(item):
                         self.found_items.append(item)
+                        found_item_keys.add(item.key)
                         if self.details["show_unfiltered"] is True:
                             logger.info(f"{name} {self.Type} | = | {current_title}")
                     else:
@@ -5124,6 +5129,7 @@ class CollectionBuilder:
             if self.limit and amount_added + self.beginning_count - len([r for _, r in self.remove_item_map.items() if r is not None]) >= self.limit:
                 logger.info(f"{self.Type} Limit reached")
                 self.found_items = self.found_items[: i - 1]
+                self.found_item_keys = {item.key for item in self.found_items}
                 break
             current_operation = "=" if item.ratingKey in collection_item_keys else "+"
             number_text = f"{i}/{total}"

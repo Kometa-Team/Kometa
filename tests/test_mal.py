@@ -49,3 +49,41 @@ class TestMyAnimeList:
         adapter._jikan_request = MagicMock(return_value={"data": [], "pagination": {"last_visible_page": 1, "items": {"total": 0}}})
         with pytest.raises(ServiceError, match="No MyAnimeList IDs for Search"):
             adapter._pagination("anime", params={"genres": 1}, limit=100)
+
+
+class TestRefresh:
+    @pytest.fixture
+    def adapter(self, monkeypatch):
+        monkeypatch.setattr("modules.mal.logger", FakeLogger())
+        from modules.mal import MyAnimeList
+
+        m = MyAnimeList.__new__(MyAnimeList)
+        m.requests = MagicMock()
+        m.requests.post_json.return_value = {"error": "invalid_grant"}
+        m.authorization = {"access_token": "old", "refresh_token": "rt-1"}
+        m.client_secret = "app-secret"
+        return m
+
+    @pytest.mark.parametrize("client_secret", [None, "", "leftover-secret"])
+    def test_official_client_omits_client_secret(self, adapter, client_secret):
+        from modules.mal import OFFICIAL_CLIENT_ID, urls
+
+        adapter.client_id = OFFICIAL_CLIENT_ID
+        adapter.client_secret = client_secret
+        assert adapter._refresh() is False
+        adapter.requests.post_json.assert_called_once_with(
+            urls["oauth_token"],
+            data={"client_id": OFFICIAL_CLIENT_ID, "refresh_token": "rt-1", "grant_type": "refresh_token"},
+        )
+        assert "client_secret" not in adapter.requests.post_json.call_args.kwargs["data"]
+
+    def test_other_client_posts_client_secret(self, adapter):
+        from modules.mal import urls
+
+        adapter.client_id = "user-app-id"
+        adapter.requests.post_json.return_value = {"error": "invalid_grant"}
+        assert adapter._refresh() is False
+        adapter.requests.post_json.assert_called_once_with(
+            urls["oauth_token"],
+            data={"client_id": "user-app-id", "client_secret": "app-secret", "refresh_token": "rt-1", "grant_type": "refresh_token"},
+        )

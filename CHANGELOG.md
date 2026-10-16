@@ -22,12 +22,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Resolve `label` filters in Music libraries to the selected artist, album, or track label field.
+- Accept a Kometa Utilities "Use Kometa App" MyAnimeList block that omits `client_secret`, and refresh that official app without sending a client secret.
 - Accept `stinger_rating` filters and all numeric modifiers for collections and overlays, including negative integer thresholds. #3732
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
 - Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
+- Make up to three attempts for Plex image uploads returning HTTP 502, 503, or 504, and report retries with the item and image details instead of a traceback, including artwork resets and overlay uploads/removal.
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713
+- Avoid quadratic item deduplication across builder entries and while compiling overlay item lists, reducing episode-overlay preparation work for large libraries while preserving item order, limits, and existing filters. #3722
 
 ## [v2.5.3] - 2026-10-12
 

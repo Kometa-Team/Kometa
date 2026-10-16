@@ -41,6 +41,7 @@ class FakeShowLibrary:
 class FakeEpisode:
     def __init__(self, rating_key, title):
         self.ratingKey = rating_key
+        self.key = f"/library/metadata/{rating_key}"
         self.title = title
 
 
@@ -110,6 +111,7 @@ def make_builder(**attrs) -> CollectionBuilder:
         "details": {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
         "filtered_keys": {},
         "found_items": [],
+        "found_item_keys": set(),
         "do_report": False,
         "obj": None,
         "name": "Test Collection",
@@ -432,6 +434,7 @@ class TestFilterAndSaveItems:
         class FakeArtist:
             def __init__(self, rating_key, title):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = title
                 self.guids = []
 
@@ -471,6 +474,7 @@ class TestFilterAndSaveItems:
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = "Movie with stale TMDb GUID"
 
         logger = FakeLogger()
@@ -548,6 +552,7 @@ class TestFilterAndSaveItems:
         class FakeMovie:
             def __init__(self, rating_key):
                 self.ratingKey = rating_key
+                self.key = f"/library/metadata/{rating_key}"
                 self.title = f"Movie {rating_key}"
 
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
