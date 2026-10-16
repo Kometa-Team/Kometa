@@ -9,7 +9,7 @@ from plexapi.video import Episode, Season
 
 from modules import overlay, plex, timings, util
 from modules.builder import CollectionBuilder, prefetch_gather_ids
-from modules.util import Failed, FilterFailed, NotScheduled, OverlayError
+from modules.util import Failed, FilterFailed, NotScheduled, OverlayError, PlexImageUploadError
 
 logger = util.logger
 
@@ -536,14 +536,16 @@ class Overlays:
                                     raise Failed(e)
 
                         added_titles = []
+                        overlay_item_keys = set(properties[prop_name].keys)
                         if builder.found_items:
                             for item in builder.found_items:
                                 if builder.limit and len(added_titles) >= builder.limit:
                                     break
                                 key_to_item[item.ratingKey] = item
                                 added_titles.append(item)
-                                if item.ratingKey not in properties[prop_name].keys:
+                                if item.ratingKey not in overlay_item_keys:
                                     properties[prop_name].keys.append(item.ratingKey)
+                                    overlay_item_keys.add(item.ratingKey)
                         if added_titles:
                             logger.info(f"{len(added_titles)} Items found for {prop_name}")
                             logger.trace(f"Titles Found: {[self.library.get_item_display_title(a) for a in added_titles]}")
@@ -658,7 +660,11 @@ class Overlays:
             except Failed:
                 pass
         if poster_location:
-            self.library.upload_poster(item, poster_location, url=is_url)
+            try:
+                self.library.upload_poster(item, poster_location, url=is_url)
+            except PlexImageUploadError as e:
+                logger.error(f"Overlay removal skipped for {item_title}: {e}. Continuing the run.")
+                return
             self.library.edit_tags("label", item, remove_tags=[label], do_print=False)
             for loc in locations:
                 if os.path.exists(loc):

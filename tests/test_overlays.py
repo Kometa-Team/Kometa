@@ -428,6 +428,22 @@ class TestRemoveOverlay:
         overlay.remove_overlay(item, "Test Item", "Overlay", ["/tmp/poster.png"])
         overlay.library.edit_tags.assert_called_once_with("label", item, remove_tags=["Overlay"], do_print=False)
 
+    def test_failed_restore_keeps_overlay_label_and_backup(self, overlay, monkeypatch, tmp_path):
+        from modules.util import PlexImageUploadError
+
+        test_logger = MagicMock()
+        monkeypatch.setattr("modules.overlays.logger", test_logger)
+        backup = tmp_path / "poster.png"
+        backup.write_bytes(b"original poster")
+        overlay.library.upload_poster.side_effect = PlexImageUploadError("Plex returned HTTP 502 after 3 upload attempts")
+
+        overlay.remove_overlay(MagicMock(), "Test Item", "Overlay", [str(backup)])
+
+        overlay.library.edit_tags.assert_not_called()
+        assert backup.read_bytes() == b"original poster"
+        test_logger.stacktrace.assert_not_called()
+        assert "Test Item" in test_logger.error.call_args.args[0]
+
     def test_handles_missing_assets_gracefully(self, overlay, monkeypatch):
         monkeypatch.setattr("modules.overlays.logger", FakeLogger())
         overlay.library.find_item_assets.side_effect = Failed("not found")
@@ -435,3 +451,48 @@ class TestRemoveOverlay:
         item = MagicMock()
         overlay.remove_overlay(item, "Test", "Overlay", ["/nonexistent"])
         overlay.library.edit_tags.assert_not_called()
+
+
+class NoMembershipList(list):
+    def __contains__(self, value):
+        raise AssertionError("Overlay compilation must not scan the ordered key list")
+
+
+@pytest.mark.parametrize("limit", [None, 3])
+def test_compile_overlay_keys_preserves_order_and_duplicates_count_toward_limit(monkeypatch, limit):
+    test_logger = FakeLogger()
+    test_logger.separating_character = "="
+    monkeypatch.setattr("modules.overlays.logger", test_logger)
+    overlay_object = SimpleNamespace(mapping_name="Test", keys=NoMembershipList([2]), suppress=[], group=None, weight=0)
+    items = [SimpleNamespace(ratingKey=key, title=str(key)) for key in [2, 1, 2, 3]]
+    builder = SimpleNamespace(overlay=overlay_object, builders=[], found_items=items, limit=limit, display_filters=lambda: None)
+    monkeypatch.setattr("modules.overlays.CollectionBuilder", lambda *args, **kwargs: builder)
+    library = MagicMock(overlay_files=[SimpleNamespace(overlays={"Test": {}})])
+    library.get_item_display_title.side_effect = lambda item: item.title
+    overlays = make_overlays(library=library)
+
+    key_to_overlays, properties = overlays.compile_overlays()
+
+    expected = [2, 1] if limit else [2, 1, 3]
+    assert list(properties["Test"].keys) == expected
+    assert list(key_to_overlays) == expected
+    assert all(names == ["Test"] for _, names in key_to_overlays.values())
+
+
+def test_compile_large_overlay_does_not_scan_ordered_key_list(monkeypatch):
+    test_logger = FakeLogger()
+    test_logger.separating_character = "="
+    monkeypatch.setattr("modules.overlays.logger", test_logger)
+    count = 80_000
+    items = [SimpleNamespace(ratingKey=key, title=str(key)) for key in range(count)]
+    overlay_object = SimpleNamespace(mapping_name="Large", keys=NoMembershipList(), suppress=[], group=None, weight=0)
+    builder = SimpleNamespace(overlay=overlay_object, builders=[], found_items=items, limit=None, display_filters=lambda: None)
+    monkeypatch.setattr("modules.overlays.CollectionBuilder", lambda *args, **kwargs: builder)
+    library = MagicMock(overlay_files=[SimpleNamespace(overlays={"Large": {}})])
+    library.get_item_display_title.side_effect = lambda item: item.title
+    overlays = make_overlays(library=library)
+
+    key_to_overlays, properties = overlays.compile_overlays()
+
+    assert list(properties["Large"].keys) == list(range(count))
+    assert list(key_to_overlays) == list(range(count))

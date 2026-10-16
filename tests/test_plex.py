@@ -242,6 +242,164 @@ class TestImageUpdate:
 
 
 class TestUploadImages:
+    @pytest.fixture
+    def gateway_upload(self, monkeypatch):
+        import modules.library as library_module
+        import modules.plex as plex_module
+        from modules.poster import ImageData
+
+        test_logger = MagicMock()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        cache = MagicMock()
+        cache.query_image_map.return_value = (None, None, None)
+        plex = make_plex(config=SimpleNamespace(Cache=cache), image_table_name="images")
+        plex.reload = MagicMock()
+        monkeypatch.setattr(plex_module, "logger", test_logger)
+        sleeps = []
+        monkeypatch.setattr(Plex._upload_image_request.retry, "sleep", sleeps.append)
+        item = make_plex_item(title="Gil Netter (Producer)")
+
+        def run(artwork):
+            image = ImageData(f"url_{artwork}", "https://example.com/image.jpg", image_type=artwork, is_url=True)
+            return plex.upload_images(item, **{artwork: image})
+
+        return plex, item, cache, test_logger, sleeps, run
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_recovers(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest(f"({status}) gateway error"), BadRequest(f"({status}) gateway error"), None]
+
+        result = run(artwork)
+
+        assert result[("poster", "background", "logo", "square_art").index(artwork)] is True
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_called_once_with(item, force=True)
+        cache.update_image_map.assert_called_once()
+        test_logger.error.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_exhausted_logs_details_without_traceback(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = BadRequest(f"({status}) gateway error; sensitive Plex request details")
+
+        assert run(artwork) == (False, False, False, False)
+
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_not_called()
+        item.refresh.assert_not_called()
+        cache.update_image_map.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+        test_logger.error.assert_called_once()
+        message = test_logger.error.call_args.args[0]
+        assert "Gil Netter (Producer)" in message
+        assert f"HTTP {status} after 3 upload attempts" in message
+        assert "https://example.com/image.jpg" in message
+        assert "Continuing the run" in message
+        assert "sensitive Plex request details" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("url", [False, True])
+    def test_direct_upload_helpers_retry_and_identify_image(self, gateway_upload, artwork, method, url):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        image = "https://example.com/image.jpg" if url else "/posters/local.jpg"
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest("(503) sensitive request text"), None]
+
+        getattr(plex, f"upload_{artwork}")(item, image, url=url)
+
+        assert upload.call_count == 2
+        upload.assert_called_with(**{"url" if url else "filepath": image})
+        assert sleeps == [2]
+        message = test_logger.info.call_args.args[0]
+        assert item.title in message
+        assert artwork in message
+        assert image in message
+        assert "sensitive request text" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_direct_upload_exhaustion_is_not_retried_by_outer_policy(self, gateway_upload, artwork, method):
+        from modules.util import PlexImageUploadError
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        getattr(item, method).side_effect = BadRequest("(502) sensitive request text")
+
+        with pytest.raises(PlexImageUploadError) as error:
+            getattr(plex, f"upload_{artwork}")(item, "/posters/local.jpg")
+
+        assert getattr(item, method).call_count == 3
+        assert sleeps == [2, 5]
+        assert item.title in str(error.value)
+        assert artwork in str(error.value)
+        assert "/posters/local.jpg" in str(error.value)
+        assert "sensitive request text" not in str(error.value)
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_reset_failure_does_not_lock_artwork_or_remove_overlay_label(self, gateway_upload, artwork, method):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        setattr(plex, f"mass_{artwork}_update", {"source": "tmdb"})
+        plex.query = MagicMock()
+        plex.edit_tags = MagicMock()
+        getattr(item, method).side_effect = BadRequest("(504) gateway timeout")
+
+        assert plex.image_update(item, None, tmdb=("tmdb", "https://example.com/image.jpg"), image_type=artwork) == ("Reset", "TMDb", "Failed")
+
+        assert getattr(item, method).call_count == 3
+        plex.query.assert_not_called()
+        plex.edit_tags.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("message", ["(400) bad_request", "(404) not_found", "(401) unauthorized", "(400) body mentions (502)"])
+    def test_permanent_upload_error_is_not_retried_and_retains_traceback(self, gateway_upload, message):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest(message)
+
+        assert run("poster") == (False, False, False, False)
+
+        item.uploadPoster.assert_called_once()
+        item.refresh.assert_called_once()
+        assert sleeps == []
+        test_logger.stacktrace.assert_called_once()
+        cache.update_image_map.assert_not_called()
+
+    def test_exhausted_poster_upload_still_updates_background(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest("(502) bad_gateway")
+        poster = ImageData("url_poster", "https://example.com/poster.jpg")
+        background = ImageData("url_background", "https://example.com/background.jpg", image_type="background")
+
+        result = plex.upload_images(item, poster=poster, background=background)
+
+        assert result == (False, True, False, False)
+        assert item.uploadPoster.call_count == 3
+        item.uploadArt.assert_called_once_with(url=background.location)
+        cache.update_image_map.assert_called_once_with(item.ratingKey, "images_backgrounds", "", background.compare)
+        test_logger.stacktrace.assert_not_called()
+
+    def test_local_image_upload_uses_gateway_retries(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        plex.validate_image_size = MagicMock(return_value=True)
+        image = ImageData("file_poster", "/posters/local.jpg", is_url=False, compare="local-image")
+        item.uploadPoster.side_effect = [BadRequest("(503) service_unavailable"), None]
+
+        assert plex.upload_images(item, poster=image) == (True, False, False, False)
+
+        assert item.uploadPoster.call_count == 2
+        item.uploadPoster.assert_called_with(filepath=image.location)
+        assert sleeps == [2]
+        test_logger.stacktrace.assert_not_called()
+
     @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
     @pytest.mark.parametrize("timeout", [ReadTimeout, ConnectTimeout])
     def test_upload_timeout_retries_and_logs_without_traceback(self, monkeypatch, artwork, method, timeout):

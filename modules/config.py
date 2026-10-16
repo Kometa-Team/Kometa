@@ -20,7 +20,7 @@ from modules.imdb import IMDb
 from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
-from modules.mal import MyAnimeList
+from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
@@ -1184,13 +1184,19 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
+                    mal_client_id = check_for_attribute(self.data, "client_id", parent="mal", throw=True)
+                    if mal_client_id == OFFICIAL_CLIENT_ID:
+                        # The utilities "Use Kometa App" block omits client_secret. Do not fail, and do not write client_secret: null.
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", default_is_none=True, save=False, do_print=False)
+                    else:
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                     self.MyAnimeList = MyAnimeList(
                         self.Requests,
                         self.Cache,
                         self.read_only,
                         {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
+                            "client_id": mal_client_id,
+                            "client_secret": mal_client_secret,
                             "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                             "config_path": self.config_path,

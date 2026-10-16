@@ -16,13 +16,13 @@ from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Episode, Movie, Season, Show
 from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
-from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
+from tenacity import retry, retry_if_exception, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
 
 from modules import builder, timings, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
-from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, ServiceError
+from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError
 
 logger = util.logger
 
@@ -120,6 +120,25 @@ SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_M
 
 def _plex_timeout_sleep(seconds):
     time.sleep(seconds)
+
+
+def _plex_image_upload_status(exception):
+    # PlexAPI's BadRequest exposes HTTP status in its message, not an attribute.
+    match = re.match(r"^\((502|503|504)\)", str(exception)) if isinstance(exception, BadRequest) else None
+    return match.group(1) if match else None
+
+
+def _plex_image_upload_retryable(exception):
+    return _plex_image_upload_status(exception) is not None
+
+
+def _plex_image_upload_exhausted(retry_state):
+    exception = retry_state.outcome.exception()
+    raise PlexImageUploadError(f"Plex returned HTTP {_plex_image_upload_status(exception)} after {retry_state.attempt_number} upload attempts for {retry_state.kwargs['upload_context']}") from exception
+
+
+def _plex_image_upload_before_sleep(retry_state):
+    logger.info(f"Plex image upload for {retry_state.kwargs['upload_context']} returned HTTP {_plex_image_upload_status(retry_state.outcome.exception())}; retrying in {int(retry_state.next_action.sleep)} seconds.")
 
 
 def _plex_timeout_retry_label(retry_state):
@@ -1425,9 +1444,22 @@ class Plex(Library):
         else:
             item.edit(**edits)
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_chain(wait_fixed(2), wait_fixed(5)),
+        retry=retry_if_exception(_plex_image_upload_retryable),
+        retry_error_callback=_plex_image_upload_exhausted,
+        before_sleep=_plex_image_upload_before_sleep,
+        sleep=_plex_timeout_sleep,
+        reraise=True,
+    )
+    def _upload_image_request(self, method, *, upload_context, **kwargs):
+        method(**kwargs)
+
     @PLEX_RETRY
     def _upload_image(self, item, image):
         upload_success = True
+        upload_context = f"{item.title}: {image.attribute} {image.message}"
         try:
             if image.is_url and "theposterdb.com" in image.location:
                 now = datetime.now()
@@ -1437,60 +1469,50 @@ class Plex(Library):
                         now = datetime.now()
                 self.config.tpdb_timer = now
             if image.is_poster and image.is_url:
-                item.uploadPoster(url=image.location)
+                self._upload_image_request(item.uploadPoster, upload_context=upload_context, url=image.location)
             elif image.is_poster:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadPoster(filepath=image.location)
+                    self._upload_image_request(item.uploadPoster, upload_context=upload_context, filepath=image.location)
             elif image.is_background and image.is_url:
-                item.uploadArt(url=image.location)
+                self._upload_image_request(item.uploadArt, upload_context=upload_context, url=image.location)
             elif image.is_background:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadArt(filepath=image.location)
+                    self._upload_image_request(item.uploadArt, upload_context=upload_context, filepath=image.location)
             elif image.is_square_art and image.is_url:
-                item.uploadSquareArt(url=image.location)
+                self._upload_image_request(item.uploadSquareArt, upload_context=upload_context, url=image.location)
             elif image.is_square_art:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadSquareArt(filepath=image.location)
+                    self._upload_image_request(item.uploadSquareArt, upload_context=upload_context, filepath=image.location)
             elif image.is_url:
-                item.uploadLogo(url=image.location)
+                self._upload_image_request(item.uploadLogo, upload_context=upload_context, url=image.location)
             else:
-                item.uploadLogo(filepath=image.location)
+                self._upload_image_request(item.uploadLogo, upload_context=upload_context, filepath=image.location)
             self.reload(item, force=True)
             return upload_success
+        # Exhausted gateway failures bypass refresh: no successful upload was confirmed.
+        # Preserve refresh for the existing non-gateway BadRequest handling.
         except BadRequest as e:
             item.refresh()
             raise Failed(e)
 
     @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
-        if url:
-            item.uploadPoster(url=image)
-        else:
-            item.uploadPoster(filepath=image)
+        self._upload_image_request(item.uploadPoster, upload_context=f"{item.title}: poster ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_background(self, item, image, url=False):
-        if url:
-            item.uploadArt(url=image)
-        else:
-            item.uploadArt(filepath=image)
+        self._upload_image_request(item.uploadArt, upload_context=f"{item.title}: background ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
-        if url:
-            item.uploadLogo(url=image)
-        else:
-            item.uploadLogo(filepath=image)
+        self._upload_image_request(item.uploadLogo, upload_context=f"{item.title}: logo ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_square_art(self, item, image, url=False):
-        if url:
-            item.uploadSquareArt(url=image)
-        else:
-            item.uploadSquareArt(filepath=image)
+        self._upload_image_request(item.uploadSquareArt, upload_context=f"{item.title}: square_art ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def get_actor_id(self, name):
@@ -2346,25 +2368,25 @@ class Plex(Library):
                 if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
                         updated = False
                 elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
                         updated = False
                 elif image_type == "logo":
                     try:
                         self.upload_logo(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload logo: {e}")
                         updated = False
                 else:
                     try:
                         self.upload_square_art(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
                         updated = False
                 if updated:
