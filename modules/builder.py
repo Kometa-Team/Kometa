@@ -894,6 +894,11 @@ class CollectionBuilder:
             raise BuilderValidationError("Playlist Error: No libraries were processed this run to use as the playlist default")
         return libraries
 
+    def _warn_smart_playlist_album_tracks(self):
+        if self.music_playlist_smart and not getattr(self, "smart_playlist_album_warning", False):
+            logger.warning("Playlist Warning: Smart Playlists do not support albums; the underlying tracks have been added instead")
+            self.smart_playlist_album_warning = True
+
     def __init__(self, config, metadata, name, data, library=None, overlay=None, extra=None, music_playlist=False):
         self.config = config
         self.metadata = metadata
@@ -906,6 +911,7 @@ class CollectionBuilder:
         self.music_playlist = music_playlist
         methods = {m.lower(): m for m in self.data}
         self.music_playlist_smart = self.music_playlist and any(method in methods for method in ["smart_filter", "smart_label", "smart_url"])
+        self.smart_playlist_album_warning = False
         self.smart_url_builder = False
         if self.music_playlist_smart and sum(method in methods for method in ["smart_filter", "smart_label", "smart_url"]) > 1:
             raise BuilderValidationError("Playlist Error: Use only one of smart_filter, smart_label, or smart_url in a music playlist")
@@ -1210,6 +1216,8 @@ class CollectionBuilder:
                     raise BuilderValidationError(f"{self.Type} Error: builder_level '{self.data[methods['builder_level']]}' is invalid. Options: {options}")
         elif self.library.is_music:
             self.builder_level = _default_music_level(methods, self.data)
+        if self.music_playlist_smart and self.library.is_music and self.builder_level == "album":
+            self._warn_smart_playlist_album_tracks()
         self.parts_collection = self.builder_level in plex.builder_level_options
 
         self.posters = {}
@@ -1658,6 +1666,8 @@ class CollectionBuilder:
                 try:
                     self.smart_url, self.smart_type_key = self.library.get_smart_filter_from_uri(self.data[methods["smart_url"]])
                     self.smart_url_builder = True
+                    if self.music_playlist_smart and self.smart_type_key == plex.sort_types["album"][1]:
+                        self._warn_smart_playlist_album_tracks()
                 except ValueError:
                     raise BuilderValidationError(f"{self.Type} Error: 'smart_url' attribute is incorrectly formatted")
 
@@ -4613,6 +4623,8 @@ class CollectionBuilder:
 
         if self.music_playlist and sort_type not in ["artist", "album", "track"]:
             raise BuilderValidationError(f"{self.Type} Error: Music playlist smart filters must use type 'artist', 'album', or 'track'")
+        if self.music_playlist_smart and sort_type == "album" and display:
+            self._warn_smart_playlist_album_tracks()
 
         ms = method.split("_")
         filter_details = f"{ms[0].capitalize()} {sort_type.capitalize()} {ms[1].capitalize()}\n"

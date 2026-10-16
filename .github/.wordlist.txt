@@ -178,6 +178,7 @@ kometateam
 kometautils
 Kubernetes
 Kuesel
+Kworb
 lastfm
 Launchd
 Lavagirl
@@ -346,6 +347,7 @@ Sohjiro
 Sohjiro's
 Sonarr
 sonarr
+Spotify
 Springland
 SSL
 ssl
