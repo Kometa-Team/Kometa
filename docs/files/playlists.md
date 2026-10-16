@@ -75,25 +75,25 @@ This file would then be defined in my `config.yml` file as a `playlist_files` it
 
 ## Playlist Attributes
 
-Kometa can automatically build and update playlists defined within the `playlists` attribute.
+Kometa can automatically build and update regular playlists defined under `playlists` and Music library playlists defined under `music_playlists`.
 
 These are the attributes which can be utilized within the Playlist File:
 
 | Attribute                            | Description                                                                                                             |
 |:-------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| [`playlists`](#playlist-attributes)  | contains definitions of playlists you wish to add to the server                                                         |
-| [`templates`](templates.md)          | contains definitions of templates that can be leveraged by multiple playlists                                           |
-| [`external_templates`](templates.md) | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple playlists |
+| [`playlists`](#playlist-attributes)       | contains regular playlist definitions that can combine items from configured libraries                                  |
+| [`music_playlists`](#music-playlists)     | contains Music library playlist definitions                                                                              |
+| [`templates`](templates.md)               | contains definitions of templates that can be leveraged by multiple playlists                                           |
+| [`external_templates`](templates.md)      | contains [file blocks](../config/files.md) that point to external templates that can be leveraged by multiple playlists |
 
-* `playlists` is required in order to run the Playlist File.
+* At least one of `playlists` or `music_playlists` is required in order to run the Playlist File.
 * You can find example Playlist Files in the 
 [Kometa Community Configs Repository](https://github.com/Kometa-Team/Community-Configs)
 * Plex does not support the "Continue Watching" feature for playlists, you can
 [vote for the feature here](https://forums.plex.tv/t/playlists-remember-position-for-subsequent-resume/84866/39)
 
 
-Each playlist requires its own section within the `playlists` attribute and unlike collections, playlists can only be 
-built using one Builder as their ordering is inherited from the Builder; it is not possible to combine builders.
+Each regular playlist requires its own section within `playlists` and, unlike collections, can only be built using one Builder because its ordering is inherited from that Builder.
 
 ```yaml
 playlists:
@@ -104,6 +104,29 @@ playlists:
   etc:
     # ... builder, details, and filters for this playlist
 ```
+
+## Music Playlists
+
+Use `music_playlists` in a Playlist File to create playlists from Music library builders or Plex smart playlist filters. Kometa runs each definition against every configured Music library. Configure those libraries under `libraries` in the main Configuration File.
+
+Music builders such as Lidarr, Last.fm, and YouTube Music create regular playlists that Kometa refreshes when it runs. Use one of `smart_filter`, `smart_label`, or `smart_url` to create a Plex smart playlist that updates from its filter automatically.
+
+```yaml
+music_playlists:
+  Last.fm Top Tracks:
+    lastfm_chart_top_tracks:
+      limit: 50
+
+  Recently Added Tracks:
+    smart_filter:
+      type: track
+      limit: 50
+      sort_by: added.desc
+      all:
+        plays.gte: 1
+```
+
+Each definition uses one builder. A smart playlist can use one smart rule (`smart_filter`, `smart_label`, or `smart_url`) and cannot combine that rule with another builder. Smart labels filter existing Plex music labels; they do not apply labels to tracks.
 
 There are multiple types of attributes that can be utilized within a playlist:
 
