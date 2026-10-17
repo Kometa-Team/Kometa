@@ -61,7 +61,7 @@ local investigation, use:
 uv run pytest tests/ -k "regression or issue_ or bug_"
 ```
 
-The import smoke check runs in a fresh process with the CLI's builder-first
-import order. It checks module-level imports, not imports inside uncalled
-functions. The subprocess has its own timeout and a larger pytest timeout to
+The import smoke check runs in a fresh process with the builder-first import
+order used by the CLI. It checks module-level imports, not imports inside uncalled
+functions. The child process has its own timeout and a larger pytest timeout to
 allow startup on both platforms.
