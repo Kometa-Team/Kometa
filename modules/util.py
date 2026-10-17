@@ -181,6 +181,10 @@ class OverlayError(Failed):
     pass
 
 
+class ImageNotFound(Failed):
+    """The image URL returned HTTP 404."""
+
+
 class NoValueFound(Failed):
     pass
 
