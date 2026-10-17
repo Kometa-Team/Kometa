@@ -25,7 +25,7 @@ These guides will walk you through installing Kometa on your system.
 The below guides and recipes have been created to assist users with various aspects of Kometa's and its companion scripts.
 
 - [Plex Ratings Explained](ratings.md)
-- [Scheduling Kometa Runs Guide](scheduling.md)
+- [Scheduling Kometa and Library Runs Guide](scheduling.md)
 - [Image Asset Directory Guide](assets.md)
 - [Log Files](../logs.md)
 - [Understanding YAML File Syntax](../yaml.md)
@@ -107,4 +107,3 @@ This YouTube video has been created by one of our community members to showcase 
 Caveat: it is very long, and the author has their own ideas as to what is "required". For example, this video begins with setting up a third-party script that is not required to use Kometa.
 
 <iframe width="840" height="472" src="https://www.youtube.com/embed/O8aKqCCvrsU?si=b_eSozovIwao7VO9" title="Kometa Demo Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-
