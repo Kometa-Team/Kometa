@@ -349,6 +349,9 @@ scrobble
 scrobbled
 scrobbles
 SDTV
+seerr
+Seerr
+Seerr's
 selectable
 Serializd
 serializd
