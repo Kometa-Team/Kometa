@@ -1,9 +1,10 @@
 from types import SimpleNamespace
 
 import pytest
+
 import modules.builder as builder_module
-from modules.builder import CollectionBuilder
 import modules.seerr as seerr_module
+from modules.builder import CollectionBuilder
 from modules.seerr import Seerr
 from modules.util import BuilderValidationError
 from tests.conftest import FakeLogger

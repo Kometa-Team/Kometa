@@ -20,16 +20,17 @@ class Seerr:
             payload["seasons"] = "all"
             if tvdb_id is not None:
                 payload["tvdbId"] = int(tvdb_id)
-        for key in (overrides or {}):
+        request_overrides = overrides or {}
+        for key, value in request_overrides.items():
             if key == "server_id":
-                payload["serverId"] = overrides[key]
+                payload["serverId"] = value
             elif key == "root_folder":
-                payload["rootFolder"] = overrides[key]
+                payload["rootFolder"] = value
             elif key == "quality_profile":
-                if isinstance(overrides[key], int):
-                    payload["profileId"] = overrides[key]
+                if isinstance(value, int):
+                    payload["profileId"] = value
                 else:
-                    payload["profileName"] = overrides[key]
+                    payload["profileName"] = value
 
         url = f"{self.url}/api/v1/request"
         try:

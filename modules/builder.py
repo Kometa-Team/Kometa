@@ -2055,7 +2055,9 @@ class CollectionBuilder:
             self.sync = False
 
         self.do_report = not self.config.no_report and (self.details["save_report"])
-        self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]) or self.seerr_details["add_missing"])
+        self.do_missing = not self.config.no_missing and (
+            self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]) or self.seerr_details["add_missing"]
+        )
         if self.build_collection or self.music_playlist_smart:
             if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")

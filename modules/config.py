@@ -30,8 +30,8 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
-from modules.serializd import Serializd
 from modules.seerr import Seerr
+from modules.serializd import Serializd
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
