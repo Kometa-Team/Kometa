@@ -13,6 +13,24 @@
     },
     "definitions": {
 
+        "seerr-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "standard": { "$ref": "#/definitions/seerr-request-overrides" },
+                "4k": { "$ref": "#/definitions/seerr-request-overrides" }
+            }
+        },
+        "seerr-request-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "server_id": { "type": "integer", "minimum": 1 },
+                "quality_profile": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "minLength": 1 }] },
+                "root_folder": { "type": "string", "minLength": 1 }
+            }
+        },
+
         "lastfm-user-top-artists-entry": {
             "type": "object",
             "additionalProperties": false,
@@ -1243,6 +1261,10 @@
                 "sonarr_tag": { "$ref": "#/definitions/tag-value" },
                 "sonarr_season_folder": { "type": "boolean" },
                 "sonarr_ignore_cache": { "type": "boolean" },
+                "seerr_add_missing": { "type": "boolean", "description": "Submit missing movies or shows to Seerr." },
+                "seerr_add_existing": { "type": "boolean", "description": "Submit movies or shows already in the Plex library to Seerr." },
+                "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"], "description": "Seerr request tier(s) to use; both submits a separate request to each tier." },
+                "seerr_overrides": { "$ref": "#/definitions/seerr-overrides", "description": "Optional per-tier Seerr server, quality profile, and root folder overrides." },
 
                 "filters": {
                     "description": "Filters applied to items found by builders.",

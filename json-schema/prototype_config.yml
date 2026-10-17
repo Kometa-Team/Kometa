@@ -3,6 +3,9 @@
 
 libraries:
   Movies:                                           # Must match a library name in your Plex
+    # seerr:                                        # Optional per-library override; unspecified values inherit the global Seerr settings.
+    #   url: http://192.168.1.13:5055
+    #   apikey: Enter Library Seerr API Key
     report_path: config/missing/Movies_missing.yml
     remove_overlays: false                        # Set to true if you want to remove overlays
     reapply_overlays: false
@@ -514,6 +517,9 @@ radarr:                          # Can be individually specified per library as 
   search: false
   radarr_path:
   plex_path:
+seerr:                           # Optional request manager for missing movies and shows
+  url: http://192.168.1.12:5055
+  apikey: Enter Seerr API Key
 sonarr:                          # Can be individually specified per library as well
   url: http://192.168.1.12:8989
   token: Enter Sonarr API Key

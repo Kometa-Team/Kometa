@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-
+- Add Release Notes to Kometa website, available under `Useful Links` section of navigation
+- Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
 - Add music support to `tautulli_popular` and `tautulli_top`; keep `tautulli_watched` as a legacy alias.
 - Add `music_playlists` to Music library collection files for building Music Playlists.

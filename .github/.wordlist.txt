@@ -20,6 +20,7 @@ APIs
 apiVersion
 appdata
 AppleTV
+arr
 ArrAPI
 Arrowverse
 Atmos

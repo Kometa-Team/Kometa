@@ -31,6 +31,7 @@ from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
 from modules.serializd import Serializd
+from modules.seerr import Seerr
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
 from modules.stevenlu import StevenLu
@@ -334,6 +335,8 @@ class ConfigFile:
             logger.debug("")
 
         self.data = self.Requests.file_yaml(self.config_path).data
+        self.Seerr = None
+        self.seerr_config = None
 
         def replace_attr(all_data, in_attr, par):
             if "settings" not in all_data:
@@ -1090,6 +1093,20 @@ class ConfigFile:
 
         logger.save_errors = True
         logger.separator()
+
+        if self.data.get("seerr"):
+            logger.info("Connecting to Seerr...")
+            try:
+                self.seerr_config = {
+                    "url": check_for_attribute(self.data, "url", parent="seerr", var_type="url", throw=True),
+                    "apikey": check_for_attribute(self.data, "apikey", parent="seerr", throw=True),
+                }
+                self.Seerr = Seerr(self.Requests, self.seerr_config)
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"Seerr Configuration {'Failed' if self.Seerr is None else 'Successful'}")
+        else:
+            logger.info("seerr attribute not found")
 
         try:
             self.TMDb = None
@@ -2282,6 +2299,34 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    library.Seerr = self.Seerr
+                    if lib and "seerr" in lib:
+                        try:
+                            seerr_params = {
+                                "url": check_for_attribute(
+                                    lib,
+                                    "url",
+                                    parent="seerr",
+                                    var_type="url",
+                                    default=self.seerr_config["url"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                                "apikey": check_for_attribute(
+                                    lib,
+                                    "apikey",
+                                    parent="seerr",
+                                    default=self.seerr_config["apikey"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                            }
+                            library.Seerr = self.Seerr if self.seerr_config == seerr_params else Seerr(self.Requests, seerr_params)
+                            logger.info(f"{display_name} library's Seerr Configuration Successful")
+                        except Failed as e:
+                            library.Seerr = None
+                            logger.error(e)
+                            logger.info(f"{display_name} library's Seerr Configuration Failed")
                     global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], library.type)
                     library.asset_directory, library.collection_asset_directory = util.resolve_asset_directories(configured_assets, library.type, global_items, global_collections)
                     if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):
