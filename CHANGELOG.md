@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Consolidate test execution in CI, assert CLI smoke diagnostics, share test factories, and replace copied overlay algorithms and source-text checks with production behavior coverage.
+
 ### Added
 - Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 - Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
