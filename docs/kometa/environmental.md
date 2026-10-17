@@ -580,7 +580,11 @@ Kometa will load those environment variables when it starts up, and you don't ha
 
 ??? blank "Run Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`--mode`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`KOMETA_MODE`<a class="headerlink" href="#mode" title="Permanent link">¶</a>"
 
-    <div id="mode" />Set the [library schedule mode](../config/schedule.md#library-schedule-modes) for every library in this run. This overrides configured library schedule modes, including libraries without a matching schedule. Other schedule rules still apply.
+    <div id="mode" />Set the [library schedule mode](../config/schedule.md#library-schedule-modes) for every library in this run. This overrides configured library schedule modes, including libraries without a matching schedule. Other schedule rules still apply. 
+
+    ???+ tip "Best practices and examples"
+
+        See the [Scheduling Kometa and Library Runs guide](guides/scheduling.md#try-a-mode) for the best practices and some examples of how to use `--mode` effectively against your server.
 
     <hr style="margin: 0px;">
 
