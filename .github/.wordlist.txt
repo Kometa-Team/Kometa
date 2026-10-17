@@ -20,6 +20,7 @@ APIs
 apiVersion
 appdata
 AppleTV
+arr
 ArrAPI
 Arrowverse
 Atmos
@@ -348,6 +349,9 @@ scrobble
 scrobbled
 scrobbles
 SDTV
+seerr
+Seerr
+Seerr's
 selectable
 Serializd
 serializd

@@ -162,6 +162,7 @@ nav:
         - ImageMaid: kometa/scripts/imagemaid.md
         - Kometa Overlay Reset: kometa/scripts/overlay-reset.md
   - USEFUL LINKS: &links
+      - Release Notes: kometa/release-notes.md
       - Feature Requests: https://features.kometa.wiki/
       - Bugs & Issues: https://github.com/Kometa-Team/Kometa/issues
       - Community Configs: https://github.com/Kometa-Team/Community-Configs
@@ -193,6 +194,7 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
+      - Seerr: config/seerr.md
       - Lidarr: config/lidarr.md
       - Last.fm: config/lastfm.md
       - YouTube Music: config/ytmusic.md

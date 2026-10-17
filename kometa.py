@@ -1227,9 +1227,10 @@ def run_collection(config, library, metadata, requested_collections, music_playl
                     library.status[str(mapping_name)]["removed"] = items_removed
 
                 missing_counts = missing_item_counts(builder)
-                if builder.do_missing and any(missing_counts.values()):
-                    logger.info("")
-                    logger.info(f"Processing missing items: {', '.join(f'{count} {level}' for level, count in missing_counts.items())}")
+                if (builder.do_missing and any(missing_counts.values())) or builder.seerr_details["add_existing"]:
+                    if builder.do_missing and any(missing_counts.values()):
+                        logger.info("")
+                        logger.info(f"Processing missing items: {', '.join(f'{count} {level}' for level, count in missing_counts.items())}")
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
                     library.status[str(mapping_name)]["radarr"] += radarr_add
@@ -1489,7 +1490,7 @@ def run_playlists(config):
                         delete_status = f"Deleted; {delete_status}"
                     status[status_key]["status"] = delete_status
 
-                if builder.do_missing and any(missing_item_counts(builder).values()):
+                if (builder.do_missing and any(missing_item_counts(builder).values())) or builder.seerr_details["add_existing"]:
                     builder.is_playlist = True
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add

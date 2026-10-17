@@ -416,6 +416,7 @@ sonarr_details = [
     "item_sonarr_tag",
     "sonarr_ignore_cache",
 ]
+seerr_details = ["seerr_add_missing", "seerr_add_existing", "seerr_instance", "seerr_overrides"]
 album_details = ["non_item_remove_label", "item_album_sorting"]
 sub_filters = [
     "filepath",
@@ -648,6 +649,7 @@ smart_url_invalid = (
     ]
     + radarr_details
     + sonarr_details
+    + seerr_details
 )
 custom_sort_builders = [
     *lastfm.builders,
@@ -877,6 +879,7 @@ playlist_attributes = (
     + poster_details
     + radarr_details
     + sonarr_details
+    + seerr_details
 )
 music_attributes = (
     [
@@ -1353,6 +1356,7 @@ class CollectionBuilder:
         self.item_details = {}
         self.radarr_details = {}
         self.sonarr_details = {}
+        self.seerr_details = {"add_missing": False, "add_existing": False, "instance": "standard", "overrides": {}}
         self.missing_movies = []
         self.missing_shows = []
         self.missing_artists = []
@@ -1829,6 +1833,8 @@ class CollectionBuilder:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires FlickList to be configured")
                 elif not self.config.WeTrakr and "wetrakr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires WeTrakr to be configured")
+                elif not self.library.Seerr and "seerr" in method_name:
+                    raise ServiceError(f"{self.Type} Error: '{method_final}' requires Seerr to be configured")
                 elif not self.library.Radarr and "radarr" in method_name:
                     raise ServiceError(f"{self.Type} Error: '{method_final}' requires Radarr to be configured")
                 elif not self.library.Sonarr and "sonarr" in method_name:
@@ -1897,6 +1903,8 @@ class CollectionBuilder:
                     self._radarr(method_name, method_data)
                 elif method_name in sonarr_details or method_name in sonarr.builders:
                     self._sonarr(method_name, method_data)
+                elif method_name in seerr_details:
+                    self._seerr(method_name, method_data)
                 elif method_name in lidarr.builders:
                     self._lidarr(method_name, method_data)
                 elif method_name in lastfm.builders:
@@ -2047,7 +2055,9 @@ class CollectionBuilder:
             self.sync = False
 
         self.do_report = not self.config.no_report and (self.details["save_report"])
-        self.do_missing = not self.config.no_missing and (self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]))
+        self.do_missing = not self.config.no_missing and (
+            self.details["show_missing"] or self.do_report or (self.library.Radarr and self.radarr_details["add_missing"]) or (self.library.Sonarr and self.sonarr_details["add_missing"]) or self.seerr_details["add_missing"]
+        )
         if self.build_collection or self.music_playlist_smart:
             if self.obj is not None and ((self.smart and not self.obj.smart) or (not self.smart and self.obj.smart)):
                 logger.info("")
@@ -2388,6 +2398,97 @@ class CollectionBuilder:
             self.builders.append((method_name, util.get_list(method_data, lower=True, return_none=False)))
         elif method_name == "sonarr_all":
             self.builders.append((method_name, True))
+
+    def _seerr(self, method_name, method_data):
+        if self.library.is_music:
+            raise BuilderValidationError(f"{self.Type} Error: Seerr requests are only supported for movie and show collections")
+        if method_name == "seerr_add_missing":
+            self.seerr_details["add_missing"] = util.parse(self.Type, method_name, method_data, datatype="bool")
+        elif method_name == "seerr_add_existing":
+            self.seerr_details["add_existing"] = util.parse(self.Type, method_name, method_data, datatype="bool")
+        elif method_name == "seerr_instance":
+            instance = str(method_data).lower()
+            if instance not in ["standard", "4k", "both"]:
+                raise BuilderValidationError(f"{self.Type} Error: seerr_instance must be standard, 4k, or both")
+            self.seerr_details["instance"] = instance
+        elif method_name == "seerr_overrides":
+            if not isinstance(method_data, dict):
+                raise BuilderValidationError(f"{self.Type} Error: seerr_overrides must be a dictionary")
+            overrides = {}
+            for tier, options in method_data.items():
+                tier = str(tier).lower()
+                if tier not in ["standard", "4k"] or not isinstance(options, dict):
+                    raise BuilderValidationError(f"{self.Type} Error: seerr_overrides keys must be standard or 4k, each with a dictionary of options")
+                options = {str(key).lower(): value for key, value in options.items()}
+                invalid = set(options) - {"server_id", "quality_profile", "root_folder"}
+                if invalid:
+                    raise BuilderValidationError(f"{self.Type} Error: Unsupported seerr_overrides option(s): {', '.join(sorted(invalid))}")
+                tier_options = {}
+                if "server_id" in options:
+                    if isinstance(options["server_id"], bool):
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} server_id must be an integer greater than 0")
+                    try:
+                        server_id = int(options["server_id"])
+                    except (TypeError, ValueError):
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} server_id must be an integer greater than 0")
+                    if server_id < 1:
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} server_id must be an integer greater than 0")
+                    tier_options["server_id"] = server_id
+                if "quality_profile" in options:
+                    profile = options["quality_profile"]
+                    if isinstance(profile, bool):
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} quality_profile must be a positive ID or non-blank name")
+                    try:
+                        profile = int(profile)
+                    except (TypeError, ValueError):
+                        profile = str(profile).strip()
+                    if isinstance(profile, int) and profile < 1 or isinstance(profile, str) and not profile:
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} quality_profile must be a positive ID or non-blank name")
+                    tier_options["quality_profile"] = profile
+                if "root_folder" in options:
+                    root_folder = str(options["root_folder"]).strip()
+                    if not root_folder:
+                        raise BuilderValidationError(f"{self.Type} Error: seerr_overrides {tier} root_folder cannot be blank")
+                    tier_options["root_folder"] = root_folder
+                overrides[tier] = tier_options
+            self.seerr_details["overrides"] = overrides
+
+    def _send_seerr_requests(self, items, media_type):
+        if not items:
+            return
+        instance = self.seerr_details["instance"]
+        is4k_values = [False, True] if instance == "both" else [instance == "4k"]
+        submitted = 0
+        logger.info("")
+        logger.separator("Sending Missing Requests to Seerr", space=False, border=False)
+        for title, item_id in items:
+            media_id = item_id
+            tvdb_id = None
+            if media_type == "tv":
+                tvdb_id = item_id
+                try:
+                    media_id = self.config.Convert.tvdb_to_tmdb(tvdb_id, fail=True)
+                except Failed as error:
+                    logger.error(f"Seerr Error: Unable to resolve TMDb ID for {title} (TVDb: {tvdb_id}): {error}")
+                    continue
+            for is4k in is4k_values:
+                instance_name = "4K" if is4k else "Standard"
+                try:
+                    tier = "4k" if is4k else "standard"
+                    result = self.library.Seerr.request(media_type, media_id, is4k=is4k, tvdb_id=tvdb_id, overrides=self.seerr_details["overrides"].get(tier))
+                    if isinstance(result, dict) and result.get("_kometa_status") == "duplicate":
+                        logger.info(f"Seerr {instance_name} Request Already Exists | {title}: {result.get('message', '')}")
+                        continue
+                    if isinstance(result, dict) and result.get("_kometa_status") == "skipped":
+                        logger.info(f"Seerr {instance_name} Request Skipped | {title}: {result.get('message', '')}")
+                        continue
+                    logger.info(f"Requested via Seerr | {media_id:<7} | {title} | {instance_name}")
+                    submitted += 1
+                except Failed as error:
+                    logger.error(f"Seerr {instance_name} Request Failed | {title}: {error}")
+        if submitted:
+            label = "Movie" if media_type == "movie" else "Series"
+            logger.info(f"{submitted} {label} request{'s' if submitted != 1 else ''} submitted to Seerr")
 
     def _lidarr(self, method_name, method_data):
         if not self.library.Lidarr:
@@ -5501,7 +5602,7 @@ class CollectionBuilder:
             if len(missing_movies_with_names) > 0:
                 if self.do_report:
                     self.library.add_missing(self.name, missing_movies_with_names, True)
-                if self.run_again or (self.library.Radarr and (self.radarr_details["add_missing"] or "item_radarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Radarr and (self.radarr_details["add_missing"] or "item_radarr_tag" in self.item_details)) or self.seerr_details["add_missing"]:
                     missing_tmdb_ids = [missing_id for title, missing_id in missing_movies_with_names]
                     if self.library.Radarr:
                         if self.radarr_details["add_missing"]:
@@ -5526,6 +5627,8 @@ class CollectionBuilder:
                             except ArrException as e:
                                 logger.stacktrace()
                                 logger.error(f"Arr Error: {e}")
+                    if self.seerr_details["add_missing"]:
+                        self._send_seerr_requests(missing_movies_with_names, "movie")
                     if self.run_again:
                         self.run_again_movies.extend(missing_tmdb_ids)
             if len(filtered_movies_with_names) > 0 and self.do_report:
@@ -5573,7 +5676,7 @@ class CollectionBuilder:
             if len(missing_shows_with_names) > 0:
                 if self.do_report:
                     self.library.add_missing(self.name, missing_shows_with_names, False)
-                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add_missing"] or "item_sonarr_tag" in self.item_details)):
+                if self.run_again or (self.library.Sonarr and (self.sonarr_details["add_missing"] or "item_sonarr_tag" in self.item_details)) or self.seerr_details["add_missing"]:
                     missing_tvdb_ids = [missing_id for title, missing_id in missing_shows_with_names]
                     if self.library.Sonarr:
                         if self.sonarr_details["add_missing"]:
@@ -5598,6 +5701,8 @@ class CollectionBuilder:
                             except ArrException as e:
                                 logger.stacktrace()
                                 logger.error(f"Arr Error: {e}")
+                    if self.seerr_details["add_missing"]:
+                        self._send_seerr_requests(missing_shows_with_names, "tv")
                     if self.run_again:
                         self.run_again_shows.extend(missing_tvdb_ids)
             if len(filtered_shows_with_names) > 0 and self.do_report:
@@ -5610,6 +5715,36 @@ class CollectionBuilder:
                 self.library.add_missing(self.name, self.missing_parts, False)
         if self.library.is_music:
             self._report_missing_music()
+        if getattr(self, "seerr_details", {}).get("add_existing", False):
+            existing_movies = []
+            existing_shows = []
+            for item in self.found_items:
+                media_type = "movie" if isinstance(item, Movie) else "tv" if isinstance(item, Show) else None
+                if media_type is None:
+                    continue
+                id_map_name = "movie_rating_key_map" if media_type == "movie" else "show_rating_key_map"
+                media_id = None
+                matches = []
+                for pl_library in self.libraries:
+                    id_map = getattr(pl_library, id_map_name, {})
+                    if item.ratingKey not in id_map:
+                        continue
+                    cached_item = pl_library.cached_items.get(item.ratingKey)
+                    if cached_item and cached_item[0] is item:
+                        media_id = id_map[item.ratingKey]
+                        break
+                    matches.append(id_map[item.ratingKey])
+                if media_id is None and len(matches) == 1:
+                    media_id = matches[0]
+                if media_id is None:
+                    logger.warning(f"Seerr Warning: Unable to resolve {media_type} ID for existing item {util.item_title(item)}")
+                    continue
+                entry = (util.item_title(item), media_id)
+                (existing_movies if media_type == "movie" else existing_shows).append(entry)
+            if existing_movies:
+                self._send_seerr_requests(existing_movies, "movie")
+            if existing_shows:
+                self._send_seerr_requests(existing_shows, "tv")
         return added_to_radarr, added_to_sonarr
 
     @timings.timed("load_collection_items")

@@ -40,6 +40,9 @@
     "sonarr": {
       "$ref": "#/definitions/sonarr-api"
     },
+    "seerr": {
+      "$ref": "#/definitions/seerr-api"
+    },
     "radarr": {
       "$ref": "#/definitions/radarr-api"
     },
@@ -91,6 +94,23 @@
     "tmdb"
   ],
   "definitions": {
+    "seerr-overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "standard": { "$ref": "#/definitions/seerr-request-overrides" },
+        "4k": { "$ref": "#/definitions/seerr-request-overrides" }
+      }
+    },
+    "seerr-request-overrides": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "server_id": { "type": "integer", "minimum": 1 },
+        "quality_profile": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "minLength": 1 }] },
+        "root_folder": { "type": "string", "minLength": 1 }
+      }
+    },
     "schedule": {
       "oneOf": [
         {
@@ -1529,6 +1549,40 @@
       },
       "required": [],
       "title": "anidb"
+    },
+    "seerr-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "apikey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["url", "apikey"],
+      "title": "seerr"
+    },
+    "seerr-api-lib": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https?)://"
+        },
+        "apikey": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [],
+      "title": "seerr"
     },
     "sonarr-api": {
       "type": "object",
@@ -4692,7 +4746,7 @@
       "type": "object",
       "additionalProperties": false,
       "patternProperties": {
-        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
+        "^(?!plex|tmdb|tautulli|webhooks|omdb|mdblist|notifiarr|gotify|ntfy|anidb|radarr|sonarr|seerr|lidarr|lastfm|ytmusic|trakt|yamtrack|flicklist|serializd|floppy|mal).+$": {
           "additionalProperties": false,
           "properties": {
             "metadata_files": {
@@ -4738,6 +4792,9 @@
             },
             "sonarr": {
               "$ref": "#/definitions/sonarr-api-lib"
+            },
+            "seerr": {
+              "$ref": "#/definitions/seerr-api-lib"
             },
             "lidarr": {
               "$ref": "#/definitions/lidarr-api-lib"
@@ -6850,6 +6907,10 @@
           "description": "Changes the name_mapping for all collections. Use <<key_name>> as a placeholder.",
           "type": "string"
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "description": "Override Radarr add_missing for all collections in this defaults file.",
           "type": "boolean"
@@ -7277,6 +7338,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -7576,6 +7641,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -8058,6 +8127,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -8330,6 +8403,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -8709,6 +8786,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -8990,6 +9071,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -9321,6 +9406,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -9601,6 +9690,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -9925,6 +10018,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -10209,6 +10306,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -10593,6 +10694,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -10873,6 +10978,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -11281,6 +11390,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -11553,6 +11666,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -11890,6 +12007,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -12170,6 +12291,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -12504,6 +12629,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -12784,6 +12913,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13211,6 +13344,10 @@
             }
           ]
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific collection by key.",
           "type": "boolean"
@@ -13494,6 +13631,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13767,6 +13908,10 @@
           "type": "integer",
           "minimum": 1
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -13972,6 +14117,10 @@
         "^schedule_.+$": {
           "type": "string"
         },
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "description": "Override Radarr add_missing for a specific seasonal collection by key.",
           "type": "boolean"
@@ -15258,6 +15407,10 @@
             }
           ]
         },
+        "seerr_add_missing": { "type": "boolean" },
+        "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "seerr_add_existing": { "type": "boolean" },
+        "seerr_overrides": { "$ref": "#/definitions/seerr-overrides" },
         "radarr_add_missing": {
           "type": "boolean"
         },
@@ -15367,6 +15520,10 @@
           ]
         },
         "^mdblist_list_.+$": {},
+        "^seerr_add_missing_.+$": { "type": "boolean" },
+        "^seerr_instance_.+$": { "type": "string", "enum": ["standard", "4k", "both"] },
+        "^seerr_add_existing_.+$": { "type": "boolean" },
+        "^seerr_overrides_.+$": { "$ref": "#/definitions/seerr-overrides" },
         "^radarr_add_missing_.+$": {
           "type": "boolean"
         },

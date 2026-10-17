@@ -23,6 +23,10 @@ tags:
   - item_radarr_tag.sync
   - sonarr_add_missing
   - sonarr_add_existing
+  - seerr_add_missing
+  - seerr_add_existing
+  - seerr_instance
+  - seerr_overrides
   - sonarr_upgrade_existing
   - sonarr_monitor_existing
   - sonarr_ignore_cache
@@ -91,6 +95,17 @@ All the following attributes can override the global/library [Sonarr](../config/
 | `item_sonarr_tag`         | **Description:** Used to append a tag in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags                    |
 | `item_sonarr_tag.remove`  | **Description:** Used to remove existing tags in Sonarr for every series found by the builders that's in Sonarr<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags            |
 | `item_sonarr_tag.sync`    | **Description:** Matches the tags in Sonarr for every series found by the builders that's in Sonarr with the provided tags<br>**Values:** List :material-information-outline:{ data-tooltip data-tooltip-id="tippy-yaml-lists" } or comma-separated string of tags |
+
+## Seerr Definition Settings
+
+These attributes override Seerr request behavior for the collection or playlist. Seerr must be configured globally or for the library; see the [Seerr configuration](../config/seerr.md).
+
+| Attribute             | Description & Values                                                                                                                                                                  |
+|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `seerr_add_missing`   | **Description:** Submit movies or shows missing from the Plex library to Seerr<br>**Values:** `true` or `false`                                                                        |
+| `seerr_add_existing`  | **Description:** Submit movies or shows already in the Plex library to Seerr, for example to request a 4K version<br>**Values:** `true` or `false`                                     |
+| `seerr_instance`      | **Description:** Seerr request tier(s) to use<br>**Values:** `standard`, `4k`, or `both` (default: `standard`)                                                                          |
+| `seerr_overrides`     | **Description:** Override Seerr's server, quality profile, or root folder separately for each tier<br>**Values:** Dictionary with `standard` and/or `4k` entries; see [Seerr configuration](../config/seerr.md) |
 
 ## Adding to Arr
 You can add items to Radarr/Sonarr in two different ways.
