@@ -1281,6 +1281,36 @@ class TestDelete:
 class TestUpdateSmartFilter:
     """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
 
+    @pytest.mark.parametrize("member_count", [0, 10, 64])
+    def test_initialization_preserves_smart_label_filter_and_member_count(self, monkeypatch, member_count):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        library = MagicMock()
+        library.is_movie = False
+        library.is_show = True
+        library.is_music = False
+        library.type = "Show"
+        library.mass_collection_mode = None
+        library.minimum_items = 1
+        library.collection_order = "release"
+        library.sync_mode = "sync"
+        library.split.side_effect = lambda key: (key, "", key)
+        library.smart_label_check.return_value = True
+        library.get_collection.return_value = SimpleNamespace(title="Streaming Shows", smart=True)
+        filter_url = "?type=2&sort=originallyAvailableAt:desc&label=123"
+        library.smart_filter.return_value = filter_url
+        library.fetchItems.return_value = [SimpleNamespace(ratingKey=i) for i in range(member_count)]
+        config = MagicMock()
+        config.no_report = True
+        config.no_missing = True
+        monkeypatch.setattr(CollectionBuilder, "build_filter", lambda *args, **kwargs: (2, "Label filter", filter_url))
+
+        builder = CollectionBuilder(config, MagicMock(), "Streaming Shows", {"smart_label": "release.desc", "plex_all": True}, library=library)
+
+        assert builder.smart_label_url == filter_url
+        assert builder.beginning_count == member_count
+        library.fetchItems.assert_called_once_with(filter_url)
+        library.update_smart_collection.assert_not_called()
+
     @staticmethod
     def _library(existing_filter):
         library = MagicMock()

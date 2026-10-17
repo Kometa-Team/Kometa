@@ -1691,7 +1691,6 @@ class CollectionBuilder:
         self.smart_url = None
         self.smart_type_key = None
         self.smart_filter_result_type = None
-        self.smart_label_url = None
         if "smart_url" in methods and (not self.playlist or self.music_playlist) and not self.overlay:
             logger.debug("")
             logger.debug("Validating Method: smart_url")
