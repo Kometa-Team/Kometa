@@ -1,7 +1,7 @@
 import os
 import re
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from xml.etree.ElementTree import ParseError  # nosec B405
 
 import langcodes
@@ -1089,14 +1089,20 @@ class Plex(Library):
 
     @PLEX_RETRY
     def search(self, title=None, sort=None, maxresults=None, libtype=None, **kwargs):
-        return self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
+        items = self.Plex.search(title=title, sort=sort, maxresults=maxresults, libtype=libtype, **kwargs)
+        if getattr(self, "has_schedule_scope", False):
+            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or self.is_scheduled_item(item)]
+        return items
 
     @PLEX_RETRY
     def exact_search(self, title, libtype=None, year=None):
         terms = {"title=": title}
         if year:
             terms["year"] = year
-        return self.Plex.search(libtype=libtype, **terms)
+        items = self.Plex.search(libtype=libtype, **terms)
+        if getattr(self, "has_schedule_scope", False):
+            return [item for item in items if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or self.is_scheduled_item(item)]
+        return items
 
     def fetch_item(self, item):
         if isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
@@ -1122,11 +1128,13 @@ class Plex(Library):
     def fetchItems(self, uri_args):
         return self.Plex.fetchItems(f"/library/sections/{self.Plex.key}/all{'' if uri_args is None else uri_args}")
 
-    def get_all(self, builder_level=None, load=False):
+    def get_all(self, builder_level=None, load=False, ignore_schedule_scope=False):
         cache_top_level = builder_level in [None, "show", "artist", "movie"]
         if load and cache_top_level:
             self._all_items = []
         if self._all_items and cache_top_level:
+            if not ignore_schedule_scope and getattr(self, "has_schedule_scope", False):
+                return [item for item in self._all_items if item.ratingKey in self.scheduled_item_keys]
             return self._all_items
         builder_type = builder_level if builder_level else self.Plex.TYPE
         if not builder_level:
@@ -1154,6 +1162,33 @@ class Plex(Library):
         logger.info(f"Loaded {total_size} {builder_level.capitalize()}s")
         if cache_top_level:
             self._all_items = results
+        if cache_top_level and not ignore_schedule_scope and getattr(self, "has_schedule_scope", False):
+            return [item for item in results if item.ratingKey in self.scheduled_item_keys]
+        return results
+
+    def get_items_added_since(self, builder_level, cutoff):
+        """Load newest Plex items until reaching an item older than ``cutoff``."""
+        logger.info(f"Loading {builder_level.capitalize()}s Added Since {cutoff.date()} from Library: {self.name}")
+        key = f"/library/sections/{self.Plex.key}/all?includeGuids=1&type={utils.searchType(builder_level)}&sort=addedAt%3Adesc"
+        container_start = 0
+        container_size: int = plexapi.X_PLEX_CONTAINER_SIZE  # type: ignore[assignment]
+        results = []
+        total_size = 1
+        while total_size > container_start:
+            data = self.Plex._server.query(key, headers={"X-Plex-Container-Start": str(container_start), "X-Plex-Container-Size": str(container_size)})
+            subresults = self.Plex.findItems(data, initpath=key)
+            total_size = utils.cast(int, data.attrib.get("totalSize") or data.attrib.get("size")) or len(subresults)
+            for item in subresults:
+                added_at = getattr(item, "addedAt", None)
+                if not added_at:
+                    return results
+                added_at = added_at.replace(tzinfo=timezone.utc) if added_at.tzinfo is None else added_at.astimezone(timezone.utc)
+                if added_at < cutoff:
+                    return results
+                results.append(item)
+            container_start += container_size
+            logger.ghost(f"Loaded: {min(container_start, total_size)}/{total_size}")
+        logger.info(f"Loaded {len(results)} {builder_level.capitalize()}s Added Since {cutoff.date()}")
         return results
 
     def upload_theme(self, item, url=None, filepath=None):
@@ -2173,8 +2208,14 @@ class Plex(Library):
         elif method == "plex_id":
             return [(plex_id, "plex") for plex_id in data]
         elif method == "plex_all":
-            logger.info(f"Processing Plex All {data.capitalize()}s")
-            items = self.get_all(builder_level=data)
+            if getattr(self, "has_schedule_scope", False) and self.is_show and data in ["season", "episode"]:
+                logger.info(f"Processing Plex {data.capitalize()}s from Scheduled Shows")
+                method_name = f"{data}s"
+                for show in self.get_all():
+                    items.extend(self.cached_item_subitems(show, method_name))
+            else:
+                logger.info(f"Processing Plex All {data.capitalize()}s")
+                items = self.get_all(builder_level=data)
         elif method == "plex_watchlist":
             logger.info("Processing Plex Watchlist")
             return self.get_watchlist(sort=data, is_playlist=is_playlist)

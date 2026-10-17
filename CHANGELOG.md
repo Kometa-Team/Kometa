@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
+- Add library schedule modes for full, added, changed, alphabetical, and explicitly selected items, plus a `--mode` / `KOMETA_MODE` override for a run.
 - Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 - Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
