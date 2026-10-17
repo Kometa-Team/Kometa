@@ -325,7 +325,7 @@ This guide covers both parts. First choose how to start Kometa on a regular basi
           ```
 
 === "cron"
-    The cron utility is used for running scripts and commands at regular intervals, and at specific times and dates. Itâ€™s built into most Operating Systems (namely Linux and Mac),
+    The cron utility is used for running scripts and commands at regular intervals, and at specific times and dates. It's built into most Operating Systems (namely Linux and Mac),
     and provides a very useful way to schedule tasks on your server. It also works for running Docker commands on a schedule.
 
     1. Decide when you want to run Kometa

@@ -208,6 +208,7 @@ Linuxserver
 linuxserver
 linuxserver's
 localhost
+lookback
 lookups
 Looper
 Lossy
@@ -274,6 +275,7 @@ oderwat
 OMDb
 omdb
 OSX
+ov
 ozzy
 Palme
 pathing
