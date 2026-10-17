@@ -12,7 +12,7 @@ from modules.meta import MetadataFile, OverlayFile
 from modules.operations import Operations
 from modules.poster import ImageData
 from modules.schedule_mode import parse_added_duration
-from modules.util import Failed, NotScheduled
+from modules.util import Failed, NotScheduled, PlexImageUploadError
 
 logger = util.logger
 
@@ -22,6 +22,7 @@ class Library(ABC):
         self.session = None
         self.Radarr = None
         self.Sonarr = None
+        self.Seerr = None
         self.Lidarr = None
         self.Tautulli = None
         self.Tracearr = None
@@ -336,6 +337,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {poster.attribute} updated {poster.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {poster.prefix}poster update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {poster.attribute} update skipped for {item.title}: {e}; {poster.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {poster.attribute} {poster.message}")
             except (Failed, RequestException):
@@ -353,6 +356,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {background.attribute} updated {background.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {background.prefix}background update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {background.attribute} update skipped for {item.title}: {e}; {background.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {background.attribute} {background.message}")
             except (Failed, RequestException):
@@ -370,6 +375,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {logo.attribute} updated {logo.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {logo.prefix}logo update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {logo.attribute} update skipped for {item.title}: {e}; {logo.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {logo.attribute} {logo.message}")
             except (Failed, RequestException):
@@ -387,6 +394,8 @@ class Library(ABC):
                     logger.info(f"Metadata: {square_art.attribute} updated {square_art.message}")
                 elif self.show_asset_not_needed:
                     logger.info(f"Metadata: {square_art.prefix}square art update not needed")
+            except PlexImageUploadError as e:
+                logger.error(f"Metadata: {square_art.attribute} update skipped for {item.title}: {e}; {square_art.message}. Continuing the run.")
             except Timeout:
                 logger.error(f"Plex Error: Plex server timed out while updating {square_art.attribute} {square_art.message}")
             except (Failed, RequestException):
@@ -489,6 +498,7 @@ class Library(ABC):
                 "tmdb_profile",
                 "tmdb_list_poster",
                 "tvdb_list_poster",
+                "ytmusic_list",
                 f"tvdb_{image_type}",
                 "asset_directory",
                 f"pmm_{image_type}",
@@ -581,8 +591,8 @@ class Library(ABC):
     def add_additions(self, collection, items, is_movie):
         self._add_to_file("Added", collection, items, is_movie)
 
-    def add_missing(self, collection, items, is_movie):
-        self._add_to_file("Missing", collection, items, is_movie)
+    def add_missing(self, collection, items, is_movie, is_music=False):
+        self._add_to_file("Missing", collection, items, is_movie, is_music=is_music)
 
     def add_removed(self, collection, items, is_movie):
         self._add_to_file("Removed", collection, items, is_movie)
@@ -590,13 +600,17 @@ class Library(ABC):
     def add_filtered(self, collection, items, is_movie):
         self._add_to_file("Filtered", collection, items, is_movie)
 
-    def _add_to_file(self, file_type, collection, items, is_movie):
+    def _add_to_file(self, file_type, collection, items, is_movie, is_music=False):
         if collection not in self.report_data:
             self.report_data[collection] = {}
         parts = isinstance(items[0], str)
         if parts:
             other = f"Parts {file_type}"
             section = other
+        elif is_music:
+            music_level = {True: "Artists", "artist": "Artists", "album": "Albums", "track": "Tracks"}.get(is_music, "Artists")
+            other = f"{music_level} {file_type}"
+            section = f"{other} (MusicBrainz IDs)"
         elif is_movie:
             other = f"Movies {file_type}"
             section = f"{other} (TMDb IDs)"
@@ -610,7 +624,7 @@ class Library(ABC):
         else:
             for title, item_id in items:
                 if item_id:
-                    self.report_data[collection][section][int(item_id)] = title
+                    self.report_data[collection][section][str(item_id) if is_music else int(item_id)] = title
                 else:
                     if other not in self.report_data[collection]:
                         self.report_data[collection][other] = []
@@ -800,3 +814,21 @@ class Library(ABC):
         self.plex_map_levels.update({self.type, self.type.lower()})
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
+        self.cache_imdb_ratings()
+
+    def cache_imdb_ratings(self):
+        """Batch-fill the local IMDb rating cache with this library's ids.
+
+        Called when the library finishes loading so later IMDb direct rating lookups
+        read the cache instead of requesting one title at a time.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not self.imdb_map:
+            return
+        imdb_ids = [imdb_id for imdb_id in self.imdb_map if imdb_id]
+        if not imdb_ids:
+            return
+        try:
+            imdb.cache_library_ratings(imdb_ids)
+        except Exception as error:
+            logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")

@@ -1,6 +1,7 @@
 import copy
 import math
 import os
+import random
 import re
 from collections import Counter
 from datetime import datetime, timezone
@@ -57,6 +58,13 @@ def _format_plex_rating(value, source, rating_name):
         raise Failed
     rating = float(value)
     return f"{rating:.1f}"
+
+
+def _random_rating(current):
+    rating = random.randint(0, 100) / 10  # nosec B311
+    while rating == current:
+        rating = random.randint(0, 100) / 10  # nosec B311
+    return rating
 
 
 def _scale_provider_rating(value, source, rating_name, maximum, factor):
@@ -347,7 +355,7 @@ class Operations:
             def record_image_operation(result, image_type, level):
                 if result:
                     operation, source, status = result
-                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets"}.get(str(source).lower(), str(source))
+                    source = {"tmdb": "TMDb", "tvdb": "TVDb", "plex": "Plex", "assets": "Assets", "ytmusic": "YouTube Music"}.get(str(source).lower(), str(source))
                     image_operation_counts[(operation, source, image_type, level, status)] += 1
 
             # Pre-warms reload data for the whole library in batched requests instead of one per item - see plex.py's bulk_reload().
@@ -701,7 +709,9 @@ class Operations:
                                 break
                             else:
                                 try:
-                                    if option == "tmdb":
+                                    if option == "random":
+                                        found_rating = _random_rating(current)
+                                    elif option == "tmdb":
                                         found_rating = tmdb_obj().vote_average  # noqa
                                     elif option == "imdb":
                                         found_rating = self.config.IMDb.get_rating(imdb_id)
@@ -801,6 +811,8 @@ class Operations:
                                         rating_edits[item_attr][found_rating].append(item.ratingKey)
                                         combinable_edits.setdefault(item.ratingKey, {}).setdefault("fields", {})[item_attr] = found_rating
                                         item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
+                                    else:
+                                        logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                     break
                                 except Failed:
                                     continue
@@ -1246,6 +1258,12 @@ class Operations:
                                 image_url = _get_tvdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
                             elif source == "tmdb":
                                 image_url = _get_tmdb_image_url(image_config, is_poster=is_poster, image_type=image_type)
+                            elif source == "ytmusic":
+                                try:
+                                    image_url = self.config.YouTubeMusic.artist_image_url(item.title, background=not is_poster) if self.library.is_music and self.config.YouTubeMusic else None
+                                except Exception as e:
+                                    logger.warning(f"YouTube Music Warning: unable to fetch artwork for {item.title} ({type(e).__name__}); continuing with the next image source")
+                                    image_url = None
                             elif source == "plex":
                                 return "plex", None
                             else:
@@ -1472,7 +1490,7 @@ class Operations:
                                     else:
                                         try:
                                             try:
-                                                tmdb_item = tmdb_obj()
+                                                tmdb_item = None if option == "random" else tmdb_obj()
                                             except Failed:
                                                 tmdb_item = None
                                             found_rating = None
@@ -1482,7 +1500,9 @@ class Operations:
                                                     found_rating = ratings[option]  # noqa
                                                 except KeyError:
                                                     found_rating = None
-                                            if tmdb_item and option == "tmdb":
+                                            if option == "random":
+                                                found_rating = _random_rating(current)
+                                            elif tmdb_item and option == "tmdb":
                                                 try:
                                                     found_rating = self.library.get_tmdb_episode(ep, tmdb_item.tmdb_id).vote_average  # noqa
                                                 except Failed as er:
@@ -1523,6 +1543,8 @@ class Operations:
                                                     ep_rating_edits[item_attr][found_rating] = []
                                                 ep_rating_edits[item_attr][found_rating].append(ep)
                                                 item_edits += f"\n{name_display[item_attr]} (Batched) | {found_rating}"
+                                            else:
+                                                logger.info(f"{name_display[item_attr]} Unchanged | {current}")
                                             break
                                         except Failed:
                                             continue

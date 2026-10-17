@@ -6,11 +6,131 @@
     "additionalProperties": false,
     "properties": {
         "collections": { "$ref": "#/definitions/collections-map" },
+        "music_playlists": { "$ref": "#/definitions/music-playlists-map" },
         "templates": { "$ref": "#/definitions/templates-map" },
         "dynamic_collections": { "$ref": "#/definitions/dynamic-collections-map" },
         "external_templates": { "$ref": "#/definitions/external-templates-list" }
     },
     "definitions": {
+
+        "seerr-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "standard": { "$ref": "#/definitions/seerr-request-overrides" },
+                "4k": { "$ref": "#/definitions/seerr-request-overrides" }
+            }
+        },
+        "seerr-request-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "server_id": { "type": "integer", "minimum": 1 },
+                "quality_profile": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "minLength": 1 }] },
+                "root_folder": { "type": "string", "minLength": 1 }
+            }
+        },
+
+        "lastfm-user-top-artists-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "period": { "type": "string", "enum": ["overall", "7day", "1month", "3month", "6month", "12month"] },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "ytmusic-list-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["playlist"],
+            "properties": {
+                "playlist": { "type": "string" },
+                "limit": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "ytmusic-top-artists-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "country": { "type": "string" }
+            }
+        },
+
+        "spotify-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country", "chart"],
+            "properties": {
+                "country": { "type": "string", "minLength": 1 },
+                "chart": { "type": "string", "enum": ["daily", "weekly"] }
+            }
+        },
+
+        "kworb-music-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country"],
+            "properties": {
+                "country": { "type": "string", "enum": ["US", "UK", "JP", "DE", "FR", "IT", "RU"] },
+                "type": { "type": "string", "enum": ["track", "song", "album"] }
+            }
+        },
+
+        "lastfm-user-loved-tracks-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "lastfm-user-recent-tracks-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 },
+                "from": { "type": "integer", "minimum": 1 },
+                "to": { "type": "integer", "minimum": 1 }
+            }
+        },
+
+        "lastfm-user-tags-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["username", "tag"],
+            "properties": {
+                "username": { "type": "string", "minLength": 1 },
+                "tag": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "last-tag-charts-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["tag"],
+            "properties": {
+                "tag": { "type": "string", "minLength": 1 },
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
+
+        "lastfm-global-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["limit"],
+            "properties": {
+                "limit": { "type": "integer", "minimum": 1, "maximum": 1000 }
+            }
+        },
 
         "schedule": {
             "description": "A single schedule expression or a non-empty list of expressions evaluated with OR logic.",
@@ -25,6 +145,17 @@
             "description": "A mapping of collection names to their definitions.",
             "type": "object",
             "additionalProperties": { "$ref": "#/definitions/collection-definition" }
+        },
+
+        "music-playlists-map": {
+            "title": "music_playlists",
+            "description": "A mapping of Plex music playlist names to music builders or smart playlist filters.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "description": "A music playlist definition. Music builders and smart_filter, smart_label, or smart_url are supported.",
+                "additionalProperties": true
+            }
         },
 
         "collection-definition": {
@@ -49,6 +180,38 @@
                         }
                     ]
                 },
+
+                "ytmusic_list": {
+                    "description": "YouTube Music playlist URL, ID, or entry object for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/ytmusic-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/ytmusic-list-entry" }] } }
+                    ]
+                },
+
+                "ytmusic_top_artists": {
+                    "description": "YouTube Music top artists chart for an artist-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "boolean" },
+                        { "type": "string" },
+                        { "$ref": "#/definitions/ytmusic-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "boolean" }, { "type": "string" }, { "$ref": "#/definitions/ytmusic-top-artists-entry" }] } }
+                    ]
+                },
+                "spotify_chart": {
+                    "description": "Kworb Spotify daily or weekly country chart for a track-level Plex music collection.",
+                    "$ref": "#/definitions/spotify-chart-entry"
+                },
+                "apple_chart": {
+                    "description": "Kworb Apple Music country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
+                },
+                "itunes_chart": {
+                    "description": "Kworb iTunes country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
+                },
+
                 "variables": { "type": "object", "additionalProperties": true },
 
                 "blank_collection": { "type": "boolean", "description": "Create the collection with no builders and no items." },
@@ -470,6 +633,7 @@
                 },
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tautulli_top": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
@@ -509,6 +673,84 @@
                         { "type": "string" },
                         { "type": "null" },
                         { "type": "array", "items": { "type": "string" } }
+                    ]
+                },
+
+                "lastfm_user_top_artists": {
+                    "description": "Get a user's most-played artists from Last.fm for a Plex music library.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_top_albums": {
+                    "description": "Get a user's most-played albums from Last.fm for an album-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_top_tracks": {
+                    "description": "Get a user's most-played tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-top-artists-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-top-artists-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_loved_tracks": {
+                    "description": "Get a user's loved tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-loved-tracks-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-loved-tracks-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_recent_tracks": {
+                    "description": "Get a user's recently played tracks from Last.fm for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/lastfm-user-recent-tracks-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/lastfm-user-recent-tracks-entry" }] } }
+                    ]
+                },
+
+                "lastfm_user_tags": {
+                    "description": "Get a user's personally tagged artists, albums, or tracks from Last.fm for a Plex music collection.",
+                    "oneOf": [
+                        { "$ref": "#/definitions/lastfm-user-tags-entry" },
+                        { "type": "array", "items": { "$ref": "#/definitions/lastfm-user-tags-entry" } }
+                    ]
+                },
+
+                "lastfm_tag_charts": {
+                    "description": "Get Last.fm's top artists, albums, or tracks for a tag for a Plex music collection.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/last-tag-charts-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/last-tag-charts-entry" }] } }
+                    ]
+                },
+
+                "lastfm_chart_top_artists": {
+                    "description": "Get the global Last.fm top artists API chart for an artist-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 1000 },
+                        { "$ref": "#/definitions/lastfm-global-chart-entry" }
+                    ]
+                },
+
+                "lastfm_chart_top_tracks": {
+                    "description": "Get the global Last.fm top tracks API chart for a track-level Plex music collection.",
+                    "oneOf": [
+                        { "type": "integer", "minimum": 1, "maximum": 1000 },
+                        { "$ref": "#/definitions/lastfm-global-chart-entry" }
                     ]
                 },
 
@@ -915,6 +1157,9 @@
                 "item_label": { "$ref": "#/definitions/tag-value", "description": "Apply label(s) to all items found by builders." },
                 "item_label.remove": { "$ref": "#/definitions/tag-value" },
                 "item_label.sync": { "$ref": "#/definitions/tag-value" },
+                "item.label": { "$ref": "#/definitions/tag-value", "description": "Alias for item_label; supported on Music artists, albums, and tracks." },
+                "item.label.remove": { "$ref": "#/definitions/tag-value" },
+                "item.label.sync": { "$ref": "#/definitions/tag-value" },
                 "item_assets": { "type": "boolean" },
                 "item_refresh": { "type": "boolean" },
                 "item_refresh_delay": { "type": "integer", "minimum": 0 },
@@ -1016,6 +1261,10 @@
                 "sonarr_tag": { "$ref": "#/definitions/tag-value" },
                 "sonarr_season_folder": { "type": "boolean" },
                 "sonarr_ignore_cache": { "type": "boolean" },
+                "seerr_add_missing": { "type": "boolean", "description": "Submit missing movies or shows to Seerr." },
+                "seerr_add_existing": { "type": "boolean", "description": "Submit movies or shows already in the Plex library to Seerr." },
+                "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"], "description": "Seerr request tier(s) to use; both submits a separate request to each tier." },
+                "seerr_overrides": { "$ref": "#/definitions/seerr-overrides", "description": "Optional per-tier Seerr server, quality profile, and root folder overrides." },
 
                 "filters": {
                     "description": "Filters applied to items found by builders.",
@@ -1226,7 +1475,8 @@
             "properties": {
                 "list_days": { "type": "integer", "minimum": 1 },
                 "list_minimum": { "type": "integer", "minimum": 0 },
-                "list_size": { "type": "integer", "minimum": 1 }
+                "list_size": { "type": "integer", "minimum": 1 },
+                "list_buffer": { "type": "integer", "minimum": 0 }
             }
         },
         "tracearr-builder-block": {

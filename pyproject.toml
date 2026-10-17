@@ -8,7 +8,7 @@ dependencies = [
     "apprise>=2.0.1",
     "arrapi==1.5.1",
     "cloudscraper==1.2.71",
-    "gitpython==3.2.0",
+    "gitpython==3.2.1",
     "jsonschema==4.26.0",
     "langcodes==3.5.1",
     "letterboxdpy==6.5.9",
@@ -18,6 +18,7 @@ dependencies = [
     "pathvalidate==3.3.1",
     "pillow==12.3.0",
     "plexapi==4.18.3",
+    "pylast==7.2.0",
     "psutil==7.2.2",
     "pyinstrument==5.1.3",
     "python-dateutil==2.9.0.post0",
@@ -30,6 +31,7 @@ dependencies = [
     "setuptools==84.0.0",
     "tenacity==9.2.1",
     "tmdbapis==1.3.1",
+    "ytmusicapi==1.12.3",
 ]
 
 [tool.pytest.ini_options]
@@ -117,7 +119,7 @@ mkdocs-include-markdown-plugin = { git = "https://github.com/Kometa-Team/mkdocs-
 
 [dependency-groups]
 # uv itself, installed by docker/Dockerfile.base and CI via the hashed export in docker/uv-bootstrap.txt. Not a default group, so never synced.
-bootstrap = ["uv==0.13.0"]
+bootstrap = ["uv==0.13.1"]
 
 # Documentation toolchain. Not installed at runtime -- nothing in modules/ or
 # kometa.py imports any of these; they exist only to build the mkdocs site.
@@ -125,7 +127,7 @@ docs = [
     "babel>=2.18.0",
     "colorama>=0.4.6",
     "jinja2>=3.1.6",
-    "markdown>=3.11",
+    "markdown>=3.11.1",
     "material-plausible-plugin>=0.3.0",
     "mkdocs>=1.6.1",
     "mkdocs-glightbox>=0.5.2",
@@ -137,7 +139,7 @@ docs = [
     "neoteroi-mkdocs>=1.2.0",
     "paginate>=0.5.7",
     "pygments>=2.21.0",
-    "pymdown-extensions>=12.2",
+    "pymdown-extensions>=12.3",
     "regex>=2026.9.29",
     "requests==2.34.2",
 ]
@@ -148,7 +150,7 @@ dev = [
     "black==26.10.1",
     "cloudscraper==1.2.71",
     "flake8==7.4.1",
-    "gitpython==3.2.0",
+    "gitpython==3.2.1",
     "isort==9.0.2",
     "letterboxdpy==6.5.9",
     "lxml==6.1.3",
@@ -157,6 +159,7 @@ dev = [
     "pathvalidate==3.3.1",
     "pillow==12.3.0",
     "plexapi==4.18.3",
+    "pylast==7.2.0",
     "prek==0.5.5",
     "psutil==7.2.2",
     "pyright==1.1.414",

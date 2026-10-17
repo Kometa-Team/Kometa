@@ -2,7 +2,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta, timezone
-from xml.etree.ElementTree import ParseError
+from xml.etree.ElementTree import ParseError  # nosec B405
 
 import langcodes
 import plexapi
@@ -16,15 +16,102 @@ from plexapi.playlist import Playlist
 from plexapi.server import PlexServer
 from plexapi.video import Episode, Movie, Season, Show
 from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
-from tenacity import retry, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
+from tenacity import retry, retry_if_exception, retry_if_exception_type, retry_if_not_exception_type, stop_after_attempt, wait_chain, wait_fixed
 
 from modules import builder, timings, util
 from modules.library import Library
 from modules.poster import ImageData
 from modules.request import parse_qs, quote_plus, urlparse
-from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, ServiceError
+from modules.util import Failed, LimitReached, MappingConvertError, OverlayError, PlexImageUploadError, ServiceError
 
 logger = util.logger
+
+music_mbid_pattern = re.compile(r"^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$", re.IGNORECASE)
+music_dash_translation = str.maketrans({dash: "-" for dash in "‐‑‒–—−"})
+
+
+def music_title_key(value):
+    return value.casefold().translate(music_dash_translation)
+
+
+class MusicMatcher:
+    """Resolve external music IDs and unique titles against Plex items."""
+
+    def __init__(self, libraries, level, load_dates=False):
+        if level not in ("artist", "album", "track"):
+            raise ValueError(f"Unsupported music level: {level}")
+        self.by_mbid = {}
+        self.by_title = {}
+        self.tracks_by_artist_title = {}
+        self.track_album_dates = {}
+        for library in libraries:
+            if not library.is_music:
+                continue
+            library_items = library.get_all(builder_level=level, load=load_dates) if load_dates else library.get_all(builder_level=level)
+            album_dates = {}
+            if load_dates and level == "track":
+                album_dates = {album.ratingKey: getattr(album, "originallyAvailableAt", None) or getattr(album, "year", None) for album in library.get_all(builder_level="album")}
+            for item in library_items:
+                for guid in getattr(item, "guids", []):
+                    guid_id = str(guid.id)
+                    if guid_id.lower().startswith("mbid://"):
+                        mbid = guid_id[7:].lower()
+                        if music_mbid_pattern.fullmatch(mbid):
+                            matches = self.by_mbid.setdefault(mbid, [])
+                            if item not in matches:
+                                matches.append(item)
+                if level == "artist":
+                    title_key = (music_title_key(item.title),)
+                elif level == "album":
+                    title_key = (music_title_key(item.parentTitle), music_title_key(item.title))
+                else:
+                    title_key = (music_title_key(item.grandparentTitle), music_title_key(item.parentTitle), music_title_key(item.title))
+                    self.tracks_by_artist_title.setdefault((music_title_key(item.grandparentTitle), music_title_key(item.title)), []).append(item)
+                    album_date = album_dates.get(getattr(item, "parentRatingKey", None))
+                    self.track_album_dates[item.ratingKey] = album_date or getattr(item, "parentYear", None)
+                self.by_title.setdefault(title_key, []).append(item)
+
+    def match(self, mbid=None, artist=None, album=None, track=None):
+        valid_mbid = str(mbid).lower() if mbid and music_mbid_pattern.fullmatch(str(mbid)) else None
+        candidates = self.by_mbid.get(valid_mbid, []) if valid_mbid else []
+        if len(candidates) == 1:
+            return candidates[0], None
+        id_ambiguous = len(candidates) > 1
+        titles = tuple(music_title_key(value) for value in (artist, album, track) if value is not None)
+        candidates = self.by_title.get(titles, []) if titles else []
+        if len(candidates) == 1:
+            return candidates[0], None
+        return None, "ambiguous" if candidates or id_ambiguous else "not found"
+
+    def match_track_duration(self, artist, track, duration_ms, tolerance_ms=2000):
+        if not artist or not track or not duration_ms or duration_ms <= 0:
+            return None, "not found"
+        candidates = self.tracks_by_artist_title.get((music_title_key(artist), music_title_key(track)), [])
+        matches = [item for item in candidates if getattr(item, "duration", 0) and abs(item.duration - duration_ms) <= tolerance_ms]
+        if len(matches) == 1:
+            return matches[0], None
+        return None, "ambiguous" if len(matches) > 1 else "not found"
+
+    def match_earliest_track(self, artist, track):
+        """Choose the exact artist/title match whose album has the earliest known release date."""
+        candidates = self.tracks_by_artist_title.get((music_title_key(artist), music_title_key(track)), [])
+        if not candidates:
+            return None, "not found"
+        if len(candidates) == 1:
+            return candidates[0], None
+
+        def release_sort_key(item):
+            date = self.track_album_dates.get(item.ratingKey)
+            if isinstance(date, datetime):
+                date_key = (date.year, date.month, date.day)
+            elif isinstance(date, int):
+                date_key = (date, 0, 0)
+            else:
+                date_key = (9999, 12, 31)
+            return (*date_key, str(getattr(item, "parentTitle", "")).casefold(), item.ratingKey)
+
+        return min(candidates, key=release_sort_key), None
+
 
 PLEX_RETRY = retry(stop=stop_after_attempt(6), wait=wait_fixed(10), retry=retry_if_not_exception_type((BadRequest, NotFound, Unauthorized, Failed)), reraise=True)
 SAVE_MULTI_EDITS_RETRY_DELAYS = (2, 5)
@@ -33,6 +120,25 @@ SAVE_MULTI_EDITS_RETRY_WAIT = wait_chain(*[wait_fixed(delay) for delay in SAVE_M
 
 def _plex_timeout_sleep(seconds):
     time.sleep(seconds)
+
+
+def _plex_image_upload_status(exception):
+    # PlexAPI's BadRequest exposes HTTP status in its message, not an attribute.
+    match = re.match(r"^\((502|503|504)\)", str(exception)) if isinstance(exception, BadRequest) else None
+    return match.group(1) if match else None
+
+
+def _plex_image_upload_retryable(exception):
+    return _plex_image_upload_status(exception) is not None
+
+
+def _plex_image_upload_exhausted(retry_state):
+    exception = retry_state.outcome.exception()
+    raise PlexImageUploadError(f"Plex returned HTTP {_plex_image_upload_status(exception)} after {retry_state.attempt_number} upload attempts for {retry_state.kwargs['upload_context']}") from exception
+
+
+def _plex_image_upload_before_sleep(retry_state):
+    logger.info(f"Plex image upload for {retry_state.kwargs['upload_context']} returned HTTP {_plex_image_upload_status(retry_state.outcome.exception())}; retrying in {int(retry_state.next_action.sleep)} seconds.")
 
 
 def _plex_timeout_retry_label(retry_state):
@@ -95,6 +201,7 @@ search_translation = {
     "season_label": "season.label",
     "episode_label": "episode.label",
     "artist_title": "artist.title",
+    "artist_rating": "artist.userRating",
     "artist_user_rating": "artist.userRating",
     "artist_genre": "artist.genre",
     "artist_collection": "artist.collection",
@@ -102,6 +209,7 @@ search_translation = {
     "artist_mood": "artist.mood",
     "artist_style": "artist.style",
     "artist_added": "artist.addedAt",
+    "date_artist_added": "artist.addedAt",
     "artist_last_played": "artist.lastViewedAt",
     "artist_unmatched": "artist.unmatched",
     "artist_label": "artist.label",
@@ -112,6 +220,7 @@ search_translation = {
     "album_plays": "album.viewCount",
     "album_last_played": "album.lastViewedAt",
     "album_user_rating": "album.userRating",
+    "album_rating": "album.userRating",
     "album_critic_rating": "album.rating",
     "album_record_label": "album.studio",
     "album_mood": "album.mood",
@@ -121,18 +230,23 @@ search_translation = {
     "album_collection": "album.collection",
     "album_added": "album.addedAt",
     "album_released": "album.originallyAvailableAt",
+    "date_album_added": "album.addedAt",
+    "date_album_released": "album.originallyAvailableAt",
     "album_unmatched": "album.unmatched",
     "album_source": "album.source",
     "album_label": "album.label",
     "track_mood": "track.mood",
+    "track_genre": "track.genre",
     "track_title": "track.title",
     "track_plays": "track.viewCount",
     "track_last_played": "track.lastViewedAt",
     "track_skips": "track.skipCount",
     "track_last_skipped": "track.lastSkippedAt",
     "track_user_rating": "track.userRating",
+    "track_rating": "track.userRating",
     "track_last_rated": "track.lastRatedAt",
     "track_added": "track.addedAt",
+    "track_added_at": "track.addedAt",
     "track_trash": "track.trash",
     "track_source": "track.source",
     "track_label": "track.label",
@@ -252,6 +366,7 @@ method_alias = {
     "directors": "director",
     "genres": "genre",
     "labels": "label",
+    "item.label": "item_label",
     "collection_minimum": "minimum_items",
     "playlist_minimum": "minimum_items",
     "save_missing": "save_report",
@@ -505,7 +620,7 @@ show_only_searches = [
     "episode_unmatched",
     "show_unmatched",
 ]
-string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "track_title", "audio_codec"]
+string_attributes = ["title", "studio", "edition", "episode_title", "artist_title", "album_title", "album_record_label", "record_label", "track_title", "audio_codec"]
 string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
@@ -534,20 +649,39 @@ date_attributes = [
     "last_played",
     "episode_last_played",
     "artist_added",
+    "date_artist_added",
     "artist_last_played",
     "album_last_played",
     "album_added",
     "album_released",
+    "date_album_added",
+    "date_album_released",
     "track_last_played",
     "track_last_skipped",
     "track_last_rated",
     "track_added",
+    "track_added_at",
 ]
-date_modifiers = ["", ".not", ".before", ".after"]
+date_modifiers = ["", ".not", ".before", ".after", ".last", ".notlast"]
 year_attributes = ["decade", "year", "episode_year", "album_year", "album_decade"]
 number_attributes = ["plays", "episode_plays", "album_plays", "track_plays", "track_skips", "commonsense_rating"] + year_attributes
-number_modifiers = [".gt", ".gte", ".lt", ".lte"]
-float_attributes = ["user_rating", "episode_user_rating", "critic_rating", "episode_critic_rating", "audience_rating", "episode_audience_rating", "duration", "artist_user_rating", "album_user_rating", "album_critic_rating", "track_user_rating"]
+number_modifiers = [".is", ".isnot", ".gt", ".gte", ".lt", ".lte"]
+float_attributes = [
+    "user_rating",
+    "episode_user_rating",
+    "critic_rating",
+    "episode_critic_rating",
+    "audience_rating",
+    "episode_audience_rating",
+    "duration",
+    "artist_user_rating",
+    "artist_rating",
+    "album_user_rating",
+    "album_rating",
+    "album_critic_rating",
+    "track_user_rating",
+    "track_rating",
+]
 float_modifiers = number_modifiers + [".rated"]
 search_display = {"added": "Date Added", "release": "Release Date", "folder_location": "Folder Location", "hdr": "HDR", "progress": "In Progress", "episode_progress": "Episode In Progress"}
 tag_attributes = [
@@ -587,6 +721,7 @@ tag_attributes = [
     "album_source",
     "album_label",
     "track_mood",
+    "track_genre",
     "track_source",
     "track_label",
 ]
@@ -597,11 +732,15 @@ searches = (
     + [f"{f}{m}" for f in string_attributes for m in string_modifiers]
     + [f"{f}{m}" for f in tag_attributes + year_attributes for m in tag_modifiers if f not in no_not_mods or m != ".not"]
     + [f"{f}{m}" for f in date_attributes for m in date_modifiers]
-    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods]
+    + number_attributes
+    + [f"{f}{m}" for f in number_attributes for m in number_modifiers if f not in no_not_mods or m != ".isnot"]
     + ["commonsense_rating"]
+    + float_attributes
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
-music_searches = [a for a in searches if a.startswith(("artist", "album", "track"))]
+music_searches = (
+    [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
+)
 track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
@@ -1340,9 +1479,22 @@ class Plex(Library):
         else:
             item.edit(**edits)
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_chain(wait_fixed(2), wait_fixed(5)),
+        retry=retry_if_exception(_plex_image_upload_retryable),
+        retry_error_callback=_plex_image_upload_exhausted,
+        before_sleep=_plex_image_upload_before_sleep,
+        sleep=_plex_timeout_sleep,
+        reraise=True,
+    )
+    def _upload_image_request(self, method, *, upload_context, **kwargs):
+        method(**kwargs)
+
     @PLEX_RETRY
     def _upload_image(self, item, image):
         upload_success = True
+        upload_context = f"{item.title}: {image.attribute} {image.message}"
         try:
             if image.is_url and "theposterdb.com" in image.location:
                 now = datetime.now()
@@ -1352,60 +1504,50 @@ class Plex(Library):
                         now = datetime.now()
                 self.config.tpdb_timer = now
             if image.is_poster and image.is_url:
-                item.uploadPoster(url=image.location)
+                self._upload_image_request(item.uploadPoster, upload_context=upload_context, url=image.location)
             elif image.is_poster:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadPoster(filepath=image.location)
+                    self._upload_image_request(item.uploadPoster, upload_context=upload_context, filepath=image.location)
             elif image.is_background and image.is_url:
-                item.uploadArt(url=image.location)
+                self._upload_image_request(item.uploadArt, upload_context=upload_context, url=image.location)
             elif image.is_background:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadArt(filepath=image.location)
+                    self._upload_image_request(item.uploadArt, upload_context=upload_context, filepath=image.location)
             elif image.is_square_art and image.is_url:
-                item.uploadSquareArt(url=image.location)
+                self._upload_image_request(item.uploadSquareArt, upload_context=upload_context, url=image.location)
             elif image.is_square_art:
                 upload_success = self.validate_image_size(image)
                 if upload_success:
-                    item.uploadSquareArt(filepath=image.location)
+                    self._upload_image_request(item.uploadSquareArt, upload_context=upload_context, filepath=image.location)
             elif image.is_url:
-                item.uploadLogo(url=image.location)
+                self._upload_image_request(item.uploadLogo, upload_context=upload_context, url=image.location)
             else:
-                item.uploadLogo(filepath=image.location)
+                self._upload_image_request(item.uploadLogo, upload_context=upload_context, filepath=image.location)
             self.reload(item, force=True)
             return upload_success
+        # Exhausted gateway failures bypass refresh: no successful upload was confirmed.
+        # Preserve refresh for the existing non-gateway BadRequest handling.
         except BadRequest as e:
             item.refresh()
             raise Failed(e)
 
     @PLEX_RETRY
     def upload_poster(self, item, image, url=False):
-        if url:
-            item.uploadPoster(url=image)
-        else:
-            item.uploadPoster(filepath=image)
+        self._upload_image_request(item.uploadPoster, upload_context=f"{item.title}: poster ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_background(self, item, image, url=False):
-        if url:
-            item.uploadArt(url=image)
-        else:
-            item.uploadArt(filepath=image)
+        self._upload_image_request(item.uploadArt, upload_context=f"{item.title}: background ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_logo(self, item, image, url=False):
-        if url:
-            item.uploadLogo(url=image)
-        else:
-            item.uploadLogo(filepath=image)
+        self._upload_image_request(item.uploadLogo, upload_context=f"{item.title}: logo ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def upload_square_art(self, item, image, url=False):
-        if url:
-            item.uploadSquareArt(url=image)
-        else:
-            item.uploadSquareArt(filepath=image)
+        self._upload_image_request(item.uploadSquareArt, upload_context=f"{item.title}: square_art ({image})", **{"url" if url else "filepath": image})
 
     @PLEX_RETRY
     def get_actor_id(self, name):
@@ -1775,6 +1917,29 @@ class Plex(Library):
         args = {"type": smart_type, "title": title, "smart": 1, "sectionId": self.Plex.key, "uri": self.build_smart_filter(uri_args)}
         self._query(f"/library/collections{utils.joinArgs(args)}", post=True)
 
+    def create_smart_playlist(self, title, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        args = {"type": self.Plex.CONTENT_TYPE, "title": title, "smart": 1, "uri": self._smart_playlist_uri(uri_args)}
+        self._query(f"/playlists{utils.joinArgs(args)}", post=True)
+
+    @staticmethod
+    def smart_playlist_filter(playlist):
+        smart_filter = playlist.content
+        if not smart_filter or "?" not in smart_filter:
+            return None
+        return smart_filter[smart_filter.index("?") :]
+
+    def update_smart_playlist(self, playlist, uri_args):
+        if not self.is_music:
+            raise Failed("Plex Error: Smart playlists are only supported for Music libraries")
+        self._query(f"{playlist.key}/items{utils.joinArgs({'uri': self._smart_playlist_uri(uri_args)})}", put=True)
+
+    def _smart_playlist_uri(self, uri_args):
+        if str(uri_args).startswith(("http://", "https://")):
+            return uri_args
+        return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
+
     def create_blank_collection(self, title):
         existing_collection = self._collection_by_title(title)
         if existing_collection is not None:
@@ -1786,7 +1951,7 @@ class Plex(Library):
     def get_smart_filter_from_uri(self, uri):
         smart_filter = parse_qs(urlparse(uri.replace("/#!/", "/")).query)["key"][0]  # noqa
         args = smart_filter[smart_filter.index("?") :]
-        return self.build_smart_filter(args), int(args[args.index("type=") + 5 : args.index("type=") + 6])
+        return args, int(args[args.index("type=") + 5 : args.index("type=") + 6])
 
     def build_smart_filter(self, uri_args):
         return f"{self.PlexServer._uriRoot()}/library/sections/{self.Plex.key}/all{uri_args}"
@@ -1796,6 +1961,8 @@ class Plex(Library):
         self._query(f"/library/collections/{collection.ratingKey}/items{utils.joinArgs({'uri': self.build_smart_filter(uri_args)})}", put=True)
 
     def smart_filter(self, collection):
+        if isinstance(collection, Playlist):
+            return self.smart_playlist_filter(collection)
         smart_filter = self.get_collection(collection).content  # type: ignore[union-attr]
         if not smart_filter or "?" not in smart_filter:
             return None
@@ -2214,16 +2381,16 @@ class Plex(Library):
             return "Unlock", "Plex", "Updated"
         else:
             location = "the Assets Directory" if image else ""
-            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex"}.get(attr, str(attr).title())
+            source = "Assets" if image else {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "plex": "Plex", "ytmusic": "YouTube Music"}.get(attr, str(attr).title())
             image_url = False if image else True
             image = image.location if image else None
             if not image:
-                if attr in ["tmdb", "trakt", "tvdb"] and tmdb:
+                if attr in ["tmdb", "trakt", "tvdb", "ytmusic"] and tmdb:
                     image = tmdb
-                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb"}[attr]
+                    source_name = {"tmdb": "TMDb", "trakt": "Trakt", "tvdb": "TVDb", "ytmusic": "YouTube Music"}[attr]
                     source = source_name
                     location = f"{source_name} (language: {lang})" if lang and attr == "tmdb" else source_name
-                if not image and attr not in ["tmdb", "trakt", "tvdb", "lock", "unlock"]:
+                if not image and attr not in ["tmdb", "trakt", "tvdb", "ytmusic", "lock", "unlock"]:
                     images_method = {"poster": "posters", "background": "arts", "logo": "logos", "square_art": "squareArts"}[image_type]
                     if not hasattr(item, images_method):
                         logger.warning(f"{text} | Plex Image Type Not Supported")
@@ -2242,25 +2409,25 @@ class Plex(Library):
                 if image_type == "poster":
                     try:
                         self.upload_poster(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload poster: {e}")
                         updated = False
                 elif image_type == "background":
                     try:
                         self.upload_background(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload background: {e}")
                         updated = False
                 elif image_type == "logo":
                     try:
                         self.upload_logo(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload logo: {e}")
                         updated = False
                 else:
                     try:
                         self.upload_square_art(item, image, url=image_url)
-                    except BadRequest as e:
+                    except (BadRequest, PlexImageUploadError) as e:
                         logger.error(f"Plex Error: Failed to upload square art: {e}")
                         updated = False
                 if updated:
@@ -3016,6 +3183,9 @@ class Plex(Library):
 
     def split(self, text):
         attribute, modifier = os.path.splitext(str(text).lower())
+        if attribute == "item" and modifier == ".label":
+            attribute = f"item_{modifier[1:]}"
+            modifier = ""
         attribute = method_alias[attribute] if attribute in method_alias else attribute
         modifier = modifier_alias[modifier] if modifier in modifier_alias else modifier
 
@@ -3155,9 +3325,15 @@ class Plex(Library):
                     percentage = sub_data
                 elif sub_atr == "count":
                     count = sub_data
+                elif sub_atr == "latest":
+                    continue
                 else:
                     filters_in.append((sub_atr, sub_data))
-            if count is not None:
+            if filter_attr == "seasons" and filter_data.get("latest"):
+                numbered_seasons = [season for season in sub_items if season.index is not None and season.index > 0]
+                if not numbered_seasons or not self.check_filters(max(numbered_seasons, key=lambda season: season.index), filters_in, current_time):
+                    return False
+            elif count is not None:
                 matches = 0
                 for sub_item in sub_items:
                     if self.check_filters(sub_item, filters_in, current_time) is True:

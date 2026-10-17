@@ -19,7 +19,8 @@
   if (isPreRelease) {
     const branchName = isNightly ? "NIGHTLY" : "DEVELOP";
     const latestURL = currentURL.replace(/en\/(nightly|develop)\//, 'en/latest/');
-    announceText = `⚠️ You are viewing the ${branchName} branch's wiki. <a href="${latestURL}">Click here to go to the main wiki.</a> ⚠️`;
+    const releaseNotesURL = currentURL.replace(/en\/(nightly|develop)\/.*/, `en/${isNightly ? "nightly" : "develop"}/kometa/release-notes/`);
+    announceText = `⚠️ You are viewing the ${branchName} branch's wiki. Click <a href="${latestURL}">here</a> to go to the main wiki. View the latest changes in <a href="${releaseNotesURL}">Release Notes.</a> ⚠️`;
   } else {
     announceText = `
       <div class="announce-bar">
@@ -47,4 +48,3 @@
 </script>
 
 {% endblock %}
-

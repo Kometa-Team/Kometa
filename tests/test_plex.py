@@ -20,7 +20,7 @@ from requests.exceptions import ConnectionError, ConnectTimeout, ReadTimeout
 from tenacity import wait_none
 
 import modules.builder  # noqa: F401 — pre-import to break circular deps
-from modules.plex import Plex, TracedPlexServer
+from modules.plex import MusicMatcher, Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
 
@@ -242,6 +242,164 @@ class TestImageUpdate:
 
 
 class TestUploadImages:
+    @pytest.fixture
+    def gateway_upload(self, monkeypatch):
+        import modules.library as library_module
+        import modules.plex as plex_module
+        from modules.poster import ImageData
+
+        test_logger = MagicMock()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        cache = MagicMock()
+        cache.query_image_map.return_value = (None, None, None)
+        plex = make_plex(config=SimpleNamespace(Cache=cache), image_table_name="images")
+        plex.reload = MagicMock()
+        monkeypatch.setattr(plex_module, "logger", test_logger)
+        sleeps = []
+        monkeypatch.setattr(Plex._upload_image_request.retry, "sleep", sleeps.append)
+        item = make_plex_item(title="Gil Netter (Producer)")
+
+        def run(artwork):
+            image = ImageData(f"url_{artwork}", "https://example.com/image.jpg", image_type=artwork, is_url=True)
+            return plex.upload_images(item, **{artwork: image})
+
+        return plex, item, cache, test_logger, sleeps, run
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_recovers(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest(f"({status}) gateway error"), BadRequest(f"({status}) gateway error"), None]
+
+        result = run(artwork)
+
+        assert result[("poster", "background", "logo", "square_art").index(artwork)] is True
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_called_once_with(item, force=True)
+        cache.update_image_map.assert_called_once()
+        test_logger.error.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_exhausted_logs_details_without_traceback(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = BadRequest(f"({status}) gateway error; sensitive Plex request details")
+
+        assert run(artwork) == (False, False, False, False)
+
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_not_called()
+        item.refresh.assert_not_called()
+        cache.update_image_map.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+        test_logger.error.assert_called_once()
+        message = test_logger.error.call_args.args[0]
+        assert "Gil Netter (Producer)" in message
+        assert f"HTTP {status} after 3 upload attempts" in message
+        assert "https://example.com/image.jpg" in message
+        assert "Continuing the run" in message
+        assert "sensitive Plex request details" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("url", [False, True])
+    def test_direct_upload_helpers_retry_and_identify_image(self, gateway_upload, artwork, method, url):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        image = "https://example.com/image.jpg" if url else "/posters/local.jpg"
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest("(503) sensitive request text"), None]
+
+        getattr(plex, f"upload_{artwork}")(item, image, url=url)
+
+        assert upload.call_count == 2
+        upload.assert_called_with(**{"url" if url else "filepath": image})
+        assert sleeps == [2]
+        message = test_logger.info.call_args.args[0]
+        assert item.title in message
+        assert artwork in message
+        assert image in message
+        assert "sensitive request text" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_direct_upload_exhaustion_is_not_retried_by_outer_policy(self, gateway_upload, artwork, method):
+        from modules.util import PlexImageUploadError
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        getattr(item, method).side_effect = BadRequest("(502) sensitive request text")
+
+        with pytest.raises(PlexImageUploadError) as error:
+            getattr(plex, f"upload_{artwork}")(item, "/posters/local.jpg")
+
+        assert getattr(item, method).call_count == 3
+        assert sleeps == [2, 5]
+        assert item.title in str(error.value)
+        assert artwork in str(error.value)
+        assert "/posters/local.jpg" in str(error.value)
+        assert "sensitive request text" not in str(error.value)
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_reset_failure_does_not_lock_artwork_or_remove_overlay_label(self, gateway_upload, artwork, method):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        setattr(plex, f"mass_{artwork}_update", {"source": "tmdb"})
+        plex.query = MagicMock()
+        plex.edit_tags = MagicMock()
+        getattr(item, method).side_effect = BadRequest("(504) gateway timeout")
+
+        assert plex.image_update(item, None, tmdb=("tmdb", "https://example.com/image.jpg"), image_type=artwork) == ("Reset", "TMDb", "Failed")
+
+        assert getattr(item, method).call_count == 3
+        plex.query.assert_not_called()
+        plex.edit_tags.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("message", ["(400) bad_request", "(404) not_found", "(401) unauthorized", "(400) body mentions (502)"])
+    def test_permanent_upload_error_is_not_retried_and_retains_traceback(self, gateway_upload, message):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest(message)
+
+        assert run("poster") == (False, False, False, False)
+
+        item.uploadPoster.assert_called_once()
+        item.refresh.assert_called_once()
+        assert sleeps == []
+        test_logger.stacktrace.assert_called_once()
+        cache.update_image_map.assert_not_called()
+
+    def test_exhausted_poster_upload_still_updates_background(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest("(502) bad_gateway")
+        poster = ImageData("url_poster", "https://example.com/poster.jpg")
+        background = ImageData("url_background", "https://example.com/background.jpg", image_type="background")
+
+        result = plex.upload_images(item, poster=poster, background=background)
+
+        assert result == (False, True, False, False)
+        assert item.uploadPoster.call_count == 3
+        item.uploadArt.assert_called_once_with(url=background.location)
+        cache.update_image_map.assert_called_once_with(item.ratingKey, "images_backgrounds", "", background.compare)
+        test_logger.stacktrace.assert_not_called()
+
+    def test_local_image_upload_uses_gateway_retries(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        plex.validate_image_size = MagicMock(return_value=True)
+        image = ImageData("file_poster", "/posters/local.jpg", is_url=False, compare="local-image")
+        item.uploadPoster.side_effect = [BadRequest("(503) service_unavailable"), None]
+
+        assert plex.upload_images(item, poster=image) == (True, False, False, False)
+
+        assert item.uploadPoster.call_count == 2
+        item.uploadPoster.assert_called_with(filepath=image.location)
+        assert sleeps == [2]
+        test_logger.stacktrace.assert_not_called()
+
     @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
     @pytest.mark.parametrize("timeout", [ReadTimeout, ConnectTimeout])
     def test_upload_timeout_retries_and_logs_without_traceback(self, monkeypatch, artwork, method, timeout):
@@ -915,6 +1073,37 @@ class TestRefreshItemCacheAndMappings:
 # ═══════════════════════════════════════════════════════════════════════
 # check_filters / check_filter reload dedup
 # ═══════════════════════════════════════════════════════════════════════
+
+
+class TestImdbRatingCacheOnLibraryLoad:
+    def test_map_guids_caches_ratings_after_the_library_loads(self, monkeypatch):
+        monkeypatch.setattr("modules.library.logger", FakeLogger())
+        library = MagicMock()
+        library.anidb_map = {}
+        library.mal_map = {}
+        library.plex_map_levels = set()
+        library.type = "Movie"
+        Plex.map_guids(library, [])
+        library.cache_imdb_ratings.assert_called_once_with()
+
+    def test_cache_imdb_ratings_sends_that_librarys_ids(self):
+        imdb = SimpleNamespace(cache_library_ratings=MagicMock())
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1], "": [2], "tt0068646": [3]}, config=SimpleNamespace(IMDb=imdb))
+        Plex.cache_imdb_ratings(library)
+        imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
+
+    def test_cache_imdb_ratings_skips_when_imdb_is_not_configured(self):
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=None))
+        Plex.cache_imdb_ratings(library)
+
+    def test_cache_imdb_ratings_logs_and_continues_when_caching_fails(self, monkeypatch):
+        logger = FakeLogger()
+        monkeypatch.setattr("modules.library.logger", logger)
+        imdb = SimpleNamespace(cache_library_ratings=MagicMock(side_effect=RuntimeError("db locked")))
+        library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=imdb))
+        Plex.cache_imdb_ratings(library)
+        assert imdb.cache_library_ratings.called
+        assert any("db locked" in message for message in logger.error_messages)
 
 
 class TestCheckFiltersReloadDedup:
@@ -2106,3 +2295,88 @@ def test_collection_file_asset_override_reaches_both_metadata_scans(monkeypatch,
     assert constructor.call_args_list[0].kwargs["configured_names_only"] is True
     assert library.collection_names == ["Test"]
     assert library.collections == ["Test"]
+
+
+def music_item(rating_key, title, artist=None, album=None, mbid=None):
+    item = SimpleNamespace(ratingKey=rating_key, title=title, guids=[SimpleNamespace(id=f"mbid://{mbid}")] if mbid else [])
+    if artist:
+        item.parentTitle = artist
+    if album:
+        item.grandparentTitle = artist
+        item.parentTitle = album
+    return item
+
+
+def test_music_artist_id_then_unique_title_fallback_and_ambiguity():
+    artists = [music_item(1, "Beyoncé", mbid="6bcf8d06-9648-456b-970f-ae9ba1c9ae95"), music_item(2, "Beyoncé & Shakira"), music_item(3, "Duplicate"), music_item(4, "Duplicate")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=artists))
+    matcher = MusicMatcher([library], "artist")
+
+    assert matcher.match(mbid="6BCF8D06-9648-456B-970F-AE9BA1C9AE95", artist="Other name") == (artists[0], None)
+    assert matcher.match(mbid="18dd525e-7efb-4a2e-b2cb-f6199acaeae2", artist="BEYONCÉ & SHAKIRA") == (artists[1], None)
+    assert matcher.match(artist="Duplicate") == (None, "ambiguous")
+    assert matcher.match(artist="Beyoncé & Shakira feat. Someone") == (None, "not found")
+
+
+def test_music_album_fallback_requires_unique_artist_and_title():
+    albums = [music_item(1, "Greatest Hits", artist="ABBA"), music_item(2, "Greatest Hits", artist="Queen"), music_item(3, "Deluxe", artist="ABBA"), music_item(4, "Deluxe", artist="ABBA")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=albums))
+    matcher = MusicMatcher([library], "album")
+
+    assert matcher.match(mbid="68c46898-e359-4cad-9d35-1576b66919d4", artist="abba", album="GREATEST HITS") == (albums[0], None)
+    assert matcher.match(artist="Queen", album="Greatest Hits") == (albums[1], None)
+    assert matcher.match(artist="ABBA", album="Deluxe") == (None, "ambiguous")
+
+
+def test_music_ambiguous_id_can_be_resolved_by_unique_titles():
+    shared_mbid = "e4be8595-a0f9-4f7e-acf1-23ffef126a23"
+    albums = [music_item(1, "Original", artist="Artist", mbid=shared_mbid), music_item(2, "Remaster", artist="Artist", mbid=shared_mbid)]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=albums))
+    matcher = MusicMatcher([library], "album")
+
+    assert matcher.match(mbid=shared_mbid, artist="Artist", album="Original") == (albums[0], None)
+    assert matcher.match(mbid=shared_mbid, artist="Artist", album="Unknown") == (None, "ambiguous")
+
+
+def test_music_track_fallback_requires_artist_album_and_track():
+    tracks = [music_item(1, "Black Velvet", artist="Alannah Myles", album="Alannah Myles"), music_item(2, "Black Velvet", artist="Alannah Myles", album="Greatest Hits")]
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match(mbid="be191a11-c480-4240-8baa-6c4be0f8d400", artist="ALANNAH MYLES", album="Alannah Myles", track="black velvet") == (tracks[0], None)
+    assert matcher.match(artist="Alannah Myles", track="Black Velvet") == (None, "not found")
+    assert matcher.match(artist="Alannah Myles", album="Greatest Hits", track="Black Velvet") == (tracks[1], None)
+
+
+def test_music_track_duration_requires_one_close_match():
+    tracks = [music_item(1, "Black Velvet", artist="Alannah Myles", album="Alannah Myles"), music_item(2, "Black Velvet", artist="Alannah Myles", album="Greatest Hits")]
+    tracks[0].duration = 287477
+    tracks[1].duration = 305000
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("ALANNAH MYLES", "Black Velvet", 288000) == (tracks[0], None)
+    assert matcher.match_track_duration("Alannah Myles", "Black Velvet", 0) == (None, "not found")
+    tracks[1].duration = 288500
+    assert matcher.match_track_duration("Alannah Myles", "Black Velvet", 288000) == (None, "ambiguous")
+
+
+def test_music_track_matches_unicode_and_ascii_artist_hyphens():
+    track = music_item(11526, "Crying at the Discotheque", artist="Sophie Ellis‐Bextor", album="Crying at the Discotheque")
+    track.duration = 231444
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=[track]))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("Sophie Ellis-Bextor", "Crying at the Discotheque", 231000) == (track, None)
+    assert matcher.match(artist="Sophie Ellis-Bextor", album="Crying at the Discotheque", track="Crying at the Discotheque") == (track, None)
+
+
+def test_music_dash_normalization_still_requires_unique_match():
+    tracks = [music_item(1, "Crying at the Discotheque", artist="Sophie Ellis‐Bextor", album="Crying at the Discotheque"), music_item(2, "Crying at the Discotheque", artist="Sophie Ellis-Bextor", album="Crying at the Discotheque")]
+    for track in tracks:
+        track.duration = 231444
+    library = SimpleNamespace(is_music=True, get_all=MagicMock(return_value=tracks))
+    matcher = MusicMatcher([library], "track")
+
+    assert matcher.match_track_duration("Sophie Ellis-Bextor", "Crying at the Discotheque", 231000) == (None, "ambiguous")
+    assert matcher.match(artist="Sophie Ellis-Bextor", album="Crying at the Discotheque", track="Crying at the Discotheque") == (None, "ambiguous")

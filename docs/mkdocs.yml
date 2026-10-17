@@ -162,6 +162,7 @@ nav:
         - ImageMaid: kometa/scripts/imagemaid.md
         - Kometa Overlay Reset: kometa/scripts/overlay-reset.md
   - USEFUL LINKS: &links
+      - Release Notes: kometa/release-notes.md
       - Feature Requests: https://features.kometa.wiki/
       - Bugs & Issues: https://github.com/Kometa-Team/Kometa/issues
       - Community Configs: https://github.com/Kometa-Team/Community-Configs
@@ -193,7 +194,10 @@ nav:
       - AniDB: config/anidb.md
       - Radarr: config/radarr.md
       - Sonarr: config/sonarr.md
+      - Seerr: config/seerr.md
       - Lidarr: config/lidarr.md
+      - Last.fm: config/lastfm.md
+      - YouTube Music: config/ytmusic.md
       - Floppy: config/floppy.md
       - YamTrack: config/yamtrack.md
       - FlickList: config/flicklist.md
@@ -384,7 +388,7 @@ nav:
       - Tautulli:
         - Overview: files/builders/tautulli/overview.md
         - Popular: files/builders/tautulli/popular.md
-        - Watched: files/builders/tautulli/watched.md
+        - Top: files/builders/tautulli/top.md
       - Tracearr:
         - Overview: files/builders/tracearr/overview.md
         - History: files/builders/tracearr/history.md
@@ -400,6 +404,19 @@ nav:
         - Overview: files/builders/lidarr/overview.md
         - All: files/builders/lidarr/all.md
         - Taglist: files/builders/lidarr/taglist.md
+      - Last.fm:
+        - User Top Artists: files/builders/lastfm/user-top-artists.md
+        - User Top Albums: files/builders/lastfm/user-top-albums.md
+        - User Top Tracks: files/builders/lastfm/user-top-tracks.md
+        - User Loved Tracks: files/builders/lastfm/user-loved-tracks.md
+        - User Recent Tracks: files/builders/lastfm/user-recent-tracks.md
+        - User Tags: files/builders/lastfm/user-tags.md
+        - Tag Charts: files/builders/lastfm/tag-charts.md
+        - Global Charts: files/builders/lastfm/global-charts.md
+      - YouTube Music:
+        - List: files/builders/ytmusic/list.md
+        - Top Artists: files/builders/ytmusic/top-artists.md
+        - Dynamic Charts: files/builders/ytmusic/charts.md
       - MDBList:
         - Overview: files/builders/mdblist/overview.md
         - List: files/builders/mdblist/list.md

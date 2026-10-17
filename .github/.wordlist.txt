@@ -4,6 +4,7 @@ ACL
 Addon
 addon
 addons
+AE
 AFI's
 Ahsoka
 AMC
@@ -19,6 +20,7 @@ APIs
 apiVersion
 appdata
 AppleTV
+arr
 ArrAPI
 Arrowverse
 Atmos
@@ -33,6 +35,7 @@ beetlejuice
 Berlinale
 berlinale
 Bestest
+BG
 BING
 bing
 Bitrate
@@ -69,6 +72,7 @@ config
 Configs
 configs
 CORS
+Costa
 cov
 Cpt
 Cron
@@ -79,6 +83,7 @@ crontab
 Crunchyroll
 customizable
 customizations
+CY
 Deathday
 deduplicate
 deduplication
@@ -90,6 +95,7 @@ Diiivoy
 diiivoy
 diiivoycolor
 DiskStation
+DK
 Dockerfile
 dockerfiles
 Dockerhub
@@ -102,6 +108,8 @@ DTS
 DV
 ee
 eedd
+EG
+El
 Emmys
 ENV
 env
@@ -140,9 +148,12 @@ gzip
 hayu
 HD
 HDR
+HK
 HLG
+HN
 HRA
 https
+HU
 Hulu
 ICheckMovies
 ImageMaid
@@ -165,6 +176,7 @@ JSON
 json
 JustWatch
 Kanopy
+KE
 keepachangelog
 Kenobi
 kesleyalfa
@@ -178,6 +190,8 @@ kometateam
 kometautils
 Kubernetes
 Kuesel
+KZ
+lastfm
 Launchd
 Lavagirl
 Letterboxd
@@ -199,6 +213,7 @@ Looper
 Lossy
 LSIO
 Luxembourgish
+LV
 MacOS
 macOS
 MAL
@@ -233,6 +248,7 @@ MPAA
 MUBI
 multiline
 MusicBrainz
+MX
 MyAnimeList
 myanimelist
 MyAnimeList's
@@ -244,6 +260,8 @@ nanogenres
 NAS
 natively
 nfr
+NG
+NL
 Nokmål
 NOSUCHLIBRARY
 Notifiarr
@@ -286,6 +304,7 @@ preroll
 PRs
 PUID
 py
+pylast
 Pyright
 pyright
 pyright's
@@ -311,6 +330,8 @@ Repo
 repo
 Repos
 repos
+Rica
+RO
 RogerEbert
 Romani
 RSS
@@ -324,14 +345,22 @@ sandler
 Schemas
 schemas
 SciFi
+scrobble
+scrobbled
+scrobbles
 SDTV
+seerr
+Seerr
+Seerr's
 selectable
 Serializd
 serializd
 Serializd's
+SG
 SHA
 Sharkboy
 ShawShank
+Shortcode
 shoutout
 SIMKL
 Simkl
@@ -341,6 +370,8 @@ Sohjiro
 Sohjiro's
 Sonarr
 sonarr
+Spotify
+Spotify's
 Springland
 SSL
 ssl
@@ -353,6 +384,7 @@ stonecutter
 sudo
 Sundance
 sundance
+SV
 Synology
 Systemctl
 Taglist
@@ -381,6 +413,7 @@ tooltip
 Tracearr
 tracearr
 Tracearr's
+traceback
 Trakt
 trakt
 Trakt's
@@ -398,7 +431,9 @@ tubi
 TVDB
 TVDb
 tvdb
+TW
 txt
+UA
 UI
 UID
 uncompress
@@ -419,8 +454,11 @@ URI
 UserList
 userlist
 UUID
+UY
 validator
+VE
 venv
+VN
 VSCode
 VSCodium
 Walkthrough
@@ -452,4 +490,6 @@ YamTrack
 YML
 yml
 Yozora
+ytmusic
 YYYY
+ZA

@@ -576,6 +576,8 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 service_url = "https://utilities.kometa.wiki/imdb-service"
+# Kometa Utilities POST /ratings rejects bodies larger than this (service default).
+ratings_batch_max = 1000
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
@@ -592,6 +594,7 @@ class IMDb:
         self.default_dir = default_dir
         self._service_available = True
         self._title_cache = {}
+        self._direct_ratings = {}
         self._episode_ratings_cache = {}
         self._ratings = None
         self._genres = None
@@ -1209,16 +1212,79 @@ class IMDb:
         if logger:
             logger.warning(f"IMDb Service unavailable, falling back to TSV dataset: {error}")
 
+    def cache_library_ratings(self, imdb_ids):
+        """Load IMDb direct ratings for these ids into the local cache.
+
+        Rows still inside ``cache_expiration`` are reused. Missing and expired ids are
+        requested together from Kometa Utilities ``POST /ratings`` (chunks of
+        ``ratings_batch_max``) and then read back for the rest of the run. A service
+        failure falls back to the IMDb TSV dataset for whatever is still unresolved.
+        """
+        pending = []
+        seen = set()
+        for imdb_id in imdb_ids or []:
+            if not imdb_id or imdb_id in seen or imdb_id in self._direct_ratings:
+                continue
+            seen.add(imdb_id)
+            pending.append(imdb_id)
+        if not pending:
+            return
+
+        missing = pending
+        if self.cache is not None:
+            fresh, missing = self.cache.query_imdb_ratings(pending, self.cache.expiration)
+            self._direct_ratings.update(fresh)
+        if not missing:
+            return
+        if not self._service_available:
+            self._fill_ratings_from_tsv(missing)
+            return
+        if logger:
+            logger.info(f"Caching {len(missing)} IMDb ratings")
+        self._fetch_ratings_batch(missing)
+
+    def _fetch_ratings_batch(self, imdb_ids):
+        try:
+            for start in range(0, len(imdb_ids), ratings_batch_max):
+                chunk = imdb_ids[start : start + ratings_batch_max]
+                stored = self._ratings_from_batch(chunk)
+                if stored is None:
+                    for imdb_id in chunk:
+                        self._direct_ratings[imdb_id] = None
+                    continue
+                self._direct_ratings.update(stored)
+                if self.cache is not None:
+                    self.cache.update_imdb_ratings(stored, self.cache.expiration)
+        except Failed as error:
+            self._service_unavailable(error)
+            unresolved = [imdb_id for imdb_id in imdb_ids if imdb_id not in self._direct_ratings]
+            self._fill_ratings_from_tsv(unresolved)
+
+    def _ratings_from_batch(self, imdb_ids):
+        data = self._service_post("ratings", {"imdb_ids": imdb_ids})
+        if not isinstance(data, dict):
+            return None
+        results = data.get("results")
+        if not isinstance(results, dict):
+            return None
+        stored = {}
+        for imdb_id in imdb_ids:
+            row = results.get(imdb_id)
+            stored[imdb_id] = row.get("averageRating") if isinstance(row, dict) else None
+        return stored
+
+    def _fill_ratings_from_tsv(self, imdb_ids):
+        ratings = self.ratings if self.ratings else {}
+        for imdb_id in imdb_ids:
+            if imdb_id not in self._direct_ratings:
+                self._direct_ratings[imdb_id] = ratings.get(imdb_id)
+
     def get_rating(self, imdb_id):
         if not imdb_id:
             return None
-        if self._service_available:
-            try:
-                data = self._service_title(imdb_id)
-                return data.get("averageRating") if isinstance(data, dict) else None
-            except Failed as e:
-                self._service_unavailable(e)
-        return self.ratings.get(imdb_id) if self.ratings else None
+        if imdb_id not in self._direct_ratings:
+            self.cache_library_ratings([imdb_id])
+        return self._direct_ratings.get(imdb_id)
 
     def get_genres(self, imdb_id):
         if not imdb_id:
