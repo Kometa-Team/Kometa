@@ -23,8 +23,8 @@ one file per issue. Issue and PR references belong in short comments explaining
 why a non-obvious case matters.
 
 Shared `FakeLogger`, `FakeRequests`, `FakeResponse`, and `FakeCache` live in
-`conftest.py`. Shared builder and Plex factories live in `factories.py`; do not
-import helpers from another `test_*.py` file.
+`conftest.py`. Shared builder, Plex, and `Requests` factories live in `factories.py`;
+do not import helpers from another `test_*.py` file.
 
 The factories bypass constructors intentionally for isolated method tests.
 Use real construction for initialization regressions and tests spanning the

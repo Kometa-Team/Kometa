@@ -1,14 +1,16 @@
-"""Factories for isolated builder and Plex method tests.
+"""Factories and small fakes for isolated builder, Plex and Requests method tests.
 
 These bypass initialization intentionally. Constructor and lifecycle tests should
 instantiate the real class instead.
 """
 
 from types import SimpleNamespace
+from typing import cast
 from unittest.mock import MagicMock
 
 from modules.builder import CollectionBuilder
 from modules.plex import Plex
+from modules.request import Requests
 from tests.conftest import FakeLogger
 
 
@@ -125,3 +127,27 @@ def make_plex_item(
     for key, value in extras.items():
         setattr(item, key, value)
     return item
+
+
+class FakeImageResponse:
+    """Minimal image HTTP response for get_image() tests."""
+
+    def __init__(self, status_code=200, content_type="image/png", content=b"fake-png-bytes"):
+        self.status_code = status_code
+        self.headers = {"Content-Type": content_type}
+        self.content = content
+
+
+def make_requests() -> Requests:
+    """Bare Requests instance without hitting the network or cloudscraper."""
+    return Requests.__new__(Requests)
+
+
+def make_image_requests():
+    """Bare Requests instance with just the attributes get_image() touches, plus its get()/head() cast to MagicMock for mock-attribute access."""
+    req = make_requests()
+    req._image_url_cache = {}
+    req.image_content_types = ["image/png", "image/jpeg", "image/webp"]
+    req.get = MagicMock()
+    req.head = MagicMock()
+    return req, cast(MagicMock, req.get), cast(MagicMock, req.head)

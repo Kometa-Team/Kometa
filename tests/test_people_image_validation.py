@@ -7,9 +7,7 @@ import pytest
 from requests.exceptions import ReadTimeout
 
 from modules.util import Failed
-from tests.test_builder import make_builder
-from tests.test_plex import make_plex
-from tests.test_request import _FakeImageResponse, make_image_requests
+from tests.factories import FakeImageResponse, make_builder, make_image_requests, make_plex
 
 PEOPLE_URL = "https://raw.githubusercontent.com/Kometa-Team/People-Images-bw/master/G/Images/Gil%20Netter.jpg"
 TMDB_URL = "https://image.tmdb.org/t/p/original/person.jpg"
@@ -18,7 +16,7 @@ TMDB_URL = "https://image.tmdb.org/t/p/original/person.jpg"
 @pytest.mark.parametrize("status, expected_attribute, expected_location", [(404, "tmdb_person", TMDB_URL), (200, "url_poster", PEOPLE_URL)])
 def test_person_poster_selection_uses_validated_candidates(monkeypatch, status, expected_attribute, expected_location):
     requests, mock_get, mock_head = make_image_requests()
-    mock_head.return_value = _FakeImageResponse(status_code=status)
+    mock_head.return_value = FakeImageResponse(status_code=status)
     test_logger = MagicMock()
     monkeypatch.setattr("modules.builder.logger", test_logger)
     library = make_plex(config=SimpleNamespace(Requests=requests))
@@ -45,8 +43,8 @@ def test_person_poster_selection_uses_validated_candidates(monkeypatch, status, 
 
 def test_cached_missing_validation_does_not_poison_downloads_or_later_runs():
     requests, mock_get, mock_head = make_image_requests()
-    mock_head.return_value = _FakeImageResponse(status_code=404)
-    mock_get.return_value = _FakeImageResponse()
+    mock_head.return_value = FakeImageResponse(status_code=404)
+    mock_get.return_value = FakeImageResponse()
     for _ in range(2):
         with pytest.raises(Failed, match="Not Found on Image URL"):
             requests.get_image(PEOPLE_URL, validate_only=True)
@@ -55,7 +53,7 @@ def test_cached_missing_validation_does_not_poison_downloads_or_later_runs():
     mock_get.assert_called_once_with(PEOPLE_URL, header=True)
 
     next_run, _, next_head = make_image_requests()
-    next_head.return_value = _FakeImageResponse()
+    next_head.return_value = FakeImageResponse()
     assert next_run.get_image(PEOPLE_URL, validate_only=True) is next_head.return_value
     next_head.assert_called_once_with(PEOPLE_URL, header=True)
 
@@ -63,7 +61,7 @@ def test_cached_missing_validation_does_not_poison_downloads_or_later_runs():
 @pytest.mark.parametrize("status", [403, 429, 500, 502, 503, 504])
 def test_temporary_or_access_failure_is_not_cached_as_missing(status):
     requests, _, mock_head = make_image_requests()
-    mock_head.side_effect = [_FakeImageResponse(status_code=status), _FakeImageResponse()]
+    mock_head.side_effect = [FakeImageResponse(status_code=status), FakeImageResponse()]
     with pytest.raises(Failed, match=str(status)):
         requests.get_image(PEOPLE_URL, validate_only=True)
     assert requests.get_image(PEOPLE_URL, validate_only=True).status_code == 200
@@ -72,7 +70,7 @@ def test_temporary_or_access_failure_is_not_cached_as_missing(status):
 
 def test_network_failure_is_not_cached_as_missing():
     requests, _, mock_head = make_image_requests()
-    mock_head.side_effect = [ReadTimeout("timeout"), _FakeImageResponse()]
+    mock_head.side_effect = [ReadTimeout("timeout"), FakeImageResponse()]
     with pytest.raises(Failed, match="Unable to reach Image URL"):
         requests.get_image(PEOPLE_URL, validate_only=True)
     assert requests.get_image(PEOPLE_URL, validate_only=True).status_code == 200
@@ -82,7 +80,7 @@ def test_network_failure_is_not_cached_as_missing():
 def test_session_validation_caches_missing_response():
     requests, _, mock_head = make_image_requests()
     session = MagicMock()
-    session.head.return_value = _FakeImageResponse(status_code=404)
+    session.head.return_value = FakeImageResponse(status_code=404)
     for _ in range(2):
         with pytest.raises(Failed, match="Not Found on Image URL"):
             requests.get_image(PEOPLE_URL, session=session, validate_only=True)
