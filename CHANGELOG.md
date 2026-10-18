@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Consolidate test execution in CI, assert CLI smoke diagnostics, share test factories, and replace copied overlay algorithms and source-text checks with production behavior coverage.
-
 ### Added
 
 - Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
