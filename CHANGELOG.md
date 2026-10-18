@@ -9,8 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
 - Add library schedule modes for full, added, changed, alphabetical, and explicitly selected items, plus a `--mode` / `KOMETA_MODE` override for a run.
+- Support minute, hour, and explicit day durations in `added(...)` library modes while keeping bare integers as days.
 - Add Release Notes to Kometa website, available under `Useful Links` section of navigation
 - Add Seerr connector for handling media requests to Radarr and Sonarr. Supports adding to standard and 4K arr instances simultaneously.
 - Add `apple_chart`, `itunes_chart` and `spotify_chart` builders for per-country song and album charts
@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `seasons: {latest: true}` filtering against the highest-numbered Plex season, excluding Specials.
 - Add an artist-level Lidarr connector with global or per-library configuration, quality-profile and monitoring updates, tag add/remove/sync support, cached successful additions, and `lidarr_add_all_existing` / `lidarr_remove_by_tag` library operations. Plex artists are added only when their metadata contains one valid MusicBrainz artist ID.
 - Add music-library `lidarr_all` and `lidarr_taglist` builders, which create Plex artist collections by matching Lidarr and Plex MusicBrainz artist IDs.
+- Mapper operations can now use an empty key (`""`) or `_` to match a blank Plex value. This lets content rating mappings set a value such as `NR` when an item has no content rating.
 
 ### Fixed
 

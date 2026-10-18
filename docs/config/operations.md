@@ -264,7 +264,7 @@ Several of these operations perform **mass** updates; these are just that, **mas
 
     === "Content Ratings"
 
-        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final content rating value after source lookup.
+        `source` accepts a source or an ordered list of fallback sources. `mappings` maps the final content rating value after source lookup. Use an empty key (`""`) or `_` to map an item whose Plex value is blank. This default mapping behavior is available for mapper attributes; for example, the genre mapper applies it to items with no genres.
 
         ???+ tip "Note on `mdb` sources"
 
@@ -283,6 +283,8 @@ Several of these operations perform **mass** updates; these are just that, **mas
                   mappings:
                     PG: Y-10
                     "PG-13": Y-10
+                    "": NR
+                    _: NR
                     R:
             ```
 
@@ -422,6 +424,16 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `remove` | Remove all genres and lock the genre field. |
         | `reset` | Remove all genres and unlock the genre field. |
         | List of strings | Set explicit genre values, for example `["String 1", "String 2"]`. |
+
+        Use an empty key (`""`) or `_` to match items with no genres and assign a default genre. For example, this adds the `Uncategorized` genre when the selected source returns no genres and the item has no existing genres.
+
+        ```yaml
+        operations:
+          mass_metadata_update:
+            genre:
+              mappings:
+                "": Uncategorized
+        ```
 
         | Mappings Attribute | Description |
         | --- | --- |

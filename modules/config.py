@@ -2001,12 +2001,12 @@ class ConfigFile:
                                 elif "mapper" in op:
                                     section_final[op] = {}
                                     for old_value, new_value in input_dict.items():
-                                        if not old_value:
-                                            logger.warning("Config Warning: The key cannot be empty")
-                                        elif new_value and str(old_value) == str(new_value):
+                                        # An empty key (or "_") maps the missing/default Plex value.
+                                        old_key = "" if old_value is None or str(old_value) == "" else str(old_value)
+                                        if old_key and new_value and old_key == str(new_value):
                                             logger.warning(f"Config Warning: {op} value '{new_value}' ignored as it cannot be mapped to itself")
                                         else:
-                                            section_final[op][str(old_value)] = str(new_value) if new_value else None  # noqa
+                                            section_final[op][old_key] = str(new_value) if new_value else None  # noqa
                                 elif op == "delete_collections":
                                     section_final[op] = {
                                         "managed": check_for_attribute(input_dict, "managed", var_type="bool", default_is_none=True, save=False),

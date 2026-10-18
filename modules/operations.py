@@ -874,6 +874,10 @@ class Operations:
                                     mapped_genres.append(self.library.genre_mapper[genre])
                             else:
                                 mapped_genres.append(genre)
+                        if not new_genres:
+                            default_genre = self.library.genre_mapper.get("", self.library.genre_mapper.get("_"))
+                            if default_genre:
+                                mapped_genres.extend(default_genre if isinstance(default_genre, list) else [default_genre])
                         new_genres = mapped_genres
                     _add = sorted(set(new_genres) - set(item_genres))
                     _remove = sorted(set(item_genres) - set(new_genres))
@@ -963,10 +967,13 @@ class Operations:
                     if not new_rating:
                         new_rating = current_rating
                     if self.library.content_rating_mapper:
-                        if new_rating in self.library.content_rating_mapper:
-                            new_rating = self.library.content_rating_mapper[new_rating]
-                            if not new_rating:
-                                is_none = True
+                        mapper_key = new_rating or ""
+                        if mapper_key in self.library.content_rating_mapper:
+                            new_rating = self.library.content_rating_mapper[mapper_key]
+                        elif not mapper_key and "_" in self.library.content_rating_mapper:
+                            new_rating = self.library.content_rating_mapper["_"]
+                        if (mapper_key in self.library.content_rating_mapper or (not mapper_key and "_" in self.library.content_rating_mapper)) and not new_rating:
+                            is_none = True
                     if extra_option == "reset":
                         if current_rating:
                             if "contentRating" not in reset_edits:
