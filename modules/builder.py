@@ -4699,6 +4699,8 @@ class CollectionBuilder:
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
                 continue
+            if not self.playlist and getattr(getattr(self, "library", None), "has_schedule_scope", False) is True and not self.library.is_scheduled_item(item):
+                continue
             if item.key not in found_item_keys:
                 if item.ratingKey in self.filtered_keys:
                     if self.details["show_filtered"] is True:
@@ -6367,6 +6369,9 @@ class CollectionBuilder:
 
     @timings.timed("sort_collection")
     def sort_collection(self):
+        if getattr(getattr(self, "library", None), "has_schedule_scope", False) is True:
+            logger.info("Skipping Collection Item Sorting because the library schedule mode is scoped")
+            return
         logger.info("")
         logger.separator(f"Sorting {self.name} {self.Type}", space=False, border=False)
         logger.info("")

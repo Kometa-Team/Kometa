@@ -4809,8 +4809,39 @@
               "$ref": "#/definitions/template-variables-library"
             },
             "schedule": {
-              "description": "Used to schedule when a library is run using the schedule options.",
-              "allOf": [{"$ref": "#/definitions/schedule"}]
+              "description": "Used to schedule when a library is run using the schedule options, or to select an item scope with full, added(duration), diff, index(range), or items(ids) modes. Added durations accept a positive integer followed by m, h, or d; no unit means days.",
+              "oneOf": [
+                {
+                  "$ref": "#/definitions/schedule"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "schedule",
+                      "mode"
+                    ],
+                    "properties": {
+                      "schedule": {
+                        "allOf": [
+                          {
+                            "$ref": "#/definitions/schedule"
+                          },
+                          {
+                            "type": "string"
+                          }
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "pattern": "^(full|diff|[Aa][Dd][Dd][Ee][Dd]\\(0*[1-9][0-9]*[mhdMHD]?\\)|index\\([A-Za-z](-[A-Za-z]#?)?\\)|items\\(((tmdb|tvdb|plex):0*[1-9][0-9]*|imdb:tt[0-9]+)(\\|((tmdb|tvdb|plex):0*[1-9][0-9]*|imdb:tt[0-9]+))*\\))$"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                }
+              ]
             },
             "schedule_overlays": {
               "description": "Used to schedule when overlays are run for this library.",

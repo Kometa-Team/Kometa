@@ -207,7 +207,9 @@ document$.subscribe(function() {
       const summary = document.createElement("summary");
       summary.className = "release-notes__heading";
       const releaseMatch = release.title.match(/^\[?(v\d+[^\]]*)\]?\s+-\s+(\d{4}-\d{2}-\d{2})$/);
-      if (releaseMatch) {
+      if (branch !== "master" && /^\[?unreleased\]?$/i.test(release.title)) {
+        summary.textContent = "Develop/Nightly Changes";
+      } else if (releaseMatch) {
         const versionLabel = document.createElement("code");
         versionLabel.textContent = releaseMatch[1];
         summary.appendChild(versionLabel);
