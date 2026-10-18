@@ -48,7 +48,7 @@ from modules import (
 from modules.overlay import Overlay, rating_sources
 from modules.poster import KometaImage
 from modules.request import quote
-from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, MappingConvertError, NonExisting, NotScheduled, NotScheduledRange, ServiceError
+from modules.util import BuilderValidationError, Deleted, Failed, FilterFailed, ImageNotFound, MappingConvertError, NonExisting, NotScheduled, NotScheduledRange, ServiceError
 
 logger = util.logger
 
@@ -2135,8 +2135,10 @@ class CollectionBuilder:
                 if not method_data.startswith("https://theposterdb.com/api/assets/"):
                     self.config.Requests.get_image(method_data, validate_only=True)
                 self.posters[method_name] = method_data
-            except Failed:
+            except ImageNotFound:
                 logger.warning(f"{self.Type} Warning: No Poster Found at {method_data}")
+            except Failed as e:
+                logger.warning(f"{self.Type} Warning: Poster validation failed at {method_data}: {e}. Trying another available poster source.")
         elif method_name == "tmdb_list_poster":
             self.posters[method_name] = self.config.TMDb.get_list(util.regex_first_int(method_data, "TMDb List ID")).poster_url
         elif method_name == "tvdb_list_poster":
