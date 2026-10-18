@@ -453,7 +453,7 @@ class TestGetImageValidateOnly:
 
 
 class TestGetImageStableAssetSkip:
-    """validate_only checks against Kometa's own shipped assets (Default-Images, People-Images-*) skip the network round-trip entirely - only arbitrary user url_poster/url_background/url_logo/url_square_art values need live validation."""
+    """Only Default-Images artwork skips validation; person images can be missing."""
 
     def test_kometa_team_url_skips_network_when_validate_only(self):
         req, mock_get, mock_head = make_image_requests()
@@ -462,12 +462,14 @@ class TestGetImageStableAssetSkip:
         assert mock_head.call_count == 0
         assert mock_get.call_count == 0
 
-    def test_kometa_team_people_images_url_skips_network_when_validate_only(self):
+    @pytest.mark.parametrize("repository", ["People-Images", "People-Images-bw", "People-Images-Portrait", "Other-Artwork", "Default-Images-copy"])
+    def test_other_kometa_repositories_are_validated(self, repository):
         req, mock_get, mock_head = make_image_requests()
-        result = req.get_image("https://raw.githubusercontent.com/Kometa-Team/People-Images-Portrait/master/A/Images/Actor.jpg", validate_only=True)
-        assert result is None
-        assert mock_head.call_count == 0
-        assert mock_get.call_count == 0
+        mock_head.return_value = _FakeImageResponse()
+        url = f"https://raw.githubusercontent.com/Kometa-Team/{repository}/master/A/Images/Actor.jpg"
+        assert req.get_image(url, validate_only=True) is mock_head.return_value
+        mock_head.assert_called_once_with(url, header=True)
+        mock_get.assert_not_called()
 
     def test_kometa_team_url_still_fetches_when_not_validate_only(self):
         """The skip is scoped to validate_only - a real poster/background/logo download must still hit the network."""
@@ -486,7 +488,7 @@ class TestGetImageStableAssetSkip:
         assert mock_head.call_count == 1
 
     def test_other_github_org_url_still_validated(self):
-        """Only the Kometa-Team org prefix is trusted - a different GitHub org/user is not Kometa's own maintained content."""
+        """Artwork outside Default-Images is validated regardless of its owner."""
         req, mock_get, mock_head = make_image_requests()
         mock_head.return_value = _FakeImageResponse()
         req.get_image("https://raw.githubusercontent.com/some-other-user/posters/master/poster.jpg", validate_only=True)

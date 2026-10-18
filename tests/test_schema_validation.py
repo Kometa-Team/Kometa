@@ -132,7 +132,7 @@ def test_schedule_properties_use_shared_definition(schema_path: Path) -> None:
     def references_shared_schedule(declaration):
         if declaration.get("$ref") == "#/definitions/schedule":
             return True
-        return any(item.get("$ref") == "#/definitions/schedule" for item in declaration.get("allOf", []))
+        return any(references_shared_schedule(item) for key in ("allOf", "anyOf", "oneOf") for item in declaration.get(key, []))
 
     assert all(references_shared_schedule(declaration) for declaration in declarations)
 

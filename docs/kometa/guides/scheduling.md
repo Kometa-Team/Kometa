@@ -1,45 +1,21 @@
----
+﻿---
 search:
   boost: 3
 hide:
   - toc
 ---
-# Scheduling Kometa Runs Guide
+# Scheduling Kometa and Library Runs Guide
 
-Kometa can run in two ways:
+Kometa scheduling has two parts: **when Kometa starts** and **what it processes after it starts**. A task scheduler, service, or container controls when Kometa runs. Kometa's schedules in `config.yml` control which libraries, items, collections, metadata, overlays, and operations are processed during that run.
 
-1. Run in the background, waking up at 5AM to process your config, then going back to sleep until tomorrow.
-2. Run immediately, process the config, then exit [the container, if you are running in docker]
-
-These two modes are mutually exclusive, and the first is the default behavior.
-
-While it is possible to have `python kometa.py` running in an open window constantly, this is not the recommended approach 
-as it relies on an always-open command window that can be obtrusive to the user.
-
-Instead, it is recommended to set an automated scheduling service so that Kometa can run in the background when scheduled 
-to without any visible impact to the user (other than the Plex libraries and playlists updating).
-
-This page discusses how to set up this "When should Kometa run" level of schedule, and it leverages both the "modes" of running discussed above.
-
-**You can also put schedule information in your config to control things like "process the Movie library only on Tuesdays" or the like. 
-That level of scheduling is configured independently from the "when Kometa runs" scheduling covered on this page, and is discussed [here](../../../config/schedule)**
-
-IMPORTANT: Every time you see `/path/to/` below, it's a placeholder for the path to that directory on *your* system. 
-You will need to change that to the relevant path on your machine. The same goes for things like `YOUR_USERNAME`.
-
-IMPORTANT: These guides are intended as just that, **guides**. Kometa has no special requirements with regard to any of these things compared to any other Python script or Docker image, 
-so if something here conflicts with normal procedure on your OS, or if the screenshots don't match some future version of Windows or the like, 
-you will possibly need to interpret the concepts discussed here and apply them to your specific setup.
-
-IMPORTANT: Any links to tools are just suggestions for a thing that can do the job; they are typically
-not required or specifically endorsed beyond "Here's a thing that the author used for this purpose".
+This guide covers both parts. First choose how to start Kometa on a regular basis; then use runtime flags to try a library mode, and move that setup into `config.yml` when you are ready. The [schedule configuration reference](../../config/schedule.md) lists every supported schedule expression and detailed behavior.
 
 === "Docker"
     Using docker is the simplest and most robust solution to automating Kometa scheduling.
-    
-    When running Kometa within docker, the session will resume after a system reboot (assuming Docker is set to start at system startup, 
+
+    When running Kometa within docker, the session will resume after a system reboot (assuming Docker is set to start at system startup,
     which is the default) and Kometa will run in the background at all times.
-    
+
     There's a [Docker Walkthrough](../../install/walkthroughs/docker) with more detailed instructions on setting up Kometa within docker. The simplest command to facilitate a docker run is:
 
     ```
@@ -52,150 +28,150 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     Change `/path/to/config` to reflect where you've installed Kometa.
 
     TZ=<TIMEZONE>
-    <TIMEZONE> is replaced with your local timezone, or the timezone your device is in that is running Kometa. For a list of available timezones, 
-    please see [Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). You want to replace <TIMEZONE> with the TZ Database Name. 
-    
+    <TIMEZONE> is replaced with your local timezone, or the timezone your device is in that is running Kometa. For a list of available timezones,
+    please see [Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones). You want to replace <TIMEZONE> with the TZ Database Name.
+
     ```
     TZ=America/New_York
     ```
-    
-    This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running, 
+
+    This will run Kometa in the background persistently until it is stopped by the user. While the docker container will be persistently running,
     Kometa will not begin the run until the scheduled time.
-    
+
     Further customizations of the docker run command can be used to specify set times to run Kometa, further information on this and other Run Commands can be found [here](../../environmental#times)
 
 === "Windows Task Scheduler"
-    
+
     Windows Task Scheduler is advised for those who followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) and/or do not want to run Kometa within docker.
-    
+
     Windows Task Scheduler allows the user to run commands and services at scheduled times and intervals.
-    
+
     There are two methods of running Kometa:
     * Single run Scheduled Task
       * Background run Scheduled Task
-    
+
     These will be explained further down this page.
-    
-    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) which includes setting up the 
-    [virtual environment](../../install/walkthroughs/local#setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live 
+
+    These guides assume the user has followed the Windows instructions in the [Local Walkthrough Guides](../../install/walkthroughs/local) which includes setting up the
+    [virtual environment](../../install/walkthroughs/local#setting-up-a-virtual-environment). Please also ensure to edit any commands to be reflective of the live
     environment (such as usernames, installation directories).
-    
+
     ### Background Run Scheduled Task
-    
-    This method will start Kometa at system startup and will keep Kometa running in the background indefinitely. 
+
+    This method will start Kometa at system startup and will keep Kometa running in the background indefinitely.
     The user can then define set days and times for the Configuration File to be processed, and Kometa will handle processing as and when required.
-    
+
     This is the recommended approach as it allows the user additional control over how and when Kometa processes.
-    
+
     If you don't specify a time, the script will run at 5AM each day. You can change this with the [time-to-run](../../environmental#times) runtime flag.
 
     ??? abstract "Background Run Scheduled Task"
-    
+
         1. Create a `waiter.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
-        
+
             ```batch
             cd C:\Users\YOUR_USERNAME\Kometa
             .\kometa-venv\Scripts\python .\kometa.py
             ```
-            This will navigate to the Kometa directory, then run Kometa. At the scheduled time [as defined within Kometa], 
+            This will navigate to the Kometa directory, then run Kometa. At the scheduled time [as defined within Kometa],
             Kometa will process the Configuration File and will then wait until the next scheduled time.
-        
+
         2. Open Task Scheduler by searching for it in the Start Menu or by opening the Run window (Windows + R) and typing taskschd.msc before hitting OK.
-        
+
             **Ensure that Task Scheduler is opened and not Task Manager**
-        
+
             ![open](./../../assets/images/kometa/guides/scheduling/open.png)
-        
+
         3. Select "Create a basic task" on the right-hand column
-        
+
             ![main](./../../assets/images/kometa/guides/scheduling/main.png)
-        
+
         4. Give the task a name, in this example `Background Kometa` and then select "Next"
-        
+
             ![background-create](./../../assets/images/kometa/guides/scheduling/background-create.png)
-        
+
         5. Choose the frequency that Kometa should run and then select "Next", `When the computer starts` is recommended.
-        
+
             ![background-trigger](./../../assets/images/kometa/guides/scheduling/background-trigger.png)
-        
+
         6. Choose the action "Start a program" and select "Next".
-        
+
             ![background-action](./../../assets/images/kometa/guides/scheduling/background-action.png)
-        
-        7. Click "Browse", Navigate to the Kometa directory and choose `waiter.cmd`, which was created in Step 1, then select "Open". 
+
+        7. Click "Browse", Navigate to the Kometa directory and choose `waiter.cmd`, which was created in Step 1, then select "Open".
         NOTE: Your path may vary from the illustration here; navigate to the file you created and saved in Step 1.
-        
+
             ![background-script](./../../assets/images/kometa/guides/scheduling/background-script.png)
-        
-        8. Copy the directory everything up to but not including `waiter.cmd` from the "Program/Script" field, and paste it into the "Start in" field. 
+
+        8. Copy the directory everything up to but not including `waiter.cmd` from the "Program/Script" field, and paste it into the "Start in" field.
         This is `C:\User\IEUser\Kometa-1.15.1` in the example below, then select "next". NOTE: Your path may vary from the illustration or example.
-        
+
             ![background-start](./../../assets/images/kometa/guides/scheduling/background-start.png)
-        
+
         9. Click "Finish".
-        
+
         10. Click "Task Schedule Library" on the left. The "Background Kometa" task should be visible.
-        
+
         Kometa will now launch at system startup, but will wait until the user-specified scheduled time before executing, and will then wait in the background for the next scheduled run.
-    
+
     ### Single Run Scheduled Task
-    
+
     This method will start Kometa at the desired time, immediately begin running the Configuration File and will then kill the process once it has completed.
-    
+
     ??? abstract "Single Run Scheduled Task"
-        
+
         1. Create a `runner.cmd` file by opening the text editor (i.e. Notepad, TextEdit) and pasting the following code:
             ```batch
             cd C:\Users\YOUR_USERNAME\Kometa
             .\kometa-venv\Scripts\python .\kometa.py --run
             ```
             This will navigate to the Kometa directory, then launch Kometa using the `-r`/`--run` flag which triggers an immediate run. Once complete, Kometa will exit.
-        
+
             Save this file to C:\Users\YOUR_USERNAME\Kometa\runner.cmd`.
-        
+
         2. Open Task Scheduler by searching for it in the Start Menu or by opening the Run window (Windows + R) and typing taskschd.msc before hitting OK.
-        
+
             **Ensure that Task Scheduler is opened and not Task Manager**
-        
+
             ![open](./../../assets/images/kometa/guides/scheduling/open.png)
-        
+
         3. Select "Create a basic task" on the right-hand column
-        
+
             ![main](./../../assets/images/kometa/guides/scheduling/main.png)
-        
+
         4. Give the task a name, in this example `Run Kometa` and then select "Next"
-        
+
             ![run-create](./../../assets/images/kometa/guides/scheduling/run-create.png)
-        
+
         5. Choose the frequency that Kometa should run and then select "Next", `Daily` is recommended.
-        
+
             ![run-trigger](./../../assets/images/kometa/guides/scheduling/run-trigger.png)
-        
+
         6. Specify the first date and time at which Kometa should run and then select "Next".
-        
+
             ![run-daily](./../../assets/images/kometa/guides/scheduling/run-daily.png)
-        
+
         7. Choose the action "Start a program" and select "Next".
-        
+
             ![run-action](./../../assets/images/kometa/guides/scheduling/run-action.png)
-        
+
         8. Click "Browse", Navigate to the Kometa directory and choose `runner.cmd`, which was created in Step 1, then select "Open".
-        
+
             ![run-browse](./../../assets/images/kometa/guides/scheduling/run-browse.png)
-        
+
         9. Copy the directory everything up to but not including `runner.cmd` from the "Program/Script" field, and paste it into the "Start in" field.
         This is `C:\User\IEUser\Kometa-1.15.1` in the example below, then select "next".
-        
+
             ![run-script](./../../assets/images/kometa/guides/scheduling/run-script.png)
-        
+
         10. Check "Open the properties dialog" if desired (not required) then select "Finish".
-        
+
             ![run-check](./../../assets/images/kometa/guides/scheduling/run-check.png)
-   
+
         11. Click "Task Schedule Library" on the left. The Kometa Run task should be visible.
-        
+
             ![run-confirm](./../../assets/images/kometa/guides/scheduling/run-confirm.png)
-        
+
         **Kometa will now run at the set date/time you selected in Step 6, and will run each subsequent day at the same time.**
 
 
@@ -208,7 +184,7 @@ not required or specifically endorsed beyond "Here's a thing that the author use
     Change `/path/to/kometa` to reflect where you've installed Kometa.
 
     Keep Kometa running constantly, let it wait to do its thing at 5 AM:
-    
+
        ```
        <?xml version="1.0" encoding="UTF-8"?>
        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -228,10 +204,10 @@ not required or specifically endorsed beyond "Here's a thing that the author use
         <string>/PATH/TO/KOMETA</string>
        </dict>
        </plist>
-       ```  
+       ```
 
     Run Kometa every 6 hours, running it immediately and letting it quit:
-    
+
        ```
        <?xml version="1.0" encoding="UTF-8"?>
        <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -274,10 +250,10 @@ not required or specifically endorsed beyond "Here's a thing that the author use
 
        Save this file as `com.YOUR_USERNAME.kometa.plist` in `~/Library/LaunchAgents`.
 
-    2. Load and start the agent 🚀
+    2. Load and start the agent ðŸš€
 
        Retrieve your user id with `id -u` in Terminal. You'll need it for the commands in this step.
-    
+
        Load the agent by executing the following commands:
 
        ```
@@ -290,27 +266,27 @@ not required or specifically endorsed beyond "Here's a thing that the author use
        ```
        launchctl kickstart -k gui/YOUR-USER-ID/com.YOUR_USERNAME.kometa
        ```
-    
+
        Note that this command uses the *label*, not the plist filename. The -k options means that the service will first be killed, if running.
-    
+
        The agent should now be active and starting the program according to the schedule you set.
 
 === "Linux Systemctl Service"
 
     1. Create the service file:
-    
+
        ```bash
        sudo nano /etc/systemd/system/kometa.service
        ```
-    
+
        Put the following into the file:
        ```
        # /etc/systemd/system/kometa.service
-    
+
        [Unit]
        Description=Kometa
        After=network-online.target
-    
+
        [Service]
        User=USER
        Group=GROUP
@@ -321,47 +297,47 @@ not required or specifically endorsed beyond "Here's a thing that the author use
        ExecStart=/path/to/kometa/kometa-venv/bin/python /path/to/kometa/kometa.py
        Restart=always
        RestartSec=10
-    
+
        [Install]
        WantedBy=default.target
        ```
-    
+
        Change `USER` and `GROUP` to reflect your user and group.
-    
+
        Change `/path/to/kometa` to reflect where you've installed Kometa.
-    
+
        NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
-    
+
        Save and close the file.
-    
+
     2. Load and start the service
-    
+
           ```shell
           sudo systemctl daemon-reload
           sudo systemctl enable kometa.service
           sudo systemctl start kometa.service
           ```
-    
+
     3. You can check whether the service is running with:
-    
+
           ```shell
           sudo systemctl status kometa.service
           ```
 
 === "cron"
-    The cron utility is used for running scripts and commands at regular intervals, and at specific times and dates. It’s built into most Operating Systems (namely Linux and Mac), 
+    The cron utility is used for running scripts and commands at regular intervals, and at specific times and dates. It's built into most Operating Systems (namely Linux and Mac),
     and provides a very useful way to schedule tasks on your server. It also works for running Docker commands on a schedule.
-    
+
     1. Decide when you want to run Kometa
-    
+
        `cron` needs a specific syntax to express schedules. A cron schedule is something like "Every Tuesday at 4" or "5 minutes past every other hour".
-    
+
        You can generate the required line by checking boxes using something like [crontab-generator](https://crontab-generator.org/).
-    
+
        The command you use in crontab will probably be the command you use to run it on the command line.
-    
+
        A command you could use for this:
-    
+
        ```
        cd /path/to/kometa && kometa-venv/bin/python kometa.py --config config/config.yml --run
        ```
@@ -370,14 +346,246 @@ not required or specifically endorsed beyond "Here's a thing that the author use
        This is an example, which does nothing but run the script immediately. If you want to add additional flags you can do so.
 
        NOTE: This is assuming you created the `kometa-venv` virtual environment as described in the [Local Walkthrough](../../install/walkthroughs/local)
-    
+
     2. Open the system crontab for editing:
 
           ```bash
           sudo crontab -e
           ```
 
-    3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own. Depending on the editor being used, you may need to put it into insert mode first. 
+    3. Paste in the crontab line you got from `crontab-generator`, or type in one of your own. Depending on the editor being used, you may need to put it into insert mode first.
     There's a good chance it's `vi`, in which case you need to press `i` to put it into insert mode, after which you will see `-- INSERT -- ` in the lower left.
 
     4. Save and close the file. How you do that depends on which editor is being used. There's a good chance it's `vi`, in which case `ESC : w RETURN` will save and `ESC : q RETURN` will exit.
+
+## Choose which items and tasks a run processes
+
+The sections above arrange **when Kometa starts**. Library schedule modes decide **which media items are in scope** once it starts. Use runtime flags to test a mode on a one-time run, or configure ordered `schedule` and `mode` entries in `config.yml` for a recurring plan. `weekly(monday)` in a library schedule does not start Kometa on Monday; it only matches if Kometa is already running that day.
+
+## Try a mode with a runtime flag
+
+The easiest way to try a mode is to pass `--mode` for a one-time run. It applies to every library Kometa processes, so pair it with `--run-libraries` when you want to try it on just one library. Modes containing parentheses or pipe characters should be quoted in your shell.
+
+For example, this processes all items across all libraries configured in the config file:
+
+```bash
+python kometa.py --run --mode 'full'
+```
+
+To only process items added in the last 24 hours, change the mode to `added` and specify the duration:
+
+```bash
+python kometa.py --run --mode 'added(1)'
+```
+
+To further limit the run to one library, name it explicitly:
+
+```bash
+python kometa.py --run-libraries 'Movies' --mode 'added(1)'
+```
+
+`--run-libraries` starts an immediate run and selects those libraries. The `--mode` override then selects the items in scope. Add a task-specific flag to narrow what Kometa does to those items. For example, run only overlays for media added in the last day:
+
+```bash
+python kometa.py --run-libraries 'Movies' --mode 'added(1)' -ov
+```
+
+Other useful combinations include:
+
+```bash
+# Run only collections for recently added items in the Movies library
+python kometa.py --run-libraries 'Movies' --mode 'added(1)' -co
+
+# Run only metadata updates for a hand-picked movie
+python kometa.py --run-libraries 'Movies' --mode 'items(tmdb:550)' -mo
+
+# Run only overlays for titles in the A-F range
+python kometa.py --run-libraries 'Movies' --mode 'index(A-F)' -ov
+```
+
+The `-ov`, `-co`, and `-mo` flags mean overlays only, collections only, and metadata only. Only one `--*-only` flag can be used at a time. See [Run Commands and Environment Variables](../environmental.md) for other options.
+
+You can set the same mode as `KOMETA_MODE` in the environment or in Kometa's `.env` file:
+
+```dotenv
+KOMETA_MODE=added(1)
+KOMETA_RUN_LIBRARIES=Movies
+KOMETA_OVERLAYS_ONLY=true
+```
+
+Environment variables stay in effect whenever Kometa starts with that environment, so remove or change them when you want a different run. A command-line option takes precedence over its corresponding environment variable.
+
+???+ warning "Runtime modes apply across libraries"
+
+    `--mode` and `KOMETA_MODE` override configured library modes for every library in the run, including libraries without a matching configured schedule. Use `--run-libraries` to target specific libraries. `--run-libraries` bypasses their configured schedule and selects the full library scope before the mode override is applied.
+
+???+ warning "Scoped runs do not reconcile everything"
+
+    A mode such as `added(1)`, `diff`, `index(A-F)`, or `items(...)` revisits only its selected items. It does not remove stale collection members, reorder the whole collection, or refresh out-of-scope poster metadata. Schedule occasional full runs for cleanup and reconciliation.
+
+## Make the mode part of your config
+
+Once you know which mode fits your workflow, you may want to add an ordered list of `schedule` and `mode` pairs to a library in `config.yml`. This example processes recently added movies on Monday, then processes the full library on every other day:
+
+```yaml
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: added(7)
+      - schedule: weekly.not(monday)
+        mode: full
+    collection_files:
+      - file: config/Movies.yml
+```
+
+Each entry has two jobs:
+
+- `schedule` says when that entry matches. It uses Kometa's regular schedule expressions, such as `daily`, `weekly(monday)`, or `monthly(1)`.
+- `mode` says which library items are in scope when that entry matches.
+
+Library schedule modes choose the **items in scope**; they do not choose which task types run. A configured schedule cannot include a `-ov` or `--overlays-only` option. If you want an ongoing overlays-only schedule for a subset of a Plex library, create a second library entry (a virtual library) that points to the same Plex library with `library_name`, then give that entry its own `schedule`, `mode`, and `run_order`. See the [Library Attributes reference](../../config/libraries.md#library-name) for how `library_name` maps a config entry to a real Plex library.
+
+For example, this keeps the regular `Movies` entry and adds a virtual entry that runs overlays only for movies added in the last day:
+
+```yaml
+libraries:
+  Movies:
+    collection_files:
+      - file: config/Movies.yml
+    overlay_files:
+      - file: config/Movie Overlays.yml
+
+  Movies Recent Overlays:
+    library_name: Movies
+    schedule:
+      - schedule: daily
+        mode: added(1)
+    run_order:
+      - overlays
+    overlay_files:
+      - file: config/Movie Overlays.yml
+```
+
+`Movies Recent Overlays` is the config name used to select this virtual entry; `library_name: Movies` tells Kometa which Plex library to access. Its `run_order` restricts this entry to overlays, while its schedule limits the overlay work to recently added items. Keep the normal entry if you also want full collection, metadata, operation, or overlay runs. For a one-time subset run, use the runtime flags described above instead.
+
+Entries are checked from top to bottom. The **first matching entry wins**. If none match, Kometa skips that library for this run. Add a final `full` entry when you want the library to run normally on days not covered by earlier entries.
+
+???+ warning "A missing match skips the library"
+
+    A library schedule mode does not fall back to `full`. If Monday is the only entry and Kometa runs on Tuesday, the library is skipped. Add another matching entry, often a final `full`, if you want it to run on other days.
+
+## Choose a mode
+
+| Mode | Example value | What Kometa processes | Good for |
+|:--|:--|:--|:--|
+| `full` | `full` | Every top-level item in the library. | Regular reconciliation and normal runs. |
+| `added(duration)` | `added(1)` or `added(6h)` | Items Plex added within a recent time window. A TV show is also included when it has a recently added episode. | Frequent runs that focus on new media. |
+| `diff` | `diff` | Items that Kometa has not seen in its previous library snapshot. For shows, Kometa checks season update times to find new episodes. | Frequent runs that focus on newly seen or changed items. |
+| `index(A-F)` | `index(A-F)` or `index(A-F#)` | Items whose Sort Title (or title when there is no Sort Title) starts with A through F, inclusive. Add `#` to include titles starting with a number or symbol. | Splitting a large library into alphabetical groups. |
+| `items(ids)` | `items(tmdb:550\|imdb:tt0133093)` | Specific existing items selected by provider ID or Plex rating key. | Updating a small hand-picked set. |
+
+### New or recently added items
+
+`added(duration)` accepts a positive whole number followed by `m` for minutes, `h` for hours, or `d` for 24-hour days. Without a unit, the number means days:
+
+```yaml
+libraries:
+  Movies:
+    schedule:
+      - schedule: hourly(2|8|14|20)
+        mode: added(6h)
+      - schedule: weekly(sunday)
+        mode: full
+```
+
+This checks for movies added in the previous six hours at the selected run hours, and processes the full library on Sunday. A short lookback is useful for frequent runs, but schedule Kometa to run often enough that the window does not routinely expire before the next run.
+
+### Newly seen items
+
+`diff` compares Plex rating keys with the previous library snapshot. In a show library, it also checks whether seasons have changed so newly added episodes can bring their parent show into scope.
+
+```yaml
+libraries:
+  TV Shows:
+    schedule:
+      - schedule: daily
+        mode: diff
+      - schedule: weekly(sunday)
+        mode: full
+```
+
+Use a persistent Kometa cache directory across runs. This is especially important in Docker: keep `/config` mounted to persistent storage so Kometa can use its previous snapshot on the next run.
+
+???+ warning "The first diff run can include the whole library"
+
+    If Kometa has no previous snapshot, every current item is new to that snapshot. The first `diff` run can therefore select the whole library. Run `full` first to establish a baseline, then enable `diff` for later runs.
+
+### Alphabetical groups
+
+Use inclusive letter ranges to divide work across days. A final `#` includes titles that start with a number or symbol:
+
+```yaml
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: index(A-F#)
+      - schedule: weekly(tuesday)
+        mode: index(G-L)
+      - schedule: weekly(wednesday)
+        mode: index(M-R)
+      - schedule: weekly(thursday)
+        mode: index(S-Z)
+      - schedule: weekly(sunday)
+        mode: full
+```
+
+The final full run catches anything missed by the alphabetical groups and refreshes results across the whole library.
+
+### Specific items
+
+Put IDs inside `items(...)`, separated by `|`. You can mix supported identifiers in the same mode:
+
+```yaml
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(friday)
+        mode: items(tmdb:550|imdb:tt0133093|plex:42)
+      - schedule: weekly(sunday)
+        mode: full
+```
+
+Use `tmdb:<id>` for movies, `tvdb:<id>` for shows, `imdb:tt<id>` for either, or `plex:<ratingKey>` for a top-level item. TMDb show IDs are converted to TVDb IDs in show libraries. Plex rating keys can also select a top-level music artist. IDs that do not match an item select nothing; they do not expand the run to the full library.
+
+> In a music library, use Plex rating keys. Provider IDs select movies and shows, not music artists.
+
+## What a limited run changes
+
+For a non-`full` mode, Kometa limits metadata updates, overlays, item operations, and collection additions to items in scope. Existing collection members outside the selected items are left alone. That makes scoped runs faster, but they do not fully reconcile changing collections.
+
+
+???+ warning "Scoped runs do not clean up everything"
+
+    A mode such as `added(1d)`, `diff`, `index(A-F)`, or `items(...)` only revisits its selected items. It does not remove existing collection members, reorder the whole collection, or refresh out-of-scope poster metadata. 
+
+    For example, say you have an IMDb Top 250 collection, movies that fall out of the ranking can remain in Plex while newly ranked movies are added, leaving the collection with more than 250 items. 
+
+    We strongly suggest you keep a regular `full` run for cleanup and reconciliation.
+
+
+## Override or bypass configured schedules
+
+`--mode` and `KOMETA_MODE` override the configured library mode for a run. Other schedules, such as collection schedules and `schedule_overlays`, continue to apply unless you also use `--ignore-schedules`. `--ignore-schedules` bypasses library schedule modes and uses full scope when no runtime mode overrides it; it also affects other schedule behavior as described in [Run Commands and Environment Variables](../environmental.md#ignore-schedules).
+
+## A practical routine
+
+For a large library, a good starting point is:
+
+1. Run `full` once to let Kometa build a complete baseline and reconcile everything.
+2. Use `added(1d)` for frequent runs, or `diff` when you want to detect newly seen items from Kometa's persistent snapshot.
+3. Add a weekly `full` run to refresh changing lists, remove stale members, and keep the library fully reconciled.
+4. Read the run log for `Library Schedule Mode` and the reported item count to confirm which scope Kometa selected.
+
+Start with a mode on one library, confirm its item count and results, then apply the pattern to other libraries. See [Library Schedule Modes](../../config/schedule.md#library-schedule-modes) for syntax details, identifier matching, and schedule-expression options.

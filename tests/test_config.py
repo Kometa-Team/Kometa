@@ -170,6 +170,29 @@ def make_config(
 # ═══════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.parametrize("attrs, expected_mode", [({}, "items(tmdb:550|tmdb:603)"), ({"ignore_schedules": True}, "full"), ({"libraries": "Movies"}, "full"), ({"mode": "index(a)"}, "index(a)"), ({"mode": "full", "ignore_schedules": True}, "full")])
+def test_items_schedule_config_selection(tmp_path, monkeypatch, attrs, expected_mode):
+    class MondayDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 6, 15, 12, tzinfo=tz)
+
+    monkeypatch.setattr(config_module, "datetime", MondayDateTime)
+    captured = {}
+    original_plex = config_module.Plex
+
+    def capture_plex(*args, **kwargs):
+        for argument in args:
+            if isinstance(argument, dict) and "schedule_mode" in argument:
+                captured.update(argument)
+        return original_plex(*args, **kwargs)
+
+    monkeypatch.setattr(config_module, "Plex", capture_plex)
+    config_yaml = BASE_CONFIG.replace("    collection_files: []", "    collection_files: []\n    schedule:\n      - schedule: weekly(monday)\n        mode: items(tmdb:550|tmdb:603)\n      - schedule: daily\n        mode: full")
+    make_config(tmp_path, config_yaml=config_yaml, attrs={"time_obj": datetime(2026, 6, 15, 12), **attrs})
+    assert captured["schedule_mode"] == expected_mode
+
+
 class TestConfigDiscovery:
     def test_finds_explicit_config_path(self, tmp_path):
         cf = make_config(tmp_path)
