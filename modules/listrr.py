@@ -124,7 +124,7 @@ class Listrr:
         return results
 
     def _headers(self):
-        return {"Authorization": f"{authorization_scheme} {self.api_key}"}
+        return {"Authorization": f"{authorization_scheme} {self.apikey}"}
 
     def _send(self, url):
         getter = getattr(self.requests, "get_once", None)
