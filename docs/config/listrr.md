@@ -15,7 +15,7 @@ listrr:
 
 | Attribute | Description | Required |
 |:----------|:------------|:------------------------------------------:|
-| `ap_key`  | Listrr API key | :fontawesome-solid-circle-check:{ .green } |
+| `apikey`  | Listrr API key | :fontawesome-solid-circle-check:{ .green } |
 
 ## Getting an API key
 
