@@ -3,10 +3,26 @@ import json
 import os
 
 import pytest
-from jsonschema import ValidationError, validate
+from jsonschema import validators
+from jsonschema.exceptions import ValidationError, best_match
 
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "json-schema", "collection-schema.json")
 PLAYLIST_SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "..", "json-schema", "playlist-schema.json")
+
+# Each entry keeps the schema itself so its id() cannot be reused by another object.
+_VALIDATORS = {}
+
+
+def validate(instance, schema):
+    """Same as jsonschema.validate, but checks and builds each schema's validator once instead of on every call."""
+    cached = _VALIDATORS.get(id(schema))
+    if cached is None:
+        cls = validators.validator_for(schema)
+        cls.check_schema(schema)
+        cached = _VALIDATORS[id(schema)] = (schema, cls(schema))
+    error = best_match(cached[1].iter_errors(instance))
+    if error is not None:
+        raise error
 
 
 @pytest.fixture(scope="module")
