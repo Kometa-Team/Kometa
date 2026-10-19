@@ -36,8 +36,8 @@ if resource is not None:
         pass  # If we can't set it, continue anyway
 
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 10:
-    print("Python Version %s.%s.%s has been detected and is no longer supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+if sys.version_info[0] != 3 or sys.version_info[1] < 11:
+    print("Python Version %s.%s.%s has been detected and is no longer supported. Kometa requires a minimum of Python 3.11.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
