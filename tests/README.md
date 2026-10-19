@@ -5,14 +5,21 @@
 ```bash
 uv sync --group dev
 uv run pytest tests/
+uv run pytest tests/ -n auto
 uv run pytest tests/ --cov=modules --cov-report=term-missing
 uv run pytest tests/ --timeout=30 --durations=10 --durations-min=2.0
 ```
 
-CI runs the full suite on Ubuntu and Windows, including schema validation,
+`-n auto` runs the suite in parallel with `pytest-xdist` (about 15s instead of
+35s on a recent laptop) and can be added to any of the other commands.
+
+CI runs the full suite in parallel on Ubuntu and Windows, on Python 3.12 (the
+minimum) and 3.13 (the Docker image's version), including schema validation,
 regression cases, fresh-process imports, per-test timeouts, and duration reporting.
 CLI smoke checks separately verify `--help` and the expected missing-config
-error. Ubuntu enforces a 20% line-coverage floor. Coverage is a guard against
+error on the same matrix. Line coverage is measured on Ubuntu with Python 3.13,
+which enforces a 48% floor (measured coverage is about 51%); raise the floor in
+`.github/workflows/test.yml` when coverage rises. Coverage is a guard against
 accidental losses, not a reason to add tests that repeat implementation details.
 
 ## Where tests belong
