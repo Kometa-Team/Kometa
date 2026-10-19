@@ -3397,7 +3397,7 @@ class Plex(Library):
                 test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
             if filter_attr in ["dovi_level", "dovi_profile"]:
-                if not test_number:
+                if not isinstance(test_number, list) or not test_number:
                     return False
                 if modifier == ".not" and filter_data in test_number:
                     return False
