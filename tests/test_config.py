@@ -17,7 +17,7 @@ import modules.builder  # noqa: F401 — pre-import to break circular deps
 import modules.config as config_module
 from modules.config import ConfigFile
 from modules.util import Failed
-from tests.conftest import FakeLogger, FakeRequests
+from tests.conftest import FakeLogger, FakeRequests, InMemoryYAMLRequests
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
@@ -157,12 +157,14 @@ def make_config(
     config_yaml: str = BASE_CONFIG,
     attrs: dict | None = None,
     secrets: dict | None = None,
+    real_yaml: bool = False,
 ) -> ConfigFile:
-    """Build a ConfigFile from *config_yaml* with all dependencies mocked."""
+    """Build a ConfigFile from *config_yaml* with all dependencies mocked; the config file is served from memory unless real_yaml=True (needed to read the saved file back)."""
     config_path = tmp_path / "config.yml"
     config_path.write_text(config_yaml, encoding="utf-8")
     merged_attrs = {**_default_attrs(str(config_path)), **(attrs or {})}
-    return ConfigFile(FakeRequests(), str(tmp_path), merged_attrs, secrets or {})
+    requests = FakeRequests() if real_yaml else InMemoryYAMLRequests()
+    return ConfigFile(requests, str(tmp_path), merged_attrs, secrets or {})
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -201,7 +203,7 @@ class TestConfigDiscovery:
     def test_raises_failed_when_file_missing(self, tmp_path):
         with pytest.raises(Failed, match="config not found"):
             ConfigFile(
-                FakeRequests(),
+                InMemoryYAMLRequests(),
                 str(tmp_path),
                 {**_default_attrs(str(tmp_path / "nope.yml"))},
                 secrets={},
@@ -215,7 +217,7 @@ class TestConfigDiscovery:
             "time_obj": datetime(2026, 6, 14, 18, 53),
             "time": "18:53",
         }
-        cf = ConfigFile(FakeRequests(), str(tmp_path), attrs, secrets={})
+        cf = ConfigFile(InMemoryYAMLRequests(), str(tmp_path), attrs, secrets={})
         assert cf.config_path == str(tmp_path / "config.yml")
 
     def test_raises_failed_when_no_config_in_default_dir(self, tmp_path):
@@ -225,7 +227,7 @@ class TestConfigDiscovery:
             "time": "18:53",
         }
         with pytest.raises(Failed, match="config not found"):
-            ConfigFile(FakeRequests(), str(tmp_path), attrs, secrets={})
+            ConfigFile(InMemoryYAMLRequests(), str(tmp_path), attrs, secrets={})
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -586,7 +588,7 @@ class TestNotify:
 
 class TestMediastingers:
     def test_mediastingers_calls_get_yaml(self, tmp_path):
-        requests = FakeRequests()
+        requests = InMemoryYAMLRequests()
         requests.get_yaml = MagicMock(return_value={"media": "stuff"})
         config_path = tmp_path / "config.yml"
         config_path.write_text(BASE_CONFIG, encoding="utf-8")
@@ -648,7 +650,7 @@ plex:
         custom = tmp_path / "custom_config.yml"
         custom.write_text(BASE_CONFIG, encoding="utf-8")
         cf = ConfigFile(
-            FakeRequests(),
+            InMemoryYAMLRequests(),
             str(tmp_path),
             _default_attrs(str(custom)),
             secrets={},
@@ -780,6 +782,7 @@ mal:
     expires_in: 3600
     refresh_token: rt
 """),
+            real_yaml=True,
         )
         assert config.MyAnimeList is not None
         assert calls[0][3]["client_id"] == OFFICIAL_CLIENT_ID
@@ -819,6 +822,7 @@ mal:
     access_token: at
     refresh_token: rt
 """),
+            real_yaml=True,
         )
         assert config.MyAnimeList is None
         assert calls == []
