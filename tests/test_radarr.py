@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+import pytest
+
 import modules.builder  # noqa: F401
 from tests.conftest import FakeLogger
 
@@ -71,7 +73,9 @@ class TestRadarrGetTmdbIds:
 
 
 class TestRadarrEditTags:
-    def test_add_tags_does_not_raise(self, monkeypatch):
+    @pytest.mark.parametrize(("apply_tags", "expected_mode"), [("", "add"), ("sync", "replace"), ("remove", "remove")])
+    def test_edit_tags_sends_the_translated_apply_mode_to_the_api(self, monkeypatch, apply_tags, expected_mode):
         r, api = _make_adapter(monkeypatch)
         api.edit_multiple_movies.return_value = ([], [])
-        r.edit_tags([550], ["action"], "")
+        r.edit_tags([550], ["action"], apply_tags)
+        api.edit_multiple_movies.assert_called_once_with([550], tags=["action"], apply_tags=expected_mode, per_request=100)

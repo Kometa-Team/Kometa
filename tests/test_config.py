@@ -288,23 +288,46 @@ plex:
         with pytest.raises(Failed, match="tmdb"):
             make_config(tmp_path, config_yaml=config)
 
-    def test_missing_plex_section(self, tmp_path):
-        """Config without a top-level plex: section still works if no library has per-library plex."""
+    def test_missing_plex_section_fails_every_library_without_its_own_plex_settings(self, tmp_path):
         config = """
-settings:
-  cache: false
-libraries:
-  Movies:
-    collection_files: []
-tmdb:
-  apikey: fake
-plex:
-  url: http://localhost
-  token: fake
-"""
-        # This should succeed because plex config is present at the top level
+    settings:
+      cache: false
+    libraries:
+      Movies:
+        collection_files: []
+    tmdb:
+      apikey: fake
+    """
+        with pytest.raises(Failed, match="No libraries were found in config"):
+            make_config(tmp_path, config_yaml=config)
+        assert any("url attribute must be set under plex globally or under this specific Library" in message for message in config_module.logger.error_messages)
+        assert any("Library Connection Failed" in message for message in config_module.logger.info_messages)
+
+    def test_per_library_plex_settings_stand_in_for_a_missing_top_level_section(self, tmp_path, monkeypatch):
+        captured = {}
+        original_plex = config_module.Plex
+
+        def capture_plex(config, params):
+            captured.update(params["plex"])
+            return original_plex(config, params)
+
+        monkeypatch.setattr(config_module, "Plex", capture_plex)
+        config = """
+    settings:
+      cache: false
+    libraries:
+      Movies:
+        collection_files: []
+        plex:
+          url: http://library-plex:32400
+          token: library-token
+    tmdb:
+      apikey: fake
+    """
         cf = make_config(tmp_path, config_yaml=config)
-        assert cf is not None
+        assert len(cf.libraries) == 1
+        assert captured["url"] == "http://library-plex:32400"
+        assert captured["token"] == "library-token"
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -570,7 +593,12 @@ class TestNotify:
     def test_notify_calls_webhooks_error_hooks(self, tmp_path):
         cf = make_config(tmp_path)
         cf.notify("Something went wrong")
-        cf.Webhooks.error_hooks.assert_called_once()
+        cf.Webhooks.error_hooks.assert_called_once_with("Something went wrong", server=None, library=None, collection=None, playlist=None, critical=True)
+
+    def test_notify_forwards_its_context_to_the_error_hooks(self, tmp_path):
+        cf = make_config(tmp_path)
+        cf.notify("boom", server="srv", library="Movies", collection="Coll", playlist="Pl", critical=False)
+        cf.Webhooks.error_hooks.assert_called_once_with("boom", server="srv", library="Movies", collection="Coll", playlist="Pl", critical=False)
 
     def test_notify_redacts_secrets_before_calling_error_webhooks(self, tmp_path):
         cf = make_config(tmp_path)
@@ -581,7 +609,7 @@ class TestNotify:
     def test_notify_delete_calls_webhooks_delete_hooks(self, tmp_path):
         cf = make_config(tmp_path)
         cf.notify_delete("Collection deleted")
-        cf.Webhooks.delete_hooks.assert_called_once()
+        cf.Webhooks.delete_hooks.assert_called_once_with("Collection deleted", server=None, library=None)
 
 
 class TestMediastingers:

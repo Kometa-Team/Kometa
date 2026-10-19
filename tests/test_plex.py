@@ -1092,9 +1092,14 @@ class TestImdbRatingCacheOnLibraryLoad:
         Plex.cache_imdb_ratings(library)
         imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
 
-    def test_cache_imdb_ratings_skips_when_imdb_is_not_configured(self):
+    def test_cache_imdb_ratings_skips_silently_when_imdb_is_not_configured(self, monkeypatch):
+        # Without the guard, the None.cache_library_ratings AttributeError would be swallowed and only show up as a logged error.
+        logs = FakeLogger()
+        monkeypatch.setattr("modules.library.logger", logs)
         library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=None))
         Plex.cache_imdb_ratings(library)
+        assert library.imdb_map == {"tt0111161": [1]}
+        assert logs.error_messages == []
 
     def test_cache_imdb_ratings_logs_and_continues_when_caching_fails(self, monkeypatch):
         logger = FakeLogger()
@@ -1179,43 +1184,25 @@ class TestCheckFilterForceReloadParam:
         item.labels = labels if labels is not None else [MagicMock(tag="Test")]
         return item
 
-    def test_force_reload_true_passed_through_to_reload(self):
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=True)
-
-        plex.reload.assert_called_once_with(item, force=True)
-
-    def test_force_reload_false_passed_through_to_reload(self):
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=False)
-
-        plex.reload.assert_called_once_with(item, force=False)
-
-    def test_force_reload_none_falls_back_to_old_always_force_behavior(self):
-        """Only a direct caller that bypasses check_filters would hit this - kept for safety."""
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=None)
-
-        plex.reload.assert_called_once_with(item, force=True)
-
-    def test_force_reload_none_for_non_tag_filter_does_not_force(self):
+    @pytest.mark.parametrize(
+        ("attribute", "values", "force_reload", "expected_force"),
+        [
+            ("genre", ["Action"], True, True),
+            ("genre", ["Action"], False, False),
+            ("genre", ["Action"], None, True),  # a direct caller that bypasses check_filters keeps the old always-force behaviour
+            ("title", ["Something"], None, False),  # a non-tag filter never forces a reload
+        ],
+        ids=["true_is_passed_through", "false_is_passed_through", "none_on_a_tag_filter_forces", "none_on_a_non_tag_filter_does_not_force"],
+    )
+    def test_force_reload_decides_whether_check_filter_forces_the_reload(self, attribute, values, force_reload, expected_force):
         plex = make_plex()
         item = self._movie_item()
         item.title = "Something"
         plex.reload = MagicMock(return_value=item)
 
-        plex.check_filter(item, "title", "", "title", ["Something"], None, force_reload=None)
+        plex.check_filter(item, attribute, "", attribute, values, None, force_reload=force_reload)
 
-        plex.reload.assert_called_once_with(item, force=False)
+        plex.reload.assert_called_once_with(item, force=expected_force)
 
 
 # ═══════════════════════════════════════════════════════════════════════

@@ -167,6 +167,16 @@ def test_load_collection_items_allows_empty_arr_mdblist_sync(monkeypatch):
 
     builder.load_collection_items()
 
+    assert builder.items == []
+
+
+def test_load_collection_items_without_items_or_mdblist_sync_raises(monkeypatch):
+    monkeypatch.setattr(builder_module, "logger", FakeLogger())
+    builder = make_builder(build_collection=False, mdb_list_arr_ids=None)
+
+    with pytest.raises(Failed, match="No Collection items found"):
+        builder.load_collection_items()
+
 
 def test_load_collection_items_recognizes_empty_existing_collection(monkeypatch):
     monkeypatch.setattr(builder_module, "logger", FakeLogger())
