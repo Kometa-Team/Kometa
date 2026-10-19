@@ -1214,7 +1214,7 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "api_key": {
+        "apikey": {
           "type": "string"
         }
       },
