@@ -226,6 +226,28 @@ class TestMDBList:
         assert result == [("456_2_3", "tmdb_episode")]
         assert adapter._request.call_args_list[1].args[0].endswith("/items/episode")
 
+    def test_get_tmdb_ids_preserves_mixed_playlist_item_types(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(
+            side_effect=[
+                ({"items": 5}, {}),
+                (
+                    [
+                        {"id": 1771, "mediatype": "movie"},
+                        {"id": 63213, "mediatype": "season", "show_id": 61550, "season_number": 1},
+                        {"id": 972992, "mediatype": "episode", "show_id": 1403, "season_number": 1, "episode_number": 1},
+                        {"id": 1403, "mediatype": "show"},
+                        {"id": 123, "mediatype": "season"},
+                    ],
+                    {"X-Has-More": "false"},
+                ),
+            ]
+        )
+
+        result = adapter.get_tmdb_ids("mdblist_list", {"url": "https://mdblist.com/lists/user/list"}, is_movie=None)
+
+        assert result == [(1771, "tmdb"), ("61550_1", "tmdb_season"), ("1403_1_1", "tmdb_episode"), (1403, "tmdb_show")]
+
     def test_get_tmdb_ids_uses_official_list_endpoint(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(

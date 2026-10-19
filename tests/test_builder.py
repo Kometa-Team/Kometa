@@ -586,6 +586,20 @@ class TestFilterAndSaveItems:
         builder.filter_and_save_items([("383275_2", "tvdb_season")])
         assert builder.found_items == episodes
 
+    def test_expands_tmdb_season_into_playlist_episodes(self, monkeypatch):
+        monkeypatch.setattr(builder_module, "logger", FakeLogger())
+        monkeypatch.setattr(builder_module, "Episode", FakeEpisode)
+        monkeypatch.setattr(builder_module.util, "item_title", lambda item: item.title)
+        episodes = [FakeEpisode(201, "Episode 1"), FakeEpisode(202, "Episode 2")]
+        builder = _episode_builder(FakeTVDbLibrary(FakeShow("Agent Carter", seasons={1: FakeSeason(episodes)})))
+        builder.playlist = True
+        builder.config = SimpleNamespace(Convert=SimpleNamespace(tmdb_to_tvdb=MagicMock(return_value=383275)))
+
+        builder.filter_and_save_items([("61550_1", "tmdb_season")])
+
+        builder.config.Convert.tmdb_to_tvdb.assert_called_once_with(61550, fail=True)
+        assert builder.found_items == episodes
+
     def test_deduplicates_episodes(self, monkeypatch):
         logger = FakeLogger()
         monkeypatch.setattr(builder_module, "logger", logger)
