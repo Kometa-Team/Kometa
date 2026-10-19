@@ -102,6 +102,7 @@ Dockerhub
 dockerhub
 docstring
 d'Or
+dovi
 Downey
 dropdown
 DTS

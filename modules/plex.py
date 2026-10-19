@@ -3376,11 +3376,7 @@ class Plex(Library):
                     stream_attribute = "DOVILevel" if filter_attr == "dovi_level" else "DOVIProfile"
                     for media in item.media:
                         for part in media.parts:
-                            test_number.extend(
-                                value
-                                for stream in part.videoStreams()
-                                if getattr(stream, "DOVIPresent", False) and (value := getattr(stream, stream_attribute, None)) is not None
-                            )
+                            test_number.extend(value for stream in part.videoStreams() if getattr(stream, "DOVIPresent", False) and (value := getattr(stream, stream_attribute, None)) is not None)
                 elif filter_attr == "audio_language":
                     for media in item.media:
                         for part in media.parts:
