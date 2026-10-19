@@ -625,6 +625,8 @@ string_modifiers = ["", ".not", ".is", ".isnot", ".begins", ".ends"]
 boolean_attributes = [
     "dovi",
     "hdr",
+    "hdr10plus",
+    "atmos",
     "unmatched",
     "duplicate",
     "unplayed",
@@ -3351,8 +3353,8 @@ class Plex(Library):
                     if failures > failure_threshold:
                         return False
         elif (filter_attr != "year" and filter_attr in builder.number_filters) or modifier in [".gt", ".gte", ".lt", ".lte", ".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
-            # channels/height/width/aspect/versions/audio_language/subtitle_language/duration are media-file properties Kometa never writes - cache them; ratings/tmdb_* stay uncached since update_item_details can write those mid-run.
-            cacheable = filter_attr in ("channels", "height", "width", "aspect", "versions", "audio_language", "subtitle_language", "duration")
+            # Media-file properties, including Dolby Vision stream values, can be cached; ratings/tmdb_* stay uncached since update_item_details can write those mid-run.
+            cacheable = filter_attr in ("channels", "height", "width", "aspect", "versions", "audio_language", "subtitle_language", "duration", "dovi_level", "dovi_profile")
             cache_key = (item.ratingKey, f"media_number:{filter_attr}")
             if cacheable and cache_key in self.filter_attr_cache:
                 test_number = self.filter_attr_cache[cache_key]
@@ -3370,6 +3372,11 @@ class Plex(Library):
                         test_number = self.config.mediastingers[self.movie_rating_key_map[item.ratingKey]]
                 elif filter_attr == "versions":
                     test_number = len(item.media)
+                elif filter_attr in ["dovi_level", "dovi_profile"]:
+                    stream_attribute = "DOVILevel" if filter_attr == "dovi_level" else "DOVIProfile"
+                    for media in item.media:
+                        for part in media.parts:
+                            test_number.extend(value for stream in part.videoStreams() if getattr(stream, "DOVIPresent", False) and (value := getattr(stream, stream_attribute, None)) is not None)
                 elif filter_attr == "audio_language":
                     for media in item.media:
                         for part in media.parts:
@@ -3389,7 +3396,14 @@ class Plex(Library):
             if modifier in [".count_gt", ".count_gte", ".count_lt", ".count_lte"]:
                 test_number = len(test_number) if test_number else 0  # type: ignore[arg-type]
                 modifier = f".{modifier[7:]}"
-            if test_number is None or util.is_number_filter(test_number, modifier, filter_data):
+            if filter_attr in ["dovi_level", "dovi_profile"]:
+                if not isinstance(test_number, list) or not test_number:
+                    return False
+                if modifier == ".not" and filter_data in test_number:
+                    return False
+                if modifier != ".not" and all(util.is_number_filter(value, modifier, filter_data) for value in test_number):
+                    return False
+            elif test_number is None or util.is_number_filter(test_number, modifier, filter_data):
                 return False
         else:
             attrs = []

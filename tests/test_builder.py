@@ -1417,7 +1417,55 @@ class TestGatherIds:
             )
 
 
+class TestDolbyVisionNumberFilters:
+    @pytest.mark.parametrize("attribute,valid_values", [("dovi_level", range(1, 14)), ("dovi_profile", [5, 7, 8, 9, 10, 20])])
+    def test_accepts_current_dolby_values(self, attribute, valid_values):
+        builder = make_builder()
+        for value in valid_values:
+            assert builder.validate_attribute(attribute, "", attribute, value, True) == value
+
+    @pytest.mark.parametrize("attribute,invalid_values", [("dovi_level", [0, 14, 20, 1.5]), ("dovi_profile", [0, 1, 6, 11, 21, 7.5])])
+    def test_rejects_values_outside_current_dolby_guidance(self, attribute, invalid_values):
+        builder = make_builder()
+        for value in invalid_values:
+            with pytest.raises((builder_module.BuilderValidationError, Failed)):
+                builder.validate_attribute(attribute, "", attribute, value, True)
+
+    @pytest.mark.parametrize("level", ["movie", "show", "season", "episode"])
+    @pytest.mark.parametrize("attribute", ["dovi_level", "dovi_profile"])
+    def test_available_as_media_filter_at_each_video_level(self, level, attribute):
+        assert attribute in builder_module.filters[level]
+        assert f"{attribute}.gte" in builder_module.all_filters
+
+
 class TestBuildFilter:
+    @pytest.mark.parametrize("method", ["plex_search", "smart_filter"])
+    @pytest.mark.parametrize("attribute", ["hdr10plus", "atmos"])
+    @pytest.mark.parametrize("level,type_key,plex_field", [("movie", 1, "{attribute}"), ("show", 2, "episode.{attribute}"), ("season", 3, "episode.{attribute}"), ("episode", 4, "{attribute}")])
+    def test_new_media_boolean_uses_plex_filter_for_selected_level(self, method, attribute, level, type_key, plex_field):
+        field = plex_field.format(attribute=attribute)
+        plex_section = MagicMock()
+        plex_section.listFilters.return_value = [SimpleNamespace(filter=field)]
+        library = SimpleNamespace(is_movie=level == "movie", is_show=level != "movie", is_music=False, split=lambda value: (value, "", value), Plex=plex_section)
+        builder = make_builder(library=library, builder_level=level)
+
+        _, _, url = builder.build_filter(method, {"all": {attribute: True}})
+
+        assert url.startswith(f"?type={type_key}&")
+        assert f"{field}=1" in url
+        plex_section.listFilters.assert_called_once_with(level)
+
+    @pytest.mark.parametrize("method", ["plex_search", "smart_filter"])
+    @pytest.mark.parametrize("attribute", ["hdr10plus", "atmos"])
+    def test_new_media_boolean_rejects_level_without_plex_filter(self, method, attribute):
+        plex_section = MagicMock()
+        plex_section.listFilters.return_value = []
+        library = SimpleNamespace(is_movie=False, is_show=True, is_music=False, split=lambda value: (value, "", value), Plex=plex_section)
+        builder = make_builder(library=library, builder_level="season")
+
+        with pytest.raises(builder_module.BuilderValidationError, match="not supported by Plex for season searches"):
+            builder.build_filter(method, {"all": {attribute: True}})
+
     def test_music_smart_artist_filter_returns_tracks(self):
         def split(value):
             for modifier in [".notlast", ".isnot", ".gte", ".gt", ".lte", ".lt", ".before", ".after", ".last", ".is", ".not"]:
