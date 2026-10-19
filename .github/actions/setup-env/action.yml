@@ -1,5 +1,5 @@
 name: Set up locked environment
-description: Installs uv from the hash-pinned bootstrap export, syncs uv.lock including the dev group and puts the virtualenv first on PATH; run actions/setup-python first.
+description: Installs uv from the hash-pinned bootstrap export, restores uv's download cache, syncs uv.lock including the dev group and puts the virtualenv first on PATH; run actions/setup-python first.
 
 runs:
   using: composite
@@ -8,8 +8,23 @@ runs:
       shell: bash
       run: python -m pip install --require-hashes --disable-pip-version-check -r docker/uv-bootstrap.txt
 
+    - name: Read the interpreter version for the cache key
+      id: python
+      shell: bash
+      run: echo "version=$(python -c 'import platform; print(platform.python_version())')" >> "$GITHUB_OUTPUT"
+
+    - name: Restore uv's download cache
+      uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ runner.temp }}/uv-cache
+        key: uv-${{ runner.os }}-${{ steps.python.outputs.version }}-${{ hashFiles('uv.lock') }}
+        restore-keys: |
+          uv-${{ runner.os }}-${{ steps.python.outputs.version }}-
+
     - name: Sync the locked dev environment
       shell: bash
+      env:
+        UV_CACHE_DIR: ${{ runner.temp }}/uv-cache
       run: uv sync --locked --group dev
 
     - name: Put the virtualenv first on PATH

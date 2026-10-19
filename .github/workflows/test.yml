@@ -5,10 +5,15 @@
 #
 # Gates:
 #   lint  — formatting, lint, and security checks (ubuntu)
-#   test  — full suite, including schemas, fresh-process imports, regressions,
-#           per-test timeouts and duration reporting (ubuntu + windows)
+#   test  — full suite, run in parallel (pytest-xdist), including schemas,
+#           fresh-process imports, regressions, per-test timeouts and duration
+#           reporting, on Python 3.12 (the minimum) and 3.13 (the Docker image's
+#           version) across ubuntu + windows; line coverage is measured and
+#           enforced once, on ubuntu with 3.13
 #   smoke — real CLI --help and an asserted missing-config diagnostic
-#           (ubuntu + windows)
+#           (same matrix as test)
+#
+# The three jobs are independent and run in parallel.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Tests
 
@@ -17,6 +22,9 @@ on:
   push:
     branches: [nightly]
 
+permissions:
+  contents: read
+
 env:
   PYTHON_VERSION: "3.12"
 
@@ -24,6 +32,7 @@ jobs:
   # ── 1. Lint & Format ────────────────────────────────────────────────────────
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -36,78 +45,74 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Black check
-        run: black --check --diff modules/ tests/ *.py
+        run: black --check --diff modules/ tests/ ./*.py
 
       - name: isort check
-        run: isort --check-only --diff modules/ tests/ *.py
+        run: isort --check-only --diff modules/ tests/ ./*.py
 
       - name: flake8
-        run: flake8 modules/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
+        run: flake8 modules/ tests/ ./*.py --max-line-length=256 --extend-ignore=E203,W503
 
       - name: bandit
         run: bandit -r modules/ -c pyproject.toml
         continue-on-error: true
 
-  # ── 2. Full Test Suite + Coverage Gate ─────────────────────────────────────
-  # Matrix: ubuntu + windows. Coverage gate only enforced on ubuntu — Windows
-  # leg exists to catch OS-specific test failures (path handling, FD APIs,
-  # subprocess differences), not to ratchet coverage twice.
+  # ── 2. Full Test Suite ──────────────────────────────────────────────────────
+  # Matrix: ubuntu + windows on the minimum Python (3.12) and the Docker image's (3.13).
+  # The Windows legs exist to catch OS-specific failures (path handling, FD APIs,
+  # subprocess differences). Coverage is measured and gated on one leg only
+  # (ubuntu, 3.13); pytest-xdist spreads each run across the runner's cores.
   test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # Fail-fast: don't bother running other jobs if lint failed
-    needs: [lint]
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python: "3.13"
+            coverage: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
 
       - name: Install dependencies
         uses: ./.github/actions/setup-env
 
+      # The floor is the measured total (about 51%) minus a 2-point margin for Python-version and OS differences; raise it when coverage rises.
       - name: Run pytest with coverage
-        run: |
-          python -m pytest tests/ --cov=modules --cov-report=term-missing --cov-report=xml:coverage.xml --timeout=30 --durations=10 --durations-min=2.0 --tb=short -v
+        if: matrix.coverage
+        run: python -m pytest tests/ -n auto --cov=modules --cov-report=term --cov-report=xml:coverage.xml --cov-fail-under=48 --timeout=30 --durations=10 --durations-min=2.0 --tb=short
+
+      - name: Run pytest
+        if: ${{ !matrix.coverage }}
+        run: python -m pytest tests/ -n auto --timeout=30 --durations=10 --durations-min=2.0 --tb=short
 
       - name: Upload coverage report
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-report
           path: coverage.xml
 
-      - name: Enforce minimum coverage
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          python -c "
-          import xml.etree.ElementTree as ET
-          tree = ET.parse('coverage.xml')
-          root = tree.getroot()
-          covered = float(root.attrib['line-rate'])
-          threshold = 0.20  # 20% — measured baseline is ~23%; ratchet up as coverage grows
-          pct = covered * 100
-          print(f'Total line coverage: {pct:.1f}%')
-          if covered < threshold:
-              print(f'FAIL: coverage {pct:.1f}% is below {threshold*100}%')
-              exit(1)
-          print('Coverage gate PASSED')
-          "
-
   # Fresh-process imports, schema validation, regressions, and timing are all
-  # covered by the main test job. Keep CLI startup separate on both platforms.
+  # covered by the main test job. Keep CLI startup separate on every leg.
   smoke:
+    name: smoke (${{ matrix.os }}, py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    needs: [lint]
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.13"]
     defaults:
       run:
         shell: bash
@@ -117,7 +122,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
