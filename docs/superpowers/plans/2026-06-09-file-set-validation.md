@@ -6,7 +6,7 @@
 
 **Architecture:** Two new module-level functions (`detect_schema_type`, `collect_yaml_files`) and a new `FileSetValidator` class are added to `modules/validator.py`. A new branch in `kometa.py`'s `start()` handles both flags. All schema validation logic is self-contained in `FileSetValidator`; it does not depend on `ConfigValidator`.
 
-**Tech Stack:** Python 3.10+, `ruamel.yaml`, `jsonschema==4.26.0`, `pytest`
+**Tech Stack:** Python 3.11+, `ruamel.yaml`, `jsonschema==4.26.0`, `pytest`
 
 ---
 
