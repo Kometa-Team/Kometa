@@ -29,19 +29,21 @@ collections:
     sonarr_taglist: 
 ```
 
-### Sync to MDBList
+### Export to MDBList
 
-When used with [`sync_to_mdb_list`](../../settings.md#mdblist-sync-example),
-`sonarr_taglist` uses the matching series in Sonarr as the source of truth.
-The sync does not depend on the items being present in Plex or on a Plex
-collection being built. Removing a tag in Sonarr also removes
-the series from the MDBList static list. Only series are removed, so this can
-safely share a list with [`radarr_taglist`](../../radarr/taglist.md) syncs.
+When used with [`list_export`](../../settings.md#list-export), `sonarr_taglist`
+exports matching series that Kometa can resolve in Plex. With `mode: sync`,
+series absent from those results are removed from the MDBList list. Use a
+separate destination list for [`radarr_taglist`](../../radarr/taglist.md),
+because sync treats the builder's results as the complete list.
 
 ```yaml
 collections:
   Sonarr Test:
     sonarr_taglist: kometa_test
-    sync_to_mdb_list: My Kometa Test Tags
+    list_export:
+      source: mdblist
+      name: My Kometa Test Tags
+      mode: sync
     build_collection: false
 ```

@@ -844,6 +844,7 @@ parts_collection_valid = (
         "sync_to_mdb_list",
         "sync_to_flicklist_list",
         "sync_to_wetrakr_list",
+        "list_export",
     ]
     + episode_parts_only
     + summary_details
@@ -1408,6 +1409,7 @@ class CollectionBuilder:
         self.sync_missing_to_flicklist_list = False
         self.sync_to_wetrakr_list = None
         self.sync_missing_to_wetrakr_list = False
+        self.list_export = None
         self.collection_poster = None
         self.collection_square_art = None
         self.collection_background = None
@@ -1946,6 +1948,8 @@ class CollectionBuilder:
                     self._tracearr(method_name, method_data)
                 elif method_name in tmdb.builders:
                     self._tmdb(method_name, method_data)
+                elif method_name == "list_export":
+                    self._list_export(method_data)
                 elif method_name == "sync_to_mdb_list":
                     self._sync_to_mdb_list(method_data)
                 elif method_name in yamtrack.builders:
@@ -4039,6 +4043,25 @@ class CollectionBuilder:
         if mode not in ("sync", "append"):
             raise BuilderValidationError(f"{self.Type} Error: sync_to_mdb_list mode must be sync or append")
         self.sync_to_mdb_list = {"name": str(name), "mode": mode}
+
+    def _list_export(self, method_data):
+        if not isinstance(method_data, dict):
+            raise BuilderValidationError(f"{self.Type} Error: list_export requires source, name, and optional mode")
+        unknown = set(method_data) - {"source", "name", "mode"}
+        if unknown:
+            raise BuilderValidationError(f"{self.Type} Error: list_export has unknown attributes: {', '.join(sorted(unknown))}")
+        source = str(method_data.get("source") or "").strip().lower()
+        name = method_data.get("name")
+        mode = str(method_data.get("mode", "sync")).strip().lower()
+        if source not in ("mdblist", "flicklist", "wetrakr", "tmdb", "floppy"):
+            raise BuilderValidationError(f"{self.Type} Error: list_export source must be mdblist, flicklist, wetrakr, tmdb, or floppy")
+        if isinstance(name, bool) or not isinstance(name, (str, int)) or not str(name).strip():
+            raise BuilderValidationError(f"{self.Type} Error: list_export name must be a list name or id")
+        if mode not in ("sync", "append"):
+            raise BuilderValidationError(f"{self.Type} Error: list_export mode must be sync or append")
+        if getattr(self.config, {"mdblist": "MDBList", "flicklist": "FlickList", "wetrakr": "WeTrakr", "tmdb": "TMDb", "floppy": "Floppy"}[source], None) is None:
+            raise ServiceError(f"{self.Type} Error: list_export source {source} is not configured")
+        self.list_export = {"source": source, "name": name, "mode": mode}
 
     def _yamtrack(self, method_name, method_data):
         if self.config.YamTrack is None:
@@ -6482,12 +6505,12 @@ class CollectionBuilder:
             current_ids.extend([(ms, "tvdb") for ms in self.missing_shows])
         self.config.Trakt.sync_list(self.sync_to_trakt_list, current_ids)
 
-    def _tracker_sync_ids(self, service, include_missing):
-        """Provider-agnostic walk of self.items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
+    def _tracker_sync_ids(self, service, include_missing, items=None):
+        """Provider-agnostic walk of items into (ids_block, media_type) pairs for a tracker list sync - movies/shows only.
         service names the tracker in the skip-count warning; include_missing extends the result with this collection's missing movies/shows."""
         current_ids = []
         skipped_seasons_and_episodes = 0
-        for item in self.items:
+        for item in self.items if items is None else items:
             for pl_library in self.libraries:
                 new_id = None
                 if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
@@ -6556,6 +6579,38 @@ class CollectionBuilder:
                     current_ids.append((tmdb_id, "tmdb_show"))
                     break
         self.config.MDBList.sync_list(self.sync_to_mdb_list["name"], current_ids, self.sync_to_mdb_list["mode"])
+
+    def export_list(self):
+        """Export the successfully gathered builder results, even when the result is empty."""
+        if self.list_export is None:
+            raise Failed(f"{self.Type} Error: list_export is not configured")
+        source = self.list_export["source"]
+        name = self.list_export["name"]
+        mode = self.list_export["mode"]
+        logger.info(f"Exporting '{self.name}' {self.Type} to {source}")
+        if source in ("mdblist", "tmdb", "floppy"):
+            if self.mdb_list_arr_ids is not None:
+                ids = self._get_mdb_list_arr_ids()
+                getattr(self.config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list(name, ids, mode)
+                return
+            ids = []
+            for item in self.found_items:
+                for pl_library in self.libraries:
+                    if isinstance(item, Movie) and item.ratingKey in pl_library.movie_rating_key_map:
+                        ids.append((pl_library.movie_rating_key_map[item.ratingKey], "tmdb"))
+                        break
+                    if isinstance(item, Show) and item.ratingKey in pl_library.show_rating_key_map:
+                        try:
+                            tmdb_id = self.config.Convert.tvdb_to_tmdb(pl_library.show_rating_key_map[item.ratingKey], fail=True)
+                        except MappingConvertError as e:
+                            logger.warning(f"{source.upper()} Warning: Skipping {item.title}: {e}")
+                            break
+                        ids.append((tmdb_id, "tmdb_show"))
+                        break
+            getattr(self.config, {"mdblist": "MDBList", "tmdb": "TMDb", "floppy": "Floppy"}[source]).sync_list(name, ids, mode)
+        else:
+            ids = self._tracker_sync_ids(source.title(), False, items=self.found_items)
+            getattr(self.config, "FlickList" if source == "flicklist" else "WeTrakr").sync_list(self.config.Convert, name, ids, mode=mode)
 
     def _get_mdb_list_arr_ids(self):
         current_ids = []
