@@ -1,7 +1,4 @@
-"""Shared fakes for tracker-connector tests. test_flicklist.py keeps its own inline copies (it
-predates this file and editing it isn't part of Layer 0's zero-edit acceptance test) - this file
-is for test_tracker.py and future connector test files (test_wetrakr.py, ...) to import instead
-of redefining the same fakes a third time."""
+"""Shared fakes for tracker-connector tests (test_tracker.py, test_wetrakr.py, test_flicklist.py and the connector contract suite)."""
 
 
 class FakeResponse:
