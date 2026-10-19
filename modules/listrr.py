@@ -32,10 +32,10 @@ _imdb_digits = re.compile(r"^\d+$")
 
 
 class Listrr:
-    def __init__(self, requests, api_key):
+    def __init__(self, requests, apikey):
         self.requests = requests
-        self.api_key = api_key
-        util.logger.secret(self.api_key)
+        self.apikey = apikey
+        util.logger.secret(self.apikey)
 
     def test_connection(self):
         self._request(f"{api_url}/List/My/1")
