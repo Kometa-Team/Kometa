@@ -86,14 +86,15 @@ jobs:
       - name: Install dependencies
         uses: ./.github/actions/setup-env
 
+      # -n logical uses every logical CPU; -n auto counts only physical cores when psutil is installed (2 workers on the Windows runner).
       # The floor is the measured total (about 51%) minus a 2-point margin for Python-version and OS differences; raise it when coverage rises.
       - name: Run pytest with coverage
         if: matrix.coverage
-        run: python -m pytest tests/ -n auto --cov=modules --cov-report=term --cov-report=xml:coverage.xml --cov-fail-under=48 --timeout=30 --durations=10 --durations-min=2.0 --tb=short
+        run: python -m pytest tests/ -n logical --cov=modules --cov-report=term --cov-report=xml:coverage.xml --cov-fail-under=48 --timeout=30 --durations=10 --durations-min=2.0 --tb=short
 
       - name: Run pytest
         if: ${{ !matrix.coverage }}
-        run: python -m pytest tests/ -n auto --timeout=30 --durations=10 --durations-min=2.0 --tb=short
+        run: python -m pytest tests/ -n logical --timeout=30 --durations=10 --durations-min=2.0 --tb=short
 
       - name: Upload coverage report
         if: matrix.coverage
