@@ -31,11 +31,27 @@ class TestWebhooks:
         w.apprise = None
         return w
 
-    def test_error_hooks_no_webhooks_does_not_raise(self, wh):
+    def test_error_hooks_without_configured_webhooks_send_nothing(self, wh):
+        wh._request = MagicMock()
         wh.error_hooks("test error", critical=False)
+        wh._request.assert_not_called()
 
-    def test_delete_hooks_no_webhooks_does_not_raise(self, wh):
+    def test_error_hooks_send_the_error_event_to_configured_webhooks(self, wh):
+        wh.error_webhooks = ["https://example.com/hook"]
+        wh._request = MagicMock()
+        wh.error_hooks("boom", library="Movies", critical=False)
+        wh._request.assert_called_once_with(["https://example.com/hook"], {"event": "error", "error": "boom", "critical": False, "library_name": "Movies"})
+
+    def test_delete_hooks_without_configured_webhooks_send_nothing(self, wh):
+        wh._request = MagicMock()
         wh.delete_hooks("test delete")
+        wh._request.assert_not_called()
+
+    def test_delete_hooks_send_the_delete_event_to_configured_webhooks(self, wh):
+        wh.delete_webhooks = ["https://example.com/hook"]
+        wh._request = MagicMock()
+        wh.delete_hooks("Collection deleted", library="Movies")
+        wh._request.assert_called_once_with(["https://example.com/hook"], {"event": "delete", "message": "Collection deleted", "library_name": "Movies"})
 
     @pytest.mark.parametrize("url", ["<<https://discord.com/api/webhooks/example/secret", "https://example.com/<token>", "example.com/hook", "ftp://example.com/hook", "https://example.com:bad/hook"])
     def test_invalid_url_is_reported_without_sending(self, wh, monkeypatch, url):
