@@ -208,6 +208,9 @@ LinuxServer
 Linuxserver
 linuxserver
 linuxserver's
+Listrr
+listrr
+Listrr's
 localhost
 lookback
 lookups

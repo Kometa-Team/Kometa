@@ -879,6 +879,22 @@
                     "description": "YamTrack tracked movies and shows filtered by status.",
                     "$ref": "#/definitions/yamtrack-tracked"
                 },
+                "listrr_list": {
+                    "description": "Listrr list id, site URL, or object with url/list_id, sort_by, and limit.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/listrr-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }] } }
+                    ]
+                },
+                "listrr_list_details": {
+                    "description": "Listrr list id, site URL, or object with url/list_id, sort_by, and limit. Also stores the first list description as the collection summary.",
+                    "oneOf": [
+                        { "type": "string" },
+                        { "$ref": "#/definitions/listrr-list-entry" },
+                        { "type": "array", "items": { "oneOf": [{ "type": "string" }, { "$ref": "#/definitions/listrr-list-entry" }] } }
+                    ]
+                },
                 "flicklist_list": {
                     "description": "FlickList List URL(s) or numeric id(s).",
                     "oneOf": [
@@ -1888,6 +1904,19 @@
             "properties": {
                 "limit": { "type": "integer", "minimum": 1, "maximum": 500 }
             }
+        },
+
+        "listrr-list-entry": {
+            "description": "listrr_list object form. url and list_id are aliases for a 24-character list id or a listrr.pro list URL.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "url": { "type": "string" },
+                "list_id": { "type": "string" },
+                "sort_by": { "type": "string", "enum": ["name.asc", "name.desc", "release.asc", "release.desc"] },
+                "limit": { "type": "integer", "minimum": 0 }
+            },
+            "anyOf": [{ "required": ["url"] }, { "required": ["list_id"] }]
         },
 
         "flicklist-ratings-entry": {

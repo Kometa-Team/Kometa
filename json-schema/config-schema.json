@@ -70,6 +70,9 @@
     "flicklist": {
       "$ref": "#/definitions/flicklist-api"
     },
+    "listrr": {
+      "$ref": "#/definitions/listrr-api"
+    },
     "wetrakr": {
       "$ref": "#/definitions/wetrakr-api"
     },
@@ -1206,6 +1209,17 @@
       },
       "required": [],
       "title": "flicklist"
+    },
+    "listrr-api": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "apikey": {
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "listrr"
     },
     "wetrakr-api": {
       "type": "object",

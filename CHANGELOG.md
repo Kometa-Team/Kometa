@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.apikey` and reads list membership from the Listrr API.
 - Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
@@ -28,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Say that an unconfigured `listrr_list` or `listrr_list_details` builder requires Listrr to be configured, matching the other service builders.
+- Read several `listrr_list` values as one builder so playlists and `collection_order: custom` can combine Listrr lists, and keep a Listrr timeout, rate limit, or blank API key from stopping the rest of the run.
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739
 - Resolve `label` filters in Music libraries to the selected artist, album, or track label field.
