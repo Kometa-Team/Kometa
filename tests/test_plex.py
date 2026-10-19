@@ -1115,6 +1115,29 @@ class TestCheckFiltersReloadDedup:
         assert plex.check_filter.call_count == 1
 
 
+class TestDolbyVisionNumberFilters:
+    @pytest.mark.parametrize("attribute,stream_attribute", [("dovi_level", "DOVILevel"), ("dovi_profile", "DOVIProfile")])
+    def test_matches_video_streams_and_requires_metadata(self, attribute, stream_attribute):
+        plex = make_plex()
+        streams = [SimpleNamespace(DOVIPresent=True, **{stream_attribute: 6 if attribute == "dovi_level" else 7}), SimpleNamespace(DOVIPresent=True, **{stream_attribute: 9 if attribute == "dovi_level" else 8})]
+        part = SimpleNamespace(videoStreams=lambda: streams)
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        item.media = [SimpleNamespace(parts=[part])]
+        plex.reload = MagicMock(return_value=item)
+        first, second = (6, 9) if attribute == "dovi_level" else (7, 8)
+
+        assert plex.check_filter(item, attribute, "", attribute, first, None) is True
+        assert plex.check_filter(item, attribute, ".gte", f"{attribute}.gte", second, None) is True
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", first, None) is False
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", 10 if attribute == "dovi_level" else 9, None) is True
+
+        plex.filter_attr_cache.clear()
+        streams[:] = [SimpleNamespace(DOVIPresent=False, **{stream_attribute: first})]
+        assert plex.check_filter(item, attribute, "", attribute, first, None) is False
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", first, None) is False
+
+
 class TestCheckFilterForceReloadParam:
     def _movie_item(self, genres=None, labels=None):
         from plexapi.video import Movie
