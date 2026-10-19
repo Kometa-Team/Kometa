@@ -28,7 +28,7 @@ Let's check if Python is already installed [type this into your terminal]
 python3 --version
 ```
 
-If this doesn't return a version between `3.10` and `3.13`, you'll need to installed a supported version of Python.
+If this doesn't return a version between `3.11` and `3.14`, you'll need to installed a supported version of Python.
 
 === ":fontawesome-brands-linux: Linux"
 
@@ -50,7 +50,7 @@ If this doesn't return a version between `3.10` and `3.13`, you'll need to insta
     Depending on the version of Python, you may need to use one or the other. 
     If this works, you're ready to go, just substitute `python` for `python3` in the couple places it appears below.
     
-    Go to http://www.python.org/download and download Python 3.13. **Kometa has not been tested and may be non-functional on any version of Python beyond 3.13**
+    Go to http://www.python.org/download and download Python 3.14. **Kometa has not been tested and may be non-functional on any version of Python beyond 3.14**
     
     Once downloaded, run the installer. Tick “Add to path” checkbox at the bottom and click “Install Now”.
     
@@ -195,12 +195,12 @@ think of it as a "sandbox" for this script. It also provides a clean way to reco
     Error: Command '['/home/mroche/Kometa/kometa-venv/bin/python3', '-Im', 'ensurepip', '--upgrade', '--default-pip']' returned non-zero exit status 1.
     ```
     
-    You probably need to make sure the Python 3.10-specific virtualenv support library is installed:
+    You probably need to make sure the Python 3.11-specific virtualenv support library is installed:
 
     [type this into your terminal]
 
     ```shell
-    sudo apt-get install python3.10-venv
+    sudo apt-get install python3.11-venv
     ```
 
     Then try the original venv command above again.

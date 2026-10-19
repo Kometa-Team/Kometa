@@ -6,11 +6,30 @@
     "additionalProperties": false,
     "properties": {
         "collections": { "$ref": "#/definitions/collections-map" },
+        "music_playlists": { "$ref": "#/definitions/music-playlists-map" },
         "templates": { "$ref": "#/definitions/templates-map" },
         "dynamic_collections": { "$ref": "#/definitions/dynamic-collections-map" },
         "external_templates": { "$ref": "#/definitions/external-templates-list" }
     },
     "definitions": {
+
+        "seerr-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "standard": { "$ref": "#/definitions/seerr-request-overrides" },
+                "4k": { "$ref": "#/definitions/seerr-request-overrides" }
+            }
+        },
+        "seerr-request-overrides": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "server_id": { "type": "integer", "minimum": 1 },
+                "quality_profile": { "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "string", "minLength": 1 }] },
+                "root_folder": { "type": "string", "minLength": 1 }
+            }
+        },
 
         "lastfm-user-top-artists-entry": {
             "type": "object",
@@ -38,6 +57,26 @@
             "additionalProperties": false,
             "properties": {
                 "country": { "type": "string" }
+            }
+        },
+
+        "spotify-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country", "chart"],
+            "properties": {
+                "country": { "type": "string", "minLength": 1 },
+                "chart": { "type": "string", "enum": ["daily", "weekly"] }
+            }
+        },
+
+        "kworb-music-chart-entry": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["country"],
+            "properties": {
+                "country": { "type": "string", "enum": ["US", "UK", "JP", "DE", "FR", "IT", "RU"] },
+                "type": { "type": "string", "enum": ["track", "song", "album"] }
             }
         },
 
@@ -108,6 +147,17 @@
             "additionalProperties": { "$ref": "#/definitions/collection-definition" }
         },
 
+        "music-playlists-map": {
+            "title": "music_playlists",
+            "description": "A mapping of Plex music playlist names to music builders or smart playlist filters.",
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "description": "A music playlist definition. Music builders and smart_filter, smart_label, or smart_url are supported.",
+                "additionalProperties": true
+            }
+        },
+
         "collection-definition": {
             "description": "Defines a single Plex collection.",
             "type": "object",
@@ -148,6 +198,18 @@
                         { "$ref": "#/definitions/ytmusic-top-artists-entry" },
                         { "type": "array", "items": { "oneOf": [{ "type": "boolean" }, { "type": "string" }, { "$ref": "#/definitions/ytmusic-top-artists-entry" }] } }
                     ]
+                },
+                "spotify_chart": {
+                    "description": "Kworb Spotify daily or weekly country chart for a track-level Plex music collection.",
+                    "$ref": "#/definitions/spotify-chart-entry"
+                },
+                "apple_chart": {
+                    "description": "Kworb Apple Music country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
+                },
+                "itunes_chart": {
+                    "description": "Kworb iTunes country chart, matched to track or album items in a Plex music library.",
+                    "$ref": "#/definitions/kworb-music-chart-entry"
                 },
 
                 "variables": { "type": "object", "additionalProperties": true },
@@ -571,6 +633,7 @@
                 },
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tautulli_top": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tracearr_history": { "$ref": "#/definitions/tracearr-builder-block" },
                 "tracearr_popular": { "$ref": "#/definitions/tracearr-builder-block" },
@@ -1110,6 +1173,9 @@
                 "item_label": { "$ref": "#/definitions/tag-value", "description": "Apply label(s) to all items found by builders." },
                 "item_label.remove": { "$ref": "#/definitions/tag-value" },
                 "item_label.sync": { "$ref": "#/definitions/tag-value" },
+                "item.label": { "$ref": "#/definitions/tag-value", "description": "Alias for item_label; supported on Music artists, albums, and tracks." },
+                "item.label.remove": { "$ref": "#/definitions/tag-value" },
+                "item.label.sync": { "$ref": "#/definitions/tag-value" },
                 "item_assets": { "type": "boolean" },
                 "item_refresh": { "type": "boolean" },
                 "item_refresh_delay": { "type": "integer", "minimum": 0 },
@@ -1211,6 +1277,10 @@
                 "sonarr_tag": { "$ref": "#/definitions/tag-value" },
                 "sonarr_season_folder": { "type": "boolean" },
                 "sonarr_ignore_cache": { "type": "boolean" },
+                "seerr_add_missing": { "type": "boolean", "description": "Submit missing movies or shows to Seerr." },
+                "seerr_add_existing": { "type": "boolean", "description": "Submit movies or shows already in the Plex library to Seerr." },
+                "seerr_instance": { "type": "string", "enum": ["standard", "4k", "both"], "description": "Seerr request tier(s) to use; both submits a separate request to each tier." },
+                "seerr_overrides": { "$ref": "#/definitions/seerr-overrides", "description": "Optional per-tier Seerr server, quality profile, and root folder overrides." },
 
                 "filters": {
                     "description": "Filters applied to items found by builders.",
@@ -1421,7 +1491,8 @@
             "properties": {
                 "list_days": { "type": "integer", "minimum": 1 },
                 "list_minimum": { "type": "integer", "minimum": 0 },
-                "list_size": { "type": "integer", "minimum": 1 }
+                "list_size": { "type": "integer", "minimum": 1 },
+                "list_buffer": { "type": "integer", "minimum": 0 }
             }
         },
         "tracearr-builder-block": {

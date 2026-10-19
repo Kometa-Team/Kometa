@@ -23,70 +23,11 @@ import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import MusicMatcher, Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
+from tests.factories import make_plex, make_plex_item
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
-
-
-def make_plex(**attrs) -> Plex:
-    """Create a minimal Plex instance with ``Plex.__new__``.
-
-    Defaults provide enough for basic method calls.  Override any
-    attribute via keyword arguments.
-
-    Sets ``Plex.logger`` and ``plex_module.logger`` to FakeLogger.
-    """
-    import modules.plex as plex_module
-
-    plex = Plex.__new__(Plex)
-
-    # Required by Library base class
-    plex.name = attrs.pop("name", "Test Library")
-    plex.is_movie = attrs.pop("is_movie", True)
-    plex.is_show = attrs.pop("is_show", False)
-    plex.type = attrs.pop("type", "Movie")
-    plex.cached_items = attrs.pop("cached_items", {})
-    plex.filter_attr_cache = attrs.pop("filter_attr_cache", {})
-    plex.collection_names = attrs.pop("collection_names", [])
-    plex.collection_files = attrs.pop("collection_files", [])
-    plex.stats = attrs.pop("stats", {"deleted": 0})
-    plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
-
-    # Required by Plex class
-    plex.collection_asset_directory = attrs.pop("collection_asset_directory", [])
-    plex.plex = attrs.pop("plex", None)
-    plex.url = attrs.pop("url", "http://localhost:32400")
-    plex.token = attrs.pop("token", "fake-token")
-    plex.PlexServer = attrs.pop("PlexServer", MagicMock())
-    plex.Plex = attrs.pop("Plex", MagicMock())
-    plex.session = attrs.pop("session", MagicMock())
-    plex.timeout = attrs.pop("timeout", 30)
-    plex._language_choice_cache = attrs.pop("_language_choice_cache", {})
-
-    # Apply any remaining overrides
-    for key, value in attrs.items():
-        setattr(plex, key, value)
-
-    plex_module.logger = FakeLogger()
-    return plex
-
-
-def make_plex_item(
-    rating_key: int = 1,
-    title: str = "Test Item",
-    year: int = 2023,
-    **extras,
-) -> MagicMock:
-    """Return a MagicMock that looks like a Plex video object."""
-    item = MagicMock()
-    item.ratingKey = rating_key
-    item.title = title
-    item.year = year
-    item.type = extras.pop("type", "movie")
-    for key, value in extras.items():
-        setattr(item, key, value)
-    return item
 
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -242,6 +183,164 @@ class TestImageUpdate:
 
 
 class TestUploadImages:
+    @pytest.fixture
+    def gateway_upload(self, monkeypatch):
+        import modules.library as library_module
+        import modules.plex as plex_module
+        from modules.poster import ImageData
+
+        test_logger = MagicMock()
+        monkeypatch.setattr(library_module, "logger", test_logger)
+        cache = MagicMock()
+        cache.query_image_map.return_value = (None, None, None)
+        plex = make_plex(config=SimpleNamespace(Cache=cache), image_table_name="images")
+        plex.reload = MagicMock()
+        monkeypatch.setattr(plex_module, "logger", test_logger)
+        sleeps = []
+        monkeypatch.setattr(Plex._upload_image_request.retry, "sleep", sleeps.append)
+        item = make_plex_item(title="Gil Netter (Producer)")
+
+        def run(artwork):
+            image = ImageData(f"url_{artwork}", "https://example.com/image.jpg", image_type=artwork, is_url=True)
+            return plex.upload_images(item, **{artwork: image})
+
+        return plex, item, cache, test_logger, sleeps, run
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_recovers(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest(f"({status}) gateway error"), BadRequest(f"({status}) gateway error"), None]
+
+        result = run(artwork)
+
+        assert result[("poster", "background", "logo", "square_art").index(artwork)] is True
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_called_once_with(item, force=True)
+        cache.update_image_map.assert_called_once()
+        test_logger.error.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("status", [502, 503, 504])
+    def test_gateway_upload_exhausted_logs_details_without_traceback(self, gateway_upload, artwork, method, status):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        upload = getattr(item, method)
+        upload.side_effect = BadRequest(f"({status}) gateway error; sensitive Plex request details")
+
+        assert run(artwork) == (False, False, False, False)
+
+        assert upload.call_count == 3
+        assert sleeps == [2, 5]
+        plex.reload.assert_not_called()
+        item.refresh.assert_not_called()
+        cache.update_image_map.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+        test_logger.error.assert_called_once()
+        message = test_logger.error.call_args.args[0]
+        assert "Gil Netter (Producer)" in message
+        assert f"HTTP {status} after 3 upload attempts" in message
+        assert "https://example.com/image.jpg" in message
+        assert "Continuing the run" in message
+        assert "sensitive Plex request details" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    @pytest.mark.parametrize("url", [False, True])
+    def test_direct_upload_helpers_retry_and_identify_image(self, gateway_upload, artwork, method, url):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        image = "https://example.com/image.jpg" if url else "/posters/local.jpg"
+        upload = getattr(item, method)
+        upload.side_effect = [BadRequest("(503) sensitive request text"), None]
+
+        getattr(plex, f"upload_{artwork}")(item, image, url=url)
+
+        assert upload.call_count == 2
+        upload.assert_called_with(**{"url" if url else "filepath": image})
+        assert sleeps == [2]
+        message = test_logger.info.call_args.args[0]
+        assert item.title in message
+        assert artwork in message
+        assert image in message
+        assert "sensitive request text" not in message
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_direct_upload_exhaustion_is_not_retried_by_outer_policy(self, gateway_upload, artwork, method):
+        from modules.util import PlexImageUploadError
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        getattr(item, method).side_effect = BadRequest("(502) sensitive request text")
+
+        with pytest.raises(PlexImageUploadError) as error:
+            getattr(plex, f"upload_{artwork}")(item, "/posters/local.jpg")
+
+        assert getattr(item, method).call_count == 3
+        assert sleeps == [2, 5]
+        assert item.title in str(error.value)
+        assert artwork in str(error.value)
+        assert "/posters/local.jpg" in str(error.value)
+        assert "sensitive request text" not in str(error.value)
+
+    @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
+    def test_reset_failure_does_not_lock_artwork_or_remove_overlay_label(self, gateway_upload, artwork, method):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        setattr(plex, f"mass_{artwork}_update", {"source": "tmdb"})
+        plex.query = MagicMock()
+        plex.edit_tags = MagicMock()
+        getattr(item, method).side_effect = BadRequest("(504) gateway timeout")
+
+        assert plex.image_update(item, None, tmdb=("tmdb", "https://example.com/image.jpg"), image_type=artwork) == ("Reset", "TMDb", "Failed")
+
+        assert getattr(item, method).call_count == 3
+        plex.query.assert_not_called()
+        plex.edit_tags.assert_not_called()
+        test_logger.stacktrace.assert_not_called()
+
+    @pytest.mark.parametrize("message", ["(400) bad_request", "(404) not_found", "(401) unauthorized", "(400) body mentions (502)"])
+    def test_permanent_upload_error_is_not_retried_and_retains_traceback(self, gateway_upload, message):
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest(message)
+
+        assert run("poster") == (False, False, False, False)
+
+        item.uploadPoster.assert_called_once()
+        item.refresh.assert_called_once()
+        assert sleeps == []
+        test_logger.stacktrace.assert_called_once()
+        cache.update_image_map.assert_not_called()
+
+    def test_exhausted_poster_upload_still_updates_background(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        item.uploadPoster.side_effect = BadRequest("(502) bad_gateway")
+        poster = ImageData("url_poster", "https://example.com/poster.jpg")
+        background = ImageData("url_background", "https://example.com/background.jpg", image_type="background")
+
+        result = plex.upload_images(item, poster=poster, background=background)
+
+        assert result == (False, True, False, False)
+        assert item.uploadPoster.call_count == 3
+        item.uploadArt.assert_called_once_with(url=background.location)
+        cache.update_image_map.assert_called_once_with(item.ratingKey, "images_backgrounds", "", background.compare)
+        test_logger.stacktrace.assert_not_called()
+
+    def test_local_image_upload_uses_gateway_retries(self, gateway_upload):
+        from modules.poster import ImageData
+
+        plex, item, cache, test_logger, sleeps, run = gateway_upload
+        plex.validate_image_size = MagicMock(return_value=True)
+        image = ImageData("file_poster", "/posters/local.jpg", is_url=False, compare="local-image")
+        item.uploadPoster.side_effect = [BadRequest("(503) service_unavailable"), None]
+
+        assert plex.upload_images(item, poster=image) == (True, False, False, False)
+
+        assert item.uploadPoster.call_count == 2
+        item.uploadPoster.assert_called_with(filepath=image.location)
+        assert sleeps == [2]
+        test_logger.stacktrace.assert_not_called()
+
     @pytest.mark.parametrize("artwork, method", [("poster", "uploadPoster"), ("background", "uploadArt"), ("logo", "uploadLogo"), ("square_art", "uploadSquareArt")])
     @pytest.mark.parametrize("timeout", [ReadTimeout, ConnectTimeout])
     def test_upload_timeout_retries_and_logs_without_traceback(self, monkeypatch, artwork, method, timeout):
@@ -866,6 +965,8 @@ class TestRefreshItemCacheAndMappings:
         fresh_item = make_plex_item(rating_key=202)
         plex = make_plex(is_movie=False, is_show=True)
         plex.is_music = False
+        plex.schedule_mode = "full"
+        plex.scheduled_item_keys = set()
         plex.get_all = MagicMock(return_value=[fresh_item])
         plex.map_guids = MagicMock()
         for attr in [
@@ -889,7 +990,7 @@ class TestRefreshItemCacheAndMappings:
         result = plex.refresh_item_cache_and_mappings()
 
         assert result == [fresh_item]
-        plex.get_all.assert_called_once_with(load=True)
+        plex.get_all.assert_called_once_with(load=True, ignore_schedule_scope=True)
         plex.map_guids.assert_called_once_with([fresh_item])
         assert plex.cached_items == {202: (fresh_item, False)}
         assert plex.filter_attr_cache == {}
@@ -932,9 +1033,14 @@ class TestImdbRatingCacheOnLibraryLoad:
         Plex.cache_imdb_ratings(library)
         imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
 
-    def test_cache_imdb_ratings_skips_when_imdb_is_not_configured(self):
+    def test_cache_imdb_ratings_skips_silently_when_imdb_is_not_configured(self, monkeypatch):
+        # Without the guard, the None.cache_library_ratings AttributeError would be swallowed and only show up as a logged error.
+        logs = FakeLogger()
+        monkeypatch.setattr("modules.library.logger", logs)
         library = SimpleNamespace(name="Movies", imdb_map={"tt0111161": [1]}, config=SimpleNamespace(IMDb=None))
         Plex.cache_imdb_ratings(library)
+        assert library.imdb_map == {"tt0111161": [1]}
+        assert logs.error_messages == []
 
     def test_cache_imdb_ratings_logs_and_continues_when_caching_fails(self, monkeypatch):
         logger = FakeLogger()
@@ -1009,6 +1115,29 @@ class TestCheckFiltersReloadDedup:
         assert plex.check_filter.call_count == 1
 
 
+class TestDolbyVisionNumberFilters:
+    @pytest.mark.parametrize("attribute,stream_attribute", [("dovi_level", "DOVILevel"), ("dovi_profile", "DOVIProfile")])
+    def test_matches_video_streams_and_requires_metadata(self, attribute, stream_attribute):
+        plex = make_plex()
+        streams = [SimpleNamespace(DOVIPresent=True, **{stream_attribute: 6 if attribute == "dovi_level" else 7}), SimpleNamespace(DOVIPresent=True, **{stream_attribute: 9 if attribute == "dovi_level" else 8})]
+        part = SimpleNamespace(videoStreams=lambda: streams)
+        item = MagicMock(spec=Movie)
+        item.ratingKey = 1
+        item.media = [SimpleNamespace(parts=[part])]
+        plex.reload = MagicMock(return_value=item)
+        first, second = (6, 9) if attribute == "dovi_level" else (7, 8)
+
+        assert plex.check_filter(item, attribute, "", attribute, first, None) is True
+        assert plex.check_filter(item, attribute, ".gte", f"{attribute}.gte", second, None) is True
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", first, None) is False
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", 10 if attribute == "dovi_level" else 9, None) is True
+
+        plex.filter_attr_cache.clear()
+        streams[:] = [SimpleNamespace(DOVIPresent=False, **{stream_attribute: first})]
+        assert plex.check_filter(item, attribute, "", attribute, first, None) is False
+        assert plex.check_filter(item, attribute, ".not", f"{attribute}.not", first, None) is False
+
+
 class TestCheckFilterForceReloadParam:
     def _movie_item(self, genres=None, labels=None):
         from plexapi.video import Movie
@@ -1019,43 +1148,25 @@ class TestCheckFilterForceReloadParam:
         item.labels = labels if labels is not None else [MagicMock(tag="Test")]
         return item
 
-    def test_force_reload_true_passed_through_to_reload(self):
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=True)
-
-        plex.reload.assert_called_once_with(item, force=True)
-
-    def test_force_reload_false_passed_through_to_reload(self):
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=False)
-
-        plex.reload.assert_called_once_with(item, force=False)
-
-    def test_force_reload_none_falls_back_to_old_always_force_behavior(self):
-        """Only a direct caller that bypasses check_filters would hit this - kept for safety."""
-        plex = make_plex()
-        item = self._movie_item()
-        plex.reload = MagicMock(return_value=item)
-
-        plex.check_filter(item, "genre", "", "genre", ["Action"], None, force_reload=None)
-
-        plex.reload.assert_called_once_with(item, force=True)
-
-    def test_force_reload_none_for_non_tag_filter_does_not_force(self):
+    @pytest.mark.parametrize(
+        ("attribute", "values", "force_reload", "expected_force"),
+        [
+            ("genre", ["Action"], True, True),
+            ("genre", ["Action"], False, False),
+            ("genre", ["Action"], None, True),  # a direct caller that bypasses check_filters keeps the old always-force behaviour
+            ("title", ["Something"], None, False),  # a non-tag filter never forces a reload
+        ],
+        ids=["true_is_passed_through", "false_is_passed_through", "none_on_a_tag_filter_forces", "none_on_a_non_tag_filter_does_not_force"],
+    )
+    def test_force_reload_decides_whether_check_filter_forces_the_reload(self, attribute, values, force_reload, expected_force):
         plex = make_plex()
         item = self._movie_item()
         item.title = "Something"
         plex.reload = MagicMock(return_value=item)
 
-        plex.check_filter(item, "title", "", "title", ["Something"], None, force_reload=None)
+        plex.check_filter(item, attribute, "", attribute, values, None, force_reload=force_reload)
 
-        plex.reload.assert_called_once_with(item, force=False)
+        plex.reload.assert_called_once_with(item, force=expected_force)
 
 
 # ═══════════════════════════════════════════════════════════════════════

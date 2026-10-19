@@ -131,6 +131,10 @@ class Failed(Exception):
     pass
 
 
+class PlexImageUploadError(Failed):
+    """A temporary Plex image upload error persisted after bounded retries."""
+
+
 class FilterFailed(Failed):
     pass
 
@@ -175,6 +179,10 @@ class BuilderValidationError(Failed):
 
 class OverlayError(Failed):
     pass
+
+
+class ImageNotFound(Failed):
+    """The image URL returned HTTP 404."""
 
 
 class NoValueFound(Failed):
@@ -832,6 +840,17 @@ def schedule_check(attribute, data, current_time, run_hour, is_all=False, object
         run_time = str(schedule).lower()
         display = f"{attribute} attribute {schedule} invalid"
         schedules_run += 1
+        modifier_match = re.match(r"^([a-z]+)\.([a-z]+)(\(.+\))$", run_time)
+        if modifier_match:
+            schedule_type, modifier, parameters = modifier_match.groups()
+            if modifier != "not":
+                logger.error(f"Schedule Error: {display}")
+                continue
+            try:
+                schedule_check(attribute, f"{schedule_type}{parameters}", current_time, run_hour)
+            except NotScheduled:
+                all_check += 1
+            continue
         if run_time.startswith("all"):
             match = re.search("\\[([^\\]]+)\\]", run_time)
             if not match:

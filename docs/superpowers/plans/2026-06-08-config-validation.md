@@ -6,7 +6,7 @@
 
 **Architecture:** A new `modules/validator.py` houses a `ConfigValidator` class with three depth levels (syntax, structure, full) and an optional JSON schema pass. `kometa.py` gains four new CLI flags and a short-circuit branch in `start()` that calls the validator and exits without running collections.
 
-**Tech Stack:** Python 3.10+, `ruamel.yaml` (already a dependency), `jsonschema==4.26.0` (new), `pytest` (existing test runner).
+**Tech Stack:** Python 3.11+, `ruamel.yaml` (already a dependency), `jsonschema==4.26.0` (new), `pytest` (existing test runner).
 
 ---
 

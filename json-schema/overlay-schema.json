@@ -115,6 +115,7 @@
                 "trakt_recommendations": { "type": "integer", "minimum": 1 },
 
                 "tautulli_popular": { "$ref": "#/definitions/tautulli-builder-block" },
+                "tautulli_top": { "$ref": "#/definitions/tautulli-builder-block" },
                 "tautulli_watched": { "$ref": "#/definitions/tautulli-builder-block" },
 
                 "radarr_all": { "type": "boolean" },

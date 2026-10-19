@@ -38,6 +38,57 @@ The scheduling options are:
 * Use `all[...]` to require every enclosed scheduling option to match.
 * You can use the `delete_not_scheduled` setting to delete Collections that are skipped due to not being scheduled.
 
+## Library Schedule Modes
+
+Library schedule modes limit the media items Kometa processes. Use an ordered list of `schedule` and `mode` mappings under a library's `schedule` attribute. Kometa uses the first matching entry; if none match, it skips the library.
+
+```yaml title="Run a limited Monday update and a full update on other days"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: added(7)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The `.not` modifier inverts one schedule expression. For example, `weekly.not(monday)` matches every day except Monday.
+
+| Mode | Scope |
+|:--|:--|
+| `full` | Every top-level library item. |
+| `items(ids)` | Individual movies or shows identified by pipe-separated TMDb, TVDb, IMDb, or Plex rating-key IDs. |
+| `added(duration)` | Items added to Plex within the previous duration. Use a positive integer with `m` for minutes, `h` for hours, or `d` for 24-hour days, such as `added(30m)`, `added(1h)`, or `added(12d)`. A bare integer such as `added(7)` means days. In a TV Show library, this also includes existing shows with recently added episodes. |
+| `diff` | Items absent from Kometa's previous library snapshot. Show libraries compare each season's Plex `updatedAt` value. Requires a persistent Kometa cache. |
+| `index(A-F)` | Titles beginning with letters in the inclusive A through F range. |
+| `index(A-F#)` | The A through F range plus titles beginning with a number, symbol, or other non-alphabetical character. |
+
+`index` matches the first non-whitespace character in a Plex item's Sort Title, case-insensitively, and falls back to its title when no Sort Title is set. Ranges must be alphabetical and ascending.
+
+Use `items(...)` to select specific items already present in the library. Accepted identifiers are `tmdb:<id>`, `tvdb:<id>`, `imdb:tt<id>`, and `plex:<ratingKey>`. Numeric IDs must be positive. Identifiers can be mixed and are matched with OR logic; duplicates select an item only once. IDs that do not match a library item select nothing and never expand the scope to the full library. TMDb IDs in a TV Show library are converted to TVDb IDs. Selecting a show also includes its seasons and episodes. Plex rating keys must identify top-level library items, such as movies, shows, or music artists; provider IDs apply to movies and shows.
+
+```yaml title="Update two selected movies on Mondays"
+libraries:
+  Movies:
+    schedule:
+      - schedule: weekly(monday)
+        mode: items(tmdb:550|tmdb:603)
+      - schedule: weekly.not(monday)
+        mode: full
+```
+
+The second entry is optional; without it, this library is skipped on other days. As with other library schedule modes, `--ignore-schedules` or explicitly selecting the library with `--run-libraries` bypasses its schedule and uses the full scope.
+
+Use `--run --mode full` or `KOMETA_MODE=full` to choose one mode for every library in a run. This overrides configured library schedule modes, including unmatched entries. Other schedules, such as individual collection schedules and `schedule_overlays`, still apply unless you also use `--ignore-schedules`.
+
+When a mode is not `full`, Kometa limits metadata, overlays, item operations, and collection additions to items in scope. It does not remove existing collection members or change custom collection ordering; run with `full` to reconcile the whole library.
+
+???+ warning "Scoped runs can leave outdated results"
+
+    Scoped runs only update items in their selected scope. If a collection or overlay depends on a changing list, such as "Top 10 Today", items outside that scope may remain after they no longer qualify.
+
+    Schedule regular `full` runs to reconcile the whole library. For example, run `diff` daily for quick updates and `full` weekly to remove stale collection members and refresh overlays.
+
 ???+ warning "monthly(N) behaviour change"
     In previous versions, `monthly(N)` would fall back to the last day of the month if day N didn't exist in that month — for example, `monthly(31)` would fire on 30 November. This created a conflict where `monthly(30)` and `monthly(31)` would both trigger on the same day in 30-day months.
 

@@ -15,17 +15,19 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
 === "Boolean Filters"
     
     Boolean Filters take no modifier and can only be either `true` or `false`.
-    
+ 
     #### Boolean Filter Attributes
     
     | Boolean Search      | Description            |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
     |:--------------------|:-----------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
     | `hdr`               | Is HDR                 | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `unmatched`         | Is Unmatched           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `hdr10plus`         | Has HDR10+             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `atmos`             | Has Dolby Atmos        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `unmatched`         | Is Unmatched (Music: Artist) | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `duplicate`         | Is Duplicate           | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `unplayed`          | Is Unplayed            | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `progress`          | Is In Progress         | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `trash`             | Is Trashed             | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `trash`             | Is Trashed (Music: Track) | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | `unplayed_episodes` | Has Unplayed Episodes  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `episode_unplayed`  | Has Episodes Unplayed  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `episode_duplicate` | Has Duplicate Episodes |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -39,7 +41,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
 
 === "Date Filters"
     
-    Date filters can be used with either no modifier or with `.not`, `.before`, or `.after`.
+    Date filters can be used with no modifier or with `.last`, `.notlast`, `.before`, or `.after`. The legacy `.not` modifier is also accepted as `.notlast`.
     
     No date filter can take multiple values.
     
@@ -54,28 +56,30 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `episode_air_date`    | Uses the air date attribute (originally available) of the show's episodes to match |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `last_played`         | Uses the date last played attribute to match                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `episode_last_played` | Uses the date last played attribute of the show's episodes to match                |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `artist_added`        | Uses the Artist's date added attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `artist_added` / `date_artist_added` | Uses the Artist's date added attribute to match                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `artist_last_played`  | Uses the Artist's last played attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `album_last_played`   | Uses the Album's last played attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_added`         | Uses the Album's date added attribute to match                                     |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_released`      | Uses the Album's release date attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `album_added` / `date_album_added` | Uses the Album's date added attribute to match                          |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `album_released` / `date_album_released` | Uses the Album's release date attribute to match                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_last_played`   | Uses the Track's date last played attribute to match                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_last_skipped`  | Uses the Track's date last skipped attribute to match                              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_last_rated`    | Uses the Track's date last rated attribute to match                                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_added`         | Uses the Track's date added attribute to match                                     |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `track_added` / `track_added_at` | Uses the Track's date added attribute to match                             |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     
     ???+ tip "Date Filter Modifiers"
         
         | Date Modifier | Description                                                                                                                                                | Plex Web UI Display  |
         |:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------:|
-        | No Modifier   | Matches every item where the date attribute is in the last X days<br>**Format:** number of days<br>**Example:** `30`                                       |   `is in the last`   |
-        | `.not`        | Matches every item where the date attribute is not in the last X days<br>**Format:** number of days<br>**Example:** `30`                                   | `is not in the last` |
+        | No Modifier / `.last` | Matches every item where the date attribute is in the last X units<br>**Format:** number of days, or a number with `s` (seconds), `min` (minutes), `h` (hours), `d` (days), `m` (months), or `y` (years)<br>**Example:** `10h` | `is in the last` |
+        | `.notlast` / `.not` | Matches every item where the date attribute is not in the last X units<br>**Format:** same as `.last`<br>**Example:** `30` | `is not in the last` |
         | `.before`     | Matches every item where the date attribute is before the given date<br>**Format:** MM/DD/YYYY or `today` for the current day<br>**Example:** `01/01/2000` |     `is before`      |
         | `.after`      | Matches every item where the date attribute is after the given date<br>**Format:** MM/DD/YYYY or `today` for the current day<br>**Example:** `01/01/2000`  |      `is after`      |
+
+        For example, `date_album_added.last: 10h` matches albums added in the last 10 hours.
         
 === "Number Filters"
 
-    Number filters must use `.gt`, `.gte`, `.lt`, or `.lte` as a modifier only the rating filters can use `.rated`.
+    Number filters can use `.is`, `.isnot`, `.gt`, `.gte`, `.lt`, or `.lte` as a modifier. Only rating filters can use `.rated`.
     
     No number filter can take multiple values.
     
@@ -84,7 +88,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | Number Search                                                                                    | Description                                                                                 |             Movie<br>Libraries             |             Show<br>Libraries              |             Music<br>Libraries             |
     |:-------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------|:------------------------------------------:|:------------------------------------------:|:------------------------------------------:|
     | `duration`                                                                                       | Uses the duration attribute to match using minutes<br>**Minimum:** `0`                      | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year attribute to match<br>**Minimum:** `0`                                        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year attribute to match (Music: Album)<br>**Minimum:** `0`                            | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | `plays`                                                                                          | Uses the plays attribute to match<br>**Minimum:** `0`                                       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `critic_rating`                                                                                  | Uses the critic rating attribute to match<br>**Range:** `0.0` - `10.0`                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `audience_rating`                                                                                | Uses the audience rating attribute to match<br>**Range:** `0.0` - `10.0`                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -100,15 +104,17 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `album_plays`                                                                                    | Uses the Album's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_plays`                                                                                    | Uses the Track's plays attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_skips`                                                                                    | Uses the Track's skips attribute to match<br>**Minimum:** `0`                               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `artist_user_rating`                                                                             | Uses the Artist's user rating attribute to match<br>**Range:** `0.0` - `10.0`               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_user_rating`                                                                              | Uses the Album's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `artist_rating` / `artist_user_rating`                                                           | Uses the Artist's user rating attribute to match<br>**Range:** `0.0` - `10.0`               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `album_rating` / `album_user_rating`                                                              | Uses the Album's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `album_critic_rating`                                                                            | Uses the Album's critic rating attribute to match<br>**Range:** `0.0` - `10.0`              |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `track_user_rating`                                                                              | Uses the Track's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `track_rating` / `track_user_rating`                                                             | Uses the Track's user rating attribute to match<br>**Range:** `0.0` - `10.0`                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     
     ???+ tip "Number Filter Modifiers"
     
         | Number Modifier | Description                                                                                                                                             | Plex Web UI Display |
         |:----------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------:|
+        | `.is`           | Matches every item where the number attribute is equal to the given number<br>**Format:** number<br>**Example:** `1`, `1995`, or `7.5`                  |       `is`          |
+        | `.isnot`        | Matches every item where the number attribute is not equal to the given number<br>**Format:** number<br>**Example:** `1`, `1995`, or `7.5`             |     `is not`        |
         | `.gt`           | Matches every item where the number attribute is greater than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`             |  `is greater than`  |
         | `.gte`          | Matches every item where the number attribute is greater than or equal to the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5` |         N/A         |
         | `.lt`           | Matches every item where the number attribute is less than the given number<br>**Format:** number<br>**Example:** `30`, `1995`, or `7.5`                |   `is less than`    |
@@ -134,7 +140,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `artist_title`       | Uses the Artist's Title attribute to match               |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `album_title`        | Uses the Album's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_title`        | Uses the Track's Title attribute to match                |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
-    | `album_record_label` | Uses the Album's Record Label attribute to match         |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `record_label` / `album_record_label` | Uses the Album's Record Label attribute to match        |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `audio_codec`        | Uses the Track's audio codec attribute to match          |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
 
     ???+ tip "String Filter Modifiers"
@@ -171,7 +177,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `director`                                                                                       | Uses the director tags to match                                             | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `folder_location`                                                                                | Uses the Plex library root folder location to match                         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | `genre`                                                                                          | Uses the genre tags to match                                                | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `label`                                                                                          | Uses the label tags to match for top level collections                      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `label`                                                                                          | Uses the label tags to match for top level collections; in Music, matches the selected artist, album, or track type | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | `season_label`                                                                                   | Uses the label tags to match for season collections                         |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `episode_label`                                                                                  | Uses the label tags to match for episode collections                        |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `network`                                                                                        | Uses the network tags to match<br>**Only works with the New Plex TV Agent** |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
@@ -179,7 +185,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `resolution`                                                                                     | Uses the resolution tags to match                                           | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `subtitle_language`                                                                              | Uses the subtitle language tags to match                                    | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `writer`                                                                                         | Uses the writer tags to match                                               | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  |
-    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year tag to match                                                  | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
+    | `year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" }         | Uses the year tag to match (Music: Album)                                   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
     | `episode_year` :material-numeric-1-circle:{ data-tooltip data-tooltip-id="tippy-plex-search-1" } | Uses the year tag to match                                                  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |  :fontawesome-solid-circle-xmark:{ .red }  |
     | `artist_genre`                                                                                   | Uses the Artist's Genre attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `artist_collection`                                                                              | Uses the Artist's Collection attribute to match                             |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
@@ -196,6 +202,7 @@ The majority of Smart and Manual Builders utilize the same Search Options, meani
     | `album_source`                                                                                   | Uses the Album's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `album_label`                                                                                    | Uses the Album's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_mood`                                                                                     | Uses the Track's Mood attribute to match                                    |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
+    | `track_genre`                                                                                    | Uses the Track's Genre attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_source`                                                                                   | Uses the Track's Source attribute to match                                  |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     | `track_label`                                                                                    | Uses the Track's Label attribute to match                                   |  :fontawesome-solid-circle-xmark:{ .red }  |  :fontawesome-solid-circle-xmark:{ .red }  | :fontawesome-solid-circle-check:{ .green } |
     

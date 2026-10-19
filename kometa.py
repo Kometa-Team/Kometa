@@ -15,7 +15,7 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
 from modules.integrity import log_integrity, log_integrity_summary
-from modules.log_summary import SEVERITIES, RunLogSummary
+from modules.log_summary import SEVERITIES, RunLogSummary, print_status
 from modules.logs import MyLogger
 
 # Increase file descriptor limit to prevent exhaustion with large libraries.
@@ -36,8 +36,8 @@ if resource is not None:
         pass  # If we can't set it, continue anyway
 
 
-if sys.version_info[0] != 3 or sys.version_info[1] < 10:
-    print("Python Version %s.%s.%s has been detected and is no longer supported. Kometa requires a minimum of Python 3.10.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
+if sys.version_info[0] != 3 or sys.version_info[1] < 11:
+    print("Python Version %s.%s.%s has been detected and is no longer supported. Kometa requires a minimum of Python 3.11.0." % (sys.version_info[0], sys.version_info[1], sys.version_info[2]))
     sys.exit(0)
 
 try:
@@ -107,6 +107,7 @@ arguments = {
     "run-collections": {"args": ["rc", "cl", "collection", "collections", "run-collection"], "type": "str", "help": "Process only specified collections (pipe-separated list '|')"},
     "run-libraries": {"args": ["rl", "l", "library", "libraries", "run-library"], "type": "str", "help": "Process only specified libraries (pipe-separated list '|')"},
     "run-files": {"args": ["rf", "rm", "m", "run-file", "metadata", "metadata-files", "run-metadata-files"], "type": "str", "help": "Process only specified Files (pipe-separated list '|')"},
+    "mode": {"args": [], "type": "str", "help": "Override library schedule modes for this run"},
     "ignore-schedules": {"args": "is", "type": "bool", "help": "Run ignoring collection schedules"},
     "ignore-ghost": {"args": "ig", "type": "bool", "help": "Run ignoring ghost logging"},
     "delete-collections": {"args": ["dc", "delete", "delete-collection"], "type": "bool", "help": "Deletes all Collections in the Plex Library before running"},
@@ -188,6 +189,10 @@ for arg_key, arg_data in arguments.items():
     temp_args = arg_data["args"] if isinstance(arg_data["args"], list) else [arg_data["args"]]
     final_vars = [f"KOMETA_{arg_key.replace('-', '_').upper()}"] + [f"KOMETA_{a.replace('-', '_').upper()}" for a in temp_args if len(a) > 2]
     run_args[arg_key] = get_env(final_vars, getattr(args, arg_key.replace("-", "_")), arg_bool=arg_data["type"] == "bool", arg_int=arg_data["type"] == "int")
+if run_args["mode"] is not None:
+    run_args["mode"] = run_args["mode"].strip().lower()
+    if not run_args["mode"]:
+        parser.error("--mode / KOMETA_MODE must specify a schedule mode")
 env_branch = get_env("BRANCH_NAME", "master")
 is_docker = get_env("KOMETA_DOCKER", False, arg_bool=True)
 is_linuxserver = get_env("KOMETA_LINUXSERVER", False, arg_bool=True)
@@ -415,7 +420,13 @@ def process(attrs):
 
 
 def should_sync_collection(builder):
-    return builder.sync and builder.build_collection and bool(builder.remove_item_map) and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
+    return (
+        not getattr(getattr(builder, "library", None), "has_schedule_scope", False) is True
+        and builder.sync
+        and builder.build_collection
+        and bool(builder.remove_item_map)
+        and (not builder.found_items or len(builder.found_items) + builder.beginning_count >= builder.minimum)
+    )
 
 
 def missing_item_counts(builder):
@@ -565,6 +576,7 @@ def start(attrs):
         attrs["time_obj"] = start_time
         attrs["config_file"] = run_args["config"]
         attrs["ignore_schedules"] = run_args["ignore-schedules"]
+        attrs["mode"] = run_args["mode"]
         attrs["read_only"] = run_args["read-only-config"]
         attrs["no_missing"] = run_args["no-missing"]
         attrs["no_report"] = run_args["no-report"]
@@ -841,19 +853,6 @@ def run_config(config, stats):
             if len(title) > longest:
                 longest = len(title)
 
-    def print_status(status):
-        if not status:
-            return
-        logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
-        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
-        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
-        for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
-            if data["errors"]:
-                for error in data["errors"]:
-                    logger.info(error)
-                logger.info("")
-
     logger.info("")
     logger.separator("Summary")
     for library in config.libraries:
@@ -866,12 +865,12 @@ def run_config(config, stats):
             for text, value in library_status[library.name].items():
                 logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
-        print_status(library.status)
+        print_status(library.status, longest, logger)
     if playlist_status:
         logger.info("")
         logger.separator("Playlists Summary", space=False, border=False)
         logger.info("")
-        print_status(playlist_status)
+        print_status(playlist_status, longest, logger)
 
     if collections_ran:
         report_duplicate_collections(config)
@@ -997,14 +996,24 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
 
             time_start = datetime.now()
             temp_items = None
-            list_key = None
+            schedule_list_key = None
             if config.Cache:
-                list_key, _ = config.Cache.query_list_cache("library", library.mapping_name, 1)
+                schedule_list_key, _ = config.Cache.query_list_cache("library_schedule", library.mapping_name, 0)
+                if schedule_list_key:
+                    library.scheduled_cached_keys = {int(key) for key, _ in config.Cache.query_list_ids(schedule_list_key)}
 
             if not temp_items:
                 temp_items = library.cache_items()
-                if config.Cache and list_key:
-                    config.Cache.delete_list_ids(list_key)
+                library.scheduled_item_keys = library._schedule_item_keys(temp_items)
+                if library.has_schedule_scope:
+                    temp_items = [item for item in temp_items if item.ratingKey in library.scheduled_item_keys]
+                    logger.info(f"Library Schedule Mode: {library.schedule_mode} ({len(temp_items)} items in scope)")
+                if config.Cache:
+                    schedule_list_key = config.Cache.update_list_cache("library_schedule", library.mapping_name, True, 0)
+                    config.Cache.delete_list_ids(schedule_list_key)
+                    config.Cache.update_list_ids(schedule_list_key, [(item.ratingKey, "ratingKey") for item in library.get_cached_items()])
+                    if library.schedule_mode == "diff" and library.is_show and library.xml_library_id is not None:
+                        config.Cache.update_xml_updated_at(library.xml_library_id, library.xml_updates)
             timings.registry.meta.setdefault("library_item_counts", {})[library.name] = len(temp_items) if temp_items else 0
             if not library.is_music:
                 logger.info("")
@@ -1033,7 +1042,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             library.collection_names.append(mapping_name)
 
             for run_type in library.run_order:
-                if run_type == "collections" and runs[run_type]:
+                if run_type == "collections" and (runs[run_type] or run_args["playlists-only"]):
                     time_start = datetime.now()
                     for metadata in library.collection_files:
                         metadata_name = metadata.get_file_name()
@@ -1043,10 +1052,21 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             continue
                         logger.info("")
                         logger.separator(f"Running {metadata_name} Collection File\n{metadata.path}")
-                        collections_to_run = metadata.get_collections(config.requested_collections)
-                        if run_args["resume"] and run_args["resume"] not in collections_to_run:
+                        collections_to_run = {} if run_args["playlists-only"] else metadata.get_collections(config.requested_collections)
+                        music_playlists_to_run = {} if run_args["collections-only"] else metadata.get_music_playlists(config.requested_collections)
+                        if run_args["resume"]:
+                            if run_args["resume"] in collections_to_run:
+                                collections_to_run = {run_args["resume"]: collections_to_run[run_args["resume"]]}
+                                music_playlists_to_run = {}
+                            elif run_args["resume"] in music_playlists_to_run:
+                                music_playlists_to_run = {run_args["resume"]: music_playlists_to_run[run_args["resume"]]}
+                                collections_to_run = {}
+                            else:
+                                logger.info("")
+                                logger.warning(f"Collection or Music Playlist: {run_args['resume']} not in Collection File: {metadata.path}")
+                                continue
+                        if not collections_to_run and not music_playlists_to_run:
                             logger.info("")
-                            logger.warning(f"Collection: {run_args['resume']} not in Collection File: {metadata.path}")
                             continue
                         if collections_to_run:
                             logger.info("")
@@ -1055,6 +1075,11 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
                             with timings.overlay_context(False):
                                 run_collection(config, library, metadata, collections_to_run)
                             # logger.re_add_library_handler(library.mapping_name)
+                        if music_playlists_to_run:
+                            logger.info("")
+                            logger.separator(f"{'Test ' if run_args['tests'] else ''}Music Playlists")
+                            with timings.overlay_context(False):
+                                run_collection(config, library, metadata, music_playlists_to_run, music_playlist=True)
                     library_status[library.name]["Library Collection Files"] = str(datetime.now() - time_start).split(".")[0]
                     # Skip hub sorting on a targeted -rc or -rf run: only the requested collections/files are rebuilt, so hub_priorities only reflects those collections, not every pinned collection.
                     targeted_run = config.requested_collections or config.requested_files
@@ -1108,7 +1133,7 @@ def run_libraries(config) -> tuple[LibraryRunStatus, bool]:
     return library_status, collections_ran
 
 
-def run_collection(config, library, metadata, requested_collections):
+def run_collection(config, library, metadata, requested_collections, music_playlist=False):
     logger.info("")
     for mapping_name, collection_attrs in requested_collections.items():
         collection_start = datetime.now()
@@ -1144,13 +1169,13 @@ def run_collection(config, library, metadata, requested_collections):
         library.status[str(mapping_name)] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
 
         try:
-            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str)
+            builder = CollectionBuilder(config, metadata, mapping_name, collection_attrs, library=library, extra=output_str, music_playlist=music_playlist)
             library.stats["names"].append(builder.name)
-            if builder.build_collection:
+            if builder.build_collection and not builder.playlist:
                 library.collection_names.append(builder.name)
             logger.info("")
 
-            logger.separator(f"Running {builder.name} Collection", space=False, border=False)
+            logger.separator(f"Running {builder.name} {'Music Playlist' if builder.playlist else 'Collection'}", space=False, border=False)
 
             if len(builder.schedule) > 0:
                 logger.info(builder.schedule)
@@ -1197,7 +1222,9 @@ def run_collection(config, library, metadata, requested_collections):
 
                 items_added = 0
                 items_removed = 0
-                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
+                if builder.music_playlist_smart:
+                    builder.found_items = []
+                elif len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum and builder.build_collection:
                     items_added, items_unchanged = builder.add_to_collection()
                     library.stats["added"] += items_added
                     library.status[str(mapping_name)]["added"] = items_added
@@ -1209,21 +1236,22 @@ def run_collection(config, library, metadata, requested_collections):
                     library.status[str(mapping_name)]["removed"] = items_removed
 
                 missing_counts = missing_item_counts(builder)
-                if builder.do_missing and any(missing_counts.values()):
-                    logger.info("")
-                    logger.info(f"Processing missing items: {', '.join(f'{count} {level}' for level, count in missing_counts.items())}")
+                if (builder.do_missing and any(missing_counts.values())) or builder.seerr_details["add_existing"]:
+                    if builder.do_missing and any(missing_counts.values()):
+                        logger.info("")
+                        logger.info(f"Processing missing items: {', '.join(f'{count} {level}' for level, count in missing_counts.items())}")
                     radarr_add, sonarr_add = builder.run_missing()
                     library.stats["radarr"] += radarr_add
                     library.status[str(mapping_name)]["radarr"] += radarr_add
                     library.stats["sonarr"] += sonarr_add
                     library.status[str(mapping_name)]["sonarr"] += sonarr_add
 
-                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None:
+                if not builder.found_items and not builder.ignore_blank_results and not builder.obj and builder.mdb_list_arr_ids is None and not builder.music_playlist_smart:
                     raise NonExisting(f"{builder.Type} Warning: No items found")
 
             valid = True
             final_collection_count = collection_count_after_run(builder.beginning_count, items_added, items_removed)
-            if builder.build_collection and not builder.blank_collection and final_collection_count < builder.minimum:
+            if builder.build_collection and not builder.music_playlist_smart and not builder.blank_collection and final_collection_count < builder.minimum:
                 logger.info("")
                 logger.info(f"{builder.Type} Minimum: {builder.minimum} not met for {mapping_name} Collection")
                 delete_status = f"Minimum {builder.minimum} Not Met"
@@ -1235,7 +1263,7 @@ def run_collection(config, library, metadata, requested_collections):
                 library.status[str(mapping_name)]["status"] = delete_status
 
             run_item_details = True
-            if valid and builder.build_collection and (builder.builders or builder.smart_url or builder.blank_collection):
+            if valid and (builder.build_collection or builder.music_playlist_smart) and (builder.builders or builder.smart_url or builder.blank_collection):
                 try:
                     builder.load_collection()
                     if builder.created:
@@ -1342,6 +1370,46 @@ def run_collection(config, library, metadata, requested_collections):
         # logger.remove_collection_handler(library.mapping_name, collection_log_name)
 
 
+def gather_playlist_ids(builder):
+    method, value = builder.builders[0]
+    logger.debug("")
+    logger.debug(f"Builder: {method}: {value}")
+    logger.info("")
+    if method == "plex_watchlist":
+        return builder.libraries[0].get_rating_keys(method, value, True)
+    if "plex" in method:
+        ids = []
+        logged_plex_search = False
+        for pl_library in builder.libraries:
+            try:
+                if method == "plex_search":
+                    builder.library = pl_library
+                    plex_search = builder.build_filter("plex_search", value)
+                    if not logged_plex_search:
+                        search_details = "\n".join(plex_search[1].splitlines()[1:])
+                        logger.info(f"Processing Plex Search{f'{chr(10)}{search_details}' if search_details else ''}")
+                        logged_plex_search = True
+                    ids.extend(pl_library.get_rating_keys(method, plex_search, True, display=False))
+                else:
+                    ids.extend(pl_library.get_rating_keys(method, value, True))
+            except Failed as e:
+                if builder.validate_builders:
+                    raise
+                logger.error(e)
+        return ids
+    if "tautulli" in method:
+        ids = []
+        for pl_library in builder.libraries:
+            try:
+                ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
+            except Failed as e:
+                if builder.validate_builders:
+                    raise
+                logger.error(e)
+        return ids
+    return builder.gather_ids(method, value)
+
+
 def run_playlists(config):
     stats = {"created": 0, "modified": 0, "deleted": 0, "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0, "names": []}
     status = {}
@@ -1349,8 +1417,15 @@ def run_playlists(config):
     logger.separator("Playlists")
     logger.info("")
     for playlist_file in config.playlist_files:
-        for mapping_name, playlist_attrs in playlist_file.playlists.items():
+        playlist_definitions = [(name, attrs, None) for name, attrs in playlist_file.playlists.items()]
+        music_libraries = [library for library in config.libraries if library.is_music]
+        for name, attrs in playlist_file.music_playlists.items():
+            playlist_definitions.extend((name, attrs, library) for library in music_libraries)
+        if playlist_file.music_playlists and not music_libraries:
+            logger.error("Playlist Error: music_playlists requires at least one configured Music library")
+        for mapping_name, playlist_attrs, music_library in playlist_definitions:
             playlist_start = datetime.now()
+            status_key = f"{mapping_name} ({music_library.name})" if music_library else mapping_name
             if run_args["tests"] and ("test" not in playlist_attrs or playlist_attrs["test"] is not True):
                 no_template_test = True
                 if "template" in playlist_attrs and playlist_attrs["template"]:
@@ -1373,10 +1448,12 @@ def run_playlists(config):
             else:
                 playlist_log_name, output_str = util.validate_filename(mapping_name)
             # logger.add_playlist_handler(playlist_log_name)
-            status[mapping_name] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
+            status[status_key] = {"status": "Unchanged", "errors": [], "added": 0, "unchanged": 0, "removed": 0, "radarr": 0, "sonarr": 0}
             server_name = None
             try:
-                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, extra=output_str)
+                builder = CollectionBuilder(config, playlist_file, mapping_name, playlist_attrs, library=music_library, extra=output_str, music_playlist=music_library is not None)
+                if not builder.libraries:
+                    raise Failed("Playlist Error: No libraries are available for this playlist")
                 stats["names"].append(builder.name)
                 logger.info("")
                 server_name = builder.libraries[0].PlexServer.friendlyName
@@ -1392,60 +1469,25 @@ def run_playlists(config):
                 logger.info("")
                 logger.info(f"Sync Mode: {'sync' if builder.sync else 'append'}")
 
-                method, value = builder.builders[0]
-                logger.debug("")
-                logger.debug(f"Builder: {method}: {value}")
-                logger.info("")
-                if method == "plex_watchlist":
-                    ids = builder.libraries[0].get_rating_keys(method, value, True)
-                elif "plex" in method:
-                    ids = []
-                    logged_plex_search = False
-                    for pl_library in builder.libraries:
-                        try:
-                            if method == "plex_search":
-                                builder.library = pl_library
-                                plex_search = builder.build_filter("plex_search", value)
-                                if not logged_plex_search:
-                                    search_details = "\n".join(plex_search[1].splitlines()[1:])
-                                    logger.info(f"Processing Plex Search{f'{chr(10)}{search_details}' if search_details else ''}")
-                                    logged_plex_search = True
-                                ids.extend(pl_library.get_rating_keys(method, plex_search, True, display=False))
-                            else:
-                                ids.extend(pl_library.get_rating_keys(method, value, True))
-                        except Failed as e:
-                            if builder.validate_builders:
-                                raise
-                            else:
-                                logger.error(e)
-                elif "tautulli" in method:
-                    ids = []
-                    for pl_library in builder.libraries:
-                        try:
-                            ids.extend(pl_library.Tautulli.get_rating_keys(value, True))
-                        except Failed as e:
-                            if builder.validate_builders:
-                                raise
-                            else:
-                                logger.error(e)
+                if builder.music_playlist_smart:
+                    builder.found_items = []
                 else:
-                    ids = builder.gather_ids(method, value)
+                    builder.filter_and_save_items(gather_playlist_ids(builder))
 
                 builder.display_filters()
-                builder.filter_and_save_items(ids)
 
-                if len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:
+                if not builder.music_playlist_smart and len(builder.found_items) > 0 and len(builder.found_items) + builder.beginning_count >= builder.minimum:
                     items_added, items_unchanged = builder.add_to_collection()
                     stats["added"] += items_added
-                    status[mapping_name]["added"] += items_added
+                    status[status_key]["added"] += items_added
                     stats["unchanged"] += items_unchanged
-                    status[mapping_name]["unchanged"] += items_unchanged
+                    status[status_key]["unchanged"] += items_unchanged
                     items_removed = 0
                     if builder.sync:
                         items_removed = builder.sync_collection()
                         stats["removed"] += items_removed
-                        status[mapping_name]["removed"] += items_removed
-                elif len(builder.found_items) < builder.minimum:
+                        status[status_key]["removed"] += items_removed
+                elif not builder.music_playlist_smart and len(builder.found_items) < builder.minimum:
                     logger.info("")
                     logger.info(f"Playlist Minimum: {builder.minimum} not met for {mapping_name} Playlist")
                     delete_status = f"Minimum {builder.minimum} Not Met"
@@ -1455,26 +1497,26 @@ def run_playlists(config):
                         logger.info(builder.delete())
                         stats["deleted"] += 1
                         delete_status = f"Deleted; {delete_status}"
-                    status[mapping_name]["status"] = delete_status
+                    status[status_key]["status"] = delete_status
 
-                if builder.do_missing and any(missing_item_counts(builder).values()):
+                if (builder.do_missing and any(missing_item_counts(builder).values())) or builder.seerr_details["add_existing"]:
                     builder.is_playlist = True
                     radarr_add, sonarr_add = builder.run_missing()
                     stats["radarr"] += radarr_add
-                    status[mapping_name]["radarr"] += radarr_add
+                    status[status_key]["radarr"] += radarr_add
                     stats["sonarr"] += sonarr_add
-                    status[mapping_name]["sonarr"] += sonarr_add
+                    status[status_key]["sonarr"] += sonarr_add
 
                 run_item_details = True
-                if valid and builder.builders:
+                if valid and (builder.builders or builder.music_playlist_smart):
                     try:
                         builder.load_collection()
                         if builder.created:
                             stats["created"] += 1
-                            status[mapping_name]["status"] = "Created"
+                            status[status_key]["status"] = "Created"
                         elif items_added > 0 or items_removed > 0:
                             stats["modified"] += 1
-                            status[mapping_name]["status"] = "Modified"
+                            status[status_key]["status"] = "Modified"
                     except Failed as e:
                         logger.error(e)
                         run_item_details = False
@@ -1484,9 +1526,9 @@ def run_playlists(config):
                         details_list = builder.update_details()
                         if details_list:
                             pre = ""
-                            if status[mapping_name]["status"] != "Unchanged":
-                                pre = f"{status[mapping_name]['status']} and "
-                            status[mapping_name]["status"] = f"{pre}Updated {', '.join(details_list)}"
+                            if status[status_key]["status"] != "Unchanged":
+                                pre = f"{status[status_key]['status']} and "
+                            status[status_key]["status"] = f"{pre}Updated {', '.join(details_list)}"
 
                 if valid and run_item_details and builder.builders and (builder.item_details or builder.custom_sort):
                     try:
@@ -1508,30 +1550,30 @@ def run_playlists(config):
 
             except Deleted as e:
                 logger.info(e)
-                status[mapping_name]["status"] = "Deleted"
+                status[status_key]["status"] = "Deleted"
             except NotScheduled as e:
                 logger.info(e)
                 if str(e).endswith("and was deleted"):
                     stats["deleted"] += 1
-                    status[mapping_name]["status"] = "Deleted Not Scheduled"
+                    status[status_key]["status"] = "Deleted Not Scheduled"
                 else:
-                    status[mapping_name]["status"] = "Not Scheduled"
+                    status[status_key]["status"] = "Not Scheduled"
             except Failed as e:
                 config.notify(e, server=server_name, playlist=mapping_name)
                 if not isinstance(e, ServiceError):
                     logger.stacktrace()
                 logger.error(e)
-                status[mapping_name]["status"] = "Kometa Failure"
-                status[mapping_name]["errors"].append(e)
+                status[status_key]["status"] = "Kometa Failure"
+                status[status_key]["errors"].append(e)
             except Exception as e:
                 config.notify(f"Unknown Error: {e}", server=server_name, playlist=mapping_name)
                 logger.stacktrace()
                 logger.error(f"Unknown Error: {e}")
-                status[mapping_name]["status"] = "Unknown Error"
-                status[mapping_name]["errors"].append(e)
+                status[status_key]["status"] = "Unknown Error"
+                status[status_key]["errors"].append(e)
             logger.info("")
             playlist_run_time = str(datetime.now() - playlist_start).split(".")[0]
-            status[mapping_name]["run_time"] = playlist_run_time
+            status[status_key]["run_time"] = playlist_run_time
             logger.info("")
             logger.separator(f"Finished {mapping_name} Playlist\nPlaylist Run Time: {playlist_run_time}")
             # logger.remove_playlist_handler(playlist_log_name)

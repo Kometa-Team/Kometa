@@ -8,7 +8,7 @@ backrefs==8.1
     # via mkdocs-material
 bracex==3.1
     # via wcmatch
-certifi==2026.7.22
+certifi==2026.10.18
     # via
     #   httpcore
     #   httpx
@@ -100,7 +100,7 @@ pathspec==1.1.1
     # via
     #   mkdocs
     #   properdocs
-platformdirs==4.13.0
+platformdirs==4.13.5
     # via
     #   mkdocs-get-deps
     #   properdocs
@@ -131,7 +131,7 @@ requests==2.34.2
     # via mkdocs-material
 rich==15.0.0
     # via neoteroi-mkdocs
-selectolax==1.0.0
+selectolax==1.0.1
     # via mkdocs-glightbox
 six==1.17.0
     # via python-dateutil

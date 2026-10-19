@@ -641,6 +641,7 @@ class MetadataFile(DataFile):
         self.library = library
         self.metadata = None
         self.collections = None
+        self.music_playlists = {}
         self.dynamic_collections = []
         self.templates = None
         self.update_collections = True
@@ -803,6 +804,15 @@ class MetadataFile(DataFile):
             self.external_templates(data)
             if self.file_style == "collection":
                 self.collections = get_dict("collections", data, library.collections)
+                self.music_playlists = get_dict("music_playlists", data)
+                if self.music_playlists and not library.is_music:
+                    raise Failed("YAML Error: music_playlists can only be used in a Music library collection file")
+                duplicate_playlists = set(self.music_playlists).intersection(self.collections or {})
+                if duplicate_playlists:
+                    raise Failed(f"YAML Error: music_playlists names must be unique from collections: {', '.join(str(name) for name in sorted(duplicate_playlists, key=str))}")
+                playlist_file_conflicts = set(self.music_playlists).intersection(getattr(self.config, "playlist_names", []))
+                if playlist_file_conflicts:
+                    raise Failed(f"YAML Error: music_playlists names must be unique from Playlist Files: {', '.join(str(name) for name in sorted(playlist_file_conflicts, key=str))}")
                 self.dynamic_collections = get_dict("dynamic_collections", data)
                 col_names = library.collections + [c for c in self.collections]
                 for map_name, dynamic in self.dynamic_collections.items():
@@ -1196,6 +1206,10 @@ class MetadataFile(DataFile):
                             playlists = self.config.YouTubeMusic.chart_playlists(country, ytmusic.dynamic_chart_types[auto_type])
                             if auto_type == "ytmusic_genre_charts":
                                 logger.info(f"YouTube Music genre chart keys for {country}:")
+                                chart_limit_match = re.match(r"Top (\d+)", playlists[0]["title"], flags=re.IGNORECASE)
+                                chart_limit = limit or (chart_limit_match.group(1) if chart_limit_match else "50")
+                                extra_template_vars["limit"] = chart_limit
+                                extra_template_vars["country"] = next((entry["country_name"] for entry in playlists if entry.get("country_name")), country)
                             for entry in playlists:
                                 title = ytmusic.YouTubeMusic.chart_name(entry["title"], ytmusic.dynamic_chart_types[auto_type])
                                 pid = entry["playlistId"]
@@ -1212,7 +1226,7 @@ class MetadataFile(DataFile):
                                 "builder_level": "track",
                                 "collection_order": "custom",
                             }
-                            default_title_format = "<<key_name>>"
+                            default_title_format = "Top <<limit>> <<key_name>> <<country>>" if auto_type == "ytmusic_genre_charts" else "<<key_name>>"
                         else:
                             raise Failed(f"Config Error: {map_name} type attribute {dynamic[methods['type']]} invalid")
 
@@ -1478,8 +1492,8 @@ class MetadataFile(DataFile):
 
             if self.file_style == "metadata" and not self.metadata:
                 raise Failed("YAML Error: metadata attribute is required")
-            if self.file_style == "collection" and not self.collections:
-                raise Failed("YAML Error: collections or dynamic_collections attribute is required")
+            if self.file_style == "collection" and not self.collections and not self.music_playlists:
+                raise Failed("YAML Error: collections, dynamic_collections, or music_playlists attribute is required")
             logger.info("")
             logger.info(f"{self.type_str} Loaded Successfully")
 
@@ -1616,6 +1630,11 @@ class MetadataFile(DataFile):
             return {c: self.collections[c] for c in util.get_list(requested_collections, return_none=False) if c in self.collections}
         else:
             return self.collections
+
+    def get_music_playlists(self, requested_playlists):
+        if requested_playlists:
+            return {p: self.music_playlists[p] for p in util.get_list(requested_playlists, return_none=False) if p in self.music_playlists}
+        return self.music_playlists
 
     def edit_tags(self, attr, obj, group, alias, extra=None):
         if attr in alias and f"{attr}.sync" in alias:
@@ -2387,10 +2406,14 @@ class PlaylistFile(DataFile):
         self.data_type = "Playlist"
         data = self.load_file(self.type, self.path)
         self.playlists = get_dict("playlists", data, self.config.playlist_names)
+        self.music_playlists = get_dict("music_playlists", data, self.config.playlist_names)
+        duplicate_names = set(self.playlists).intersection(self.music_playlists)
+        if duplicate_names:
+            raise Failed(f"YAML Error: Playlist names must be unique: {', '.join(str(name) for name in sorted(duplicate_names, key=str))}")
         self.templates = get_dict("templates", data)
         self.external_templates(data)
-        if not self.playlists:
-            raise Failed("YAML Error: playlists attribute is required")
+        if not self.playlists and not self.music_playlists:
+            raise Failed("YAML Error: playlists or music_playlists attribute is required")
         logger.info("Playlist File Loaded Successfully")
 
 

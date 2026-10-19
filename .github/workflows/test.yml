@@ -3,19 +3,17 @@
 #
 # Called as a job (workflow_call) from ci.yml for PRs targeting nightly; also runs standalone on push to nightly for post-merge validation.
 #
-# Checks (in order of speed):
-#   1. lint       — black, isort, flake8, bandit                        (ubuntu)
-#   2. test       — full pytest suite + coverage threshold     (ubuntu+windows)
-#   3. regression — issue-specific regression test suite                (ubuntu)
-#   4. schema     — validate all shipped defaults against JSON schemas  (ubuntu)
-#   5. imports    — detect NEW circular imports + POSIX-only leaks (ubuntu+windows)
-#   6. perf       — flag slow tests with --durations=10                 (ubuntu)
-#   7. smoke      — `kometa.py --help` + minimal-config dry-run (ubuntu+windows)
+# Gates:
+#   lint  — formatting, lint, and security checks (ubuntu)
+#   test  — full suite, run in parallel (pytest-xdist), including schemas,
+#           fresh-process imports, regressions, per-test timeouts and duration
+#           reporting, on Python 3.12 (the minimum) and 3.13 (the Docker image's
+#           version) across ubuntu + windows; line coverage is measured and
+#           enforced once, on ubuntu with 3.13
+#   smoke — real CLI --help and an asserted missing-config diagnostic
+#           (same matrix as test)
 #
-# The three matrix jobs (test/imports/smoke) catch OS-specific regressions
-# like #3244, where #3235's unconditional `import resource` crashed every
-# Windows user. The other jobs stay ubuntu-only because their inputs (Python
-# source, JSON schemas, lint config) are platform-independent.
+# The three jobs are independent and run in parallel.
 # ─────────────────────────────────────────────────────────────────────────────
 name: Tests
 
@@ -24,6 +22,9 @@ on:
   push:
     branches: [nightly]
 
+permissions:
+  contents: read
+
 env:
   PYTHON_VERSION: "3.12"
 
@@ -31,6 +32,7 @@ jobs:
   # ── 1. Lint & Format ────────────────────────────────────────────────────────
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -43,224 +45,74 @@ jobs:
         uses: ./.github/actions/setup-env
 
       - name: Black check
-        run: black --check --diff modules/ tests/ *.py
+        run: black --check --diff modules/ tests/ ./*.py
 
       - name: isort check
-        run: isort --check-only --diff modules/ tests/ *.py
+        run: isort --check-only --diff modules/ tests/ ./*.py
 
       - name: flake8
-        run: flake8 modules/ tests/ *.py --max-line-length=256 --extend-ignore=E203,W503
+        run: flake8 modules/ tests/ ./*.py --max-line-length=256 --extend-ignore=E203,W503
 
       - name: bandit
         run: bandit -r modules/ -c pyproject.toml
         continue-on-error: true
 
-  # ── 2. Full Test Suite + Coverage Gate ─────────────────────────────────────
-  # Matrix: ubuntu + windows. Coverage gate only enforced on ubuntu — Windows
-  # leg exists to catch OS-specific test failures (path handling, FD APIs,
-  # subprocess differences), not to ratchet coverage twice.
+  # ── 2. Full Test Suite ──────────────────────────────────────────────────────
+  # Matrix: ubuntu + windows on the minimum Python (3.12) and the Docker image's (3.13).
+  # The Windows legs exist to catch OS-specific failures (path handling, FD APIs,
+  # subprocess differences). Coverage is measured and gated on one leg only
+  # (ubuntu, 3.13); pytest-xdist spreads each run across the runner's cores.
   test:
+    name: test (${{ matrix.os }}, py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    # Fail-fast: don't bother running other jobs if lint failed
-    needs: [lint]
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python: "3.13"
+            coverage: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
 
       - name: Install dependencies
         uses: ./.github/actions/setup-env
 
+      # The floor is the measured total (about 51%) minus a 2-point margin for Python-version and OS differences; raise it when coverage rises.
       - name: Run pytest with coverage
-        run: |
-          python -m pytest tests/ --cov=modules --cov-report=term-missing --cov-report=xml:coverage.xml --tb=short -v
+        if: matrix.coverage
+        run: python -m pytest tests/ -n auto --cov=modules --cov-report=term --cov-report=xml:coverage.xml --cov-fail-under=48 --timeout=30 --durations=10 --durations-min=2.0 --tb=short
+
+      - name: Run pytest
+        if: ${{ !matrix.coverage }}
+        run: python -m pytest tests/ -n auto --timeout=30 --durations=10 --durations-min=2.0 --tb=short
 
       - name: Upload coverage report
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.coverage
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: coverage-report
           path: coverage.xml
 
-      - name: Enforce minimum coverage
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          python -c "
-          import xml.etree.ElementTree as ET
-          tree = ET.parse('coverage.xml')
-          root = tree.getroot()
-          covered = float(root.attrib['line-rate'])
-          threshold = 0.20  # 20% — measured baseline is ~23%; ratchet up as coverage grows
-          pct = covered * 100
-          print(f'Total line coverage: {pct:.1f}%')
-          if covered < threshold:
-              print(f'FAIL: coverage {pct:.1f}% is below {threshold*100}%')
-              exit(1)
-          print('Coverage gate PASSED')
-          "
-
-  # ── 3. Regression Suite ──────────────────────────────────────────────────────────
-  # Runs tests tagged as regression tests — i.e. tests written specifically
-  # to prevent a fixed bug from coming back. The tag is the test function's
-  # name prefix:
-  #
-  #   def test_regression_<short_slug>():     # for tracked-bug regressions
-  #   def test_issue_<gh_number>():           # for GitHub issue numbers
-  #   def test_bug_<short_slug>():            # for bugs without a GH issue
-  #
-  # Example:
-  #
-  #   def test_issue_3168_anime_map_overwrites_anilist_with_anidb():
-  #       """Regression test for #3168 — cache.py was writing the anidb id
-  #       into the anilist column on UPDATE. See modules/cache.py:1234."""
-  #       cache = Cache(...)
-  #       cache.update_anime_map(...)
-  #       assert ...
-  #
-  # When zero regression tests exist (pytest exits 5 "no tests collected"),
-  # the job logs a friendly message and passes — we don't want to block PRs
-  # during the bootstrap phase. Once we have >= 1 regression test, this job
-  # will run them and fail if any break.
-  regression:
-    runs-on: ubuntu-latest
-    needs: [lint]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-env
-
-      - name: Run regression tests
-        run: |
-          # pytest exit codes:
-          #   0 = all passed
-          #   1 = some failed (real signal — block the PR)
-          #   5 = no tests collected (expected during bootstrap; pass)
-          # Any other exit code = real error (pass through).
-          set +e
-          python -m pytest tests/ \
-            -k "regression or issue_ or bug_" \
-            --tb=long \
-            --junitxml=regression-report.xml \
-            -v
-          status=$?
-          if [ $status -eq 5 ]; then
-            echo "::notice::No regression tests found yet. See tests/README.md"
-            echo "::notice::for the naming convention to add one."
-            exit 0
-          fi
-          exit $status
-
-      - name: Upload regression report
-        if: always() && hashFiles('regression-report.xml') != ''
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: regression-report
-          path: regression-report.xml
-
-  # ── 4. Schema Validation ───────────────────────────────────────────────────
-  schema:
-    runs-on: ubuntu-latest
-    needs: [lint]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-env
-
-      - name: Validate schemas and defaults
-        run: |
-          python -m pytest tests/test_schema_validation.py tests/test_collection_schema.py tests/test_validator.py -v --tb=short
-
-  # ── 5. Import Cycle Detection ────────────────────────────────────────
-  # Auto-discovers every modules/*.py and tries to import it. Catches new
-  # circular imports, missing dependencies, and lazy import bugs that wouldn't
-  # show up in unit tests. See tests/test_imports.py for the logic.
-  #
-  # Matrix: ubuntu + windows. Windows leg catches POSIX-only imports leaking
-  # into module-level code (e.g. `import resource`, `import fcntl`, `import
-  # pwd`) — the exact class of bug that crashed every Windows user after #3235.
-  imports:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-env
-
-      - name: Import every module under modules/
-        run: |
-          python -m pytest tests/test_imports.py -v --tb=short
-
-  # ── 6. Performance Timing ──────────────────────────────────────────────────
-  # Uses pytest's native --durations-min flag (pytest >= 6) so we don't have
-  # to parse output with awk.  --timeout=30 fails the job if any single test
-  # hangs for more than 30s; --durations-min=2.0 surfaces every test slower
-  # than 2s in the report.
-  perf:
-    runs-on: ubuntu-latest
-    needs: [lint]
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Install dependencies
-        uses: ./.github/actions/setup-env
-
-      - name: Run tests with timeout enforcement
-        run: |
-          python -m pytest tests/ \
-            --timeout=30 \
-            --durations=10 \
-            --durations-min=2.0 \
-            --tb=short \
-            -q
-
-  # ── 7. Smoke Test (minimal end-to-end) ─────────────────────────
-  # Matrix: ubuntu + windows. The windows leg is the gate against future
-  # POSIX-only regressions like #3244 — `python kometa.py --help` is the
-  # literal command that crashed on Windows when #3235 added an unconditional
-  # `import resource` at module scope.
-  #
-  # `shell: bash` is set explicitly so the heredoc and `|| true` syntax work
-  # identically on both runners (Windows runners ship git-bash by default).
+  # Fresh-process imports, schema validation, regressions, and timing are all
+  # covered by the main test job. Keep CLI startup separate on every leg.
   smoke:
+    name: smoke (${{ matrix.os }}, py${{ matrix.python }})
     runs-on: ${{ matrix.os }}
-    needs: [lint]
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
+        python: ["3.12", "3.13"]
     defaults:
       run:
         shell: bash
@@ -270,30 +122,38 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements.txt
 
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
-      - name: Create minimal config
-        run: |
-          mkdir -p "${RUNNER_TEMP}/kometa-smoke"
-          cat > "${RUNNER_TEMP}/kometa-smoke/config.yml" << 'EOF'
-          settings:
-            cache: false
-          libraries: {}
-          tmdb:
-            apikey: test
-          plex:
-            url: http://localhost:32400
-            token: test
-          EOF
-
       - name: "Run Kometa --help (verifies module-level imports + argparse setup)"
         run: |
           python kometa.py --help
 
-      - name: "Run Kometa with minimal config (expected: clean failure)"
+      - name: Verify missing config produces the expected diagnostic
         run: |
-          python kometa.py --run --config "${RUNNER_TEMP}/kometa-smoke/config.yml" 2>&1 || true
+          python - <<'PYCODE'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+
+          with TemporaryDirectory(dir=os.environ["RUNNER_TEMP"]) as directory:
+              missing = Path(directory) / "missing-config.yml"
+              result = subprocess.run(
+                  [sys.executable, "kometa.py", "--run", "--config", str(missing)],
+                  capture_output=True, text=True, timeout=120,
+              )
+          output = result.stdout + result.stderr
+          print(output)
+          # Kometa currently logs configuration failures and returns zero.
+          assert result.returncode == 0, f"Unexpected exit code: {result.returncode}"
+          assert f"Config Error: Configuration file (config.yml) not found at {missing}" in output
+          assert "Uncaught Exception" not in output
+          assert "Traceback (most recent call last)" not in output
+          PYCODE

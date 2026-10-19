@@ -21,7 +21,7 @@ from modules.lastfm import LastFM
 from modules.letterboxd import Letterboxd
 from modules.lidarr import Lidarr
 from modules.listrr import Listrr
-from modules.mal import MyAnimeList
+from modules.mal import OFFICIAL_CLIENT_ID, MyAnimeList
 from modules.mdblist import MDBList
 from modules.meta import PlaylistFile
 from modules.mojo import BoxOfficeMojo
@@ -31,6 +31,7 @@ from modules.omdb import OMDb
 from modules.overlays import Overlays
 from modules.plex import Plex
 from modules.radarr import Radarr
+from modules.seerr import Seerr
 from modules.serializd import Serializd
 from modules.simkl import Simkl
 from modules.sonarr import Sonarr
@@ -293,6 +294,7 @@ class ConfigFile:
         self.no_missing = attrs["no_missing"] if "no_missing" in attrs else None
         self.no_report = attrs["no_report"] if "no_report" in attrs else None
         self.ignore_schedules = attrs["ignore_schedules"] if "ignore_schedules" in attrs else False
+        self.runtime_mode = attrs.get("mode")
         self.start_time = attrs["time_obj"]
         self.run_hour = datetime.strptime(attrs["time"], "%H:%M").hour
         self.requested_collections = None
@@ -335,6 +337,8 @@ class ConfigFile:
             logger.debug("")
 
         self.data = self.Requests.file_yaml(self.config_path).data
+        self.Seerr = None
+        self.seerr_config = None
 
         def replace_attr(all_data, in_attr, par):
             if "settings" not in all_data:
@@ -1092,6 +1096,20 @@ class ConfigFile:
         logger.save_errors = True
         logger.separator()
 
+        if self.data.get("seerr"):
+            logger.info("Connecting to Seerr...")
+            try:
+                self.seerr_config = {
+                    "url": check_for_attribute(self.data, "url", parent="seerr", var_type="url", throw=True),
+                    "apikey": check_for_attribute(self.data, "apikey", parent="seerr", throw=True),
+                }
+                self.Seerr = Seerr(self.Requests, self.seerr_config)
+            except Failed as e:
+                logger.error(e)
+            logger.info(f"Seerr Configuration {'Failed' if self.Seerr is None else 'Successful'}")
+        else:
+            logger.info("seerr attribute not found")
+
         try:
             self.TMDb = None
             if "tmdb" in self.data:
@@ -1185,13 +1203,19 @@ class ConfigFile:
             if "mal" in self.data:
                 logger.info("Connecting to My Anime List...")
                 try:
+                    mal_client_id = check_for_attribute(self.data, "client_id", parent="mal", throw=True)
+                    if mal_client_id == OFFICIAL_CLIENT_ID:
+                        # The utilities "Use Kometa App" block omits client_secret. Do not fail, and do not write client_secret: null.
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", default_is_none=True, save=False, do_print=False)
+                    else:
+                        mal_client_secret = check_for_attribute(self.data, "client_secret", parent="mal", throw=True)
                     self.MyAnimeList = MyAnimeList(
                         self.Requests,
                         self.Cache,
                         self.read_only,
                         {
-                            "client_id": check_for_attribute(self.data, "client_id", parent="mal", throw=True),
-                            "client_secret": check_for_attribute(self.data, "client_secret", parent="mal", throw=True),
+                            "client_id": mal_client_id,
+                            "client_secret": mal_client_secret,
                             "localhost_url": check_for_attribute(self.data, "localhost_url", parent="mal", default_is_none=True),
                             "cache_expiration": check_for_attribute(self.data, "cache_expiration", parent="mal", var_type="int", default=60, int_min=1),
                             "config_path": self.config_path,
@@ -2130,15 +2154,45 @@ class ConfigFile:
                 params["default_dir"] = default_dir
 
                 params["skip_library"] = False
-                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules:
+                params["schedule_mode"] = self.runtime_mode or "full"
+                if lib and "schedule" in lib and not self.requested_libraries and not self.ignore_schedules and not self.runtime_mode:
                     if not lib["schedule"]:
                         logger.error("Config Error: schedule attribute is blank")
                     else:
                         logger.debug(f"Value: {lib['schedule']}")
-                        try:
-                            util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
-                        except NotScheduled:
-                            params["skip_library"] = True
+                        schedule_entries = util.get_list(lib["schedule"], split=False)
+                        if any(isinstance(entry, dict) for entry in schedule_entries):
+                            schedule_modes = []
+                            for entry in schedule_entries:
+                                if not isinstance(entry, dict) or set(entry) != {"schedule", "mode"}:
+                                    logger.error("Config Error: each library schedule mode must contain schedule and mode attributes")
+                                    continue
+                                schedule = entry["schedule"]
+                                mode = entry["mode"]
+                                if not isinstance(schedule, str):
+                                    logger.error("Config Error: library schedule mode schedule must be a string")
+                                    continue
+                                if not isinstance(mode, str):
+                                    logger.error(f"Config Error: schedule mode for {schedule} must be a string")
+                                    continue
+                                schedule_modes.append((schedule, mode.lower()))
+                            if not schedule_modes:
+                                params["skip_library"] = True
+                            else:
+                                for schedule, mode in schedule_modes:
+                                    try:
+                                        util.schedule_check("schedule", schedule, current_time, self.run_hour)
+                                        params["schedule_mode"] = mode
+                                        break
+                                    except NotScheduled:
+                                        continue
+                                else:
+                                    params["skip_library"] = True
+                        else:
+                            try:
+                                util.schedule_check("schedule", lib["schedule"], current_time, self.run_hour)
+                            except NotScheduled:
+                                params["skip_library"] = True
 
                 old_reset = None
                 old_schedule = None
@@ -2300,6 +2354,34 @@ class ConfigFile:
                     if params["plex"]["token"].lower() == "env":
                         params["plex"]["token"] = self.env_plex_token
                     library = Plex(self, params)
+                    library.Seerr = self.Seerr
+                    if lib and "seerr" in lib:
+                        try:
+                            seerr_params = {
+                                "url": check_for_attribute(
+                                    lib,
+                                    "url",
+                                    parent="seerr",
+                                    var_type="url",
+                                    default=self.seerr_config["url"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                                "apikey": check_for_attribute(
+                                    lib,
+                                    "apikey",
+                                    parent="seerr",
+                                    default=self.seerr_config["apikey"] if self.seerr_config else None,
+                                    req_default=True,
+                                    save=False,
+                                ),
+                            }
+                            library.Seerr = self.Seerr if self.seerr_config == seerr_params else Seerr(self.Requests, seerr_params)
+                            logger.info(f"{display_name} library's Seerr Configuration Successful")
+                        except Failed as e:
+                            library.Seerr = None
+                            logger.error(e)
+                            logger.info(f"{display_name} library's Seerr Configuration Failed")
                     global_items, global_collections = util.resolve_asset_directories(self.general["asset_directory"], library.type)
                     library.asset_directory, library.collection_asset_directory = util.resolve_asset_directories(configured_assets, library.type, global_items, global_collections)
                     if isinstance(self.general["asset_directory"], dict) or isinstance(configured_assets, dict):

@@ -257,7 +257,17 @@ class YouTubeMusic:
         except (YTMusicError, RequestException) as e:
             raise Failed(f"YouTube Music Error: unable to load {country} charts: {e}") from e
         artists = charts.get("artists")
-        if not isinstance(artists, list) or not artists:
+        # ytmusicapi currently identifies artist carousels by their renderer only.
+        # Some country responses use that same renderer for album entries, so
+        # validate their browse IDs before treating the titles as artists.
+        if not isinstance(artists, list) or not artists or not any(self._is_artist_chart_entry(artist) for artist in artists):
+            if country != "ZZ":
+                try:
+                    global_charts = self.client.get_charts(country="ZZ")
+                except (YTMusicError, RequestException) as e:
+                    raise Failed(f"YouTube Music Error: unable to load global artist chart fallback: {e}") from e
+                artists = global_charts.get("artists") if isinstance(global_charts, dict) else None
+        if not isinstance(artists, list) or not artists or not any(self._is_artist_chart_entry(artist) for artist in artists):
             raise Failed(f"YouTube Music Error: artist charts are unavailable for {country}")
         matcher = MusicMatcher([library], "artist")
         results = []
@@ -276,6 +286,11 @@ class YouTubeMusic:
                 seen.add(name.casefold())
         return results
 
+    @staticmethod
+    def _is_artist_chart_entry(artist):
+        browse_id = artist.get("browseId") if isinstance(artist, dict) else None
+        return isinstance(browse_id, str) and browse_id.startswith("UC")
+
     def chart_playlists(self, country, section):
         try:
             charts = self.client.get_charts(country=country)
@@ -286,7 +301,10 @@ class YouTubeMusic:
             available = ", ".join(name for name in chart_sections if charts.get(name)) or "none"
             raise Failed(f"YouTube Music Error: {section} charts are unavailable for {country}. Available sections: {available}.")
 
-        return [entry for entry in entries if isinstance(entry, dict) and entry.get("playlistId") and entry.get("title")]
+        countries_data = charts.get("countries")
+        selected = countries_data.get("selected") if isinstance(countries_data, dict) else None
+        country_name = selected.get("text") if isinstance(selected, dict) else None
+        return [{**entry, "country_name": country_name} for entry in entries if isinstance(entry, dict) and entry.get("playlistId") and entry.get("title")]
 
     @staticmethod
     def chart_name(title, section):

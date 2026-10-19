@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from modules.log_summary import SUMMARY_NORMALIZATIONS, RunLogSummary, normalize_summary_message
+from modules.log_summary import SUMMARY_NORMALIZATIONS, RunLogSummary, normalize_summary_message, print_status
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 KOMETA_PY = REPO_ROOT / "kometa.py"
@@ -267,12 +267,9 @@ def test_overlay_summary_groups_follow_current_rating_sources() -> None:
     assert list(summary.section_rows("overlay")) == [(1, "No 'serializd_rating' found", ["'Example'"])]
 
 
-def test_stale_summary_rules_are_removed() -> None:
-    """Rules without current emitters should not linger in the summary catalog."""
-    text = (REPO_ROOT / "modules" / "log_summary.py").read_text(encoding="utf-8")
-    assert "Convert Warning: No MyAnimeList Found for AniDB ID:" not in text
-    assert 'r".+ Error: No Filter Created"' not in text
-    assert "Trakt Error: No TVDb ID found for" not in text
+@pytest.mark.parametrize("message", ["Convert Warning: No MyAnimeList Found for AniDB ID: 123", "Collection Error: No Filter Created", "Trakt Error: No TVDb ID found for 123"])
+def test_retired_summary_messages_are_left_unchanged(message):
+    assert normalize_summary_message(message) == message
 
 
 def test_overlay_attempts_are_reported_in_overlay_summary() -> None:
@@ -297,16 +294,15 @@ def test_missing_overlay_template_values_are_grouped_by_placeholder() -> None:
     assert _section_rows("Overlay Error: No '<<critic_rating>>' found") == [(1, "No '<<critic_rating>>' found", [])]
 
 
-def test_letterboxd_tmdb_failures_are_summarized() -> None:
-    """Regression for repeated Letterboxd per-item TMDb lookup noise.
-
-    These are high-volume item-level messages that should collapse into
-    the end-of-run summary instead of filling the report with one line
-    per title.
-    """
-    text = (REPO_ROOT / "modules" / "log_summary.py").read_text(encoding="utf-8")
-    assert 'r"Letterboxd Error: TMDb Movie ID not found at .+ item is type .+ with tmdb_id .+\\."' in text
-    assert 'r"Letterboxd Warning: TMDb link for .+ is for a TV show, not a movie; ignoring TMDb ID .+ from link\\."' in text
+@pytest.mark.parametrize(
+    "message, expected",
+    [
+        ("Letterboxd Error: TMDb Movie ID not found at example item is type movie with tmdb_id 123.", "Letterboxd Error: TMDb Movie ID not found"),
+        ("Letterboxd Warning: TMDb link for example is for a TV show, not a movie; ignoring TMDb ID 123 from link.", "Letterboxd Warning: TMDb link is for a TV show, not a movie"),
+    ],
+)
+def test_letterboxd_tmdb_failures_are_summarized(message, expected):
+    assert normalize_summary_message(message) == expected
 
 
 def test_dynamic_run_summary_messages_are_consolidated() -> None:
@@ -453,14 +449,20 @@ def test_missing_builder_parts_are_summarized() -> None:
         assert _summarize_log_message(message) == expected
 
 
-def test_status_summary_skips_empty_tables() -> None:
-    """Regression for the run-status table header.
+def test_status_summary_skips_empty_tables():
+    logger = MagicMock()
+    print_status({}, 20, logger)
+    logger.info.assert_not_called()
+    logger.separator.assert_not_called()
 
-    If there is no status data to report, the summary should stay quiet
-    rather than printing an empty header row.
-    """
-    text = KOMETA_PY.read_text(encoding="utf-8")
-    assert "if not status:\n            return" in text
+
+def test_status_summary_renders_counts_and_errors():
+    logger = MagicMock(separating_character="-")
+    print_status({"Example": {"added": 1, "unchanged": 2, "removed": 3, "run_time": "0:00:01", "status": "Modified", "errors": ["Failure detail"]}}, 20, logger)
+    messages = [call.args[0] for call in logger.info.call_args_list]
+    assert messages[0].strip().startswith("Title")
+    assert [part.strip() for part in messages[1].split("|")] == ["Example", "1", "2", "3", "0:00:01", "Modified"]
+    assert messages[2:] == ["Failure detail", ""]
 
 
 @pytest.mark.parametrize("severity", ["WARNING", "ERROR"])

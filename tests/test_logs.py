@@ -83,14 +83,16 @@ class TestMyLogger:
         log.spacing = 0
         return log
 
-    def test_log_methods_do_not_raise(self, logger):
+    def test_each_level_method_hands_one_record_to_the_handler_at_its_own_level(self, logger):
         logger.info("m")
         logger.warning("m")
         logger.error("m")
         logger.debug("m")
         logger.secret("x")
         logger.ghost("x")
-        assert logger._logger.info.call_count >= 0
+
+        assert [call.args[1] for call in logger._logger.makeRecord.call_args_list] == [logging.INFO, logging.WARNING, logging.ERROR, logging.DEBUG]
+        assert logger._logger.handle.call_count == 4  # secret() and ghost() never reach the handler
 
     def test_ghost_does_not_record_info(self, logger):
         logger.ghost("x")

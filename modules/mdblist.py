@@ -697,11 +697,21 @@ class MDBList:
                         results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
                     continue
 
-                tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
-                if tmdb_id:
-                    m_type = item.get("mediatype") or item.get("type") or "movie"
-                    type_key = "tmdb" if m_type.lower() == "movie" else "tmdb_show"
-                    results.append((tmdb_id, type_key))
+                m_type = (item.get("mediatype") or item.get("type") or "movie").lower()
+                if m_type in ["season", "episode"]:
+                    show_id = util.check_num(item.get("show_id"))
+                    season_number = util.check_num(item.get("season_number"))
+                    if show_id and season_number is not None:
+                        if m_type == "season":
+                            results.append((f"{show_id}_{season_number}", "tmdb_season"))
+                        else:
+                            episode_number = util.check_num(item.get("episode_number"))
+                            if episode_number is not None:
+                                results.append((f"{show_id}_{season_number}_{episode_number}", "tmdb_episode"))
+                elif m_type in ["movie", "show"]:
+                    tmdb_id = util.check_num(item.get("id") or item.get("tmdbid"))
+                    if tmdb_id:
+                        results.append((tmdb_id, "tmdb" if m_type == "movie" else "tmdb_show"))
 
             offset += len(items)  # type: ignore
 

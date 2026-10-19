@@ -6,14 +6,29 @@ hide:
 
 Smart Filters allow Kometa to create Smart Collections. The results of this builder are dynamic and do not require Kometa to re-run in order to update, instead they will update automatically as the data within your Plex Library updates (i.e. if new media is added)
 
-Smart Filter Builders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
+Smart Filter Builders use Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/) to create a smart collection based on the filter parameters provided. Under `music_playlists` in a Playlist File, `smart_filter` creates a Plex smart playlist within the Music library instead. Any Advanced Filter made using the Plex UI should be able to be recreated using `smart_filter`. This is the normal approach used when your Builder criteria is held solely within Plex, and no third-party service involvement is required.
 
 ???+ important
 
-    Smart Filters do not work with Playlists
+    Smart Filters are supported for music playlists defined under `music_playlists`. They do not work in regular cross-library Playlist Files.
 
 Like Plex's [Advanced Filters](https://support.plex.tv/articles/201273953-collections/), you have to start each filter with either `any` or `all` as a base. You can only 
 have one base attribute and all filter attributes must be under the base.
+
+For Music filters, `label` matches labels on the selected type: artists use `artist_label`, albums use `album_label`, and tracks use `track_label`. You can also use those type-specific filter names directly.
+
+Music smart playlists always contain tracks. You can still filter by artist- or album-level fields (for example, `artist_mood`); Plex applies those rules to the tracks in the playlist. Kometa's `Items Found` count uses artist results for artist filters and album results for album filters, so it reports the matching titles even though the playlist itself contains tracks.
+
+Numeric Music filters use comparison modifiers. For example, this creates a playlist of tracks with exactly one skip:
+
+```yaml
+music_playlists:
+  Skipped Tracks:
+    smart_filter:
+      type: track
+      all:
+        track_skips.is: 1
+```
 
 Inside the base attribute you can use any filter below or nest more `any` or `all`. You can have as many nested `any` 
 or `all` next to each other as you want. If using multiple `any` or `all` you will have to do so in the form of a list.

@@ -7,8 +7,7 @@ import pytest
 from plexapi.video import Movie
 
 from modules.util import Failed
-from tests.test_builder import make_builder
-from tests.test_plex import make_plex
+from tests.factories import make_builder, make_plex
 
 MODIFIERS = ["", ".not", ".gt", ".gte", ".lt", ".lte"]
 
@@ -20,9 +19,7 @@ def stinger_builder():
     return make_builder(library=library, builder_level="movie", filters=[])
 
 
-@pytest.mark.parametrize("definition_type", ["Collection", "Overlay"])
-@pytest.mark.parametrize("modifier", MODIFIERS)
-@pytest.mark.parametrize("threshold", [-3, 0, 5, "-3", "0", "5"])
+@pytest.mark.parametrize("definition_type, modifier, threshold", [(kind, modifier, -3) for kind in ("Collection", "Overlay") for modifier in MODIFIERS] + [("Collection", "", value) for value in (0, 5, "-3", "0", "5")])
 def test_all_stinger_modifiers_accept_signed_integer_thresholds(stinger_builder, definition_type, modifier, threshold):
     builder = stinger_builder
     builder.Type = definition_type

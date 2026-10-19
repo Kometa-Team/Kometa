@@ -83,6 +83,8 @@ All the following attributes update the poster of the collection/playlist from v
 
 **All of these details work with Playlists.**
 
+People-Images poster URLs are validated before selection. If a person image is missing, Kometa logs a warning and uses the next available poster source, such as the profile supplied by `tmdb_person`. Existing person images retain their usual priority. Successful checks and missing-image responses are cached for the current run; a later run checks again. Each distinct People-Images URL requires a HEAD check during that run. If validation fails because of rate limiting, a server error, or a network error, Kometa logs the validation failure and tries another available poster source; it does not report a confirmed missing image or cache the temporary failure.
+
 If no poster is specified the script will look in the library's [Image Asset Directories](../kometa/guides/assets.md) for a
 folder named either the collection/playlist name or the `name_mapping` if specified and look for a supported poster asset
 such as `poster.ext`, `cover.ext`, `default.ext`, `folder.ext`, or `movie.ext` in that folder.

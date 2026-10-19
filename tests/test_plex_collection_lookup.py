@@ -42,6 +42,7 @@ def _load_plex(monkeypatch):
     fake_util.LimitReached = Exception
     fake_util.MappingConvertError = Exception
     fake_util.OverlayError = Exception
+    fake_util.PlexImageUploadError = Exception
     fake_util.ServiceError = Exception
     monkeypatch.setitem(sys.modules, "modules.util", fake_util)
 
@@ -73,6 +74,7 @@ def _load_plex(monkeypatch):
         return decorator
 
     fake_tenacity.retry = retry
+    fake_tenacity.retry_if_exception = _identity
     fake_tenacity.retry_if_exception_type = _identity
     fake_tenacity.retry_if_not_exception_type = _identity
     fake_tenacity.stop_after_attempt = _identity

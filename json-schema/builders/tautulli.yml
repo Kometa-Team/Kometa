@@ -33,13 +33,22 @@ collections:
       list_minimum: 3
 
   # ---------------------------------------------------------------------------
-  # tautulli_watched — items most-completed by users over a rolling window
+  # tautulli_top — most-played items (alias: tautulli_watched)
   # Parameters:
   #   list_days    (int, default 30)  — how many days to look back
   #   list_size    (int, default 10)  — number of items to include
   #   list_minimum (int, default 0)   — minimum watch/play count threshold
   # ---------------------------------------------------------------------------
   Most Watched Movies (Last 30 Days):
+    sync_mode: sync
+    collection_order: custom
+    tautulli_top:
+      list_days: 30
+      list_size: 20
+      list_minimum: 2
+
+  # Backward-compatible legacy builder name
+  Legacy Most Watched Movies:
     sync_mode: sync
     collection_order: custom
     tautulli_watched:
@@ -50,7 +59,7 @@ collections:
   Most Watched Movies (Last 7 Days):
     sync_mode: sync
     collection_order: custom
-    tautulli_watched:
+    tautulli_top:
       list_days: 7
       list_size: 10
       list_minimum: 1
@@ -58,7 +67,44 @@ collections:
   Most Watched Movies (Last 90 Days):
     sync_mode: sync
     collection_order: custom
-    tautulli_watched:
+    tautulli_top:
       list_days: 90
       list_size: 25
       list_minimum: 5
+
+  # ---------------------------------------------------------------------------
+  # Music libraries: tautulli_popular uses Popular Music; tautulli_top uses Top Music.
+  # ---------------------------------------------------------------------------
+  Popular Music Artists:
+    builder_level: artist
+    sync_mode: sync
+    collection_order: custom
+    tautulli_popular:
+      list_days: 30
+      list_size: 20
+      list_minimum: 1
+
+  Top Music Albums:
+    builder_level: album
+    sync_mode: sync
+    collection_order: custom
+    tautulli_top:
+      list_days: 90
+      list_size: 15
+      list_minimum: 2
+
+  Popular Music Tracks:
+    builder_level: track
+    sync_mode: sync
+    collection_order: custom
+    tautulli_popular:
+      list_days: 7
+      list_size: 25
+
+  Top Music Tracks:
+    builder_level: track
+    sync_mode: sync
+    collection_order: custom
+    tautulli_top:
+      list_days: 30
+      list_size: 50

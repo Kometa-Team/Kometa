@@ -37,7 +37,7 @@ The specific steps you will be taking:
 <!--all-->
 
 <!--local-->
-1. Verify that the version of Python installed is between 3.10 and 3.13.
+1. Verify that the version of Python installed is between 3.11 and 3.14.
 
 <!--local-->
 
