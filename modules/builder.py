@@ -4548,9 +4548,16 @@ class CollectionBuilder:
                         else:
                             logger.warning(f"{self.Type} Warning: Numeric ID: {input_id} not found in the defined libraries")
                             continue
-                    elif id_type == "tvdb_season" and (self.builder_level in ["season", "episode"] or self.playlist):
-                        tvdb_id, season_num = input_id.split("_")
-                        tvdb_id = int(tvdb_id)
+                    elif id_type in ["tvdb_season", "tmdb_season"] and (self.builder_level in ["season", "episode"] or self.playlist):
+                        show_id, season_num = input_id.split("_")
+                        if id_type == "tmdb_season":
+                            try:
+                                tvdb_id = self.config.Convert.tmdb_to_tvdb(int(show_id), fail=True)
+                            except Failed as e:
+                                logger.warning(e)
+                                continue
+                        else:
+                            tvdb_id = int(show_id)
                         found = False
                         for pl_library in self.libraries:
                             if tvdb_id in pl_library.show_map:
@@ -4563,7 +4570,7 @@ class CollectionBuilder:
                                     else:
                                         items.append(season_obj)
                                 except NotFound:
-                                    self._log_missing_part(f"tvdb_season:{input_id}", f"{show_item.title} Season: {season_num} Missing")
+                                    self._log_missing_part(f"{id_type}:{input_id}", f"{show_item.title} Season: {season_num} Missing")
                                 break
                         if not found and tvdb_id not in self.missing_shows:
                             self.missing_shows.append(tvdb_id)
