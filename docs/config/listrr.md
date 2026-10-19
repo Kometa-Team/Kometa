@@ -10,12 +10,12 @@ The `listrr` attribute is at the root of the config file.
 
 ```yaml
 listrr:
-  api_key: your_api_key
+  apikey: your_api_key
 ```
 
 | Attribute | Description | Required |
 |:----------|:------------|:------------------------------------------:|
-| `api_key` | Listrr API key | :fontawesome-solid-circle-check:{ .green } |
+| `ap_key`  | Listrr API key | :fontawesome-solid-circle-check:{ .green } |
 
 ## Getting an API key
 
