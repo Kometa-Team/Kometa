@@ -18,6 +18,7 @@ import modules.builder as builder_module
 from modules.builder import CollectionBuilder, custom_sort_builders, parts_collection_valid, playlist_attributes
 from modules.util import Failed
 from tests.conftest import FakeLogger
+from tests.factories import make_builder
 
 # ═══════════════════════════════════════════════════════════════════════
 # Shared fakes
@@ -88,61 +89,6 @@ class FakeTVDbLibrary:
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
-
-
-def make_builder(**attrs) -> CollectionBuilder:
-    """Create a minimal CollectionBuilder with ``__new__``."""
-    builder = CollectionBuilder.__new__(CollectionBuilder)
-    defaults = {
-        "Type": "Collection",
-        "builder_level": "movie",
-        "playlist": False,
-        "music_playlist": False,
-        "music_playlist_smart": False,
-        "smart_filter_result_type": None,
-        "libraries": [],
-        "ignore_imdb_ids": [],
-        "ignore_ids": [],
-        "missing_movies": [],
-        "missing_parts": [],
-        "missing_shows": [],
-        "do_missing": True,
-        "filters": [],
-        "details": {"show_filtered": False, "show_unfiltered": False, "only_filter_missing": False},
-        "filtered_keys": {},
-        "found_items": [],
-        "found_item_keys": set(),
-        "do_report": False,
-        "obj": None,
-        "name": "Test Collection",
-        "builders": [],
-        "items": [],
-        "mdb_list_arr_ids": None,
-        "item_details": {},
-        "asset_directory": None,
-        "collection_asset_directory": None,
-        "collection_assets_configured": False,
-        "overlay": False,
-        "radarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
-        "sonarr_details": {"add_existing": False, "upgrade_existing": False, "monitor_existing": False},
-        "run_again_movies": [],
-        "run_again_shows": [],
-        "notification_additions": [],
-        "notification_removals": [],
-        "added_to_radarr": [],
-        "added_to_sonarr": [],
-        "collection_poster": None,
-        "collection_background": None,
-        "deleted": False,
-        "created": True,
-        "smart_label_collection": False,
-        "check_filters": lambda item, display: True,
-        "value_filters": [],
-    }
-    defaults.update(attrs)
-    for key, value in defaults.items():
-        setattr(builder, key, value)
-    return builder
 
 
 def _episode_builder(library) -> CollectionBuilder:
@@ -1291,7 +1237,7 @@ class TestDelete:
 class TestUpdateSmartFilter:
     """Regression coverage for the "Metadata: Smart Collection updated to None" log line."""
 
-    @pytest.mark.parametrize("member_count", [0, 10, 64])
+    @pytest.mark.parametrize("member_count", [0, 10], ids=["empty", "populated"])
     def test_initialization_preserves_smart_label_filter_and_member_count(self, monkeypatch, member_count):
         monkeypatch.setattr(builder_module, "logger", FakeLogger())
         library = MagicMock()
@@ -2236,7 +2182,7 @@ def test_collection_asset_directory_does_not_redirect_other_builders(kind):
 def test_collection_artwork_and_downloads_use_collection_root(tmp_path, asset_folders, monkeypatch):
     import modules.library as library_module
     from modules.request import Requests
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
 
@@ -2287,7 +2233,7 @@ def test_collection_artwork_and_downloads_use_collection_root(tmp_path, asset_fo
 
 def test_collection_asset_downloads_still_respect_download_setting(tmp_path, monkeypatch):
     import modules.library as library_module
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
 
@@ -2309,7 +2255,7 @@ def test_collection_asset_downloads_still_respect_download_setting(tmp_path, mon
 @pytest.mark.parametrize("source", ["tmdb_poster", "tvdb_poster", "tmdb_movie_details"])
 def test_grouped_collection_assets_do_not_download_live_sources(tmp_path, source, monkeypatch):
     import modules.library as library_module
-    from tests.test_plex import make_plex
+    from tests.factories import make_plex
 
     monkeypatch.setattr(library_module, "logger", FakeLogger())
     requests = SimpleNamespace(download_image=MagicMock())

@@ -15,7 +15,7 @@ from packaging.requirements import InvalidRequirement, Requirement
 from packaging.version import parse
 
 from modules.integrity import log_integrity, log_integrity_summary
-from modules.log_summary import SEVERITIES, RunLogSummary
+from modules.log_summary import SEVERITIES, RunLogSummary, print_status
 from modules.logs import MyLogger
 
 # Increase file descriptor limit to prevent exhaustion with large libraries.
@@ -853,19 +853,6 @@ def run_config(config, stats):
             if len(title) > longest:
                 longest = len(title)
 
-    def print_status(status):
-        if not status:
-            return
-        logger.info(f"{'Title':^{longest}} |   +   |   =   |   -   | Run Time | {'Status'}")
-        breaker = f"{logger.separating_character * longest}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 7}|{logger.separating_character * 10}|"
-        logger.separator(breaker, space=False, border=False, side_space=False, left=True)
-        for name, data in status.items():
-            logger.info(f"{name:<{longest}} | {data['added']:>5} | {data['unchanged']:>5} | {data['removed']:>5} | {data['run_time']:>8} | {data['status']}")
-            if data["errors"]:
-                for error in data["errors"]:
-                    logger.info(error)
-                logger.info("")
-
     logger.info("")
     logger.separator("Summary")
     for library in config.libraries:
@@ -878,12 +865,12 @@ def run_config(config, stats):
             for text, value in library_status[library.name].items():
                 logger.info(f"{text:<27} | {value:>8} |")
         logger.info("")
-        print_status(library.status)
+        print_status(library.status, longest, logger)
     if playlist_status:
         logger.info("")
         logger.separator("Playlists Summary", space=False, border=False)
         logger.info("")
-        print_status(playlist_status)
+        print_status(playlist_status, longest, logger)
 
     if collections_ran:
         report_duplicate_collections(config)

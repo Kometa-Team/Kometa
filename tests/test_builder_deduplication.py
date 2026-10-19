@@ -7,7 +7,7 @@ import pytest
 
 import modules.builder as builder_module
 from tests.conftest import FakeLogger
-from tests.test_builder import make_builder
+from tests.factories import make_builder
 
 
 class KeyedEpisode:

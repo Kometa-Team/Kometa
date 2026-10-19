@@ -23,70 +23,11 @@ import modules.builder  # noqa: F401 — pre-import to break circular deps
 from modules.plex import MusicMatcher, Plex, TracedPlexServer
 from modules.util import Failed
 from tests.conftest import FakeLogger
+from tests.factories import make_plex, make_plex_item
 
 # ═══════════════════════════════════════════════════════════════════════
 # Helpers
 # ═══════════════════════════════════════════════════════════════════════
-
-
-def make_plex(**attrs) -> Plex:
-    """Create a minimal Plex instance with ``Plex.__new__``.
-
-    Defaults provide enough for basic method calls.  Override any
-    attribute via keyword arguments.
-
-    Sets ``Plex.logger`` and ``plex_module.logger`` to FakeLogger.
-    """
-    import modules.plex as plex_module
-
-    plex = Plex.__new__(Plex)
-
-    # Required by Library base class
-    plex.name = attrs.pop("name", "Test Library")
-    plex.is_movie = attrs.pop("is_movie", True)
-    plex.is_show = attrs.pop("is_show", False)
-    plex.type = attrs.pop("type", "Movie")
-    plex.cached_items = attrs.pop("cached_items", {})
-    plex.filter_attr_cache = attrs.pop("filter_attr_cache", {})
-    plex.collection_names = attrs.pop("collection_names", [])
-    plex.collection_files = attrs.pop("collection_files", [])
-    plex.stats = attrs.pop("stats", {"deleted": 0})
-    plex.config = attrs.pop("config", SimpleNamespace(notify=MagicMock(), notify_delete=MagicMock()))
-
-    # Required by Plex class
-    plex.collection_asset_directory = attrs.pop("collection_asset_directory", [])
-    plex.plex = attrs.pop("plex", None)
-    plex.url = attrs.pop("url", "http://localhost:32400")
-    plex.token = attrs.pop("token", "fake-token")
-    plex.PlexServer = attrs.pop("PlexServer", MagicMock())
-    plex.Plex = attrs.pop("Plex", MagicMock())
-    plex.session = attrs.pop("session", MagicMock())
-    plex.timeout = attrs.pop("timeout", 30)
-    plex._language_choice_cache = attrs.pop("_language_choice_cache", {})
-
-    # Apply any remaining overrides
-    for key, value in attrs.items():
-        setattr(plex, key, value)
-
-    plex_module.logger = FakeLogger()
-    return plex
-
-
-def make_plex_item(
-    rating_key: int = 1,
-    title: str = "Test Item",
-    year: int = 2023,
-    **extras,
-) -> MagicMock:
-    """Return a MagicMock that looks like a Plex video object."""
-    item = MagicMock()
-    item.ratingKey = rating_key
-    item.title = title
-    item.year = year
-    item.type = extras.pop("type", "movie")
-    for key, value in extras.items():
-        setattr(item, key, value)
-    return item
 
 
 # ═══════════════════════════════════════════════════════════════════════

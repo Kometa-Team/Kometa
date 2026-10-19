@@ -37,7 +37,7 @@ class TestStevenLu:
     def test_popular_returns_imdb_ids(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.stevenlu.logger", FakeLogger())
         ids = adapter.get_imdb_ids("stevenlu_popular", None)
-        assert len(ids) == 1
+        assert ids == [("tt1234567", "imdb")]
 
 
 class TestGotify:
@@ -55,9 +55,10 @@ class TestGotify:
     def test_notification_calls_request(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.gotify.logger", FakeLogger())
         monkeypatch.setattr("modules.webhooks.get_message", lambda j: ("msg", "title", None))
-        adapter._request = MagicMock(return_value=None)
+        adapter.requests.post.return_value.json.return_value = {"id": 123}
+        adapter.requests.post.return_value.status_code = 200
         adapter.notification({"event": "test"})
-        adapter._request.assert_called_once()
+        adapter.requests.post.assert_called_once_with("http://gotify:8080/message", headers={"X-Gotify-Key": "fake"}, json={"message": "msg", "title": "title"})
 
 
 class TestNtfy:
@@ -74,10 +75,13 @@ class TestNtfy:
 
     def test_notification_sends_request(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.ntfy.logger", FakeLogger())
-        monkeypatch.setattr("modules.webhooks.get_message", lambda j: ("msg", "title", None))
-        adapter._request = MagicMock(return_value=None)
+        monkeypatch.setattr("modules.webhooks.get_message", lambda j: ("msg", "title", 4))
         adapter.notification({"event": "test"})
-        adapter._request.assert_called_once()
+        adapter.requests.post.assert_called_once_with(
+            "http://ntfy:8080/test",
+            headers={"Authorization": "Bearer fake", "Icon": "https://kometa.wiki/en/latest/assets/icon.png", "Priority": "4", "Title": "title"},
+            data="msg",
+        )
 
     def test_init_does_not_publish_access_test(self, monkeypatch):
         from modules.ntfy import Ntfy
@@ -102,9 +106,10 @@ class TestNotifiarr:
         return n
 
     def test_notification_calls_request(self, adapter):
-        adapter._request = MagicMock(return_value=None)
+        adapter.requests.get.return_value.status_code = 200
+        adapter.requests.get.return_value.json.return_value = {"details": {"response": True}}
         adapter.notification({"event": "test"})
-        adapter._request.assert_called_once()
+        adapter.requests.get.assert_called_once_with("https://notifiarr.com/api/v1/notification/pmm/", json={"event": "test"}, headers={"x-api-key": "fake"}, params=None)
 
 
 class TestICheckMovies:
