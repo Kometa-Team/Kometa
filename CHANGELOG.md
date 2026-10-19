@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.api_key` and reads list membership from the Listrr API.
+- Add a read-only `listrr_list` / `listrr_list_details` builder for Listrr movie and show lists. It uses an optional `listrr.apikey` and reads list membership from the Listrr API.
 - Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
