@@ -8,11 +8,45 @@ hide:
 
 The Image Asset Directories can be used to update the posters and backgrounds of collections, movies, shows, seasons, and episodes.
 
+Please read thorough this entire guide.  Everything in it assumes understanding of what came before.
+
+## What is an Asset?
+
+Kometa can apply a variety of images to a variety of items in Plex from a variety of sources.
+
+An "Asset" is one of those sources; it's a set of directories full of images with specific names that can be applied to items by Kometa.  Kometa can apply asset images to:
+
+    | Item Type    | poster | background | logo | square_art |
+    |:-------------|:----------------------------------------|
+    | Collection   | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Playlist     | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Movie        | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Show         | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } |
+    | Season       | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
+    | Episode      | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .green } | :fontawesome-solid-circle-check:{ .red }   | :fontawesome-solid-circle-check:{ .red }   |
+
+Without additional specific configuration, Kometa will apply assets **only** to collections/playlists which Kometa has created itself ("managed" collections/playlists).  This refers to the **collection itself**, not the items **in** the collection.
+
+Kometa **will not** apply assets to *items within collections*, and that functionality is not available in Kometa since a movie/show/episode has a single poster across the entire library.  Assets can already be applied to individual items, so a duplicate method to apply such assets is not needed.
+
+    | Item Type            | when assets are applied          |
+    |:---------------------|:---------------------------------|
+    | Managed Collection   | happens automatically            |
+    | Managed Playlist     | happens automatically            |
+    | Unmanaged Collection | assets_for_all_collections: true |
+    | Unmanaged Playlist   | NOT SUPPORTED                    |
+    | Movie                | assets_for_all: true             |
+    | Show                 | assets_for_all: true             |
+    | Season               | assets_for_all: true             |
+    | Episode              | assets_for_all: true             |
+
+Image **assets** are stored in and retrieved by Kometa from "asset directories".
+
 ## What is an Asset Directory?
 
 It is a folder containing artwork (posters and/or backgrounds) that is *typically* entirely separate to your media directories.
 
-The only connection an asset directory has with your media directories is that the name of the folder your movie or series is in is the "asset name".
+The only connection an asset directory has with your media directories is that **the name of the folder containing your movie or series' video files** is the "asset name".
 Kometa uses that "asset name" as the **key** to find the artwork in the asset directory.
 
 Media directory:
@@ -21,7 +55,6 @@ Media directory:
 /this/part/does/not/matter/Star Wars (1977)/neither_does_this_part.mkv
                            ^^^^^^^^^^^^^^^^ "asset name"
 ```
-
 Asset Directory:
 
 with asset folders:
