@@ -154,7 +154,7 @@ Movies:
     assets_for_all: true             # apply assets to individual moives/shows/season/episodes
     assets_for_all_collections: true # apply assets to UNMANAGED collections
 ```
-Applying an asset to a collection affects **ONLY** the collection.  The items within the collection are **not affected** unless you enable `assets_for_all` and even then you need to individually configure assets for those items.  There is no built-in functionality for "apply assets to this collection and all the things within it".  Also, if you apply assets to items within a collection, those assets show up everytwhere in the Plex UI.  A movie, for example, has one poster.  If you set an asset on "Star Wars", then that poster shows up on the movie when you view your "Star Wars" collection along with everywhere else the movie appears [other collections, the library].
+Applying an asset to a collection affects **ONLY** the collection.  The items within the collection are **not affected** unless you enable `assets_for_all` and even then you need to individually configure assets for those items.  There is no built-in functionality for "apply assets to this collection and all the things within it".  Also, if you apply assets to items within a collection, those assets show up everywhere in the Plex UI.  A movie, for example, has one poster.  If you set an asset on "Star Wars", then that poster shows up on the movie when you view your "Star Wars" collection along with everywhere else the movie appears [other collections, the library].
 
 Relevant operations:
 [`assets_for_all`](../../config/operations/#assets-for-all)
