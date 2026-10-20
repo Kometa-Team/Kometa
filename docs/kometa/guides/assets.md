@@ -40,6 +40,10 @@ Kometa **will not** apply assets to *items within collections*, and that functio
     | Season               | assets_for_all: true             |
     | Episode              | assets_for_all: true             |
 
+Relevant operations:
+[`assets_for_all`](../../config/operations/#assets-for-all)
+[`assets_for_all_collections`](../../config/operations/#assets-for-all-collections)
+
 Image **assets** are stored in and retrieved by Kometa from "asset directories".
 
 ## What is an Asset Directory?
@@ -77,6 +81,9 @@ You **can** use your media directories as the asset directories (if for example 
 
 Kometa does not require direct access to your media directories in normal use, and it is typically run remote from the Plex server, which is why the asset directory is *typically* entirely separate.
 
+Relevant settings:
+[`asset-directory`](../../config/settings/#asset-directory)
+
 ## Requirements and configuration
 
 If you want to apply artwork to movies and shows using the asset directory, the Kometa asset pipeline *requires* that your movies and shows are in folders of their own.
@@ -107,6 +114,8 @@ You can specify your asset folders under the `settings` attribute `asset_directo
     Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
     For the sake of this document, we will assume that your assets folders are all based within the directory mapped to `config` within your Kometa environment.
+
+    Asset directories can be scoped to type/library/collection; those specifics are not discussed here.  See the [`asset-directory`](../../config/settings/#asset-directory) docs.
 
 ```yaml
 settings:
@@ -147,12 +156,17 @@ Movies:
 ```
 Applying an asset to a collection affects **ONLY** the collection.  The items within the collection are **not affected** unless you enable `assets_for_all` and even then you need to individually configure assets for those items.  There is no built-in functionality for "apply assets to this collection and all the things within it".  Also, if you apply assets to items within a collection, those assets show up everytwhere in the Plex UI.  A movie, for example, has one poster.  If you set an asset on "Star Wars", then that poster shows up on the movie when you view your "Star Wars" collection along with everywhere else the movie appears [other collections, the library].
 
+Relevant operations:
+[`assets_for_all`](../../config/operations/#assets-for-all)
+[`assets_for_all_collections`](../../config/operations/#assets-for-all-collections)
+
 If you want to silence the `Asset Warning: No poster or background found in an assets folder for 'TITLE'` you can use the [`show_missing_assets` Setting Attribute](../../config/settings.md):
 
 ```yaml
 settings:
   show_missing_assets: false
 ```
+[`asset-show_missing_assets`](../../config/settings/#show_missing_assets)
 
 ## Asset interaction with overlays
 
@@ -163,7 +177,8 @@ the simplest and safest way to ensure that the overlay pipeline doesn't unexpect
 ## Asset Naming
 
 The table below shows the asset folder path structures that will be searched for. There are two options for how Kometa looks at the files inside your Asset Directories. Choose an option with
-the [`asset_folders` Setting Attribute](../../config/settings.md). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
+
+the [`asset_folders` Setting Attribute](../../config/settings/#asset_folders). Note that `asset_folders` is a toggle; you can't put some images in folders and some not in a context where it is enabled.
 
 Assets can be stored anywhere on the host system that Kometa has visibility of (i.e. if using docker, the directory must be mounted/visible to the docker container).
 
@@ -500,3 +515,11 @@ Here's an example config folder structure with an assets directory with `asset_f
         ├── Star Wars Rebels_Season04.png
         └── Star Wars Rebels_Season04_background.png
     ```
+
+### Other settings
+
+There are other asset-related settings described starting [here](../../config/settings/#asset-depth)
+
+### Step-by-Step
+
+The Cookbook has a step-by-step [walkthrough](https://github.com/Kometa-Team/Cookbook/blob/main/cookbook/asset_pipeline_walkthrough.md).
