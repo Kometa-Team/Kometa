@@ -740,9 +740,8 @@ searches = (
     + float_attributes
     + [f"{f}{m}" for f in float_attributes for m in float_modifiers if f != "duration" or m != ".rated"]
 )
-music_searches = (
-    [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + ["year", "unmatched", "trash"] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
-)
+shared_music_searches = ["year", "unmatched", "trash"]
+music_searches = [a for a in searches if a.startswith(("artist", "album", "track", "date_album"))] + [f"date_artist_added{modifier}" for modifier in date_modifiers] + [f"record_label{modifier}" for modifier in string_modifiers]
 track_only_searches = ["folder_location", "folder_location.not", "folder_location.regex"] + [f"audio_codec{modifier}" for modifier in string_modifiers]
 movie_sorts = {
     "title.asc": "titleSort",
