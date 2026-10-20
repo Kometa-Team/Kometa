@@ -4871,7 +4871,7 @@ class CollectionBuilder:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for movie libraries"
                 elif self.library.is_movie and final_attr in plex.show_only_searches:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for show libraries"
-                elif self.library.is_music and final_attr not in plex.music_searches + (plex.track_only_searches if sort_type == "track" else []) + ["all", "any"]:
+                elif self.library.is_music and final_attr not in plex.music_searches + plex.shared_music_searches + (plex.track_only_searches if sort_type == "track" else []) + ["all", "any"]:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' does not work for music libraries"
                 elif not self.library.is_music and final_attr in plex.music_searches:
                     error = f"{self.Type} Error: {method} attribute '{final_attr}' only works for music libraries"
