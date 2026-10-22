@@ -815,6 +815,7 @@ class Library(ABC):
         logger.info("")
         logger.info(f"Processed {len(items)} {self.type}s")
         self.cache_imdb_ratings()
+        self.cache_imdb_genres()
 
     def cache_imdb_ratings(self):
         """Batch-fill the local IMDb rating cache with this library's ids.
@@ -832,3 +833,20 @@ class Library(ABC):
             imdb.cache_library_ratings(imdb_ids)
         except Exception as error:
             logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")
+
+    def cache_imdb_genres(self):
+        """Batch-fill the local IMDb genre cache with this library's ids.
+
+        Called when the library finishes loading so later IMDb genre lookups
+        read the cache instead of requesting one title at a time.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not self.imdb_map:
+            return
+        imdb_ids = [imdb_id for imdb_id in self.imdb_map if imdb_id]
+        if not imdb_ids:
+            return
+        try:
+            imdb.cache_library_genres(imdb_ids)
+        except Exception as error:
+            logger.error(f"IMDb Error: Failed to cache genres for {self.name}: {error}")

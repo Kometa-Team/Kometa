@@ -576,8 +576,9 @@ event_options = {
 }
 base_url = "https://www.imdb.com"
 service_url = "https://utilities.kometa.wiki/imdb-service"
-# Kometa Utilities POST /ratings rejects bodies larger than this (service default).
+# Kometa Utilities POST /ratings and POST /genre reject bodies larger than this (service default).
 ratings_batch_max = 1000
+genres_batch_max = 1000
 git_base = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Awards/master"
 search_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/HASH"
 list_hash_url = "https://raw.githubusercontent.com/Kometa-Team/IMDb-Hash/master/LIST_HASH"
@@ -593,8 +594,8 @@ class IMDb:
         self.cache = cache
         self.default_dir = default_dir
         self._service_available = True
-        self._title_cache = {}
         self._direct_ratings = {}
+        self._direct_genres = {}
         self._episode_ratings_cache = {}
         self._ratings = None
         self._genres = None
@@ -1202,11 +1203,6 @@ class IMDb:
         else:
             raise Failed(f"IMDb Error: Method {method} not supported")
 
-    def _service_title(self, imdb_id):
-        if imdb_id not in self._title_cache:
-            self._title_cache[imdb_id] = self._service_request(f"title/{imdb_id}", not_found_ok=True)
-        return self._title_cache[imdb_id]
-
     def _service_unavailable(self, error):
         self._service_available = False
         if logger:
@@ -1286,17 +1282,94 @@ class IMDb:
             self.cache_library_ratings([imdb_id])
         return self._direct_ratings.get(imdb_id)
 
+    def cache_library_genres(self, imdb_ids):
+        """Load IMDb genres for these ids into the local cache.
+
+        Rows still inside ``cache_expiration`` are reused. Missing and expired ids are
+        requested together from Kometa Utilities ``POST /genre`` (chunks of
+        ``genres_batch_max``) and then read back for the rest of the run. A service
+        failure falls back to the IMDb TSV dataset for whatever is still unresolved.
+        """
+        pending = []
+        seen = set()
+        for imdb_id in imdb_ids or []:
+            if not imdb_id or imdb_id in seen or imdb_id in self._direct_genres:
+                continue
+            seen.add(imdb_id)
+            pending.append(imdb_id)
+        if not pending:
+            return
+
+        missing = pending
+        if self.cache is not None:
+            fresh, missing = self.cache.query_imdb_genres(pending, self.cache.expiration)
+            self._direct_genres.update(fresh)
+        if not missing:
+            return
+        if not self._service_available:
+            self._fill_genres_from_tsv(missing)
+            return
+        if logger:
+            logger.info(f"Caching {len(missing)} IMDb genres")
+        self._fetch_genres_batch(missing)
+
+    def _fetch_genres_batch(self, imdb_ids):
+        try:
+            for start in range(0, len(imdb_ids), genres_batch_max):
+                chunk = imdb_ids[start : start + genres_batch_max]
+                stored = self._genres_from_batch(chunk)
+                if stored is None:
+                    for imdb_id in chunk:
+                        self._direct_genres[imdb_id] = []
+                    continue
+                self._direct_genres.update(stored)
+                if self.cache is not None:
+                    self.cache.update_imdb_genres(stored, self.cache.expiration)
+        except Failed as error:
+            self._service_unavailable(error)
+            unresolved = [imdb_id for imdb_id in imdb_ids if imdb_id not in self._direct_genres]
+            self._fill_genres_from_tsv(unresolved)
+
+    def _genres_from_batch(self, imdb_ids):
+        data = self._service_post("genre", {"imdb_ids": imdb_ids})
+        if not isinstance(data, dict):
+            return None
+        results = data.get("results")
+        if not isinstance(results, dict):
+            return None
+        stored = {}
+        for imdb_id in imdb_ids:
+            stored[imdb_id] = self._genres_from_row(results.get(imdb_id))
+        return stored
+
+    def _genres_from_row(self, row):
+        """Genres from one ``POST /genre`` result.
+
+        Each result matches ``GET /genre/{id}`` (a ``genres`` list). A comma-separated
+        string is accepted too, which is the shape previously returned by ``GET /title/{id}``.
+        """
+        if not isinstance(row, dict):
+            return []
+        genres = row.get("genres")
+        if isinstance(genres, list):
+            return [str(genre) for genre in genres if genre]
+        if isinstance(genres, str):
+            return [genre for genre in genres.split(",") if genre]
+        return []
+
+    def _fill_genres_from_tsv(self, imdb_ids):
+        genres = self.genres if self.genres else {}
+        for imdb_id in imdb_ids:
+            if imdb_id not in self._direct_genres:
+                self._direct_genres[imdb_id] = genres.get(imdb_id, [])
+
     def get_genres(self, imdb_id):
         if not imdb_id:
             return []
-        if self._service_available:
-            try:
-                data = self._service_title(imdb_id)
-                genres = data.get("genres") if isinstance(data, dict) else None
-                return genres.split(",") if genres else []
-            except Failed as e:
-                self._service_unavailable(e)
-        return self.genres.get(imdb_id, []) if self.genres else []
+        if imdb_id not in self._direct_genres:
+            self.cache_library_genres([imdb_id])
+        genres = self._direct_genres.get(imdb_id)
+        return genres if isinstance(genres, list) else []
 
     def get_episode_rating(self, imdb_id, season_num, episode_num):
         if not imdb_id:

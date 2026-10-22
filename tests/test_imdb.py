@@ -372,6 +372,10 @@ def _ratings_batch(results, not_found=None):
     return {"field": "ratings", "results": results, "not_found": not_found or []}
 
 
+def _genre_batch(results, not_found=None):
+    return {"field": "genres", "results": results, "not_found": not_found or []}
+
+
 def test_get_rating_returns_average_rating():
     imdb = make_imdb_service({}, post_responses={"ratings": _ratings_batch({"tt0111161": {"tconst": "tt0111161", "averageRating": 9.3, "numVotes": 100}})})
     assert imdb.get_rating("tt0111161") == 9.3
@@ -402,27 +406,46 @@ def test_get_rating_service_failure_uses_tsv_for_later_calls():
     assert imdb._service_post.call_count == 1
 
 
-def test_get_genres_splits_comma_string():
-    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3, "genres": "Drama,Crime"}})
+def test_get_genres_returns_genre_list():
+    imdb = make_imdb_service({}, post_responses={"genre": _genre_batch({"tt0111161": {"tconst": "tt0111161", "genres": ["Drama", "Crime"]}})})
     assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+    imdb._service_post.assert_called_once_with("genre", {"imdb_ids": ["tt0111161"]})
+    imdb._service_request.assert_not_called()
+
+
+def test_get_genres_splits_comma_string():
+    imdb = make_imdb_service({}, post_responses={"genre": _genre_batch({"tt0111161": {"genres": "Drama,Crime"}})})
+    assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+    imdb._service_post.assert_called_once_with("genre", {"imdb_ids": ["tt0111161"]})
 
 
 def test_get_genres_blank_id_returns_empty_list():
     imdb = make_imdb_service({})
     assert imdb.get_genres("") == []
     assert imdb.get_genres(None) == []
+    imdb._service_post.assert_not_called()
 
 
 def test_get_genres_missing_genres_returns_empty_list():
-    imdb = make_imdb_service({"title/tt0111161": {"averageRating": 9.3}})
+    imdb = make_imdb_service({}, post_responses={"genre": _genre_batch({"tt0111161": {"tconst": "tt0111161"}}, not_found=["tt0000000"])})
     assert imdb.get_genres("tt0111161") == []
+    assert imdb.get_genres("tt0000000") == []
 
 
 def test_get_genres_falls_back_to_tsv_on_service_failure():
-    imdb = make_imdb_service({}, raise_failed="title/tt0111161")
+    imdb = make_imdb_service({}, post_raise="genre")
     imdb._genres = {"tt0111161": ["Drama", "Crime"]}
     assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
     assert imdb._service_available is False
+
+
+def test_get_genres_service_failure_uses_tsv_for_later_calls():
+    imdb = make_imdb_service({}, post_raise="genre")
+    imdb._genres = {"tt0111161": ["Drama", "Crime"], "tt0068646": ["Crime", "Drama"]}
+    imdb.get_genres("tt0111161")
+    # After first failure, service flag is False; second call should skip service entirely.
+    assert imdb.get_genres("tt0068646") == ["Crime", "Drama"]
+    assert imdb._service_post.call_count == 1
 
 
 def test_get_episode_rating_returns_rating():
@@ -498,8 +521,11 @@ def test_get_rating_non_dict_response_returns_none_without_crash():
 
 
 def test_get_genres_non_dict_response_returns_empty_list():
-    imdb = make_imdb_service({"title/tt0111161": ["unexpected", "list", "response"]})
+    # The IMDb service unexpectedly answering with a non-object body (e.g. a bare list)
+    # must not raise AttributeError from calling .get() on it.
+    imdb = make_imdb_service({}, post_responses={"genre": ["unexpected", "list", "response"]})
     assert imdb.get_genres("tt0111161") == []
+    assert imdb._service_available is True
 
 
 def test_get_episode_rating_non_dict_response_returns_none():
@@ -599,10 +625,90 @@ def test_get_genres_falls_back_on_invalid_json():
     response.status_code = 200
     response.content = b"not json"
     response.json.side_effect = ValueError("No JSON")
-    imdb.requests.get.return_value = response
+    imdb.requests.post.return_value = response
     imdb._genres = {"tt0111161": ["Drama"]}
     assert imdb.get_genres("tt0111161") == ["Drama"]
     assert imdb._service_available is False
+
+
+def test_get_genres_falls_back_on_non_http_failure():
+    """Non-HTTP failures (connection errors, timeouts) should also trigger TSV fallback."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    imdb.requests.post.side_effect = ConnectionError("Connection refused")
+    imdb._genres = {"tt0111161": ["Drama"]}
+    assert imdb.get_genres("tt0111161") == ["Drama"]
+    assert imdb._service_available is False
+
+
+def test_get_genres_reads_fresh_cache_without_calling_the_service(tmp_path):
+    import modules.cache as cache_module
+    from modules.cache import Cache
+    from tests.conftest import FakeLogger
+
+    cache_module.logger = FakeLogger()
+    cache = Cache(str(tmp_path / "config.yml"), expiration=60)
+    cache.update_imdb_genres({"tt0111161": ["Drama", "Crime"], "tt0000000": []}, expiration=60)
+    imdb = IMDb(requests=MagicMock(), cache=cache, default_dir=str(tmp_path))
+    imdb._service_post = MagicMock(side_effect=AssertionError("fresh genres must not be fetched"))
+
+    assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+    assert imdb.get_genres("tt0000000") == []
+    assert imdb.get_genres("tt0111161") == ["Drama", "Crime"]
+    imdb._service_post.assert_not_called()
+
+
+def test_library_genres_batch_misses_and_reuse_until_expired(tmp_path):
+    import sqlite3
+    from datetime import datetime, timedelta
+
+    import modules.cache as cache_module
+    from modules.cache import Cache
+    from modules.imdb import genres_batch_max
+    from tests.conftest import FakeLogger
+
+    cache_module.logger = FakeLogger()
+    cache = Cache(str(tmp_path / "config.yml"), expiration=60)
+    imdb = IMDb(requests=MagicMock(), cache=cache, default_dir=str(tmp_path))
+    calls = []
+
+    def post(endpoint, body, not_found_ok=False):
+        assert endpoint == "genre"
+        calls.append(list(body["imdb_ids"]))
+        return _genre_batch(
+            {imdb_id: {"genres": ["Drama", "Crime"]} for imdb_id in body["imdb_ids"] if not imdb_id.endswith("0000000")},
+            not_found=[imdb_id for imdb_id in body["imdb_ids"] if imdb_id.endswith("0000000")],
+        )
+
+    imdb._service_post = post
+    ids = [f"tt{i:07d}" for i in range(genres_batch_max + 1)]
+    ids.append(ids[0])
+    imdb.cache_library_genres(ids)
+
+    assert [len(chunk) for chunk in calls] == [genres_batch_max, 1]
+    assert imdb.get_genres("tt0000001") == ["Drama", "Crime"]
+    assert imdb.get_genres("tt0000000") == []
+    assert len(calls) == 2
+
+    imdb._direct_genres.clear()
+    imdb.cache_library_genres(["tt0000001", "tt0000000"])
+    assert len(calls) == 2
+
+    old = (datetime.now() - timedelta(days=61)).strftime("%Y-%m-%d")
+    with sqlite3.connect(cache.cache_path) as conn:
+        conn.execute("UPDATE imdb_genres SET expiration_date = ?", (old,))
+    imdb._direct_genres.clear()
+    imdb.cache_library_genres(["tt0000001", "tt0000000"])
+    assert len(calls) == 3
+    assert calls[2] == ["tt0000001", "tt0000000"]
+
+
+def test_genre_miss_during_the_run_uses_the_batch_endpoint():
+    imdb = make_imdb_service({}, post_responses={"genre": _genre_batch({"tt0068646": {"genres": ["Crime", "Drama"]}})})
+    imdb.cache_library_genres(["tt0111161"])
+    assert imdb.get_genres("tt0068646") == ["Crime", "Drama"]
+    assert imdb._service_post.call_count == 2
+    imdb._service_post.assert_called_with("genre", {"imdb_ids": ["tt0068646"]})
+    imdb._service_request.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
