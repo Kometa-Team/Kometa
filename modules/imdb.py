@@ -640,10 +640,10 @@ class IMDb:
         except ValueError as e:
             raise Failed("IMDb Error: GraphQL request returned a non-JSON response") from e
 
-    def _service_request(self, endpoint, not_found_ok=False):
+    def _service_request(self, endpoint, not_found_ok=False, params=None):
         url = f"{service_url}/{endpoint}"
         try:
-            response = self.requests.get(url)
+            response = self.requests.get(url, params=params)
         except Exception as e:
             raise Failed(f"IMDb Service Error: {e}")
         if response.status_code == 404 and not_found_ok:
@@ -1096,10 +1096,11 @@ class IMDb:
 
     def _service_chart(self, chart, limit=None):
         """Fetch chart IMDb IDs from the Kometa IMDb Service."""
-        params = {}
+        # A limit of 0 is Kometa's "no limit" and is omitted so the service uses its default size.
+        kwargs = {"not_found_ok": True}
         if limit:
-            params["limit"] = limit
-        data = self._service_request(f"chart/{chart}", not_found_ok=True)
+            kwargs["params"] = {"limit": limit}
+        data = self._service_request(f"chart/{chart}", **kwargs)
         if not data:
             return []
         return [item["tconst"] for item in data.get("results", []) if item.get("tconst")]

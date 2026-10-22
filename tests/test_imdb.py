@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 from requests.exceptions import JSONDecodeError
 
-from modules.imdb import IMDb, graphql_url
+from modules.imdb import IMDb, graphql_url, service_url
 from modules.util import Failed
 
 
@@ -750,6 +750,38 @@ def test_ids_from_chart_falls_back_to_graphql_on_service_failure():
     ids = imdb._ids_from_chart("top_movies", "en")
     assert ids == ["tt0111161", "tt0068646"]
     assert imdb._service_available is False
+
+
+def test_service_chart_sends_configured_limit():
+    """A configured chart limit is a query parameter on the chart request."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    response = MagicMock(status_code=200)
+    response.json.return_value = {
+        "chart": "top_movies",
+        "results": [
+            {"tconst": "tt0111161", "rank": 1},
+            {"tconst": "tt0068646", "rank": 2},
+        ],
+    }
+    imdb.requests.get.return_value = response
+
+    assert imdb._service_chart("top_movies", limit=10) == ["tt0111161", "tt0068646"]
+    imdb.requests.get.assert_called_once_with(f"{service_url}/chart/top_movies", params={"limit": 10})
+
+
+def test_service_chart_omits_limit_when_unset():
+    """No limit, or 0 (Kometa's 'no limit'), is omitted so the service uses its default size."""
+    imdb = IMDb(requests=MagicMock(), cache=None, default_dir="/tmp")
+    response = MagicMock(status_code=200)
+    response.json.return_value = {"chart": "top_movies", "results": [{"tconst": "tt0111161"}]}
+    imdb.requests.get.return_value = response
+
+    assert imdb._service_chart("top_movies") == ["tt0111161"]
+    imdb.requests.get.assert_called_once_with(f"{service_url}/chart/top_movies", params=None)
+
+    imdb.requests.get.reset_mock()
+    assert imdb._service_chart("top_movies", limit=0) == ["tt0111161"]
+    imdb.requests.get.assert_called_once_with(f"{service_url}/chart/top_movies", params=None)
 
 
 def test_ids_from_chart_falls_back_to_scraping_when_service_and_graphql_fail():
