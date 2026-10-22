@@ -206,6 +206,25 @@ class Operations:
             return
         self.library.prefetch_mdblist(items)
 
+    @staticmethod
+    def _includes_imdb_option(value):
+        if isinstance(value, (list, tuple, set)):
+            return any(item == "imdb" for item in value)
+        return value == "imdb"
+
+    def _prefetch_imdb(self, items):
+        """Collect IMDb ids for this operations pass and load them in one batch.
+
+        Mass rating and genre updates run after the library preload, and can include
+        ids that preload did not see. ``get_rating`` / ``get_genres`` will not POST
+        for those misses.
+        """
+        rating_sources = (self.library.mass_audience_rating_update, self.library.mass_critic_rating_update, self.library.mass_user_rating_update)
+        ratings = any(self._includes_imdb_option(source) for source in rating_sources)
+        genres = self._includes_imdb_option(self.library.mass_genre_update)
+        if ratings or genres:
+            self.library.prefetch_imdb(items, ratings=ratings, genres=genres)
+
     def _sync_serializd_watched(self, item, tmdb_id):
         watched_by_season = {}
         for episode in self.library.cached_item_subitems(item, "episodes"):
@@ -329,6 +348,7 @@ class Operations:
             items = refreshed_items if refreshed_items is not None else self.library.get_all()
             total_items = len(items)
             self._prefetch_mdblist(items)
+            self._prefetch_imdb(items)
 
             radarr_adds = []
             sonarr_adds = []

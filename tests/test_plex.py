@@ -103,6 +103,44 @@ class TestMDBListPrefetch:
         config.MDBList.cache_item_alias.assert_called_once_with("tmdb", "movie", 202, fallback)
 
 
+class TestIMDbPrefetch:
+    def test_batches_ratings_and_genres_for_items_outside_the_library_pass(self):
+        imdb = MagicMock()
+        plex = make_plex(config=SimpleNamespace(IMDb=imdb))
+        items = [make_plex_item(rating_key=1), make_plex_item(rating_key=2), make_plex_item(rating_key=1)]
+        plex.get_ids = MagicMock(side_effect=[(None, None, "tt0111161"), (None, None, "tt0068646")])
+
+        plex.prefetch_imdb(items, ratings=True, genres=True)
+
+        imdb.cache_library_ratings.assert_called_once_with(["tt0111161", "tt0068646"])
+        imdb.cache_library_genres.assert_called_once_with(["tt0111161", "tt0068646"])
+        assert plex.get_ids.call_count == 2
+
+    def test_episode_items_share_the_parent_show_id(self):
+        imdb = MagicMock()
+        plex = make_plex(config=SimpleNamespace(IMDb=imdb), is_movie=False, is_show=True)
+        show = make_plex_item(rating_key=10)
+        first = MagicMock(spec=Episode)
+        second = MagicMock(spec=Episode)
+        first.show.return_value = show
+        second.show.return_value = show
+        plex.get_ids = MagicMock(return_value=(None, None, "tt0096697"))
+
+        plex.prefetch_imdb([first, second], ratings=True)
+
+        imdb.cache_library_ratings.assert_called_once_with(["tt0096697"])
+        imdb.cache_library_genres.assert_not_called()
+        plex.get_ids.assert_called_once_with(show)
+
+    def test_skips_when_imdb_is_not_configured(self):
+        plex = make_plex(config=SimpleNamespace(IMDb=None))
+        plex.get_ids = MagicMock()
+
+        plex.prefetch_imdb([make_plex_item()], ratings=True, genres=True)
+
+        plex.get_ids.assert_not_called()
+
+
 class TestUploadTheme:
     def test_uploads_theme_from_url(self):
         plex = make_plex()

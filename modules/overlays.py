@@ -75,6 +75,20 @@ class Overlays:
         if items:
             self.library.prefetch_mdblist(items)
 
+    def _prefetch_imdb_ratings(self, key_to_overlays, properties):
+        """Batch IMDb ratings for overlay items that were not in the library preload."""
+        items = []
+        for item, over_names in key_to_overlays.values():
+            if not any("imdb_rating" in getattr(properties.get(over_name), "variables", ()) for over_name in over_names):
+                continue
+            if self.cache:
+                cached_value, expired = self.cache.query_overlay_value_cache(item.ratingKey, "imdb_rating")
+                if cached_value is not None and not expired:
+                    continue
+            items.append(item)
+        if items:
+            self.library.prefetch_imdb(items, ratings=True)
+
     def run_overlays(self):
         overlay_start = datetime.now()
         logger.info("")
@@ -88,6 +102,7 @@ class Overlays:
         if not self.library.remove_overlays:
             key_to_overlays, properties = self.compile_overlays()
             self._prefetch_mdblist(key_to_overlays, properties)
+            self._prefetch_imdb_ratings(key_to_overlays, properties)
         ignore_list = [rk for rk in key_to_overlays]
 
         old_overlays = [la for la in self.library.Plex.listFilterChoices("label") if str(la.title).lower().endswith(" overlay")]

@@ -662,6 +662,37 @@ class TestMDBListValueFilterPrefetch:
         library.prefetch_mdblist.assert_not_called()
 
 
+class TestIMDbValueFilterPrefetch:
+    def test_batches_items_whose_imdb_rating_is_not_cached(self):
+        cache = MagicMock()
+        cache.query_overlay_value_cache.side_effect = [("8.0", False), (None, None)]
+        library = MagicMock()
+        first = SimpleNamespace(ratingKey=1)
+        second = SimpleNamespace(ratingKey=2)
+        builder = make_builder(
+            config=SimpleNamespace(Cache=cache),
+            library=library,
+            value_filters=[("imdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_imdb_value_filters([first, second])
+
+        library.prefetch_imdb.assert_called_once_with([second], ratings=True)
+
+    def test_prefetches_every_item_when_there_is_no_overlay_cache(self):
+        library = MagicMock()
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        builder = make_builder(
+            config=SimpleNamespace(Cache=None),
+            library=library,
+            value_filters=[("imdb_rating", "gte", 6.0)],
+        )
+
+        builder._prefetch_imdb_value_filters(items)
+
+        library.prefetch_imdb.assert_called_once_with(items, ratings=True)
+
+
 # ═══════════════════════════════════════════════════════════════════════
 # _log_episode_count
 # ═══════════════════════════════════════════════════════════════════════

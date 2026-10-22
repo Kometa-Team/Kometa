@@ -177,6 +177,32 @@ class TestMDBListPrefetch:
         assert mdblist._request.call_count == 1
 
 
+class TestIMDbPrefetch:
+    def test_batches_imdb_mass_ratings_and_genres(self):
+        items = [SimpleNamespace(ratingKey=1), SimpleNamespace(ratingKey=2)]
+        library = make_mass_edit_library(items, mass_critic_rating_update=["imdb"], mass_genre_update=["imdb", "tmdb"])
+
+        Operations(config=MagicMock(), library=library)._prefetch_imdb(items)
+
+        library.prefetch_imdb.assert_called_once_with(items, ratings=True, genres=True)
+
+    def test_skips_when_imdb_is_not_a_mass_source(self):
+        items = [SimpleNamespace(ratingKey=1)]
+        library = make_mass_edit_library(items, mass_critic_rating_update=["tmdb"], mass_genre_update=["omdb"])
+
+        Operations(config=MagicMock(), library=library)._prefetch_imdb(items)
+
+        library.prefetch_imdb.assert_not_called()
+
+    def test_ratings_only_does_not_request_genres(self):
+        items = [SimpleNamespace(ratingKey=1)]
+        library = make_mass_edit_library(items, mass_user_rating_update=["imdb"])
+
+        Operations(config=MagicMock(), library=library)._prefetch_imdb(items)
+
+        library.prefetch_imdb.assert_called_once_with(items, ratings=True, genres=False)
+
+
 # ---------------------------------------------------------------------------
 # Regression: demonstrate the bug that existed before the fix
 # ---------------------------------------------------------------------------

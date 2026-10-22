@@ -37,8 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Normalize typographic dash variants when matching music artist, album, and track names, so names such as `Sophie Ellis-Bextor` match Plex's `Sophie Ellis‐Bextor` when the result is unique.
 - Validate People-Images poster URLs before selection so missing images allow an available TMDb poster to be selected; cache validation misses for the current run and distinguish temporary validation failures from confirmed missing images. #3715
 - Add the existing `plex_bulk_edit_batch_size` operation to the configuration schema.
-- Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache, and misses are batched instead of requested one title at a time.
-- Cache IMDb genres locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /genre` and reuses them until `cache_expiration`; later genre lookups read the cache, and misses are batched instead of requested one title at a time.
+- Cache IMDb direct ratings locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /ratings` and reuses them until `cache_expiration`; later direct rating lookups read the cache.
+- Cache IMDb genres locally. Library load batch-fetches that library's IMDb ids from Kometa Utilities `POST /genre` and reuses them until `cache_expiration`; later genre lookups read the cache.
+- Stop IMDb rating and genre lookups for items outside the library preload from sending one id per `POST /ratings` or `POST /genre`. Mass rating updates, mass genre updates, rating overlays, and `imdb_rating` value filters reuse the local cache and send any remaining ids together.
 - Fix startup crashes when timing instrumentation is enabled by using the initialized logger for timing announcements. #3718
 - Make up to three attempts for Plex image uploads returning HTTP 502, 503, or 504, and report retries with the item and image details instead of a traceback, including artwork resets and overlay uploads/removal.
 - Map the German genre names Dokumentarfilm, Kriegsfilm, Liebesfilm, and TV-Film to the existing default genre posters. #3713

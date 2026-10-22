@@ -821,7 +821,8 @@ class Library(ABC):
         """Batch-fill the local IMDb rating cache with this library's ids.
 
         Called when the library finishes loading so later IMDb direct rating lookups
-        read the cache instead of requesting one title at a time.
+        read the cache. Ids outside this pass are collected by the later pass and
+        sent together.
         """
         imdb = getattr(getattr(self, "config", None), "IMDb", None)
         if imdb is None or not self.imdb_map:
@@ -838,7 +839,8 @@ class Library(ABC):
         """Batch-fill the local IMDb genre cache with this library's ids.
 
         Called when the library finishes loading so later IMDb genre lookups
-        read the cache instead of requesting one title at a time.
+        read the cache. Ids outside this pass are collected by the later pass and
+        sent together.
         """
         imdb = getattr(getattr(self, "config", None), "IMDb", None)
         if imdb is None or not self.imdb_map:

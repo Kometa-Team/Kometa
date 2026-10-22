@@ -4697,8 +4697,9 @@ class CollectionBuilder:
             logger.info("Filtering Builders:")
         filtered_items = []
         mdb_value_filters = any(variable_name.startswith("mdb") for variable_name, _, _ in self.value_filters)
+        imdb_value_filters = any(variable_name == "imdb_rating" for variable_name, _, _ in self.value_filters)
         standard_filter_results = {}
-        if mdb_value_filters:
+        if mdb_value_filters or imdb_value_filters:
             value_filter_items = []
             for i, item in enumerate(items, 1):
                 if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)) or item.key in found_item_keys or item.ratingKey in self.filtered_keys:
@@ -4707,7 +4708,10 @@ class CollectionBuilder:
                 standard_filter_results[item.ratingKey] = passed
                 if passed:
                     value_filter_items.append(item)
-            self._prefetch_mdblist_value_filters(value_filter_items)
+            if mdb_value_filters:
+                self._prefetch_mdblist_value_filters(value_filter_items)
+            if imdb_value_filters:
+                self._prefetch_imdb_value_filters(value_filter_items)
         for i, item in enumerate(items, 1):
             if not isinstance(item, (Movie, Show, Season, Episode, Artist, Album, Track)):
                 logger.error(f"{self.Type} Error: Item: {item} is an invalid type")
@@ -4720,7 +4724,7 @@ class CollectionBuilder:
                         logger.info(f"{name} {self.Type} | X | {self.filtered_keys[item.ratingKey]}")
                 else:
                     current_title = util.item_title(item)
-                    standard_filters_passed = standard_filter_results[item.ratingKey] if mdb_value_filters else self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
+                    standard_filters_passed = standard_filter_results[item.ratingKey] if mdb_value_filters or imdb_value_filters else self.check_filters(item, f"{(' ' * (max_length - len(str(i))))}{i}/{total}")
                     if standard_filters_passed and self.check_value_filter(item):
                         self.found_items.append(item)
                         found_item_keys.add(item.key)
@@ -5555,6 +5559,18 @@ class CollectionBuilder:
             pending.append(item)
         if pending:
             self.library.prefetch_mdblist(pending)
+
+    def _prefetch_imdb_value_filters(self, items):
+        """Batch IMDb ratings for value-filter items that were not in the library preload."""
+        pending = []
+        for item in items:
+            if self.config.Cache:
+                cached_value, expired = self.config.Cache.query_overlay_value_cache(item.ratingKey, "imdb_rating")
+                if cached_value is not None and not expired:
+                    continue
+            pending.append(item)
+        if pending:
+            self.library.prefetch_imdb(pending, ratings=True)
 
     def display_filters(self):
         if self.filters:
