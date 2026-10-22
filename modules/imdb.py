@@ -1097,10 +1097,10 @@ class IMDb:
     def _service_chart(self, chart, limit=None):
         """Fetch chart IMDb IDs from the Kometa IMDb Service."""
         # A limit of 0 is Kometa's "no limit" and is omitted so the service uses its default size.
-        kwargs = {"not_found_ok": True}
         if limit:
-            kwargs["params"] = {"limit": limit}
-        data = self._service_request(f"chart/{chart}", **kwargs)
+            data = self._service_request(f"chart/{chart}", not_found_ok=True, params={"limit": limit})
+        else:
+            data = self._service_request(f"chart/{chart}", not_found_ok=True)
         if not data:
             return []
         return [item["tconst"] for item in data.get("results", []) if item.get("tconst")]
