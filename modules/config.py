@@ -88,6 +88,9 @@ imdb_label_options = {
     "severe": "Add IMDb Parental Labels for Severe",
 }
 mass_genre_options = {
+    "anilist": "Use AniList Genres",
+    "anilist_tags": "Use AniList Tags",
+    "anilist_tags_ns": "Use AniList Tags without Spoilers",
     "lock": "Lock Genre",
     "unlock": "Unlock Genre",
     "remove": "Remove and Lock Genre",
@@ -786,9 +789,14 @@ class ConfigFile:
                     if "mappings" in genre_config:
                         expanded_values["genre_mapper"] = genre_config["mappings"]
                     if "source" in genre_config:
-                        expanded_values["mass_genre_update"] = genre_config["source"]
+                        source = genre_config["source"]
+                        if "limit" in genre_config:
+                            if source not in ["anilist_tags", "anilist_tags_ns"]:
+                                raise Failed("Config Error: genre limit requires anilist_tags or anilist_tags_ns as source")
+                            source = {source: {"limit": genre_config["limit"]}}
+                        expanded_values["mass_genre_update"] = source
                     else:
-                        genre_updates = [k for k in genre_config if k not in ["mappings", "schedule"]]
+                        genre_updates = [{k: genre_config[k]} if isinstance(genre_config[k], dict) else k for k in genre_config if k not in ["mappings", "schedule", "limit"]]
                         if genre_updates:
                             expanded_values["mass_genre_update"] = genre_updates
                 else:
@@ -1902,6 +1910,16 @@ class ConfigFile:
                                             "mass_original_title_update",
                                         ]:
                                             final_list.append(str(list_attr))
+                                        elif op == "mass_genre_update" and isinstance(list_attr, dict):
+                                            if len(list_attr) != 1:
+                                                raise Failed("must specify one AniList tag source with a limit")
+                                            source, options = next(iter(list_attr.items()))
+                                            if source not in ["anilist_tags", "anilist_tags_ns"] or not isinstance(options, dict) or set(options) != {"limit"}:
+                                                raise Failed(f"has an invalid AniList tag source or options: {list_attr}")
+                                            limit = options["limit"]
+                                            if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+                                                raise Failed("AniList tag limit must be a positive integer")
+                                            final_list.append({source: limit})
                                         elif op == "mass_genre_update":
                                             final_list.append(list_attr if isinstance(list_attr, list) else [list_attr])
                                         elif op in ["mass_originally_available_update", "mass_added_at_update"]:

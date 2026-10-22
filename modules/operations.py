@@ -822,6 +822,9 @@ class Operations:
                     extra_option = None
                     if self.library.mass_genre_update:
                         for option in self.library.mass_genre_update:
+                            tag_limit = None
+                            if isinstance(option, dict):
+                                option, tag_limit = next(iter(option.items()))
                             if option in ["lock", "unlock", "remove", "reset"]:
                                 extra_option = option
                                 break
@@ -854,6 +857,13 @@ class Operations:
                                     new_genres = mal_obj().genres  # noqa
                                 elif option == "mal_all":
                                     new_genres = mal_obj().genres + mal_obj().explicit_genres + mal_obj().themes + mal_obj().demographics  # noqa
+                                elif option in ["anilist", "anilist_tags", "anilist_tags_ns"]:
+                                    if anidb_id is None:
+                                        anidb_id = get_anidb_id()
+                                    if not anidb_id:
+                                        raise Failed(f"AniList Error: No AniDB ID for {item.title}")
+                                    anilist_id = self.config.Convert.anidb_to_anilist(anidb_id)
+                                    new_genres = self.config.AniList.get_genres(anilist_id, option, limit=tag_limit)
                                 else:
                                     new_genres = option
                                 if not new_genres:

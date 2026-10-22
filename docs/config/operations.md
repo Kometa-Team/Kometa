@@ -417,6 +417,9 @@ Several of these operations perform **mass** updates; these are just that, **mas
         | `anidb_0_5` | Use AniDB main tags and all 0.5 star tags and above for genres. |
         | `mal` | Use MyAnimeList for genres. Requires [MyAnimeList authentication](../config/myanimelist.md). |
         | `mal_all` | Use MyAnimeList for genres, including explicit genres, themes, and demographics. Requires [MyAnimeList authentication](../config/myanimelist.md). |
+        | `anilist` | Use AniList genres for anime matched through the Anime-IDs mapping. |
+        | `anilist_tags` | Use AniList tags for matched anime, sorted by relevance rank (highest first). Use `{anilist_tags: {limit: 5}}` to take only the top five. |
+        | `anilist_tags_ns` | Use AniList tags excluding general and media-specific spoilers, then sort by relevance rank. Use `{anilist_tags_ns: {limit: 3}}` to take only the top three tags. |
         | `lock` | Lock the genre field. |
         | `unlock` | Unlock the genre field. |
         | `remove` | Remove all genres and lock the genre field. |

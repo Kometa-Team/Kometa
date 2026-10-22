@@ -2705,7 +2705,7 @@ class CollectionBuilder:
                         )
                     elif search_data is None:
                         raise BuilderValidationError(f"{self.Type} Error: {method_name} {search_method} attribute is blank")
-                    elif search_attr == "adult":
+                    elif search_attr in ["adult", "exclude_spoiler_tags"]:
                         new_dictionary[search_attr] = util.parse(self.Type, search_attr, search_data, datatype="bool", parent=method_name)
                     elif search_attr == "country":
                         new_dictionary[search_attr] = util.parse(self.Type, search_attr, search_data, options=anilist.country_codes, parent=method_name)

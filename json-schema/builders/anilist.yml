@@ -79,6 +79,7 @@ collections:
   #   year:           1917–next year
   #   min_tag_percent: 0–100
   #   adult:          true | false
+  #   exclude_spoiler_tags: true | false (exclude anime with general spoiler tags)
   #   country:        ISO 3166-1 alpha-2 code (e.g. JP, KR, CN)
   #   source:         original | manga | light_novel | visual_novel |
   #                   video_game | other | novel | doujinshi | anime
