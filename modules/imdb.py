@@ -1208,6 +1208,28 @@ class IMDb:
         if logger:
             logger.warning(f"IMDb Service unavailable, falling back to TSV dataset: {error}")
 
+    def _pending_ids(self, imdb_ids, loaded):
+        pending = []
+        seen = set()
+        for imdb_id in imdb_ids or []:
+            if not imdb_id or imdb_id in seen or imdb_id in loaded:
+                continue
+            seen.add(imdb_id)
+            pending.append(imdb_id)
+        return pending
+
+    def _ratings_missing(self, imdb_ids):
+        """Copy fresh rating rows into memory and return ids that still need a fetch.
+
+        This reads the local cache only. It does not call Kometa Utilities.
+        """
+        pending = self._pending_ids(imdb_ids, self._direct_ratings)
+        if not pending or self.cache is None:
+            return pending
+        fresh, missing = self.cache.query_imdb_ratings(pending, self.cache.expiration)
+        self._direct_ratings.update(fresh)
+        return missing
+
     def cache_library_ratings(self, imdb_ids):
         """Load IMDb direct ratings for these ids into the local cache.
 
@@ -1216,20 +1238,7 @@ class IMDb:
         ``ratings_batch_max``) and then read back for the rest of the run. A service
         failure falls back to the IMDb TSV dataset for whatever is still unresolved.
         """
-        pending = []
-        seen = set()
-        for imdb_id in imdb_ids or []:
-            if not imdb_id or imdb_id in seen or imdb_id in self._direct_ratings:
-                continue
-            seen.add(imdb_id)
-            pending.append(imdb_id)
-        if not pending:
-            return
-
-        missing = pending
-        if self.cache is not None:
-            fresh, missing = self.cache.query_imdb_ratings(pending, self.cache.expiration)
-            self._direct_ratings.update(fresh)
+        missing = self._ratings_missing(imdb_ids)
         if not missing:
             return
         if not self._service_available:
@@ -1276,11 +1285,31 @@ class IMDb:
                 self._direct_ratings[imdb_id] = ratings.get(imdb_id)
 
     def get_rating(self, imdb_id):
+        """Return a rating already loaded for this run.
+
+        Fresh cache rows are reused. An id that was not part of ``cache_library_ratings``
+        is left unresolved so a later pass can send it with the rest of its ids.
+        This does not call ``POST /ratings``.
+        """
         if not imdb_id:
             return None
         if imdb_id not in self._direct_ratings:
-            self.cache_library_ratings([imdb_id])
+            missing = self._ratings_missing([imdb_id])
+            if missing and not self._service_available:
+                self._fill_ratings_from_tsv(missing)
         return self._direct_ratings.get(imdb_id)
+
+    def _genres_missing(self, imdb_ids):
+        """Copy fresh genre rows into memory and return ids that still need a fetch.
+
+        This reads the local cache only. It does not call Kometa Utilities.
+        """
+        pending = self._pending_ids(imdb_ids, self._direct_genres)
+        if not pending or self.cache is None:
+            return pending
+        fresh, missing = self.cache.query_imdb_genres(pending, self.cache.expiration)
+        self._direct_genres.update(fresh)
+        return missing
 
     def cache_library_genres(self, imdb_ids):
         """Load IMDb genres for these ids into the local cache.
@@ -1290,20 +1319,7 @@ class IMDb:
         ``genres_batch_max``) and then read back for the rest of the run. A service
         failure falls back to the IMDb TSV dataset for whatever is still unresolved.
         """
-        pending = []
-        seen = set()
-        for imdb_id in imdb_ids or []:
-            if not imdb_id or imdb_id in seen or imdb_id in self._direct_genres:
-                continue
-            seen.add(imdb_id)
-            pending.append(imdb_id)
-        if not pending:
-            return
-
-        missing = pending
-        if self.cache is not None:
-            fresh, missing = self.cache.query_imdb_genres(pending, self.cache.expiration)
-            self._direct_genres.update(fresh)
+        missing = self._genres_missing(imdb_ids)
         if not missing:
             return
         if not self._service_available:
@@ -1364,10 +1380,18 @@ class IMDb:
                 self._direct_genres[imdb_id] = genres.get(imdb_id, [])
 
     def get_genres(self, imdb_id):
+        """Return genres already loaded for this run.
+
+        Fresh cache rows are reused. An id that was not part of ``cache_library_genres``
+        is left unresolved so a later pass can send it with the rest of its ids.
+        This does not call ``POST /genre``.
+        """
         if not imdb_id:
             return []
         if imdb_id not in self._direct_genres:
-            self.cache_library_genres([imdb_id])
+            missing = self._genres_missing([imdb_id])
+            if missing and not self._service_available:
+                self._fill_genres_from_tsv(missing)
         genres = self._direct_genres.get(imdb_id)
         return genres if isinstance(genres, list) else []
 

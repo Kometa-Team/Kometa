@@ -2794,6 +2794,46 @@ class Plex(Library):
             except Failed as err:
                 logger.error(str(err))
 
+    def prefetch_imdb(self, items, ratings=False, genres=False):
+        """Batch-load IMDb ratings and genres for items outside the library preload.
+
+        ``get_rating`` and ``get_genres`` only read data already cached. Call this
+        before a pass that looks those up per item so the remaining ids share one
+        ``POST /ratings`` or ``POST /genre``.
+        """
+        imdb = getattr(getattr(self, "config", None), "IMDb", None)
+        if imdb is None or not items or not (ratings or genres):
+            return
+        imdb_ids = []
+        seen_ids = set()
+        seen_items = set()
+        for item in items:
+            item_to_id = item.show() if isinstance(item, (Season, Episode)) else item
+            if item_to_id is None:
+                continue
+            rating_key = getattr(item_to_id, "ratingKey", None)
+            if rating_key is not None:
+                if rating_key in seen_items:
+                    continue
+                seen_items.add(rating_key)
+            _, _, imdb_id = self.get_ids(item_to_id)
+            if not imdb_id or imdb_id in seen_ids:
+                continue
+            seen_ids.add(imdb_id)
+            imdb_ids.append(imdb_id)
+        if not imdb_ids:
+            return
+        if ratings:
+            try:
+                imdb.cache_library_ratings(imdb_ids)
+            except Exception as error:
+                logger.error(f"IMDb Error: Failed to cache ratings for {self.name}: {error}")
+        if genres:
+            try:
+                imdb.cache_library_genres(imdb_ids)
+            except Exception as error:
+                logger.error(f"IMDb Error: Failed to cache genres for {self.name}: {error}")
+
     def get_ratings(self, item):
         ratings = {
             "plex_imdb": None,
