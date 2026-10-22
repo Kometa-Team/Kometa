@@ -51,7 +51,7 @@ mod_searches = [
     "popularity.lt",
     "popularity.lte",
 ]
-no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by", "source", "country"]
+no_mod_searches = ["search", "season", "year", "adult", "min_tag_percent", "limit", "sort_by", "source", "country", "exclude_spoiler_tags"]
 searches = mod_searches + no_mod_searches
 sort_options = {"score": "SCORE_DESC", "popular": "POPULARITY_DESC", "trending": "TRENDING_DESC"}
 userlist_sort_options = {
@@ -69,7 +69,7 @@ media_format = {"tv": "TV", "short": "TV_SHORT", "movie": "MOVIE", "special": "S
 media_status = {"finished": "FINISHED", "airing": "RELEASING", "not_yet_aired": "NOT_YET_RELEASED", "cancelled": "CANCELLED", "hiatus": "HIATUS"}
 media_source = {"original": "ORIGINAL", "manga": "MANGA", "light_novel": "LIGHT_NOVEL", "visual_novel": "VISUAL_NOVEL", "video_game": "VIDEO_GAME", "other": "OTHER", "novel": "NOVEL", "doujinshi": "DOUJINSHI", "anime": "ANIME"}
 base_url = "https://graphql.anilist.co"
-tag_query = "query{MediaTagCollection {name, category}}"
+tag_query = "query{MediaTagCollection {name, category, isGeneralSpoiler}}"
 genre_query = "query{GenreCollection}"
 country_codes = [
     "af",
@@ -374,7 +374,7 @@ class AniList:
             return media["id"], media["title"]["english" if media["title"]["english"] else "romaji"]
         raise Failed(f"AniList Error: No AniList ID found for {anilist_id}")
 
-    def _pagenation(self, query, limit=0, variables=None):
+    def _pagenation(self, query, limit=0, variables=None, exclude_spoiler_tags=False):
         anilist_ids = []
         count = 0
         page_num = 0
@@ -387,7 +387,7 @@ class AniList:
             json_obj = self._request(query, variables)
             next_page = json_obj["data"]["Page"]["pageInfo"]["hasNextPage"]
             for media in json_obj["data"]["Page"]["media"]:
-                if media["id"]:
+                if media["id"] and (not exclude_spoiler_tags or not any(tag["isGeneralSpoiler"] for tag in media["tags"])):
                     anilist_ids.append(media["id"])
                     count += 1
                     if 0 < limit == count:
@@ -400,7 +400,7 @@ class AniList:
         media_vars = f"sort: {sort_options[kwargs['sort_by']]}, type: ANIME"
         variables = {"sort": sort_options[kwargs["sort_by"]]}
         for key, value in kwargs.items():
-            if key not in ["sort_by", "limit"]:
+            if key not in ["sort_by", "limit", "exclude_spoiler_tags"]:
                 if "." in key:
                     attr, mod = key.split(".")
                 else:
@@ -431,9 +431,10 @@ class AniList:
                 elif mod == "lte":
                     value = int(value) + 1
                 media_vars += f", {final}: {value}"
-        query = f"query ($page: Int) {{Page(page: $page){{pageInfo {{hasNextPage}}media({media_vars}){{id}}}}}}"
+        media_fields = "id tags{isGeneralSpoiler}" if kwargs.get("exclude_spoiler_tags") else "id"
+        query = f"query ($page: Int) {{Page(page: $page){{pageInfo {{hasNextPage}}media({media_vars}){{{media_fields}}}}}}}"
         logger.debug(query)
-        return self._pagenation(query, limit=kwargs["limit"], variables=variables)
+        return self._pagenation(query, limit=kwargs["limit"], variables=variables, exclude_spoiler_tags=kwargs.get("exclude_spoiler_tags", False))
 
     def _studio(self, studio_id):
         query = """
@@ -556,6 +557,17 @@ class AniList:
         if len(anilist_values) > 0:
             return anilist_values
         raise Failed(f"AniList Error: No valid AniList IDs in {anilist_ids}")
+
+    def get_genres(self, anilist_id, source, limit=None):
+        query = "query ($id: Int) {Media(id: $id, type: ANIME) {genres tags{name rank isGeneralSpoiler isMediaSpoiler}}}"
+        media = self._request(query, {"id": anilist_id})["data"]["Media"]
+        if not media:
+            raise Failed(f"AniList Error: No anime found for AniList ID {anilist_id}")
+        if source == "anilist":
+            return media["genres"] or []
+        tags = [tag for tag in media["tags"] or [] if source == "anilist_tags" or not (tag["isGeneralSpoiler"] or tag["isMediaSpoiler"])]
+        tags.sort(key=lambda tag: tag["rank"] or 0, reverse=True)
+        return [tag["name"] for tag in tags[:limit]]
 
     def get_anilist_ids(self, method, data):
         if method == "anilist_id":
