@@ -141,7 +141,7 @@ schedule==1.2.2
     # via kometa
 serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483
     # via kometa
-setuptools==84.0.0
+setuptools==84.2.0
     # via
     #   kometa
     #   tmdbapis
