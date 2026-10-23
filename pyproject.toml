@@ -28,7 +28,7 @@ dependencies = [
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
     "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
-    "setuptools==84.0.0",
+    "setuptools==84.2.0",
     "tenacity==9.2.1",
     "tmdbapis==1.3.1",
     "ytmusicapi==1.12.3",
@@ -175,7 +175,7 @@ dev = [
     "ruamel-yaml==0.19.1",
     "schedule==1.2.2",
     "serializd-py @ git+https://github.com/Velocidensity/serializd-py.git@1b34bb2ddee12df12bfd19c88d95d489a0bcd483",
-    "setuptools==84.0.0",
+    "setuptools==84.2.0",
     "tenacity==9.2.1",
     "tmdbapis==1.3.1",
 ]
