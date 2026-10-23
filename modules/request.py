@@ -1,11 +1,13 @@
 import base64
 import os
 import time
+import warnings
 from urllib import parse
 
 import cloudscraper
 import requests
 import ruamel.yaml
+import urllib3
 from lxml import html
 from requests.exceptions import ConnectionError, HTTPError, RequestException
 from tenacity import RetryError, retry, stop_after_attempt, wait_exponential
@@ -115,6 +117,14 @@ class Requests:
         session = requests.Session()
         if not verify_ssl:
             self.no_verify_ssl(session)
+            original_request = session.request
+
+            def request_without_insecure_warning(*args, **kwargs):
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
+                    return original_request(*args, **kwargs)
+
+            session.request = request_without_insecure_warning
         # Every consumer (plexapi/tmdbapis/arrapi/this module's get/post) rides through session.request, so one hook here times all HTTP traffic.
         return timings.instrument_session(session)
 
@@ -125,9 +135,7 @@ class Requests:
         session.verify = False
         if global_opt_out:
             # Only a config-level opt-out silences the warning process-wide;
-            # a scoped session keeps it so other connections still surface it.
-            import urllib3
-
+            # a scoped session suppresses it only while that session is requesting.
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
