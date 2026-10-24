@@ -86,6 +86,7 @@ class Cache:
                     "mdb_data2",
                     "mdb_data3",
                     "mdb_data4",
+                    "mdb_data5",
                     "omdb_data",
                     "omdb_data2",
                     "tvdb_data",
@@ -161,7 +162,7 @@ class Cache:
                     season_num INTEGER,
                     episode_num INTEGER,
                     expiration_date TEXT)""")
-                cursor.execute("""CREATE TABLE IF NOT EXISTS mdb_data5 (
+                cursor.execute("""CREATE TABLE IF NOT EXISTS mdb_data6 (
                     key INTEGER PRIMARY KEY,
                     key_id TEXT UNIQUE,
                     title TEXT,
@@ -686,7 +687,7 @@ class Cache:
         expired = None
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("SELECT * FROM mdb_data5 WHERE key_id = ?", (key_id,))
+                cursor.execute("SELECT * FROM mdb_data6 WHERE key_id = ?", (key_id,))
                 row = cursor.fetchone()
                 if row:
                     if not _ratings_valid(
@@ -706,7 +707,7 @@ class Cache:
                         ],
                         cached=True,
                     ):
-                        cursor.execute("DELETE FROM mdb_data5 WHERE key_id = ?", (key_id,))
+                        cursor.execute("DELETE FROM mdb_data6 WHERE key_id = ?", (key_id,))
                         return {}, None
                     mdb_dict["title"] = row["title"] if row["title"] else None
                     mdb_dict["year"] = row["year"] if row["year"] else None
@@ -759,9 +760,9 @@ class Cache:
         expiration_date = datetime.now() if expired is True else (datetime.now() - timedelta(days=random.randint(1, expiration)))
         with self.connection as connection:
             with closing(connection.cursor()) as cursor:
-                cursor.execute("INSERT OR IGNORE INTO mdb_data5(key_id) VALUES(?)", (key_id,))
+                cursor.execute("INSERT OR IGNORE INTO mdb_data6(key_id) VALUES(?)", (key_id,))
                 update_sql = (
-                    "UPDATE mdb_data5 SET title = ?, year = ?, released = ?, released_digital = ?, type = ?, imdbid = ?, traktid = ?, "
+                    "UPDATE mdb_data6 SET title = ?, year = ?, released = ?, released_digital = ?, type = ?, imdbid = ?, traktid = ?, "
                     "tmdbid = ?, score = ?, average = ?, imdb_rating = ?, metacritic_rating = ?, metacriticuser_rating = ?, "
                     "trakt_rating = ?, tomatoes_rating = ?, tomatoesaudience_rating = ?, tmdb_rating = ?, "
                     "letterboxd_rating = ?, myanimelist_rating = ?, certification = ?, commonsense = ?, age_rating = ?, expiration_date = ? WHERE key_id = ?"
