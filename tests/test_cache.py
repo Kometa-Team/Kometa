@@ -417,6 +417,17 @@ class TestMdbCache:
         assert result == {}
         assert expired is None
 
+    def test_cached_myanimelist_rating_is_parsed(self, tmp_path):
+        from modules.mdblist import MDbObj
+
+        cache = make_cache(tmp_path)
+        cache.update_mdb(False, "mal", _make_mdb_obj(myanimelist_rating=8.45), expiration=30)
+        result, expired = cache.query_mdb("mal", expiration=30)
+
+        assert expired is False
+        assert {"source": "myanimelist", "value": 8.45} in result["ratings"]
+        assert MDbObj(result).myanimelist_rating == 8.45
+
     def test_invalid_rating_is_not_written(self, tmp_path):
         cache = make_cache(tmp_path)
 
