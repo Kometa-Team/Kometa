@@ -1,4 +1,5 @@
 from types import SimpleNamespace
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -31,6 +32,80 @@ def test_public_movie_list_uses_radarr_json_feed():
     url = "https://floppy.kometa.team/list/1/json?arr=radarr"
     floppy = Floppy(Requests({url: [{"id": 550}, {"id": 13}]}), {"url": "https://floppy.kometa.team", "token": None})
     assert floppy.get_ids("https://floppy.kometa.team/list/1", is_movie=True) == [(550, "tmdb"), (13, "tmdb")]
+
+
+def test_list_export_uses_media_list_route_without_tracking():
+    root = "https://floppy.kometa.team"
+    requests = Requests(
+        {
+            f"{root}/api/v1/lists?limit=100": {"results": [{"id": 7, "name": "Test"}], "pagination": {"next": None}},
+            f"{root}/api/v1/lists/7/items?limit=100": {"results": [{"id": 21, "media_type": "movie", "source": "tmdb", "media_id": "550"}], "pagination": {"next": None}},
+        }
+    )
+    requests.session = MagicMock()
+    requests.session.put.return_value = FakeResponse({"results": []})
+    requests.session.delete.return_value = FakeResponse(None, status_code=204)
+    floppy = Floppy(requests, {"url": root, "token": "secret"})
+
+    floppy.sync_list("Test", [(550, "tmdb"), (1399, "tmdb_show")], "sync")
+
+    requests.session.put.assert_called_once()
+    assert requests.session.put.call_args.args[0] == f"{root}/api/v1/media/tv/tmdb/1399/lists/7"
+    requests.session.delete.assert_not_called()
+
+
+def test_list_export_syncs_empty_without_media_tracking():
+    root = "https://floppy.kometa.team"
+    requests = Requests(
+        {
+            f"{root}/api/v1/lists?limit=100": {"results": [{"id": 7, "name": "Test"}], "pagination": {"next": None}},
+            f"{root}/api/v1/lists/7/items?limit=100": {"results": [{"id": 1, "media_type": "tv", "source": "tmdb", "media_id": "97546"}], "pagination": {"next": None}},
+        }
+    )
+    requests.session = MagicMock()
+    requests.session.delete.return_value = FakeResponse(None, status_code=204)
+    floppy = Floppy(requests, {"url": root, "token": "secret"})
+
+    floppy.sync_list(7, [], "sync")
+
+    requests.session.delete.assert_called_once()
+    assert requests.session.delete.call_args.args[0] == f"{root}/api/v1/media/tv/tmdb/97546/lists/7"
+    requests.session.put.assert_not_called()
+
+
+def test_list_export_creates_missing_named_list():
+    root = "https://floppy.kometa.team"
+    requests = Requests(
+        {
+            f"{root}/api/v1/lists?limit=100": {"results": [], "pagination": {"next": None}},
+            f"{root}/api/v1/lists/8/items?limit=100": {"results": [], "pagination": {"next": None}},
+        }
+    )
+    requests.post = MagicMock(return_value=FakeResponse({"id": 8, "name": "New"}, status_code=201))
+    requests.session = MagicMock()
+    floppy = Floppy(requests, {"url": root, "token": "secret"})
+
+    floppy.sync_list("New", [], "sync")
+
+    requests.post.assert_called_once_with(f"{root}/api/v1/lists", json={"name": "New"}, headers={"X-API-Key": "secret"})
+
+
+def test_list_export_does_not_remove_items_after_failed_add():
+    root = "https://floppy.kometa.team"
+    requests = Requests(
+        {
+            f"{root}/api/v1/lists?limit=100": {"results": [{"id": 7, "name": "Test"}], "pagination": {"next": None}},
+            f"{root}/api/v1/lists/7/items?limit=100": {"results": [{"id": 21, "media_type": "movie", "source": "tmdb", "media_id": "550"}], "pagination": {"next": None}},
+        }
+    )
+    requests.session = MagicMock()
+    requests.session.put.return_value = FakeResponse({"detail": "Media not found"}, status_code=404)
+    floppy = Floppy(requests, {"url": root, "token": "secret"})
+
+    with pytest.raises(Failed, match="Media not found"):
+        floppy.sync_list("Test", [(1399, "tmdb_show")], "sync")
+
+    requests.session.delete.assert_not_called()
 
 
 def test_public_show_list_uses_sonarr_json_feed():

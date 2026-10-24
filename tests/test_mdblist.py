@@ -481,6 +481,23 @@ class TestMDBList:
         with pytest.raises(Failed, match="Multiple lists"):
             adapter.sync_list("Favourites", [])
 
+    def test_sync_list_accepts_owned_numeric_id(self, adapter, monkeypatch):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(return_value=([{"id": 123, "name": "Favourites"}], {}))
+        adapter.get_tmdb_ids = MagicMock(return_value=[])
+
+        adapter.sync_list(123, [], mode="sync")
+
+        adapter.get_tmdb_ids.assert_called_once_with("mdblist_list", {"id": 123}, is_movie=None)
+
+    def test_sync_list_rejects_unknown_numeric_id(self, adapter):
+        adapter._request = MagicMock(return_value=([{"id": 123, "name": "Favourites"}], {}))
+
+        with pytest.raises(Failed, match="list id 456 was not found"):
+            adapter.sync_list(456, [])
+
+        assert not any(call.args[0].endswith("/add") for call in adapter._request.call_args_list)
+
     def test_sync_list_uses_list_id_when_syncing(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
@@ -490,28 +507,61 @@ class TestMDBList:
 
         adapter.get_tmdb_ids.assert_called_once_with("mdblist_list", {"id": 1}, is_movie=None)
 
-    def test_sync_list_removes_existing_items_before_adding_in_source_order(self, adapter, monkeypatch):
+    def test_sync_list_logs_link_after_creating_list(self, adapter, monkeypatch):
+        logs = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logs)
+        adapter._request = MagicMock(side_effect=[([], {}), ({"id": 1}, {}), ([{"id": 1, "name": "New List", "user_name": "user", "slug": "new-list"}], {})])
+
+        adapter.sync_list("New List", [], mode="append")
+
+        assert logs.info_messages[-2:] == ["MDBList list New List updated (append)", "List: https://mdblist.com/lists/user/new-list"]
+
+    def test_sync_list_only_removes_stale_and_adds_missing_items(self, adapter, monkeypatch):
         monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
         adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
-        adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb")])
+        adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb"), (3, "tmdb")])
 
         adapter.sync_list("Favourites", [(1, "tmdb"), (2, "tmdb")])
 
         remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
         add_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/add"))
-        assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
-        assert add_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}, {"tmdb": 2}]}
+        assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 3}]}
+        assert add_call.kwargs["json_data"] == {"movies": [{"tmdb": 2}]}
         assert adapter._request.call_args_list.index(remove_call) < adapter._request.call_args_list.index(add_call)
 
+    def test_sync_list_unchanged_items_make_no_write_requests(self, adapter, monkeypatch):
+        logs = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logs)
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "user_name": "user", "slug": "favourites"}], {}))
+        adapter.get_tmdb_ids = MagicMock(return_value=[(10, "tmdb_show"), (20, "tmdb_show")])
+
+        adapter.sync_list("Favourites", [(10, "tmdb_show"), (20, "tmdb_show"), (20, "tmdb_show")])
+
+        assert not any("/items/add" in call.args[0] or "/items/remove" in call.args[0] for call in adapter._request.call_args_list)
+        assert logs.info_messages[-2:] == ["MDBList list Favourites already up to date (sync)", "List: https://mdblist.com/lists/user/favourites"]
+
     def test_sync_list_limits_removals_to_requested_media_types(self, adapter, monkeypatch):
-        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
-        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "username": "user", "slug": "favourites"}], {}))
+        logs = FakeLogger()
+        monkeypatch.setattr("modules.mdblist.logger", logs)
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites", "user_name": "user", "slug": "favourites"}], {}))
         adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb"), (2, "tmdb_show")])
 
         adapter.sync_list("Favourites", [], removal_types={"tmdb"})
 
         remove_call = next(call for call in adapter._request.call_args_list if call.args[0].endswith("/items/remove"))
         assert remove_call.kwargs["json_data"] == {"movies": [{"tmdb": 1}]}
+        assert sum(call.args[0].endswith("/lists/user") for call in adapter._request.call_args_list) == 1
+        assert logs.info_messages[-2:] == ["MDBList list Favourites updated (sync)", "List: https://mdblist.com/lists/user/favourites"]
+
+    @pytest.mark.parametrize("mode, removes", [("sync", True), ("append", False)])
+    def test_sync_list_empty_results_respect_mode(self, adapter, monkeypatch, mode, removes):
+        monkeypatch.setattr("modules.mdblist.logger", FakeLogger())
+        adapter._request = MagicMock(return_value=([{"id": 1, "name": "Favourites"}], {}))
+        adapter.get_tmdb_ids = MagicMock(return_value=[(1, "tmdb")])
+
+        adapter.sync_list("Favourites", [], mode=mode)
+
+        assert any(call.args[0].endswith("/items/remove") for call in adapter._request.call_args_list) is removes
 
 
 @pytest.mark.parametrize("metadata_succeeds", [False, True])

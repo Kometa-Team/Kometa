@@ -2,8 +2,10 @@ from unittest.mock import patch
 
 import pytest
 
+import modules.flicklist as flicklist_module
 from modules.flicklist import FlickList
 from modules.util import Failed
+from tests.conftest import FakeLogger
 from tests.tracker_fakes import FakeConvert, FakeRequests, FakeResponse
 
 
@@ -344,6 +346,43 @@ def test_sync_list_chunks_batches_at_1000_items():
     assert len(flicklist.requests.posts) == 2
     assert len(flicklist.requests.posts[0][1]["items"]) == 1000
     assert len(flicklist.requests.posts[1][1]["items"]) == 500
+
+
+@pytest.mark.parametrize("mode, expected_deletes", [("sync", 1), ("append", 0)])
+def test_sync_list_empty_results_remove_only_in_sync_mode(mode, expected_deletes, monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(flicklist_module, "logger", logs)
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[{"id": 4821, "name": "My List", "slug": "my-list"}], headers={}),
+            FakeResponse(json_data=[{"ids": {"tmdb": 550}, "media_type": "movie"}], headers={}),
+            FakeResponse(json_data={"not_found": []}),
+        ]
+    )
+    flicklist._me = {"username": "chris"}
+
+    flicklist.sync_list(FakeConvert(), 4821, [], mode=mode)
+
+    assert len(flicklist.requests.deletes) == expected_deletes
+    assert logs.info_messages[-2:] == [f"FlickList list 4821 updated ({mode})", "List: https://flicklist.tv/u/chris/lists/my-list"]
+
+
+def test_sync_list_created_list_uses_slug_from_refreshed_lists(monkeypatch):
+    logs = FakeLogger()
+    monkeypatch.setattr(flicklist_module, "logger", logs)
+    flicklist = make_flicklist(
+        [
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data={"id": 4392, "name": "Marvel Stuff"}),
+            FakeResponse(json_data=[], headers={}),
+            FakeResponse(json_data=[{"id": 4392, "name": "Marvel Stuff", "slug": "marvel-stuff"}], headers={}),
+        ]
+    )
+    flicklist._me = {"username": "yozoraxcii"}
+
+    flicklist.sync_list(FakeConvert(), "Marvel Stuff", [], mode="sync")
+
+    assert logs.info_messages[-2:] == ["FlickList list Marvel Stuff updated (sync)", "List: https://flicklist.tv/u/yozoraxcii/lists/marvel-stuff"]
 
 
 def test_sync_list_current_item_with_only_fldb_and_imdb_matches_desired_tmdb_via_convert():

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add `list_export` for exporting builder results to MDBList, FlickList, WeTrakr, TMDb, or Floppy lists with `sync` or `append` mode options. Legacy `sync_to_*_list` attributes removed from documentation
 - Drop support for python 3.10 due to it going end of life. Python 3.11 or above is now required.
 - Add `dovi_level` and `dovi_profile` filters for use with `plex_all` builders.
 - Add `hdr10plus` and `atmos` boolean attributes for `plex_search` and `smart_filter` builders
