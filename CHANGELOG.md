@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Invalidate stale MDBList cache entries that could apply incorrectly scaled Letterboxd ratings to Plex. #3771
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739
