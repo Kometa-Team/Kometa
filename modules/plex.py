@@ -3016,7 +3016,7 @@ class Plex(Library):
                 if anidb_id:
                     anidb_obj = self.config.AniDB.get_anime(anidb_id)
                     cacheable = getattr(anidb_obj, "ratings_valid", True)
-                    if variable_name == "anidb_rating_rating":
+                    if variable_name == "anidb_rating":
                         found_rating = anidb_obj.rating
                     elif variable_name == "anidb_average_rating":
                         found_rating = anidb_obj.average
