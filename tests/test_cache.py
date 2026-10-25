@@ -71,6 +71,17 @@ class TestInit:
         cache = make_cache(tmp_path)
         assert os.path.exists(cache.cache_path)
 
+    def test_drops_legacy_mdb_cache(self, tmp_path):
+        with sqlite3.connect(tmp_path / "config.cache") as connection:
+            connection.execute("CREATE TABLE mdb_data5 (key_id TEXT UNIQUE, letterboxd_rating REAL)")
+            connection.execute("INSERT INTO mdb_data5 (key_id, letterboxd_rating) VALUES (?, ?)", ("legacy", 4.6))
+
+        cache = make_cache(tmp_path)
+
+        assert not table_exists(cache, "mdb_data5")
+        assert table_exists(cache, "mdb_data6")
+        assert cache.query_mdb("legacy", expiration=30) == ({}, None)
+
     def test_creates_expected_tables(self, tmp_path):
         cache = make_cache(tmp_path)
         for table in [
@@ -79,7 +90,7 @@ class TestInit:
             "letterboxd_map",
             "mojo_map",
             "omdb_data3",
-            "mdb_data5",
+            "mdb_data6",
             "anidb_data4",
             "anime_map",
             "mal_data4",
@@ -441,11 +452,11 @@ class TestMdbCache:
         cache = make_cache(tmp_path)
         cache.update_mdb(False, "stale", _make_mdb_obj(), expiration=30)
         with sqlite3.connect(cache.cache_path) as connection:
-            connection.execute("UPDATE mdb_data5 SET letterboxd_rating = ? WHERE key_id = ?", (5.1, "stale"))
+            connection.execute("UPDATE mdb_data6 SET letterboxd_rating = ? WHERE key_id = ?", (5.1, "stale"))
 
         assert cache.query_mdb("stale", expiration=30) == ({}, None)
         with sqlite3.connect(cache.cache_path) as connection:
-            count = connection.execute("SELECT COUNT(*) FROM mdb_data5 WHERE key_id = ?", ("stale",)).fetchone()[0]
+            count = connection.execute("SELECT COUNT(*) FROM mdb_data6 WHERE key_id = ?", ("stale",)).fetchone()[0]
         assert count == 0
         assert any("MDBList Warning: letterboxd rating value 5.1" in message and "cached value will be evicted" in message for message in cache_module.logger.warning_messages)
 
