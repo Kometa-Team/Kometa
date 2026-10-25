@@ -833,7 +833,7 @@ class Plex(Library):
         self.session = self.config.Requests.session
         if self.plex["verify_ssl"] is False and self.config.Requests.global_ssl is True:
             logger.debug("Overriding verify_ssl to False for Plex connection")
-            self.session = self.config.Requests.create_session(verify_ssl=False)
+            self.session = self.config.Requests.create_session(verify_ssl=False, url=self.url)
         if self.plex["verify_ssl"] is True and self.config.Requests.global_ssl is False:
             logger.debug("Overriding verify_ssl to True for Plex connection")
             self.session = self.config.Requests.create_session()

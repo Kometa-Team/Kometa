@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Suppress unverified HTTPS warnings for the configured Plex host when its SSL verification is disabled, while preserving warnings for other hosts. #3743
+
 ## [v2.5.3] - 2026-10-12
 
 

@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 import time
 import warnings
 from urllib import parse
@@ -112,18 +113,15 @@ class Requests:
         if not self.global_ssl:
             self.no_verify_ssl()
 
-    def create_session(self, verify_ssl=True):
+    def create_session(self, verify_ssl=True, url=None):
         session = requests.Session()
         if not verify_ssl:
             self.no_verify_ssl(session)
-            original_request = session.request
-
-            def request_without_insecure_warning(*args, **kwargs):
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore", urllib3.exceptions.InsecureRequestWarning)
-                    return original_request(*args, **kwargs)
-
-            session.request = request_without_insecure_warning
+            hostname = urlparse(url).hostname if url else None
+            if hostname:
+                # Register once for this host; per-request warning contexts reset
+                # warning registries and change process-wide filters across threads.
+                warnings.filterwarnings("ignore", message=rf"^Unverified HTTPS request is being made to host '{re.escape(hostname)}'\.", category=urllib3.exceptions.InsecureRequestWarning)
         # Every consumer (plexapi/tmdbapis/arrapi/this module's get/post) rides through session.request, so one hook here times all HTTP traffic.
         return timings.instrument_session(session)
 
@@ -134,7 +132,7 @@ class Requests:
         session.verify = False
         if global_opt_out:
             # Only a config-level opt-out silences the warning process-wide;
-            # a scoped session suppresses it only while that session is requesting.
+            # scoped sessions can suppress warnings for their configured host.
             urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     def download_image(self, title, image_url, download_directory, session=None, image_type="poster", filename=None):
