@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Report Silo user and profile ids when a request fails because the configured profile was not found. (#3351)
 - Skip Plex clean bundles, empty trash, and optimize on Silo, Jellyfin, and Emby libraries. (#3351)
 - Report Silo library load progress with the loaded and total counts while caching a library. (#3351)
+- List Silo, Jellyfin, and Emby collections during collection operations. Silo has no labels, so unmanaged and unconfigured checks do not read labels. (#3351)
 - Fix `year`, `unmatched`, and `trash` smart filters being removed from Show and Movie libraries
 - Resolve MDBList season and episode entries through their parent show in mixed playlists, preventing unrelated shows from being added.
 - Preserve smart-label collection filters during initialization so existing shows count toward `minimum_items`, preventing streaming collections from alternating between deletion and recreation. #3739

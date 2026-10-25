@@ -10,6 +10,7 @@ from plexapi.exceptions import NotFound
 from plexapi.video import Movie, Show
 
 from modules import anidb, plex, timings, tvdb, util
+from modules.media_server import Capability
 from modules.request import urlparse
 from modules.util import Failed, LimitReached
 
@@ -1749,7 +1750,7 @@ class Operations:
             for i, col in enumerate(all_collections, 1):
                 logger.ghost(f"Reading Collection: {i}/{len(all_collections)} {col.title}")
                 col = self.library.reload(col, force=True)
-                labels = [la.tag for la in self.library.item_labels(col)]
+                labels = [la.tag for la in self.library.item_labels(col)] if self.library.supports(Capability.GET_ITEM_LABELS) else []
 
                 if should_be_deleted(col, labels, configured, managed, None if col.smart and ignore_smart else less):
                     try:

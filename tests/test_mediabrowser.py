@@ -189,3 +189,19 @@ def test_emby_library_edits_tags_and_refuses_a_music_library():
     assert item.tags == ["Old", "Kometa"]
     with pytest.raises(Failed, match="Emby Error: Library type 'music'"):
         browser_module.kometa_library_type("music", "Emby")
+
+
+def test_get_all_collections_returns_boxsets_and_can_filter_a_tag():
+    session = FakeSession(
+        [
+            FakeResponse({"Items": [{"Id": "box-1", "Name": "Heat", "Type": "BoxSet", "Tags": ["Kometa"]}, {"Id": "box-2", "Name": "Other", "Type": "BoxSet", "Tags": []}], "TotalRecordCount": 2}),
+            FakeResponse({"Items": [{"Id": "box-1", "Name": "Heat", "Type": "BoxSet", "Tags": ["Kometa"]}, {"Id": "box-2", "Name": "Other", "Type": "BoxSet", "Tags": []}], "TotalRecordCount": 2}),
+        ]
+    )
+    library = _library(MediaBrowserClient(_server(), session=session))
+
+    collections = library.get_all_collections()
+
+    assert [collection.title for collection in collections] == ["Heat", "Other"]
+    assert [collection.title for collection in library.get_all_collections(label="Kometa")] == ["Heat"]
+    assert session.calls[0]["params"]["includeItemTypes"] == "BoxSet"

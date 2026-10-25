@@ -277,11 +277,18 @@ class SiloClient:
 
 class SiloCollection:
     def __init__(self, data, etag=None):
-        self.data = dict(data or {})
+        self.data = {}
+        self.etag = None
+        self.apply(data, etag=etag)
+
+    def apply(self, data, etag=None):
+        if data:
+            self.data.update(data)
         self.id = self.data.get("id")
         self.ratingKey = self.id
         self.title = self.data.get("title") or self.data.get("name") or ""
-        self.etag = etag
+        if etag:
+            self.etag = etag
         self.smart = self.data.get("collection_type") == "smart"
         self.summary = self.data.get("description") or ""
         self.childCount = self.data.get("item_count") or 0
@@ -444,6 +451,10 @@ class Silo(Library):
         return True
 
     def reload(self, item, force=False):
+        if isinstance(item, SiloCollection):
+            data, etag = self.client.get_collection(item.id)
+            item.apply(data, etag=etag)
+            return item
         self.require(Capability.RELOAD_ITEM_FORCE if force else Capability.RELOAD_ITEM)
         if force:
             self.client.refresh_metadata(item.content_id)
@@ -568,6 +579,11 @@ class Silo(Library):
         if isinstance(item, SiloItem):
             return self.reload(item)
         return self.reload(SiloItem({"content_id": item}, self))
+
+    def get_all_collections(self, label=None):
+        if label:
+            return []
+        return self._collections()
 
     def get_collection(self, data, force_search=False, debug=True):
         self.require(Capability.GET_COLLECTION_BY_NAME)

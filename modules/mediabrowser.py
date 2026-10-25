@@ -747,6 +747,12 @@ class MediaBrowser(Library):
 
         return Plex.split(self, text)  # type: ignore[arg-type]  # split only reads library fields such as is_movie
 
+    def get_all_collections(self, label=None):
+        collections = self._collections()
+        if label is None:
+            return collections
+        return [collection for collection in collections if str(label) in list(getattr(collection, "tags", None) or [])]
+
     def _collections(self):
         self.require(Capability.GET_ALL_COLLECTIONS)
         return [self._wrap_collection(row) for row in self.client.items({"includeItemTypes": "BoxSet", "recursive": "true"})]

@@ -255,6 +255,36 @@ def test_other_not_found_errors_do_not_list_profiles():
     assert len(session.calls) == 1
 
 
+def test_get_all_collections_lists_the_library_and_reloads_a_collection():
+    session = FakeSession(
+        [
+            FakeResponse(
+                {
+                    "items": [
+                        {"id": "col-1", "title": "Heat", "library_id": "lib-1", "collection_type": "manual", "item_count": 2},
+                        {"id": "col-2", "title": "Elsewhere", "library_id": "other"},
+                    ],
+                    "page": {"has_more": False},
+                }
+            ),
+            FakeResponse({"id": "col-1", "title": "Heat", "collection_type": "smart", "item_count": 4}, headers={"ETag": '"v2"'}),
+        ]
+    )
+    library = _library(SiloClient(_server(), session=session))
+
+    collections = library.get_all_collections()
+
+    assert [collection.title for collection in collections] == ["Heat"]
+    assert library.get_all_collections(label="Kometa") == []
+    reloaded = library.reload(collections[0], force=True)
+    assert reloaded is collections[0]
+    assert reloaded.smart is True
+    assert reloaded.childCount == 4
+    assert reloaded.etag == '"v2"'
+    assert session.calls[1]["url"].endswith("/admin/collections/col-1")
+    assert all("refresh-metadata" not in call["url"] for call in session.calls)
+
+
 def test_library_builds_collections_and_refuses_missing_capabilities():
     session = FakeSession(
         [
