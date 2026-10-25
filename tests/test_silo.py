@@ -23,7 +23,7 @@ class FakeSession:
         self.responses = list(responses)
 
     def request(self, method, url, params=None, json=None, headers=None, timeout=None, files=None):
-        self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers, "timeout": timeout, "files": files})
+        self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers, "timeout": timeout, "files": files, "profile": self.headers.get("X-Profile-Id")})
         return self.responses.pop(0)
 
 
@@ -149,6 +149,66 @@ def test_client_pages_catalog_results_and_quotes_collection_ids():
     assert session.calls[3]["method"] == "PUT"
     assert session.calls[3]["url"].endswith("/admin/collections/col%201/items/movie%3Aheat-1995")
     assert session.calls[3]["json"] == {"position": 3}
+
+
+def test_missing_profile_lists_users_and_profiles():
+    problem = {"title": "Not found", "status": 404, "detail": "Profile not found"}
+    session = FakeSession(
+        [
+            FakeResponse(problem, status_code=404),
+            FakeResponse({"items": [{"id": "12", "username": "alice"}, {"id": "13", "username": "bob"}], "page": {"has_more": False}}),
+            FakeResponse({"items": [{"id": "34", "name": "Alice", "is_primary": True}], "page": {"has_more": False}}),
+            FakeResponse({"items": [{"id": "34", "name": "Alice"}, {"id": "35", "name": "Kids"}], "page": {"has_more": False}}),
+            FakeResponse({"items": [{"id": "40", "name": "Bob"}], "page": {"has_more": False}}),
+        ]
+    )
+    client = SiloClient(_server(profile_id="999"), session=session)
+
+    with pytest.raises(Failed) as caught:
+        client.list_libraries()
+
+    message = str(caught.value)
+    assert "GET /libraries returned 404" in message
+    assert "Profile not found for profile_id '999'" in message
+    assert 'user 12 (alice): profile 34 "Alice" primary, profile 35 "Kids"' in message
+    assert 'user 13 (bob): profile 40 "Bob"' in message
+    assert session.calls[0]["profile"] == "999"
+    assert session.calls[1]["url"].endswith("/admin/users")
+    assert session.calls[1]["profile"] is None
+    assert session.calls[2]["url"].endswith("/profiles")
+    assert session.calls[3]["url"].endswith("/admin/users/12/profiles")
+    assert session.calls[4]["url"].endswith("/admin/users/13/profiles")
+    assert session.headers["X-Profile-Id"] == "999"
+
+
+def test_missing_profile_falls_back_to_the_signed_in_account():
+    session = FakeSession(
+        [
+            FakeResponse({"detail": "Profile not found"}, status_code=404),
+            FakeResponse({"detail": "Forbidden"}, status_code=403),
+            FakeResponse({"id": "12", "username": "alice"}),
+            FakeResponse({"items": [{"id": "34", "name": "Alice", "is_primary": True}], "page": {"has_more": False}}),
+        ]
+    )
+    client = SiloClient(_server(profile_id="999"), session=session)
+
+    with pytest.raises(Failed) as caught:
+        client.list_libraries()
+
+    assert 'user 12 (alice): profile 34 "Alice" primary' in str(caught.value)
+    assert session.calls[2]["url"].endswith("/account/me")
+    assert session.calls[3]["url"].endswith("/profiles")
+    assert session.calls[2]["profile"] is None
+
+
+def test_other_not_found_errors_do_not_list_profiles():
+    session = FakeSession([FakeResponse({"detail": "Collection not found"}, status_code=404)])
+    client = SiloClient(_server(), session=session)
+
+    with pytest.raises(Failed, match="Collection not found"):
+        client.get_collection("missing")
+
+    assert len(session.calls) == 1
 
 
 def test_library_builds_collections_and_refuses_missing_capabilities():

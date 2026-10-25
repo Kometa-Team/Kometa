@@ -120,6 +120,7 @@ class SiloClient:
             self.session.headers["X-Profile-Id"] = str(server.profile_id)
         if server.verify_ssl is False:
             self.session.verify = False
+        self._listing_profiles = False
 
     def request(self, method, path, params=None, json_body=None, headers=None, files=None):
         try:
@@ -127,7 +128,11 @@ class SiloClient:
         except requests.RequestException as error:
             raise Failed(f"Silo Error: {method} {path} failed: {error}") from error
         if response.status_code >= 400:
-            detail = (response.text or "").strip().replace("\n", " ")[:300]
+            detail = _response_detail(response)
+            if _profile_not_found(response):
+                detail = self._missing_profile_detail()
+            elif len(detail) > 300:
+                detail = detail[:300]
             raise Failed(f"Silo Error: {method} {path} returned {response.status_code}{f': {detail}' if detail else ''}")
         if response.status_code == 204 or not response.content:
             return None, response.headers
@@ -160,6 +165,35 @@ class SiloClient:
 
     def list_libraries(self):
         return self._items("GET", "/libraries")
+
+    def _missing_profile_detail(self):
+        configured = self.server.profile_id
+        detail = "Profile not found"
+        if configured:
+            detail += f" for profile_id '{configured}'"
+        if self._listing_profiles:
+            return detail
+        choices = self._profile_choices()
+        if choices:
+            return f"{detail}. Available users and profiles: {choices}"
+        return f"{detail}. Available users and profiles could not be listed"
+
+    def _profile_choices(self):
+        """List users and profiles without the profile header that Silo just rejected."""
+        self._listing_profiles = True
+        saved = self.session.headers.pop("X-Profile-Id", None)
+        try:
+            try:
+                users = self._items("GET", "/admin/users")
+            except Failed:
+                users = None
+            if users:
+                return _format_user_profiles(self, users)
+            return _format_account_profiles(self)
+        finally:
+            self._listing_profiles = False
+            if saved is not None:
+                self.session.headers["X-Profile-Id"] = saved
 
     def list_collections(self, library_id):
         return self._items("GET", "/admin/collections", params={"library_id": library_id})
@@ -667,6 +701,96 @@ class _SiloSection:
 
     def __getattr__(self, name):
         raise Failed(f"Silo Error: Plex library attribute '{name}' is not available on a Silo library")
+
+
+def _response_payload(response):
+    try:
+        return response.json()
+    except ValueError:
+        return None
+
+
+def _response_detail(response):
+    payload = _response_payload(response)
+    if isinstance(payload, dict):
+        detail = payload.get("detail") or payload.get("title")
+        if detail:
+            return str(detail).strip()
+    return (getattr(response, "text", None) or "").strip().replace("\n", " ")
+
+
+def _profile_not_found(response):
+    payload = _response_payload(response)
+    if isinstance(payload, dict) and str(payload.get("detail") or "").casefold() == "profile not found":
+        return True
+    return "profile not found" in (getattr(response, "text", None) or "").casefold()
+
+
+def _profile_label(profile, primary_ids=()):
+    ident = profile.get("id")
+    if ident is None:
+        return ""
+    label = f"profile {ident}"
+    name = profile.get("name") or ""
+    if name:
+        label += f' "{name}"'
+    if profile.get("is_primary") or str(ident) in primary_ids:
+        label += " primary"
+    return label
+
+
+def _format_profiles(profiles, primary_ids=()):
+    return ", ".join(label for label in (_profile_label(profile, primary_ids) for profile in profiles) if label)
+
+
+def _primary_profile_ids(client):
+    try:
+        profiles = client._items("GET", "/profiles")
+    except Failed:
+        return set()
+    return {str(profile.get("id")) for profile in profiles if profile.get("is_primary") and profile.get("id") is not None}
+
+
+def _format_user_profiles(client, users):
+    primary_ids = _primary_profile_ids(client)
+    parts = []
+    for user in users:
+        user_id = user.get("id")
+        if user_id is None:
+            continue
+        username = user.get("username") or ""
+        try:
+            profiles = client._items("GET", f"/admin/users/{_path_id(user_id)}/profiles")
+        except Failed:
+            profiles = []
+        who = f"user {user_id}"
+        if username:
+            who += f" ({username})"
+        parts.append(f"{who}: {_format_profiles(profiles, primary_ids) or 'no profiles'}")
+    return "; ".join(parts)
+
+
+def _format_account_profiles(client):
+    account = {}
+    try:
+        data, _headers = client.request("GET", "/account/me")
+        if isinstance(data, dict):
+            account = data
+    except Failed:
+        account = {}
+    try:
+        profiles = client._items("GET", "/profiles")
+    except Failed:
+        profiles = []
+    listed = _format_profiles(profiles)
+    user_id = account.get("id")
+    if user_id is None:
+        return listed
+    who = f"user {user_id}"
+    username = account.get("username") or ""
+    if username:
+        who += f" ({username})"
+    return f"{who}: {listed or 'no profiles'}"
 
 
 def _path_id(value):
